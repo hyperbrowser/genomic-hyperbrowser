@@ -2,36 +2,6 @@
 
 cd `dirname $0`
 
-# If there is a .venv/ directory, assume it contains a virtualenv that we
-# should run this instance in.
-if [ -d .venv ];
-then
-    printf "Activating virtualenv at %s/.venv\n" $(pwd)
-    . .venv/bin/activate
-
-    # R setup for Galaxy ProTo.
-    # Thanks to Dr. Paul Harrison for the setup
-    # (http://www.logarithmic.net/pfh/blog/01415014891)
-
-    if [ ! -d .venv/R/library ];
-    then
-        printf "Setting up R in virtualenv at %s/.venv\n" $(pwd)
-
-        echo 'export R_LIBS=$VIRTUAL_ENV/R/library' >>.venv/bin/activate
-        for LIB in .venv/lib/python*
-        do
-            echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py
-        done
-
-        echo ". `pwd`/.venv/bin/activate && `which R` \$@" >.venv/bin/R
-        echo ". `pwd`/.venv/bin/activate && `which Rscript` \$@" >.venv/bin/Rscript
-        chmod a+x .venv/bin/R .venv/bin/Rscript
-
-        mkdir .venv/R
-        mkdir .venv/R/library
-    fi
-fi
-
 # If there is a file that defines a shell environment specific to this
 # instance of Galaxy, source the file.
 if [ -z "$GALAXY_LOCAL_ENV_FILE" ];
@@ -105,11 +75,6 @@ then
     export GALAXY_CONFIG_OVERRIDE_TOOL_CONFIG_FILE="test/functional/tools/samples_tool_conf.xml"
     export GALAXY_CONFIG_ENABLE_BETA_WORKFLOW_MODULES="true"
     export GALAXY_CONFIG_OVERRIDE_ENABLE_BETA_TOOL_FORMATS="true"
-fi
-
-if [ ! $? -eq 0 ]; then
-    echo "Error in './scripts/common_startup.sh'. Exiting."
-    exit 1
 fi
 
 if [ -n "$GALAXY_UNIVERSE_CONFIG_DIR" ]; then

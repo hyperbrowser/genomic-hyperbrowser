@@ -11,7 +11,7 @@ import sys
 try:
     from rpy2.robjects import r
 except:
-    sys.exit(0)
+    sys.exit(1)
 
 
 class InstallError(Exception):

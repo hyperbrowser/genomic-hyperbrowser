@@ -113,4 +113,14 @@
     <tool file="plotting/boxplot.xml" />
     <tool file="maf/vcf_to_maf_customtrack.xml" />
   </section>
+
+  <label text="Galaxy ProTo" id="proto_label" />
+
+  <section id="protoTools" name="ProTo development tools">
+    <tool file="proto/GenerateToolsTool.xml" />
+    <tool file="proto/ExploreToolsTool.xml" />
+    <tool file="proto/InstallToolsTool.xml" />
+  </section>
+  <section id="installedProto" name="Installed ProTo tools">
+  </section>
 </toolbox>
