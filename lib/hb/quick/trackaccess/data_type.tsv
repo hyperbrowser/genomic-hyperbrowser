@@ -1,0 +1,14 @@
+#type_name	Encode	Epigenome2	ICGC	CGAtlas	FANTOM5	GWAS	EBIHub
+Peaks (narrow)	narrowPeak.gz	.	.	.	.	.	.
+Peaks (broad)	broadPeak.gz	.	.	.	.	.	.
+Peaks (gapped)	.	.	.	.	.	.	.
+Peaks (general)	peaks.gz	.	.	.	.	.	.
+Signal	bigWig,bw	.	.	.	.	.	.
+Regions	bed.gz,bed9.gz,gff.gz,gtf.gz,bigBed,bb	.	.	.	.	.	.
+Variants (germline)	.	.	.	.	.	gtrack	.
+Variants (somatic)	.	.	.	.	.	.	.
+Raw reads (aligned)	bam	.	.	.	.	.	.
+Raw reads	fastq.gz,csfasta.gz	.	.	.	.	.	.
+Sequence	.	.	.	.	.	.	.
+Others	.	.	.	.	.	.	.
+#Clinical Sample	clinicalsample.*

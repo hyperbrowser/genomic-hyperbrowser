@@ -1,0 +1,1650 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.9: http://docutils.sourceforge.net/" />
+<meta http-equiv="expires" content="Wed, 19 Feb 2003 08:00:00 GMT"/>
+<title></title>
+<link rel="stylesheet" href="style/welcome.css" type="text/css" />
+        <script type="text/javascript" src="scripts/jquery.js"></script>
+        <script type="text/javascript" src="scripts/google_analytics_1.js"></script>
+    	<script type="text/javascript" src="scripts/google_analytics_2.js"></script>
+	    <link href="style/arrowsandboxes.css" rel="stylesheet" type="text/css" />
+	    <script src="scripts/jquery_wz_jsgraphics.js" type="text/javascript"></script>
+	    <script src="scripts/arrowsandboxes.js" type="text/javascript"></script>
+
+		<script>
+		function getUrlParameter(sParam)
+		{
+		    var sPageURL = window.location.search.substring(1);
+		    var sURLVariables = sPageURL.split('&');
+		    for (var i = 0; i < sURLVariables.length; i++)
+		    {
+		        var sParameterName = sURLVariables[i].split('=');
+		        if (sParameterName[0] == sParam)
+		        {
+		            return sParameterName[1];
+		        }
+		    }
+		}
+		</script>
+		
+		<script type="text/javascript">
+		var jqnc = jQuery.noConflict();
+        jqnc(document).ready(function() {
+            
+		jqnc(".tab4collectionDesc").hide();
+		jqnc('.tab4collectionTitle').on('click',function(e) {
+
+		var divid = this.id;
+		divid = divid.replace('T','D');
+	    jqnc('#'+divid).slideToggle("fast");
+	    
+	    var divid = this.id;
+	    divid = divid.replace('T','B');
+	    
+	    //console.log(divid, ' ==== ', jqnc('#'+divid).attr("class"));
+	    
+	    if(jqnc('#'+divid).attr("class") == '-on')
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAlying.png");
+	    	jqnc('#'+divid).attr('class', '-off');
+	    	
+	    	//console.log(divid, ' 111 ', jqnc('#'+divid).attr("class"));
+	    }
+	    else
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAstanding.png");
+	    	jqnc('#'+divid).attr('class', '-on');
+	    	
+	    	//console.log(divid, ' 222 ', jqnc('#'+divid).attr("class"));
+	    }
+	    
+	    
+	    
+		});
+		});
+		
+		jqnc(document).ready(function() {
+            
+		jqnc(".sliding").hide();
+		jqnc('.show_hide').on('click',function(e) {
+
+		var divid = this.id;
+		divid = divid.replace('T','D');
+	      
+	      jqnc('#'+divid).slideToggle();
+
+			var divid = this.id;
+	    divid = divid.replace('T','B');
+
+	    //console.log(divid, ' ==== ', jqnc('#'+divid).attr("class"));
+
+	    if(jqnc('#'+divid).attr("class") == '-on')
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAlying.png");
+	    	jqnc('#'+divid).attr('class', '-off');
+
+	    	//console.log(divid, ' 111 ', jqnc('#'+divid).attr("class"));
+	    }
+	    else
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAstanding.png");
+	    	jqnc('#'+divid).attr('class', '-on');
+
+	    	//console.log(divid, ' 222 ', jqnc('#'+divid).attr("class"));
+	    }
+
+
+		});
+		});
+		
+		
+		
+		</script>
+
+        <script type="text/javascript">
+            var q = jQuery.noConflict();
+            q(document).ready(function() {
+              q( "a[minsizehint]" ).click( function() {
+                  if ( parent.handle_minwidth_hint ) {
+                      parent.handle_minwidth_hint( q(this).attr( "minsizehint" ) );
+                  }
+              });
+			    q('.tabs .tab-links a').on('click', function(e)  {
+			        var currentAttrValue = q(this).attr('href');
+
+			        // Show/Hide Tabs
+			        q('.tabs ' + currentAttrValue).show().siblings().hide();
+
+			        // Change/remove current tab to active
+			        q(this).parent('li').addClass('active').siblings().removeClass('active');
+
+			        e.preventDefault();
+			    });
+
+			    /*
+			    Open the tab defined by name in the url with parameter tabOn.
+			    */
+			    var tabOn = getUrlParameter('tabOn');
+			    if (tabOn) {
+			    	if (tabOn !== 'tab1') {
+			    		showDiv('tab1', tabOn)
+			    	}
+			    }
+
+			    /*
+			    Open the basic mode tab (tab2) and the question div defined in the basicQuestionId parameter
+			    */
+			    var basicQuestionId = getUrlParameter('basicQuestionId');
+			    if (basicQuestionId) {
+			    	showDiv('tab1', 'tab2')
+			    	var qDivId = basicQuestionId.split('_')[0]
+			    	toggleDiv('#q' + qDivId, '#i' + qDivId)
+			    	var aDivId = basicQuestionId.split('_')[1]
+			    	toggleDiv('#a' + qDivId + aDivId, '#i' + qDivId + aDivId)
+
+			    }
+            });
+        </script>
+		<script>
+		function showDiv(tabNoVisible, tabVisible) {
+		    div1 = document.getElementById(tabVisible);
+		    div1.style.display = "block";
+		    div2 = document.getElementById(tabNoVisible);
+		    div2.style.display = "none";
+
+		    jQuery('#tab-links li[value='+ tabVisible + ']').addClass('active');
+		    jQuery('#tab-links li[value='+tabNoVisible+']').removeClass('active');
+		}
+		</script>
+		<script type="text/javascript">
+		   if (typeof String.prototype.endsWith !== 'function') {
+				String.prototype.endsWith = function(suffix) {
+				    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+				};
+			}
+		</script>
+
+		   <script type="text/javascript">
+		   var q = jQuery.noConflict();
+		   function toggleDiv(divId, imgId) {
+         var imgIdFirst = imgId.substr(2,1);
+         var imgIdSecond = imgId.substr(3,imgId.length);
+
+			   q(divId).toggle();
+			   if (q(imgId).attr("data-open") == 'false') {
+				   q(imgId).attr("src", "hyperbrowser/images/div/DNAstanding.png")
+				   q(imgId).attr("data-open", "true")
+
+           if(imgId.length === 3)
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=' + imgIdFirst);
+           }
+           else
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=' + imgIdFirst + '_' + imgIdSecond);
+           }
+			   }
+			   else {
+				   q(imgId).attr("src", "hyperbrowser/images/div/DNAlying.png")
+				   q(imgId).attr("data-open", "false")
+
+           if(imgId.length === 3)
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=0');
+           }
+           else
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=' + imgIdFirst);
+           }
+			   }
+		   }
+
+	   </script>
+
+     <script>
+      function toggleInfoBox(divId)
+      {
+        q(divId).toggle();
+      }
+     </script>
+
+	   <script>
+	   function generateAnswerADivContent(divId, toolUrl, toolTitle, trackCollectionExampleText, trackCollectionDataTitle, basicQuestionId ) {
+		   var q = jQuery.noConflict();
+		   var content = '            <p>\n' +
+			   '                This particular question can be seen as a concrete instance of the more general question \n' +
+			   '                "How does a single genomic track overlap with various other tracks from a collection", where:	\n' +
+			   '            </p>\n' +
+			   '                        <ul>\n' +
+			   '                <li>\n' +
+			   '                    the <span title="a set of genomic regions, e.g. a single bed file"><b>single genomic track</b></span> is the dataset you want to study, which should be uploaded to Galaxy history using e.g. the tool <a href="../tool_runner?tool_id=upload1">Upload File</a> <br><i>(If you want to test with a sample track file, <a href=../tool_runner?tool_id=file_import_bed&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvTVNfcmVnaW9uc19leHBhbmRlZF8xMGtiLmJlZA==&datatype=bed&basicQuestionId=' + basicQuestionId + '>click here</a> to load a sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions)</i>\n' +
+			   '                </li><br>\n' +
+			   '                <li>\n' +
+			   '                    a <span title="each track is a set of genomic regions, so that a collection of genomic tracks means multiple datasets, e.g. multiple bed files"><b>track collection</b></span> to be compared against, ' + trackCollectionExampleText + ', which should be constructed using \n' +
+			   '                    the tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=' + basicQuestionId + '">Construct track collection (GSuite)</a>\n' +
+			   '                </li>\n' +
+			   '            </ul>\n' +
+			   '            <p>\n' +
+			   '                After the necessary data has been collected to Galaxy history, the genomic track of interest can be analyzed against ' + trackCollectionDataTitle + '\n' +
+			   '                using the tool <a href="' + toolUrl + '&isBasic=1&isBasic=True"\n' +
+			   '                >' + toolTitle +'</a>\n' +
+			   '            </p>'
+
+		   q(divId).html(content)
+
+	   }
+	   function generateToolHyperlink(anchorId, toolId, title, params, isBasic) {
+			var q = jQuery.noConflict();
+			hrefVal = '../hyper?mako=generictool&tool_id=' + toolId
+			if (isBasic) {
+				hrefVal += '&isBasic=1&isBasic=True'
+			}
+			for (var paramName in params) {
+				hrefVal += '&' + paramName + '=' + params[paramName]
+			}
+//	   		q(anchorId).attr('href', '../hyper?mako=generictool&tool_id=' + toolId + '&basicQuestionId=' + basicQuestionId)
+	   		q(anchorId).attr('href', hrefVal)
+	   		q(anchorId).html(title)
+	   }
+	   </script>
+</head>
+
+
+<body>
+
+
+<div class="tabs">
+    <ul class="tab-links" id="tab-links">
+        <li class="active" value="tab1"><a href="#tab1">Main page</a></li>
+        <li value="tab2"><a href="#tab2">Basic mode</a></li>
+        <li value="tab3"><a href="#tab3">Advanced mode</a></li>
+        <li value="tab4"><a href="#tab4">Examples</a></li>
+        <li value="tab5"><a href="#tab5">About</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="tab1" class="tab active">
+		<div class="document">
+		    <div class="main">
+		    <h1>Welcome to GSuite Tools</h1>
+		    <h2>Manage and Analyze collections of genome-wide datasets</h2>
+		    <p>
+			    <b>GSuite tools</b> offer the ability to manage and analyze collections of
+			    genome-wide datasets (genomic tracks). At the core of the system is a simple tabular format
+			    called GSuite, which represents a collection of genomic tracks (one genomic track per line),
+			    along with some basic metadata.
+		    </p>
+		    <p>
+		    To guide you through your analysis, two different working modes are provided. Depending on your experience with the Genomic HyperBrowser and Galaxy-based web tools, please select Basic or Advanced user mode.
+		    </p>
+		    </div>
+		    <div class="basic" id="basic" onclick="javascript:showDiv('tab1', 'tab2');" onmouseover="this.style.background='#F8F0B1';" onmouseout="this.style.background='#FBDF6E';">
+		    <h2>Basic user mode</h2>
+		    <p>
+		    Let's you select a more specific genome analysis question and leads you through a simplified workflow where you get the relevant datasets and run an analysis with a default parameter setup. Choose this if you are new to the GSuite Tools and the Genomic HyperBrowser.
+		    </p>
+		    </div>
+		    <div class="advanced" id="advanced" onclick="javascript:showDiv('tab1', 'tab3');" onmouseover="this.style.background='#F8F0B1';" onmouseout="this.style.background='#FBDF6E';">
+		    <h2>Advanced user mode</h2>
+		    <p>
+		    Gives you full control of the analysis workflow with all intermediate steps. Let's you edit the content of the GSuite files and modify the parameters of the analysis. Choose this if you already have experience with GSuite Tools or the Genomic HyperBrowser.
+		    </p>
+		    </div>
+		</div>
+	</div>
+
+	<div id="tab2" class="tab">
+
+
+
+	    <div class="document">
+		<div class="main">
+		    <h2>GSuite Tools - Basic User Mode</h2>
+		    <h3>
+		    <span title="Hover mouse over words in bold if you are uncertain about their meaning">
+		    <b>What is the biological question you would like to ask?</b>
+		    </span>
+		    </h3>
+		    <p>(Tip: Click to expand the available biological questions in the scenario of interest.)</p>
+<!-- 		    <p>
+		    <b>**IMPORTANT:</b> Currently only sections (biological questions) marked with ** are functioning.
+		    This is because we are still in a testing phase. For now use only the marked questions to test the functionality.
+		    The rest of the sections will be filled out later. Suggestions for new sections are also welcomed.
+		    </p> -->
+		</div>
+
+        <div class="question-wrapper" onclick="toggleDiv('#q1', '#i1');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <p>
+                <img data-open='false' id="i1" src="hyperbrowser/images/div/DNAlying.png"
+                width="20" height="20" />
+                <span> - Explore disease-associated variation (GWAS SNPs)
+ </span>
+             </p>
+
+        </div>
+        <div id='q1' class="answer-wrapper">
+        
+            <div class="question" id="q11" onclick="toggleDiv('#a11', '#i11');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i11" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied trait-associated variants particularly active in certain cell types?
+
+            </div>
+
+        
+        <div class="answer" id="a11">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing to what extent variants from a given query set fall into the active chromatin regions (determined by DNase-Seq, FAIRE-Seq or histone modification ChIP-Seq) of selected cell types. Any number of cell types can be uniformly investigated within a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox1_1')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_1" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific SNP variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the areas of active chromatin, with each dataset describing the genomic regions of DNaseI accessibility for a separate cell type).
+<br>
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_bed&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvTVNfcmVnaW9uc19leHBhbmRlZF8xMGtiLmJlZA==&datatype=bed&basicQuestionId=1_1">sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=1_1">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each representing the active chromatin regions of a separate cell type, in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvRE5hc2VfaW5fNDBfY2VsbF90eXBlcy5nc3VpdGU=&datatype=gsuite&basicQuestionId=1_1">sample GSuite of DNaseI accessibility for different cell types</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import active chromatin data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_1">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import active chromatin data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_1">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded cell type specific files can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_1">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_1">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=1_1">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q12" onclick="toggleDiv('#a12', '#i12');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i12" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied trait-associated variants preferentially located in certain chromatin states (in a given cell type)?
+
+            </div>
+
+        
+        <div class="answer" id="a12">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of query variants in regions associated with a particular chromatin state (determined by histone modification ChIP-Seq or computationally) in a cell type of interests. Any number of chromatin states can be uniformly investigated within a single analysis run. Various information, including genomic locations of individual histone modifications or their combinations, can be used to denote a chromatin state.
+</div></br><img onclick="toggleInfoBox('#infoBox1_2')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_2" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific SNP variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the areas of various chromatin states, with each dataset describing the genomic regions associated with a separate chromatin state of a given cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_bed&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvTVNfcmVnaW9uc19leHBhbmRlZF8xMGtiLmJlZA==&datatype=bed&basicQuestionId=1_2">sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=1_2">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets related to a given cell type, each dataset representing the regions of a separate chromatin state; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvaGlzdF9rNTYyLmdzdWl0ZQ==&datatype=gsuite&basicQuestionId=1_2">sample GSuite of different K562 Histone modifications</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import chromatin state data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_2">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import chromatin state data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_2">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific chromatin states can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_2">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_2">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=1_2">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q13" onclick="toggleDiv('#a13', '#i13');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i13" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied trait-associated variants potentially disrupting the regulatory function of a given transcription factor (in certain cell types)?
+
+            </div>
+
+        
+        <div class="answer" id="a13">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of query variants within the binding sites of a particular transcription factor (TF). Disruption of binding sites (determined by TF ChIP-Seq, DamID or computational predictions based on binding motifs) of the selected TF can be uniformly investigated for any number of cell types in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox1_3')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_3" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific SNP variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of TF binding sites, with each dataset representing the binding sites of a given TF in a separate cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_bed&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvTVNfcmVnaW9uc19leHBhbmRlZF8xMGtiLmJlZA==&datatype=bed&basicQuestionId=1_3">sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=1_3">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets related to a given TF, each dataset representing the binding sites of this TF in a separate cell type; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvY015Y19hY3Jvc3NfNDNfY2VsbF90eXBlcy5nc3VpdGU=&datatype=gsuite&basicQuestionId=1_3">sample GSuite of binding regions for the transcription factor c-myb in different cell types</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import TF binding-site data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_3">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_3">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific cell types can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_3">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_3">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=1_3">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q14" onclick="toggleDiv('#a14', '#i14');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i14" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied trait-associated variants potentially disrupting the regulatory function of a given transcription factor (in certain cell types)?
+
+            </div>
+
+        
+        <div class="answer" id="a14">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of query variants within the binding sites of a particular transcription factor (TF). Disruption of binding sites (determined by TF ChIP-Seq, DamID or computational predictions based on binding motifs) of the selected TF can be uniformly investigated for any number of cell types in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox1_4')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_4" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific SNP variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of TF binding sites, with each dataset representing the binding sites of a given TF in a separate cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_bed&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvTVNfcmVnaW9uc19leHBhbmRlZF8xMGtiLmJlZA==&datatype=bed&basicQuestionId=1_4">sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=1_4">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets related to a given TF, each dataset representing the binding sites of this TF in a separate cell type; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvY015Y19hY3Jvc3NfNDNfY2VsbF90eXBlcy5nc3VpdGU=&datatype=gsuite&basicQuestionId=1_4">sample GSuite of binding regions for the transcription factor c-myb in different cell types</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import TF binding-site data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_4">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_4">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific TFs can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_4">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_4">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=1_4">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q15" onclick="toggleDiv('#a15', '#i15');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i15" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- How similar are the supplied traits in terms of sharing their lead SNPs?
+
+            </div>
+
+        
+        <div class="answer" id="a15">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the degree to which annotated lead SNPs are shared across selected traits. Any number of traits (each represented by a corresponding set of variants) can be included in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox1_5')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_5" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How do the individual tracks of a single suite overlap each other?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of trait-associated SNP variants, with each dataset representing a separate trait).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the variants associated with a separate trait; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a __dgs_traits__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import trait-associated SNP data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_5">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import trait-associated SNP data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_5">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific traits can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_5">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_5">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the tracks of the suite by utilizing one of the following tools:
+</li><ol type="a"><li>				- the <a href="../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True&bmQid=1_5">Determine coinciding track combinations from two GSuites</a> tool provides a selection of multiple methods for calculating a pair-wise overlap table for all the tracks of the suite;
+</li><li>				- the <a href="../hyper?mako=generictool&tool_id=hb_pilot_page_overlap_between_tracks_tool&bmQid=1_5">Overlap between tracks</a> tool calculates overall overlap statistics (e.g. a table showing how many SNPs are shared among 1, 2, …, n tracks of the suite).
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q16" onclick="toggleDiv('#a16', '#i16');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i16" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- How do the supplied traits cluster based on the location of their lead SNPs?
+
+            </div>
+
+        
+        <div class="answer" id="a16">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis exploring the clustering tendencies of selected traits. Any number of traits (each represented by a corresponding set of variants) can be included in a single analysis run. One of multiple measures, each of which assesses the distribution of individual traits’ associated variants along the genome, can be used as a basis for the clustering.
+</div></br><img onclick="toggleInfoBox('#infoBox1_6')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_6" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How do the individual tracks of a single suite form clusters?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of trait-associated SNP variants, with each dataset representing a separate trait).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the variants associated with a separate trait; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a __dgs_traits__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import trait-associated SNP data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_6">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import trait-associated SNP data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_6">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific traits can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_6">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_6">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the tracks of the suite by utilizing the __cgst_tool__ tool.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q17" onclick="toggleDiv('#a17', '#i17');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i17" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Which of the supplied traits is represented by the most (or the least) unique lead SNP set?
+
+            </div>
+
+        
+        <div class="answer" id="a17">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis calculating the relative ranking of each submitted trait based on its average enrichment ratio against the other supplied traits. Any number of traits (each represented by a corresponding set of variants) can be included in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox1_7')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox1_7" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "Given a suite of tracks, which tracks are the most or the least unique ones relative to the other tracks in the suite?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of trait-associated SNP variants, with each dataset representing a separate trait).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the variants associated with a separate trait; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a __dgs_traits__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import trait-associated SNP data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=1_7">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import trait-associated SNP data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=1_7">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific traits can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=1_7">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=1_7">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the tracks of the suite by utilizing the <a href="../hyper?mako=generictool&tool_id=hb_pilot_page_similarity_and_uniqueness_of_tracks_tool&bmQid=1_7">Similarity and uniqueness of tracks</a> tool.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q18" onclick="toggleDiv('#a18', '#i18');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i18" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- What I am interested in does not match any of the suggestions above..
+
+            </div>
+
+        
+        <div class="answer" id="a18">
+            GSuite Tools is a generic system for analyzing suites of tracks, that is not in any way restricted to the specific example scenarios described above.
+<br>
+<br>If you are interested in a question that does not directly match any of the examples above, you might still get an idea of how to perform your analysis of interest by reading through the examples above and look for parallels to your question.
+<br>
+<br>Alternatively, you can switch to <a href="javascript:;"  onclick="showDiv('tab1', 'tab3’);”>advanced mode</a>, and look at the general descriptions of the analytical options provided by GSuite Tools.
+<br>
+<br>You are also more than welcome to contact us in the HyperBrowser team at <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@sgub-resworbrepyh</a>. We have provided help to a broad range of investigations before, and are happy to provide noncommittal advice or also to take part in collaborations.
+<br>If not, these are the generic options, could any of them match?
+<br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_representative_and_untypical_track_tool&isBasic=1&isBasic=True&bmQid=1_8">Determine representative and atypical tracks in a GSuite </a> - use it when you need to analyze a single collection
+<br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=1_8">Determine GSuite tracks coinciding with a separate track</a> - use it when you have a single track of interest that needs to be analyzed against a collection of tracks
+<br><a href="../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True&bmQid=1_8">Determine coinciding track combinations from two GSuites</a> - use it when you have two collections of tracks which you want to analyze against each other
+<br>
+
+            </div>
+
+
+        
+</div>
+        <div class="question-wrapper" onclick="toggleDiv('#q2', '#i2');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <p>
+                <img data-open='false' id="i2" src="hyperbrowser/images/div/DNAlying.png"
+                width="20" height="20" />
+                <span> - Explore cancer mutations (somatic variation)
+ </span>
+             </p>
+
+        </div>
+        <div id='q2' class="answer-wrapper">
+        
+            <div class="question" id="q21" onclick="toggleDiv('#a21', '#i21');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i21" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied somatic variants (e.g. variants associated with a particular cancer type) particularly active in certain cell types?
+
+            </div>
+
+        
+        <div class="answer" id="a21">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing to what extent variants from a given query set fall into the active chromatin regions (determined by DNase-Seq, FAIRE-Seq or histone modification ChIP-Seq) of selected cell types. Any number of cell types can be uniformly investigated within a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox2_1')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox2_1" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific somatic variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the areas of active chromatin, with each dataset describing the genomic regions of DNaseI accessibility for a separate cell type).
+<br>
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gtrack&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvVENHQV9QUkFELmd0cmFjaw==&datatype=gtrack&basicQuestionId=2_1">sample TCGA track</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=2_1">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each representing the active chromatin regions of a separate cell type, in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvRE5hc2VfaW5fNDBfY2VsbF90eXBlcy5nc3VpdGU=&datatype=gsuite&basicQuestionId=2_1">sample GSuite of DNaseI accessibility for different cell types</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import active chromatin data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=2_1">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import active chromatin data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=2_1">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded cell type specific files can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=2_1">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=2_1">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=2_1">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q22" onclick="toggleDiv('#a22', '#i22');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i22" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied somatic variants (e.g. variants associated with a particular cancer type) preferentially located in certain chromatin states (in a given cell type)?
+
+            </div>
+
+        
+        <div class="answer" id="a22">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of query somatic variants in regions associated with a particular chromatin state (determined by histone modification ChIP-Seq or computationally) in a cell type of interests. Any number of chromatin states can be uniformly investigated within a single analysis run. Various information, including genomic locations of individual histone modifications or their combinations, can be used to denote a chromatin state.
+</div></br><img onclick="toggleInfoBox('#infoBox2_2')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox2_2" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific somatic variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the areas of various chromatin states, with each dataset describing the genomic regions associated with a separate chromatin state of a given cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gtrack&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvVENHQV9QUkFELmd0cmFjaw==&datatype=gtrack&basicQuestionId=2_2">sample TCGA track</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=2_2">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets related to a given cell type, each dataset representing the regions of a separate chromatin state; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvaGlzdF9rNTYyLmdzdWl0ZQ==&datatype=gsuite&basicQuestionId=2_2">sample GSuite of different K562 Histone modifications</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import chromatin state data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=2_2">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import chromatin state data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=2_2">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific chromatin states can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=2_2">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=2_2">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=2_2">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q23" onclick="toggleDiv('#a23', '#i23');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i23" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Are the supplied somatic variants (e.g. variants associated with a particular cancer type) potentially disrupting the regulatory function of certain transcription factors (in a given cell type)?
+
+            </div>
+
+        
+        <div class="answer" id="a23">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of query variants within the binding sites of a particular transcription factor (TF) in a cell type of interest. Any number of TFs, represented by their binding sites (determined by TF ChIP-Seq, DamID or computational predictions based on binding motifs), can be uniformly investigated within a single analysis run.
+<br>
+</div></br><img onclick="toggleInfoBox('#infoBox2_3')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox2_3" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the genomic locations of specific somatic variants);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of TF binding sites, with each dataset representing the binding sites of a separate TF in a given cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the variants, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gtrack&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvVENHQV9QUkFELmd0cmFjaw==&datatype=gtrack&basicQuestionId=2_3">sample TCGA track</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=2_3">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets related to a given cell type, each dataset representing the binding sites of a separate TF; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvMTU5X1RGc19pbl9nbTEyODc4X2NlbGxfdHlwZS5nc3VpdGU=&datatype=gsuite&basicQuestionId=2_3">sample GSuite of different transcription factors for the cell type gm12878</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import TF binding-site data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=2_3">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=2_3">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific TFs can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=2_3">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=2_3">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=2_3">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q24" onclick="toggleDiv('#a24', '#i24');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i24" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Do the supplied somatic variants occur preferentially in certain genes?
+
+            </div>
+
+        
+        <div class="answer" id="a24">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing absolute and patient-wise somatic mutation rates within individual genes. A normalization factor is calculated for each gene based on the cumulative length of genomic regions assigned to it (in case of targeted assays, only the targeted regions should be taken into account). Multiple patients (each corresponding to a set of somatic variants) and genes (each represented by a set of genomic regions) can be uniformly investigated in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox2_4')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox2_4" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How are the track elements of one suite distributed among the tracks of another suite?” Two input collections, each being a separate GSuite instance, are required:
+<br>A dataset of cases or classes, i.e. separate sets of genomic events/features (e.g. multiple patients, each with an own list of genomic locations that represent somatic variants);
+<br>A collection of potential targets represented by datasets of closely related genomic features (e.g. a collection of datasets which map the genomic locations of exons, with each dataset corresponding to one gene).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the suite of patient tracks (a collection of genomic location datasets, each dataset representing the somatic variants of a separate patient; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a __dgs_sv_colade__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import patient-wise somatic variation data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=2_4">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import patient-wise somatic variation data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=2_4">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific patients can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=2_4">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=2_4">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Fetch the suite of gene tracks (a collection of genomic location datasets, each dataset representing the exons of a separate gene; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a __dgs_tcga_exome__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import gene-wise exon data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=2_4">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import gene-wise exon data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=2_4">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific genes can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=2_4">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=2_4">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the data by utilizing the tool __event_incidence_tool__.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q25" onclick="toggleDiv('#a25', '#i25');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i25" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- (more options are in the process of being made available)
+
+            </div>
+
+        
+</div>
+        <div class="question-wrapper" onclick="toggleDiv('#q3', '#i3');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <p>
+                <img data-open='false' id="i3" src="hyperbrowser/images/div/DNAlying.png"
+                width="20" height="20" />
+                <span> - Explore transcription factor binding (TF Chip-seq)
+ </span>
+             </p>
+
+        </div>
+        <div id='q3' class="answer-wrapper">
+        
+            <div class="question" id="q31" onclick="toggleDiv('#a31', '#i31');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i31" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- How do the supplied transcription factors cluster based on the location of their binding sites (i.e. based on the targets of their regulatory activity)?
+
+            </div>
+
+        
+        <div class="answer" id="a31">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis exploring the clustering tendencies of selected transcription factors (TFs). Any number of TFs (each represented by a corresponding set of binding sites) can be included in a single analysis run. One of multiple measures, each of which assesses the distribution of individual TFs’ associated binding sites along the genome, can be used as a basis for the clustering.
+</div></br><img onclick="toggleInfoBox('#infoBox3_1')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox3_1" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How do the individual tracks of a single suite form clusters?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of transcription factor (TF)-associated binding sites, with each dataset representing a separate TF).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the binding sites associated with a separate TF; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvMTU5X1RGc19pbl9nbTEyODc4X2NlbGxfdHlwZS5nc3VpdGU=&datatype=gsuite&basicQuestionId=3_1">sample GSuite of different transcription factors for the cell type gm12878</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import TF-associated binding-site data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=3_1">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF-associated binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=3_1">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific TFs can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=3_1">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=3_1">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the tracks of the suite by utilizing the __cgst_tool__ tool.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q32" onclick="toggleDiv('#a32', '#i32');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i32" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- How much does binding (i.e. the set of supplied binding sites) of a given transcription factor vary across cell types?
+
+            </div>
+
+        
+        <div class="answer" id="a32">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the degree to which binding sites of a given transcription factor (TF) vary across cell types. Any number of cell types, each represented by a corresponding set of binding sites for the selected TF, can be uniformly investigated in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox3_2')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox3_2" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How do the individual tracks of a single suite overlap each other?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of TF binding sites, with each dataset representing the binding sites of a given TF in a separate cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets related to a given TF, each dataset representing the binding sites of this TF in a separate cell type; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvY015Y19hY3Jvc3NfNDNfY2VsbF90eXBlcy5nc3VpdGU=&datatype=gsuite&basicQuestionId=3_2">sample GSuite of binding regions for the transcription factor c-myb in different cell types</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import TF binding-site data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=3_2">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=3_2">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific cell types can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=3_2">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=3_2">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the suite of tracks by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_pilot_page_overlap_between_tracks_tool&bmQid=3_2">Overlap between tracks</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q33" onclick="toggleDiv('#a33', '#i33');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i33" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- How similar are the supplied transcription factors in terms of sharing their binding sites?
+
+            </div>
+
+        
+        <div class="answer" id="a33">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the degree to which binding sites are shared across selected TFs. Any number of TFs (each represented by a corresponding set of binding sites) can be included in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox3_3')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox3_3" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How do the individual tracks of a single suite overlap each other?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of transcription factor (TF) binding sites, with each dataset representing a separate TF).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the binding sites associated with a separate TF; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvMTU5X1RGc19pbl9nbTEyODc4X2NlbGxfdHlwZS5nc3VpdGU=&datatype=gsuite&basicQuestionId=3_3">sample GSuite of different transcription factors for the cell type gm12878</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import TF-associated binding-site data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=3_3">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF-associated binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=3_3">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific TFs can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=3_3">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=3_3">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the tracks of the suite by utilizing one of the following tools:
+</li><ol type="a"><li>				- the <a href="../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True&bmQid=3_3">Determine coinciding track combinations from two GSuites</a> tool provides a selection of multiple methods for calculating a pair-wise overlap table for all the tracks of the suite;
+</li><li>				- the <a href="../hyper?mako=generictool&tool_id=hb_pilot_page_overlap_between_tracks_tool&bmQid=3_3">Overlap between tracks</a> tool calculates overall overlap statistics (e.g. a table showing how many binding sites are shared among 1, 2, …, n TF tracks of the suite).
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q34" onclick="toggleDiv('#a34', '#i34');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i34" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- Which of the supplied transcription factors is represented by the most (or the least) unique binding site set?
+
+            </div>
+
+        
+        <div class="answer" id="a34">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis calculating the relative ranking of each submitted transcription factor (TF) based on its average enrichment ratio against the other supplied TFs. Any number of TFs (each represented by a corresponding set of binding sites) can be included in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox3_4')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox3_4" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "Given a suite of tracks, which tracks are the most or the least unique ones relative to the other tracks in the suite?”, where:
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of transcription factor (TF)-associated binding sites, with each dataset representing a separate TF).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the binding sites associated with a separate TF; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvMTU5X1RGc19pbl9nbTEyODc4X2NlbGxfdHlwZS5nc3VpdGU=&datatype=gsuite&basicQuestionId=3_4">sample GSuite of different transcription factors for the cell type gm12878</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import trait-associated SNP data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=3_4">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import TF-associated binding-site data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=3_4">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific TFs can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=3_4">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=3_4">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the tracks of the suite by utilizing the <a href="../hyper?mako=generictool&tool_id=hb_pilot_page_similarity_and_uniqueness_of_tracks_tool&bmQid=3_4">Similarity and uniqueness of tracks</a> tool.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q35" onclick="toggleDiv('#a35', '#i35');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i35" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- In which cell types do the supplied transcription factor binding site predictions fall into regulatory active regions?
+
+            </div>
+
+        
+        <div class="answer" id="a35">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of supplied motif-based binding site predictions (for a specific transcription factor) in regulatory active regions of multiple cell types. Locations of various genomic features (including DNaseI accessibility sites, FAIRE sites or specific histone modifications, e.g. H3K4me1 and H3K27ac) can be used as a proxy for regulatory active regions. Any number of cell types (or cell type - feature combinations) can be uniformly investigated in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox3_5')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox3_5" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the binding sites of a given transcription factor);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the areas of active chromatin, with each dataset describing the genomic regions of DNaseI accessibility for a separate cell type).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the binding site predictions of a given transcription factor, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a __tf_pred__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=3_5">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the active chromatin regions of a separate cell type; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a <a href="../tool_runner?tool_id=file_import_gsuite&dbkey=hg19&runtool_btn=yes&input=L3NvZnR3YXJlL2dhbGF4eS9nYWxheHlfZGV2ZWxvcGVyL3N0YXRpYy9oeXBlcmJyb3dzZXIvZGF0YS9nc3VpdGUvRE5hc2VfaW5fNDBfY2VsbF90eXBlcy5nc3VpdGU=&datatype=gsuite&basicQuestionId=3_5">sample GSuite of DNaseI accessibility for different cell types</a> (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import active chromatin data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=3_5">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import active chromatin data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=3_5">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded cell type specific files can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=3_5">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=3_5">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=3_5">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q36" onclick="toggleDiv('#a36', '#i36');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i36" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- How do the supplied transcription factor binding sites overlap various traits’ associated DNA variants?
+
+            </div>
+
+        
+        <div class="answer" id="a36">
+            <div id="analysisDetails">
+<h3 class="welcomeAnalysisDetails">Analysis details</h3>
+	An analysis assessing the enrichment of trait-associated variants in the binding sites of a query transcription factor (TF). Any number of traits (each represented by its own set of associated variants, typically lead SNPs found through a GWAS) can be uniformly investigated in a single analysis run.
+</div></br><img onclick="toggleInfoBox('#infoBox3_6')" data-open="false" id="img" + "_" + str(self.questionCount) + " src="june_2007_style/HB/info_small.png" width="15" height="15" />
+<div id="infoBox3_6" class="infoBox">
+<h3>Info box</h3>	This example task can be seen as a concrete instance of the more general question "How does a query track overlap the different tracks of a suite?”, where:
+<br>The query track is a dataset of genomic features (e.g. the binding sites of a given transcription factor);
+<br>The suite of tracks (a GSuite instance) is a collection of related genomic feature datasets (e.g. a collection of datasets which map the genomic locations of trait-associated SNP variants, with each dataset representing a separate trait).
+
+</div>
+<div class="analysisSteps">
+<h3 class="welcomeAnalysisSteps">Analysis steps</h3>
+<ol>
+<li>			- Fetch the query track (a set of genomic locations representing the binding sites of a given transcription factor, in BED, GTrack or another supported file format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable query track available in your current Galaxy history;
+</li><li>				- click here to load a __tf_pred__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- upload your own file to the current Galaxy history by using the <a href="../tool_runner?tool_id=upload1">Upload file</a> (if the file is not in one of the supported file formats, you can convert it to the GTrack format by using the tool <a href="../hyper?mako=generictool&tool_id=hb_tabular_to_gtrack_tool&basicQuestionId=3_6">Create GTrack file from unstructured tabular data</a>);
+</li>
+</ol>
+<li>			- Fetch the suite of tracks (a collection of genomic location datasets, each dataset representing the variants associated with a separate trait; in GSuite format). You can:
+</li><ol type="a"><li>				- skip this step if you already have a suitable GSuite file available in your current Galaxy history;
+</li><li>				- click here to load a __dgs_traits__ (you will be automatically redirected back to this page if you choose this option);
+</li><li>				- import trait-associated SNP data from a public data source using the curated search tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=3_6">Import collection of tracks from public repositories (basic)</a>;
+</li><li>				- (recommended for advanced users only) import trait-associated SNP data from a public data source (e.g. with the help of tool <a href="../hyper?mako=generictool&tool_id=hb_track_source_test_tool&basicQuestionId=3_6">Import collection of tracks from public repositories (advanced)</a>) or upload your own data (e.g. by using the <a href="../tool_runner?tool_id=upload1">Upload file</a>); individually uploaded files representing specific traits can be combined into a single GSuite element with the tool <a href="../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool&basicQuestionId=3_6">Compile a GSuite from history</a> (alternatively, an uploaded zip/tar archive containing such files can serve as input of the <a href="../hyper?mako=generictool&tool_id=hb_compile_g_suite_from_archive_tool&basicQuestionId=3_6">Compile GSuite from archive (Zip/tar)</a> tool);
+</li>
+</ol>
+<li>			- Analyze the query track against the tracks of the suite by utilizing the tool <a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=3_6">Determine GSuite tracks coinciding with a separate track</a>.
+</li>
+</ol>
+</div>
+            </div>
+
+
+        
+            <div class="question" id="q37" onclick="toggleDiv('#a37', '#i37');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <img data-open='false' id="i37" src="hyperbrowser/images/div/DNAlying.png" width="15" height="15" />
+            	- What I am interested in does not match any of the suggestions above..
+
+            </div>
+
+        
+        <div class="answer" id="a37">
+            GSuite Tools is a generic system for analyzing suites of tracks, that is not in any way restricted to the specific example scenarios described above.
+<br>
+<br>If you are interested in a question that does not directly match any of the examples above, you might still get an idea of how to perform your analysis of interest by reading through the examples above and look for parallels to your question.
+<br>
+<br>Alternatively, you can switch to <a href="javascript:;"  onclick="showDiv('tab1', 'tab3’);”>advanced mode</a>, and look at the general descriptions of the analytical options provided by GSuite Tools.
+<br>
+<br>You are also more than welcome to contact us in the HyperBrowser team at <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@sgub-resworbrepyh</a>. We have provided help to a broad range of investigations before, and are happy to provide noncommittal advice or also to take part in collaborations.
+<br>If not, these are the generic options, could any of them match?
+<br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_representative_and_untypical_track_tool&isBasic=1&isBasic=True&bmQid=3_7">Determine representative and atypical tracks in a GSuite </a> - use it when you need to analyze a single collection
+<br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=3_7">Determine GSuite tracks coinciding with a separate track</a> - use it when you have a single track of interest that needs to be analyzed against a collection of tracks
+<br><a href="../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True&bmQid=3_7">Determine coinciding track combinations from two GSuites</a> - use it when you have two collections of tracks which you want to analyze against each other
+<br>
+
+            </div>
+
+
+        
+</div>
+        <div class="question-wrapper" onclick="toggleDiv('#q4', '#i4');" onmouseover="this.style.background='#F8F0B1';this.style.border='1px solid #F8F0B1';"
+            onmouseout="this.style.background='#FBDF6E';this.style.border='1px dotted #333333';">
+            <p>
+                <img data-open='false' id="i4" src="hyperbrowser/images/div/DNAlying.png"
+                width="20" height="20" />
+                <span> - What I am interested in does not match any of the suggestions above..
+ </span>
+             </p>
+
+        </div>
+        <div id='q4' class="answer-wrapper">
+        	    	
+	    </div>
+		</div>
+	</div>
+
+
+	<div id="tab3" class="tab">
+
+	    <div class="document">
+		<div class="main">
+		<div class="gsuitebox">
+		    <h2 class="topheader">GSuite tools</h2>
+		    <p>
+		    <b>GSuite tools</b> offer an easy and straightforward way to manage and analyze collections of
+		    <a href="welcome_gentrack.html">genomic tracks</a>
+		    (datasets of coordinates in a reference genome). At the core of the system is a simple tabular format
+		    called GSuite, which represents a collection of genomic tracks (one genomic track per line),
+		    along with some basic metadata. A total of 18 tools supports working with such track collections through three stages:
+		    </p>
+		    <ol type="1">
+			    <li>
+			    Compiling a track collection (GSuite) from local files or external databases
+			    </li>
+			    <li>
+			    Customizing the track collection (GSuite) for analysis through textual manipulation and/or preprocessing.
+			    </li>
+			    <li>
+			    Analyzing the track collection (GSuite), investigating relations between tracks within a collection or between collections
+			    </li>
+		    </ol>
+
+		    <p>
+			    The 18 GSuite tools are available on the left hand menu, as well as from the
+			    diagram below, which shows (as hyperlinks) the various tools available along the
+			    stages of a typical workflow.
+		    </p>
+
+		    <h3 class="overview" align="center">GSuite Analysis Workflow Diagram</h3>
+		    <h4 class="overview_subtitle" align="center">(follow the links in the diagram to access the tools directly)</h4>
+
+		    <pre class="arrows-and-boxes">
+		    ({compile_node_remote}:Stage 1: Compile from remote source |
+		    {{- <a href="../tool_runner?tool_id=hb_track_source_test_tool">
+			    Compile GSuite from external database
+			    </a>}}
+			    ) >
+		    (a{compile_node_fetch}:Stage 1: Fetch remote datasets |
+		    {{- <a href="../tool_runner?tool_id=hb_g_suite_download_files">
+			    Fetch remote GSuite datasets
+			    </a>}}
+		     ) >
+		    ((b{customize_node}:Stage 2: Customize dataset collection |
+				    {{<p class="inner_title">Modify GSuite</p>}}
+				    {{- <a href="../tool_runner?tool_id=hb_g_suite_select_rows">Select subset of tracks (in GSuite)</a>}}
+				    {{<br>}}
+				    {{- <a href="../tool_runner?tool_id=hb_g_suite_select_columns">Select subsets of metadata columns (in GSuite)</a>}}
+				    {{<br>}}
+				    {{<p class="inner_title">Modify datasets referred in GSuite</p>}}
+				    {{- <a href="../tool_runner?tool_id=hb_g_suite_manipulate_text_files">Manipulate textual track files referred in GSuite</a>}}
+				    {{<br>}}
+		     > [c])))
+		    (d{analyse_node}:Stage 3: Analyse |
+			    Analyse higher order relations
+			    {{<br>}}
+			    {{- <a href="../tool_runner?tool_id=hb_multi_track_analysis_tool">
+			    Analyse relations of tracks in GSuite</a>}}
+			    {{<br>}}
+			    {{<p class="inner_title">Analyse multiple pairwise relations</p>}}
+			    {{- <a href="../tool_runner?tool_id=hb_track_vs_collection_analysis">
+			    Screen track against a track collection</a>}}
+			    {{<br>}}
+			    {{- <a href="../tool_runner?tool_id=hb_track_collections_analysis">
+			    Screen two track collections against each other</a>}}
+			    {{<br>}}
+			    {{<p class="inner_title">Visualization</p>}}
+			    {{- <a href="../tool_runner?tool_id=hb_segments_overlap_visualization_tool">
+			    Color-code query segments based on overlap against reference tracks</a>}}
+			    {{<br>}}
+			    {{- <a href="../tool_runner?tool_id=hb_segments_overlap_visualization_heatmap_tool">
+			    Make heatmap of overlap between query segments and reference tracks</a>}}
+			    {{<br>}}
+			    {{- <a href="../tool_runner?tool_id=hb_create_bps_venn_d_iagram">
+			    Venn diagram for track collection</a>}}
+			    {{<br>}}
+			    {{<p class="inner_title">Domain specific analysis</p>}}
+			    {{- <a href="../tool_runner?tool_id=hb_all_targets_of_tfs">
+			    Scan targets of a transcription factor</a>}}
+			    {{<br>}}
+			    {{- <a href="../tool_runner?tool_id=hb_all_tfs_of_regions">
+			    Scan transcription factors of a genomic region</a>}}
+			    {{<br>}}
+			    )
+		    || () ||
+		    ({compile_node_history}:Stage 1: Compile from history |
+		    {{- <a href="../tool_runner?tool_id=hb_create_g_suite_file_from_history_elements_tool">
+			    Compile GSuite from history elements
+			    </a>}}
+		     ) > (>[b])
+
+		     || () ()
+
+		    ((c{prepare_node}:Stage 2: Prepare for analysis |
+				    Prepare GSuite
+				    {{<br>}}
+				    {{- <a href="../tool_runner?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess tracks in GSuite for analysis</a>}}
+				    {{<br>}}
+		    )) > ()
+		    ||
+		    ({compile_node_hb}:Stage 1: Compile from HyperBrowser |
+		    {{- <a href="../tool_runner?tool_id=hb_extract_subtracks_tool">
+			    Compile GSuite from HyperBrowser repository
+			    </a>}}
+		     ) - () > () > (f:)
+		    </pre>
+
+		    <p>
+		    The power of GSuite Tools is best seen when the tools are combined in a full investigation scenario.
+		    We provide several <a href="welcome_usecases.html">use-cases</a>,
+		    including a <a href="../u/hb-superuser/p/use-case---icgc-somatic-mutations" target="_blank">main case</a>
+		    on analyzing mutation data across cancer types from
+		    ICGC against DNase1 hypersensitive sites across cells from ENCODE, which
+		    shows a typical workflow involving several tools, executing the three main
+		    stages for each analysis, listed above.
+		    The use-cases, as well as demonstrations of how to use each
+		    individual tool, are available in the catalog of
+		    <a target="_blank" href="../page/list_published"><b>Published Pages</b></a>.
+		    </p>
+		    <p>
+		    Note that GSuite files come in three variants, referring to either
+		    <a href="welcome_note.html">external datasets, local textual datasets or local binary datasets.</a>
+		    Remote datasets need to be downloaded using the
+		    <a href="../tool_runner?tool_id=hb_g_suite_download_files">Fetch tool</a>
+		     on the GSuite before they can be used further, and textual datasets
+		     must be converted to binary format using the
+		    <a href="../tool_runner?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocessing tool</a>
+		    on the GSuite before they can be analyzed.
+		    </p>
+		</div>
+		</div>
+	    </div>
+	</div>
+
+	<div id="tab4" class="tab">
+
+	    <div class="document">
+			<div class="main">
+				<h2>
+				Examples of analyses using GSuite
+				</h2>
+				
+				<p>
+				Thanks to recent advances in genome­-wide profiling techniques, genomic investigations can be routinely performed for a range of query features, for instance chromatin accessibility, binding of transcription factors or DNA variation (genetic differences from the reference genome). However, in order to meaningfully interpret such datasets in the context of a particular experiment, it is very useful to know the typical range of variation of a given feature's important properties (e.g. how large a variation can we expect when comparing feature data collected across different cell types or epigenetic factors). In addition, in genomic investigations one will usually work with experimental data from ChIP-seq, DNase-seq etc. - methods which do not directly handle the features of interest, but rather sheared DNA sequences coupled with the feature of interest. Such experimental data may have somewhat different properties from the features they represent, and having an overview of these characteristics may be crucial in order to make meaningful interpretations. Here we provide a resource of basic facts and numbers regarding collections of genomic tracks for features typically explored in genomic investigations, with a particular emphasis on the variation of such signals within sets of cell types and epigenetic factors. We have explored track collections for:
+				<ol>
+  					<li>GWAS SNPs for all NHGRI diseases/traits (In progress - waiting for tools that allow analysis on GSuit instances with points)</li>
+				    <li>Mutations in various cancer types (ICGC) (In progress)</li>
+				    <li>Mutations of different patients for a particular cancer type (ICGC) (In progress -  - need a way to overlap a patient's GSuite with dbSNP)</li>
+				    <li>Chromatin accessibility (DHS) across cell types</li>
+				    <li>cMyc bindings regions across cell types (In progress - waiting for Antonio's tools)</li>
+				    <li>Binding for different TFs (chip-seq) for one cell type (gm12878) (Initiating analysis)</li>
+				    <li>Different histone modifications for one cell type (gm12878) (Mads has a similar example)</li>
+				</ol>
+				</p>
+			</div>
+				
+				<div class="tab4collectionTitle" id="T0">
+				  <div class="imgBackground"> <img src="hyperbrowser/images/div/DNAlying.png" id="B0" height="20" width="20" class='-off' /></div>
+				 - GWAS SNPs for all NHGRI diseases/traits
+				</div>
+				
+					<div class="tab4collectionDesc" id="D0">
+					
+						<div class="show_hide" id="T01"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B01" height="20" width="20"  class='-off' /></div> - Background</div>
+						<div class="sliding" id="D01">
+						
+							<div class="tab4collectionDescDetails">Genome-wide association study (GWAS) is a method of searching the genome for small variations, called single nucleotide polymorphisms or SNPs (pronounced “snips”), that occur more frequently in people with a particular disease than in people without the disease. A single GWAS study can look at hundreds of thousands of SNPs in order to pinpoint genes or non-coding regulatory regions associated with complex clinical conditions and phenotypic traits. Unlike single gene disorders, such as Huntington’s disease, complex diseases are usually the result of a combination of genetic and environmental factors, each of which increases susceptibility to the condition. This approach has already identified SNPs related to several complex conditions including diabetes, heart abnormalities, Parkinson disease, and Crohn disease. Researchers hope that future genome-wide association studies will identify more SNPs associated with chronic diseases, as well as variations that affect a person’s response to certain drugs and influence interactions between a person’s genes and the environment. [1, 2]</div>
+
+							<div class="tab4collectionDescDetails">The National Human Genome Research Institute's (NHGRI) Catalog of Published GWAS provides a publicly available manually curated collection of all published GWAS conforming to the selected eligibility criteria (e.g. a minimum number of SNPs assayed and non-targeted study design; the full eligibility criteria list is available at http://www.genome.gov/27529028). The GWAS Catalog data are extracted from the literature and subsequently curated (a detailed overview of the curation process can be found on the GWAS diagram website: www.ebi.ac.uk/fgpt/gwas/#curationtab) [2]. Additional resources related to the GWAS Catalog (e.g. trait annotation ontology and trait karyotype visualization) can be found on the NHGRI webpages [3].</div>
+
+							<div class="tab4collectionDescDetails">[1] <a href= 'http://ghr.nlm.nih.gov/handbook/genomicresearch/gwastudies' > Genetics Home Reference. What are genome-wide association studies? (2015). </a> </div>
+
+							<div class="tab4collectionDescDetails">[2] Welter, D. et al. The NHGRI GWAS Catalog, a curated resource of SNP-trait associations. Nucleic Acids Res. 42, D1001–D1006 (2014)</div>
+
+							<div class="tab4collectionDescDetails">[3] <a href='http://www.genome.gov/gwastudies/'> National Human Genome Research Institute. Catalog of Published Genome-Wide Association Studies (2015).   </a> </div>
+
+							<div class="tab4collectionDescDetails">Tracks explored in this case correspond to the different human diseases/traits from NHGRI's GWAS Catalog. Each disease/trait is represented by a curated set of associated GWAS SNP variants.</div>
+						</div>
+						
+						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
+					
+					
+					</div>
+					
+				
+				
+				<div class="tab4collectionTitle" id="T1">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B1" class='-off' /></div>
+					- Mutations in various cancer types (ICGC)
+				</div>
+						
+					<div class="tab4collectionDesc" id="D1">
+				
+						<div class="show_hide" id="T11"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B11" height="20" width="20"  class='-off' /></div> - Background</div>
+						<div class="sliding" id="D11">
+						
+						<div class="tab4collectionDescDetails">DNA mutations are a typical accompanying phenomenon of cancer. They can be both, triggers leading to the transformation of healthy cells into abnormal cells with cancerous properties, and consequences of the detrimental changes that evolving cancer inflict on the genome. Depending on the associated tissue, each cancer type might have its characteristic properties regarding the average number and typical type of mutations, reflecting the differences in development and varying primary mutagens [1].</div>
+	
+						<div class="tab4collectionDescDetails">The International Cancer Genome Consortium (ICGC) acts as a coordinator of numerous research projects that aim to comprehensively map the genomic changes (somatic mutations, abnormal expression of genes, epigenetic modifications) present in tumors from about 50 different cancer types, which are of clinical and societal importance across the globe. The data it produces are made available to the entire research community [2].</div>
+						
+						<div class="tab4collectionDescDetails">[1] Alexandrov LB, Nik-Zainal S, Wedge DC, Aparicio S a JR, Behjati S, Biankin A V, et al. Signatures of mutational processes in human cancer. Nature. 2013;500: 415–21. doi: 10.1038/nature12477 </div>
+						
+						<div class="tab4collectionDescDetails"> [2] <a href='https://icgc.org ' > International Cancer Genome Consortium (2015). </a> </div>
+						
+						<div class="tab4collectionDescDetails">Tracks explored in this case correspond to the different cancer types included in the ICGC project. Each cancer type is represented by a set of patients with identified somatic mutations (i.e. variants found in a given patient's tumor cells, but not in his/her normal cells). Only SNVs (Single Nucleotide Variants - simple substitutions) and InDels (Insertions and Deletions) are taken into account in the analysis. </div>
+					
+						</div>
+					
+
+						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
+					
+					
+					</div>
+						
+				
+				<div class="tab4collectionTitle" id="T2">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B2" class='-off' /></div>
+						- Mutations of different patients for a particular cancer type (ICGC)
+				</div>
+				
+					<div class="tab4collectionDesc" id="D2">
+				
+						<div class="show_hide" id="T21"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B21" height="20" width="20"  class='-off' /></div> - Background</div>
+						<div class="sliding" id="D21">
+					
+						<div class="tab4collectionDescDetails">DNA mutations are a typical accompanying phenomenon of cancer. They can be both, triggers leading to the transformation of healthy cells into abnormal cells with cancerous properties, and consequences of the detrimental changes that evolving cancer inflict on the genome. Depending on the associated tissue, each cancer type might have its characteristic properties regarding the average number and typical type of mutations, reflecting the differences in development and varying primary mutagens [1].</div>
+		
+						<div class="tab4collectionDescDetails">The International Cancer Genome Consortium (ICGC) acts as a coordinator of numerous research projects that aim to comprehensively map the genomic changes (somatic mutations, abnormal expression of genes, epigenetic modifications) present in tumors from about 50 different cancer types, which are of clinical and societal importance across the globe. The data it produces are made available to the entire research community [2].</div>
+						
+						<div class="tab4collectionDescDetails">[1] Alexandrov LB, Nik-Zainal S, Wedge DC, Aparicio S a JR, Behjati S, Biankin A V, et al. Signatures of mutational processes in human cancer. Nature. 2013;500: 415–21. doi: 10.1038/nature12477</div>
+						
+						<div class="tab4collectionDescDetails">[2] <a href='https://icgc.org'> International Cancer Genome Consortium (2015). </a> </div>
+						
+						<div class="tab4collectionDescDetails">Tracks explored in this case correspond to different patients with the same cancer types diagnosis. Cancer types/datasets from the ICGC project are used as examples. Each track is composed of given patient's somatic mutations (i.e. variants found in his/her tumor cells, but not in his/her normal cells). Only SNVs (Single Nucleotide Variants - simple substitutions) and InDels (Insertions and Deletions) are taken into account in the analysis.</div>
+						
+						</div>
+					
+						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
+					
+					
+					</div>
+				
+				<div class="tab4collectionTitle" id="T3">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B3" class='-off' /></div>
+						- Chromatin accessibility (DHSs) across cell types
+				</div>
+					<div class="tab4collectionDesc" id="D3">
+						
+						<div class="show_hide" id="T31"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B31" height="20" width="20"  class='-off' /></div> - Background</div>
+						<div class="sliding" id="D31">
+						
+						<div class="tab4collectionDescDetails">Regulation of gene expression is governed by a range of proteins, which, in order to operate, require access to their respective target binding sites within the genome. Accessibility of a genomic location is determined by the local chromatin conformation, which can vary depending on cell type and conditions. Accessible sites allow not only potential interaction with sequence-specific DNA-binding proteins, but also with enzymes that can operate on any exposed DNA sequence, such as Deoxyribonuclease I (DNase I). A DNase I hypersensitive site (DHS) is an experimentally determined genomic location, where DNase I showed cleaving activity and thus demonstrated accessibility (indicating a potential for regulatory function). DHS profiles can therefore be used as non-specific proxies for mapping plausible regulatory activity across different cell types or conditions [1].</div>
+
+						<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [2].</div>
+						
+						<div class="tab4collectionDescDetails">[1] Cockerill, P. N. Structure and function of active chromatin and DNase I hypersensitive sites. FEBS J. 278, 2182–2210 (2011).</div>
+						
+						<div class="tab4collectionDescDetails">[2] ENCODE: Encyclopedia of DNA Elements (2015). https://www.encodeproject.org</div>
+							
+						<!-- <iframe src="https://hyperbrowser.uio.no/dev2/datasets/3d820423f7c1d436/display/?preview=True" scrolling="no" width="900" height="2300"></iframe> -->
+						</div>
+						
+						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
+
+
+						
+						<div class="tab4collectionDescDetails">This example examines the characteristics of ENCODE-generated DHS tracks accessible via HyperBrowser tool ''Create a remote GSuite from an external database''. About 450 tracks, encompassing over 150 different cell types and multiple methods of generating DHS profiles, are included in the initial track overview (each individual track corresponds to DNase I hypersensitive sites of a specific cell-type, treatment, method ... combination). In addition, a closer look is taken at a selected subset of cell-types and methods, exploring their effect on DHS profiling results.</div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+						<div class="tab4collectionDescDetails_history">
+							Annotated analysis history (including all the utilized data and operations) is available on a separate page:
+							<a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/h/chromatin-accessibility-dnase-across-cell-types">Analysis history: Chromatin accessibility (DHS) across cell types</a>.
+							(All results mentioned below refer to elements from this history page.)
+						</div>
+		
+
+
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks: </div>
+						<div class="tab4collectionDescDetailsV2">
+							<div class="tab4collectionDescDetails_historyV2">
+								<div class="tab4collectionDescDetails">For the initial overview creation, all the tracks available via HyperBrowser tool "Create a remote GSuite from an external database" and satisfying the following criteria were selected:</div>
+								<div class="tab4collectionDescDetails">extrenal database: ENCODE (UCSC and Ensembl)</div>
+								<div class="tab4collectionDescDetails">ENCODE data type: DnaseSeq</div>
+								<div class="tab4collectionDescDetails">File type: narrowPeak</div>
+
+
+								<div class="tab4collectionDescDetails_historyV3">
+									<a a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/9a9cc6fb2d6935e0/">Overview page for the 452-track GSuite for ENCODE DHS data </a> shows differences and similarities between tracks (e.g. with respect to genome/exone/repeat coverage or mutual overlap). It documents a considerable variability in peak count (77 458	- 405 844 peaks, median of 154 233.5 peaks) and average peak width (150 - 826 bp, median of 150 bp), which together determine the total base-pair coverage of the individual tracks (11 670 340	- 109 437 893 bp, median of 26 853 060 bp). To what degree should these differences be attributed to technical reasons?
+								</div>
+							</div>
+						</div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Comparison of the effect of cell types and data processing methods on DHS profiles: </div>
+							
+							<div class="tab4collectionDescDetailsV2">
+
+								<div class="tab4collectionDescDetails_historyV2">
+									<div class="tab4collectionDescDetails">A subset of 3 cell-types (cell-lines representing different lineages), each with a triplet of alternative DHSs tracks (representatives of ENCODE's methods of DHSs determination), was created for a closer inspection.</div>
+
+									<div class="tab4collectionDescDetails">The selected cell types and their characteristics:</div>
+
+
+									<table class="tableEx">
+									<tr><th>Cell</th><th> Lineage</th><th> Tissue</th><th> Karyotype</th></tr>
+
+									<tr><td>H1-hESC</td><td> inner cell mass </td><td>embryonic stem cell</td><td> normal</td></tr>
+
+									<tr><td>GM12878 </td><td> mesoderm</td><td> blood </td><td>normal</td></tr>
+
+									<tr><td>HeLa-S3 </td><td>ectoderm</td><td> cervix</td><td> cancer</td></tr>
+									</table>
+
+									<div class="tab4collectionDescDetails">(<a href="http://www.neuroepigenomics.org/encode/cellTypes.html">Read more about cell types used in the ENCODE project.</a>)</div>
+
+
+
+										<div class="tab4collectionDescDetails">Multiple methods for determining DHS sites were used with each of the selected cell types:</div>
+
+										<table class="tableEx">
+										<tr><th>Method</th><th> Short description</th><th> Reference build/Analysis source</th><th> Track name indicator</th></tr>
+
+										<tr><td>a) "Uniform DNaseI HS"</td><td> DNaseI Hypersensitivity Uniform Peaks from ENCODE/Analysis, Integrated Regulation from UCSC </td><td>Human Genome Build 37 (hg19): ENCODE Analysis Data at UCSC</td><td> "AwgDnaseUwduke"</td></tr>
+
+										<tr><td>b) "Duke DNaseI HS" </td><td> Open Chromatin by DNaseI HS from ENCODE/OpenChrom(Duke University)</td><td> Human Genome Build 37 (hg19): ENCODE Production Data </td><td>"OpenChromDnase"</td></tr>
+
+										<tr><td>c) "UW DNaseI HS" </td><td>DNaseI Hypersensitivity by Digital DNaseI from ENCODE/University of Washington</td><td> Human Genome Build 37 (hg19): ENCODE Production Data</td><td> "UwDnase"</td></tr>
+										</table>
+
+										<div class="tab4collectionDescDetails">(<a href "http://genome.ucsc.edu/ENCODE/downloads.html">Read more about data (types) produced by the ENCODE consortium.</a>)</div>
+
+										<div class="tab4collectionDescDetailsDesc"> - 11-track subset overview</div>
+									<div class="tab4collectionDescDetailsV3">
+										<div class="tab4collectionDescDetails">11 of the original 452 tracks were included in a new GSuite collection based on their cell-type+method combination (9 tracks for all possible combinations plus two duplicate tracks; tracks from experiments involving additional cell culture treatments were not included). <a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/36a5e6818497890e/">Overview statistics for the reduced GSuite>.</a> show that:</div>
+
+										<div class="tab4collectionDescDetails">1. After ordering the tracks by base-pair coverage, it is apparent that the method of determining DHS sites (and not the cell type) is the primary cause of differences. Without any exception, tracks produced by method b) cover a higher proportion of the reference genome than tracks produced by method a), while the output tracks of method c) are grouped at the bottom of the ordering. The cell types are, however, consistently ranked within each group (even though the differences deciding about this ranking are sometimes small): H1-hESC covers more unique base-pairs than HeLa-S3, which in turn covers more unique base-pairs than GM12878. (statistic "Base-pair coverage")</div>
+
+										<div class="tab4collectionDescDetails">2. The average peak width is strictly method-dependent, with method b) being markedly different compared to methods a) and c), which are practically identical regarding this measure. (statistic "Segment length average")</div>
+
+										<div class="tab4collectionDescDetails">3. Method a) generates more peaks than the other methods. The GM12878 cell-line produces fewer peaks when compared to other cell types (when processed by the same method). (statistic "Segment count")</div>
+									</div>
+										<div class="tab4collectionDescDetailsDesc"> - Clustering of tracks</div>
+									<div class="tab4collectionDescDetailsV3">
+										<div class="tab4collectionDescDetails">How would the 11 tracks cluster considering the apparent dependency of DHS profiles on the method of their creation?</div>
+
+										<div class="tab4collectionDescDetails">When clustered with a method based on "similarity of positional distribution along the genome" (using the default binning settings), <a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/b01a66ce370636d4/cluster_tracks_result_figure.pdf">the tracks cluster primarily by analysis method</a>. When clustered with a method based on "direct sequence similarity" (using pairwise overlap enrichment), <a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/57d86cf71653dd9e/cluster_tracks_result_figure.pdf">the tracks cluster primarily by cell type</a>. These results suggest that while the examined DHS determination methods suffer from biases with respect to peak density, true biological signal comes through on base-pair level.</div>
+									</div>
+										<div class="tab4collectionDescDetailsDesc"> - Conclusions</div>
+									<div class="tab4collectionDescDetailsV3">
+										<div class="tab4collectionDescDetails">When working with ENCODE, attention to tracks' origin should be paid and special care should be taken when drawing conclusions from comparisons of tracks which do not come from the same production source. Initial exploration of tracks properties is highly recommended.</div>
+
+										<div class="tab4collectionDescDetails">Choice of track comparison methods can have a prominent influence on the results - an appropriate analysis approach needs to be selected on case-by-case basis.</div>
+
+
+
+									</div>
+
+								</div>
+							</div>
+					</div>
+
+					
+				<div class="tab4collectionTitle" id="T4">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B4" height="20" width="20"  class='-off' /></div>
+						- cMyc bindings regions across cell types
+				</div>
+				
+					<div class="tab4collectionDesc" id="D4">
+					
+						<div class="show_hide" id="T41"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B41" height="20" width="20"  class='-off' /></div> - Background</div>
+						<div class="sliding" id="D41">
+						
+							<div class="tab4collectionDescDetails">Transcription factors (TFs) are proteins enabling transcription of DNA into RNA. They bind to DNA at specific sites by recognizing particular sequence motifs (and thus allowing expression of associated genes). Accordingly, binding sites can be predicted in-silico by scanning the genome for relevant motifs, but in order to confidently determine the binding sites of a given cell type at specific conditions, experimental methods (such as chromatin immunoprecipitation followed by sequencing, or ChIP-Seq for short) are being used.</div>
+	
+							<div class="tab4collectionDescDetails">cMyc is a transcription factor contributing to regulation of key cellular processes, including growth, differentiation and apoptosis. Its function and targets make it a proto-oncogene: with elevated expression levels or decreased degradation speed, cMyc can drive metabolic changes necessary for cancer cell proliferation. It is also one of the four transcription factors which create an environment sufficient for reprograming differentiated cells to an embryonic-like state iPS cells (induced pluripotent stem cells). [1, 2, 3]</div>
+							
+							<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [4].</div>
+							
+							<div class="tab4collectionDescDetails">[1] The UniProt Consortium. Myc Proto-oncogene Protein (2016). Accessed February 24, 2016. http://www.uniprot.org/uniprot/P01106.</div>
+							
+							<div class="tab4collectionDescDetails">[2] Miller, D. M., Thomas, S. D., Islam, A., Muench, D., & Sedoris, K. (2012). C-Myc and Cancer Metabolism. Clinical Cancer Research, 18(20), 5546-5553.</div>
+							
+							<div class="tab4collectionDescDetails">[3] Hoffman, B., & Liebermann, D. A. (2008). Apoptotic signaling by c-MYC. Oncogene, 27(50), 6462-6472.</div>
+							
+							<div class="tab4collectionDescDetails">[4] ENCODE: Encyclopedia of DNA Elements (2015). Accessed February 24, 2016. https://www.encodeproject.org</div>
+							
+							<div class="tab4collectionDescDetails">Tracks explored in this case correspond to the different cell types mapped by members of the ENCODE Consortium. The individual cell types are represented by sets of cMyc binding sites.</div>
+							
+							
+						</div>
+						
+						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
+					
+					
+					</div>
+				
+				
+				
+				
+				
+				<div class="tab4collectionTitle" id="T5">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B5" height="20" width="20"  class='-off' /></div>
+						- Binding of different TFs for one cell type (gm12878)
+				</div>
+				
+				
+					<div class="tab4collectionDesc" id="D5">
+					
+						<div class="show_hide" id="T51"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B51" height="20" width="20"  class='-off' /></div> - Background</div>
+						<div class="sliding" id="D51">
+						
+							<div class="tab4collectionDescDetails">Transcription factors (TFs) are proteins enabling transcription of DNA into RNA. They bind to DNA at specific sites by recognizing particular sequence motifs (and thus allowing expression of associated genes). Accordingly, binding sites can be predicted in-silico by scanning the genome for relevant motifs, but in order to confidently determine the binding sites of a given cell type at specific conditions, experimental methods (such as chromatin immunoprecipitation followed by sequencing, or ChIP-Seq for short) are being used.</div>
+							
+							<div class="tab4collectionDescDetails">GM12878 is a lymphoblastoid cell line, which served as a representative of the mesoderm cell lineage within the ENCODE project [1].</div>
+							
+							<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [2].</div>
+							
+							<div class="tab4collectionDescDetails">[1] National Human Genome Research Institute. ENCODE Project Common Cell Types. (2012). Retrieved March 02, 2016, from http://www.genome.gov/26524238</div>
+							
+							<div class="tab4collectionDescDetails">[2] ENCODE: Encyclopedia of DNA Elements (2015). Accessed February 24, 2016. https://www.encodeproject.org</div>
+							
+						</div>
+						
+						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
+
+						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
+					
+					
+					</div>
+				
+				
+				
+				<div class="tab4collectionTitle" id="T6">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B6" height="20" width="20"  class='-off' /></div>
+						-  Different histone modifications for one cell type (gm12878)
+				</div>
+				
+				
+					
+		</div>
+
+	</div>
+	<div id="tab5" class="tab">
+
+	    <div class="document">
+			<div class="main">
+
+				<div class="contact">
+
+				    <b>Note:</b>
+				    <p>
+				    This is a specialized version of The Genomic Hyperbrowser,
+				    focusing on new functionality for analyzing collections of genomic track.
+				    More information on the general HyperBrowser functionality and project can be
+				    found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main version</a> of the HyperBrowser.
+				    </p>
+				    <b>Contact information</b>
+				    <p>
+				    If you have any questions, requests or comments of any kind, please use our discussion forum, available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu, or send an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@stseuqer-resworbrepyh</a>&#x200E;. We are happy to respond. We especially encourage collaborative projects for further development. If you find any bugs, please send an email to
+				  <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@sgub-resworbrepyh</a>.</p>
+				    <p>If you register as a user, you will get the option to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@ofni-resworbrepyh</a> mailing list. Here, we will send announcements and administrative messages for users of the system. A backlog of announcements is available from the Help menu. Citation info is also available from the Help menu.</p>
+
+				</div>
+			</div>
+		</div>
+		<p class="blocktext">
+		This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
+		supported by various national and local bodies.
+		</p>
+		<p class="blocktext">
+		  For further info on Norwegian bioinformatics, see <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+		</p>
+
+		<div class="section">
+		  <img src="hyperbrowser/images/logo/HB_support.png" class="center">
+		</div>
+
+	</div>
+
+    </div>
+</div>
+
+
+
+
+
+</body>
+</html>

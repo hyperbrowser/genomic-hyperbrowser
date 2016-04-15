@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.9: http://docutils.sourceforge.net/" />
+<meta http-equiv="expires" content="Wed, 19 Feb 2003 08:00:00 GMT"/>
+<title></title>
+<link rel="stylesheet" href="style/welcome.css" type="text/css" />
+        <script type="text/javascript" src="scripts/jquery.js"></script>
+        <script type="text/javascript" src="scripts/google_analytics_1.js"></script>
+    	<script type="text/javascript" src="scripts/google_analytics_2.js"></script>
+	    <link href="style/arrowsandboxes.css" rel="stylesheet" type="text/css" />
+	    <script src="scripts/jquery_wz_jsgraphics.js" type="text/javascript"></script>
+	    <script src="scripts/arrowsandboxes.js" type="text/javascript"></script>
+
+		<script>
+		function getUrlParameter(sParam)
+		{
+		    var sPageURL = window.location.search.substring(1);
+		    var sURLVariables = sPageURL.split('&');
+		    for (var i = 0; i < sURLVariables.length; i++)
+		    {
+		        var sParameterName = sURLVariables[i].split('=');
+		        if (sParameterName[0] == sParam)
+		        {
+		            return sParameterName[1];
+		        }
+		    }
+		}
+		</script>
+		
+		<script type="text/javascript">
+		var jqnc = jQuery.noConflict();
+        jqnc(document).ready(function() {
+            
+		jqnc(".tab4collectionDesc").hide();
+		jqnc('.tab4collectionTitle').on('click',function(e) {
+
+		var divid = this.id;
+		divid = divid.replace('T','D');
+	    jqnc('#'+divid).slideToggle("fast");
+	    
+	    var divid = this.id;
+	    divid = divid.replace('T','B');
+	    
+	    //console.log(divid, ' ==== ', jqnc('#'+divid).attr("class"));
+	    
+	    if(jqnc('#'+divid).attr("class") == '-on')
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAlying.png");
+	    	jqnc('#'+divid).attr('class', '-off');
+	    	
+	    	//console.log(divid, ' 111 ', jqnc('#'+divid).attr("class"));
+	    }
+	    else
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAstanding.png");
+	    	jqnc('#'+divid).attr('class', '-on');
+	    	
+	    	//console.log(divid, ' 222 ', jqnc('#'+divid).attr("class"));
+	    }
+	    
+	    
+	    
+		});
+		});
+		
+		jqnc(document).ready(function() {
+            
+		jqnc(".sliding").hide();
+		jqnc('.show_hide').on('click',function(e) {
+
+		var divid = this.id;
+		divid = divid.replace('T','D');
+	      
+	      jqnc('#'+divid).slideToggle();
+
+			var divid = this.id;
+	    divid = divid.replace('T','B');
+
+	    //console.log(divid, ' ==== ', jqnc('#'+divid).attr("class"));
+
+	    if(jqnc('#'+divid).attr("class") == '-on')
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAlying.png");
+	    	jqnc('#'+divid).attr('class', '-off');
+
+	    	//console.log(divid, ' 111 ', jqnc('#'+divid).attr("class"));
+	    }
+	    else
+	    {
+	    	jqnc('#'+divid).attr('src',"hyperbrowser/images/div/DNAstanding.png");
+	    	jqnc('#'+divid).attr('class', '-on');
+
+	    	//console.log(divid, ' 222 ', jqnc('#'+divid).attr("class"));
+	    }
+
+
+		});
+		});
+		
+		
+		
+		</script>
+
+        <script type="text/javascript">
+            var q = jQuery.noConflict();
+            q(document).ready(function() {
+              q( "a[minsizehint]" ).click( function() {
+                  if ( parent.handle_minwidth_hint ) {
+                      parent.handle_minwidth_hint( q(this).attr( "minsizehint" ) );
+                  }
+              });
+			    q('.tabs .tab-links a').on('click', function(e)  {
+			        var currentAttrValue = q(this).attr('href');
+
+			        // Show/Hide Tabs
+			        q('.tabs ' + currentAttrValue).show().siblings().hide();
+
+			        // Change/remove current tab to active
+			        q(this).parent('li').addClass('active').siblings().removeClass('active');
+
+			        e.preventDefault();
+			    });
+
+			    /*
+			    Open the tab defined by name in the url with parameter tabOn.
+			    */
+			    var tabOn = getUrlParameter('tabOn');
+			    if (tabOn) {
+			    	if (tabOn !== 'tab1') {
+			    		showDiv('tab1', tabOn)
+			    	}
+			    }
+
+			    /*
+			    Open the basic mode tab (tab2) and the question div defined in the basicQuestionId parameter
+			    */
+			    var basicQuestionId = getUrlParameter('basicQuestionId');
+			    if (basicQuestionId) {
+			    	showDiv('tab1', 'tab2')
+			    	var qDivId = basicQuestionId.split('_')[0]
+			    	toggleDiv('#q' + qDivId, '#i' + qDivId)
+			    	var aDivId = basicQuestionId.split('_')[1]
+			    	toggleDiv('#a' + qDivId + aDivId, '#i' + qDivId + aDivId)
+
+			    }
+            });
+        </script>
+		<script>
+		function showDiv(tabNoVisible, tabVisible) {
+		    div1 = document.getElementById(tabVisible);
+		    div1.style.display = "block";
+		    div2 = document.getElementById(tabNoVisible);
+		    div2.style.display = "none";
+
+		    jQuery('#tab-links li[value='+ tabVisible + ']').addClass('active');
+		    jQuery('#tab-links li[value='+tabNoVisible+']').removeClass('active');
+		}
+		</script>
+		<script type="text/javascript">
+		   if (typeof String.prototype.endsWith !== 'function') {
+				String.prototype.endsWith = function(suffix) {
+				    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+				};
+			}
+		</script>
+
+		   <script type="text/javascript">
+		   var q = jQuery.noConflict();
+		   function toggleDiv(divId, imgId) {
+         var imgIdFirst = imgId.substr(2,1);
+         var imgIdSecond = imgId.substr(3,imgId.length);
+
+			   q(divId).toggle();
+			   if (q(imgId).attr("data-open") == 'false') {
+				   q(imgId).attr("src", "hyperbrowser/images/div/DNAstanding.png")
+				   q(imgId).attr("data-open", "true")
+
+           if(imgId.length === 3)
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=' + imgIdFirst);
+           }
+           else
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=' + imgIdFirst + '_' + imgIdSecond);
+           }
+			   }
+			   else {
+				   q(imgId).attr("src", "hyperbrowser/images/div/DNAlying.png")
+				   q(imgId).attr("data-open", "false")
+
+           if(imgId.length === 3)
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=0');
+           }
+           else
+           {
+             window.history.pushState('GSuite', '', 'welcome.html?basicQuestionId=' + imgIdFirst);
+           }
+			   }
+		   }
+
+	   </script>
+
+     <script>
+      function toggleInfoBox(divId)
+      {
+        q(divId).toggle();
+      }
+     </script>
+
+	   <script>
+	   function generateAnswerADivContent(divId, toolUrl, toolTitle, trackCollectionExampleText, trackCollectionDataTitle, basicQuestionId ) {
+		   var q = jQuery.noConflict();
+		   var content = '            <p>\n' +
+			   '                This particular question can be seen as a concrete instance of the more general question \n' +
+			   '                "How does a single genomic track overlap with various other tracks from a collection", where:	\n' +
+			   '            </p>\n' +
+			   '                        <ul>\n' +
+			   '                <li>\n' +
+			   '                    the <span title="a set of genomic regions, e.g. a single bed file"><b>single genomic track</b></span> is the dataset you want to study, which should be uploaded to Galaxy history using e.g. the tool <a href="../tool_runner?tool_id=upload1">Upload File</a> <br><i>(If you want to test with a sample track file, <a href=$LOAD_GSUITE_SINGLE_TRACK_SAMPLE_FILE_URL&basicQuestionId=' + basicQuestionId + '>click here</a> to load a sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions)</i>\n' +
+			   '                </li><br>\n' +
+			   '                <li>\n' +
+			   '                    a <span title="each track is a set of genomic regions, so that a collection of genomic tracks means multiple datasets, e.g. multiple bed files"><b>track collection</b></span> to be compared against, ' + trackCollectionExampleText + ', which should be constructed using \n' +
+			   '                    the tool <a href="../hyper?mako=generictool&tool_id=hb_track_global_search_tool&basicQuestionId=' + basicQuestionId + '">Construct track collection (GSuite)</a>\n' +
+			   '                </li>\n' +
+			   '            </ul>\n' +
+			   '            <p>\n' +
+			   '                After the necessary data has been collected to Galaxy history, the genomic track of interest can be analyzed against ' + trackCollectionDataTitle + '\n' +
+			   '                using the tool <a href="' + toolUrl + '&isBasic=1&isBasic=True"\n' +
+			   '                >' + toolTitle +'</a>\n' +
+			   '            </p>'
+
+		   q(divId).html(content)
+
+	   }
+	   function generateToolHyperlink(anchorId, toolId, title, params, isBasic) {
+			var q = jQuery.noConflict();
+			hrefVal = '../hyper?mako=generictool&tool_id=' + toolId
+			if (isBasic) {
+				hrefVal += '&isBasic=1&isBasic=True'
+			}
+			for (var paramName in params) {
+				hrefVal += '&' + paramName + '=' + params[paramName]
+			}
+//	   		q(anchorId).attr('href', '../hyper?mako=generictool&tool_id=' + toolId + '&basicQuestionId=' + basicQuestionId)
+	   		q(anchorId).attr('href', hrefVal)
+	   		q(anchorId).html(title)
+	   }
+	   </script>
+</head>
+
+
+<body>
+
+
+<div class="tabs">
+    <ul class="tab-links" id="tab-links">
+        <li class="active" value="tab1"><a href="#tab1">Main page</a></li>
+        <li value="tab2"><a href="#tab2">Basic mode</a></li>
+        <li value="tab3"><a href="#tab3">Advanced mode</a></li>
+        <li value="tab4"><a href="#tab4">Examples</a></li>
+        <li value="tab5"><a href="#tab5">About</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="tab1" class="tab active">
+		<div class="document">
+		    <div class="main">
+		    <h1>Welcome to GSuite Tools</h1>
+		    <h2>Manage and Analyze collections of genome-wide datasets</h2>
+		    <p>
+			    <b>GSuite tools</b> offer the ability to manage and analyze collections of
+			    genome-wide datasets (genomic tracks). At the core of the system is a simple tabular format
+			    called GSuite, which represents a collection of genomic tracks (one genomic track per line),
+			    along with some basic metadata.
+		    </p>
+		    <p>
+		    To guide you through your analysis, two different working modes are provided. Depending on your experience with the Genomic HyperBrowser and Galaxy-based web tools, please select Basic or Advanced user mode.
+		    </p>
+		    </div>
+		    <div class="basic" id="basic" onclick="javascript:showDiv('tab1', 'tab2');" onmouseover="this.style.background='#F8F0B1';" onmouseout="this.style.background='#FBDF6E';">
+		    <h2>Basic user mode</h2>
+		    <p>
+		    Let's you select a more specific genome analysis question and leads you through a simplified workflow where you get the relevant datasets and run an analysis with a default parameter setup. Choose this if you are new to the GSuite Tools and the Genomic HyperBrowser.
+		    </p>
+		    </div>
+		    <div class="advanced" id="advanced" onclick="javascript:showDiv('tab1', 'tab3');" onmouseover="this.style.background='#F8F0B1';" onmouseout="this.style.background='#FBDF6E';">
+		    <h2>Advanced user mode</h2>
+		    <p>
+		    Gives you full control of the analysis workflow with all intermediate steps. Let's you edit the content of the GSuite files and modify the parameters of the analysis. Choose this if you already have experience with GSuite Tools or the Genomic HyperBrowser.
+		    </p>
+		    </div>
+		</div>
+	</div>
+
+	<div id="tab2" class="tab">
+
+
+
+	    <div class="document">
+		<div class="main">
+		    <h2>GSuite Tools - Basic User Mode</h2>
+		    <h3>
+		    <span title="Hover mouse over words in bold if you are uncertain about their meaning">
+		    <b>What is the biological question you would like to ask?</b>
+		    </span>
+		    </h3>
+		    <p>(Tip: Click to expand the available biological questions in the scenario of interest.)</p>
+<!-- 		    <p>
+		    <b>**IMPORTANT:</b> Currently only sections (biological questions) marked with ** are functioning.
+		    This is because we are still in a testing phase. For now use only the marked questions to test the functionality.
+		    The rest of the sections will be filled out later. Suggestions for new sections are also welcomed.
+		    </p> -->
+		</div>
