@@ -27,7 +27,7 @@ class HtmlCore(object):
         self._str = '''
 <html>
 <head>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/jquery.js"></script>
+<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
 <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/sorttable.js"></script>
 '''
         for javaScriptFn in extraJavaScriptFns:
