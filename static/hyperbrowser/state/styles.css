@@ -1,0 +1,16 @@
+
+
+#masthead tbody tr td:hover > .submenu{
+	display: block;
+}
+
+#masthead tbody tr td .submenu .disabledMode a {
+	color: #777;
+	text-decoration: none;
+    cursor: default;
+}
+
+#masthead tbody tr td .noLink {
+	text-decoration: none;
+    cursor: default;
+}
