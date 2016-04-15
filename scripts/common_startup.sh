@@ -205,7 +205,7 @@ fi
 set +e
 
 if [ $FETCH_WHEELS -eq 1 ]; then
-    pip install -v -r proto-requirements.txt || echo "Failed to install rpy2. R code will not work"
+    pip install -r proto-requirements.txt || echo "Failed to install rpy2. R code will not work"
 fi
 
 python ./scripts/R_install_packages.py
