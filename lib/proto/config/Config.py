@@ -7,7 +7,7 @@ GALAXY_BASE_DIR = os.path.abspath(os.path.dirname(__file__) + '/../../../.')
 
 def getUniverseConfigParser():
     config = SafeConfigParser({'here': GALAXY_BASE_DIR})
-    configFn = GALAXY_BASE_DIR + '/config/galaxy.ini'
+    configFn = GALAXY_BASE_DIR + '/' + os.environ['GALAXY_CONFIG_FILE']
     if os.path.exists(configFn):
         config.read(configFn)
     else:
