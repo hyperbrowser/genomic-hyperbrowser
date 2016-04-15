@@ -45,8 +45,6 @@ class HtmlCore(object):
         self._str += '''
 <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
 <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/sorttable.js"></script>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/google_analytics_1.js"></script>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/google_analytics_2.js"></script>
 '''
         for javaScriptFn in extraJavaScriptFns:
             if re.match('https?://', javaScriptFn):

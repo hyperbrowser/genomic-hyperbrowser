@@ -19,12 +19,9 @@ for dir in [MAPS_PATH + os.sep + x for x in os.listdir(MAPS_PATH) if os.path.isd
         out.write(line)
     
     out.write(\
-'''        <script type="text/javascript" src="../../../scripts/jquery.js"></script>
-        <script type="text/javascript" src="../../../scripts/google_analytics_1.js"></script>
-        <script type="text/javascript" src="../../../scripts/google_analytics_2.js"></script>
+'''        <script type="text/javascript" src="../../../static/scripts/libs/jquery/jquery.js"></script>
 ''')
     
     for line in f[7:]:
         out.write(line)
     out.close()
-    
