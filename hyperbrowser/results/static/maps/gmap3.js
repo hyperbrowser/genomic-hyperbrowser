@@ -1,0 +1,1 @@
+../../../../templates/hyperbrowser/gmap/gmap3.js
