@@ -1,0 +1,30 @@
+#Python package requirements for GSuite HyperBrowser
+
+numpy>=1.10
+Pillow>=3.1.1
+pyzmq>=2.1.10
+pycairo>=1.8.10
+blist>=1.3.4
+biopython>=1.60
+pygraphviz>=1.1
+marisa_trie>=0.7.2
+pandas>=0.17.1
+Cython>=0.23.4
+certifi>=2015.11.20
+matplotlib>=1.5.1
+mechanize>=0.2.5
+pyparsing>=1.5.7
+suds>=0.4
+ConcurrentLogHandler>=0.8.4
+ftputil>=2.2.3
+testing.postgresql>=1.0.6hb
+inflection>=0.2.1
+Unidecode>=0.04.18
+pyliftover>=0.3
+progressbar>=2.3
+python_dateutil>=1.5
+
+#Might be needed
+#lxml==2.3.1
+#pypar===2.1.4_94
+#PyCluster = 1.49

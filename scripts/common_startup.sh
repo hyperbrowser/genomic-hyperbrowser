@@ -202,6 +202,10 @@ if [ -f $PROTO_TOOL_CACHE ]; then
     rm -v $PROTO_TOOL_CACHE
 fi
 
+if [ $FETCH_WHEELS -eq 1 ]; then
+    pip install -r hyperbrowser-requirements.txt
+fi
+
 set +e
 
 if [ $FETCH_WHEELS -eq 1 ]; then
