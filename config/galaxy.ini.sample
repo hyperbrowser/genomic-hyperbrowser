@@ -1173,6 +1173,6 @@ use_interactive = True
 
 # Restricted users are users that are allowed to access private ProTo tools, as well
 # as creating and installing tools. They do not, however, have Galaxy Admin
-# privileges. ALl Galaxy Admins will have full ProTo privileges without having to
+# privileges. All Galaxy Admins will have full ProTo privileges without having to
 # be in the restricted users list.
 #restricted_users =
