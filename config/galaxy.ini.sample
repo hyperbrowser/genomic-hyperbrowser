@@ -1170,3 +1170,9 @@ use_interactive = True
 # of existing jobs in history!
 #
 #proto_id_secret = USING THE DEFAULT IS ALSO NOT SECURE!
+
+# Restricted users are users that are allowed to access private ProTo tools, as well
+# as creating and installing tools. They do not, however, have Galaxy Admin
+# privileges. ALl Galaxy Admins will have full ProTo privileges without having to
+# be in the restricted users list.
+#restricted_users =

@@ -35,7 +35,10 @@ if not globals().get('URL_PREFIX'):
 
 
 GALAXY_REL_TOOL_CONFIG_FILE = getFromConfig(config, 'tool_config_file', 'config/tool_conf.xml')
-ADMIN_USERS = [username.strip() for username in getFromConfig(config, 'admin_users', '').split(',')]
+ADMIN_USERS = [username.strip() for username in
+               getFromConfig(config, 'admin_users', '').split(',')]
+RESTRICTED_USERS = [username.strip() for username in
+                    getFromConfig(config, 'restricted_users', '', 'galaxy_proto').split(',')]
 STATIC_REL_PATH = URL_PREFIX + '/static/proto'
 STATIC_PATH = GALAXY_BASE_DIR + '/' + STATIC_REL_PATH
 GALAXY_URL = URL_PREFIX
@@ -43,7 +46,7 @@ GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + getFromConfig(config, 'file_path', 'd
 
 
 def userHasFullAccess(galaxyUserName):
-    return galaxyUserName in ADMIN_USERS if galaxyUserName is not None else False
+    return galaxyUserName in ADMIN_USERS + RESTRICTED_USERS if galaxyUserName is not None else False
 
 
 def galaxyGetSecurityHelper(config):
