@@ -75,7 +75,7 @@ class GenericToolController(BaseToolController):
         subClasses = self.prototype.getSubToolClasses()
         if subClasses:
             self.subToolSelectionTitle = self.prototype.getSubToolSelectionTitle()
-            self.subClasses[self.prototype.getToolSelectionName()] = self.prototype
+            self.subClasses[self.prototype.getToolSelectionName()] = self.prototype.__class__
             for subcls in subClasses:
                 toolSelectionName = subcls.getToolSelectionName()
                 if self.prototype.useSubToolPrefix():

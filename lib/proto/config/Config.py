@@ -46,7 +46,7 @@ GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + getFromConfig(config, 'file_path', 'd
 
 
 def userHasFullAccess(galaxyUserName):
-    return galaxyUserName in ADMIN_USERS + RESTRICTED_USERS if galaxyUserName is not None else False
+    return galaxyUserName in ADMIN_USERS + RESTRICTED_USERS if galaxyUserName not in [None, ''] else False
 
 
 def galaxyGetSecurityHelper(config):

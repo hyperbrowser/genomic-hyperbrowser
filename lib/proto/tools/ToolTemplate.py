@@ -86,10 +86,6 @@ class ToolTemplate(GeneralGuiTool):
         Genome selection box:   '__genome__'
         - Returns: string
 
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
-
         History selection box:  ('__history__',) |
                                 ('__history__', 'bed', 'wig')
         - Only history items of specified types are shown.
