@@ -16,7 +16,7 @@ Note: that you can enable (lots of) debugging info using cli options:
 (see casperjs.org for more information)
 
 Note: This works with CasperJS 1.1 and PhantomJS 1.9.2 and these libraries seem to break backward
-compatbility a lot.
+compatibility a lot.
 
 Note: You can pass in extra data using --data='<some JSON object>'
     and it will be available in your script as spaceghost.fixtureData.
@@ -33,8 +33,20 @@ Note: You can pass in extra data using --data='<some JSON object>'
         casperjs test api-configuration-tests.js --url="http://localhost:8080" \
             --admin='{"email": "foo@example.com", "password": "123456" }' \
 """
-# -------------------------------------------------------------------- can't do 2.5
+
+import errno
+import json
+import logging
+import os
+import re
+import subprocess
 import sys
+import unittest
+
+from server_env import TestEnvironment
+
+# -------------------------------------------------------------------- can't do 2.5
+
 ( major, minor, micro, releaselevel, serial ) = sys.version_info
 if minor < 6:
     msg = 'casperjs requires python 2.6 or newer. Using: %s' % ( sys.version )
@@ -46,16 +58,7 @@ if minor < 6:
         raise AssertionError( msg )
 
 # --------------------------------------------------------------------
-import os
-import subprocess
-import json
-import errno
-import re
 
-import unittest
-from server_env import TestEnvironment
-
-import logging
 logging.basicConfig( stream=sys.stderr, name=__name__ )
 log = logging.getLogger( __name__ )
 
@@ -90,7 +93,7 @@ class CasperJSTestCase( unittest.TestCase ):
     """
 
     # debugging flag - set to true to have casperjs tests output with --verbose=true and --logLevel=debug
-    #debug = True
+    # debug = True
     debug = False
     # bit of a hack - this is the beginning of the last string when capserjs --verbose=true --logLevel=debug
     #   use this to get subprocess to stop waiting for output
@@ -109,11 +112,13 @@ class CasperJSTestCase( unittest.TestCase ):
         process_command_list = self.build_command_line( rel_script_path, *args, **kwargs )
         log.debug( 'process_command_list: %s', str( process_command_list ) )
         try:
-            process = subprocess.Popen( process_command_list, shell=False,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+            process = subprocess.Popen( process_command_list,
+                                        shell=False,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE )
 
             # output from the browser (stderr only) immediately
-            while process.poll() == None:
+            while process.poll() is None:
                 stderr_msg = process.stderr.readline()
                 stderr_msg = self.strip_escape_codes( stderr_msg.strip() )
                 if stderr_msg:
@@ -125,26 +130,26 @@ class CasperJSTestCase( unittest.TestCase ):
 
             # stdout is assumed to have the json test data/results
             ( stdout_output, stderr_output ) = process.communicate()
-            #log.debug( '%s stdout output:\n%s', rel_script_path, stdout_output )
-            #log.debug( '%s stderr output:\n%s', rel_script_path, stderr_output )
+            # log.debug( '%s stdout output:\n%s', rel_script_path, stdout_output )
+            # log.debug( '%s stderr output:\n%s', rel_script_path, stderr_output )
 
             log.debug( 'process.returncode: %d', process.returncode )
 
             # 1.1 has an annoying info bar that happens before it gets to our stuff, so...
             stdout_output = '\n'.join( stdout_output.split( '\n' )[1:] )
-            #log.debug( 'stdout_output:\n' + stdout_output )
+            # log.debug( 'stdout_output:\n' + stdout_output )
 
             if process.returncode == 1:
-                #TODO: this is a fail on first effect
+                # TODO: this is a fail on first effect
                 raise self.browser_error_to_exception( rel_script_path, stdout_output )
 
         # couldn't find the headless browser,
         #   provide information (as it won't be included by default with galaxy)
         except OSError, os_err:
             if os_err.errno == errno.ENOENT:
-                log.error( 'No path to headless browser executable: %s\n'
-                    + 'These tests were designed to use the following headless browser:\n%s',
-                    self.exec_path, self.casper_info )
+                log.error( 'No path to headless browser executable: %s\n' +
+                           'These tests were designed to use the following headless browser:\n%s',
+                           self.exec_path, self.casper_info )
             raise
 
         return self.handle_js_results( stdout_output )
@@ -157,7 +162,7 @@ class CasperJSTestCase( unittest.TestCase ):
         # as of casperjs 1.1, we always need to use the 'test' command
         command_line_list.append( 'test' )
 
-        # make rel_script_path an absolute path (when this is not run from its dir - i.e. run_functional_tests.sh)
+        # make rel_script_path an absolute path (when this is not run from its dir - i.e. run_tests.sh)
         curr_dir = os.path.dirname( __file__ )
         script_path = os.path.join( curr_dir, rel_script_path )
         command_line_list.append( script_path )
@@ -170,13 +175,12 @@ class CasperJSTestCase( unittest.TestCase ):
         command_line_list.append( '--return-json' )
 
         # check flag to output (very) verbose debugging messages from casperjs and tests
-        #NOTE: this can be set in the class or by using the debug_these_tests flag in server_env
-        if( ( self.debug )
-        or  ( rel_script_path in self.env.debug_these_tests ) ):
+        # NOTE: this can be set in the class or by using the debug_these_tests flag in server_env
+        if self.debug or ( rel_script_path in self.env.debug_these_tests ):
             command_line_list.extend([ '--verbose=true', '--logLevel=debug' ])
-            #TODO: add capture, html output flags
+            # TODO: add capture, html output flags
 
-        #TODO: allow casperjs cli options ('--includes='), ?in args, kwargs?
+        # TODO: allow casperjs cli options ('--includes='), ?in args, kwargs?
         command_line_list.extend( args )
 
         # send extra data - encode kwargs as json to pass to casper for decoding
@@ -204,7 +208,7 @@ class CasperJSTestCase( unittest.TestCase ):
             js_test_results = json.loads( stdout_output )
             last_error = get_error( js_test_results )
             err_string = ( "%s\n%s" % ( get_msg( last_error ),
-                self.browser_backtrace_to_string( get_trace( last_error ) ) ) )
+                           self.browser_backtrace_to_string( get_trace( last_error ) ) ) )
 
         # if we couldn't parse json from what's returned on the error, dump stdout
         except ValueError, val_err:
@@ -248,8 +252,8 @@ class CasperJSTestCase( unittest.TestCase ):
             js_test_results = json.loads( results )
             failures = js_test_results[ 'failures' ]
             assert len( failures ) == 0, (
-                "%d assertions failed in the headless browser tests" % ( len( failures ) )
-                + " (see the log for details)" )
+                "%d assertions failed in the headless browser tests" % ( len( failures ) ) +
+                " (see the log for details)" )
 
     # ---------------------------------------------------------------- TestCase overrides
     def setUp( self ):
@@ -259,7 +263,7 @@ class CasperJSTestCase( unittest.TestCase ):
 
     def run( self, result=None ):
         # wrap this in order to save ref to result
-        #TODO: gotta be a better way
+        # TODO: gotta be a better way
         self.result = result
         unittest.TestCase.run( self, result=result )
 
@@ -268,7 +272,7 @@ class CasperJSTestCase( unittest.TestCase ):
 class CasperJsonToUnittestResultsConverter( object ):
     """Convert casper failures, success to individual unittest.TestResults
     """
-    #TODO: So far I can add result instances - but each has the id, shortDescription
+    # TODO: So far I can add result instances - but each has the id, shortDescription
     #   of the TestCase.testMethod that called it. Can't find out how to change these.
 
     def convert( self, json_results, test ):
@@ -286,11 +290,11 @@ class CasperJsonToUnittestResultsConverter( object ):
     def add_json_failures_to_results( self, failures, test ):
         """Converts JSON test failures.
         """
-        #precondition: result should be an attr of test (a TestResult)
-        #TODO: no way to change test.desc, name in output?
+        # precondition: result should be an attr of test (a TestResult)
+        # TODO: no way to change test.desc, name in output?
         for failure in failures:
-            #TODO: doesn't change shortDescription
-            #if 'standard' in failure:
+            # TODO: doesn't change shortDescription
+            # if 'standard' in failure:
             #    self.__doc__ = failure[ 'standard' ]
             test.result.addFailure( test, self.casper_failure_to_unittest_failure( failure ) )
             test.result.testsRun += 1
@@ -301,29 +305,29 @@ class CasperJsonToUnittestResultsConverter( object ):
 
         Used to add failures to a casperjs TestCase.
         """
-        #TODO: this is all too elaborate
+        # TODO: this is all too elaborate
         fail_type = casper_failure[ 'type' ]
         values = json.dumps( casper_failure[ 'values' ] )
         desc = casper_failure[ 'standard' ]
         if 'messgae' in casper_failure:
             desc = casper_failure[ 'message' ]
         failure_msg = "(%s) %s: %s" % ( fail_type, desc, values )
-        #TODO: tb is empty ([]) - can we get file info from casper, covert to py trace?
+        # TODO: tb is empty ([]) - can we get file info from casper, covert to py trace?
         return ( failure_class, failure_msg, [] )
 
     def add_json_successes_to_results( self, successes, test ):
         """Converts JSON test successes.
         """
         for success in successes:
-            ## attempt to re-write test result description - doesn't work
-            #if 'standard' in success:
+            # attempt to re-write test result description - doesn't work
+            # if 'standard' in success:
             #    self.__doc__ = success[ 'standard' ]
             test.result.addSuccess( test )
             test.result.testsRun += 1
 
 
 # ==================================================================== MODULE FIXTURE
-#NOTE: nose will run these automatically
+# NOTE: nose will run these automatically
 def setup_module():
     log.debug( '\n--------------- setting up module' )
 
@@ -349,15 +353,15 @@ class Test_01_User( CasperJSTestCase ):
         register new user, logout, attempt bad registrations.
         """
         # all keywords will be compiled into a single JSON obj and passed to the server
-        #self.run_js_script( 'registration-tests.js',
+        # self.run_js_script( 'registration-tests.js',
         #    testUser=test_user )
         #    # this causes a time out in history-panel-tests: why?
         #    # also: I can't seem to bump the timeout to an error (using a handler) - causes script to hang
         #    #   removing for the sake of bbot
         self.run_js_script( 'registration-tests.js' )
 
-        #TODO:?? could theoretically do db cleanup, checks here with SQLALX
-        #TODO: have run_js_script return other persistent fixture data (uploaded files, etc.)
+        # TODO:?? could theoretically do db cleanup, checks here with SQLALX
+        # TODO: have run_js_script return other persistent fixture data (uploaded files, etc.)
 
     def test_20_login( self ):
         """User log in tests.
@@ -430,11 +434,6 @@ class Test_05_API( CasperJSTestCase ):
         """
         self.run_js_script( 'api-anon-history-permission-tests.js' )
 
-    def test_05_workflow_api( self ):
-        """Test API for workflows.
-        """
-        self.run_js_script( 'api-workflow-tests.js' )
-
     def test_06_visualization_api( self ):
         """Test API for visualizations.
         """
@@ -462,6 +461,6 @@ if __name__ == '__main__':
     from server_env import log as server_env_log
     server_env_log.setLevel( logging.DEBUG )
     setup_module()
-    #TODO: server_env config doesn't work with unittest's lame main fn
+    # TODO: server_env config doesn't work with unittest's lame main fn
     unittest.main()
     # teardown_module() isn't called when unittest.main is used

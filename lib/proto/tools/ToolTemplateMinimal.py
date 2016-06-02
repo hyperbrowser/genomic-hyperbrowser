@@ -1,5 +1,6 @@
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
+
 class ToolTemplate(GeneralGuiTool):
     @staticmethod
     def getToolName():
@@ -7,12 +8,16 @@ class ToolTemplate(GeneralGuiTool):
 
     @staticmethod
     def getInputBoxNames():
-        return [('First header','firstKey'),
+        return [('First header', 'firstKey'),
                 ('Second Header', 'secondKey')]
 
-    #@staticmethod
-    #def getInputBoxOrder():
-    #    return None
+    # @staticmethod
+    # def getInputBoxOrder():
+    #     return None
+    #
+    # @staticmethod
+    # def getInputBoxGroups(choices=None):
+    #     return None
 
     @staticmethod
     def getOptionsBoxFirstKey():
@@ -22,9 +27,17 @@ class ToolTemplate(GeneralGuiTool):
     def getOptionsBoxSecondKey(prevChoices):
         return ''
 
-    #@staticmethod
-    #def getDemoSelections():
-    #    return ['testChoice1','..']
+    # @staticmethod
+    # def getInfoForOptionsBoxKey(prevChoices):
+    #     return None
+    #
+    # @staticmethod
+    # def getDemoSelections():
+    #     return ['testChoice1', '..']
+    #
+    # @classmethod
+    # def getExtraHistElements(cls, choices):
+    #     return None
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
@@ -34,55 +47,54 @@ class ToolTemplate(GeneralGuiTool):
     def validateAndReturnErrors(choices):
         return None
 
-    #@staticmethod
-    #def getSubToolClasses():
-    #    return None
+    # @staticmethod
+    # def getSubToolClasses():
+    #     return None
     #
-    #@staticmethod
-    #def isPublic():
-    #    return False
+    # @staticmethod
+    # def isPublic():
+    #     return False
     #
-    #@staticmethod
-    #def isRedirectTool():
-    #    return False
+    # @staticmethod
+    # def isRedirectTool():
+    #     return False
     #
-    #@staticmethod
-    #def getRedirectURL(choices):
-    #    return ''
+    # @staticmethod
+    # def getRedirectURL(choices):
+    #     return ''
     #
-    #@staticmethod
-    #def isHistoryTool():
-    #    return True
+    # @staticmethod
+    # def isHistoryTool():
+    #     return True
     #
-    #@staticmethod
-    #def isDynamic():
-    #    return True
+    # @classmethod
+    # def isBatchTool(cls):
+    #     return cls.isHistoryTool()
     #
-    #@staticmethod
-    #def getResetBoxes():
-    #    return []
+    # @staticmethod
+    # def isDynamic():
+    #     return True
     #
-    #@staticmethod
-    #def getToolDescription():
-    #    return ''
+    # @staticmethod
+    # def getResetBoxes():
+    #     return []
     #
-    #@staticmethod
-    #def getToolIllustration():
-    #    return None
+    # @staticmethod
+    # def getToolDescription():
+    #     return ''
     #
-    #@staticmethod
-    #def getFullExampleURL():
-    #    return None
+    # @staticmethod
+    # def getToolIllustration():
+    #     return None
     #
-    #@classmethod
-    #def isBatchTool(cls):
-    #    return False
-    ##    return cls.isHistoryTool()
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return None
     #
-    #@staticmethod
-    #def isDebugMode():
-    #    return False
+    # @staticmethod
+    # def isDebugMode():
+    #     return False
     #
-    #@staticmethod
-    #def getOutputFormat(choices):
-    #    return 'html'
+    # @staticmethod
+    # def getOutputFormat(choices):
+    #     return 'html'

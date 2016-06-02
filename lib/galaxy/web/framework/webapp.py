@@ -10,19 +10,12 @@ import string
 import time
 from Cookie import CookieError
 
-from galaxy import eggs
-eggs.require( "Cheetah" )
 from Cheetah.Template import Template
-eggs.require( "Mako" )
 import mako.runtime
 import mako.lookup
-# pytz is used by Babel.
-eggs.require( "pytz" )
-eggs.require( "Babel" )
 from babel.support import Translations
 from babel import Locale
-eggs.require( "SQLAlchemy >= 0.4" )
-from sqlalchemy import and_
+from sqlalchemy import and_, true
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import joinedload
 
@@ -379,8 +372,8 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
             if session_key:
                 # Retrieve the galaxy_session id via the unique session_key
                 galaxy_session = self.sa_session.query( self.app.model.GalaxySession ) \
-                                                .filter( and_( self.app.model.GalaxySession.table.c.session_key==session_key, #noqa
-                                                               self.app.model.GalaxySession.table.c.is_valid==True ) ).options( joinedload( "user" ) ).first() #noqa
+                                                .filter( and_( self.app.model.GalaxySession.table.c.session_key == session_key,
+                                                               self.app.model.GalaxySession.table.c.is_valid == true() ) ).options( joinedload( "user" ) ).first()
         # If remote user is in use it can invalidate the session and in some
         # cases won't have a cookie set above, so we need to to check some
         # things now.
@@ -397,9 +390,10 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
                     # No user, associate
                     galaxy_session.user = self.get_or_create_remote_user( remote_user_email )
                     galaxy_session_requires_flush = True
-                elif ((galaxy_session.user.email != remote_user_email) and
+                elif (not remote_user_email.startswith('(null)') and  # Apache does this, see remoteuser.py
+                      (galaxy_session.user.email != remote_user_email) and
                       ((not self.app.config.allow_user_impersonation) or
-                      (remote_user_email not in self.app.config.admin_users_list))):
+                       (remote_user_email not in self.app.config.admin_users_list))):
                     # Session exists but is not associated with the correct
                     # remote user, and the currently set remote_user is not a
                     # potentially impersonating admin.
@@ -452,26 +446,31 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
         if session_cookie == 'galaxysession' and self.galaxy_session.user is None:
             # TODO: re-engineer to eliminate the use of allowed_paths
             # as maintenance overhead is far too high.
-            allowed_paths = (
-                url_for( controller='root', action='index' ),
-                url_for( controller='root', action='tool_menu' ),
-                url_for( controller='root', action='masthead' ),
-                url_for( controller='root', action='history' ),
-                url_for( controller='user', action='api_keys' ),
-                url_for( controller='user', action='create' ),
-                url_for( controller='user', action='index' ),
+            allowed_paths = [
+                # client app route
+                # TODO: might be better as '/:username/login', '/:username/logout'
+                url_for( controller='root', action='login' ),
+                # mako app routes
                 url_for( controller='user', action='login' ),
                 url_for( controller='user', action='logout' ),
-                url_for( controller='user', action='manage_user_info' ),
-                url_for( controller='user', action='set_default_permissions' ),
                 url_for( controller='user', action='reset_password' ),
+                url_for( controller='user', action='change_password' ),
+                # required to log in w/ openid
                 url_for( controller='user', action='openid_auth' ),
                 url_for( controller='user', action='openid_process' ),
                 url_for( controller='user', action='openid_associate' ),
-                url_for( controller='library', action='browse' ),
-                url_for( controller='history', action='list' ),
-                url_for( controller='dataset', action='list' )
-            )
+                # TODO: do any of these still need to bypass require login?
+                url_for( controller='user', action='api_keys' ),
+                url_for( controller='user', action='create' ),
+                url_for( controller='user', action='index' ),
+                url_for( controller='user', action='manage_user_info' ),
+                url_for( controller='user', action='set_default_permissions' ),
+            ]
+            # append the welcome url to allowed paths if we'll show it at the login screen
+            if self.app.config.show_welcome_with_login:
+                allowed_paths.append( url_for( controller='root', action='welcome' ) )
+
+            # prevent redirect when UCSC server attempts to get dataset contents as 'anon' user
             display_as = url_for( controller='root', action='display_as' )
             if self.app.datatypes_registry.get_display_sites('ucsc') and self.request.path == display_as:
                 try:
@@ -480,18 +479,21 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
                     host = None
                 if host in UCSC_SERVERS:
                     return
+            # prevent redirect for external, enabled display applications getting dataset contents
             external_display_path = url_for( controller='', action='display_application' )
             if self.request.path.startswith( external_display_path ):
                 request_path_split = self.request.path.split( '/' )
                 try:
-                    if (self.app.datatypes_registry.display_applications.get( request_path_split[-5] )
-                            and request_path_split[-4] in self.app.datatypes_registry.display_applications.get( request_path_split[-5] ).links
-                            and request_path_split[-3] != 'None'):
+                    if (self.app.datatypes_registry.display_applications.get( request_path_split[-5] ) and
+                            request_path_split[-4] in self.app.datatypes_registry.display_applications.get( request_path_split[-5] ).links and
+                            request_path_split[-3] != 'None'):
                         return
                 except IndexError:
                     pass
+            # redirect to root if the path is not in the list above
             if self.request.path not in allowed_paths:
-                self.response.send_redirect( url_for( controller='root', action='index' ) )
+                login_url = url_for( controller='root', action='login', redirect=self.request.path )
+                self.response.send_redirect( login_url )
 
     def __create_new_session( self, prev_galaxy_session=None, user_for_new_session=None ):
         """
@@ -524,8 +526,7 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
             return None
         if getattr( self.app.config, "normalize_remote_user_email", False ):
             remote_user_email = remote_user_email.lower()
-        user = self.sa_session.query( self.app.model.User
-                ).filter( self.app.model.User.table.c.email==remote_user_email ).first() #noqa
+        user = self.sa_session.query( self.app.model.User).filter( self.app.model.User.table.c.email == remote_user_email ).first()
         if user:
             # GVK: June 29, 2009 - This is to correct the behavior of a previous bug where a private
             # role and default user / history permissions were not set for remote users.  When a
@@ -603,7 +604,7 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
                     if prev_galaxy_session.user is None:
                         # Increase the user's disk usage by the amount of the previous history's datasets if they didn't already own it.
                         for hda in history.datasets:
-                            user.total_disk_usage += hda.quota_amount( user )
+                            user.adjust_total_disk_usage(hda.quota_amount(user))
             elif self.galaxy_session.current_history:
                 history = self.galaxy_session.current_history
             if (not history and users_last_session and
@@ -640,10 +641,10 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
         self.sa_session.add_all( ( prev_galaxy_session, self.galaxy_session ) )
         galaxy_user_id = prev_galaxy_session.user_id
         if logout_all and galaxy_user_id is not None:
-            for other_galaxy_session in self.sa_session.query( self.app.model.GalaxySession
-                    ).filter( and_( self.app.model.GalaxySession.table.c.user_id==galaxy_user_id, #noqa
-                                    self.app.model.GalaxySession.table.c.is_valid==True, #noqa
-                                    self.app.model.GalaxySession.table.c.id!=prev_galaxy_session.id ) ): #noqa
+            for other_galaxy_session in ( self.sa_session.query(self.app.model.GalaxySession)
+                                          .filter( and_( self.app.model.GalaxySession.table.c.user_id == galaxy_user_id,
+                                                         self.app.model.GalaxySession.table.c.is_valid == true(),
+                                                         self.app.model.GalaxySession.table.c.id != prev_galaxy_session.id ) ) ):
                 other_galaxy_session.is_valid = False
                 self.sa_session.add( other_galaxy_session )
         self.sa_session.flush()
@@ -818,8 +819,7 @@ class GalaxyWebTransaction( base.DefaultWebTransaction,
         template = template_lookup.get_template( filename )
         template.output_encoding = 'utf-8'
 
-        data = dict( caller=self, t=self, trans=self, h=helpers, util=util,
-                     request=self.request, response=self.response, app=self.app )
+        data = dict( caller=self, t=self, trans=self, h=helpers, util=util, request=self.request, response=self.response, app=self.app )
         data.update( self.template_context )
         data.update( kwargs )
         return template.render( **data )

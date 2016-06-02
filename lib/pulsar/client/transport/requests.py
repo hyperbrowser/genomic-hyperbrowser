@@ -1,26 +1,23 @@
 from __future__ import absolute_import
-try:
-    from galaxy import eggs
-    eggs.require("requests")
-except ImportError:
-    pass
+
+import logging
 
 try:
     import requests
 except ImportError:
     requests = None
-requests_multipart_post_available = False
+
 try:
     import requests_toolbelt
     requests_multipart_post_available = True
 except ImportError:
+    requests_multipart_post_available = False
     requests_toolbelt = None
 
 
 REQUESTS_UNAVAILABLE_MESSAGE = "Pulsar configured to use requests module - but it is unavailable. Please install requests."
 REQUESTS_TOOLBELT_UNAVAILABLE_MESSAGE = "Pulsar configured to use requests_toolbelt module - but it is unavailable. Please install requests_toolbelt."
 
-import logging
 log = logging.getLogger(__name__)
 
 

@@ -17,7 +17,6 @@ GALAXY_TOOL_XML_PATH = GALAXY_BASE_DIR + '/tools/'
 TOOL_XML_REL_PATH = 'hyperbrowser/'
 
 
-
 class GalaxyToolConfig:
 
     tool_xml_template = '''<tool id="%s" name="%s" version="1.0.0"
@@ -97,9 +96,7 @@ def getProtoToolList(except_class_names=[]):
     return tools, tool_classes
 
 
-
 class ExploreToolsTool(MultiGeneralGuiTool):
-
     @staticmethod
     def getToolName():
         return "ProTo tool explorer"
@@ -123,6 +120,24 @@ class ExploreToolsTool(MultiGeneralGuiTool):
         tool_shelve.close()
         tool_list = getProtoToolList(installed_classes)[1]
         return sorted(tool_list, key=lambda c: c.__module__)
+
+    @staticmethod
+    def getToolDescription():
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph("This tool is used to try out ProTo tools that have "
+                       "not been installed as separate tools in the tool "
+                       "menu. This is typically used for development "
+                       "purposes, so that one can polish the tool until it"
+                       "is finished for deployment in the tool menu. "
+                       "When a tool is installed into the menu, the tool "
+                       "disappears from the tool list in this tool."
+                       "The logic for inclusion in the list is that there "
+                       "exists a Python module with a class that inherits "
+                       "from GeneralGuiTool, without there existing "
+                       "a Galaxy xml file for the tool.")
+        return str(core)
 
 
 
@@ -185,7 +200,12 @@ class InstallToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getInputBoxNames():
-        return [('Select tool', 'tool'), ('Tool ID', 'toolID'), ('Tool name', 'name'), ('Tool description', 'description'), ('Tool XML file', 'toolXMLPath'), ('Select section', 'section')]
+        return [('Select tool', 'tool'),
+                ('Tool ID', 'toolID'),
+                ('Tool name', 'name'),
+                ('Tool description', 'description'),
+                ('Tool XML file', 'toolXMLPath'),
+                ('Select section', 'section')]
 
     @staticmethod
     def getResetBoxes():
@@ -278,13 +298,84 @@ class InstallToolsTool(GeneralGuiTool):
             tf.write(tool_xml)
         
         toolConf.write()
-        
+
+        print '''
+        <script type="text/javascript">
+            $().ready(function() {
+                $("#reload_toolbox").click(function(){
+                    $.ajax({
+                    url: "/api/configuration/toolbox",
+                    type: 'PUT'
+                    }).done(function() {
+                            top.location.reload();
+                        }
+                    );
+                });
+            });
+        </script>
+        '''
+        print '<a id="reload_toolbox" href="#">Reload toolbox/menu</a>'
         print '<pre>' + escape(xml) + '</pre>' + '<pre>' + escape(tool_xml) + '</pre>'
-        
 
-        
+    @staticmethod
+    def getToolDescription():
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph(
+            "This tool is used to install ProTo tools into the tool menu. "
+            "The installation process creates a Galaxy tool XML file and "
+            "adds the tool to the tool menu (in the 'tool_conf.xml' file). "
+            "After execution, the XML file has been generated and added "
+            "to the tool configuration file, but Galaxy needs to reload "
+            "the tool menu for it to become visible. This is done by a "
+            "Galaxy administrator, either from the Admin menu, or from a "
+            "link in the output history element from this tool.")
+        core.paragraph("Note that the after this tool has been executed "
+                       "but before a Galaxy administrator has reloaded the "
+                       "tool menu, the tool is not available from neither "
+                       "of the 'ProTo tool explorer' tool or from the "
+                       "Galaxy menu.")
+        core.divider()
+        core.smallHeader("Parameters")
+
+        core.descriptionLine("Select tool", "The tool to install.",
+                             emphasize=True)
+        core.descriptionLine("Tool ID",
+                             "The Galaxy tool id for the new tool to be "
+                             "created. This is the 'id' argument to the "
+                             "<tool> tag in the tool XML file.",
+                             emphasize=True)
+        core.descriptionLine("Tool name",
+                             "The name of the tool as it will appear in the "
+                             "tool menu. The tool name will appear as a HTML "
+                             "link.", emphasize=True)
+        core.descriptionLine("Tool description",
+                             "The description of the tool as it will appear "
+                             "in the tool menu. The tool description will "
+                             "appear directly after the tool name as "
+                             "normal text.", emphasize=True)
+        core.descriptionLine("Tool XML file",
+                             "The path (relative to 'tools/proto/') and name "
+                             "of the Galaxy tool XML file to be created. "
+                             "The tool file can be named anything and be "
+                             "placed anywhere (as the 'tool_conf.xml' file"
+                             "contains the path to the tool XML file). "
+                             "However, we encourage the practice of placing "
+                             "the Galaxy tool XML file together with the "
+                             "Python module, in the same directory and "
+                             "with the same name as tool module (with e.g. "
+                             "'ABCTool.xml' instead of 'AbcTool.py').",
+                             emphasize=True)
+        core.descriptionLine("Select section in tool_conf.xml file",
+                             "The section in the tool_conf.xml file where"
+                             "the tool should be placed in the menu. "
+                             "This corresponds to the first level in the"
+                             "tool hierarchy.", emphasize=True)
+        return str(core)
+
+
 class GenerateToolsTool(GeneralGuiTool):
-
     @staticmethod
     def getToolName():
         return "ProTo tool generator"
@@ -296,7 +387,7 @@ class GenerateToolsTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         return [('Package name', 'packageName'),
-                ('Module name', 'moduleName'),
+                ('Module/class name', 'moduleName'),
                 ('Tool name', 'toolName'),
                 ('Use template with inline documentation', 'template')]
 
@@ -352,4 +443,50 @@ class GenerateToolsTool(GeneralGuiTool):
         explore_id = quote(choices.moduleName + ': ' + choices.toolName)
         print 'Tool generated: <a href="%s/proto/?tool_id=proto_ExploreToolsTool&sub_class_id=%s">%s: %s</a>' % (URL_PREFIX, explore_id, choices.moduleName, choices.toolName)
         print 'Tool source path: ', pyname
-        
+
+    @staticmethod
+    def getToolDescription():
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph("This tool is used to dynamically generate a Python "
+                       "module defining a new ProTo tool. After tool "
+                       "execution, The tool will be available from the "
+                       "'ProTo tool explorer' tool for development purposes.")
+        core.divider()
+        core.smallHeader("Parameters")
+        core.descriptionLine("Package name",
+                             "The name of the package where the new tool "
+                             "should be installed. The package path is "
+                             "relative to 'proto.tools'. If, for instance, "
+                             "the package is set to 'mypackage.core', the full"
+                             "package hierarchy is 'proto.tools.mypackage."
+                             "core'. Any non-existing directories will be "
+                             "created as needed.", emphasize=True)
+        core.descriptionLine("Module/class name",
+                             "The name of the Python module (filename) and "
+                             "class for the new tool. For historical reasons, "
+                             "ProTo uses 'MixedCase' naming for both the "
+                             "module and the class. By convention, it is "
+                             "advised (but not required) to end the name "
+                             "with 'Tool', e.g. 'MyNewTool'. This will create "
+                             "a Python module 'MyNewTool.py' with the class "
+                             "'MyNewTool', inheriting from "
+                             "'proto.GeneralGuiTool'.", emphasize=True)
+        core.descriptionLine("Tool name",
+                             "A string with the name or title of the tool. "
+                             "This will appear on the top of the tool GUI "
+                             "as well as being the default value for the "
+                             "tool name in the menu (which can be changed "
+                             "when installing).", emphasize=True)
+        core.descriptionLine("Use template with inline documentation",
+                             "The new Python module is based upon a template"
+                             "file containing a simple example tool with "
+                             "two option boxes (one selection box and one "
+                             "text box). There are two such template files, "
+                             "one that contains inline documentation of the "
+                             "methods and possible choices, and one without "
+                             "the documentation. Advanced users could select "
+                             "the latter to make the tool code itself shorter "
+                             "and more readable.", emphasize=True)
+        return str(core)

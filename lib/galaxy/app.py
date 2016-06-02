@@ -12,8 +12,9 @@ import galaxy.quota
 from galaxy.managers.tags import GalaxyTagManager
 from galaxy.visualization.genomes import Genomes
 from galaxy.visualization.data_providers.registry import DataProviderRegistry
-from galaxy.visualization.registry import VisualizationsRegistry
-from galaxy.tools.imp_exp import load_history_imp_exp_tools
+from galaxy.visualization.plugins.registry import VisualizationsRegistry
+from galaxy.tools.special_tools import load_lib_tools
+from galaxy.tours import ToursRegistry
 from galaxy.sample_tracking import external_service_types
 from galaxy.openid.providers import OpenIDProviders
 from galaxy.tools.data_manager.manager import DataManagers
@@ -30,7 +31,12 @@ app = None
 class UniverseApplication( object, config.ConfiguresGalaxyMixin ):
     """Encapsulates the state of a Universe application"""
     def __init__( self, **kwargs ):
-        print >> sys.stderr, "python path is: " + ", ".join( sys.path )
+        if not log.handlers:
+            # Paste didn't handle it, so we need a temporary basic log
+            # configured.  The handler added here gets dumped and replaced with
+            # an appropriately configured logger in configure_logging below.
+            logging.basicConfig(level=logging.DEBUG)
+        log.debug( "python path is: %s", ", ".join( sys.path ) )
         self.name = 'galaxy'
         self.new_installation = False
         # Read config file and check for errors
@@ -38,7 +44,12 @@ class UniverseApplication( object, config.ConfiguresGalaxyMixin ):
         self.config.check()
         config.configure_logging( self.config )
         self.configure_fluent_log()
-        self._amqp_internal_connection_obj = galaxy.queues.connection_from_config(self.config)
+        self.config.reload_sanitize_whitelist(explicit='sanitize_whitelist_file' in kwargs)
+        self.amqp_internal_connection_obj = galaxy.queues.connection_from_config(self.config)
+        # control_worker *can* be initialized with a queue, but here we don't
+        # want to and we'll allow postfork to bind and start it.
+        self.control_worker = GalaxyQueueWorker(self)
+
         self._configure_tool_shed_registry()
         self._configure_object_store( fsmon=True )
         # Setup the database engine and ORM
@@ -94,12 +105,14 @@ class UniverseApplication( object, config.ConfiguresGalaxyMixin ):
         # Load external metadata tool
         self.datatypes_registry.load_external_metadata_tool( self.toolbox )
         # Load history import/export tools.
-        load_history_imp_exp_tools( self.toolbox )
+        load_lib_tools( self.toolbox )
         # visualizations registry: associates resources with visualizations, controls how to render
         self.visualizations_registry = VisualizationsRegistry(
             self,
             directories_setting=self.config.visualization_plugins_directory,
             template_cache_dir=self.config.template_cache )
+        # Tours registry
+        self.tour_registry = ToursRegistry(self.config.tour_config_dir)
         # Load security policy.
         self.security_agent = self.model.security_agent
         self.host_security_agent = galaxy.security.HostAgent(
@@ -120,6 +133,8 @@ class UniverseApplication( object, config.ConfiguresGalaxyMixin ):
         else:
             self.openid_providers = OpenIDProviders()
         # Start the heartbeat process if configured and available
+        from galaxy import auth
+        self.auth_manager = auth.AuthManager( self )
         if self.config.use_heartbeat:
             from galaxy.util import heartbeat
             if heartbeat.Heartbeat:
@@ -150,13 +165,6 @@ class UniverseApplication( object, config.ConfiguresGalaxyMixin ):
         self.model.engine.dispose()
         self.server_starttime = int(time.time())  # used for cachebusting
 
-    def setup_control_queue(self):
-        self.control_worker = GalaxyQueueWorker(self, galaxy.queues.control_queue_from_config(self.config),
-                                                galaxy.queue_worker.control_message_to_task,
-                                                self._amqp_internal_connection_obj)
-        self.control_worker.daemon = True
-        self.control_worker.start()
-
     def shutdown( self ):
         self.workflow_scheduling_manager.shutdown()
         self.job_manager.shutdown()
@@ -164,8 +172,11 @@ class UniverseApplication( object, config.ConfiguresGalaxyMixin ):
         if self.heartbeat:
             self.heartbeat.shutdown()
         self.update_repository_manager.shutdown()
-        if self.control_worker:
+        try:
             self.control_worker.shutdown()
+        except AttributeError:
+            # There is no control_worker
+            pass
         try:
             # If the datatypes registry was persisted, attempt to
             # remove the temporary file in which it was written.

@@ -1,0 +1,4 @@
+# Python package requirements of Galaxy ProTo
+
+# Optional packages
+rpy2>=2.7

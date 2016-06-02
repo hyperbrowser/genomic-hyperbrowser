@@ -45,13 +45,13 @@ User.prototype._submitRegistration = function _submitRegistration( email, passwo
         };
 
     spaceghost.openHomePage( function(){
-        this.clickLabel( spaceghost.data.labels.masthead.menus.user );
+        this.click( xpath( spaceghost.data.selectors.masthead.user ) )
         this.clickLabel( spaceghost.data.labels.masthead.userMenu.register );
 
         this.waitForNavigation( 'user/create', function beforeRegister(){
             this.withMainPanel( function mainBeforeRegister(){
-                spaceghost.debug( '(' + spaceghost.getCurrentUrl() + ') registering user:\n'
-                    + spaceghost.jsonStr( userInfo ) );
+                spaceghost.debug( '(' + spaceghost.getCurrentUrl() + ') registering user:\n' +
+                    spaceghost.jsonStr( userInfo ) );
                 this.fill( spaceghost.data.selectors.registrationPage.form, userInfo, false );
                 // need manual submit (not a normal html form)
                 this.click( xpath( spaceghost.data.selectors.registrationPage.submit_xpath ) );
@@ -78,18 +78,18 @@ User.prototype._submitLogin = function _submitLogin( email, password ){
     var spaceghost = this.spaceghost,
         loginInfo = {
         //NOTE: keys are used as name selectors in the fill fn - must match the names of the inputs
-            email: email,
+            login: email,
             password: password
         };
 
     spaceghost.openHomePage( function(){
-        this.clickLabel( spaceghost.data.labels.masthead.menus.user );
+        this.click( xpath( spaceghost.data.selectors.masthead.user ) )
         this.clickLabel( spaceghost.data.labels.masthead.userMenu.login );
 
         this.waitForNavigation( 'user/login', function beforeLogin(){
             this.withMainPanel( function mainBeforeLogin(){
-                spaceghost.debug( '(' + spaceghost.getCurrentUrl() + ') logging in user:\n'
-                    + spaceghost.jsonStr( loginInfo ) );
+                spaceghost.debug( '(' + spaceghost.getCurrentUrl() + ') logging in user:\n' +
+                    spaceghost.jsonStr( loginInfo ) );
                 spaceghost.fill( spaceghost.data.selectors.loginPage.form, loginInfo, false );
                 spaceghost.click( xpath( spaceghost.data.selectors.loginPage.submit_xpath ) );
             });
@@ -117,14 +117,15 @@ User.prototype.registerUser = function registerUser( email, password, username )
     var spaceghost = this.spaceghost;
     this._submitRegistration( email, password, username );
     spaceghost.withMainPanel( function mainAfterRegister(){
-        var messageInfo = this.getElementInfo( spaceghost.data.selectors.messages.all );
-        this.debug( 'post registration message:\n' + this.jsonStr( this.quickInfo( messageInfo ) ) );
-
-        if( messageInfo.attributes[ 'class' ] === 'errormessage' ){
-            this.warning( 'Registration failed: ' + messageInfo.text );
-            throw new spaceghost.GalaxyError( 'RegistrationError: ' + messageInfo.text );
+        var errorMessage = this.elementInfoOrNull( spaceghost.data.selectors.messages.error );
+        if( errorMessage ){
+            this.warning( 'Registration failed: ' + errorMessage.text );
+            throw new spaceghost.GalaxyError( 'RegistrationError: ' + errorMessage.text );
         }
-        
+
+        var messageInfo = this.elementInfoOrNull( spaceghost.data.selectors.messages.done );
+        this.debug( 'post registration message:\n' + messageInfo.text );
+
         this.clickLabel( 'Return to the home page.' );
         this.waitForNavigation( '' );
     });
@@ -138,6 +139,7 @@ User.prototype.registerUser = function registerUser( email, password, username )
  */
 User.prototype.login = function login( email, password ){
     var spaceghost = this.spaceghost;
+    spaceghost.debug( '(' + spaceghost.getCurrentUrl() + ') attempting login with ' + email + ' using password ' + password );
 
     this._submitLogin( email, password );
     //spaceghost.withMainPanel( function mainAfterLogin(){
@@ -190,7 +192,8 @@ User.prototype.logout = function logout(){
     var spaceghost = this.spaceghost;
     this.spaceghost.openHomePage( function(){
         if( spaceghost.user.loggedInAs() ){
-            spaceghost.clickLabel( spaceghost.data.labels.masthead.menus.user );
+            this.click( xpath( spaceghost.data.selectors.masthead.user ) )
+            //spaceghost.clickLabel( spaceghost.data.labels.masthead.menus.user );
             spaceghost.clickLabel( spaceghost.data.labels.masthead.userMenu.logout );
             spaceghost.waitForNavigation( 'user/logout', function _toLogoutPage() {
                 spaceghost.clickLabel( 'go to the home page' );

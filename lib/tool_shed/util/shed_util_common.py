@@ -5,20 +5,18 @@ import re
 import shutil
 import socket
 import string
+from urllib2 import HTTPError
+
 import sqlalchemy.orm.exc
+from sqlalchemy import and_, false, or_, true
 
 from galaxy import util
 from galaxy.web import url_for
-from galaxy.datatypes import checkers
-from galaxy.model.orm import and_
-from galaxy.model.orm import or_
-
+from galaxy.util import checkers
 from tool_shed.util import basic_util
 from tool_shed.util import common_util
 from tool_shed.util import encoding_util
 from tool_shed.util import hg_util
-
-from urllib2 import HTTPError
 
 log = logging.getLogger( __name__ )
 
@@ -83,6 +81,59 @@ This message was sent from the Galaxy Tool Shed instance hosted on the server
 """
 
 
+def can_eliminate_repository_dependency(metadata_dict, tool_shed_url, name, owner):
+    """
+    Determine if the relationship between a repository_dependency record
+    associated with a tool_shed_repository record on the Galaxy side
+    can be eliminated.
+    """
+    rd_dict = metadata_dict.get('repository_dependencies', {})
+    rd_tups = rd_dict.get( 'repository_dependencies', [] )
+    for rd_tup in rd_tups:
+        tsu, n, o, none1, none2, none3 = common_util.parse_repository_dependency_tuple(rd_tup)
+        if tsu == tool_shed_url and n == name and o == owner:
+            # The repository dependency is current, so keep it.
+            return False
+    return True
+
+
+def can_eliminate_tool_dependency(metadata_dict, name, type, version):
+    """
+    Determine if the relationship between a tool_dependency record
+    associated with a tool_shed_repository record on the Galaxy side
+    can be eliminated.
+    """
+    td_dict = metadata_dict.get('tool_dependencies', {})
+    for td_key, td_val in td_dict.items():
+        n = td_val.get('name', None)
+        t = td_val.get('type', None)
+        v = td_val.get('version', None)
+        if n == name and t == type and v == version:
+            # The tool dependency is current, so keep it.
+            return False
+    return True
+
+
+def clean_dependency_relationships(trans, metadata_dict, tool_shed_repository, tool_shed_url):
+    """
+    Repositories of type tool_dependency_definition allow for defining a
+    package dependency at some point in the change log and then removing the
+    dependency later in the change log.  This function keeps the dependency
+    relationships on the Galaxy side current by deleting database records
+    that defined the now-broken relationships.
+    """
+    for rrda in tool_shed_repository.required_repositories:
+        rd = rrda.repository_dependency
+        r = rd.repository
+        if can_eliminate_repository_dependency(metadata_dict, tool_shed_url, r.name, r.owner):
+            trans.install_model.context.delete(rrda)
+            trans.install_model.context.flush()
+    for td in tool_shed_repository.tool_dependencies:
+        if can_eliminate_tool_dependency(metadata_dict, td.name, td.type, td.version):
+            trans.install_model.context.delete(td)
+            trans.install_model.context.flush()
+
+
 def create_or_update_tool_shed_repository( app, name, description, installed_changeset_revision, ctx_rev, repository_clone_url,
                                            metadata_dict, status, current_changeset_revision=None, owner='', dist_to_shed=False ):
     """
@@ -114,11 +165,7 @@ def create_or_update_tool_shed_repository( app, name, description, installed_cha
         deleted = False
         uninstalled = False
     tool_shed_repository = \
-        get_tool_shed_repository_by_shed_name_owner_installed_changeset_revision( app,
-                                                                                  tool_shed,
-                                                                                  name,
-                                                                                  owner,
-                                                                                  installed_changeset_revision )
+        get_installed_repository( app, tool_shed=tool_shed, name=name, owner=owner, installed_changeset_revision=installed_changeset_revision )
     if tool_shed_repository:
         log.debug( "Updating an existing row for repository '%s' in the tool_shed_repository table, status set to '%s'." %
                    ( str( name ), str( status ) ) )
@@ -200,7 +247,7 @@ def generate_tool_shed_repository_install_dir( repository_clone_url, changeset_r
     tool_shed_url = items[ 0 ]
     repo_path = items[ 1 ]
     tool_shed_url = common_util.remove_port_from_tool_shed_url( tool_shed_url )
-    return common_util.url_join( tool_shed_url, 'repos', repo_path, changeset_revision )
+    return common_util.url_join( tool_shed_url, pathspec=[ 'repos', repo_path, changeset_revision ] )
 
 
 def get_absolute_path_to_file_in_repository( repo_files_dir, file_name ):
@@ -219,7 +266,7 @@ def get_categories( app ):
     """Get all categories from the database."""
     sa_session = app.model.context.current
     return sa_session.query( app.model.Category ) \
-                     .filter( app.model.Category.table.c.deleted == False ) \
+                     .filter( app.model.Category.table.c.deleted == false() ) \
                      .order_by( app.model.Category.table.c.name ) \
                      .all()
 
@@ -245,10 +292,9 @@ def get_ctx_rev( app, tool_shed_url, name, owner, changeset_revision ):
     combination of a name, owner and changeset revision.
     """
     tool_shed_url = common_util.get_tool_shed_url_from_tool_shed_registry( app, tool_shed_url )
-    params = '?name=%s&owner=%s&changeset_revision=%s' % ( name, owner, changeset_revision )
-    url = common_util.url_join( tool_shed_url,
-                                'repository/get_ctx_rev%s' % params )
-    ctx_rev = common_util.tool_shed_get( app, tool_shed_url, url )
+    params = dict( name=name, owner=owner, changeset_revision=changeset_revision )
+    pathspec = [ 'repository', 'get_ctx_rev' ]
+    ctx_rev = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
     return ctx_rev
 
 
@@ -303,6 +349,19 @@ def get_latest_downloadable_changeset_revision( app, repository, repo ):
     if changeset_revisions:
         return changeset_revisions[ -1 ]
     return hg_util.INITIAL_CHANGELOG_HASH
+
+
+def get_tool_dependency_definition_metadata_from_tool_shed( app, tool_shed_url, name, owner ):
+    """
+    Send a request to the tool shed to retrieve the current metadata for a
+    repository of type tool_dependency_definition defined by the combination
+    of a name and owner.
+    """
+    tool_shed_url = common_util.get_tool_shed_url_from_tool_shed_registry( app, tool_shed_url )
+    params = dict( name=name, owner=owner )
+    pathspec = [ 'repository', 'get_tool_dependency_definition_metadata' ]
+    metadata = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
+    return metadata
 
 
 def get_next_downloadable_changeset_revision( repository, repo, after_changeset_revision ):
@@ -507,37 +566,49 @@ def get_repository_for_dependency_relationship( app, tool_shed, name, owner, cha
         message += "required parameters is None: tool_shed: %s, name: %s, owner: %s, changeset_revision: %s " % \
             ( str( tool_shed ), str( name ), str( owner ), str( changeset_revision ) )
         raise Exception( message )
-    repository = get_tool_shed_repository_by_shed_name_owner_installed_changeset_revision( app=app,
-                                                                                           tool_shed=tool_shed,
-                                                                                           name=name,
-                                                                                           owner=owner,
-                                                                                           installed_changeset_revision=changeset_revision )
+    repository = get_installed_repository( app=app,
+                                           tool_shed=tool_shed,
+                                           name=name,
+                                           owner=owner,
+                                           installed_changeset_revision=changeset_revision )
     if not repository:
-        repository = get_tool_shed_repository_by_shed_name_owner_changeset_revision( app=app,
-                                                                                     tool_shed=tool_shed,
-                                                                                     name=name,
-                                                                                     owner=owner,
-                                                                                     changeset_revision=changeset_revision )
+        repository = get_installed_repository( app=app,
+                                               tool_shed=tool_shed,
+                                               name=name,
+                                               owner=owner,
+                                               changeset_revision=changeset_revision )
+    if not repository:
+        tool_shed_url = common_util.get_tool_shed_url_from_tool_shed_registry( app, tool_shed )
+        repository_clone_url = os.path.join( tool_shed_url, 'repos', owner, name )
+        repo_info_tuple = (None, repository_clone_url, changeset_revision, None, owner, None, None)
+        repository, pcr = repository_was_previously_installed( app, tool_shed_url, name, repo_info_tuple )
     if not repository:
         # The received changeset_revision is no longer installable, so get the next changeset_revision
         # in the repository's changelog in the tool shed that is associated with repository_metadata.
         tool_shed_url = common_util.get_tool_shed_url_from_tool_shed_registry( app, tool_shed )
-        params = '?name=%s&owner=%s&changeset_revision=%s' % ( name, owner, changeset_revision )
-        url = common_util.url_join( tool_shed_url,
-                                    'repository/next_installable_changeset_revision%s' % params )
-        text = common_util.tool_shed_get( app, tool_shed_url, url )
+        params = dict( name=name, owner=owner, changeset_revision=changeset_revision )
+        pathspec = [ 'repository', 'next_installable_changeset_revision' ]
+        text = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
         if text:
-            repository = get_tool_shed_repository_by_shed_name_owner_changeset_revision( app=app,
-                                                                                         tool_shed=tool_shed,
-                                                                                         name=name,
-                                                                                         owner=owner,
-                                                                                         changeset_revision=text )
+            repository = get_installed_repository( app=app,
+                                                   tool_shed=tool_shed,
+                                                   name=name,
+                                                   owner=owner,
+                                                   changeset_revision=text )
     return repository
 
 
-def get_repository_file_contents( file_path ):
+def get_repository_file_contents( app, file_path, repository_id ):
     """Return the display-safe contents of a repository file for display in a browser."""
-    if checkers.is_gzip( file_path ):
+    safe_str = ''
+    if not is_path_within_repo( app, file_path, repository_id ):
+        log.warning( 'Request tries to access a file outside of the repository location. File path: %s', file_path )
+        return 'Invalid file path'
+    # Symlink targets are checked by is_path_within_repo
+    if os.path.islink( file_path ):
+        safe_str = 'link to: ' + basic_util.to_html_string( os.readlink( file_path ) )
+        return safe_str
+    elif checkers.is_gzip( file_path ):
         return '<br/>gzip compressed file<br/>'
     elif checkers.is_bz2( file_path ):
         return '<br/>bz2 compressed file<br/>'
@@ -546,7 +617,6 @@ def get_repository_file_contents( file_path ):
     elif checkers.check_binary( file_path ):
         return '<br/>Binary file<br/>'
     else:
-        safe_str = ''
         for i, line in enumerate( open( file_path ) ):
             safe_str = '%s%s' % ( safe_str, basic_util.to_html_string( line ) )
             # Stop reading after string is larger than MAX_CONTENT_SIZE.
@@ -556,6 +626,7 @@ def get_repository_file_contents( file_path ):
                     util.nice_size( MAX_CONTENT_SIZE )
                 safe_str = '%s%s' % ( safe_str, large_str )
                 break
+
         if len( safe_str ) > basic_util.MAX_DISPLAY_SIZE:
             # Eliminate the middle of the file to display a file no larger than basic_util.MAX_DISPLAY_SIZE.
             # This may not be ideal if the file is larger than MAX_CONTENT_SIZE.
@@ -577,9 +648,6 @@ def get_repository_files( folder_path ):
         # Skip .hg directories
         if item.startswith( '.hg' ):
             continue
-        if os.path.isdir( os.path.join( folder_path, item ) ):
-            # Append a '/' character so that our jquery dynatree will function properly.
-            item = '%s/' % item
         contents.append( item )
     if contents:
         contents.sort()
@@ -662,6 +730,13 @@ def get_repository_in_tool_shed( app, id ):
     return sa_session.query( app.model.Repository ).get( app.security.decode_id( id ) )
 
 
+def get_repository_categories( app, id ):
+    """Get categories of a repository on the tool shed side from the database via id"""
+    sa_session = app.model.context.current
+    return sa_session.query( app.model.RepositoryCategoryAssociation ) \
+        .filter(app.model.RepositoryCategoryAssociation.table.c.repository_id == app.security.decode_id( id ))
+
+
 def get_repository_metadata_by_changeset_revision( app, id, changeset_revision ):
     """Get metadata for a specified repository change set from the database."""
     # Make sure there are no duplicate records, and return the single unique record for the changeset_revision.
@@ -705,6 +780,18 @@ def get_repository_query( app ):
     else:
         query = app.model.context.query( app.model.Repository )
     return query
+
+
+def get_repository_type_from_tool_shed( app, tool_shed_url, name, owner ):
+    """
+    Send a request to the tool shed to retrieve the type for a repository defined by the
+    combination of a name and owner.
+    """
+    tool_shed_url = common_util.get_tool_shed_url_from_tool_shed_registry( app, tool_shed_url )
+    params = dict( name=name, owner=owner )
+    pathspec = [ 'repository', 'get_repository_type' ]
+    repository_type = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
+    return repository_type
 
 
 def get_tool_panel_config_tool_path_install_dir( app, repository ):
@@ -752,47 +839,30 @@ def get_tool_shed_from_clone_url( repository_clone_url ):
     return tmp_url.split( '/repos/' )[ 0 ].rstrip( '/' )
 
 
+def get_installed_repository( app, tool_shed, name, owner, changeset_revision=None, installed_changeset_revision=None ):
+    """
+    Return a tool shed repository database record defined by the combination of a toolshed, repository name,
+    repository owner and either current or originally installed changeset_revision.
+    """
+    query = app.install_model.context.query( app.install_model.ToolShedRepository )
+    # We store the port, if one exists, in the database.
+    tool_shed = common_util.remove_protocol_from_tool_shed_url( tool_shed )
+    clause_list = [ app.install_model.ToolShedRepository.table.c.tool_shed == tool_shed,
+                    app.install_model.ToolShedRepository.table.c.name == name,
+                    app.install_model.ToolShedRepository.table.c.owner == owner ]
+    if changeset_revision is not None:
+        clause_list.append( app.install_model.ToolShedRepository.table.c.changeset_revision == changeset_revision )
+    if installed_changeset_revision is not None:
+        clause_list.append( app.install_model.ToolShedRepository.table.c.installed_changeset_revision == installed_changeset_revision )
+    return query.filter( and_( *clause_list ) ).first()
+
+
 def get_tool_shed_repository_by_id( app, repository_id ):
     """Return a tool shed repository database record defined by the id."""
     # This method is used only in Galaxy, not the tool shed.
     return app.install_model.context.query( app.install_model.ToolShedRepository ) \
                                     .filter( app.install_model.ToolShedRepository.table.c.id == app.security.decode_id( repository_id ) ) \
                                     .first()
-
-
-def get_tool_shed_repository_by_shed_name_owner_changeset_revision( app, tool_shed, name, owner, changeset_revision ):
-    """
-    Return a tool shed repository database record defined by the combination of a tool_shed, repository name,
-    repository owner and current changeet_revision.
-    """
-    # This method is used only in Galaxy, not the Tool Shed.
-    repository_query = get_repository_query( app )
-    # We store the port, if one exists, in the database.
-    tool_shed = common_util.remove_protocol_from_tool_shed_url( tool_shed )
-    return repository_query \
-        .filter( and_( app.install_model.ToolShedRepository.table.c.tool_shed == tool_shed,
-                       app.install_model.ToolShedRepository.table.c.name == name,
-                       app.install_model.ToolShedRepository.table.c.owner == owner,
-                       app.install_model.ToolShedRepository.table.c.changeset_revision == changeset_revision ) ) \
-        .first()
-
-
-def get_tool_shed_repository_by_shed_name_owner_installed_changeset_revision( app, tool_shed, name, owner,
-                                                                              installed_changeset_revision ):
-    """
-    Return a tool shed repository database record defined by the combination of a tool_shed,
-    repository name, repository owner and installed_changeet_revision.
-    """
-    # This method is used only in Galaxy, not the tool shed.
-    repository_query = get_repository_query( app )
-    # We store the port, if one exists, in the database.
-    tool_shed = common_util.remove_protocol_from_tool_shed_url( tool_shed )
-    return repository_query \
-        .filter( and_( app.install_model.ToolShedRepository.table.c.tool_shed == tool_shed,
-                       app.install_model.ToolShedRepository.table.c.name == name,
-                       app.install_model.ToolShedRepository.table.c.owner == owner,
-                       app.install_model.ToolShedRepository.table.c.installed_changeset_revision == installed_changeset_revision ) ) \
-        .first()
 
 
 def get_tool_shed_status_for_installed_repository( app, repository ):
@@ -803,13 +873,10 @@ def get_tool_shed_status_for_installed_repository( app, repository ):
     object from Galaxy.
     """
     tool_shed_url = common_util.get_tool_shed_url_from_tool_shed_registry( app, str( repository.tool_shed ) )
-    params = '?name=%s&owner=%s&changeset_revision=%s' % ( str( repository.name ),
-                                                           str( repository.owner ),
-                                                           str( repository.changeset_revision ) )
-    url = common_util.url_join( tool_shed_url,
-                                'repository/status_for_installed_repository%s' % params )
+    params = dict( name=repository.name, owner=repository.owner, changeset_revision=repository.changeset_revision )
+    pathspec = [ 'repository', 'status_for_installed_repository' ]
     try:
-        encoded_tool_shed_status_dict = common_util.tool_shed_get( app, tool_shed_url, url )
+        encoded_tool_shed_status_dict = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
         tool_shed_status_dict = encoding_util.tool_shed_decode( encoded_tool_shed_status_dict )
         return tool_shed_status_dict
     except HTTPError, e:
@@ -817,14 +884,11 @@ def get_tool_shed_status_for_installed_repository( app, repository ):
         # using a boolean value.
         log.debug( "Error attempting to get tool shed status for installed repository %s: %s\nAttempting older 'check_for_updates' method.\n" %
                    ( str( repository.name ), str( e ) ) )
-        params = '?name=%s&owner=%s&changeset_revision=%s&from_update_manager=True' % ( str( repository.name ),
-                                                                                        str( repository.owner ),
-                                                                                        str( repository.changeset_revision ) )
-        url = common_util.url_join( tool_shed_url,
-                                    'repository/check_for_updates%s' % params )
+        pathspec = [ 'repository', 'check_for_updates' ]
+        params[ 'from_update_manager' ] = True
         try:
             # The value of text will be 'true' or 'false', depending upon whether there is an update available for the installed revision.
-            text = common_util.tool_shed_get( app, tool_shed_url, url )
+            text = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
             return dict( revision_update=text )
         except Exception, e:
             # The required tool shed may be unavailable, so default the revision_update value to 'false'.
@@ -839,11 +903,11 @@ def get_tool_shed_repository_status_label( app, tool_shed_repository=None, name=
     if tool_shed_repository is None:
         if name is not None and owner is not None and repository_clone_url is not None:
             tool_shed = get_tool_shed_from_clone_url( repository_clone_url )
-            tool_shed_repository = get_tool_shed_repository_by_shed_name_owner_installed_changeset_revision( app,
-                                                                                                             tool_shed,
-                                                                                                             name,
-                                                                                                             owner,
-                                                                                                             changeset_revision )
+            tool_shed_repository = get_installed_repository( app,
+                                                             tool_shed=tool_shed,
+                                                             name=name,
+                                                             owner=owner,
+                                                             installed_changeset_revision=changeset_revision )
     if tool_shed_repository:
         status_label = tool_shed_repository.status
         if tool_shed_repository.status in [ app.install_model.ToolShedRepository.installation_status.CLONING,
@@ -917,10 +981,9 @@ def get_updated_changeset_revisions_from_tool_shed( app, tool_shed_url, name, ow
         message += "required parameters is None: tool_shed_url: %s, name: %s, owner: %s, changeset_revision: %s " % \
             ( str( tool_shed_url ), str( name ), str( owner ), str( changeset_revision ) )
         raise Exception( message )
-    params = '?name=%s&owner=%s&changeset_revision=%s' % ( name, owner, changeset_revision )
-    url = common_util.url_join( tool_shed_url,
-                                'repository/updated_changeset_revisions%s' % params )
-    text = common_util.tool_shed_get( app, tool_shed_url, url )
+    params = dict( name=name, owner=owner, changeset_revision=changeset_revision )
+    pathspec = [ 'repository', 'updated_changeset_revisions' ]
+    text = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
     return text
 
 
@@ -973,7 +1036,7 @@ def handle_email_alerts( app, host, repository, content_alert_str='', new_repo_a
         # Send email alert to users that want them.
         if app.config.email_from is not None:
             email_from = app.config.email_from
-        elif host.split( ':' )[0] == 'localhost':
+        elif host.split( ':' )[0] in [ 'localhost', '127.0.0.1', '0.0.0.0' ]:
             email_from = 'galaxy-no-reply@' + socket.getfqdn()
         else:
             email_from = 'galaxy-no-reply@' + host.split( ':' )[0]
@@ -1013,8 +1076,8 @@ def handle_email_alerts( app, host, repository, content_alert_str='', new_repo_a
             subject = subject[ :80 ]
             email_alerts = []
             for user in sa_session.query( app.model.User ) \
-                                  .filter( and_( app.model.User.table.c.deleted == False,
-                                                 app.model.User.table.c.new_repo_alert == True ) ):
+                                  .filter( and_( app.model.User.table.c.deleted == false(),
+                                                 app.model.User.table.c.new_repo_alert == true() ) ):
                 if admin_only:
                     if user.email in admin_users:
                         email_alerts.append( user.email )
@@ -1049,11 +1112,15 @@ def is_tool_shed_client( app ):
     return hasattr( app, "install_model" )
 
 
-def open_repository_files_folder( folder_path ):
+def open_repository_files_folder( app, folder_path, repository_id ):
     """
     Return a list of dictionaries, each of which contains information for a file or directory contained
     within a directory in a repository file hierarchy.
     """
+    # Symlink targets are checked by is_path_within_repo
+    if not is_path_within_repo( app, folder_path, repository_id ):
+        log.warning( 'Request tries to access a folder outside of the repository location. Folder path: %s', folder_path )
+        return []
     try:
         files_list = get_repository_files( folder_path )
     except OSError, e:
@@ -1063,10 +1130,17 @@ def open_repository_files_folder( folder_path ):
     folder_contents = []
     for filename in files_list:
         is_folder = False
-        if filename and filename[ -1 ] == os.sep:
-            is_folder = True
+        full_path = os.path.join( folder_path, filename )
+        is_link = os.path.islink( full_path )
+        path_is_within_repo = is_path_within_repo( app, full_path, repository_id )
+        if is_link and not path_is_within_repo:
+            log.warning( 'Valid folder contains a symlink outside of the repository location. Link found in: ' + str( full_path ) )
         if filename:
-            full_path = os.path.join( folder_path, filename )
+            if os.path.isdir( full_path ) and path_is_within_repo:
+                # Append a '/' character so that our jquery dynatree will function properly.
+                filename = '%s/' % filename
+                full_path = '%s/' % full_path
+                is_folder = True
             node = { "title": filename,
                      "isFolder": is_folder,
                      "isLazy": is_folder,
@@ -1074,6 +1148,16 @@ def open_repository_files_folder( folder_path ):
                      "key": full_path }
             folder_contents.append( node )
     return folder_contents
+
+
+def is_path_within_repo( app, path, repository_id ):
+    """
+    Detect whether the given path is within the repository folde ron the disk.
+    Use to filter malicious symlinks targeting outside paths.
+    """
+    repo_path = os.path.abspath( get_repository_by_id( app, repository_id ).repo_path( app ) )
+    resolved_path = os.path.realpath( path )
+    return os.path.commonprefix( [ repo_path, resolved_path ] ) == repo_path
 
 
 def repository_was_previously_installed( app, tool_shed_url, repository_name, repo_info_tuple, from_tip=False ):
@@ -1090,31 +1174,30 @@ def repository_was_previously_installed( app, tool_shed_url, repository_name, re
         get_repo_info_tuple_contents( repo_info_tuple )
     tool_shed = get_tool_shed_from_clone_url( repository_clone_url )
     # See if we can locate the repository using the value of changeset_revision.
-    tool_shed_repository = get_tool_shed_repository_by_shed_name_owner_installed_changeset_revision( app,
-                                                                                                     tool_shed,
-                                                                                                     repository_name,
-                                                                                                     repository_owner,
-                                                                                                     changeset_revision )
+    tool_shed_repository = get_installed_repository( app,
+                                                     tool_shed=tool_shed,
+                                                     name=repository_name,
+                                                     owner=repository_owner,
+                                                     installed_changeset_revision=changeset_revision )
     if tool_shed_repository:
         return tool_shed_repository, changeset_revision
     # Get all previous changeset revisions from the tool shed for the repository back to, but excluding,
     # the previous valid changeset revision to see if it was previously installed using one of them.
-    params = '?galaxy_url=%s&name=%s&owner=%s&changeset_revision=%s&from_tip=%s' % ( url_for( '/', qualified=True ),
-                                                                                     str( repository_name ),
-                                                                                     str( repository_owner ),
-                                                                                     changeset_revision,
-                                                                                     str( from_tip ) )
-    url = common_util.url_join( tool_shed_url,
-                                'repository/previous_changeset_revisions%s' % params )
-    text = common_util.tool_shed_get( app, tool_shed_url, url )
+    params = dict( galaxy_url=url_for( '/', qualified=True ),
+                   name=repository_name,
+                   owner=repository_owner,
+                   changeset_revision=changeset_revision,
+                   from_tip=str( from_tip ) )
+    pathspec = [ 'repository', 'previous_changeset_revisions' ]
+    text = common_util.tool_shed_get( app, tool_shed_url, pathspec=pathspec, params=params )
     if text:
         changeset_revisions = util.listify( text )
         for previous_changeset_revision in changeset_revisions:
-            tool_shed_repository = get_tool_shed_repository_by_shed_name_owner_installed_changeset_revision( app,
-                                                                                                             tool_shed,
-                                                                                                             repository_name,
-                                                                                                             repository_owner,
-                                                                                                             previous_changeset_revision )
+            tool_shed_repository = get_installed_repository( app,
+                                                             tool_shed=tool_shed,
+                                                             name=repository_name,
+                                                             owner=repository_owner,
+                                                             installed_changeset_revision=previous_changeset_revision )
             if tool_shed_repository:
                 return tool_shed_repository, previous_changeset_revision
     return None, None
@@ -1133,14 +1216,10 @@ def set_image_paths( app, encoded_repository_id, text ):
         else:
             # We're in the tool shed.
             route_to_images = '/repository/static/images/%s' % encoded_repository_id
-        # We used to require $PATH_TO_IMAGES, but we now eliminate it if it's used.
+        # We used to require $PATH_TO_IMAGES and ${static_path}, but
+        # we now eliminate it if it's used.
         text = text.replace( '$PATH_TO_IMAGES', '' )
-        # Eliminate the invalid setting of ./static/images since the routes will
-        # properly display images contained in that directory.
-        text = text.replace( './static/images', '' )
-        # Eliminate the default setting of /static/images since the routes will
-        # properly display images contained in that directory.
-        text = text.replace( '/static/images', '' )
+        text = text.replace( '${static_path}', '' )
         # Use regex to instantiate routes into the defined image paths, but replace
         # paths that start with neither http:// nor https://, which will allow for
         # settings like .. images:: http_files/images/help.png

@@ -13,13 +13,15 @@ from galaxy.web import security
 import tool_shed.repository_registry
 import tool_shed.repository_types.registry
 from tool_shed.grids.repository_grid_filter_manager import RepositoryGridFilterManager
+import logging
+log = logging.getLogger( __name__ )
 
 
 class UniverseApplication( object ):
     """Encapsulates the state of a Universe application"""
 
     def __init__( self, **kwd ):
-        print >> sys.stderr, "python path is: " + ", ".join( sys.path )
+        log.debug( "python path is: %s", ", ".join( sys.path ) )
         self.name = "tool_shed"
         # Read the tool_shed.ini configuration file and check for errors.
         self.config = config.Configuration( **kwd )
@@ -53,6 +55,8 @@ class UniverseApplication( object ):
         # because the Tool Shed should always have an empty dictionary!
         self.tool_data_tables = galaxy.tools.data.ToolDataTableManager( self.config.tool_data_path )
         self.genome_builds = GenomeBuilds( self )
+        from galaxy import auth
+        self.auth_manager = auth.AuthManager( self )
         # Citation manager needed to load tools.
         from galaxy.managers.citations import CitationsManager
         self.citations_manager = CitationsManager( self )
@@ -73,7 +77,7 @@ class UniverseApplication( object ):
         self.repository_registry = tool_shed.repository_registry.Registry( self )
         #  used for cachebusting -- refactor this into a *SINGLE* UniverseApplication base.
         self.server_starttime = int(time.time())
-        print >> sys.stderr, "Tool shed hgweb.config file is: ", self.hgweb_config_manager.hgweb_config
+        log.debug( "Tool shed hgweb.config file is: %s", self.hgweb_config_manager.hgweb_config )
 
     def shutdown( self ):
         pass

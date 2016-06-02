@@ -1,5 +1,3 @@
-#import routes
-
 # Unused but adds some stuff to routes.Mapper.
 from galaxy.web.framework.webapp import WebApplication
 from galaxy.webapps.galaxy import buildapp as galaxy_buildapp
@@ -84,6 +82,30 @@ def test_galaxy_routes( ):
     assert_url_is(
         url_for( "history_content_typed", history_id="123", id="456", type="dataset" ),
         "/api/histories/123/contents/datasets/456"
+    )
+
+    test_webapp.assert_maps(
+        "/api/dependency_resolvers",
+        controller="tool_dependencies",
+        action="index"
+    )
+
+    test_webapp.assert_maps(
+        "/api/dependency_resolvers/dependency",
+        controller="tool_dependencies",
+        action="manager_dependency"
+    )
+
+    test_webapp.assert_maps(
+        "/api/dependency_resolvers/0",
+        controller="tool_dependencies",
+        action="show"
+    )
+
+    test_webapp.assert_maps(
+        "/api/dependency_resolvers/0/dependency",
+        controller="tool_dependencies",
+        action="resolver_dependency"
     )
 
 

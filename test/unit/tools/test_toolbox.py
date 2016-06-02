@@ -1,3 +1,4 @@
+import json
 import os
 import string
 import unittest
@@ -7,6 +8,10 @@ from galaxy import model
 from galaxy.model import tool_shed_install
 from galaxy.model.tool_shed_install import mapping
 import tools_support
+
+import routes
+
+from .test_toolbox_filters import mock_trans
 
 
 CONFIG_TEST_TOOL_VERSION_TEMPLATE = string.Template(
@@ -113,10 +118,14 @@ class BaseToolBoxTestCase(  unittest.TestCase, tools_support.UsesApp, tools_supp
 </toolbox>"""
         self._add_config( template % (self.test_directory, CONFIG_TEST_TOOL_VERSION_1, CONFIG_TEST_TOOL_VERSION_2 ) )
 
-    def _add_config( self, xml, name="tool_conf.xml" ):
+    def _add_config( self, content, name="tool_conf.xml" ):
+        is_json = name.endswith(".json")
         path = self._tool_conf_path( name=name )
         with open( path, "w" ) as f:
-            f.write( xml )
+            if not is_json or isinstance(content, basestring):
+                f.write( content )
+            else:
+                json.dump(content, f)
         self.config_files.append( path )
 
     def _tool_conf_path( self, name="tool_conf.xml" ):
@@ -141,6 +150,48 @@ class ToolBoxTestCase( BaseToolBoxTestCase ):
         assert toolbox.get_tool( "test_tool" ) is not None
         assert toolbox.get_tool( "not_a_test_tool" ) is None
 
+    def test_to_dict_in_panel( self ):
+        for json_conf in [True, False]:
+            self._init_tool_in_section(json=json_conf)
+            mapper = routes.Mapper()
+            mapper.connect( "tool_runner", "/test/tool_runner" )
+            as_dict = self.toolbox.to_dict( mock_trans() )
+            test_section = self._find_section(as_dict, "t")
+            assert len(test_section["elems"]) == 1
+            assert test_section["elems"][0]["id"] == "test_tool"
+
+    def test_to_dict_out_of_panel( self ):
+        for json_conf in [True, False]:
+            self._init_tool_in_section(json=json_conf)
+            mapper = routes.Mapper()
+            mapper.connect( "tool_runner", "/test/tool_runner" )
+            as_dict = self.toolbox.to_dict( mock_trans(), in_panel=False )
+            assert as_dict[0]["id"] == "test_tool"
+
+    def test_out_of_panel_filtering( self ):
+        self._init_tool_in_section()
+
+        mapper = routes.Mapper()
+        mapper.connect( "tool_runner", "/test/tool_runner" )
+        as_dict = self.toolbox.to_dict( mock_trans(), in_panel=False )
+        assert len(as_dict) == 1
+
+        def allow_user_access(user, attempting_access):
+            assert not attempting_access
+            return False
+
+        # Disable access to the tool, make sure it is filtered out.
+        self.toolbox.get_tool("test_tool").allow_user_access = allow_user_access
+        as_dict = self.toolbox.to_dict( mock_trans(), in_panel=False )
+        assert len(as_dict) == 0
+
+    def _find_section( self, as_dict, section_id ):
+        for elem in as_dict:
+            if elem.get("id") == section_id:
+                assert elem["model_class"] == "ToolSection"
+                return elem
+        assert False, "Failed to find section with id [%s]" % section_id
+
     def test_tool_shed_properties( self ):
         self._init_tool()
         self._setup_two_versions_in_config( section=False )
@@ -150,7 +201,8 @@ class ToolBoxTestCase( BaseToolBoxTestCase ):
         assert test_tool.tool_shed == "github.com"
         assert test_tool.repository_owner == "galaxyproject"
         assert test_tool.repository_name == "example"
-        assert test_tool.installed_changeset_revision == "1"
+        # TODO: Not deterministc, probably should be?
+        assert test_tool.installed_changeset_revision in ["1", "2"]
 
     def test_tool_shed_properties_only_on_installed_tools( self ):
         self._init_tool()
@@ -163,8 +215,7 @@ class ToolBoxTestCase( BaseToolBoxTestCase ):
         assert test_tool.installed_changeset_revision is None
 
     def test_load_file_in_section( self ):
-        self._init_tool()
-        self._add_config( """<toolbox><section id="t" name="test"><tool file="tool.xml" /></section></toolbox>""" )
+        self._init_tool_in_section()
 
         toolbox = self.toolbox
         assert toolbox.get_tool( "test_tool" ) is not None
@@ -216,7 +267,10 @@ class ToolBoxTestCase( BaseToolBoxTestCase ):
         self._init_tool()
         self._setup_two_versions_in_config( )
         self._setup_two_versions()
-        assert self.toolbox.get_tool_id( "test_tool" ) == "github.com/galaxyproject/example/test_tool/0.1"
+        assert self.toolbox.get_tool_id( "test_tool" ) in [
+            "github.com/galaxyproject/example/test_tool/0.1",
+            "github.com/galaxyproject/example/test_tool/0.2"
+        ]
         assert self.toolbox.get_tool_id( "github.com/galaxyproject/example/test_tool/0.1" ) == "github.com/galaxyproject/example/test_tool/0.1"
         assert self.toolbox.get_tool_id( "github.com/galaxyproject/example/test_tool/0.2" ) == "github.com/galaxyproject/example/test_tool/0.2"
         assert self.toolbox.get_tool_id( "github.com/galaxyproject/example/test_tool/0.3" ) is None
@@ -224,6 +278,13 @@ class ToolBoxTestCase( BaseToolBoxTestCase ):
     def test_tool_dir( self ):
         self._init_tool()
         self._add_config( """<toolbox><tool_dir dir="%s" /></toolbox>""" % self.test_directory )
+
+        toolbox = self.toolbox
+        assert toolbox.get_tool( "test_tool" ) is not None
+
+    def test_tool_dir_json( self ):
+        self._init_tool()
+        self._add_config({"items": [{"type": "tool_dir", "dir": self.test_directory}]}, name="tool_conf.json")
 
         toolbox = self.toolbox
         assert toolbox.get_tool( "test_tool" ) is not None
@@ -257,6 +318,20 @@ class ToolBoxTestCase( BaseToolBoxTestCase ):
         assert len( self.toolbox._tool_panel ) == 1
         section = self.toolbox._tool_panel[ 'tid' ]
         self.__check_test_labels( section.elems )
+
+    def _init_tool_in_section( self, json=False ):
+        self._init_tool()
+        if not json:
+            self._add_config( """<toolbox><section id="t" name="test"><tool file="tool.xml" /></section></toolbox>""" )
+        else:
+            section = {
+                "type": "section",
+                "id": "t",
+                "name": "test",
+                "items": [{"type": "tool",
+                           "file": "tool.xml"}],
+            }
+            self._add_config({"items": [section]}, name="tool_conf.json")
 
     def __check_test_labels( self, panel_dict ):
         assert panel_dict.keys() == ["label_lab1", "label_lab2"]

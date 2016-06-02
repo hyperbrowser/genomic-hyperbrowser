@@ -22,6 +22,13 @@
                 %for i in range( len(param_values[input.name]) ):
                     ${ inputs_recursive(input.inputs, param_values[input.name][i], depth=depth+1) }
                 %endfor
+            %elif input.type == "section":
+                <tr>
+                    ##<!-- Get the value of the current Section parameter -->
+                    ${inputs_recursive_indent( text=input.name, depth=depth )}
+                    <td></td>
+                </tr>
+                ${ inputs_recursive( input.inputs, param_values[input.name], depth=depth+1, upgrade_messages=upgrade_messages.get( input.name ) ) }
             %elif input.type == "conditional":
                 <%
                 try:
@@ -125,8 +132,11 @@
         %if job:
             <tr><td>Tool Exit Code:</td><td>${ job.exit_code | h }</td></tr>
         %endif
-        <tr><td>API ID:</td><td>${encoded_hda_id}</td></tr>
-        <tr><td>History ID:</td><td>${encoded_history_id}</td></tr>
+        <tr><td>History Content API ID:</td><td>${encoded_hda_id}</td></tr>
+        %if job:
+            <tr><td>Job API ID:</td><td>${trans.security.encode_id( job.id )}</td></tr>
+        %endif
+        <tr><td>History API ID:</td><td>${encoded_history_id}</td></tr>
         %if hda.dataset.uuid:
         <tr><td>UUID:</td><td>${hda.dataset.uuid}</td></tr>
         %endif

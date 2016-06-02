@@ -12,8 +12,8 @@ import time
 
 from datetime import datetime
 
-from galaxy.exceptions import ObjectNotFound
-from galaxy.util import string_as_bool, umask_fix_perms
+from galaxy.exceptions import ObjectNotFound, ObjectInvalid
+from galaxy.util import string_as_bool, umask_fix_perms, safe_relpath
 from galaxy.util.directory_hash import directory_hash_id
 from galaxy.util.sleeper import Sleeper
 from .s3_multipart_upload import multipart_upload
@@ -44,8 +44,7 @@ class S3ObjectStore(ObjectStore):
     def __init__(self, config, config_xml):
         if boto is None:
             raise Exception(NO_BOTO_ERROR_MESSAGE)
-        super(S3ObjectStore, self).__init__(config, config_xml)
-        self.config = config
+        super(S3ObjectStore, self).__init__(config)
         self.staging_path = self.config.file_path
         self.transfer_progress = 0
         self._parse_config_xml(config_xml)
@@ -92,6 +91,14 @@ class S3ObjectStore(ObjectStore):
             self.conn_path = cn_xml.get('conn_path', '/')
             c_xml = config_xml.findall('cache')[0]
             self.cache_size = float(c_xml.get('size', -1))
+            self.staging_path = c_xml.get('path', self.config.object_store_cache_path)
+
+            for d_xml in config_xml.findall('extra_dir'):
+                self.extra_dirs[d_xml.get('type')] = d_xml.get('path')
+
+            log.debug("Object cache dir:    %s", self.staging_path)
+            log.debug("       job work dir: %s", self.extra_dirs['job_work'])
+
             # for multipart upload
             self.s3server = {'access_key': self.access_key,
                              'secret_key': self.secret_key,
@@ -192,23 +199,46 @@ class S3ObjectStore(ObjectStore):
     def _fix_permissions(self, rel_path):
         """ Set permissions on rel_path"""
         for basedir, _, files in os.walk(rel_path):
-            umask_fix_perms(basedir, self.config.umask, 0777, self.config.gid)
+            umask_fix_perms(basedir, self.config.umask, 0o777, self.config.gid)
             for filename in files:
                 path = os.path.join(basedir, filename)
                 # Ignore symlinks
                 if os.path.islink(path):
                     continue
-                umask_fix_perms( path, self.config.umask, 0666, self.config.gid )
+                umask_fix_perms( path, self.config.umask, 0o666, self.config.gid )
 
-    def _construct_path(self, obj, dir_only=None, extra_dir=None, extra_dir_at_root=False, alt_name=None, **kwargs):
+    def _construct_path(self, obj, base_dir=None, dir_only=None, extra_dir=None, extra_dir_at_root=False, alt_name=None, obj_dir=False, **kwargs):
+        # extra_dir should never be constructed from provided data but just
+        # make sure there are no shenannigans afoot
+        if extra_dir and extra_dir != os.path.normpath(extra_dir):
+            log.warning('extra_dir is not normalized: %s', extra_dir)
+            raise ObjectInvalid("The requested object is invalid")
+        # ensure that any parent directory references in alt_name would not
+        # result in a path not contained in the directory path constructed here
+        if alt_name:
+            if not safe_relpath(alt_name):
+                log.warning('alt_name would locate path outside dir: %s', alt_name)
+                raise ObjectInvalid("The requested object is invalid")
+            # alt_name can contain parent directory references, but S3 will not
+            # follow them, so if they are valid we normalize them out
+            alt_name = os.path.normpath(alt_name)
         rel_path = os.path.join(*directory_hash_id(obj.id))
         if extra_dir is not None:
             if extra_dir_at_root:
                 rel_path = os.path.join(extra_dir, rel_path)
             else:
                 rel_path = os.path.join(rel_path, extra_dir)
+
+        # for JOB_WORK directory
+        if obj_dir:
+            rel_path = os.path.join(rel_path, str(obj.id))
+        if base_dir:
+            base = self.extra_dirs.get(base_dir)
+            return os.path.join(base, rel_path)
+
         # S3 folders are marked by having trailing '/' so add it now
         rel_path = '%s/' % rel_path
+
         if not dir_only:
             rel_path = os.path.join(rel_path, alt_name if alt_name else "dataset_%s.dat" % obj.id)
         return rel_path
@@ -374,6 +404,7 @@ class S3ObjectStore(ObjectStore):
     def exists(self, obj, **kwargs):
         in_cache = in_s3 = False
         rel_path = self._construct_path(obj, **kwargs)
+
         # Check cache
         if self._in_cache(rel_path):
             in_cache = True
@@ -382,11 +413,18 @@ class S3ObjectStore(ObjectStore):
         # log.debug("~~~~~~ File '%s' exists in cache: %s; in s3: %s" % (rel_path, in_cache, in_s3))
         # dir_only does not get synced so shortcut the decision
         dir_only = kwargs.get('dir_only', False)
+        base_dir = kwargs.get('base_dir', None)
         if dir_only:
             if in_cache or in_s3:
                 return True
+            # for JOB_WORK directory
+            elif base_dir:
+                if not os.path.exists(rel_path):
+                    os.makedirs(rel_path)
+                return True
             else:
                 return False
+
         # TODO: Sync should probably not be done here. Add this to an async upload stack?
         if in_cache and not in_s3:
             self._push_to_os(rel_path, source_file=self._get_cache_path(rel_path))
@@ -398,11 +436,13 @@ class S3ObjectStore(ObjectStore):
 
     def create(self, obj, **kwargs):
         if not self.exists(obj, **kwargs):
+
             # Pull out locally used fields
             extra_dir = kwargs.get('extra_dir', None)
             extra_dir_at_root = kwargs.get('extra_dir_at_root', False)
             dir_only = kwargs.get('dir_only', False)
             alt_name = kwargs.get('alt_name', None)
+
             # Construct hashed path
             rel_path = os.path.join(*directory_hash_id(obj.id))
 
@@ -412,10 +452,12 @@ class S3ObjectStore(ObjectStore):
                     rel_path = os.path.join(extra_dir, rel_path)
                 else:
                     rel_path = os.path.join(rel_path, extra_dir)
+
             # Create given directory in cache
             cache_dir = os.path.join(self.staging_path, rel_path)
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
+
             # Although not really necessary to create S3 folders (because S3 has
             # flat namespace), do so for consistency with the regular file system
             # S3 folders are marked by having trailing '/' so add it now
@@ -439,7 +481,7 @@ class S3ObjectStore(ObjectStore):
         if self._in_cache(rel_path):
             try:
                 return os.path.getsize(self._get_cache_path(rel_path))
-            except OSError, ex:
+            except OSError as ex:
                 log.info("Could not get size of file '%s' in local cache, will try S3. Error: %s", rel_path, ex)
         elif self.exists(obj, **kwargs):
             return self._get_size_in_s3(rel_path)
@@ -449,7 +491,15 @@ class S3ObjectStore(ObjectStore):
     def delete(self, obj, entire_dir=False, **kwargs):
         rel_path = self._construct_path(obj, **kwargs)
         extra_dir = kwargs.get('extra_dir', None)
+        base_dir = kwargs.get('base_dir', None)
+        dir_only = kwargs.get('dir_only', False)
+        obj_dir = kwargs.get('obj_dir', False)
         try:
+            # Remove temparory data in JOB_WORK directory
+            if base_dir and dir_only and obj_dir:
+                shutil.rmtree(os.path.abspath(rel_path))
+                return True
+
             # For the case of extra_files, because we don't have a reference to
             # individual files/keys we need to remove the entire directory structure
             # with all the files in it. This is easy for the local file system,
@@ -489,8 +539,15 @@ class S3ObjectStore(ObjectStore):
         return content
 
     def get_filename(self, obj, **kwargs):
+        base_dir = kwargs.get('base_dir', None)
         dir_only = kwargs.get('dir_only', False)
+        obj_dir = kwargs.get('obj_dir', False)
         rel_path = self._construct_path(obj, **kwargs)
+
+        # for JOB_WORK directory
+        if base_dir and dir_only and obj_dir:
+            return os.path.abspath(rel_path)
+
         cache_path = self._get_cache_path(rel_path)
         # S3 does not recognize directories as files so cannot check if those exist.
         # So, if checking dir only, ensure given dir exists in cache and return

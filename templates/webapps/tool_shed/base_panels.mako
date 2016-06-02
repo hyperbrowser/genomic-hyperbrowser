@@ -5,6 +5,28 @@
 
 <%def name="javascripts()">
     ${parent.javascripts()}
+    <script type="text/javascript">
+        $(document).ready( function() {
+
+            // Masthead dropdown menus
+            var $dropdowns = $("#masthead ul.nav > li.dropdown > .dropdown-menu");
+            $("body").on( "click.nav_popups", function( e ) {
+                $dropdowns.hide();
+                $("#dd-helper").hide();
+                // If the target is in the menu, treat normally
+                if ( $(e.target).closest( "#masthead ul.nav > li.dropdown > .dropdown-menu" ).length ) {
+                    return;
+                }
+                // Otherwise, was the click in a tab
+                var $clicked = $(e.target).closest( "#masthead ul.nav > li.dropdown" );
+                if ( $clicked.length ) {
+                    $("#dd-helper").show();
+                    $clicked.children( ".dropdown-menu" ).show();
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 </%def>
 
 ## Masthead
@@ -80,6 +102,9 @@
                 ## Repositories tab.
                 ${tab( "repositories", "Repositories", h.url_for( controller='/repository', action='index' ) )}
                 
+                ## Groups tab.
+                ${tab( "groups", "Groups", h.url_for( controller='/groups', action='index' ) )}
+
                 ## Admin tab.
                 ${tab( "admin", "Admin", h.url_for( controller='/admin', action='index' ), extra_class="admin-only", visible=( trans.user and app.config.is_admin_user( trans.user ) ) )}
 
@@ -90,13 +115,13 @@
                     if qa_url:
                         menu_options = [ [_('Galaxy Q&A'), qa_url, "_blank" ] ]
                     menu_options.extend( [
-                        [_('Tool Shed Wiki'), app.config.get( "wiki_url", "http://wiki.galaxyproject.org/Tool%20Shed" ), "_blank" ],
-                        [_('Support'), app.config.get( "support_url", "http://wiki.galaxyproject.org/Support" ), "_blank" ],
+                        [_('Tool Shed Wiki'), app.config.get( "wiki_url", "https://wiki.galaxyproject.org/ToolShed" ), "_blank" ],
+                        [_('Support'), app.config.get( "support_url", "https://wiki.galaxyproject.org/Support" ), "_blank" ],
                         [_('Search'), app.config.get( "search_url", "http://galaxyproject.org/search/usegalaxy/" ), "_blank" ],
-                        [_('Mailing Lists'), app.config.get( "mailing_lists_url", "http://wiki.galaxyproject.org/MailingLists" ), "_blank" ],
-                        [_('Videos'), app.config.get( "screencasts_url", "http://vimeo.com/galaxyproject" ), "_blank" ],
+                        [_('Mailing Lists'), app.config.get( "mailing_lists_url", "https://wiki.galaxyproject.org/MailingLists" ), "_blank" ],
+                        [_('Videos'), app.config.get( "screencasts_url", "https://vimeo.com/galaxyproject" ), "_blank" ],
                         [_('Wiki'), app.config.get( "wiki_url", "http://galaxyproject.org/" ), "_blank" ],
-                        [_('How to Cite Galaxy'), app.config.get( "citation_url", "http://wiki.galaxyproject.org/CitingGalaxy" ), "_blank" ]
+                        [_('How to Cite Galaxy'), app.config.get( "citation_url", "https://wiki.galaxyproject.org/CitingGalaxy" ), "_blank" ]
                     ] )
                     tab( "help", _("Help"), None, menu_options=menu_options )
                 %>
@@ -140,7 +165,7 @@
     ## Logo, layered over tabs to be clickable
     <div class="navbar-brand">
         <a href="${h.url_for( app.config.get( 'logo_url', '/' ) )}">
-        <img border="0" src="${h.url_for('/static/images/galaxyIcon_noText.png')}">
+        <img style="margin-left: 0.35em;" border="0" src="${h.url_for('/static/images/galaxyIcon_noText.png')}">
         Galaxy Tool Shed
         %if app.config.brand:
             <span>/ ${app.config.brand}</span>

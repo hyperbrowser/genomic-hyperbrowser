@@ -44,9 +44,9 @@ class Xgmml( xml.GenericXml ):
         Merging multiple XML files is non-trivial and must be done in subclasses.
         """
         if len( split_files ) > 1:
-            raise NotImplementedError( "Merging multiple XML files is non-trivial "
-                                     + "and must be implemented for each XML type" )
-        #For one file only, use base class method (move/copy)
+            raise NotImplementedError( "Merging multiple XML files is non-trivial " +
+                                       "and must be implemented for each XML type" )
+        # For one file only, use base class method (move/copy)
         data.Text.merge( split_files, output_file )
 
     @dataproviders.decorators.dataprovider_factory( 'node-edge', dataproviders.hierarchy.XMLDataProvider.settings )
@@ -92,35 +92,6 @@ class Sif( tabular.Tabular ):
     def node_edge_dataprovider( self, dataset, **settings ):
         dataset_source = dataproviders.dataset.DatasetDataProvider( dataset )
         return SIFGraphDataProvider( dataset_source, **settings )
-
-
-#TODO: we might want to look at rdflib or a similar, larger lib/egg
-class Rdf( xml.GenericXml ):
-    """
-    Resource Description Framework format (http://www.w3.org/RDF/).
-    """
-    file_ext = "rdf"
-
-    def sniff( self, filename ):
-        """
-        Returns false and the user must manually set.
-        """
-        return False
-
-    def set_peek( self, dataset, is_multi_byte=False ):
-        """Set the peek and blurb text"""
-        if not dataset.dataset.purged:
-            dataset.peek = data.get_file_peek( dataset.file_name, is_multi_byte=is_multi_byte )
-            dataset.blurb = 'RDF data'
-        else:
-            dataset.peek = 'file does not exist'
-            dataset.blurb = 'file purged from disk'
-
-    #TODO: won't be as simple
-    #@dataproviders.decorators.dataprovider_factory( 'node-edge', dataproviders.column.ColumnarDataProvider.settings )
-    #def node_edge_dataprovider( self, dataset, **settings ):
-    #    dataset_source = dataproviders.dataset.DatasetDataProvider( dataset )
-    #    return None
 
 
 # ----------------------------------------------------------------------------- graph specific data providers

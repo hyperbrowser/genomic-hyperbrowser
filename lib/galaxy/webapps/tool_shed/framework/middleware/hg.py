@@ -5,17 +5,17 @@ import os
 import sqlalchemy
 import sys
 import tempfile
+import urlparse
 from paste.auth.basic import AuthBasicAuthenticator
 from paste.httpheaders import AUTH_TYPE
 from paste.httpheaders import REMOTE_USER
 
-from galaxy.util import asbool
+from galaxy.util import asbool, safe_relpath
 from galaxy.util.hash_util import new_secure_hash
 from tool_shed.util import hg_util
+from tool_shed.util import commit_util
 import tool_shed.repository_types.util as rt_util
 
-from galaxy import eggs
-eggs.require( 'mercurial' )
 import mercurial.__version__
 
 log = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ CHUNK_SIZE = 65536
 class Hg( object ):
 
     def __init__( self, app, config ):
-        print "mercurial version is:", mercurial.__version__.version
+        log.debug( "mercurial version is: %s", mercurial.__version__.version )
         self.app = app
         self.config = config
         # Authenticate this mercurial request using basic authentication
@@ -50,11 +50,11 @@ class Hg( object ):
         # a clone or a pull.  However, we do not want to increment the times_downloaded count if we're only setting repository
         # metadata.
         if cmd == 'getbundle' and not self.setting_repository_metadata:
-            common, _ = environ[ 'HTTP_X_HGARG_1' ].split( '&' )
+            hg_args = urlparse.parse_qs( environ[ 'HTTP_X_HGARG_1' ] )
             # The 'common' parameter indicates the full sha-1 hash of the changeset the client currently has checked out. If
             # this is 0000000000000000000000000000000000000000, then the client is performing a fresh checkout. If it has any
             # other value, the client is getting updates to an existing checkout.
-            if common == 'common=0000000000000000000000000000000000000000':
+            if 'common' in hg_args and hg_args[ 'common' ][-1] == '0000000000000000000000000000000000000000':
                 # Increment the value of the times_downloaded column in the repository table for the cloned repository.
                 if 'PATH_INFO' in environ:
                     # Instantiate a database connection
@@ -113,7 +113,11 @@ class Hg( object ):
                     fh.write( chunk )
                 fh.close()
                 fh = open( tmp_filename, 'rb' )
-                changeset_groups = json.loads( hg_util.bundle_to_json( fh ) )
+                try:
+                    changeset_groups = json.loads( hg_util.bundle_to_json( fh ) )
+                except AttributeError:
+                    msg = 'Your version of Mercurial is not supported. Please use a version < 3.5'
+                    return self.__display_exception_remotely( start_response, msg )
                 fh.close()
                 try:
                     os.unlink( tmp_filename )
@@ -122,6 +126,19 @@ class Hg( object ):
                 if changeset_groups:
                     # Check the repository type to make sure inappropriate files are not being pushed.
                     if 'PATH_INFO' in environ:
+                        # Ensure there are no symlinks with targets outside the repo
+                        for entry in changeset_groups:
+                            if len( entry ) == 2:
+                                filename, change_list = entry
+                                if not isinstance(change_list, list):
+                                    change_list = [change_list]
+                                for change in change_list:
+                                    for patch in change['data']:
+                                        target = patch['block'].strip()
+                                        if ( ( patch['end'] - patch['start'] == 0 ) and not safe_relpath( target ) ):
+                                            msg = "Changes include a symlink outside of the repository: %s -> %s" % ( filename, target )
+                                            log.warning( msg )
+                                            return self.__display_exception_remotely( start_response, msg )
                         # Instantiate a database connection
                         engine = sqlalchemy.create_engine( self.db_url )
                         connection = engine.connect()
@@ -204,7 +221,6 @@ class Hg( object ):
         result_set = connection.execute( "select email, password from galaxy_user where username = '%s'" % username.lower() )
         for row in result_set:
             # Should only be 1 row...
-            db_email = row[ 'email' ]
             db_password = row[ 'password' ]
         connection.close()
         if db_password:
@@ -220,14 +236,12 @@ class Hg( object ):
         """
         db_username = None
         ru_email = environ[ 'HTTP_REMOTE_USER' ].lower()
-        ## Instantiate a database connection...
+        # Instantiate a database connection...
         engine = sqlalchemy.create_engine( self.db_url )
         connection = engine.connect()
         result_set = connection.execute( "select email, username, password from galaxy_user where email = '%s'" % ru_email )
         for row in result_set:
             # Should only be 1 row...
-            db_email = row[ 'email' ]
-            db_password = row[ 'password' ]
             db_username = row[ 'username' ]
         connection.close()
         if db_username:
@@ -291,7 +305,7 @@ class Hg( object ):
                 error_msg += 'the Tool Shed upload utility.  '
                 return False, error_msg
         return True, ''
-    
+
     def repository_tags_are_valid( self, filename, change_list ):
         """
         Make sure the any complex repository dependency definitions contain valid <repository> tags when pushing
@@ -299,9 +313,9 @@ class Hg( object ):
         """
         tag = '<repository'
         for change_dict in change_list:
-            lines = get_change_lines_in_file_for_tag( tag, change_dict )
+            lines = commit_util.get_change_lines_in_file_for_tag( tag, change_dict )
             for line in lines:
-                is_valid, error_msg = repository_tag_is_valid( filename, line )
+                is_valid, error_msg = self.repository_tag_is_valid( filename, line )
                 if not is_valid:
                     return False, error_msg
         return True, ''

@@ -4,18 +4,21 @@ API operations on a jobs.
 .. seealso:: :class:`galaxy.model.Jobs`
 """
 
-from sqlalchemy import or_, and_
-from sqlalchemy.orm import aliased
 import json
+import logging
+
+from sqlalchemy import and_, false, or_
+from sqlalchemy.orm import aliased
+
+from galaxy import exceptions
+from galaxy import managers
+from galaxy import model
+from galaxy import util
 from galaxy.web import _future_expose_api as expose_api
+from galaxy.web import _future_expose_api_anonymous as expose_api_anonymous
 from galaxy.web.base.controller import BaseAPIController
 from galaxy.web.base.controller import UsesLibraryMixinItems
-from galaxy import exceptions
-from galaxy import util
-from galaxy import model
-from galaxy import managers
 
-import logging
 log = logging.getLogger( __name__ )
 
 
@@ -24,6 +27,7 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
     def __init__( self, app ):
         super( JobController, self ).__init__( app )
         self.hda_manager = managers.hdas.HDAManager( app )
+        self.dataset_manager = managers.datasets.DatasetManager( app )
 
     @expose_api
     def index( self, trans, **kwd ):
@@ -112,7 +116,7 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
     def show( self, trans, id, **kwd ):
         """
         show( trans, id )
-        * GET /api/jobs/{job_id}:
+        * GET /api/jobs/{id}:
             return jobs for current user
 
         :type   id: string
@@ -153,7 +157,7 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
     def inputs( self, trans, id, **kwd ):
         """
         show( trans, id )
-        * GET /api/jobs/{job_id}/inputs
+        * GET /api/jobs/{id}/inputs
             returns input datasets created by job
 
         :type   id: string
@@ -169,7 +173,7 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
     def outputs( self, trans, id, **kwd ):
         """
         show( trans, id )
-        * GET /api/jobs/{job_id}/outputs
+        * GET /api/jobs/{id}/outputs
             returns output datasets created by job
 
         :type   id: string
@@ -180,6 +184,29 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
         """
         job = self.__get_job( trans, id )
         return self.__dictify_associations( trans, job.output_datasets, job.output_library_datasets )
+
+    @expose_api_anonymous
+    def build_for_rerun( self, trans, id, **kwd ):
+        """
+        * GET /api/jobs/{id}/build_for_rerun
+            returns a tool input/param template prepopulated with this job's
+            information, suitable for rerunning or rendering parameters of the
+            job.
+
+        :type   id: string
+        :param  id: Encoded job id
+
+        :rtype:     dictionary
+        :returns:   dictionary containing output dataset associations
+        """
+
+        job = self.__get_job(trans, id)
+        if not job:
+            raise exceptions.ObjectNotFound("Could not access job with id '%s'" % id)
+        tool = self.app.toolbox.get_tool( job.tool_id, job.tool_version )
+        if not tool.is_workflow_compatible:
+            raise exceptions.ConfigDoesNotAllowException( "Tool '%s' cannot be rerun." % ( job.tool_id ) )
+        return tool.to_json(trans, {}, job=job)
 
     def __dictify_associations( self, trans, *association_lists ):
         rval = []
@@ -202,19 +229,15 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
             decoded_job_id = self.decode_id( id )
         except Exception:
             raise exceptions.MalformedId()
-        query = trans.sa_session.query( trans.app.model.Job )
-        if trans.user_is_admin():
-            query = query.filter(
-                trans.app.model.Job.id == decoded_job_id
-            )
-        else:
-            query = query.filter(
-                trans.app.model.Job.user == trans.user,
-                trans.app.model.Job.id == decoded_job_id
-            )
-        job = query.first()
+        job = trans.sa_session.query( trans.app.model.Job ).filter( trans.app.model.Job.id == decoded_job_id ).first()
         if job is None:
             raise exceptions.ObjectNotFound()
+        if not trans.user_is_admin() and job.user != trans.user:
+            if not job.output_datasets:
+                raise exceptions.ItemAccessibilityException( "Job has no output datasets." )
+            for data_assoc in job.output_datasets:
+                if not self.dataset_manager.is_accessible( data_assoc.dataset.dataset, trans.user ):
+                    raise exceptions.ItemAccessibilityException( "You are not allowed to rerun this job." )
         return job
 
     @expose_api
@@ -262,7 +285,7 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
                 if 'id' in v:
                     if 'src' not in v or v[ 'src' ] == 'hda':
                         hda_id = self.decode_id( v['id'] )
-                        dataset = self.hda_manager.get_accessible( trans, hda_id, trans.user )
+                        dataset = self.hda_manager.get_accessible( hda_id, trans.user )
                     else:
                         dataset = self.get_library_dataset_dataset_association( trans, v['id'] )
                     if dataset is None:
@@ -316,13 +339,13 @@ class JobController( BaseAPIController, UsesLibraryMixinItems ):
             query = query.filter( and_(
                 trans.app.model.Job.id == a.job_id,
                 a.dataset_id == b.id,
-                b.deleted == False,
+                b.deleted == false(),
                 b.dataset_id == v
             ) )
 
         out = []
         for job in query.all():
             # check to make sure none of the output files have been deleted
-            if all( list( a.dataset.deleted == False for a in job.output_datasets ) ):
+            if all( list( a.dataset.deleted is False for a in job.output_datasets ) ):
                 out.append( self.encode_all_ids( trans, job.to_dict( 'element' ), True ) )
         return out

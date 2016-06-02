@@ -28,7 +28,7 @@ class DataToolParameterTestCase( BaseParameterTestCase ):
         # Selection is Optional. may be selected with other stuff,
         # not sure the UI should really allow this but easy enough
         # to just filter it out.
-        assert [hda] == self.param.to_python( '%s,None' % hda.id, self.app )
+        self.assertEquals([hda], self.param.to_python( '%s,None' % hda.id, self.app ))
 
     def test_field_filter_on_types( self ):
         hda1 = MockHistoryDatasetAssociation( name="hda1", id=1 )
@@ -150,7 +150,7 @@ class DataToolParameterTestCase( BaseParameterTestCase ):
         self.app.model.context.flush()
         self.trans = bunch.Bunch(
             app=self.app,
-            get_history=lambda: self.test_history,
+            get_history=lambda **k: self.test_history,
             get_current_user_roles=lambda: [],
             workflow_building_mode=False,
             webapp=bunch.Bunch( name="galaxy" ),

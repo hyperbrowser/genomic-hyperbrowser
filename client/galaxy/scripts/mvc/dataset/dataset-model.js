@@ -3,14 +3,18 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( STATES, BASE_MVC, _l ){
+
+var logNamespace = 'dataset';
 //==============================================================================
 var searchableMixin = BASE_MVC.SearchableModelMixin;
 /** @class base model for any DatasetAssociation (HDAs, LDDAs, DatasetCollectionDAs).
  *      No knowledge of what type (HDA/LDDA/DCDA) should be needed here.
  *  The DA's are made searchable (by attribute) by mixing in SearchableModelMixin.
  */
-var DatasetAssociation = Backbone.Model.extend( BASE_MVC.LoggableMixin ).extend(
-        BASE_MVC.mixin( searchableMixin, /** @lends DatasetAssociation.prototype */{
+var DatasetAssociation = Backbone.Model
+        .extend( BASE_MVC.LoggableMixin )
+        .extend( BASE_MVC.mixin( searchableMixin, /** @lends DatasetAssociation.prototype */{
+    _logNamespace : logNamespace,
 
     /** default attributes for a model */
     defaults : {
@@ -57,7 +61,7 @@ var DatasetAssociation = Backbone.Model.extend( BASE_MVC.LoggableMixin ).extend(
 
         this._setUpListeners();
     },
-    
+
     /** returns misc. web urls for rendering things like re-run, display, etc. */
     _generateUrls : function(){
 //TODO: would be nice if the API did this
@@ -75,9 +79,8 @@ var DatasetAssociation = Backbone.Model.extend( BASE_MVC.LoggableMixin ).extend(
             'meta_download' : 'dataset/get_metadata_file?hda_id=' + id + '&metadata_name='
         };
 //TODO: global
-        var root = ( window.galaxy_config && galaxy_config.root )?( galaxy_config.root ):( '/' );
         _.each( urls, function( value, key ){
-            urls[ key ] = root + value;
+            urls[ key ] = Galaxy.root + value;
         });
         this.urls = urls;
         return urls;
@@ -242,14 +245,17 @@ var DatasetAssociation = Backbone.Model.extend( BASE_MVC.LoggableMixin ).extend(
  */
 var DatasetAssociationCollection = Backbone.Collection.extend( BASE_MVC.LoggableMixin ).extend(
 /** @lends HistoryContents.prototype */{
+    _logNamespace : logNamespace,
+
     model : DatasetAssociation,
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
     /** root api url */
-    urlRoot : (( window.galaxy_config && galaxy_config.root )?( galaxy_config.root ):( '/' ))
-        + 'api/datasets',
+    urlRoot : Galaxy.root + 'api/datasets',
+
+    /** url fn */
+    url : function(){
+        return this.urlRoot;
+    },
 
     // ........................................................................ common queries
     /** Get the ids of every item in this collection
@@ -268,35 +274,12 @@ var DatasetAssociationCollection = Backbone.Collection.extend( BASE_MVC.Loggable
         });
     },
 
-//    /** Get the id of every model in this collection not in a 'ready' state (running).
-//     *  @returns an array of model ids
-//     */
-//    running : function(){
-//        var idList = [];
-//        this.each( function( item ){
-//            var isRunning = !item.inReadyState();
-//            if( isRunning ){
-////TODO: is this still correct since type_id
-//                idList.push( item.get( 'id' ) );
-//            }
-//        });
-//        return idList;
-//    },
-
     /** return true if any datasets don't have details */
     haveDetails : function(){
         return this.all( function( dataset ){ return dataset.hasDetails(); });
     },
 
     // ........................................................................ ajax
-    ///** fetch detailed model data for all datasets in this collection */
-    //fetchAllDetails : function( options ){
-    //    options = options || {};
-    //    var detailsFlag = { details: 'all' };
-    //    options.data = ( options.data )?( _.extend( options.data, detailsFlag ) ):( detailsFlag );
-    //    return this.fetch( options );
-    //},
-
     /** using a queue, perform ajaxFn on each of the models in this collection */
     ajaxQueue : function( ajaxFn, options ){
         var deferred = jQuery.Deferred(),
@@ -343,26 +326,6 @@ var DatasetAssociationCollection = Backbone.Collection.extend( BASE_MVC.Loggable
     },
 
     // ........................................................................ misc
-    /** override to get a correct/smarter merge when incoming data is partial */
-    set : function( models, options ){
-        // arrrrrrrrrrrrrrrrrg...
-        //  (e.g. stupid backbone)
-        //  w/o this partial models from the server will fill in missing data with model defaults
-        //  and overwrite existing data on the client
-        // see Backbone.Collection.set and _prepareModel
-        var collection = this;
-        models = _.map( models, function( model ){
-            if( !collection.get( model.id ) ){ return model; }
-
-            // merge the models _BEFORE_ calling the superclass version
-            var merged = existing.toJSON();
-            _.extend( merged, model );
-            return merged;
-        });
-        // now call superclass when the data is filled
-        Backbone.Collection.prototype.set.call( this, models, options );
-    },
-
     ///** Convert this ad-hoc collection of hdas to a formal collection tracked
     //    by the server.
     //**/

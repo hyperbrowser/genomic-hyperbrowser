@@ -11,10 +11,11 @@ from galaxy.tools.parameters.basic import (
     SelectToolParameter,
     UnvalidatedValue
 )
-from galaxy.tools import ToolOutputCollectionPart
+from galaxy.tools.parser import ToolOutputCollectionPart
 from galaxy.tools.parameters.grouping import (
     Conditional,
-    Repeat
+    Repeat,
+    Section
 )
 from .steps import (
     attach_ordered_steps,
@@ -106,6 +107,7 @@ def extract_steps( trans, history=None, job_ids=None, dataset_ids=None, dataset_
         step = model.WorkflowStep()
         step.type = 'tool'
         step.tool_id = job.tool_id
+        step.tool_version = job.tool_version
         step.tool_inputs = tool_inputs
         # NOTE: We shouldn't need to do two passes here since only
         #       an earlier job can be used as an input to a later
@@ -279,7 +281,7 @@ class WorkflowSummary( object ):
         return hdca
 
     def __original_hda( self, hda ):
-        #if this hda was copied from another, we need to find the job that created the origial hda
+        # if this hda was copied from another, we need to find the job that created the origial hda
         job_hda = hda
         while job_hda.copied_from_history_dataset_association:
             job_hda = job_hda.copied_from_history_dataset_association
@@ -340,10 +342,11 @@ def __cleanup_param_values( inputs, values ):
                     if k.startswith( key ):
                         del root_values[k]
             elif isinstance( input, Repeat ):
-                group_values = values[key]
-                for i, rep_values in enumerate( group_values ):
-                    rep_index = rep_values['__index__']
-                    cleanup( "%s%s_%d|" % (prefix, key, rep_index ), input.inputs, group_values[i] )
+                if key in values:
+                    group_values = values[key]
+                    for i, rep_values in enumerate( group_values ):
+                        rep_index = rep_values['__index__']
+                        cleanup( "%s%s_%d|" % (prefix, key, rep_index ), input.inputs, group_values[i] )
             elif isinstance( input, Conditional ):
                 # Scrub dynamic resource related parameters from workflows,
                 # they cause problems and the workflow probably should include
@@ -352,9 +355,13 @@ def __cleanup_param_values( inputs, values ):
                     if input.name in values:
                         del values[input.name]
                     return
-                group_values = values[input.name]
-                current_case = group_values['__current_case__']
-                cleanup( "%s%s|" % ( prefix, key ), input.cases[current_case].inputs, group_values )
+                if input.name in values:
+                    group_values = values[input.name]
+                    current_case = group_values['__current_case__']
+                    cleanup( "%s%s|" % ( prefix, key ), input.cases[current_case].inputs, group_values )
+            elif isinstance( input, Section ):
+                if input.name in values:
+                    cleanup( "%s%s|" % ( prefix, key ), input.inputs, values[input.name] )
     cleanup( "", inputs, values )
     return associations
 

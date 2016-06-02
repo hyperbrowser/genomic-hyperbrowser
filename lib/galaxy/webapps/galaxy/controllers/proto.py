@@ -31,17 +31,22 @@ class ProtoController( BaseUIController ):
     def __index_pipe(response, trans, tool):
         # logging locks and/or atexit handlers may be cause of deadlocks in a fork from thread
         # attempt to fix by shutting down and reloading logging module and clear exit handlers
-        #logging.shutdown()
-        import atexit
-        #for handler in atexit._exithandlers:
+        # logging.shutdown()
+        # import atexit
+        # for handler in atexit._exithandlers:
         #    print repr(handler)
-        #    handler[0]()
-        atexit._exithandlers = []
-        reload(logging)
-        #log.warning('fork log test')
+        #    try:
+        #        handler[0]()
+        #    except Exception, e:
+        #        print e
+        #
+        # atexit._exithandlers = []
+        # reload(logging)
+        # log.warning('fork log test')
         
         exc_info = None
         html = ''
+        #response.send_bytes('ping')
         try:
 #            from gold.application.GalaxyInterface import GalaxyInterface
 #            template_mako = '/hyperbrowser/' + tool + '.mako'
@@ -76,25 +81,34 @@ class ProtoController( BaseUIController ):
         if isinstance(mako, list):
             mako = mako[0]
         
-        trans.sa_session.flush()
-        trans.sa_session.close()
+        #trans.sa_session.flush()
+        # trans.sa_session.close()
 
-        my_end, your_end = Pipe()
-        proc = Process(target=self.__index_pipe, args=(your_end,trans,str(mako)))
-        proc.start()
-        html = ''
-        if proc.is_alive():
-            if my_end.poll(60):
-                html = my_end.recv_bytes()
-                my_end.close()
+        done = False
+        while not done:
+            trans.sa_session.flush()
+
+            my_end, your_end = Pipe()
+            proc = Process(target=self.__index_pipe, args=(your_end,trans,str(mako)))
+            proc.start()
+            html = ''
+            if proc.is_alive():
+                if my_end.poll(10):
+                    #ping = my_end.recv_bytes()
+                    html = my_end.recv_bytes()
+                    my_end.close()
+                    done = True
+                else:
+                    log.warn('Fork timed out after 10 sec. Retrying...')
             else:
-                log.warn('fork timed out after 60 sec')
-        else:
-            log.warn('fork died on startup')
-        proc.join(1)
-        if proc.is_alive():
-            proc.terminate()
-            log.warn('fork did not exit, terminated.')
+                log.warn('Fork died on startup.')
+                done = True
+
+            proc.join(1)
+            if proc.is_alive():
+                proc.terminate()
+                log.warn('Fork did not exit, terminated.')
+
         return html
 
 

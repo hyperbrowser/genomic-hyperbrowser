@@ -3,8 +3,7 @@ import os
 import os.path
 import logging
 
-import pkg_resources
-pkg_resources.require( "pycrypto" )
+import galaxy.exceptions
 
 from Crypto.Cipher import Blowfish
 from Crypto.Util.randpool import RandomPool
@@ -45,6 +44,8 @@ class SecurityHelper( object ):
         self.id_ciphers_for_kind = _cipher_cache( per_kind_id_secret_base )
 
     def encode_id( self, obj_id, kind=None ):
+        if obj_id is None:
+            raise galaxy.exceptions.MalformedId("Attempted to encode None id")
         id_cipher = self.__id_cipher( kind )
         # Convert to string
         s = str( obj_id )

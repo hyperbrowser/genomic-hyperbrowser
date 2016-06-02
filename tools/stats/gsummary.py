@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 
-import sys, re, tempfile
-from rpy import *
-# Older py compatibility
+import re
+import sys
+import tempfile
 try:
-    set()
+    from rpy2.rpy_classic import BASIC_CONVERSION, NO_CONVERSION, r, RException, set_default_mode
 except:
-    from sets import Set as set
+    # RPy isn't maintained, and doesn't work with R>3.0, use it as a fallback
+    from rpy import BASIC_CONVERSION, NO_CONVERSION, r, RException, set_default_mode
 
-assert sys.version_info[:2] >= ( 2, 4 )
 
 def stop_err( msg ):
     sys.stderr.write( msg )
     sys.exit()
 
+
 def S3_METHODS( all="key" ):
-    Group_Math =  [ "abs", "sign", "sqrt", "floor", "ceiling", "trunc", "round", "signif",
+    Group_Math = [ "abs", "sign", "sqrt", "floor", "ceiling", "trunc", "round", "signif",
         "exp", "log", "cos", "sin", "tan", "acos", "asin", "atan", "cosh", "sinh", "tanh",
         "acosh", "asinh", "atanh", "lgamma", "gamma", "gammaCody", "digamma", "trigamma",
         "cumsum", "cumprod", "cummax", "cummin", "c" ]
@@ -23,12 +24,13 @@ def S3_METHODS( all="key" ):
     if all is "key":
         return { 'Math' : Group_Math, 'Ops' : Group_Ops }
 
+
 def main():
     try:
         datafile = sys.argv[1]
         outfile_name = sys.argv[2]
         expression = sys.argv[3]
-    except: 
+    except:
         stop_err( 'Usage: python gsummary.py input_file ouput_file expression' )
 
     math_allowed = S3_METHODS()[ 'Math' ]
@@ -36,11 +38,11 @@ def main():
 
     # Check for invalid expressions
     for word in re.compile( '[a-zA-Z]+' ).findall( expression ):
-        if word and not word in math_allowed: 
-            stop_err( "Invalid expression '%s': term '%s' is not recognized or allowed" %( expression, word ) )
+        if word and word not in math_allowed:
+            stop_err( "Invalid expression '%s': term '%s' is not recognized or allowed" % ( expression, word ) )
     symbols = set()
     for symbol in re.compile( '[^a-z0-9\s]+' ).findall( expression ):
-        if symbol and not symbol in ops_allowed:
+        if symbol and symbol not in ops_allowed:
             stop_err( "Invalid expression '%s': operator '%s' is not recognized or allowed" % ( expression, symbol ) )
         else:
             symbols.add( symbol )
@@ -55,10 +57,10 @@ def main():
             cols.append( int( col[1:] ) - 1 )
         except:
             pass
- 
+
     tmp_file = tempfile.NamedTemporaryFile( 'w+b' )
     # Write the R header row to the temporary file
-    hdr_str = "\t".join( "c%s" % str( col+1 ) for col in cols )
+    hdr_str = "\t".join( "c%s" % str( col + 1 ) for col in cols )
     tmp_file.write( "%s\n" % hdr_str )
     skipped_lines = 0
     first_invalid_line = 0
@@ -87,13 +89,13 @@ def main():
         stop_err( "Invalid column or column data values invalid for computation.  See tool tips and syntax for data requirements." )
     else:
         # summary function and return labels
+        set_default_mode( NO_CONVERSION )
         summary_func = r( "function( x ) { c( sum=sum( as.numeric( x ), na.rm=T ), mean=mean( as.numeric( x ), na.rm=T ), stdev=sd( as.numeric( x ), na.rm=T ), quantile( as.numeric( x ), na.rm=TRUE ) ) }" )
         headings = [ 'sum', 'mean', 'stdev', '0%', '25%', '50%', '75%', '100%' ]
         headings_str = "\t".join( headings )
-        
-        set_default_mode( NO_CONVERSION )
+
         r_data_frame = r.read_table( tmp_file.name, header=True, sep="\t" )
-        
+
         outfile = open( outfile_name, 'w' )
 
         for col in re.compile( 'c[0-9]+' ).findall( expression ):
@@ -105,10 +107,16 @@ def main():
             stop_err( "Computation resulted in the following error: %s" % str( s ) )
         summary = summary.as_py( BASIC_CONVERSION )
         outfile.write( "#%s\n" % headings_str )
-        outfile.write( "%s\n" % "\t".join( [ "%g" % ( summary[ k ] ) for k in headings ] ) )
+        if type(summary) is dict:
+            # using rpy
+            outfile.write( "%s\n" % "\t".join( [ "%g" % summary[k] for k in headings ] ) )
+        else:
+            # using rpy2
+            outfile.write( "%s\n" % "\t".join( [ "%g" % k for k in summary ] ) )
         outfile.close()
 
         if skipped_lines:
-            print "Skipped %d invalid lines beginning with line #%d.  See tool tips for data requirements." % ( skipped_lines, first_invalid_line )        
+            print "Skipped %d invalid lines beginning with line #%d.  See tool tips for data requirements." % ( skipped_lines, first_invalid_line )
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()

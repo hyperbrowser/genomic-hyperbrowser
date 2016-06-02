@@ -1,16 +1,14 @@
-// dependencies
-define(['utils/utils'], function(Utils) {
-
 /**
  *  This class creates/wraps a default html select field as backbone class.
  */
+define(['utils/utils', 'mvc/ui/ui-buttons'], function(Utils, Buttons) {
 var View = Backbone.View.extend({
     // options
-    optionsDefault : {
-        id          : '',
+    optionsDefault: {
+        id          : Utils.uid(),
         cls         : 'ui-select',
-        error_text  : 'No data available',
-        empty_text  : 'No selection',
+        error_text  : 'No options available',
+        empty_text  : 'Nothing selected',
         visible     : true,
         wait        : false,
         multiple    : false,
@@ -19,7 +17,11 @@ var View = Backbone.View.extend({
     },
 
     // initialize
-    initialize : function(options) {
+    initialize: function(options) {
+        // link this
+        var self = this;
+        this.model = new Backbone.Model();
+
         // configure options
         this.options = Utils.merge(options, this.optionsDefault);
 
@@ -28,17 +30,45 @@ var View = Backbone.View.extend({
 
         // link elements
         this.$select = this.$el.find('.select');
-        this.$icon = this.$el.find('.icon');
-        this.$button = this.$el.find('.button');
+        this.$icon_dropdown = this.$el.find('.icon-dropdown');
+        this.$icon_dropdown.on( 'click', function() { self.$select.select2 && self.$select.select2( 'open' ) });
 
-        // configure multiple
+        // allow regular multi-select field to be resized
+        var minHeight = null;
+        this.$('.icon-resize').on('mousedown', function(event) {
+            var currentY = event.pageY;
+            var currentHeight = self.$select.height();
+            minHeight = minHeight || currentHeight;
+            $('#dd-helper').show().on('mousemove', function(event) {
+                self.$select.height(Math.max(currentHeight + (event.pageY - currentY), minHeight));
+            }).on('mouseup mouseleave', function() {
+                $('#dd-helper').hide().off();
+            });
+        });
+
+        // multiple select fields have an additional button and other custom properties
         if (this.options.multiple) {
-            this.$el.addClass('ui-select-multiple');
+            // create select all button
+            if (this.options.searchable) {
+                this.all_button = new Buttons.ButtonCheck({
+                    onclick: function() {
+                        var new_value = [];
+                        if (self.all_button.value() !== 0) {
+                            new_value = self._availableOptions();
+                        }
+                        self.value(new_value);
+                        self.trigger('change');
+                    }
+                });
+                this.$el.prepend(this.all_button.$el);
+            } else {
+                this.$el.addClass('ui-select-multiple');
+            }
             this.$select.prop('multiple', true);
-            this.$button.remove();
+            this.$icon_dropdown.remove();
         }
 
-        // refresh
+        // update initial options
         this.update(this.options.data);
 
         // set initial value
@@ -59,20 +89,19 @@ var View = Backbone.View.extend({
         }
 
         // add change event. fires only on user activity
-        var self = this;
         this.$select.on('change', function() {
-            self._change();
+            self.trigger('change');
         });
 
         // add change event. fires on trigger
         this.on('change', function() {
-            self._change();
+            self.options.onchange && self.options.onchange(this.value());
         });
     },
 
     /** Return/Set current selection
     */
-    value : function (new_value) {
+    value: function (new_value) {
         // set new value
         if (new_value !== undefined) {
             if (new_value === null) {
@@ -85,9 +114,12 @@ var View = Backbone.View.extend({
                 }
             }
         }
-
-        // validate and return value
-        return this._getValue();
+        // get current value
+        var current = this._getValue();
+        if (this.all_button) {
+            this.all_button.value($.isArray(current) && current.length || 0, this._size());
+        }
+        return current;
     },
 
     /** Return the first select option
@@ -103,7 +135,7 @@ var View = Backbone.View.extend({
 
     /** Return the label/text of the current selection
     */
-    text : function () {
+    text: function () {
         return this.$select.find('option:selected').text();
     },
 
@@ -124,15 +156,15 @@ var View = Backbone.View.extend({
     /** Show a spinner indicating that the select options are currently loaded
     */
     wait: function() {
-        this.$icon.removeClass();
-        this.$icon.addClass('fa fa-spinner fa-spin');
+        this.$icon_dropdown.removeClass();
+        this.$icon_dropdown.addClass('icon-dropdown fa fa-spinner fa-spin');
     },
 
     /** Hide spinner indicating that the request has been completed
     */
     unwait: function() {
-        this.$icon.removeClass();
-        this.$icon.addClass('fa fa-caret-down');
+        this.$icon_dropdown.removeClass();
+        this.$icon_dropdown.addClass('icon-dropdown fa fa-caret-down');
     },
 
     /** Returns true if the field is disabled
@@ -153,29 +185,15 @@ var View = Backbone.View.extend({
         this.$select.prop('disabled', true);
     },
 
-    /** Add a select option
+    /** Update all available options at once
     */
-    add: function(options) {
-        // add options
-        this.$select.append(this._templateOption(options));
-        
-        // refresh
-        this._refresh();
+    add: function( options, sorter ) {
+        _.each( this.model.get( 'options' ), function( v ) {
+            !_.findWhere( options, v ) && options.push( v );
+        });
+        sorter && options.sort( sorter );
+        this.update( options );
     },
-
-    /** Delete a select option
-    */
-    del: function(value) {
-        // remove option
-        this.$select.find('option[value=' + value + ']').remove();
-        this.$select.trigger('change');
-
-        // refresh
-        this._refresh();
-    },
-
-    /** Update select options
-    */
     update: function(options) {
         // backup current value
         var current = this._getValue();
@@ -189,24 +207,35 @@ var View = Backbone.View.extend({
         }
 
         // add new options
+        this.model.set( 'options', options );
         for (var key in options) {
             this.$select.append(this._templateOption(options[key]));
         }
 
-        // refresh
-        this._refresh();
+        // count remaining entries
+        if (this._size() == 0) {
+            // disable select field
+            this.disable();
+
+            // create placeholder
+            this.$select.append(this._templateOption({value : '__null__', label : this.options.error_text}));
+        } else {
+            // enable select field
+            this.enable();
+        }
 
         // update to searchable field (in this case select2)
         if (this.options.searchable) {
             this.$select.select2('destroy');
-            this.$select.select2();
+            this.$select.select2({ closeOnSelect: !this.options.multiple });
+            this.$( '.select2-container .select2-search input' ).off( 'blur' );
         }
 
         // set previous value
         this.value(current);
 
         // check if any value was set
-        if (this._getValue() === null) {
+        if (this._getValue() === null && !(this.options.multiple && this.options.optional)) {
             this.value(this.first());
         }
     },
@@ -223,15 +252,8 @@ var View = Backbone.View.extend({
         return this.$select.find('option[value="' + value + '"]').length > 0;
     },
 
-    /** Trigger custom onchange callback
+    /** Get current value from dom
     */
-    _change: function() {
-        if (this.options.onchange) {
-            this.options.onchange(this._getValue());
-        }
-    },
-
-    /** Validate */
     _getValue: function() {
         var val = this.$select.val();
         if (!Utils.validate(val)) {
@@ -240,28 +262,26 @@ var View = Backbone.View.extend({
         return val;
     },
 
-    /** Refresh the select view
+    /** Returns all currently available options
     */
-    _refresh: function() {
-        // count remaining entries
-        var remaining = this.$select.find('option').length;
-        if (remaining == 0) {
-            // disable select field
-            this.disable();
+    _availableOptions: function() {
+        var available = [];
+        this.$select.find('option').each(function(i, e){
+            available.push($(e).attr('value'));
+        });
+        return available;
+    },
 
-            // create placeholder
-            this.$select.empty();
-            this.$select.append(this._templateOption({value : '__null__', label : this.options.error_text}));
-        } else {
-            // enable select field
-            this.enable();
-        }
+    /** Number of available options
+    */
+    _size: function() {
+        return this.$select.find('option').length;
     },
 
     /** Template for select options
     */
     _templateOption: function(options) {
-        return '<option value="' + options.value + '">' + options.label + '</option>';
+        return '<option value="' + options.value + '">' + _.escape(options.label) + '</option>';
     },
 
     /** Template for select view
@@ -269,8 +289,9 @@ var View = Backbone.View.extend({
     _template: function(options) {
         return  '<div id="' + options.id + '" class="' + options.cls + '">' +
                     '<select id="' + options.id + '_select" class="select"/>' +
-                    '<div class="button">' +
-                        '<i class="icon"/>' +
+                    '<div class="icon-dropdown"/>' +
+                    '<div class="icon-resize">' +
+                         '<i class="fa fa-angle-double-right fa-rotate-45"/>' +
                     '</div>' +
                 '</div>';
     }

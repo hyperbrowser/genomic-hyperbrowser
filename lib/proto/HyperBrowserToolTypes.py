@@ -1,7 +1,8 @@
 import os, urllib, shelve, logging, json
 from xml.etree import ElementTree
-from galaxy.tools import Tool, DataSourceTool, ToolOutput
-from galaxy.tools.parameters.output import ToolOutputActionGroup
+from galaxy.tools import Tool, DataSourceTool
+from galaxy.tools.parser.output_actions import ToolOutputActionGroup
+from galaxy.tools.parser.output_objects import ToolOutput
 from galaxy.util.odict import odict
 
 log = logging.getLogger( __name__ )

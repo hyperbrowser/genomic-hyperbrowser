@@ -7,26 +7,27 @@ import urllib
 
 from paste.httpexceptions import HTTPNotFound, HTTPBadGateway
 
-from galaxy.web.base.controller import BaseUIController
-from galaxy import managers
-
 from galaxy import web
-from galaxy.web import url_for
-from galaxy.model.item_attrs import UsesAnnotations
 from galaxy import util
-from galaxy.util import listify, Params, string_as_bool, string_as_bool_or_none
-from galaxy.util.json import dumps
+from galaxy.util import listify, Params, string_as_bool
+
+from galaxy.web.base import controller
+from galaxy.model.item_attrs import UsesAnnotations
+from galaxy import managers
 
 import logging
 log = logging.getLogger( __name__ )
 
-class RootController( BaseUIController, UsesAnnotations ):
+
+# =============================================================================
+class RootController( controller.JSAppLauncher, UsesAnnotations ):
     """
     Controller class that maps to the url root of Galaxy (i.e. '/').
     """
     def __init__( self, app ):
         super( RootController, self ).__init__( app )
         self.history_manager = managers.histories.HistoryManager( app )
+        self.history_serializer = managers.histories.HistorySerializer( app )
 
     @web.expose
     def default(self, trans, target1=None, target2=None, **kwd):
@@ -34,18 +35,90 @@ class RootController( BaseUIController, UsesAnnotations ):
         """
         raise HTTPNotFound( 'This link may not be followed from within Galaxy.' )
 
-    @web.expose
-    def index(self, trans, id=None, tool_id=None, mode=None, workflow_id=None, m_c=None, m_a=None, **kwd):
-        """
-        Called on the root url to display the main Galaxy page.
-        """
-        return trans.fill_template( "root/index.mako",
-                                    tool_id=tool_id,
-                                    workflow_id=workflow_id,
-                                    m_c=m_c, m_a=m_a,
-                                    params=kwd )
+    def _get_extended_config( self, trans ):
+        app = trans.app
+        configured_for_inactivity_warning = app.config.user_activation_on and app.config.inactivity_box_content is not None
+        user_requests = bool( trans.user and ( trans.user.requests or app.security_agent.get_accessible_request_types( trans, trans.user ) ) )
+        config = {
+            'active_view'                   : 'analysis',
+            'params'                        : dict( trans.request.params ),
+            'enable_cloud_launch'           : app.config.get_bool( 'enable_cloud_launch', False ),
+            'spinner_url'                   : web.url_for( '/static/images/loading_small_white_bg.gif' ),
+            'search_url'                    : web.url_for( controller='root', action='tool_search' ),
+            # TODO: next two should be redundant - why can't we build one from the other?
+            'toolbox'                       : app.toolbox.to_dict( trans, in_panel=False ),
+            'toolbox_in_panel'              : app.toolbox.to_dict( trans ),
+            'message_box_visible'           : app.config.message_box_visible,
+            'show_inactivity_warning'       : configured_for_inactivity_warning and trans.user and not trans.user.active,
+            # TODO: move to user
+            'user_requests'                 : user_requests
+        }
 
-    ## ---- Tool related -----------------------------------------------------
+        # TODO: move to user
+        stored_workflow_menu_entries = config[ 'stored_workflow_menu_entries' ] = []
+        for menu_item in getattr( trans.user, 'stored_workflow_menu_entries', [] ):
+            stored_workflow_menu_entries.append({
+                'encoded_stored_workflow_id' : trans.security.encode_id( menu_item.stored_workflow_id ),
+                'stored_workflow' : {
+                    'name' : util.unicodify( menu_item.stored_workflow.name )
+                }
+            })
+
+        return config
+
+    @web.expose
+    def index( self, trans, tool_id=None, workflow_id=None, history_id=None, m_c=None, m_a=None, **kwd ):
+        """
+        Root and entry point for client-side web app.
+
+        :type       tool_id: str or None
+        :param      tool_id: load center panel with given tool if not None
+        :type   workflow_id: encoded id or None
+        :param  workflow_id: load center panel with given workflow if not None
+        :type    history_id: encoded id or None
+        :param   history_id: switch current history to given history if not None
+        :type           m_c: str or None
+        :param          m_c: controller name (e.g. 'user')
+        :type           m_a: str or None
+        :param          m_a: controller method/action (e.g. 'dbkeys')
+
+        If m_c and m_a are present, the center panel will be loaded using the
+        controller and action as a url: (e.g. 'user/dbkeys').
+        """
+        if trans.app.config.require_login and self.user_manager.is_anonymous( trans.user ):
+            # TODO: this doesn't properly redirect when login is done
+            # (see webapp __ensure_logged_in_user for the initial redirect - not sure why it doesn't redirect to login?)
+            login_url = web.url_for( controller="root", action="login" )
+            trans.response.send_redirect( login_url )
+
+        # if a history_id was sent, attempt to switch to that history
+        history = trans.history
+        if history_id:
+            unencoded_id = trans.security.decode_id( history_id )
+            history = self.history_manager.get_owned( unencoded_id, trans.user )
+            trans.set_history( history )
+
+        # index/analysis needs an extended configuration
+        js_options = self._get_js_options( trans )
+        config = js_options[ 'config' ]
+        config.update( self._get_extended_config( trans ) )
+
+        return self.template( trans, 'analysis', options=js_options )
+
+    @web.expose
+    def login( self, trans, redirect=None, **kwd ):
+        """
+        User login path for client-side.
+        """
+        return self.template( trans, 'login',
+            redirect=redirect,
+            # TODO: move into config
+            openid_providers=[ p.name for p in trans.app.openid_providers ],
+            # an installation may have it's own welcome_url - show it here if they've set that
+            welcome_url=web.url_for( controller='root', action='welcome' ),
+            show_welcome_with_login=trans.app.config.show_welcome_with_login )
+
+    # ---- Tool related -----------------------------------------------------
 
     @web.json
     def tool_search( self, trans, **kwd ):
@@ -86,7 +159,7 @@ class RootController( BaseUIController, UsesAnnotations ):
         tool = toolbox.get_tool( id )
         yield "<html><body>"
         if not tool:
-            #TODO: arent tool ids strings now?
+            # TODO: arent tool ids strings now?
             yield "Unknown tool id '%d'" % id
         elif tool.help:
             yield tool.help
@@ -94,54 +167,7 @@ class RootController( BaseUIController, UsesAnnotations ):
             yield "No additional help available for tool '%s'" % tool.name
         yield "</body></html>"
 
-    ## ---- Root history display ---------------------------------------------
-    def history_as_xml( self, trans, show_deleted=None, show_hidden=None ):
-        if trans.app.config.require_login and not trans.user:
-            return trans.fill_template( '/no_access.mako', message = 'Please log in to access Galaxy histories.' )
-
-        history = trans.get_history( create=True )
-        trans.response.set_content_type('text/xml')
-        return trans.fill_template_mako( "root/history_as_xml.mako",
-                                          history=history,
-                                          show_deleted=string_as_bool( show_deleted ),
-                                          show_hidden=string_as_bool( show_hidden ) )
-
-    @web.expose
-    def history( self, trans, as_xml=False, show_deleted=None, show_hidden=None, **kwd ):
-        """
-        Display the current history in its own page or as xml.
-        """
-        if as_xml:
-            return self.history_as_xml( trans,
-                show_deleted=string_as_bool( show_deleted ), show_hidden=string_as_bool( show_hidden ) )
-
-        if trans.app.config.require_login and not trans.user:
-            return trans.fill_template( '/no_access.mako', message = 'Please log in to access Galaxy histories.' )
-
-        # get all datasets server-side, client-side will get flags and render appropriately
-        show_deleted = string_as_bool_or_none( show_deleted )
-        show_purged  = show_deleted
-        show_hidden  = string_as_bool_or_none( show_hidden )
-
-        history_dictionary = {}
-        hda_dictionaries = []
-        try:
-            history_data = self.history_manager._get_history_data( trans, trans.get_history( create=True ) )
-            history_dictionary = history_data[ 'history' ]
-            hda_dictionaries   = history_data[ 'contents' ]
-
-        except Exception, exc:
-            user_id = str( trans.user.id ) if trans.user else '(anonymous)'
-            log.exception( 'Error bootstrapping history for user %s: %s', user_id, str( exc ) )
-            history_dictionary[ 'error' ] = ( 'An error occurred getting the history data from the server. '
-                                            + 'Please contact a Galaxy administrator if the problem persists.' )
-
-        return trans.fill_template_mako( "root/history.mako",
-            history = history_dictionary, hdas = hda_dictionaries,
-            show_deleted=show_deleted, show_hidden=show_hidden )
-
-
-    ## ---- Dataset display / editing ----------------------------------------
+    # ---- Dataset display / editing ----------------------------------------
     @web.expose
     def display( self, trans, id=None, hid=None, tofile=None, toext=".txt", encoded_id=None, **kwd ):
         """Returns data directly into the browser.
@@ -153,7 +179,7 @@ class RootController( BaseUIController, UsesAnnotations ):
         and use assume id is encoded (likely id wouldn't be coming in encoded if this
         is used anywhere else though.)
         """
-        #TODO: unencoded id
+        # TODO: unencoded id
         if hid is not None:
             try:
                 hid = int( hid )
@@ -200,7 +226,7 @@ class RootController( BaseUIController, UsesAnnotations ):
     def display_child(self, trans, parent_id=None, designation=None, tofile=None, toext=".txt"):
         """Returns child data directly into the browser, based upon parent_id and designation.
         """
-        #TODO: unencoded id
+        # TODO: unencoded id
         try:
             data = trans.sa_session.query( self.app.model.HistoryDatasetAssociation ).get( parent_id )
             if data:
@@ -219,7 +245,7 @@ class RootController( BaseUIController, UsesAnnotations ):
     def display_as( self, trans, id=None, display_app=None, **kwd ):
         """Returns a file in a format that can successfully be displayed in display_app.
         """
-        #TODO: unencoded id
+        # TODO: unencoded id
         data = trans.sa_session.query( self.app.model.HistoryDatasetAssociation ).get( id )
         authz_method = 'rbac'
         if 'authz_method' in kwd:
@@ -244,8 +270,8 @@ class RootController( BaseUIController, UsesAnnotations ):
     def peek(self, trans, id=None):
         """Returns a 'peek' at the data.
         """
-        #TODO: unused?
-        #TODO: unencoded id
+        # TODO: unused?
+        # TODO: unencoded id
         data = trans.sa_session.query( self.app.model.HistoryDatasetAssociation ).get( id )
         if data:
             yield "<html><body><pre>"
@@ -254,38 +280,31 @@ class RootController( BaseUIController, UsesAnnotations ):
         else:
             yield "No data with id=%d" % id
 
-    ## ---- History management -----------------------------------------------
-    @web.expose
-    def history_options( self, trans ):
-        """Displays a list of history related actions.
-        """
-        return trans.fill_template( "/history/options.mako",
-                                    user=trans.get_user(),
-                                    history=trans.get_history( create=True ) )
+    # ---- History management -----------------------------------------------
     @web.expose
     def history_delete( self, trans, id ):
         """Backward compatibility with check_galaxy script.
         """
-        #TODO: unused?
+        # TODO: unused?
         return trans.webapp.controllers['history'].list( trans, id, operation='delete' )
 
     @web.expose
     def clear_history( self, trans ):
         """Clears the history for a user.
         """
-        #TODO: unused? (seems to only be used in TwillTestCase)
+        # TODO: unused? (seems to only be used in TwillTestCase)
         history = trans.get_history()
         for dataset in history.datasets:
             dataset.deleted = True
             dataset.clear_associated_files()
         trans.sa_session.flush()
         trans.log_event( "History id %s cleared" % (str(history.id)) )
-        trans.response.send_redirect( url_for("/index" ) )
+        trans.response.send_redirect( web.url_for("/index" ) )
 
     @web.expose
     def history_import( self, trans, id=None, confirm=False, **kwd ):
-        #TODO: unused?
-        #TODO: unencoded id
+        # TODO: unused?
+        # TODO: unencoded id
         user = trans.get_user()
         user_history = trans.get_history()
         if not id:
@@ -350,10 +369,10 @@ class RootController( BaseUIController, UsesAnnotations ):
 
     @web.expose
     def history_add_to( self, trans, history_id=None, file_data=None,
-            name="Data Added to History", info=None, ext="txt", dbkey="?", copy_access_from=None, **kwd ):
+                        name="Data Added to History", info=None, ext="txt", dbkey="?", copy_access_from=None, **kwd ):
         """Adds a POSTed file to a History.
         """
-        #TODO: unencoded id
+        # TODO: unencoded id
         try:
             history = trans.sa_session.query( trans.app.model.History ).get( history_id )
             data = trans.app.model.HistoryDatasetAssociation( name=name,
@@ -395,7 +414,7 @@ class RootController( BaseUIController, UsesAnnotations ):
     def history_set_default_permissions( self, trans, id=None, **kwd ):
         """Sets the permissions on a history.
         """
-        #TODO: unencoded id
+        # TODO: unencoded id
         if trans.user:
             if 'update_roles_button' in kwd:
                 history = None
@@ -420,23 +439,23 @@ class RootController( BaseUIController, UsesAnnotations ):
                 dataset = 'dataset' in kwd
                 bypass_manage_permission = 'bypass_manage_permission' in kwd
                 trans.app.security_agent.history_set_default_permissions( history, permissions,
-                    dataset=dataset, bypass_manage_permission=bypass_manage_permission )
+                                                                          dataset=dataset, bypass_manage_permission=bypass_manage_permission )
                 return trans.show_ok_message( 'Default history permissions have been changed.' )
             return trans.fill_template( 'history/permissions.mako' )
         else:
-            #user not logged in, history group must be only public
+            # user not logged in, history group must be only public
             return trans.show_error_message( "You must be logged in to change a history's default permissions." )
 
     @web.expose
     def dataset_make_primary( self, trans, id=None):
         """Copies a dataset and makes primary.
         """
-        #TODO: unused?
-        #TODO: unencoded id
+        # TODO: unused?
+        # TODO: unencoded id
         try:
             old_data = trans.sa_session.query( self.app.model.HistoryDatasetAssociation ).get( id )
             new_data = old_data.copy()
-            ## new_data.parent = None
+            # new_data.parent = None
             history = trans.get_history()
             history.add_dataset(new_data)
             trans.sa_session.add( new_data )
@@ -448,7 +467,7 @@ class RootController( BaseUIController, UsesAnnotations ):
     @web.expose
     def welcome( self, trans ):
         welcome_url = trans.app.config.welcome_url
-        return trans.response.send_redirect( url_for( welcome_url  ) )
+        return trans.response.send_redirect( web.url_for( welcome_url  ) )
 
     @web.expose
     def bucket_proxy( self, trans, bucket=None, **kwd):
@@ -479,7 +498,7 @@ class RootController( BaseUIController, UsesAnnotations ):
         Attempts to parse values passed as boolean, float, then int. Defaults
         to string. Non-recursive (will not parse lists).
         """
-        #TODO: use json
+        # TODO: use json
         rval = {}
         for k in kwd:
             rval[ k ] = kwd[k]
@@ -505,7 +524,7 @@ class RootController( BaseUIController, UsesAnnotations ):
         """
         try:
             code = int( code )
-        except Exception, exc:
+        except Exception:
             code = 500
 
         if code == 502:

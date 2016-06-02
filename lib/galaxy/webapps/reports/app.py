@@ -4,12 +4,14 @@ import time
 
 import galaxy.model
 from galaxy.web import security
+import logging
+log = logging.getLogger( __name__ )
 
 
 class UniverseApplication( object ):
     """Encapsulates the state of a Universe application"""
     def __init__( self, **kwargs ):
-        print >> sys.stderr, "python path is: " + ", ".join( sys.path )
+        log.debug( "python path is: %s", ", ".join( sys.path ) )
         self.name = "reports"
         # Read config file and check for errors
         self.config = config.Configuration( **kwargs )
@@ -25,7 +27,10 @@ class UniverseApplication( object ):
                                                 db_url,
                                                 self.config.database_engine_options,
                                                 create_tables=True )
-        self.targets_mysql = self.config.database_connection and 'mysql' in self.config.database_connection
+        if not self.config.database_connection:
+            self.targets_mysql = False
+        else:
+            self.targets_mysql = 'mysql' in self.config.database_connection
         # Security helper
         self.security = security.SecurityHelper( id_secret=self.config.id_secret )
         # used for cachebusting -- refactor this into a *SINGLE* UniverseApplication base.

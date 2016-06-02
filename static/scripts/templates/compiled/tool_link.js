@@ -1,18 +1,2 @@
-(function() {
-  var template = Handlebars.template, templates = Handlebars.templates = Handlebars.templates || {};
-templates['tool_link'] = template({"compiler":[6,">= 2.0.0-beta.1"],"main":function(depth0,helpers,partials,data) {
-  var helper, functionType="function", helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
-  return "<a class=\""
-    + escapeExpression(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"id","hash":{},"data":data}) : helper)))
-    + " tool-link\" href=\""
-    + escapeExpression(((helper = (helper = helpers.link || (depth0 != null ? depth0.link : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"link","hash":{},"data":data}) : helper)))
-    + "\" target=\""
-    + escapeExpression(((helper = (helper = helpers.target || (depth0 != null ? depth0.target : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"target","hash":{},"data":data}) : helper)))
-    + "\" minsizehint=\""
-    + escapeExpression(((helper = (helper = helpers.min_width || (depth0 != null ? depth0.min_width : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"min_width","hash":{},"data":data}) : helper)))
-    + "\">"
-    + escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"name","hash":{},"data":data}) : helper)))
-    + "</a> "
-    + escapeExpression(((helper = (helper = helpers.description || (depth0 != null ? depth0.description : depth0)) != null ? helper : helperMissing),(typeof helper === functionType ? helper.call(depth0, {"name":"description","hash":{},"data":data}) : helper)));
-},"useData":true});
-})();
+define(["libs/handlebars.runtime"],function(a){return a.template({1:function(a){var b=this.lambda,c=this.escapeExpression;return'<span class="label label-default label-'+c(b(a,a))+'">'+c(b(a,a))+"</span> "},compiler:[6,">= 2.0.0-beta.1"],main:function(a,b,c,d){var e,f,g=b.helperMissing,h="function",i=this.escapeExpression;return'<span class="labels">'+(null!=(e=b.each.call(a,null!=a?a.labels:a,{name:"each",hash:{},fn:this.program(1,d,0),inverse:this.noop,data:d}))?e:"")+'</span>\n<a class="'+i((f=null!=(f=b.id||(null!=a?a.id:a))?f:g,typeof f===h?f.call(a,{name:"id",hash:{},data:d}):f))+' tool-link" href="'+i((f=null!=(f=b.link||(null!=a?a.link:a))?f:g,typeof f===h?f.call(a,{name:"link",hash:{},data:d}):f))+'" target="'+i((f=null!=(f=b.target||(null!=a?a.target:a))?f:g,typeof f===h?f.call(a,{name:"target",hash:{},data:d}):f))+'" minsizehint="'+i((f=null!=(f=b.min_width||(null!=a?a.min_width:a))?f:g,typeof f===h?f.call(a,{name:"min_width",hash:{},data:d}):f))+'">'+i((f=null!=(f=b.name||(null!=a?a.name:a))?f:g,typeof f===h?f.call(a,{name:"name",hash:{},data:d}):f))+"</a>\n"+i((f=null!=(f=b.description||(null!=a?a.description:a))?f:g,typeof f===h?f.call(a,{name:"description",hash:{},data:d}):f))+"\n"},useData:!0})});
+//# sourceMappingURL=../../../maps/templates/compiled/tool_link.js.map

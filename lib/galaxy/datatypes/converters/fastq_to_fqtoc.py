@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import sys, os, gzip
-from galaxy.datatypes.checkers import is_gzip
+import sys
+from galaxy.util.checkers import is_gzip
 
 
 def main():
@@ -24,13 +24,13 @@ def main():
     out_file = open(sys.argv[2], 'w')
 
     current_line = 0
-    sequences=1000000
-    lines_per_chunk = 4*sequences
+    sequences = 1000000
+    lines_per_chunk = 4 * sequences
     chunk_begin = 0
 
     in_file = open(input_fname)
 
-    out_file.write('{"sections" : [');
+    out_file.write('{"sections" : [')
 
     for line in in_file:
         current_line += 1

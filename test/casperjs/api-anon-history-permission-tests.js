@@ -67,10 +67,12 @@ spaceghost.test.begin( 'Test permissions for accessible, published, and inaccess
         this.test.comment( 'show should work for history: ' + history.name );
         this.test.assert( this.api.histories.show( history.id ).id === history.id,
             'show worked' );
-        this.test.comment( 'copying should fail for history (multiple histories not allowed): ' + history.name );
-        this.api.assertRaises( function(){
-            this.api.histories.create({ history_id : history.id });
-        }, 403, 'API authentication required for this request', 'update authentication required' );
+
+        this.test.comment( 'copying should work for history (replacing the original history): ' + history.name );
+        var copiedHistory = this.api.histories.create({ history_id : history.id });
+        var historiesIndex = this.api.histories.index();
+        this.test.assert( historiesIndex.length === 1, 'only one history after copy' );
+        this.test.assert( historiesIndex[0].id === copiedHistory.id, 'original history with copy' );
 
         // read functions for history contents
         this.test.comment( 'index of history contents should work for history: ' + history.name );
@@ -99,16 +101,18 @@ spaceghost.test.begin( 'Test permissions for accessible, published, and inaccess
         this.test.comment( 'copying should fail for history (implicit multiple histories): ' + history.name );
         this.api.assertRaises( function(){
             this.api.histories.create({ history_id : history.id });
-        }, 403, 'API authentication required for this request', 'copy failed with error' );
+        }, 403, 'History is not accessible by user', 'copy failed with error' );
 
         // read functions for history contents
         this.test.comment( 'index and show of history contents should fail for history: ' + history.name );
         this.api.assertRaises( function(){
             this.api.hdas.index( history.id );
         }, 403, 'History is not accessible by user', 'hda index failed with error' );
-        this.api.assertRaises( function(){
-            this.api.hdas.show( history.id, hdas[0].id );
-        }, 403, 'History is not accessible by user', 'hda show failed with error' );
+        // 150721: accessible hdas in an inaccessible history are considered accessible (since api/datasets does)
+        // this.api.assertRaises( function(){
+        //     this.api.hdas.show( history.id, hdas[0].id );
+        // }, 403, 'History is not accessible by user', 'hda show failed with error' );
+        this.test.assertTrue( utils.isObject( this.api.hdas.show( history.id, hdas[0].id ) ) );
 
         this.test.comment( 'Attempting to copy an accessible hda (default is accessible)'
                          + ' from an inaccessible history should fail for: ' + history.name );

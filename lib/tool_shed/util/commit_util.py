@@ -1,50 +1,65 @@
+import bz2
 import gzip
 import json
 import logging
 import os
 import shutil
 import tempfile
+from collections import namedtuple
 
-from galaxy.datatypes import checkers
-
-from tool_shed.tools import data_table_manager
-
-from tool_shed.util import basic_util
-from tool_shed.util import hg_util
-from tool_shed.util import shed_util_common as suc
+from sqlalchemy.sql.expression import null
 
 import tool_shed.repository_types.util as rt_util
+from galaxy.util import checkers, safe_relpath
+from tool_shed.tools import data_table_manager
+from tool_shed.util import basic_util, hg_util, shed_util_common as suc
 
 log = logging.getLogger( __name__ )
 
 UNDESIRABLE_DIRS = [ '.hg', '.svn', '.git', '.cvs' ]
 UNDESIRABLE_FILES = [ '.hg_archival.txt', 'hgrc', '.DS_Store', 'tool_test_output.html', 'tool_test_output.json' ]
 
+
 def check_archive( repository, archive ):
+    valid = []
+    invalid = []
+    errors = []
+    undesirable_files = []
+    undesirable_dirs = []
     for member in archive.getmembers():
         # Allow regular files and directories only
         if not ( member.isdir() or member.isfile() or member.islnk() ):
-            message = "Uploaded archives can only include regular directories and files (no symbolic links, devices, etc).  "
-            message += "The problematic member in this archive is %s," % str( member.name )
-            return False, message
-        for item in [ '.hg', '..', '/' ]:
-            if member.name.startswith( item ):
-                message = "Uploaded archives cannot contain .hg directories, absolute filenames starting with '/', or filenames with two dots '..'.  "
-                message += "The problematic member in this archive is %s." % str( member.name )
-                return False, message
-        if member.name in [ 'hgrc' ]:
-            message = "Uploaded archives cannot contain hgrc files.  "
-            message += "The problematic member in this archive is %s." % str( member.name )
-            return False, message
+            errors.append( "Uploaded archives can only include regular directories and files (no symbolic links, devices, etc)." )
+            invalid.append( member )
+            continue
+        if not safe_relpath( member.name ):
+            errors.append( "Uploaded archives cannot contain files that would extract outside of the archive." )
+            invalid.append( member )
+            continue
+        if os.path.basename( member.name ) in UNDESIRABLE_FILES:
+            undesirable_files.append( member )
+            continue
+        head = tail = member.name
+        try:
+            while tail:
+                head, tail = os.path.split(head)
+                if tail in UNDESIRABLE_DIRS:
+                    undesirable_dirs.append( member )
+                    assert False
+        except AssertionError:
+            continue
         if repository.type == rt_util.REPOSITORY_SUITE_DEFINITION and member.name != rt_util.REPOSITORY_DEPENDENCY_DEFINITION_FILENAME:
-            message = 'Repositories of type <b>Repository suite definition</b> can contain only a single file named <b>repository_dependencies.xml</b>.'
-            message += 'This archive contains a member named %s.' % str( member.name )
-            return False, message
+            errors.append( 'Repositories of type <b>Repository suite definition</b> can contain only a single file named <b>repository_dependencies.xml</b>.' )
+            invalid.append( member )
+            continue
         if repository.type == rt_util.TOOL_DEPENDENCY_DEFINITION and member.name != rt_util.TOOL_DEPENDENCY_DEFINITION_FILENAME:
-            message = 'Repositories of type <b>Tool dependency definition</b> can contain only a single file named <b>tool_dependencies.xml</b>.'
-            message += 'This archive contains a member named %s.' % str( member.name )
-            return False, message
-    return True, ''
+            errors.append( 'Repositories of type <b>Tool dependency definition</b> can contain only a single file named <b>tool_dependencies.xml</b>.' )
+            invalid.append( member )
+            continue
+        valid.append( member )
+    ArchiveCheckResults = namedtuple( 'ArchiveCheckResults', [ 'valid', 'invalid', 'undesirable_files', 'undesirable_dirs', 'errors' ] )
+    return ArchiveCheckResults( valid, invalid, undesirable_files, undesirable_dirs, errors )
+
 
 def check_file_contents_for_email_alerts( app ):
     """
@@ -54,12 +69,13 @@ def check_file_contents_for_email_alerts( app ):
     sa_session = app.model.context.current
     admin_users = app.config.get( "admin_users", "" ).split( "," )
     for repository in sa_session.query( app.model.Repository ) \
-                                .filter( app.model.Repository.table.c.email_alerts != None ):
+                                .filter( app.model.Repository.table.c.email_alerts != null() ):
         email_alerts = json.loads( repository.email_alerts )
         for user_email in email_alerts:
             if user_email in admin_users:
                 return True
     return False
+
 
 def check_file_content_for_html_and_images( file_path ):
     message = ''
@@ -68,6 +84,7 @@ def check_file_content_for_html_and_images( file_path ):
     elif checkers.check_image( file_path ):
         message = 'The file "%s" contains image content.\n' % str( file_path )
     return message
+
 
 def get_change_lines_in_file_for_tag( tag, change_dict ):
     """
@@ -86,6 +103,7 @@ def get_change_lines_in_file_for_tag( tag, change_dict ):
                 line = line[ index: ]
                 cleaned_lines.append( line )
     return cleaned_lines
+
 
 def get_upload_point( repository, **kwd ):
     upload_point = kwd.get( 'upload_point', None )
@@ -108,6 +126,7 @@ def get_upload_point( repository, **kwd ):
             upload_point = None
     return upload_point
 
+
 def handle_bz2( repository, uploaded_file_name ):
     fd, uncompressed = tempfile.mkstemp( prefix='repo_%d_upload_bunzip2_' % repository.id,
                                          dir=os.path.dirname( uploaded_file_name ),
@@ -119,7 +138,7 @@ def handle_bz2( repository, uploaded_file_name ):
         except IOError:
             os.close( fd )
             os.remove( uncompressed )
-            log.exception( 'Problem uncompressing bz2 data "%s": %s' % ( uploaded_file_name, str( e ) ) )
+            log.exception( 'Problem uncompressing bz2 data "%s"' % uploaded_file_name )
             return
         if not chunk:
             break
@@ -127,6 +146,7 @@ def handle_bz2( repository, uploaded_file_name ):
     os.close( fd )
     bzipped_file.close()
     shutil.move( uncompressed, uploaded_file_name )
+
 
 def handle_directory_changes( app, host, username, repository, full_path, filenames_in_archive, remove_repo_files_not_in_tar,
                               new_repo_alert, commit_message, undesirable_dirs_removed, undesirable_files_removed ):
@@ -206,6 +226,7 @@ def handle_directory_changes( app, host, username, repository, full_path, filena
                              admin_only=admin_only )
     return True, '', files_to_remove, content_alert_str, undesirable_dirs_removed, undesirable_files_removed
 
+
 def handle_gzip( repository, uploaded_file_name ):
     fd, uncompressed = tempfile.mkstemp( prefix='repo_%d_upload_gunzip_' % repository.id,
                                          dir=os.path.dirname( uploaded_file_name ),
@@ -225,6 +246,7 @@ def handle_gzip( repository, uploaded_file_name ):
     os.close( fd )
     gzipped_file.close()
     shutil.move( uncompressed, uploaded_file_name )
+
 
 def uncompress( repository, uploaded_file_name, uploaded_file_filename, isgzip=False, isbz2=False ):
     if isgzip:

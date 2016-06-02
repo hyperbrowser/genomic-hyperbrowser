@@ -109,7 +109,7 @@ return Backbone.View.extend({
         var $main = $('<div/>');
         $main.append((new Ui.Label({ title : 'Provide a chart title:'}).$el));
         $main.append(this.title.$el);
-        $main.append($('<div/>').addClass('ui-table-form-info').html('This title will appear in the list of \'Saved Visualizations\'. Charts are saved upon creation.'));
+        $main.append($('<div/>').addClass('ui-form-info').html('This title will appear in the list of \'Saved Visualizations\'. Charts are saved upon creation.'));
         $main.append(this.types.$el.addClass('ui-margin-top'));
         
         // add tab
@@ -211,7 +211,7 @@ return Backbone.View.extend({
     // add group model
     _addGroupModel: function() {
         var group = new Group({
-            id : Utils.uuid()
+            id : Utils.uid()
         });
         this.chart.groups.add(group);
         return group;
@@ -260,7 +260,7 @@ return Backbone.View.extend({
     // reset
     _resetChart: function() {
         // reset chart details
-        this.chart.set('id', Utils.uuid());
+        this.chart.set('id', Utils.uid());
         this.chart.set('type', 'nvd3_bar');
         this.chart.set('dataset_id', this.app.options.config.dataset_id);
         this.chart.set('title', 'New Chart');

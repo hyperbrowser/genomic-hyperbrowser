@@ -2,7 +2,7 @@
 
 ## Set vars so that there's no need to change the code below.
 <%
-    history = published_item 
+    history = published_item
     datasets = published_item_data
 %>
 
@@ -22,12 +22,12 @@
 <%def name="render_item_links( history )">
 <%
     encoded_history_id = history_dict[ 'id' ]
-    import_url = h.url_for( controller='history', action='imp', id=encoded_history_id )
     switch_url = h.url_for( controller='history', action='switch_to_history', hist_id=encoded_history_id )
 %>
     ## Needed to overwide initial width so that link is floated left appropriately.
     %if not user_is_owner:
-    <a href="${import_url}" style="width: 100%" title="${_('Make a copy of this history and switch to it')}">
+    <a class="history-copy-link" title="${_('Make a copy of this history and switch to it')}"
+       href="javascript:void(0)" style="width: 100%" >
         ${_('Import history')}
     </a>
     %else:
@@ -46,24 +46,33 @@
 </div>
 <script type="text/javascript">
     var historyJSON  = ${h.dumps( history_dict )},
-        hdaJSON      = ${h.dumps( hda_dicts )};
+        contentsJSON = ${h.dumps( content_dicts )};
 
     require.config({
         baseUrl : "${h.url_for( '/static/scripts' )}",
-        urlArgs: 'v=${int(app.server_starttime)}'
-    })([ 'mvc/history/history-panel-annotated' ], function( panelMod ){
+        urlArgs: 'v=${app.server_starttime}'
+    })([
+        'mvc/history/history-view-annotated',
+        'mvc/history/copy-dialog',
+    ], function( panelMod, historyCopyDialog ){
         // history module is already in the dpn chain from the panel. We can re-scope it here.
         var historyModel = require( 'mvc/history/history-model' ),
-            history = new historyModel.History( historyJSON, hdaJSON, {
-            });
+            history = new historyModel.History( historyJSON, contentsJSON, {});
 
-        window.historyPanel = new panelMod.AnnotatedHistoryPanel({
+        $( '.history-copy-link' ).click( function( ev ){
+            historyCopyDialog( history, { useImport: true, allowAll: false })
+                .done( function(){
+                    var mainWindow = ( window && ( window !== window.parent ) )? window.top : window;
+                    mainWindow.location.href = Galaxy.root;
+                });
+        });
+
+        window.historyView = new panelMod.AnnotatedHistoryView({
             show_deleted    : false,
             show_hidden     : false,
             el              : $( "#history-" + historyJSON.id ),
             model           : history
         }).render();
-        console.debug( historyPanel.$el )
     });
 </script>
 </%def>

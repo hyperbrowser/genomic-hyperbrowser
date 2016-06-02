@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+
+import logging
+
 try:
     from urllib2 import urlopen
 except ImportError:
@@ -7,11 +10,6 @@ try:
     from urllib2 import Request
 except ImportError:
     from urllib.request import Request
-try:
-    from galaxy import eggs
-    eggs.require("poster")
-except ImportError:
-    pass
 
 try:
     import poster
@@ -20,7 +18,6 @@ except ImportError:
 
 POSTER_UNAVAILABLE_MESSAGE = "Pulsar configured to use poster module - but it is unavailable. Please install poster."
 
-import logging
 log = logging.getLogger(__name__)
 
 

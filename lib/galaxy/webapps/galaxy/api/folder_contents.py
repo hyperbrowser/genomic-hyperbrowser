@@ -1,15 +1,12 @@
 """
 API operations on the contents of a library folder.
 """
-from galaxy import web
 from galaxy import util
 from galaxy import exceptions
 from galaxy import managers
 from galaxy.managers import folders
 from galaxy.web import _future_expose_api as expose_api
 from galaxy.web import _future_expose_api_anonymous as expose_api_anonymous
-from sqlalchemy.orm.exc import MultipleResultsFound
-from sqlalchemy.orm.exc import NoResultFound
 from galaxy.web.base.controller import BaseAPIController, UsesLibraryMixin, UsesLibraryMixinItems
 
 import logging
@@ -130,7 +127,7 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
 
         # Check whether user can modify the current folder
         can_modify_folder = is_admin or trans.app.security_agent.can_modify_library_item( current_user_roles, folder )
-        
+
         parent_library_id = None
         if folder.parent_library is not None:
             parent_library_id = trans.security.encode_id( folder.parent_library.id )
@@ -138,6 +135,8 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
         metadata = dict( full_path=full_path,
                          can_add_library_item=can_add_library_item,
                          can_modify_folder=can_modify_folder,
+                         folder_name=folder.name,
+                         folder_description=folder.description,
                          parent_library_id=parent_library_id )
         folder_container = dict( metadata=metadata, folder_contents=folder_contents )
         return folder_container
@@ -158,7 +157,7 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
         if folder.parent_id is None:
             path_to_root.append( ( 'F' + trans.security.encode_id( folder.id ), folder.name ) )
         else:
-        # We add the current folder and traverse up one folder.
+            # We add the current folder and traverse up one folder.
             path_to_root.append( ( 'F' + trans.security.encode_id( folder.id ), folder.name ) )
             upper_folder = trans.sa_session.query( trans.app.model.LibraryFolder ).get( folder.parent_id )
             path_to_root.extend( self.build_path( trans, upper_folder ) )
@@ -187,11 +186,11 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
             if subfolder.deleted:
                 if include_deleted:
                     if is_admin:
-                    # Admins can see all deleted folders.
+                        # Admins can see all deleted folders.
                         subfolder.api_type = 'folder'
                         content_items.append( subfolder )
                     else:
-                    # Users with MODIFY permissions can see deleted folders.
+                        # Users with MODIFY permissions can see deleted folders.
                         can_modify = trans.app.security_agent.can_modify_library_item( current_user_roles, subfolder )
                         if can_modify:
                             subfolder.api_type = 'folder'
@@ -214,11 +213,11 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
             if dataset.deleted:
                 if include_deleted:
                     if is_admin:
-                    # Admins can see all deleted datasets.
+                        # Admins can see all deleted datasets.
                         dataset.api_type = 'file'
                         content_items.append( dataset )
                     else:
-                    # Users with MODIFY permissions on the item can see the deleted item.
+                        # Users with MODIFY permissions on the item can see the deleted item.
                         can_modify = trans.app.security_agent.can_modify_library_item( current_user_roles, dataset )
                         if can_modify:
                             dataset.api_type = 'file'
@@ -238,23 +237,21 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
     @expose_api
     def create( self, trans, encoded_folder_id, payload, **kwd ):
         """
-        create( self, trans, library_id, payload, **kwd )
         * POST /api/folders/{encoded_id}/contents
             create a new library file from an HDA
 
+        :param  encoded_folder_id:      the encoded id of the folder to import dataset(s) to
+        :type   encoded_folder_id:      an encoded id string
         :param  payload:    dictionary structure containing:
+            :param from_hda_id:         (optional) the id of an accessible HDA to copy into the library
+            :type  from_hda_id:         encoded id
+            :param ldda_message:        (optional) the new message attribute of the LDDA created
+            :type   ldda_message:       str
+            :param extended_metadata:   (optional) dub-dictionary containing any extended metadata to associate with the item
+            :type  extended_metadata:   dict
         :type   payload:    dict
 
-            * folder_id:    the parent folder of the new item
-            * from_hda_id:  (optional) the id of an accessible HDA to copy
-                into the library
-            * ldda_message: (optional) the new message attribute of the LDDA
-                 created
-            * extended_metadata: (optional) dub-dictionary containing any
-                extended metadata to associate with the item
-
-        :returns:   a dictionary containing the id, name,
-            and 'show' url of the new item
+        :returns:   a dictionary containing the id, name, and 'show' url of the new item
         :rtype:     dict
 
         :raises:    ObjectAttributeInvalidException,
@@ -268,8 +265,8 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
         rval = {}
         try:
             decoded_hda_id = self.decode_id( from_hda_id )
-            hda = self.hda_manager.get_owned( trans, decoded_hda_id, trans.user )
-            hda = self.hda_manager.error_if_uploading( trans, hda )
+            hda = self.hda_manager.get_owned( decoded_hda_id, trans.user, current_history=trans.history )
+            hda = self.hda_manager.error_if_uploading( hda )
             folder = self.get_library_folder( trans, encoded_folder_id_16, check_accessible=True )
 
             library = folder.parent_library
@@ -323,7 +320,7 @@ class FolderContentsController( BaseAPIController, UsesLibraryMixin, UsesLibrary
         raise exceptions.NotImplemented( 'Showing the library folder content is not implemented here.' )
 
     @expose_api
-    def update( self, trans, id,  library_id, payload, **kwd ):
+    def update( self, trans, id, library_id, payload, **kwd ):
         """
         PUT /api/folders/{encoded_folder_id}/contents
         """

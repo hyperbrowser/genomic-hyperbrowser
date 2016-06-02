@@ -2,9 +2,8 @@ import logging
 import os
 import tempfile
 
-from galaxy.model.orm import and_
-from galaxy.util import listify
 from galaxy.tools.deps.resolvers import INDETERMINATE_DEPENDENCY
+from galaxy.util import listify
 from tool_shed.util import basic_util
 from tool_shed.util import common_util
 from tool_shed.util import shed_util_common as suc
@@ -43,7 +42,7 @@ class SyncDatabase( object ):
         # followed by those containing valid tools and tool functional test components.
         log.debug( "Synchronizing the database with the file system..." )
         try:
-            log.debug( "The value of app.config.running_functional_tests is: %s" % \
+            log.debug( "The value of app.config.running_functional_tests is: %s" %
                 str( app.config.running_functional_tests ) )
         except:
             pass
@@ -60,7 +59,7 @@ class SyncDatabase( object ):
             # dependency is being installed by someone else, we don't want to interfere with that.  This assumes
             # the installation by "someone else" is not hung in an Installing state, which is a weakness if that
             # "someone else" never repaired it.
-            log.debug( 'Skipping installation of tool dependency %s version %s because it has a status of %s' % \
+            log.debug( 'Skipping installation of tool dependency %s version %s because it has a status of %s' %
                 ( str( tool_dependency.name ), str( tool_dependency.version ), str( tool_dependency.status ) ) )
         else:
             # We have a pre-existing installation directory on the file system, but our associated database record is
@@ -75,7 +74,7 @@ class SyncDatabase( object ):
                 # the control of the Tool Shed.  Since a new record was created for it and we don't know the state of the
                 # files on disk, we will set it to an error state (unless we are running Tool Shed functional tests - see
                 # below).
-                log.debug( 'Skipping installation of tool dependency %s version %s because it is installed in %s' % \
+                log.debug( 'Skipping installation of tool dependency %s version %s because it is installed in %s' %
                     ( str( tool_dependency.name ), str( tool_dependency.version ), str( tool_dependency_install_dir ) ) )
                 if app.config.running_functional_tests:
                     # If we are running functional tests, the state will be set to Installed because previously compiled
@@ -95,14 +94,14 @@ class SyncDatabase( object ):
                       str( basic_util.INSTALLATION_LOG ) )
                 error_message += ' is missing.  This indicates an installation error so the tool dependency is being'
                 error_message += ' prepared for re-installation.'
-                print error_message
+                log.error( error_message )
                 tool_dependency.status = app.install_model.ToolDependency.installation_status.NEVER_INSTALLED
                 basic_util.remove_dir( tool_dependency_install_dir )
                 can_install_tool_dependency = True
             sa_session.add( tool_dependency )
             sa_session.flush()
         try:
-            log.debug( "Returning from sync_database_with_file_system with tool_dependency %s, can_install_tool_dependency %s." % \
+            log.debug( "Returning from sync_database_with_file_system with tool_dependency %s, can_install_tool_dependency %s." %
                 ( str( tool_dependency.name ), str( can_install_tool_dependency ) ) )
         except Exception, e:
             log.debug( str( e ) )
@@ -148,7 +147,7 @@ class Install( RecipeTag, SyncDatabase ):
                                                                                              install_dir,
                                                                                              tool_dependency_type='package' )
                 if not proceed_with_install:
-                    log.debug( "Tool dependency %s version %s cannot be installed (it was probably previously installed), so returning it." % \
+                    log.debug( "Tool dependency %s version %s cannot be installed (it was probably previously installed), so returning it." %
                         ( str( tool_dependency.name ), str( tool_dependency.version ) ) )
                     return tool_dependency, proceed_with_install, actions_elem_tuples
         else:
@@ -179,10 +178,10 @@ class Install( RecipeTag, SyncDatabase ):
                     error_message += 'tag set.'
                     # Since there was an installation error, update the tool dependency status to Error.
                     # The remove_installation_path option must be left False here.
-                    tool_dependency = tool_dependency_util.handle_tool_dependency_installation_error( self.app, 
-                                                                                                      tool_dependency, 
-                                                                                                      error_message, 
-                                                                                                      remove_installation_path=False )
+                    tool_dependency = tool_dependency_util.set_tool_dependency_attributes(self.app,
+                                                                                          tool_dependency=tool_dependency,
+                                                                                          status=self.app.install_model.ToolDependency.installation_status.ERROR,
+                                                                                          error_message=error_message)
             else:
                 raise NotImplementedError( 'Only install version 1.0 is currently supported (i.e., change your tag to be <install version="1.0">).' )
         return tool_dependency, proceed_with_install, actions_elem_tuples
@@ -203,24 +202,17 @@ class Package( RecipeTag ):
         if package_name and package_version:
             dependencies_ignored = not self.app.toolbox.dependency_manager.uses_tool_shed_dependencies()
             if dependencies_ignored:
-                attr_tups_of_dependencies_for_install = []
-                log.debug( "Skipping installation of tool dependency package %s because tool shed dependency resolver not enabled." % \
+                log.debug( "Skipping installation of tool dependency package %s because tool shed dependency resolver not enabled." %
                     str( package_name ) )
                 # Tool dependency resolves have been configured and they do not include the tool shed. Do not install package.
                 if self.app.toolbox.dependency_manager.find_dep( package_name, package_version, type='package') != INDETERMINATE_DEPENDENCY:
-                    ## TODO: Do something here such as marking it installed or configured externally.
+                    # TODO: Do something here such as marking it installed or configured externally.
                     pass
                 tool_dependency = \
                     tool_dependency_util.set_tool_dependency_attributes( self.app,
                                                                          tool_dependency=tool_dependency,
-                                                                         status=self.app.install_model.ToolDependency.installation_status.ERROR,
-                                                                         error_message=None,
-                                                                         remove_from_disk=False )
+                                                                         status=self.app.install_model.ToolDependency.installation_status.ERROR )
             else:
-                if tool_dependency_db_records is None:
-                    attr_tups_of_dependencies_for_install = []
-                else:
-                    attr_tups_of_dependencies_for_install = [ ( td.name, td.version, td.type ) for td in tool_dependency_db_records ]
                 proceed_with_install = True
         return tool_dependency, proceed_with_install, action_elem_tuples
 
@@ -253,10 +245,11 @@ class Repository( RecipeTag, SyncDatabase ):
             message += "following required parameters is None: tool_shed_url: %s, name: %s, owner: %s, changeset_revision: %s " % \
                 ( str( tool_shed_url ), str( name ), str( owner ), str( changeset_revision ) )
             raise Exception( message )
-        params = '?name=%s&owner=%s&changeset_revision=%s' % ( name, owner, changeset_revision )
-        url = common_util.url_join( tool_shed_url,
-                        'repository/get_tool_dependencies_config_contents%s' % params )
-        text = common_util.tool_shed_get( self.app, tool_shed_url, url )
+        params = dict( name=name,
+                       owner=owner,
+                       changeset_revision=changeset_revision )
+        pathspec = [ 'repository', 'get_tool_dependencies_config_contents' ]
+        text = common_util.tool_shed_get( self.app, tool_shed_url, pathspec=pathspec, params=params )
         if text:
             # Write the contents to a temporary file on disk so it can be reloaded and parsed.
             fh = tempfile.NamedTemporaryFile( 'wb', prefix="tmp-toolshed-cttdc"  )
@@ -279,7 +272,7 @@ class Repository( RecipeTag, SyncDatabase ):
         Create or get a tool_dependency record that is defined by the received package_name and package_version.
         An env.sh file will be created for the tool_dependency in the received dependent_install_dir.
         """
-        #The received required_repository refers to a tool_shed_repository record that is defined as a complex
+        # The received required_repository refers to a tool_shed_repository record that is defined as a complex
         # repository dependency for this tool_dependency.  The required_repository may or may not be currently
         # installed (it doesn't matter).  If it is installed, it is associated with a tool_dependency that has
         # an env.sh file that this new tool_dependency must be able to locate and "source".  If it is not installed,
@@ -332,18 +325,18 @@ class Repository( RecipeTag, SyncDatabase ):
                                 error_message = 'Error defining env.sh file for package %s, return_code: %s' % \
                                     ( str( package_name ), str( return_code ) )
                                 tool_dependency = \
-                                    tool_dependency_util.handle_tool_dependency_installation_error( self.app,
-                                                                                                    tool_dependency,
-                                                                                                    error_message,
-                                                                                                    remove_installation_path=False )
+                                    tool_dependency_util.set_tool_dependency_attributes(self.app,
+                                                                                        tool_dependency=tool_dependency,
+                                                                                        status=self.app.install_model.ToolDependency.installation_status.ERROR,
+                                                                                        error_message=error_message)
                             elif required_tool_dependency is not None and required_tool_dependency.in_error_state:
                                 error_message = "This tool dependency's required tool dependency %s version %s has status %s." % \
                                     ( str( required_tool_dependency.name ), str( required_tool_dependency.version ), str( required_tool_dependency.status ) )
                                 tool_dependency = \
-                                    tool_dependency_util.handle_tool_dependency_installation_error( self.app,
-                                                                                                    tool_dependency,
-                                                                                                    error_message,
-                                                                                                    remove_installation_path=False )
+                                    tool_dependency_util.set_tool_dependency_attributes(self.app,
+                                                                                        tool_dependency=tool_dependency,
+                                                                                        status=self.app.install_model.ToolDependency.installation_status.ERROR,
+                                                                                        error_message=error_message)
                             else:
                                 tool_dependency = \
                                     tool_dependency_util.set_tool_dependency_attributes( self.app,
@@ -365,34 +358,6 @@ class Repository( RecipeTag, SyncDatabase ):
         env_sh_file_path = os.path.join( env_sh_file_dir, 'env.sh' )
         return env_sh_file_path
 
-    def get_tool_shed_repository_by_tool_shed_name_owner_changeset_revision( self, tool_shed_url, name, owner, changeset_revision ):
-        sa_session = self.app.install_model.context
-        # The protocol is not stored, but the port is if it exists.
-        tool_shed = common_util.remove_protocol_from_tool_shed_url( tool_shed_url )
-        tool_shed_repository =  sa_session.query( self.app.install_model.ToolShedRepository ) \
-                                          .filter( and_( self.app.install_model.ToolShedRepository.table.c.tool_shed == tool_shed,
-                                                         self.app.install_model.ToolShedRepository.table.c.name == name,
-                                                         self.app.install_model.ToolShedRepository.table.c.owner == owner,
-                                                         self.app.install_model.ToolShedRepository.table.c.changeset_revision == changeset_revision ) ) \
-                                          .first()
-        if tool_shed_repository:
-            return tool_shed_repository
-        # The tool_shed_repository must have been updated to a newer changeset revision than the one defined in the repository_dependencies.xml file,
-        # so call the tool shed to get all appropriate newer changeset revisions.
-        text = suc.get_updated_changeset_revisions_from_tool_shed( self.app, tool_shed_url, name, owner, changeset_revision )
-        if text:
-            changeset_revisions = listify( text )
-            for changeset_revision in changeset_revisions:
-                tool_shed_repository = sa_session.query( self.app.install_model.ToolShedRepository ) \
-                                                 .filter( and_( self.app.install_model.ToolShedRepository.table.c.tool_shed == tool_shed,
-                                                                self.app.install_model.ToolShedRepository.table.c.name == name,
-                                                                self.app.install_model.ToolShedRepository.table.c.owner == owner,
-                                                                self.app.install_model.ToolShedRepository.table.c.changeset_revision == changeset_revision ) ) \
-                                                 .first()
-                if tool_shed_repository:
-                    return tool_shed_repository
-        return None
-
     def handle_complex_repository_dependency_for_package( self, elem, package_name, package_version, tool_shed_repository,
                                                           from_tool_migration_manager=False ):
         """
@@ -403,17 +368,15 @@ class Repository( RecipeTag, SyncDatabase ):
         and package_version is being installed.
         """
         handled_tool_dependencies = []
-        tool_shed = elem.attrib[ 'toolshed' ]
-        # The protocol is not stored, but the port is if it exists.
-        tool_shed = common_util.remove_protocol_from_tool_shed_url( tool_shed )
+        tool_shed_url = elem.attrib[ 'toolshed' ]
         required_repository_name = elem.attrib[ 'name' ]
         required_repository_owner = elem.attrib[ 'owner' ]
         default_required_repository_changeset_revision = elem.attrib[ 'changeset_revision' ]
-        required_repository = \
-            self.get_tool_shed_repository_by_tool_shed_name_owner_changeset_revision( tool_shed,
-                                                                                      required_repository_name,
-                                                                                      required_repository_owner,
-                                                                                      default_required_repository_changeset_revision )
+        required_repository = suc.get_repository_for_dependency_relationship( self.app, tool_shed_url,
+                                                                              required_repository_name,
+                                                                              required_repository_owner,
+                                                                              default_required_repository_changeset_revision )
+        tool_shed = common_util.remove_protocol_from_tool_shed_url( tool_shed_url )
         tmp_filename = None
         if required_repository:
             required_repository_changeset_revision = required_repository.installed_changeset_revision
@@ -455,7 +418,7 @@ class Repository( RecipeTag, SyncDatabase ):
                                                                                                         dependent_install_dir,
                                                                                                         tool_dependency_type='package' )
                     if not can_install_tool_dependency:
-                        log.debug( "Tool dependency %s version %s cannot be installed (it was probably previously installed), " % \
+                        log.debug( "Tool dependency %s version %s cannot be installed (it was probably previously installed), " %
                             ( str( tool_dependency.name, str( tool_dependency.version ) ) ) )
                         log.debug( "so appending it to the list of handled tool dependencies." )
                         handled_tool_dependencies.append( tool_dependency )
@@ -467,8 +430,12 @@ class Repository( RecipeTag, SyncDatabase ):
                 # required_repository.
                 if required_repository.is_deactivated_or_installed:
                     if not os.path.exists( required_repository_package_install_dir ):
-                        print 'Missing required tool dependency directory %s' % str( required_repository_package_install_dir )
+                        log.error( 'Missing required tool dependency directory %s' % str( required_repository_package_install_dir ) )
                     repo_files_dir = required_repository.repo_files_directory( self.app )
+                    if not repo_files_dir:
+                        message = "Unable to locate the repository directory for revision %s of installed repository %s owned by %s." % \
+                            ( str( required_repository.changeset_revision ), str( required_repository.name ), str( required_repository.owner ) )
+                        raise Exception( message )
                     tool_dependencies_config = suc.get_absolute_path_to_file_in_repository( repo_files_dir, 'tool_dependencies.xml' )
                     if tool_dependencies_config:
                         config_to_use = tool_dependencies_config
@@ -521,7 +488,7 @@ class Repository( RecipeTag, SyncDatabase ):
         for rd_tool_dependency in rd_tool_dependencies:
             if rd_tool_dependency.status == self.app.install_model.ToolDependency.installation_status.ERROR:
                 # We'll log the error here, but continue installing packages since some may not require this dependency.
-                print "Error installing tool dependency for required repository: %s" % str( rd_tool_dependency.error_message )
+                log.error( "Error installing tool dependency for required repository: %s" % str( rd_tool_dependency.error_message ) )
         return tool_dependency, proceed_with_install, action_elem_tuples
 
     def remove_file( self, file_name ):
@@ -555,18 +522,10 @@ class SetEnvironment( RecipeTag ):
         else:
             attr_tups_of_dependencies_for_install = [ ( td.name, td.version, td.type ) for td in tool_dependency_db_records ]
         try:
-            tool_dependencies = self.set_environment( package_elem, tool_shed_repository, attr_tups_of_dependencies_for_install )
+            self.set_environment( package_elem, tool_shed_repository, attr_tups_of_dependencies_for_install )
         except Exception, e:
             error_message = "Error setting environment for tool dependency: %s" % str( e )
             log.debug( error_message )
-        for tool_dependency in tool_dependencies:
-            if tool_dependency and tool_dependency.status == self.app.install_model.ToolDependency.installation_status.ERROR:
-                # Since there was an installation error, update the tool dependency status to Error. The
-                # remove_installation_path option must be left False here.
-                tool_dependency = tool_dependency_util.handle_tool_dependency_installation_error( self.app, 
-                                                                                                  tool_dependency, 
-                                                                                                  error_message, 
-                                                                                                  remove_installation_path=False )
         return tool_dependency, proceed_with_install, action_elem_tuples
 
     def set_environment( self, elem, tool_shed_repository, attr_tups_of_dependencies_for_install ):
@@ -574,11 +533,11 @@ class SetEnvironment( RecipeTag ):
         Create a ToolDependency to set an environment variable.  This is different from the process used to
         set an environment variable that is associated with a package.  An example entry in a tool_dependencies.xml
         file is::
-    
+
             <set_environment version="1.0">
                 <environment_variable name="R_SCRIPT_PATH" action="set_to">$REPOSITORY_INSTALL_DIR</environment_variable>
             </set_environment>
-        
+
         This method must also handle the sub-element tag::
             <environment_variable name="R_SCRIPT_PATH" action="set_to">$REPOSITORY_INSTALL_DIR</environment_variable>
         """
@@ -608,11 +567,11 @@ class SetEnvironment( RecipeTag ):
         for env_var_elem in elems:
             env_var_name = env_var_elem.get( 'name', None )
             # The value of env_var_name must match the text value of at least 1 <requirement> tag in the
-            # tool config's <requirements> tag set whose "type" attribute is "set_environment" (e.g., 
+            # tool config's <requirements> tag set whose "type" attribute is "set_environment" (e.g.,
             # <requirement type="set_environment">R_SCRIPT_PATH</requirement>).
             env_var_action = env_var_elem.get( 'action', None )
             if env_var_name and env_var_action:
-                # Tool dependencies of type "set_environmnet" always have the version attribute set to None.
+                # Tool dependencies of type "set_environment" always have the version attribute set to None.
                 attr_tup = ( env_var_name, None, 'set_environment' )
                 if attr_tup in attr_tups_of_dependencies_for_install:
                     install_dir = \
@@ -653,8 +612,7 @@ class SetEnvironment( RecipeTag ):
                                     tool_dependency_util.set_tool_dependency_attributes( self.app,
                                                                                          tool_dependency=tool_dependency,
                                                                                          status=status,
-                                                                                         error_message=error_message,
-                                                                                         remove_from_disk=False )
+                                                                                         error_message=error_message )
                             else:
                                 if tool_dependency.status not in [ self.app.install_model.ToolDependency.installation_status.ERROR,
                                                                    self.app.install_model.ToolDependency.installation_status.INSTALLED ]:
@@ -662,10 +620,8 @@ class SetEnvironment( RecipeTag ):
                                     tool_dependency = \
                                         tool_dependency_util.set_tool_dependency_attributes( self.app,
                                                                                              tool_dependency=tool_dependency,
-                                                                                             status=status,
-                                                                                             error_message=None,
-                                                                                             remove_from_disk=False )
-                                    log.debug( 'Environment variable %s set in %s for tool dependency %s.' % \
+                                                                                             status=status )
+                                    log.debug( 'Environment variable %s set in %s for tool dependency %s.' %
                                         ( str( env_var_name ), str( install_dir ), str( tool_dependency.name ) ) )
                         else:
                             error_message = 'Only set_environment version 1.0 is currently supported (i.e., change your tag to be <set_environment version="1.0">).'
@@ -674,7 +630,6 @@ class SetEnvironment( RecipeTag ):
                                 tool_dependency_util.set_tool_dependency_attributes( self.app,
                                                                                      tool_dependency=tool_dependency,
                                                                                      status=status,
-                                                                                     error_message=error_message,
-                                                                                     remove_from_disk=False )
+                                                                                     error_message=error_message )
             tool_dependencies.append( tool_dependency )
         return tool_dependencies

@@ -1,34 +1,29 @@
 <%def name="common_javascripts(repository)">
     <script type="text/javascript">
         $(function(){
-            $("#tree").ajaxComplete(function(event, XMLHttpRequest, ajaxOptions) {
-                _log("debug", "ajaxComplete: %o", this); // dom element listening
-            });
+
             // --- Initialize sample trees
             $("#tree").dynatree({
                 title: "${repository.name}",
-                rootVisible: true,
-                minExpandLevel: 0, // 1: root node is not collapsible
+                minExpandLevel: 1,
                 persist: false,
                 checkbox: true,
                 selectMode: 3,
                 onPostInit: function(isReloading, isError) {
-                    //alert("reloading: "+isReloading+", error:"+isError);
-                    logMsg("onPostInit(%o, %o) - %o", isReloading, isError, this);
                     // Re-fire onActivate, so the text is updated
                     this.reactivate();
                 }, 
                 fx: { height: "toggle", duration: 200 },
                 // initAjax is hard to fake, so we pass the children as object array:
                 initAjax: {url: "${h.url_for( controller='repository', action='open_folder' )}",
-                           dataType: "json", 
-                           data: { folder_path: "${repository.repo_path( trans.app )}" },
+                           dataType: "json",
+                           data: { folder_path: "${repository.repo_path( trans.app )}", repository_id: "${trans.security.encode_id( repository.id )}"  },
                 },
                 onLazyRead: function(dtnode){
                     dtnode.appendAjax({
-                        url: "${h.url_for( controller='repository', action='open_folder' )}", 
+                        url: "${h.url_for( controller='repository', action='open_folder' )}",
                         dataType: "json",
-                        data: { folder_path: dtnode.data.key },
+                        data: { folder_path: dtnode.data.key, repository_id: "${trans.security.encode_id( repository.id )}"  },
                     });
                 },
                 onSelect: function(select, dtnode) {
@@ -61,7 +56,7 @@
                             type: "POST",
                             url: "${h.url_for( controller='repository', action='get_file_contents' )}",
                             dataType: "json",
-                            data: { file_path: selected_value },
+                            data: { file_path: selected_value, repository_id: "${trans.security.encode_id( repository.id )}" },
                             success : function ( data ) {
                                 cell.html( '<label>'+data+'</label>' )
                             }
@@ -156,8 +151,25 @@
             });
             restore_folder_state();
         };
+
+        var init_clipboard = function() {
+                %if hasattr( repository, 'clone_url' ):
+                    $('#clone_clipboard').on('click', function( event ) {
+                        event.preventDefault();
+                        window.prompt("Copy to clipboard: Ctrl+C, Enter", "hg clone ${ repository.clone_url }");
+                    });           
+                %endif
+                %if hasattr( repository, 'share_url' ):
+                    $('#share_clipboard').on('click', function( event ) {
+                        event.preventDefault();
+                        window.prompt("Copy to clipboard: Ctrl+C, Enter", "${ repository.share_url }");
+                    });
+                %endif
+        };
+
         $(function() {
             init_dependencies();
+            init_clipboard();
         });
     </script>
 </%def>
@@ -210,16 +222,13 @@
         from tool_shed.util.shed_util_common import generate_sharable_link_for_repository_in_tool_shed
         sharable_link = generate_sharable_link_for_repository_in_tool_shed( repository, changeset_revision=changeset_revision )
     %>
-    <a href="${sharable_link}">${sharable_link}</a>
+    <a href="${ sharable_link }" target="_blank">${ sharable_link }</a>
 </%def>
 
-<%def name="render_clone_str( repository )">
-    <%
+<%def name="render_clone_str( repository )"><%
         from tool_shed.util.common_util import generate_clone_url_for_repository_in_tool_shed
         clone_str = generate_clone_url_for_repository_in_tool_shed( trans.user, repository )
-    %>
-    hg clone <a href="${clone_str}">${clone_str}</a>
-</%def>
+    %>hg clone ${ clone_str }</%def>
 
 <%def name="render_folder( folder, folder_pad, parent=None, row_counter=None, is_root_folder=False, render_repository_actions_for='tool_shed' )">
     <%
@@ -1216,7 +1225,7 @@
             </div>
         </div>
     %endif
-    %if tool_test_results_root_folder:
+    %if tool_test_results_root_folder and trans.app.config.display_legacy_test_results:
         ${render_table_wrap_style( "test_environment" )}
         <p/>
         <div class="toolForm">

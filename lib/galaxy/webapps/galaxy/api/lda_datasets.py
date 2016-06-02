@@ -33,13 +33,13 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
     def __init__( self, app ):
         super( LibraryDatasetsController, self ).__init__( app )
         self.folder_manager = folders.FolderManager()
-        self.role_manager = roles.RoleManager()
+        self.role_manager = roles.RoleManager( app )
 
     @expose_api_anonymous
     def show( self, trans, id, **kwd ):
         """
         show( self, trans, id, **kwd )
-        * GET /api/libraries/datasets/{encoded_dataset_id}:
+        * GET /api/libraries/datasets/{encoded_dataset_id}
             Displays information about the dataset identified by the encoded ID.
 
         :param  id:      the encoded id of the dataset to query
@@ -88,7 +88,7 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
     def show_version( self, trans, encoded_dataset_id, encoded_ldda_id, **kwd ):
         """
         show_version( self, trans, encoded_dataset_id, encoded_ldda_id, **kwd ):
-        * GET /api/libraries/datasets/:encoded_dataset_id/versions/:encoded_ldda_id
+        * GET /api/libraries/datasets/{encoded_dataset_id}/versions/{encoded_ldda_id}
             Displays information about specific version of the library_dataset (i.e. ldda).
 
         :param  encoded_dataset_id:      the encoded id of the dataset to query
@@ -398,11 +398,10 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
         return rval
 
     @expose_api
-    def load( self, trans, **kwd ):
+    def load( self, trans, payload=None, **kwd ):
         """
-        load( self, trans, **kwd ):
         * POST /api/libraries/datasets
-        Load dataset from the given source into the library. 
+        Load dataset from the given source into the library.
         Source can be:
             user directory - root folder specified in galaxy.ini as "$user_library_import_dir"
                 example path: path/to/galaxy/$user_library_import_dir/user@example.com/{user can browse everything here}
@@ -410,31 +409,35 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
             (admin)import directory - root folder specified in galaxy ini as "$library_import_dir"
                 example path: path/to/galaxy/$library_import_dir/{admin can browse everything here}
             (admin)any absolute or relative path - option allowed with "allow_library_path_paste" in galaxy.ini
-         
-        :param  encoded_folder_id:      the encoded id of the folder to import dataset(s) to
-        :type   encoded_folder_id:      an encoded id string
-        :param  source:                 source the datasets should be loaded form
-        :type   source:                 str
-        :param  link_data:              flag whether to link the dataset to data or copy it to Galaxy, defaults to copy
-                                        while linking is set to True all symlinks will be resolved _once_
-        :type   link_data:              bool
-        :param  preserve_dirs:          flag whether to preserve the directory structure when importing dir
-                                        if False only datasets will be imported
-        :type   preserve_dirs:          bool
-        :param  file_type:              file type of the loaded datasets, defaults to 'auto' (autodetect)
-        :type   file_type:              str
-        :param  dbkey:                  dbkey of the loaded genome, defaults to '?' (unknown)
-        :type   dbkey:                  str
 
+        :param   payload: dictionary structure containing:
+            :param  encoded_folder_id:      the encoded id of the folder to import dataset(s) to
+            :type   encoded_folder_id:      an encoded id string
+            :param  source:                 source the datasets should be loaded from
+            :type   source:                 str
+            :param  link_data:              flag whether to link the dataset to data or copy it to Galaxy, defaults to copy
+                                            while linking is set to True all symlinks will be resolved _once_
+            :type   link_data:              bool
+            :param  preserve_dirs:          flag whether to preserve the directory structure when importing dir
+                                            if False only datasets will be imported
+            :type   preserve_dirs:          bool
+            :param  file_type:              file type of the loaded datasets, defaults to 'auto' (autodetect)
+            :type   file_type:              str
+            :param  dbkey:                  dbkey of the loaded genome, defaults to '?' (unknown)
+            :type   dbkey:                  str
+        :type   dictionary
         :returns:   dict containing information about the created upload job
-        :rtype:     dictionary        
+        :rtype:     dictionary
+        :raises: RequestParameterMissingException, AdminRequiredException, ConfigDoesNotAllowException, RequestParameterInvalidException
+                    InsufficientPermissionsException, ObjectNotFound
         """
-
-        kwd[ 'space_to_tab' ] = 'False'
-        kwd[ 'to_posix_lines' ] = 'True'
+        if payload:
+            kwd.update(payload)
+        kwd['space_to_tab'] = False
+        kwd['to_posix_lines'] = True
         kwd[ 'dbkey' ] = kwd.get( 'dbkey', '?' )
         kwd[ 'file_type' ] = kwd.get( 'file_type', 'auto' )
-        kwd[' link_data_only' ] = 'link_to_files' if util.string_as_bool( kwd.get( 'link_data', False ) ) else 'copy_files'
+        kwd['link_data_only'] = 'link_to_files' if util.string_as_bool( kwd.get( 'link_data', False ) ) else 'copy_files'
         encoded_folder_id = kwd.get( 'encoded_folder_id', None )
         if encoded_folder_id is not None:
             folder_id = self.folder_manager.cut_and_decode( trans, encoded_folder_id )
@@ -477,7 +480,7 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
         tool_id = 'upload1'
         tool = trans.app.toolbox.get_tool( tool_id )
         state = tool.new_state( trans )
-        tool.update_state( trans, tool.inputs_by_page[ 0 ], state.inputs, kwd )
+        tool.populate_state( trans, tool.inputs, state.inputs, kwd )
         tool_params = state.inputs
         dataset_upload_inputs = []
         for input in tool.inputs.itervalues():
@@ -488,16 +491,15 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
         kwd[ 'filesystem_paths' ] = path
         if source in [ 'importdir_folder' ]:
             kwd[ 'filesystem_paths' ] = os.path.join( import_base_dir, path )
-        params = util.Params( kwd )
         # user wants to import one file only
         if source in [ "userdir_file", "importdir_file" ]:
             file = os.path.abspath( path )
             abspath_datasets.append( trans.webapp.controllers[ 'library_common' ].make_library_uploaded_dataset(
-                trans, 'api', params, os.path.basename( file ), file, 'server_dir', library_bunch ) )
+                trans, 'api', kwd, os.path.basename( file ), file, 'server_dir', library_bunch ) )
         # user wants to import whole folder
         if source == "userdir_folder":
             uploaded_datasets_bunch = trans.webapp.controllers[ 'library_common' ].get_path_paste_uploaded_datasets(
-                trans, 'api', params, library_bunch, 200, '' )
+                trans, 'api', kwd, library_bunch, 200, '' )
             uploaded_datasets = uploaded_datasets_bunch[ 0 ]
             if uploaded_datasets is None:
                 raise exceptions.ObjectNotFound( 'Given folder does not contain any datasets.' )
@@ -508,7 +510,7 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
         if source in [ "admin_path", "importdir_folder" ]:
             # validate the path is within root
             uploaded_datasets_bunch = trans.webapp.controllers[ 'library_common' ].get_path_paste_uploaded_datasets(
-                trans, 'api', params, library_bunch, 200, '' )
+                trans, 'api', kwd, library_bunch, 200, '' )
             uploaded_datasets = uploaded_datasets_bunch[0]
             if uploaded_datasets is None:
                 raise exceptions.ObjectNotFound( 'Given folder does not contain any datasets.' )
@@ -542,8 +544,10 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
 
         :param  format:      string representing requested archive format
         :type   format:      string
-        :param  ld_ids[]:      an array of encoded ids
+        :param  ld_ids[]:      an array of encoded dataset ids
         :type   ld_ids[]:      an array
+        :param  folder_ids[]:      an array of encoded folder ids
+        :type   folder_ids[]:      an array
 
         :rtype:   file
         :returns: either archive with the requested datasets packed inside or a single uncompressed dataset
@@ -566,13 +570,45 @@ class LibraryDatasetsController( BaseAPIController, UsesVisualizationMixin ):
                     raise exceptions.InternalServerError( 'Internal error.' )
                 except Exception, e:
                     raise exceptions.InternalServerError( 'Unknown error.' )
-        else:
-            raise exceptions.RequestParameterMissingException( 'Request has to contain a list of dataset ids to download.' )
+
+        folders_to_download = kwd.get( 'folder_ids%5B%5D', None )
+        if folders_to_download is None:
+            folders_to_download = kwd.get( 'folder_ids', None )
+        if folders_to_download is not None:
+            folders_to_download = util.listify( folders_to_download )
+
+            current_user_roles = trans.get_current_user_roles()
+
+            def traverse( folder ):
+                admin = trans.user_is_admin()
+                rval = []
+                for subfolder in folder.active_folders:
+                    if not admin:
+                        can_access, folder_ids = trans.app.security_agent.check_folder_contents( trans.user, current_user_roles, subfolder )
+                    if (admin or can_access) and not subfolder.deleted:
+                        rval.extend( traverse( subfolder ) )
+                for ld in folder.datasets:
+                    if not admin:
+                        can_access = trans.app.security_agent.can_access_dataset(
+                            current_user_roles,
+                            ld.library_dataset_dataset_association.dataset
+                        )
+                    if (admin or can_access) and not ld.deleted:
+                        rval.append( ld )
+                return rval
+
+            for encoded_folder_id in folders_to_download:
+                folder_id = self.folder_manager.cut_and_decode( trans, encoded_folder_id )
+                folder = self.folder_manager.get( trans, folder_id )
+                library_datasets.extend( traverse( folder ) )
+
+        if not library_datasets:
+            raise exceptions.RequestParameterMissingException( 'Request has to contain a list of dataset ids or folder ids to download.' )
 
         if format in [ 'zip', 'tgz', 'tbz' ]:
             # error = False
             killme = string.punctuation + string.whitespace
-            trantab = string.maketrans( killme, '_'*len( killme ) )
+            trantab = string.maketrans( killme, '_' * len( killme ) )
             try:
                 outext = 'zip'
                 if format == 'zip':

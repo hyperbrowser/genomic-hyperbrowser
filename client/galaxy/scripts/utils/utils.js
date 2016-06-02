@@ -4,19 +4,36 @@
 */
 
 // dependencies
-define(["libs/underscore"], function(_) {
+define([], function() {
+
+/** Builds a basic iframe
+*/
+function iframe( src ) {
+    return '<iframe src="' + src + '" frameborder="0" style="width: 100%; height: 100%;"/>';
+}
 
 /** Traverse through json
 */
-function deepeach(dict, callback) {
-    for (var i in dict) {
-        var d = dict[i];
-        if (d && typeof(d) == "object") {
-            callback(d);
-            deepeach(d, callback);
+function deepeach( dict, callback ) {
+    for( var i in dict ) {
+        var d = dict[ i ];
+        if( _.isObject( d ) ) {
+            var new_dict = callback( d );
+            new_dict && ( dict[ i ] = new_dict );
+            deepeach( d, callback );
         }
     }
 }
+
+/**
+ * Check if a string is a json string
+ * @param{String}   text - Content to be validated
+ */
+function isJSON(text) {
+    return /^[\],:{}\s]*$/.test(text.replace(/\\["\\\/bfnrtu]/g, '@').
+        replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+        replace(/(?:^|:|,)(?:\s*\[)+/g, ''));
+};
 
 /**
  * Sanitize/escape a string
@@ -39,7 +56,7 @@ function validate (value) {
         return false;
     }
     for (var i in value) {
-        if (['__null__', '__undefined__', 'None', null, undefined].indexOf(value[i]) > -1) {
+        if (['__null__', '__undefined__', null, undefined].indexOf(value[i]) > -1) {
             return false;
         }
     }
@@ -106,7 +123,7 @@ function request (options) {
         data        : options.data || {},
         url         : options.url
     }
-    
+
     // encode data into url
     if (ajaxConfig.type == 'GET' || ajaxConfig.type == 'DELETE') {
         if (ajaxConfig.url.indexOf('?') == -1) {
@@ -123,8 +140,7 @@ function request (options) {
     }
 
     // make request
-    $.ajax(ajaxConfig)
-    .done(function(response) {
+    $.ajax(ajaxConfig).done(function(response) {
         if (typeof response === 'string') {
             try {
                 response = response.replace('Infinity,', '"Infinity",');
@@ -134,8 +150,7 @@ function request (options) {
             }
         }
         options.success && options.success(response);
-    })
-    .fail(function(response) {
+    }).fail(function(response) {
         var response_text = null;
         try {
             response_text = jQuery.parseJSON(response.responseText);
@@ -143,39 +158,32 @@ function request (options) {
             response_text = response.responseText;
         }
         options.error && options.error(response_text, response);
+    }).always(function() {
+        options.complete && options.complete();
     });
 };
 
-/** 
+/**
  * Read a property value from CSS
  * @param{String}   classname   - CSS class
  * @param{String}   name        - CSS property
  */
 function cssGetAttribute (classname, name) {
-    // place dummy element
     var el = $('<div class="' + classname + '"></div>');
-       
-    // required append
     el.appendTo(':eq(0)');
-    
-    // get value
     var value = el.css(name);
-    
-    // remove element
     el.remove();
-        
-    // return css value
     return value;
 };
-    
+
 /**
  * Load a CSS file
  * @param{String}   url - Url of CSS file
  */
 function cssLoadFile (url) {
-    // check if css is already available
-    if (!$('link[href^="' + url + '"]').length)
-        $('<link href="' + galaxy_config.root + url + '" rel="stylesheet">').appendTo('head');
+    if (!$('link[href^="' + url + '"]').length) {
+        $('<link href="' + Galaxy.root + url + '" rel="stylesheet">').appendTo('head');
+    }
 };
 
 /**
@@ -184,29 +192,49 @@ function cssLoadFile (url) {
  * @param{Object}   optionsDefault  - Source dictionary
  */
 function merge (options, optionsDefault) {
-    if (options)
+    if (options) {
         return _.defaults(options, optionsDefault);
-    else
+    } else {
         return optionsDefault;
+    }
 };
 
+
+/**
+ * Round floaing point 'number' to 'numPlaces' number of decimal places.
+ * @param{Object}   number      a floaing point number
+ * @param{Object}   numPlaces   number of decimal places
+ */
+function roundToDecimalPlaces( number, numPlaces ){
+    var placesMultiplier = 1;
+    for( var i=0; i<numPlaces; i++ ){
+        placesMultiplier *= 10;
+    }
+    return Math.round( number * placesMultiplier ) / placesMultiplier;
+}
+
+// calculate on import
+var kb = 1024,
+    mb = kb * kb,
+    gb = mb * kb,
+    tb = gb * kb;
 /**
  * Format byte size to string with units
  * @param{Integer}   size           - Size in bytes
  * @param{Boolean}   normal_font    - Switches font between normal and bold
  */
-function bytesToString (size, normal_font) {
+function bytesToString (size, normal_font, numberPlaces) {
+    numberPlaces = numberPlaces !== undefined? numberPlaces: 1;
     // identify unit
     var unit = "";
-    if (size >= 100000000000)   { size = size / 100000000000; unit = 'TB'; } else
-    if (size >= 100000000)      { size = size / 100000000; unit = 'GB'; } else
-    if (size >= 100000)         { size = size / 100000; unit = 'MB'; } else
-    if (size >= 100)            { size = size / 100; unit = 'KB'; } else
-    if (size >  0)              { size = size * 10; unit = 'b'; } else
-        return '<strong>-</strong>';
-                                
+    if (size >= tb){ size = size / tb; unit = 'TB'; } else
+    if (size >= gb){ size = size / gb; unit = 'GB'; } else
+    if (size >= mb){ size = size / mb; unit = 'MB'; } else
+    if (size >= kb){ size = size / kb; unit = 'KB'; } else
+    if (size >  0){ unit = 'b'; }
+    else { return normal_font? '0 b': '<strong>-</strong>'; }
     // return formatted string
-    var rounded = (Math.round(size) / 10);
+    var rounded = unit == 'b'? size: roundToDecimalPlaces( size, numberPlaces );
     if (normal_font) {
        return  rounded + ' ' + unit;
     } else {
@@ -217,43 +245,40 @@ function bytesToString (size, normal_font) {
 /**
  * Create a unique id
  */
-function uuid(){
-    return 'x' + Math.random().toString(36).substring(2, 9);
+function uid(){
+    top.__utils__uid__ = top.__utils__uid__ || 0;
+    return 'uid-' + top.__utils__uid__++;
 };
 
 /**
  * Create a time stamp
  */
 function time() {
-    // get date object
     var d = new Date();
-    
-    // format items
     var hours = (d.getHours() < 10 ? "0" : "") + d.getHours();
     var minutes = (d.getMinutes() < 10 ? "0" : "") + d.getMinutes()
-    
-    // format final stamp
-    var datetime = d.getDate() + "/"
+    return datetime = d.getDate() + "/"
                 + (d.getMonth() + 1)  + "/"
                 + d.getFullYear() + ", "
                 + hours + ":"
                 + minutes;
-    return datetime;
 };
 
 return {
-    cssLoadFile   : cssLoadFile,
-    cssGetAttribute : cssGetAttribute,
-    get : get,
-    merge : merge,
+    cssLoadFile: cssLoadFile,
+    cssGetAttribute: cssGetAttribute,
+    get: get,
+    merge: merge,
+    iframe: iframe,
     bytesToString: bytesToString,
-    uuid: uuid,
+    uid: uid,
     time: time,
     request: request,
     sanitize: sanitize,
     textify: textify,
     validate: validate,
-    deepeach: deepeach
+    deepeach: deepeach,
+    isJSON: isJSON
 };
 
 });

@@ -75,7 +75,7 @@ class GenericToolController(BaseToolController):
         subClasses = self.prototype.getSubToolClasses()
         if subClasses:
             self.subToolSelectionTitle = self.prototype.getSubToolSelectionTitle()
-            self.subClasses[self.prototype.getToolSelectionName()] = self.prototype
+            self.subClasses[self.prototype.getToolSelectionName()] = self.prototype.__class__
             for subcls in subClasses:
                 toolSelectionName = subcls.getToolSelectionName()
                 if self.prototype.useSubToolPrefix():
@@ -478,7 +478,7 @@ class GenericToolController(BaseToolController):
             print '''
             <html>
                 <head>
-                    <script type="text/javascript" src="%(prefix)s/static/scripts/jquery.js"></script>
+                    <script type="text/javascript" src="%(prefix)s/static/scripts/libs/jquery/jquery.js"></script>
                     <link href="%(prefix)s/static/style/base.css" rel="stylesheet" type="text/css" />
                 </head>
                 <body>

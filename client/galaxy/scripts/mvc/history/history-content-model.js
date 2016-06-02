@@ -3,6 +3,8 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( STATES, BASE_MVC, _l ){
+
+var logNamespace = 'history';
 //==============================================================================
 /** How the type_id attribute is built for the history's mixed contents collection */
 var typeIdStr = function _typeIdStr( type, id ){
@@ -56,6 +58,13 @@ var HistoryContentMixin = {
         this.set( 'type_id', this._typeIdStr() );
     },
 
+    /** override because backbone tests boolean( idAttribute ), but it's not an empty string even for new models
+     *  due to our use of type_id.
+     */
+    isNew : function(){
+        return !this.get( 'id' );
+    },
+
     // ........................................................................ common queries
     /** the more common alias of visible */
     hidden : function(){
@@ -85,7 +94,7 @@ var HistoryContentMixin = {
 //TODO: global
 //TODO: these are probably better done on the leaf classes
     /** history content goes through the 'api/histories' API */
-    urlRoot: galaxy_config.root + 'api/histories/',
+    urlRoot: Galaxy.root + 'api/histories/',
 
     /** full url spec. for this content */
     url : function(){
@@ -121,7 +130,10 @@ var HistoryContentMixin = {
 //TODO: needed?
 /** @class (Concrete/non-mixin) base model for content items.
  */
-var HistoryContent = Backbone.Model.extend( BASE_MVC.LoggableMixin ).extend( HistoryContentMixin );
+var HistoryContent = Backbone.Model
+        .extend( BASE_MVC.LoggableMixin )
+        .extend( HistoryContentMixin )
+        .extend({ _logNamespace : logNamespace });
 
 
 //==============================================================================

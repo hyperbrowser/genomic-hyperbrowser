@@ -83,10 +83,14 @@ class GalaxyWrapper:
                 self.params[key] = params[key]
 
     def encode_id(self, id):
-        return self.trans.security.encode_id(id)
+        from proto.CommonFunctions import galaxySecureEncodeId
+        return galaxySecureEncodeId(id)
+        # return self.trans.security.encode_id(id)
 
     def decode_id(self, id):
-        return self.trans.security.decode_id(id)
+        from proto.CommonFunctions import galaxySecureDecodeId
+        return galaxySecureDecodeId(id)
+        # return self.trans.security.decode_id(id)
 
     #def setDataFileRoot(self, root):
     #    self._data_file_root = root

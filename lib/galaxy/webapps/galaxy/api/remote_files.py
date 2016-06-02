@@ -4,15 +4,15 @@ API operations on remote files.
 import os
 import time
 import hashlib
-from galaxy import web
 from galaxy import exceptions
 from galaxy.web import _future_expose_api as expose_api
-from galaxy.util import jstree
-from galaxy.web.base.controller import BaseAPIController, url_for
+from galaxy.util import jstree, unicodify
+from galaxy.web.base.controller import BaseAPIController
 from operator import itemgetter
 
 import logging
 log = logging.getLogger( __name__ )
+
 
 class RemoteFilesAPIController( BaseAPIController ):
 
@@ -24,7 +24,7 @@ class RemoteFilesAPIController( BaseAPIController ):
         Displays remote files.
 
         :param  target:      target to load available datasets from, defaults to ftp
-            possible values: ftp, userdir
+            possible values: ftp, userdir, importdir
         :type   target:      str
 
         :param  format:      requested format of data, defaults to flat
@@ -42,6 +42,8 @@ class RemoteFilesAPIController( BaseAPIController ):
             if user_base_dir is None:
                 raise exceptions.ConfigDoesNotAllowException( 'The configuration of this Galaxy instance does not allow upload from user directories.' )
             full_import_dir = os.path.join( user_base_dir, user_login )
+            if not os.path.exists(full_import_dir):
+                raise exceptions.ObjectNotFound('You do not have any files in your user directory. Use FTP to upload there.')
             if full_import_dir is not None:
                 if format == 'jstree':
                     disable = kwd.get( 'disable', 'folders')
@@ -51,6 +53,8 @@ class RemoteFilesAPIController( BaseAPIController ):
                     except Exception, exception:
                         log.debug( str( exception ) )
                         raise exceptions.InternalServerError( 'Could not create tree representation of the given folder: ' + str( full_import_dir ) )
+                    if not response:
+                        raise exceptions.ObjectNotFound('You do not have any files in your user directory. Use FTP to upload there.')
                 elif format == 'ajax':
                     raise exceptions.NotImplemented( 'Not implemented yet. Sorry.' )
                 else:
@@ -109,9 +113,9 @@ class RemoteFilesAPIController( BaseAPIController ):
                 for filename in filenames:
                     path = os.path.relpath( os.path.join( dirpath, filename ), directory )
                     statinfo = os.lstat( os.path.join( dirpath, filename ) )
-                    response.append( dict(  path    = path,
-                                            size    = statinfo.st_size,
-                                            ctime   = time.strftime( "%m/%d/%Y %I:%M:%S %p", time.localtime( statinfo.st_ctime ) ) ) )
+                    response.append( dict( path=path,
+                                           size=statinfo.st_size,
+                                           ctime=time.strftime( "%m/%d/%Y %I:%M:%S %p", time.localtime( statinfo.st_ctime ) ) ) )
         else:
             raise exceptions.ConfigDoesNotAllowException( 'The given directory does not exist.' )
         # sort by path
@@ -128,20 +132,18 @@ class RemoteFilesAPIController( BaseAPIController ):
         jstree_paths = []
         if os.path.exists( directory ):
             for ( dirpath, dirnames, filenames ) in os.walk( directory ):
-
                 for dirname in dirnames:
                     dir_path = os.path.relpath( os.path.join( dirpath, dirname ), directory )
-                    dir_path_hash = hashlib.sha1( dir_path ).hexdigest()
+                    dir_path_hash = hashlib.sha1(unicodify(dir_path).encode('utf-8')).hexdigest()
                     disabled = True if disable == 'folders' else False
                     jstree_paths.append( jstree.Path( dir_path, dir_path_hash, { 'type': 'folder', 'state': { 'disabled': disabled }, 'li_attr': { 'full_path': dir_path } } ) )
 
                 for filename in filenames:
                     file_path = os.path.relpath( os.path.join( dirpath, filename ), directory )
-                    file_path_hash = hashlib.sha1( file_path ).hexdigest()
+                    file_path_hash = hashlib.sha1(unicodify(file_path).encode('utf-8')).hexdigest()
                     disabled = True if disable == 'files' else False
                     jstree_paths.append( jstree.Path( file_path, file_path_hash, { 'type': 'file', 'state': { 'disabled': disabled }, 'li_attr': { 'full_path': file_path } } ) )
         else:
             raise exceptions.ConfigDoesNotAllowException( 'The given directory does not exist.' )
-
         userdir_jstree = jstree.JSTree( jstree_paths )
         return userdir_jstree
