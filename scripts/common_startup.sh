@@ -219,3 +219,8 @@ else
     echo "R library loading failed."
     exit 0
 fi
+
+set -e
+
+./scripts/hyperbrowser_dirs.sh
+python ./scripts/hyperbrowser_setup.py

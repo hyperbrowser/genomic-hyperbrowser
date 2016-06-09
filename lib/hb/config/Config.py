@@ -14,7 +14,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from config.LocalOSConfig import *
 from config.AutoConfig import *
 
 #
@@ -22,13 +21,13 @@ from config.AutoConfig import *
 #
 
 HB_VERSION = 'v1.6'
-GALAXY_VERSION = 'fa0b5c68d097'
+# GALAXY_VERSION = 'fa0b5c68d097'
 # '26920e20157f'
 
 #
 # Functionality settings
 #
-
+IS_EXPERIMENTAL_INSTALLATION = True
 USE_MEMORY_MEMOIZATION = True
 LOAD_DISK_MEMOIZATION = IS_EXPERIMENTAL_INSTALLATION
 STORE_DISK_MEMOIZATION = IS_EXPERIMENTAL_INSTALLATION
