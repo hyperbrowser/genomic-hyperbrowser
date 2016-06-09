@@ -1,1 +1,0 @@
-../../../../templates/hyperbrowser/gmap/make_index.sh
