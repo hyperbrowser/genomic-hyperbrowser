@@ -1,9 +1,3 @@
-try:
-    from galaxy import eggs
-    import pkg_resources
-    pkg_resources.require('ftputil')
-except:
-    pass
 import os,sys,shutil
 import urllib2,re
 #Not needed anymore:

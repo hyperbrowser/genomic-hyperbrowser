@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from galaxy import eggs
-import pkg_resources
-pkg_resources.require('suds')
 import ftplib
 from suds import WebFault
 from suds.client import Client
