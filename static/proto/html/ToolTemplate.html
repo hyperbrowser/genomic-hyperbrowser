@@ -9,7 +9,7 @@
 <td valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>ToolTemplate</strong></big></big></font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href="../../../lib">index</a><br><a href="file:/Users/sveinugu/PycharmProjects/proto/lib/proto/tools/ToolTemplate.py">/Users/sveinugu/PycharmProjects/proto/lib/proto/tools/ToolTemplate.py</a></font></td></tr></table>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/sveinugu/PycharmProjects/proto/lib/proto/tools/ToolTemplate.py">/Users/sveinugu/PycharmProjects/proto/lib/proto/tools/ToolTemplate.py</a></font></td></tr></table>
     <p></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -217,10 +217,15 @@ Mandatory&nbsp;for&nbsp;the&nbsp;subsequent&nbsp;keys&nbsp;(after&nbsp;the&nbsp;
 <a href="#ToolTemplate-getInputBoxNames">getInputBoxNames</a>(),&nbsp;if&nbsp;any.</tt></dd></dl>
 
 <dl><dt><a name="ToolTemplate-getOutputFormat"><strong>getOutputFormat</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>The&nbsp;format&nbsp;of&nbsp;the&nbsp;history&nbsp;element&nbsp;with&nbsp;the&nbsp;output&nbsp;of&nbsp;the&nbsp;tool.&nbsp;Note<br>
-that&nbsp;html&nbsp;output&nbsp;shows&nbsp;print&nbsp;statements,&nbsp;but&nbsp;that&nbsp;text-based&nbsp;output<br>
-(e.g.&nbsp;bed)&nbsp;only&nbsp;shows&nbsp;text&nbsp;written&nbsp;to&nbsp;the&nbsp;galaxyFn&nbsp;file.In&nbsp;the&nbsp;latter<br>
-case,&nbsp;all&nbsp;all&nbsp;print&nbsp;statements&nbsp;are&nbsp;redirected&nbsp;to&nbsp;the&nbsp;info&nbsp;field&nbsp;of<br>
-the&nbsp;history&nbsp;item&nbsp;box.<br>
+that&nbsp;if&nbsp;'html'&nbsp;is&nbsp;returned,&nbsp;any&nbsp;print&nbsp;statements&nbsp;in&nbsp;the&nbsp;<a href="#ToolTemplate-execute">execute</a>()<br>
+method&nbsp;is&nbsp;printed&nbsp;to&nbsp;the&nbsp;output&nbsp;dataset.&nbsp;For&nbsp;text-based&nbsp;output<br>
+(e.g.&nbsp;bed)&nbsp;the&nbsp;output&nbsp;dataset&nbsp;only&nbsp;contains&nbsp;text&nbsp;written&nbsp;to&nbsp;the<br>
+galaxyFn&nbsp;file,&nbsp;while&nbsp;all&nbsp;print&nbsp;statements&nbsp;are&nbsp;redirected&nbsp;to&nbsp;the&nbsp;info<br>
+field&nbsp;of&nbsp;the&nbsp;history&nbsp;item&nbsp;box.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;for&nbsp;'html'&nbsp;output,&nbsp;standard&nbsp;HTML&nbsp;header&nbsp;and&nbsp;footer&nbsp;code&nbsp;is<br>
+added&nbsp;to&nbsp;the&nbsp;output&nbsp;dataset.&nbsp;If&nbsp;one&nbsp;wants&nbsp;to&nbsp;write&nbsp;the&nbsp;complete&nbsp;HTML<br>
+page,&nbsp;use&nbsp;the&nbsp;restricted&nbsp;output&nbsp;format&nbsp;'customhtml'&nbsp;instead.<br>
 &nbsp;<br>
 Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:<br>
 'html'</tt></dd></dl>
