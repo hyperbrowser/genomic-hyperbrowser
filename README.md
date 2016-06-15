@@ -59,6 +59,16 @@ It is highly recommended that users of Galaxy ProTo create a GitHub fork of the 
 9. In order to commit code changes and push to your github fork, run:
     - `git add $FILE` for all new and changed files
     - `git commit -m "Some nice commit message"`
-    - `git push origin $PROJECT_dev` to push all local commits to GitHub
+    - `git push origin myproject_dev` to push all local commits to GitHub
 
 ## Tool development
+
+Tool development in ProTo consists of three major steps, each handled by dedicated tool under the tool header "ProTo development tools":
+
+1. **ProTo tool generator**: This tool is used to dynamically generate a Python module (i.e. a *.py file) that defines a new ProTo tool. The module is a duplicate of a selected tool template, containing a very simple usage example.
+2. **ProTo tool explorer**: After a Python module has been generated, one needs to edit the *.py file in some editor (preferably an IDE, like PyCharm). One can then witness the creation of the tool on-the-fly using the ProTo tool explorer. Just save the file, and the user interface of the tool will be updated. The ProTo tool explorer contains all the tools that has not been installed (i.e. is under development).
+3. **ProTo tool installer**: After the tool has been finalized, it can be published as a separate tool in the tool menu. A restricted user can carry out this with the ProTo tool installer, but an administrator needs to refresh the tool menu for the new tool to appear.
+
+### Documentation of the API
+
+The complete API is documented as
