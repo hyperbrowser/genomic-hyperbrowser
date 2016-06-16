@@ -70,6 +70,8 @@ Tool development in ProTo consists of three major steps, each handled by dedicat
 2. **ProTo tool explorer**: After a Python module has been generated, one needs to edit the *.py file in some editor (preferably an IDE, like PyCharm). One can then witness the creation of the tool on-the-fly using the ProTo tool explorer. Just save the file, and the user interface of the tool will be updated. The ProTo tool explorer contains all the tools that has not been installed (i.e. is under development).
 3. **ProTo tool installer**: After the tool has been finalized, it can be published as a separate tool in the tool menu. A restricted user can carry out this with the ProTo tool installer, but an administrator needs to refresh the tool menu for the new tool to appear.
 
+See the help text inside each tool for more usage details.
+
 ### Documentation of the API
 
 The complete API is documented as pydoc strings within the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) file, and a HTML compilation of the documentation (with some manual modifications) is available in the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) file.
