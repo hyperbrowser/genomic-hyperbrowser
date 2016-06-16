@@ -21,10 +21,11 @@ Instead of XML files, Galaxy ProTo supports defining the user interface of a too
 - Galaxy ProTo has only been tested on Linux-based operating systems. It will probably also work on Mac OS X, and probably not on Windows.
 - The "Run this job again" functionality of Galaxy will break for old history elements if the "proto_id_secret" configuration options is changed in the "galaxy.ini" file.
 - ProTo tools are not supported in Galaxy Tool Shed, mainly because the API is an unofficial alternative to the Galaxy XML.
+- Tested mainly with Chrome and Firefox web browsers.
 
 ## Installation
 
-It is highly recommended that users of Galaxy ProTo create a GitHub fork of the project to host their developed ProTo tools, so this guide will follow that approach. If, for some reason, you would like to work locally on the server only, please just skip item 1 and 2 and use the URL "https://github.com/elixir-no-nels/proto" in item 3.i.
+It is highly recommended that users of Galaxy ProTo create a GitHub fork of the project to host their developed ProTo tools, so this guide will follow that approach. If, for some reason, you would like to work locally on the server only, please just skip item 1 and 2, use the URL "https://github.com/elixir-no-nels/proto" in item 3.i., and skip item 3.iii.
 
 1. Create a github user (if you do not already have one), at https://github.com, and sign in.
 2. Fork Galaxy Proto:
@@ -48,13 +49,13 @@ It is highly recommended that users of Galaxy ProTo create a GitHub fork of the 
   1. Uncomment "port" and set it to an unused port number (or keep the default 8080 if you want).
   2. Uncomment "host" and set it to `0.0.0.0` (given that you want to access the Galaxy ProTo web server from other computers).
   3. Uncomment "database_connection" and set it to point to your PostgreSQL database, as explained in the [Galaxy Wiki] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer#Switching_to_a_database_server). 
-  4. Uncomment "admin_users" and add the email address(es) for the admins. An adimn account is needed to publish finished ProTo tools to the tool menu. You will need to register with the same address in Galaxy to get the admin account.
+  4. Uncomment "admin_users" and add the email address(es) for the admins. An admin account is needed to publish finished ProTo tools to the tool menu. You will need to register with the same address in Galaxy to get the admin account.
   5. Uncomment "id_secret" and set it to the result of the one-liner generation code in the comments.
-  6. Uncomment "restricted_users" and add any users that need access to private development tools (e.g. developers or test users). Admn users are by default also restricted users and no not need to be listed twice.
+  6. Uncomment "restricted_users" and add any users that need access to private development tools (e.g. developers or test users). Admin users are by default also restricted users and no not need to be listed twice.
   7. Uncomment "proto_id_secret" and set it to the result of the one-liner generation code in the comments, but with a different code than "id_secret". NOTE: This step is important if you want to maintain the redo functionality, see "Known Limitations" above.
 8. Start up Galaxy ProTo:
   1. `cd ..` (to exit the "config" directory).
-  2. `./run.sh`. The Galaxy should now be accessible from http://insilico.hpc.uio.no:PORT, where PORT is the selected port number (above)
+  2. `./run.sh`. The Galaxy should now be accessible from e.g. http://yourserver.edu:8080, where the hostname and port will change according to your setup.
   - For making Galaxy run in the background, use `./run.sh --daemon` to start it and `./run.sh --stop-daemon` to stop it.
 9. In order to commit code changes and push to your github fork, run:
     - `git add $FILE` for all new and changed files
@@ -69,6 +70,16 @@ Tool development in ProTo consists of three major steps, each handled by dedicat
 2. **ProTo tool explorer**: After a Python module has been generated, one needs to edit the *.py file in some editor (preferably an IDE, like PyCharm). One can then witness the creation of the tool on-the-fly using the ProTo tool explorer. Just save the file, and the user interface of the tool will be updated. The ProTo tool explorer contains all the tools that has not been installed (i.e. is under development).
 3. **ProTo tool installer**: After the tool has been finalized, it can be published as a separate tool in the tool menu. A restricted user can carry out this with the ProTo tool installer, but an administrator needs to refresh the tool menu for the new tool to appear.
 
+See the help text inside each tool for more usage details.
+
 ### Documentation of the API
 
-The complete API is documented as
+The complete API is documented as pydoc strings within the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) file, and a HTML compilation of the documentation (with some manual modifications) is available in the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) file.
+
+A basic tutorial has yet to be written, but here are some points to get you started:
+
+1. A ProTo tool is a subclass of the GeneralGuiTool class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py] (lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method. 
+2. The minimal set of methods to be defined is `getToolName()`, `getInputBoxNames()` and `execute()`. which will produce a tool existing of a single execute button.
+3. Adding other input (and output) boxes is a matter of first defining them in the return statement of getInputBoxNames() with a certain key, e.g. "histSelect". Secondly, one needs to implement a method `getOptionsBoxKey`, exchanging the actual key string in the method, in this example `getOptionsBoxHistSelect`. The return value of this method defines the type of input field, e.g. returning a string creates a text box, while a list of strings creates a selection list. See the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) documentation for the complete list of inpute fields.
+4. The parameter `prevChoices` provided to the `getOptionsBox...()` methods is a namedtuple object of all previous options boxes (including the previous content of the current options box). One can access previous selection by using standard member access, e.g. `prevChoices.histSelect`. Similarly the parameter `choices` provided to the `execute()` method and others contain the full list of option box selections, in the same format.
+5. The parameter `galaxyFn` contains the disk path to the output dataset of the tool. Please write tool output to this file path. See [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) for more details.
