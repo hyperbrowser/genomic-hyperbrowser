@@ -85,8 +85,7 @@ A basic tutorial has yet to be written, but here are some points to get you star
 5. The parameter `galaxyFn` contains the disk path to the output dataset of the tool. Please write tool output to this file path. See [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) for more details.
 6. Validation of input parameters can be done in the method `validateAndReturnErrors`. It takes in the `choices` parameter (as explained in point 4), and the user selections and input can then be validated. If there is something wrong with the input, e.g. the user typed some alphabetic characters in a numbers-only input field, just return a string with the error message, and this will be shown to the user (and the "Execute" button will be hidden).
 
-### More advanced development topics
-Some more advanced topics:
+### Miscellaneous features, tips and best practices
 
 #### Hide options box
 To make an options box visible only if the user has selected something in a previous options box (e.g. selected a history element): 
@@ -118,7 +117,7 @@ Note that when using `begin()` and `end()` methods, which adds the HTML start an
 An overview of the methods are available from [HtmlCore.html]  (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/HtmlCore.html). However, the methods have not been documented yet.
 
 #### Extra output files linked from the main HTML output
-The module [StaticFile] (lib/proto/StaticFile.py) contains a very useful class for specifically HTML output, named `GalaxyRunSpecificFile`. The aim of this class is to serve as a reference to an additional output files connected to the output dataset. Such extra files are stored under the 'dataset_XYZ_files' directory (for those familiar with the Galaxy file hierarchy). The class can be used like in this example in the `execute()` method (also making use of [HtmlCore] (#html-output):
+The module [StaticFile] (lib/proto/StaticFile.py) contains a very useful class for specifically HTML output, named `GalaxyRunSpecificFile`. The aim of this class is to serve as a reference to an additional output files connected to the output dataset. Such extra files are stored under the 'dataset_XYZ_files' directory (for those familiar with the Galaxy file hierarchy). The class can be used like in this example in the `execute()` method (also making use of [HtmlCore] (#html-output)):
 
 ```
 from proto.HtmlCore import HtmlCore
