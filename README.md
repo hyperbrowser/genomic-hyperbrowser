@@ -1,4 +1,28 @@
 # Galaxy ProTo
+## Table of Contents
+
+  * [<a id="user-content-introduction" href="#introduction"></a>Introduction](#introduction)
+  * [<a id="user-content-background" href="#background"></a>Background](#background)
+  * [<a id="user-content-features" href="#features"></a>Features](#features)
+  * [<a id="user-content-known-limitations" href="#known-limitations"></a>Known limitations](#known-limitations)
+  * [<a id="user-content-installation" href="#installation"></a>Installation](#installation)
+  * [<a id="user-content-tool-development" href="#tool-development"></a>Tool development](#tool-development)
+    * [<a id="user-content-documentation-of-the-api" href="#documentation-of-the-api"></a>Documentation of the API](#documentation-of-the-api)
+    * [<a id="user-content-miscellaneous-features-tips-and-best-practices" href="#miscellaneous-features-tips-and-best-practices"></a>Miscellaneous features, tips and best practices](#miscellaneous-features-tips-and-best-practices)
+      * [<a id="user-content-hide-options-box" href="#hide-options-box"></a>Hide options box](#hide-options-box)
+      * [<a id="user-content-html-output" href="#html-output"></a>HTML output](#html-output)
+      * [<a id="user-content-extra-output-files-linked-from-the-main-html-output" href="#extra-output-files-linked-from-the-main-html-output"></a>Extra output files linked from the main HTML output](#extra-output-files-linked-from-the-main-html-output)
+      * [<a id="user-content-running-r-code" href="#running-r-code"></a>Running R code](#running-r-code)
+      * [<a id="user-content-more-than-one-output-history-element" href="#more-than-one-output-history-element"></a>More than one output history element](#more-than-one-output-history-element)
+      * [<a id="user-content-storing-state-information" href="#storing-state-information"></a>Storing state information](#storing-state-information)
+      * [<a id="user-content-variable-number-of-option-boxes" href="#variable-number-of-option-boxes"></a>Variable number of option boxes](#variable-number-of-option-boxes)
+      * [<a id="user-content-use-class-constants-to-store-selection-box-text" href="#use-class-constants-to-store-selection-box-text"></a>Use class constants to store selection box text](#use-class-constants-to-store-selection-box-text)
+      * [<a id="user-content-changing-type-of-proto-option-box" href="#changing-type-of-proto-option-box"></a>Changing type of ProTo option box](#changing-type-of-proto-option-box)
+      * [<a id="user-content-camelcase-or-snake_case" href="#camelcase-or-snake_case"></a>CamelCase or snake_case?](#camelcase-or-snake_case)
+  * [<a id="user-content-version-log" href="#version-log"></a>Version log](#version-log)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
 ## Introduction
 The Galaxy Prototyping Tool API (Galaxy ProTo) is an extension of the Galaxy web-based platform for data intensive biomedical research, which is available from [galaxyproject.org](https://galaxyproject.org). Galaxy ProTo is a new tool building methodology introduced by the [Genomic HyperBrowser project] (https://hyperbrowser.uio.no) as an unofficial alternative for defining Galaxy tools. Galaxy ProTo provides:
 
