@@ -4,7 +4,6 @@
   * [Introduction](#introduction)
   * [Background](#background)
   * [Features](#features)
-  * [Known limitations](#known-limitations)
   * [Installation](#installation)
   * [Tool development](#tool-development)
     * [Documentation of the API](#documentation-of-the-api)
@@ -19,6 +18,7 @@
       * [Use class constants to store selection box text](#use-class-constants-to-store-selection-box-text)
       * [Changing type of ProTo option box](#changing-type-of-proto-option-box)
       * [CamelCase or snake_case?](#camelcase-or-snake_case)
+  * [Known limitations](#known-limitations)
   * [Version log](#version-log)
 
 ## Introduction
@@ -35,15 +35,6 @@ In addition to being a feature-rich framework for biomedical research, Galaxy ca
 ## Features
 
 Instead of XML files, Galaxy ProTo supports defining the user interface of a tool as a Python class. There are no limitations to what kind of code that can be executed to generate the interface. For instance one could read the beginning of an input file and provide dynamic options based on the file contents. When developing a ProTo tool, results of changes in the code can be witnessed on-the-fly in a web browser; there is no need to reload the tool or restart the Galaxy server. When development is finished, a ProTo tool can be easily be installed into the Galaxy tool menu alongside the standard Galaxy tools. Galaxy ProTo thus empowers developers without Galaxy experience to easily develop Galaxy tools, both for prototyping purposes, but also for developing fully functional, interactive tools.
-
-## Known limitations
-
-- Galaxy ProTo tools will not run as part of a Galaxy workflow. Support for this might de developed if the need is high, but it is not a priority right now, as Galaxy ProTo is envisioned first and foremost as a way to provide easy and dynamic interaction directly with the user.
-- Galaxy ProTo works best connected to a PostgreSQL database (as recommended for [production Galaxy instances] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer)). It will work out-of-the-box with the default SQLite database, but due to a basically unfixable deadlock issue, the user will experience significant waiting time when using the tools. Using SQLite, the opening of tools will once in a while fail and time out after 15 seconds, after which the tool reloads for another try. Because of this is it highly recommended to use PostgreSQL instead of SQLite.
-- Galaxy ProTo has only been tested on Linux-based operating systems. It will probably also work on Mac OS X, and probably not on Windows.
-- The "Run this job again" functionality of Galaxy will break for old history elements if the "proto_id_secret" configuration options is changed in the "galaxy.ini" file.
-- ProTo tools are not supported in Galaxy Tool Shed, mainly because the API is an unofficial alternative to the Galaxy XML.
-- Tested mainly with Chrome and Firefox web browsers.
 
 ## Installation
 
@@ -66,11 +57,11 @@ It is highly recommended that users of Galaxy ProTo create a GitHub fork of the 
   1. `cd config`
   2. `cp galaxy.ini.sample galaxy.ini`
   3. `cp tool_conf.xml.sample tool_conf.xml`
-6. Set up an empty PostgreSQL database (follow a PostgreSQL tutorial to do this). See "Known Limitations" above.
+6. Set up an empty PostgreSQL database (follow a PostgreSQL tutorial to do this). See [Known Limitations] (#known-limitations).
 7. Edit galaxy.ini:
   1. Uncomment "port" and set it to an unused port number (or keep the default 8080 if you want).
   2. Uncomment "host" and set it to `0.0.0.0` (given that you want to access the Galaxy ProTo web server from other computers).
-  3. Uncomment "database_connection" and set it to point to your PostgreSQL database, as explained in the [Galaxy Wiki] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer#Switching_to_a_database_server). 
+  3. Uncomment "database_connection" and set it to point to your PostgreSQL database, as explained in the [Galaxy Wiki] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer#Switching_to_a_database_server).
   4. Uncomment "admin_users" and add the email address(es) for the admins. An admin account is needed to publish finished ProTo tools to the tool menu. You will need to register with the same address in Galaxy to get the admin account.
   5. Uncomment "id_secret" and set it to the result of the one-liner generation code in the comments.
   6. Uncomment "restricted_users" and add any users that need access to private development tools (e.g. developers or test users). Admin users are by default also restricted users and no not need to be listed twice.
@@ -100,7 +91,7 @@ The complete API is documented as pydoc strings within the [ToolTemplate.py] (li
 
 A basic tutorial has yet to be written, but here are some points to get you started:
 
-1. A ProTo tool is a subclass of the `GeneralGuiTool` class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py] (lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method. 
+1. A ProTo tool is a subclass of the `GeneralGuiTool` class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py] (lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method.
 2. The minimal set of methods to be defined is `getToolName()` and `execute()`. Only defining these two methods will produce a tool existing of a single execute button.
 3. Adding other input (and output) boxes is a matter of first defining them in the return statement of `getInputBoxNames()` with a certain key, e.g. "histSelect". Secondly, one needs to implement a method `getOptionsBoxKey`, exchanging the actual key string in the method, e.g. `getOptionsBoxHistSelect`. The return value of this method defines the type of input field, e.g. returning a string creates a text box, while a list of strings creates a selection list. See the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) documentation for the complete list of input fields.
 4. The parameter `prevChoices` provided to the `getOptionsBox...()` methods is a namedtuple object of all previous options boxes (including the previous content of the current options box). One can access previous user selections and unput by using standard member access, e.g. `prevChoices.histSelect`. Similarly the parameter `choices` provided to the `execute()` method and others contain the full list of option box selections, in the same format.
@@ -110,7 +101,7 @@ A basic tutorial has yet to be written, but here are some points to get you star
 ### Miscellaneous features, tips and best practices
 
 #### Hide options box
-To make an options box visible only if the user has selected something in a previous options box (e.g. selected a history element): 
+To make an options box visible only if the user has selected something in a previous options box (e.g. selected a history element):
 
 ```
 def getOptionBoxHideable(prevChoices):
@@ -134,7 +125,7 @@ with open(galaxyFn, 'w') as outFile:
     print>>outFile, core
 ```
 
-Note that when using `begin()` and `end()` methods, which adds the HTML start and end tags, the output file format (as defined by the `getOutputFormat()` method of the tool) must be set to 'customhtml'. 
+Note that when using `begin()` and `end()` methods, which adds the HTML start and end tags, the output file format (as defined by the `getOutputFormat()` method of the tool) must be set to 'customhtml'.
 
 An overview of the methods are available from [HtmlCore.html]  (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/HtmlCore.html). However, the methods have not been documented yet.
 
@@ -202,16 +193,16 @@ Galaxy ProTo supports the creation of more than one history element, as in this 
 class MyTool(GeneralGuiTool):
     EXTRA_OUTPUT_TITLE = 'Title of extra output'
     EXTRA_OUTPUT_FORMAT = 'bed'
-    
+
     (...)
-    
+
     @classmethod
     def getExtraHistElements(cls, choices):
         from proto.GeneralGuiTool import HistElement
         return [HistElement(cls.EXTRA_OUTPUT_TITLE, cls.EXTRA_OUTPUT_FORMAT)]
-        
+
     (...)
-    
+
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         (...)
@@ -228,7 +219,7 @@ If you need to store state information for some reason (this will be very rare),
 return '__hidden__', myStateInfoAsStr`
 ```
 
-You can retrieve the previous value of the hidden options box from the prevChoices namedtuple, e.g. 
+You can retrieve the previous value of the hidden options box from the prevChoices namedtuple, e.g.
 ```
 def getOptionsBoxHidden(prevChoices):
     if prevChoices.hidden is None:
@@ -252,7 +243,7 @@ class MyTool(GeneralGuiTool):
         if index < numBoxes(prevChoices): #numBoxes is placeholder for some logic that returns the exact number of boxes
             #code for option box
             return #something
-    
+
     @classmethod
     def setupExtraBoxMethods(cls):
         from functools import partial
@@ -269,7 +260,7 @@ class MyTool(GeneralGuiTool):
 MyTool.setupExtraMethods()
 ```
 
-When the module (Python file) is first read, the `setupExtraMethods()` method is called, which sets 
+When the module (Python file) is first read, the `setupExtraMethods()` method is called, which sets
 up `MAX_NUM_OF_EXTRA_BOXES` new option boxes. The code for each box is essentially similar to:
 
 ```
@@ -284,15 +275,15 @@ While one could hardcoded strings (e.g. of a selection box) directly in the retu
 Instead of hardcoding the strings, like this:
 ```
 class MyTool(GeneralGuiTool):
-    
+
     (...)
-    
+
     @staticmethod
     def getOptionsBoxSelect(prevChoices):
         return ['The first choice', 'The second choice']
-        
+
     (...)
-    
+
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         if choices.select == 'The first choice':
@@ -304,15 +295,15 @@ One should use class constants, like this:
 class MyTool(GeneralGuiTool):
     SELECT_FIRST_CHOICE = 'The first choice'
     SELECT_SECOND_CHOICE = 'The second choice'
-    
+
     (...)
-    
+
     @classmethod
     def getOptionsBoxSelect(cls, prevChoices):
         return [cls.SELECT_FIRST_CHOICE, cls.SELECT_SECOND_CHOICE]
-        
+
     (...)
-    
+
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         if choices.select == cls.SELECT_FIRST_CHOICE:
@@ -326,6 +317,15 @@ If one want to change the text later, the change is thus done only one place.
 #### CamelCase or snake_case?
 
 For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixedCase") styling for functions, member variables and methods, contrary to the recommended Python standard [PEP8] (https://www.python.org/dev/peps/pep-0008/), even though it is allowed ("allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards compatibility."). As the superclass of new ProTo tools use "camelCase", the subclasses themselves also need to follow the "camelCase" standard. If there is enough interest in it, it might be possible create support for the snake_case style, but it has not been a priority until now.
+
+## Known limitations
+
+- Galaxy ProTo tools will not run as part of a Galaxy workflow. Support for this might be developed if the need is high, but it is not a priority right now, as Galaxy ProTo is envisioned first and foremost as a way to provide easy and dynamic interaction directly with the user.
+- Galaxy ProTo works best connected to a PostgreSQL database (as recommended for [production Galaxy instances] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer)). It will work out-of-the-box with the default SQLite database, but due to a basically unfixable deadlock issue, the user will experience significant waiting time when using the tools. Using SQLite, the opening of tools will once in a while fail and time out after 15 seconds, after which the tool reloads for another try. Because of this is it highly recommended to use PostgreSQL instead of SQLite.
+- Galaxy ProTo has only been tested on Linux-based operating systems. It will probably also work on Mac OS X, and probably not on Windows.
+- The "Run this job again" functionality of Galaxy will break for old history elements if the "proto_id_secret" configuration options is changed in the "galaxy.ini" file.
+- ProTo tools are not supported in Galaxy Tool Shed, mainly because the API is an unofficial alternative to the Galaxy XML.
+- Tested mainly with Chrome and Firefox web browsers.
 
 ## Version log
 
