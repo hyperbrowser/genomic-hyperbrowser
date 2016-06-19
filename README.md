@@ -174,7 +174,7 @@ with open(galaxyFn, 'w') as outFile:
 ```
 
 #### More than one output history element
-Galaxy ProTo supports the creation of more than one history element, as in this code snippet (Note: As of version 0.9, this functionality is not operational. We are working on a fix.):
+Galaxy ProTo supports the creation of more than one history element, as in this code snippet (**Note: As of version 0.9, this functionality is not operational. We are working on a fix.**):
 
 ```
 class MyTool(GeneralGuiTool):
@@ -201,7 +201,7 @@ class MyTool(GeneralGuiTool):
 #### Storing state information
 One should never store state information in class member variables for the GenericGuiTool subclasses. Class constants are allowed (with CAPITALIZED_NAMES), but these should not contain information that will change according to user input (i.e. not being used as a constant). Doing so defeats one of the core design strategies for the ProTo system, that all state information is stored in the prevChoices variables, and can have unforeseen consequences.
 
-If you need to store state information for some reason (this will be veryr rare), you can use a hidden option box, e.g.:
+If you need to store state information for some reason (this will be very rare), you can use a hidden option box, e.g.:
 ```
 return '__hidden__', myStateInfoAsStr`
 ```
