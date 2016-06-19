@@ -1,4 +1,4 @@
-from config.Config import STATIC_PATH, STATIC_REL_PATH
+from proto.config.Config import STATIC_PATH, STATIC_REL_PATH
 from proto.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL, \
     extractNameFromDatasetInfo
 from proto.HtmlCore import HtmlCore

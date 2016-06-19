@@ -112,18 +112,18 @@ def createFullGalaxyIdFromNumber(num):
 
 
 def getGalaxyFnFromDatasetId(num):
-    from config.Config import GALAXY_FILE_PATH
+    from proto.config.Config import GALAXY_FILE_PATH
     id1, id2 = createFullGalaxyIdFromNumber(num)
     return os.path.join(GALAXY_FILE_PATH, id1, 'dataset_%s.dat' % id2)
 
 
 def galaxySecureEncodeId(plainId):
-    from config.Config import GALAXY_SECURITY_HELPER_OBJ
+    from proto.config.Config import GALAXY_SECURITY_HELPER_OBJ
     return GALAXY_SECURITY_HELPER_OBJ.encode_id(plainId)
 
 
 def galaxySecureDecodeId(encodedId):
-    from config.Config import GALAXY_SECURITY_HELPER_OBJ
+    from proto.config.Config import GALAXY_SECURITY_HELPER_OBJ
     return GALAXY_SECURITY_HELPER_OBJ.decode_id(encodedId)
 
 
@@ -197,13 +197,13 @@ def extractNameFromDatasetInfo(datasetInfo):
 #    return ['run_specific'] + id
 #
 # def getUniqueWebPath(id=[]):
-#    from config.Config import STATIC_PATH
+#    from proto.config.Config import STATIC_PATH
 #    return os.sep.join([STATIC_PATH] + getUniqueRunSpecificId(id))
 
 
 def getLoadToGalaxyHistoryURL(fn, genome='hg18', galaxyDataType='bed', urlPrefix=None):
     if urlPrefix is None:
-        from config.Config import URL_PREFIX
+        from proto.config.Config import URL_PREFIX
         urlPrefix = URL_PREFIX
 
     import base64
@@ -214,7 +214,7 @@ def getLoadToGalaxyHistoryURL(fn, genome='hg18', galaxyDataType='bed', urlPrefix
             + base64.urlsafe_b64encode(fn) + ('&datatype='+galaxyDataType if galaxyDataType is not None else '')
 
 # def getRelativeUrlFromWebPath(webPath):
-#    from config.Config import GALAXY_BASE_DIR, URL_PREFIX
+#    from proto.config.Config import GALAXY_BASE_DIR, URL_PREFIX
 #    if webPath.startswith(GALAXY_BASE_DIR):
 #        return URL_PREFIX + webPath[len(GALAXY_BASE_DIR):]
 
@@ -394,19 +394,19 @@ def createHyperBrowserURL(genome, trackName1, trackName2=None, track1file=None, 
     #genes not __genes__?
     #encode?
 
-    from config.Config import URL_PREFIX
+    from proto.config.Config import URL_PREFIX
     return URL_PREFIX + '/hyper?' + '&'.join([urllib.quote(key) + '=' + \
                                               urllib.quote(value) for key,value in urlParams])
 
 
 def createToolURL(toolId, **kwArgs):
-    from config.Config import URL_PREFIX
+    from proto.config.Config import URL_PREFIX
     return URL_PREFIX + '/hyper?mako=generictool&tool_id=' + toolId + \
             ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
 
 
 def createGalaxyToolURL(toolId, **kwArgs):
-    from config.Config import URL_PREFIX
+    from proto.config.Config import URL_PREFIX
     return URL_PREFIX + '/tool_runner?tool_id=' + toolId + \
             ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
 

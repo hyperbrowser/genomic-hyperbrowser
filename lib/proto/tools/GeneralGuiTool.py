@@ -1,7 +1,7 @@
 import os
 from collections import namedtuple
 
-#from config.Config import DATA_FILES_PATH
+#from proto.config.Config import DATA_FILES_PATH
 #from gold.application.LogSetup import logMessage
 #from gold.util.CustomExceptions import Warning
 #from quick.util.CommonFunctions import getUniqueWebPath, getRelativeUrlFromWebPath, extractIdFromGalaxyFn
