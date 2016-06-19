@@ -18,8 +18,10 @@
 import sys
 #from gold.application.GalaxyInterface import GalaxyInterface
 from collections import OrderedDict
-from hyper_gui import *
+from hyper_gui import load_input_parameters, SelectElement, \
+                      GalaxyWrapper, getDataFilePath
 from config import Config
+from urllib import unquote
 
 class BaseToolController(object):
     def __init__(self, trans = None, job = None):

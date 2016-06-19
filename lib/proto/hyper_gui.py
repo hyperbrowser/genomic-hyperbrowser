@@ -21,9 +21,9 @@ from collections import OrderedDict
 from galaxy.util.json import from_json_string, to_json_string
 import os, re
 
-#def getDataFilePath(root, id):
-#    hashDir = '/%03d/' % (int(id) / 1000)
-#    return root + hashDir + 'dataset_' + str(id) + '.dat'
+def getDataFilePath(root, id):
+    from proto.CommonFunctions import getGalaxyFnFromAnyDatasetId
+    return getGalaxyFnFromAnyDatasetId(id, root)
 
 def load_input_parameters( filename, erase_file = False ):
     datasource_params = {}
@@ -68,13 +68,11 @@ def getJobFromDataset(job_hda):
 
 
 class GalaxyWrapper:
-    _data_file_root = None
     trans = None
     params = {}
     
     def __init__(self, trans):
         self.trans = trans
-        self._data_file_root = os.path.abspath(os.path.join(trans.app.config.root, trans.app.config.file_path))
         params = trans.request.rerun_job_params if hasattr(trans.request, 'rerun_job_params') else trans.request.params
         for key in params.keys():
             try:
@@ -92,16 +90,9 @@ class GalaxyWrapper:
         return galaxySecureDecodeId(id)
         # return self.trans.security.decode_id(id)
 
-    #def setDataFileRoot(self, root):
-    #    self._data_file_root = root
-
     def getDataFilePath(self, id):
-        try:
-            did = self.decode_id(id)
-        except:
-            did = int(id)
-        hashDir = '/%03d/' % (did / 1000)
-        return self._data_file_root + hashDir + 'dataset_' + str(did) + '.dat'
+        from proto.CommonFunctions import getGalaxyFnFromAnyDatasetId
+        return getGalaxyFnFromAnyDatasetId(id)
 
     def getHistory(self, ext, dbkey = None):
         datasets = []
