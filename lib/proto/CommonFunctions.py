@@ -106,15 +106,19 @@ def extractIdFromGalaxyFn(fn):
 
 
 def createFullGalaxyIdFromNumber(num):
+    num = int(num)
     id2 = str(num)
-    id1 =  ('%.3f' % (int(id2)/1000 *1.0 / 1000))[2:]
+    id1 =  '%03d' % (num / 1000)
     return [id1, id2]
 
 
-def getGalaxyFnFromDatasetId(num):
-    from proto.config.Config import GALAXY_FILE_PATH
+def getGalaxyFnFromDatasetId(num, galaxyFilePath=None):
+    if not galaxyFilePath:
+        from proto.config.Config import GALAXY_FILE_PATH
+        galaxyFilePath = GALAXY_FILE_PATH
+
     id1, id2 = createFullGalaxyIdFromNumber(num)
-    return os.path.join(GALAXY_FILE_PATH, id1, 'dataset_%s.dat' % id2)
+    return os.path.join(galaxyFilePath, id1, 'dataset_%s.dat' % id2)
 
 
 def galaxySecureEncodeId(plainId):
@@ -136,9 +140,17 @@ def getEncodedDatasetIdFromGalaxyFn(cls, galaxyFn):
     return getEncodedDatasetIdFromPlainGalaxyId(plainId)
 
 
-def getGalaxyFnFromEncodedDatasetId(encodedId):
+def getGalaxyFnFromEncodedDatasetId(encodedId, galaxyFilePath=None):
     plainId = galaxySecureDecodeId(encodedId)
-    return getGalaxyFnFromDatasetId(plainId)
+    return getGalaxyFnFromDatasetId(plainId, galaxyFilePath=galaxyFilePath)
+
+
+def getGalaxyFnFromAnyDatasetId(id, galaxyFilePath=None):
+    try:
+        return getGalaxyFnFromEncodedDatasetId(id,
+                                               galaxyFilePath=galaxyFilePath)
+    except:
+        return getGalaxyFnFromDatasetId(id, galaxyFilePath=galaxyFilePath)
 
 
 def getGalaxyFilesDir(galaxyFn):
