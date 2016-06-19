@@ -78,12 +78,12 @@ The complete API is documented as pydoc strings within the [ToolTemplate.py] (li
 
 A basic tutorial has yet to be written, but here are some points to get you started:
 
-1. A ProTo tool is a subclass of the GeneralGuiTool class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py] (lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method. 
+1. A ProTo tool is a subclass of the `GeneralGuiTool` class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py] (lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method. 
 2. The minimal set of methods to be defined is `getToolName()` and `execute()`. Only defining these two methods will produce a tool existing of a single execute button.
 3. Adding other input (and output) boxes is a matter of first defining them in the return statement of `getInputBoxNames()` with a certain key, e.g. "histSelect". Secondly, one needs to implement a method `getOptionsBoxKey`, exchanging the actual key string in the method, e.g. `getOptionsBoxHistSelect`. The return value of this method defines the type of input field, e.g. returning a string creates a text box, while a list of strings creates a selection list. See the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) documentation for the complete list of input fields.
 4. The parameter `prevChoices` provided to the `getOptionsBox...()` methods is a namedtuple object of all previous options boxes (including the previous content of the current options box). One can access previous user selections and unput by using standard member access, e.g. `prevChoices.histSelect`. Similarly the parameter `choices` provided to the `execute()` method and others contain the full list of option box selections, in the same format.
 5. The parameter `galaxyFn` contains the disk path to the output dataset of the tool. Please write tool output to this file path. See [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) for more details.
-6. Validation of input parameters can be done in the method `validateAndReturnErrors`. It takes in the `choices` parameter (as explained in point 4), and the user selections and input can then be validated. If there is something wrong with the input, e.g. the user typed some alphabetic characters in a numbers-only input field, just return a string with the error message, and this will be shown to the user (and the "Execute" button will be hidden).
+6. Validation of input parameters can be done in the method `validateAndReturnErrors()`. It takes in the `choices` parameter (as explained in point 4), so that the selections and other input from the user can be validated. If there is something wrong with the input, e.g. the user typed some alphabetic characters in a numbers-only input field, just return a string with the error message, and this will be shown to the user (and the "Execute" button will be hidden).
 
 ### Miscellaneous features, tips and best practices
 
@@ -117,7 +117,7 @@ Note that when using `begin()` and `end()` methods, which adds the HTML start an
 An overview of the methods are available from [HtmlCore.html]  (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/HtmlCore.html). However, the methods have not been documented yet.
 
 #### Extra output files linked from the main HTML output
-The module [StaticFile] (lib/proto/StaticFile.py) contains a very useful class for specifically HTML output, named `GalaxyRunSpecificFile`. The aim of this class is to serve as a reference to an additional output files connected to the output dataset. Such extra files are stored under the 'dataset_XYZ_files' directory (for those familiar with the Galaxy file hierarchy). The class can be used like in this example in the `execute()` method (also making use of [HtmlCore] (#html-output)):
+The module [StaticFile] (lib/proto/StaticFile.py) contains a very useful class, especially for HTML output, named `GalaxyRunSpecificFile`. The aim of this class is to serve as a reference to an additional output file connected to the output dataset. Such extra files are stored under the 'dataset_XYZ_files' directory (for those familiar with the Galaxy file hierarchy). The class is aimed for use in the `execute()` method of a tool. The following example (also making use of [HtmlCore] (#html-output)) shows the usage:
 
 ```
 from proto.HtmlCore import HtmlCore
@@ -143,12 +143,14 @@ with open(galaxyFn, 'w') as outFile:
 
 An overview of the methods are available from [StaticFile.html]  (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/StaticFile.html), but not yet with detailed documentation.
 
-#### Running `R` code
-Galaxy ProTo includes support for running `R` code via the `rpy2` Python package. If `R` is available when starting up Galaxy ProTo, `rpy2` is automatically installed. `R` is an optional dependency. In addition to the standard `rpy2` setup, Galaxy ProTo includes advanced autoconversion setup that automatically converts standard Python object (lists, vectors, dicts) and `NumPy` objects (arrays, matrices, scalars) to the corresponding `R` objects, and vice-versa. In almost all cases, no extra thought needs to be put on conversion, just include the parameters that feels natural, in stark contrast to the default `rpy2` setup.
+#### Running R code
+Galaxy ProTo includes support for running `R` code via the `rpy2` Python package. If `R` is available when starting up Galaxy ProTo, `rpy2` is automatically installed. However, `R` is not a mandatory dependency for Galaxy ProTo; the rest of the functionality still works without `R` installed.
 
-To run `R` code, just import `from proto.RSetup import r`. In order to install R libraries into the virtualenv that Galaxy runs within, just add the name of the library into the [r-packages.txt file] (proto/lib/galaxy/dependencies/r-packages.txt), and restart Galaxy ProTo.
+In addition to the standard `rpy2` setup, Galaxy ProTo includes advanced autoconversion setup that automatically converts standard Python object (lists, vectors, dicts) and `NumPy` objects (arrays, matrices, scalars) into the corresponding `R` objects, and vice-versa. In almost all cases, no extra thought needs to be put on conversion, just include the parameters that feels natural, in stark contrast to the default `rpy2` setup.
 
-Here is an example that creates a `R` histogram plot as an extra file, linked to from the main HTML output file (using also [HtmlCore] (#html-output) and [GalaxyRunSpecificFile] (#extra-output-files-linked-from-the-main-html-output)):
+To run `R` code, just import `from proto.RSetup import r` (or `robjects`), and follow the documentation of the [rpy2] (http://rpy2.readthedocs.io/) library. In order to install R libraries into the virtualenv that Galaxy runs within, just add the name of the library into the [r-packages.txt file] (lib/galaxy/dependencies/r-packages.txt), and restart Galaxy ProTo.
+
+Here follows an example (in the `execute()` method) that creates a `R` histogram plot as an extra file, linked to from the main HTML output file. (The example also makes use of the [HtmlCore] (#html-output) and [GalaxyRunSpecificFile] (#extra-output-files-linked-from-the-main-html-output) classes.):
 
 ```
 from proto.HtmlCore import HtmlCore
@@ -172,7 +174,7 @@ with open(galaxyFn, 'w') as outFile:
 ```
 
 #### More than one output history element
-Galaxy ProTo support the creation of more than one history element, as in this code snippet:
+Galaxy ProTo supports the creation of more than one history element, as in this code snippet (Note: As of version 0.9, this functionality is not operational. We are working on a fix.):
 
 ```
 class MyTool(GeneralGuiTool):
@@ -183,7 +185,7 @@ class MyTool(GeneralGuiTool):
     
     @classmethod
     def getExtraHistElements(cls, choices):
-        from quick.webtools.GeneralGuiTool import HistElement
+        from proto.GeneralGuiTool import HistElement
         return [HistElement(cls.EXTRA_OUTPUT_TITLE, cls.EXTRA_OUTPUT_FORMAT)]
         
     (...)
@@ -196,10 +198,10 @@ class MyTool(GeneralGuiTool):
         (...)
 ```
 
-#### Storing state info
-Never store state information in class member variables for the GenericGuiTool subclasses. Class constants are allowed (with CAPITALIZED_NAMES), but do not use these for anything other than constant values. Doing so defeats one of the core design strategies for the ProTo system, that all state information is stored in the prevChoices variables, and can have unforeseen consequences.
+#### Storing state information
+One should never store state information in class member variables for the GenericGuiTool subclasses. Class constants are allowed (with CAPITALIZED_NAMES), but these should not contain information that will change according to user input (i.e. not being used as a constant). Doing so defeats one of the core design strategies for the ProTo system, that all state information is stored in the prevChoices variables, and can have unforeseen consequences.
 
-If you need to store state information somehow, you can use a hidden option box, e.g.:
+If you need to store state information for some reason (this will be veryr rare), you can use a hidden option box, e.g.:
 ```
 return '__hidden__', myStateInfoAsStr`
 ```
@@ -245,8 +247,8 @@ class MyTool(GeneralGuiTool):
 MyTool.setupExtraMethods()
 ```
 
-When the module (Python file) is first read, the setupExtraMethods() method is called and sets 
-up MAX_NUM_OF_EXTRA_BOXES new option boxes. The code for each box is essentially similar to:
+When the module (Python file) is first read, the `setupExtraMethods()` method is called, which sets 
+up `MAX_NUM_OF_EXTRA_BOXES` new option boxes. The code for each box is essentially similar to:
 
 ```
     @classmethod
@@ -254,15 +256,54 @@ up MAX_NUM_OF_EXTRA_BOXES new option boxes. The code for each box is essentially
         return cls._methodForOptionsBox(prevChoices, index=0)
 ```
 
-#### Other best practices
-* Use class constants to store selection box text
-  * While most tools today use hardcoded strings in the code for returning selection choices, and later (typically in the execute method) checking the value of the choice, this leads to duplication of text string. This might cause problems later on if one wants to change the text. Instead use class constants. See [[devhelp:class-constants-to-store-selection-box-text|this page]] for an example 
-* Changing type of ProTo option box
-  * **Never dynamically change the type of a single option box (e.g. from text field to selection box)!** If such changes are needed, just specify two option boxes and hide the one that is not in use. See [Hide option box] (#hide-options-box).
+#### Use class constants to store selection box text
+While one could hardcoded strings (e.g. of a selection box) directly in the return statements of a `getOptionsBox...()` method, one would later (typically in the execute method) have to check whether the user has selected something by checking against the same hardcoded sting. This might cause problems later on if one wants to change the text. Instead one should use use class constants.
+
+Instead of hardcoding the strings, like this:
+```
+class MyTool(GeneralGuiTool):
+    
+    (...)
+    
+    @staticmethod
+    def getOptionsBoxSelect(prevChoices):
+        return ['The first choice', 'The second choice']
+        
+    (...)
+    
+    @staticmethod
+    def execute(choices, galaxyFn=None, username=''):
+        if choices.select == 'The first choice':
+            # Do something
+```
+
+One should use class constants, like this:
+```
+class MyTool(GeneralGuiTool):
+    SELECT_FIRST_CHOICE = 'The first choice'
+    SELECT_SECOND_CHOICE = 'The second choice'
+    
+    (...)
+    
+    @classmethod
+    def getOptionsBoxSelect(cls, prevChoices):
+        return [cls.SELECT_FIRST_CHOICE, cls.SELECT_SECOND_CHOICE]
+        
+    (...)
+    
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
+        if choices.select == cls.SELECT_FIRST_CHOICE:
+            # Do something
+```
+If one want to change the text later, the change is thus done only one place.
+
+#### Changing type of ProTo option box
+**One should never dynamically change the type of a single option box (e.g. from text field to selection box)!** If such changes are needed, just specify two option boxes and hide the one that is not in use. See [Hide option box] (#hide-options-box).
 
 #### CamelCase or snake_case?
 
-For historical reasons, Galaxy ProTo is implemented using "camelCase" styling of functions, member variables and methods, contrary to the recommended Python standard PEP8, even though it is allowed. This means that also new ProTo tools need to follow the camelCase standard. If there is enough interest in it, we could probable also create support for the snake_case style, but it hasnot been a priority.
+For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixedCase") styling for functions, member variables and methods, contrary to the recommended Python standard [PEP8] (https://www.python.org/dev/peps/pep-0008/), even though it is allowed ("allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards compatibility."). As the superclass of new ProTo tools use "camelCase", the subclasses themselves also need to follow the "camelCase" standard. If there is enough interest in it, it might be possible create support for the snake_case style, but it has not been a priority until now.
 
 ## Version log
 
