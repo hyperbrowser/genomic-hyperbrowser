@@ -197,6 +197,7 @@ with open(galaxyFn, 'w') as outFile:
 
     myFile = GalaxyRunSpecificFile(['extra', 'histogram.png'], galaxyFn)
     path = myFile.getDiskPath(ensurePath=True)
+    link = myFile.getLink('Link to detailed results')
 
     r.png(path)
     numbers = [1,2,1,3,3,4,1,4,4,4,4,3,4,5,7,5,7,3,5,4,6,6,7,5,7,7,5,6]
