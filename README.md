@@ -8,6 +8,7 @@
   * [Tool development](#tool-development)
     * [Documentation of the API](#documentation-of-the-api)
     * [Miscellaneous features, tips and best practices](#miscellaneous-features-tips-and-best-practices)
+      * [Reading datasets from history](#reading-datasets-from-history)
       * [Hide options box](#hide-options-box)
       * [HTML output](#html-output)
       * [Extra output files linked from the main HTML output](#extra-output-files-linked-from-the-main-html-output)
@@ -100,11 +101,31 @@ A basic tutorial has yet to be written, but here are some points to get you star
 
 ### Miscellaneous features, tips and best practices
 
+#### Reading datasets from history
+To read a dataset from history, first define one of the input boxes to be a `"__history__"` input box, optionally filtering for certain file types. For reading the file, make use of the utility method `extractFnFromDatasetInfo`, e.g.:
+
+```
+@classmethod
+def getOptionBoxHistory(cls, prevChoices):
+    return '__history__, 'txt'
+    
+@classmethod
+def execute(cls, choices, galaxyFn=None, username=''):
+    from proto.CommonFunctions import extractFnFromDatasetInfo, extractFileSuffixFromDatasetInfo, extractNameFromDatasetInfo
+    datasetInfo = choices.history
+    fileName = extractFnFromDatasetInfo(datasetInfo)
+    suffix = extractFileSuffixFromDatasetInfo(datasetInfo) # if needed
+    datasetName = extractNameFromDatasetInfo(datasetInfo) # if needed
+    with open(fileName) as infile:
+        (...)
+```
+
 #### Hide options box
 To make an options box visible only if the user has selected something in a previous options box (e.g. selected a history element):
 
 ```
-def getOptionBoxHideable(prevChoices):
+@classmethod
+def getOptionBoxHideable(cls, prevChoices):
     if prevChoices.history:
         return ['Choice1', 'Choice2']</code>
 ```
@@ -176,6 +197,7 @@ with open(galaxyFn, 'w') as outFile:
 
     myFile = GalaxyRunSpecificFile(['extra', 'histogram.png'], galaxyFn)
     path = myFile.getDiskPath(ensurePath=True)
+    link = myFile.getLink('Link to histogram')
 
     r.png(path)
     numbers = [1,2,1,3,3,4,1,4,4,4,4,3,4,5,7,5,7,3,5,4,6,6,7,5,7,7,5,6]
@@ -237,7 +259,7 @@ class MyTool(GeneralGuiTool):
     def getInputBoxNames(cls):
     # Existing option boxes
       + [('Extra box number %s' % (i+1), 'extra%s' % i) for i \
-         in range(cls.MAX_NUM_OF_GSUITES_TO_ORDER)]
+         in range(cls.MAX_NUM_OF_EXTRA_BOXES)]
     (...)
     def _getOptionBoxExtra(cls, prevChoices, index):
         if index < numBoxes(prevChoices): #numBoxes is placeholder for some logic that returns the exact number of boxes
@@ -329,4 +351,5 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v0.9.1: Small bugfixes and updates to the README.md.
 * v0.9: Full functionality, but still with rests of HyperBrowser code to ble cleaned out.
