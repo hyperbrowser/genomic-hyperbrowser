@@ -197,6 +197,7 @@ with open(galaxyFn, 'w') as outFile:
 
     myFile = GalaxyRunSpecificFile(['extra', 'histogram.png'], galaxyFn)
     path = myFile.getDiskPath(ensurePath=True)
+    link = myFile.getLink('Link to detailed results')
 
     r.png(path)
     numbers = [1,2,1,3,3,4,1,4,4,4,4,3,4,5,7,5,7,3,5,4,6,6,7,5,7,7,5,6]
@@ -258,7 +259,7 @@ class MyTool(GeneralGuiTool):
     def getInputBoxNames(cls):
     # Existing option boxes
       + [('Extra box number %s' % (i+1), 'extra%s' % i) for i \
-         in range(cls.MAX_NUM_OF_GSUITES_TO_ORDER)]
+         in range(cls.MAX_NUM_OF_EXTRA_BOXES)]
     (...)
     def _getOptionBoxExtra(cls, prevChoices, index):
         if index < numBoxes(prevChoices): #numBoxes is placeholder for some logic that returns the exact number of boxes
