@@ -259,7 +259,7 @@ class MyTool(GeneralGuiTool):
     def getInputBoxNames(cls):
     # Existing option boxes
       + [('Extra box number %s' % (i+1), 'extra%s' % i) for i \
-         in range(cls.MAX_NUM_OF_GSUITES_TO_ORDER)]
+         in range(cls.MAX_NUM_OF_EXTRA_BOXES)]
     (...)
     def _getOptionBoxExtra(cls, prevChoices, index):
         if index < numBoxes(prevChoices): #numBoxes is placeholder for some logic that returns the exact number of boxes
