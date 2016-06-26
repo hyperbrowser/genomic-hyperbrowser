@@ -103,6 +103,7 @@ class HyperBrowserGenericTool( HyperBrowserTool ):
                         output.hidden = item[3] if len(item) > 3 else False
                         output.tool = self
                         output.actions = ToolOutputActionGroup( output, None )
+                        output.dataset_collector_descriptions = None
                         self.outputs[ output.name ] = output
 
             except:
