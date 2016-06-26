@@ -197,7 +197,7 @@ with open(galaxyFn, 'w') as outFile:
 
     myFile = GalaxyRunSpecificFile(['extra', 'histogram.png'], galaxyFn)
     path = myFile.getDiskPath(ensurePath=True)
-    link = myFile.getLink('Link to detailed results')
+    link = myFile.getLink('Link to histogram')
 
     r.png(path)
     numbers = [1,2,1,3,3,4,1,4,4,4,4,3,4,5,7,5,7,3,5,4,6,6,7,5,7,7,5,6]
@@ -351,4 +351,5 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v0.9.1: Small bugfixes and updates to the README.md.
 * v0.9: Full functionality, but still with rests of HyperBrowser code to ble cleaned out.
