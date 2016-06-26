@@ -39,7 +39,7 @@ Instead of XML files, Galaxy ProTo supports defining the user interface of a too
 
 ## Installation
 
-It is highly recommended that users of Galaxy ProTo create a GitHub fork of the project to host their developed ProTo tools, so this guide will follow that approach. If, for some reason, you would like to work locally on the server only, please just skip item 1 and 2, use the URL "https://github.com/elixir-no-nels/proto" in item 3.i., and skip item 3.iii.
+It is highly recommended that users of Galaxy ProTo create a GitHub fork of the project to host their developed ProTo tools, so this guide will follow that approach. If, for some reason, you do not want to create a GitHub fork, please just skip item 1 and 2, use the URL "https://github.com/elixir-no-nels/proto" in item 3.i., and skip item 3.iii.
 
 1. Create a github user (if you do not already have one), at https://github.com, and sign in.
 2. Fork Galaxy Proto:
