@@ -220,7 +220,7 @@ class MyTool(GeneralGuiTool):
 
     @classmethod
     def getExtraHistElements(cls, choices):
-        from proto.GeneralGuiTool import HistElement
+        from proto.tools.GeneralGuiTool import HistElement
         return [HistElement(cls.EXTRA_OUTPUT_TITLE, cls.EXTRA_OUTPUT_FORMAT)]
 
     (...)
