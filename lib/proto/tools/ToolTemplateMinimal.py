@@ -68,10 +68,6 @@ class ToolTemplate(GeneralGuiTool):
     #     return True
     #
     # @classmethod
-    # def isBatchTool(cls):
-    #     return cls.isHistoryTool()
-    #
-    # @classmethod
     # def isDynamic(cls):
     #     return True
     #
