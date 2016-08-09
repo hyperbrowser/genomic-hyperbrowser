@@ -16,19 +16,19 @@
 
 import sys, os
 
-from galaxy.web.base.controller import *
-import logging, sets, time
+from galaxy.web.base.controller import web, error, BaseUIController
+import logging
 
 log = logging.getLogger( __name__ )
 
 import traceback
-from multiprocessing import Process, Pipe, Array, Queue
+from multiprocessing import Process, Pipe, Queue
 from importlib import import_module
+
 
 class ProtoController( BaseUIController ):
 
-    @staticmethod
-    def __index_pipe(response, trans, tool):
+    def run_fork(self, response, trans, mako):
         # logging locks and/or atexit handlers may be cause of deadlocks in a fork from thread
         # attempt to fix by shutting down and reloading logging module and clear exit handlers
         # logging.shutdown()
@@ -48,30 +48,33 @@ class ProtoController( BaseUIController ):
         html = ''
         #response.send_bytes('ping')
         try:
-#            from gold.application.GalaxyInterface import GalaxyInterface
-#            template_mako = '/hyperbrowser/' + tool + '.mako'
-            template_mako = '/proto/' + tool + '.mako'
-            toolController = None
-            try:
-                #toolModule = __import__('proto.' + tool, globals(), locals(), ['getController'])
-                toolModule = import_module('proto.' + tool)
-                toolController = toolModule.getController(trans)
-            except Exception, e:
-                print e
-                exc_info = sys.exc_info()
-                pass
-            
-            #html = trans.fill_template(template_mako, trans=trans, hyper=GalaxyInterface, control=toolController)
-            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+            html, exc_info = self.run_tool(mako, trans)
         except Exception, e:
             html = '<html><body><pre>\n'
             if exc_info:
-                html += str(e) + ':\n' + ''.join(traceback.format_exception(exc_info[0],exc_info[1],exc_info[2])) + '\n\n'
+               html += str(e) + ':\n' + exc_info + '\n\n'
+#               html += str(e) + ':\n' + ''.join(traceback.format_exception(exc_info[0],exc_info[1],exc_info[2])) + '\n\n'
             html += str(e) + ':\n' + traceback.format_exc() + '\n</pre></body></html>'
 
         response.send_bytes(html)
         response.close()
 
+    def run_tool(self, mako, trans):
+        toolController = None
+        exc_info = None
+        try:
+            toolModule = import_module('proto.' + mako)
+            toolController = toolModule.getController(trans)
+        except Exception, e:
+            #                print e
+            exc_info = sys.exc_info()
+        if mako.startswith('/'):
+            template_mako = mako + '.mako'
+            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+        else:
+            template_mako = '/proto/' + mako + '.mako'
+            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+        return html, exc_info
 
     @web.expose
     def index(self, trans, mako = 'generictool', **kwd):
@@ -80,29 +83,27 @@ class ProtoController( BaseUIController ):
                     
         if isinstance(mako, list):
             mako = mako[0]
-        
-        #trans.sa_session.flush()
-        # trans.sa_session.close()
 
-        done = False
-        while not done:
+        retry = 3
+        while retry > 0:
+            retry -= 1
             trans.sa_session.flush()
 
             my_end, your_end = Pipe()
-            proc = Process(target=self.__index_pipe, args=(your_end,trans,str(mako)))
+            proc = Process(target=self.run_fork, args=(your_end,trans,str(mako)))
             proc.start()
             html = ''
             if proc.is_alive():
-                if my_end.poll(10):
+                if my_end.poll(15):
                     #ping = my_end.recv_bytes()
                     html = my_end.recv_bytes()
                     my_end.close()
-                    done = True
+                    break
                 else:
-                    log.warn('Fork timed out after 10 sec. Retrying...')
+                    log.warn('Fork timed out after 15 sec. Retrying...')
             else:
                 log.warn('Fork died on startup.')
-                done = True
+                break
 
             proc.join(1)
             if proc.is_alive():

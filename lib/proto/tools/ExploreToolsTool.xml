@@ -1,1 +1,1 @@
-<tool id="proto_ExploreToolsTool" name="ProTo tool explorer" proto_tool_class="ExploreToolsTool" proto_tool_module="proto.tools.ManageTools" tool_type="hyperbrowser_generic" />
+<tool id="proto_ExploreToolsTool" name="ProTo tool explorer" proto_tool_class="ExploreToolsTool" proto_tool_module="proto.tools.ManageTools" tool_type="proto_generic" />
