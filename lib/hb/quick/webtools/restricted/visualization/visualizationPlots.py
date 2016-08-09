@@ -111,7 +111,7 @@ def _addGuidelineV1(tableName='tn'):
             Zooming:
             </div>
             
-            - To zoom a plot representing one dataset, e.g. one line, click on the plot and drag your mouse to the left/right side. <br \>
+            - To zoom a plot representing one dataset, e.g. one line, click on the plot and drag your mouse to the left/right side.<br \>
             - To zoom when viewing multiple plots that represent related datasets, in the same output page, zooming one plot will automatically zoom all plots.<br \>
             - To reset the zooming press the button: \"Reset zoom\"
         
