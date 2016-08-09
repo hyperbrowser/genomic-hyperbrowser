@@ -19,6 +19,7 @@ CREATE_VENV=1
 REPLACE_PIP=$SET_VENV
 COPY_SAMPLE_FILES=1
 INSTALL_R_PACKAGES=1
+HYPERBROWSER_SETUP=1
 
 for arg in "$@"; do
     [ "$arg" = "--skip-eggs" ] && FETCH_WHEELS=0
@@ -27,7 +28,7 @@ for arg in "$@"; do
     [ "$arg" = "--no-create-venv" ] && CREATE_VENV=0
     [ "$arg" = "--no-replace-pip" ] && REPLACE_PIP=0
     [ "$arg" = "--replace-pip" ] && REPLACE_PIP=1
-    [ "$arg" = "--stop-daemon" ] && FETCH_WHEELS=0 && INSTALL_R_PACKAGES=0
+    [ "$arg" = "--stop-daemon" ] && FETCH_WHEELS=0 && INSTALL_R_PACKAGES=0 && HYPERBROWSER_SETUP=0
     [ "$arg" = "--skip-samples" ] && COPY_SAMPLE_FILES=0
 done
 
@@ -225,5 +226,7 @@ fi
 
 set -e
 
-./scripts/hyperbrowser_dirs.sh
-python ./scripts/hyperbrowser_setup.py
+if [ $HYPERBROWSER_SETUP -eq 1 ]; then
+    ./scripts/hyperbrowser_dirs.sh
+    python ./scripts/hyperbrowser_setup.py
+fi
