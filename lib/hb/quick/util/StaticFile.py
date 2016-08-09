@@ -40,7 +40,7 @@ class StaticFile(object):
         return str(HtmlCore().image(self.getURL()))
 
     def getLoadToHistoryLink(self, linkText, galaxyDataType='bed'):
-        return str(HtmlCore().link(linkText, getLoadToGalaxyHistoryURL(self.getDiskPath(), galaxyDataType)) )
+        return str(HtmlCore().link(linkText, getLoadToGalaxyHistoryURL(self.getDiskPath(), galaxyDataType=galaxyDataType)) )
 
     def openRFigure(self, h=600, w=800):
         from gold.application.RSetup import r, robjects
