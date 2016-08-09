@@ -3,14 +3,14 @@ from xml.etree import ElementTree
 from galaxy.tools import Tool, DataSourceTool
 from galaxy.tools.parser.output_actions import ToolOutputActionGroup
 from galaxy.tools.parser.output_objects import ToolOutput
-from galaxy.util.odict import odict
 from galaxy.tools.parser.output_collection_def import DEFAULT_DATASET_COLLECTOR_DESCRIPTION
+from galaxy.util.odict import odict
 
 log = logging.getLogger( __name__ )
 
-### HyperBrowser Tools
-class HyperBrowserTool( DataSourceTool ):
-    tool_type = 'hyperbrowser'
+### Proto Tools
+class ProtoTool(DataSourceTool):
+    tool_type = 'proto'
 
     def parse_inputs( self, root ):
         Tool.parse_inputs( self, root )
@@ -33,6 +33,8 @@ class HyperBrowserTool( DataSourceTool ):
             out_data2[name] = data
         
         param_dict['file_path'] = os.path.abspath(os.path.join(app.config.root, app.config.file_path))
+        # Galaxy removes the tool_id from params, add it back for ProTo
+        param_dict['tool_id'] = self.id
         DataSourceTool.exec_before_job(self, app, inp_data, out_data2, param_dict)
         
     def exec_after_process(self, app, inp_data, out_data, param_dict, job = None):
@@ -41,11 +43,13 @@ class HyperBrowserTool( DataSourceTool ):
             for name, data in out_data.items():
                 data.info = urllib.unquote(job_info)
             self.sa_session.flush()
-            #app.model.context.flush()
 
 
-class HyperBrowserGenericTool( HyperBrowserTool ):
-    tool_type = 'hyperbrowser_generic'
+class ProtoGenericTool(ProtoTool):
+    tool_type = 'proto_generic'
+    proto_mako = 'generictool'
+    proto_action = '/proto'
+    proto_command = '$GALAXY_ROOT_DIR/lib/proto/protoToolExecute.py $output'
 
     def parse( self, tool_source, guid=None ):
         root = tool_source.root
@@ -60,18 +64,20 @@ class HyperBrowserGenericTool( HyperBrowserTool ):
 
         if root.find('inputs') is None:
             inputs = ElementTree.Element('inputs')
-            inputs.append(ElementTree.Element('param', name='mako', type='hidden', value='generictool'))
+            inputs.append(ElementTree.Element('param', name='mako', type='hidden', value=self.proto_mako))
             inputs.append(ElementTree.Element('param', name='tool_id', type='hidden', value=root.get('id')))
+            inputs.append(ElementTree.Element('param', name='tool_name', type='hidden', value=root.get('id')))
             root.append(inputs)
         if root.find('outputs') is None:
             outputs = ElementTree.Element('outputs')
             outputs.append(ElementTree.Element('data', format='html', name='output'))
             root.append(outputs)
-        HyperBrowserTool.parse(self, tool_source, guid)
-        self.command = '$GALAXY_ROOT_DIR/lib/proto/protoToolExecute.py $output'
+        super(ProtoGenericTool, self).parse(tool_source, guid)
+        #self.command = '$GALAXY_ROOT_DIR/lib/proto/protoToolExecute.py $output'
+        self.command = self.proto_command
         self.interpreter = 'python'
         self.options['sanitize'] = False
-        self.action = '/proto'
+        self.action = self.proto_action
         self.check_values = False
         self.method = 'post'
 
@@ -113,13 +119,6 @@ class HyperBrowserGenericTool( HyperBrowserTool ):
         return self.tool_action.execute( self, trans, incoming=incoming, set_output_hid=set_output_hid, history=history, **kwargs )
 
 
-class HyperBrowserMultiGenericTool( HyperBrowserGenericTool ):
-    tool_type = 'hyperbrowser_multi_generic'
-
-    def parse( self, root, guid=None ):
-        HyperBrowserGenericTool.parse(self, root, guid)
-        self.command = 'multiGenericTool.py $output'
-
-
-hb_tool_types = {'hyperbrowser': HyperBrowserTool, 'hyperbrowser_generic': HyperBrowserGenericTool}
+proto_tool_types = {'proto': ProtoTool,
+                    'proto_generic': ProtoGenericTool}
 

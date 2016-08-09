@@ -20,7 +20,7 @@ TOOL_XML_REL_PATH = 'hyperbrowser/'
 class GalaxyToolConfig:
 
     tool_xml_template = '''<tool id="%s" name="%s" version="1.0.0"
-  tool_type="hyperbrowser_generic" proto_tool_module="%s" proto_tool_class="%s">
+  tool_type="proto_generic" proto_tool_module="%s" proto_tool_class="%s">
   <description>%s</description>
 </tool>\n'''
 
@@ -62,7 +62,7 @@ def getProtoToolList(except_class_names=[]):
     tools = {}
     tool_classes = []
     pys = []
-    for d in os.walk(PROTO_TOOL_DIR):
+    for d in os.walk(PROTO_TOOL_DIR, followlinks=True):
         if d[0].find('.svn') == -1:
             pys += [os.path.join(d[0], f) for f in d[2] if f.endswith('.py') and not any(f.startswith(x) for x in ['.', '#'])]
     
@@ -74,8 +74,8 @@ def getProtoToolList(except_class_names=[]):
                 if m:
                     class_name = m.group(1)
                     if class_name not in except_class_names:
-                        module_name = os.path.splitext(os.path.relpath(fn, SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
-                        #print module_name
+                        module_name = os.path.splitext(os.path.relpath(os.path.abspath(fn), SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
+                        # print module_name
                         try:
                             module = import_module(module_name)
                             prototype_cls = getattr(module, class_name)
@@ -87,6 +87,7 @@ def getProtoToolList(except_class_names=[]):
                                 else:
                                     toolSelectionName = '.'.join(toolModule)
 
+                                # print (fn, m.group(2), prototype_cls, module_name)
                                 tools[toolSelectionName] = (fn, m.group(2), prototype_cls, module_name)
                                 tool_classes.append(prototype_cls)
                         except Exception as e:
