@@ -198,7 +198,7 @@ class TabularToGtrackTool(GeneralGuiTool):
     @staticmethod
     def _getFileContentsInfo(prevChoices):
         fileContentsInfo = prevChoices.fileContentsInfo
-        if type(fileContentsInfo) == str:
+        if isinstance(fileContentsInfo, basestring):
             fileContentsInfo = eval(fileContentsInfo)
         return fileContentsInfo
 
