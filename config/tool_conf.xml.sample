@@ -132,7 +132,7 @@
   </section>
 
   <section name="Customize tracks" id="customize_tracks">
-    <tool file="hyperbrowser/expandSegments.xml" />
+    <tool file="proto/hyperbrowser/manipulate/ExpandBedSegmentsTool.xml" />
     <tool file="proto/hyperbrowser/restricted/MakeGenomePartionAccordingToSegments.xml" />
     <!--<tool file="hyperbrowser/targetcontrol.xml" />-->
     <tool file="proto/hyperbrowser/manipulate/CreateCaseControlTrack.xml" />
@@ -299,11 +299,11 @@
     <tool file="proto/hyperbrowser/restricted/ReportTrackProperties.xml" />
 
     <!-- hidden tools -->
-    <tool file="hyperbrowser/file_import.xml" />
-    <tool file="hyperbrowser/file_import_bed.xml" />
-    <tool file="hyperbrowser/file_import_bedgraph.xml" />
-    <tool file="hyperbrowser/file_import_gtrack.xml" />
-    <tool file="hyperbrowser/file_import_gsuite.xml" />
+    <tool file="proto/hyperbrowser/file_import/FileImport.xml" />
+    <tool file="proto/hyperbrowser/file_import/FileImportBed.xml" />
+    <tool file="proto/hyperbrowser/file_import/FileImportBedGraph.xml" />
+    <tool file="proto/hyperbrowser/file_import/FileImportGSuite.xml" />
+    <tool file="proto/hyperbrowser/file_import/FileImportGTrack.xml" />
     <!-- end hidden tools -->
 
     <tool file="hyperbrowser/extractTrack.xml" />
