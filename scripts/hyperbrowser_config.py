@@ -1,9 +1,12 @@
 import sys, os
 from getopt import GetoptError, getopt
+import shelve
 
 new_path = [ os.path.join( os.getcwd(), "lib" ) ]
 new_path.extend( sys.path[1:] )  # remove scripts/ from the path
 sys.path = new_path
+
+SHELVE_FN = os.getcwd() + '/database/hb_config.shelve'
 
 def usage():
     print '''
@@ -15,6 +18,12 @@ OPTIONS:
     -c CONSTANT:
         The constant whose value should be printed.
 
+    -s, --store:
+        Store all config values in a pickle file
+
+    -r, --release:
+        Release config values, deleting the pickle file
+
     -h, --help:
         Returns this help screen.
 '''
@@ -22,9 +31,12 @@ OPTIONS:
 
 if __name__ == '__main__':
     configConstant = ''
+    store = False
+    release = False
 
     try:
-        opts, args = getopt(sys.argv[1:], 'hc:', ['help', 'config-constant'])
+        opts, args = getopt(sys.argv[1:], 'hc:sr',
+                            ['help', 'config-constant', 'store', 'release'])
     except GetoptError:
         usage()
         sys.exit(1)
@@ -35,8 +47,13 @@ if __name__ == '__main__':
             sys.exit(0)
         if opt in ('-c', '--config-constant'):
             configConstant = arg
+        if opt in ('-s', '--store'):
+            store = True
+        if opt in ('-r', '--release'):
+            release = True
 
-    if not configConstant:
+    if not configConstant and not store and not release:
+        print configConstant, store, release
         print 'Error, config constant needs to be specified. Usage:'
         usage()
         sys.exit(0)
@@ -48,6 +65,23 @@ if __name__ == '__main__':
     if not os.environ.get('GALAXY_CONFIG_FILE'):
         os.environ['GALAXY_CONFIG_FILE'] = 'config/galaxy.ini'
 
-    import config.Config as Config
-    print Config.__dict__.get(configConstant)
+    if store:
+        import config.Config as Config
+        shelveFile = shelve.open(SHELVE_FN)
+        for attr in dir(Config):
+            try:
+                shelveFile[attr] = getattr(Config, attr)
+            except:
+                pass
+
+    if release and os.path.exists(SHELVE_FN):
+        os.remove(SHELVE_FN)
+
+    if configConstant:
+        if os.path.exists(SHELVE_FN):
+            shelveFile = shelve.open(SHELVE_FN, 'r')
+            print shelveFile[configConstant]
+        else:
+            import config.Config as Config
+            print Config.__dict__.get(configConstant)
 

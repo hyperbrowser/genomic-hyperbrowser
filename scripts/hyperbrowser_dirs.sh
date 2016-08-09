@@ -121,6 +121,12 @@ function create_rename_old_and_link {
     fi
 }
 
+#
+# Store config in shelve file for speed
+#
+
+$(python scripts/hyperbrowser_config.py -r)
+$(python scripts/hyperbrowser_config.py -s)
 
 #
 # Handle external HyperBrowser data directories
@@ -163,6 +169,13 @@ create_dir_if_not_exists   'RESULTS_STATIC_PATH'
 create_rename_old_and_link 'EXT_MEMOIZED_DATA_PATH'         'MEMOIZED_DATA_PATH'
 create_rename_old_and_link 'EXT_MAPS_PATH'                  'MAPS_PATH'
 link_dir                   'MAPS_TEMPLATE_PATH'             'MAPS_COMMON_PATH'
+
+
+#
+# Remove shelve file
+#
+
+$(python scripts/hyperbrowser_config.py -r)
 
 # Move back to original dir
 
