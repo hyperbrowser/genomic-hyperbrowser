@@ -79,7 +79,6 @@ EXT_NMER_CHAIN_DATA_PATH = getFromConfig(config, 'ext_nmer_chain_data_path', '',
 EXT_MAPS_PATH = getFromConfig(config, 'ext_maps_path', '', 'hyperbrowser')
 EXT_LOG_PATH = getFromConfig(config, 'ext_log_path', '', 'hyperbrowser')
 EXT_RESULTS_PATH = getFromConfig(config, 'ext_results_path', '', 'hyperbrowser')
-EXT_VIDEOS_PATH = getFromConfig(config, 'ext_videos_path', '', 'hyperbrowser')
 EXT_TMP_PATH = getFromConfig(config, 'ext_tmp_path', '', 'hyperbrowser')
 
 #del config
