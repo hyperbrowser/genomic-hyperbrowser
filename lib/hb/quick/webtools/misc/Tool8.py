@@ -109,7 +109,8 @@ class Tool8(GeneralGuiTool):
 
     @classmethod
     def _getContentsOfHistoryFile(cls, historyChoice):
-        histFileName = cls._getGalaxyFnFromHistoryChoice(historyChoice)
+        from quick.application.ExternalTrackManager import ExternalTrackManager
+        histFileName = ExternalTrackManager.extractFnFromGalaxyTN(historyChoice)
         with open(histFileName) as histFile:
             contents = [row.split() for row in histFile]
         return contents

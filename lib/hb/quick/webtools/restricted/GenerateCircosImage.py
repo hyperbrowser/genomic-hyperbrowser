@@ -95,11 +95,12 @@ class GenerateCircosImage(GeneralGuiTool):
         '''
         return None
     
-    @classmethod
-    def getTests(cls):
-        choicesFormType = ['str', 'str']
-        testRunList = ["$Tool[hb_generate_circos_image]('galaxy:bed:/usit/invitro/data/galaxy/galaxy-dist-hg-dev/database/files/026/dataset_26109.dat:9%20-%20Create%20combination%20track'|'galaxy:bed:/usit/invitro/data/galaxy/galaxy-dist-hg-dev/database/files/026/dataset_26109.dat:9%20-%20Create%20combination%20track')"]
-        return cls.formatTests(choicesFormType, testRunList)
+    # @classmethod
+    # def getTests(cls):
+    #     choicesFormType = ['str', 'str']
+    #     testRunList = ["$Tool[hb_generate_circos_image]('galaxy:bed:/usit/invitro/data/galaxy/galaxy-dist-hg-dev/database/files/026/dataset_26109.dat:9%20-%20Create%20combination%20track'|'galaxy:bed:/usit/invitro/data/galaxy/galaxy-dist-hg-dev/database/files/026/dataset_26109.dat:9%20-%20Create%20combination%20track')"]
+    #     return cls.formatTests(choicesFormType, testRunList)
+
     #@staticmethod
     #def isPublic():
     #    return False

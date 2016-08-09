@@ -1,6 +1,6 @@
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
 from gold.util.CommonFunctions import mean
-from quick.webtools.Tool3 import CreateGCFunction
+from quick.webtools.misc.Tool3 import CreateGCFunction
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.StaticFile import GalaxyRunSpecificFile
 from gold.application.LogSetup import setupDebugModeAndLogging

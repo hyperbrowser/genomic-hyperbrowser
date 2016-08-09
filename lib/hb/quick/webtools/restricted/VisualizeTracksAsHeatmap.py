@@ -680,9 +680,9 @@ effort, this form of visualization can potentially be very informative.''')
     #    return False
     #
     
-    @classmethod
-    def getTests(cls):
-        return ["$Tool[hb_visualize_tracks_as_heatmap]('hg18'|'HyperBrowser repository'|None|'Sample data:Track types:Segments'|'HyperBrowser repository'|None|'Sample data:Track types:Valued segments (category)'|'HyperBrowser repository'|None|'Sample data:Track types:Valued segments (number)'|'10000')"]
+    # @classmethod
+    # def getTests(cls):
+    #     return ["$Tool[hb_visualize_tracks_as_heatmap]('hg18'|'HyperBrowser repository'|None|'Sample data:Track types:Segments'|'HyperBrowser repository'|None|'Sample data:Track types:Valued segments (category)'|'HyperBrowser repository'|None|'Sample data:Track types:Valued segments (number)'|'10000')"]
     
     @staticmethod    
     def getOutputFormat(choices):

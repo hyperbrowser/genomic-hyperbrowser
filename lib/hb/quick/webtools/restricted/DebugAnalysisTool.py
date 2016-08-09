@@ -345,11 +345,13 @@ class DebugAnalysisTool(GeneralGuiTool):
         If all parameters are valid, the method should return None, which enables the execute button.
         '''
         return None
-    @classmethod
-    def getTests(cls):
-        choicesFormType = ['str', 'genome', 'str', 'track', 'str', 'track'] + ['str']*20
-        testRunList = ["$Tool[hb_debug_analysis_tool]('RemoveOverlappingIntraTrackSegmentsStat'|'hg18'|'yes'|'Valued segments (category)'|'yes'|'-- No track --'|'Region (default: )'|'*'|'BinSpec (default: None)'|'*'|None|None|None|None|None|None|None|None|None|None|None|None|None|None|None|None|'Chromosomes'|'*'|None|None|None)"]
-        return cls.formatTests(choicesFormType, testRunList)
+
+    # @classmethod
+    # def getTests(cls):
+    #     choicesFormType = ['str', 'genome', 'str', 'track', 'str', 'track'] + ['str']*20
+    #     testRunList = ["$Tool[hb_debug_analysis_tool]('RemoveOverlappingIntraTrackSegmentsStat'|'hg18'|'yes'|'Valued segments (category)'|'yes'|'-- No track --'|'Region (default: )'|'*'|'BinSpec (default: None)'|'*'|None|None|None|None|None|None|None|None|None|None|None|None|None|None|None|None|'Chromosomes'|'*'|None|None|None)"]
+    #     return cls.formatTests(choicesFormType, testRunList)
+
     #@staticmethod
     #def isPublic():
     #    return False

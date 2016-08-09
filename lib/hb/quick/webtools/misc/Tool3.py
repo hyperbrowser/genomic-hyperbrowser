@@ -27,7 +27,7 @@ from gold.application.LogSetup import logMessage
 import urllib
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH
-import simplejson as json
+import json
 
 class Tool3(MultiGeneralGuiTool):
     @staticmethod
@@ -43,7 +43,6 @@ class Tool3(MultiGeneralGuiTool):
                 FindSignificantPwmRegions,
                 JoinToNonOverlappingRegions,
                 FilterCategoryonVals,
-                RunToolTests,
                 AddToolsToCollection,
                 UserTools,
                 ModifyHistItems,
@@ -1009,286 +1008,286 @@ class FilterCategoryonVals(GeneralGuiTool):
 
 
 
-
-class EditToolTests(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
-        '''
-        Specifies a header of the tool, which is displayed at the top of the
-        page.
-        '''
-        return "Edit tests on a Tool"
-
-    @staticmethod
-    def getInputBoxNames():
-
-        return ['Select tool', 'Select tool'] #Alternatively: [ ('box1','1'), ('box2','2') ]
-
-    @classmethod
-    def getSourceCode(cls):
-         path = os.getcwd()
-         if path.find('database')>=0:
-             path = path.split('database')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
-         else:
-             path = path.split('hyperbrowser')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
-         try:
-             streng = open(path).read()
-         except:
-             path = path.split('hyperbrowser')[0] + '/data/hyperbrowser/hb_core_developer/trunk/quick/webtools/GeneralGuiToolsFactory.py'
-             streng = open(path).read()
-         return streng
-
-    @classmethod
-    def getOptionsBox1(cls):
-        streng = cls.getSourceCode()
-        importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)]
-        toolIdDict = dict([(streng.split(v[0])[0].split("'")[-2], v[-1].strip()) for v in importList])
-        keys = [v.split('.')[0] for v in os.listdir(DATA_FILES_PATH + os.sep + 'tests' + os.sep)]
-        return OrderedDict([(toolIdDict[v], False) for v in keys])
-        #return  OrderedDict([(streng[i.start():i.end()].split(' import ')[1], False) for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)])
-
-
-    @classmethod
-    def getOptionsBox2(cls, prevChoices):
-        if prevChoices[0]:
-
-            import importlib
-            streng = cls.getSourceCode()
-            candidateTools = [k for k,v in prevChoices[0].items() if v]
-            importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng) if streng[i.start():i.end()].split(' import ')[1] in candidateTools]
-            hiddenDict = dict()
-            toolIdDict = dict([(v[-1].strip(), streng.split(v[0])[0].split("'")[-2]) for v in importList])
-            for toolRow in importList:
-                module = importlib.import_module(toolRow[0])
-                className = toolRow[-1].strip()
-                toolId = toolIdDict[className]
-                toolClass = getattr(module, className)(toolId)
-                testDict = getattr(toolClass, 'getTests')()
-                if testDict:
-                    logMessage('testDict: '+ repr(testDict))
-                    hiddenDict.update(testDict)
-
-            jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
-            var testCollection = %s;
-
-            for (var key in testCollection) {
-                    $.post("/dev2/tool_runner",  testCollection[key]);
-            }
-        event.preventDefault();} );</script>'''
-            return '__rawstr__',jCode % json.dumps(hiddenDict), False
-        return None
-
-    @classmethod
-    def parseTest(cls, test, typeList, toolClass, toolId):
-
-        resultDict = dict()
-        textMal= 'box%i%s'
-
-        eChoices = [eval(v) for v in test.split('(',1)[1].rsplit(')',1)[0].split('|')]
-        dType = getattr(toolClass, 'getOutputFormat')(eChoices)
-        resultDict['datatype'] = dType
-        resultDict['tool_id'] = toolId
-        resultDict['URL'] = 'http://dummy'
-        resultDict['tool_name'] = toolId
-        choices = [repr(v).replace("'",'') for v in eChoices]
-        #logMessage('my test choices table: ' + repr(choices))
-
-        for i,v in enumerate(choices):
-            if not v in ['','None']:
-                bName, bType = typeList[i]
-                if bType == 'genome':
-                    resultDict['dbkey'] = v.replace("'",'')
-                elif bType == 'multiHistory':
-                    for s,t in eval(v).items():
-                        resultDict[bName+'|%i'%s] = t.replace("'",'')
-                elif bType == 'track':
-                    resultDict[bName] = v
-                    #for s,t in enumerate(v.split(':')):
-                    #    resultDict[bName+'_%i'%s] = t
-                    #resultDict[bName+'_state'] = ''
-
-                elif bType == 'dict':
-                    for s,t in eval(v).items():
-                        resultDict[bName+'|%i'%s] = t.replace("'",'')
-                else:
-                    resultDict[bName] = v.replace("'",'')
-
-
-        return resultDict
-
-    #@classmethod
-    #def getOptionsBox3(cls, prevChoices):
-    #    jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
-    #
-    #    alert( unescape($("#box2").val()) );
-    #    event.preventDefault();} );</script>'''
-    #    return 'rawStr', jCode, False
-    @classmethod
-    def execute(cls, choices, galaxyFn=None, username=''):
-        pass
-
-
-
-class RunToolTests(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
-        '''
-        Specifies a header of the tool, which is displayed at the top of the
-        page.
-        '''
-        return "Run tests on all Tools"
-
-    @staticmethod
-    def getInputBoxNames():
-
-        return ['Select tools', 'select users', 'select tests', '.'] #Alternatively: [ ('box1','1'), ('box2','2') ]
-
-    @classmethod
-    def getSourceCode(cls):
-         path = os.getcwd()
-         if path.find('database')>=0:
-             path = path.split('database')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
-         else:
-             path = path.split('hyperbrowser')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
-         try:
-             streng = open(path).read()
-         except:
-             path = path.split('hyperbrowser')[0] + '/data/hyperbrowser/hb_core_developer/trunk/quick/webtools/GeneralGuiToolsFactory.py'
-             streng = open(path).read()
-         return streng
-
-    @classmethod
-    def getOptionsBox1(cls):
-        streng = cls.getSourceCode()
-        importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)]
-        toolIdDict = dict([(streng.split(v[0])[0].split("'")[-2], v[-1].strip()) for v in importList])
-        keys = [v.split('.')[0] for v in os.listdir(DATA_FILES_PATH + os.sep + 'tests' + os.sep)]
-        return OrderedDict([(v, False) for v in keys])
-        #return OrderedDict([(toolIdDict[v], False) for v in keys])
-        #return  OrderedDict([(streng[i.start():i.end()].split(' import ')[1], False) for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)])
-
-    @classmethod
-    def getOptionsBox2(cls, prevChoices):
-        if prevChoices[0]:
-            resSet = set()
-            for fn in [k for k, v in prevChoices[0].items() if v]:
-                SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
-                tmpSet = set([k.split('::',1)[0] for k in shelve.open(SHELVE_FN).keys()])
-                resSet.update(tmpSet)
-
-            return OrderedDict([(k,False) for k in resSet])
+#
+# class EditToolTests(GeneralGuiTool):
+#     @staticmethod
+#     def getToolName():
+#         '''
+#         Specifies a header of the tool, which is displayed at the top of the
+#         page.
+#         '''
+#         return "Edit tests on a Tool"
+#
+#     @staticmethod
+#     def getInputBoxNames():
+#
+#         return ['Select tool', 'Select tool'] #Alternatively: [ ('box1','1'), ('box2','2') ]
+#
+#     @classmethod
+#     def getSourceCode(cls):
+#          path = os.getcwd()
+#          if path.find('database')>=0:
+#              path = path.split('database')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
+#          else:
+#              path = path.split('hyperbrowser')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
+#          try:
+#              streng = open(path).read()
+#          except:
+#              path = path.split('hyperbrowser')[0] + '/data/hyperbrowser/hb_core_developer/trunk/quick/webtools/GeneralGuiToolsFactory.py'
+#              streng = open(path).read()
+#          return streng
+#
+#     @classmethod
+#     def getOptionsBox1(cls):
+#         streng = cls.getSourceCode()
+#         importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)]
+#         toolIdDict = dict([(streng.split(v[0])[0].split("'")[-2], v[-1].strip()) for v in importList])
+#         keys = [v.split('.')[0] for v in os.listdir(DATA_FILES_PATH + os.sep + 'tests' + os.sep)]
+#         return OrderedDict([(toolIdDict[v], False) for v in keys])
+#         #return  OrderedDict([(streng[i.start():i.end()].split(' import ')[1], False) for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)])
+#
+#
+#     @classmethod
+#     def getOptionsBox2(cls, prevChoices):
+#         if prevChoices[0]:
+#
+#             import importlib
+#             streng = cls.getSourceCode()
+#             candidateTools = [k for k,v in prevChoices[0].items() if v]
+#             importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng) if streng[i.start():i.end()].split(' import ')[1] in candidateTools]
+#             hiddenDict = dict()
+#             toolIdDict = dict([(v[-1].strip(), streng.split(v[0])[0].split("'")[-2]) for v in importList])
+#             for toolRow in importList:
+#                 module = importlib.import_module(toolRow[0])
+#                 className = toolRow[-1].strip()
+#                 toolId = toolIdDict[className]
+#                 toolClass = getattr(module, className)(toolId)
+#                 testDict = getattr(toolClass, 'getTests')()
+#                 if testDict:
+#                     logMessage('testDict: '+ repr(testDict))
+#                     hiddenDict.update(testDict)
+#
+#             jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
+#             var testCollection = %s;
+#
+#             for (var key in testCollection) {
+#                     $.post("/dev2/tool_runner",  testCollection[key]);
+#             }
+#         event.preventDefault();} );</script>'''
+#             return '__rawstr__',jCode % json.dumps(hiddenDict), False
+#         return None
+#
+#     @classmethod
+#     def parseTest(cls, test, typeList, toolClass, toolId):
+#
+#         resultDict = dict()
+#         textMal= 'box%i%s'
+#
+#         eChoices = [eval(v) for v in test.split('(',1)[1].rsplit(')',1)[0].split('|')]
+#         dType = getattr(toolClass, 'getOutputFormat')(eChoices)
+#         resultDict['datatype'] = dType
+#         resultDict['tool_id'] = toolId
+#         resultDict['URL'] = 'http://dummy'
+#         resultDict['tool_name'] = toolId
+#         choices = [repr(v).replace("'",'') for v in eChoices]
+#         #logMessage('my test choices table: ' + repr(choices))
+#
+#         for i,v in enumerate(choices):
+#             if not v in ['','None']:
+#                 bName, bType = typeList[i]
+#                 if bType == 'genome':
+#                     resultDict['dbkey'] = v.replace("'",'')
+#                 elif bType == 'multiHistory':
+#                     for s,t in eval(v).items():
+#                         resultDict[bName+'|%i'%s] = t.replace("'",'')
+#                 elif bType == 'track':
+#                     resultDict[bName] = v
+#                     #for s,t in enumerate(v.split(':')):
+#                     #    resultDict[bName+'_%i'%s] = t
+#                     #resultDict[bName+'_state'] = ''
+#
+#                 elif bType == 'dict':
+#                     for s,t in eval(v).items():
+#                         resultDict[bName+'|%i'%s] = t.replace("'",'')
+#                 else:
+#                     resultDict[bName] = v.replace("'",'')
+#
+#
+#         return resultDict
+#
+#     #@classmethod
+#     #def getOptionsBox3(cls, prevChoices):
+#     #    jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
+#     #
+#     #    alert( unescape($("#box2").val()) );
+#     #    event.preventDefault();} );</script>'''
+#     #    return 'rawStr', jCode, False
+#     @classmethod
+#     def execute(cls, choices, galaxyFn=None, username=''):
+#         pass
 
 
-    @classmethod
-    def getOptionsBox3(cls, prevChoices):
-        if prevChoices[0] and any(prevChoices[1].values()):
-            resSet = set()
-            userList = [k for k, v  in prevChoices[1].items() if v]
-            for fn in [k for k, v in prevChoices[0].items() if v]:
-                SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
-                key = fn+':  '
+# class RunToolTests(GeneralGuiTool):
+#     @staticmethod
+#     def getToolName():
+#         '''
+#         Specifies a header of the tool, which is displayed at the top of the
+#         page.
+#         '''
+#         return "Run tests on all Tools"
+#
+#     @staticmethod
+#     def getInputBoxNames():
+#
+#         return ['Select tools', 'select users', 'select tests', '.'] #Alternatively: [ ('box1','1'), ('box2','2') ]
+#
+#     @classmethod
+#     def getSourceCode(cls):
+#          path = os.getcwd()
+#          if path.find('database')>=0:
+#              path = path.split('database')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
+#          else:
+#              path = path.split('hyperbrowser')[0] + '/hyperbrowser/src/quick/webtools/GeneralGuiToolsFactory.py'
+#          try:
+#              streng = open(path).read()
+#          except:
+#              path = path.split('hyperbrowser')[0] + '/data/hyperbrowser/hb_core_developer/trunk/quick/webtools/GeneralGuiToolsFactory.py'
+#              streng = open(path).read()
+#          return streng
+#
+#     @classmethod
+#     def getOptionsBox1(cls):
+#         streng = cls.getSourceCode()
+#         importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)]
+#         toolIdDict = dict([(streng.split(v[0])[0].split("'")[-2], v[-1].strip()) for v in importList])
+#         keys = [v.split('.')[0] for v in os.listdir(DATA_FILES_PATH + os.sep + 'tests' + os.sep)]
+#         return OrderedDict([(v, False) for v in keys])
+#         #return OrderedDict([(toolIdDict[v], False) for v in keys])
+#         #return  OrderedDict([(streng[i.start():i.end()].split(' import ')[1], False) for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng)])
+#
+#     @classmethod
+#     def getOptionsBox2(cls, prevChoices):
+#         if prevChoices[0]:
+#             resSet = set()
+#             for fn in [k for k, v in prevChoices[0].items() if v]:
+#                 SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
+#                 tmpSet = set([k.split('::',1)[0] for k in shelve.open(SHELVE_FN).keys()])
+#                 resSet.update(tmpSet)
+#
+#             return OrderedDict([(k,False) for k in resSet])
+#
+#
+#     @classmethod
+#     def getOptionsBox3(cls, prevChoices):
+#         if prevChoices[0] and any(prevChoices[1].values()):
+#             resSet = set()
+#             userList = [k for k, v  in prevChoices[1].items() if v]
+#             for fn in [k for k, v in prevChoices[0].items() if v]:
+#                 SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
+#                 key = fn+':  '
+#
+#                 tmpSet = set([key+k[:k.rfind('::')] for k in shelve.open(SHELVE_FN).keys() if k.split('::',1)[0] in userList])
+#                 resSet.update(tmpSet)
+#
+#             return OrderedDict([(k,False) for k in resSet])
+#
+#     @classmethod
+#     def getOptionsBox4(cls, prevChoices):
+#
+#         if prevChoices[2] and any(prevChoices[2].values()):
+#             candidateDict = defaultdict(list)
+#             for k, v in prevChoices[2].items():
+#                 if v:
+#                     key, value = k.split(': ',1)
+#                     candidateDict[key].append(value.strip())
+#             count = 0
+#             resultDict = dict()
+#             for fn in candidateDict.keys():
+#                 SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
+#                 for k, v in shelve.open(SHELVE_FN).items():
+#                     if k.rsplit('::',1)[0] in candidateDict[fn]:
+#                         resultDict[str(count)] = v
+#                         count+=1
+#
+#             jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
+#             var testCollection = %s;
+#
+#             for (var key in testCollection) {
+#
+#                     $.post("/dev2/tool_runner",  testCollection[key]);
+#             }
+#         event.preventDefault();} );</script>'''
+#             return '__rawstr__',jCode % json.dumps(resultDict), False
+#
+#         #if False:#prevChoices[0]:
+#         #
+#         #    import importlib
+#         #    streng = cls.getSourceCode()
+#         #    candidateTools = [k for k,v in prevChoices[0].items() if v]
+#         #    importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng) if streng[i.start():i.end()].split(' import ')[1] in candidateTools]
+#         #    hiddenDict = dict()
+#         #    toolIdDict = dict([(v[-1].strip(), streng.split(v[0])[0].split("'")[-2]) for v in importList])
+#         #    for toolRow in importList:
+#         #        module = importlib.import_module(toolRow[0])
+#         #        className = toolRow[-1].strip()
+#         #        toolId = toolIdDict[className]
+#         #        toolClass = getattr(module, className)(toolId)
+#         #        testDict = getattr(toolClass, 'getTests')()
+#         #        if testDict:
+#         #            logMessage('testDict: '+ repr(testDict))
+#         #            hiddenDict.update(testDict)
+#
+#         return None
+#
+#     @classmethod
+#     def parseTest(cls, test, typeList, toolClass, toolId):
+#
+#         resultDict = dict()
+#         textMal= 'box%i%s'
+#
+#         eChoices = [eval(v) for v in test.split('(',1)[1].rsplit(')',1)[0].split('|')]
+#         dType = getattr(toolClass, 'getOutputFormat')(eChoices)
+#         resultDict['datatype'] = dType
+#         resultDict['tool_id'] = toolId
+#         resultDict['URL'] = 'http://dummy'
+#         resultDict['tool_name'] = toolId
+#         choices = [repr(v).replace("'",'') for v in eChoices]
+#         #logMessage('my test choices table: ' + repr(choices))
+#
+#         for i,v in enumerate(choices):
+#             if not v in ['','None']:
+#                 bName, bType = typeList[i]
+#                 if bType == 'genome':
+#                     resultDict['dbkey'] = v.replace("'",'')
+#                 elif bType == 'multiHistory':
+#                     for s,t in eval(v).items():
+#                         resultDict[bName+'|%i'%s] = t.replace("'",'')
+#                 elif bType == 'track':
+#                     resultDict[bName] = v
+#                     #for s,t in enumerate(v.split(':')):
+#                     #    resultDict[bName+'_%i'%s] = t
+#                     #resultDict[bName+'_state'] = ''
+#
+#                 elif bType == 'dict':
+#                     for s,t in eval(v).items():
+#                         resultDict[bName+'|%i'%s] = t.replace("'",'')
+#                 else:
+#                     resultDict[bName] = v.replace("'",'')
+#
+#
+#         return resultDict
+#
+#     #@classmethod
+#     #def getOptionsBox3(cls, prevChoices):
+#     #    jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
+#     #
+#     #    alert( unescape($("#box2").val()) );
+#     #    event.preventDefault();} );</script>'''
+#     #    return 'rawStr', jCode, False
+#     @classmethod
+#     def execute(cls, choices, galaxyFn=None, username=''):
+#         pass
 
-                tmpSet = set([key+k[:k.rfind('::')] for k in shelve.open(SHELVE_FN).keys() if k.split('::',1)[0] in userList])
-                resSet.update(tmpSet)
-
-            return OrderedDict([(k,False) for k in resSet])
-
-    @classmethod
-    def getOptionsBox4(cls, prevChoices):
-
-        if prevChoices[2] and any(prevChoices[2].values()):
-            candidateDict = defaultdict(list)
-            for k, v in prevChoices[2].items():
-                if v:
-                    key, value = k.split(': ',1)
-                    candidateDict[key].append(value.strip())
-            count = 0
-            resultDict = dict()
-            for fn in candidateDict.keys():
-                SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
-                for k, v in shelve.open(SHELVE_FN).items():
-                    if k.rsplit('::',1)[0] in candidateDict[fn]:
-                        resultDict[str(count)] = v
-                        count+=1
-
-            jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
-            var testCollection = %s;
-
-            for (var key in testCollection) {
-
-                    $.post("/dev2/tool_runner",  testCollection[key]);
-            }
-        event.preventDefault();} );</script>'''
-            return '__rawstr__',jCode % json.dumps(resultDict), False
-
-        #if False:#prevChoices[0]:
-        #
-        #    import importlib
-        #    streng = cls.getSourceCode()
-        #    candidateTools = [k for k,v in prevChoices[0].items() if v]
-        #    importList = [streng[i.start()+5:i.end()].split(' import ') for i in re.finditer('from [a-zA-Z0-9.]+ import [a-zA-Z0-9]+', streng) if streng[i.start():i.end()].split(' import ')[1] in candidateTools]
-        #    hiddenDict = dict()
-        #    toolIdDict = dict([(v[-1].strip(), streng.split(v[0])[0].split("'")[-2]) for v in importList])
-        #    for toolRow in importList:
-        #        module = importlib.import_module(toolRow[0])
-        #        className = toolRow[-1].strip()
-        #        toolId = toolIdDict[className]
-        #        toolClass = getattr(module, className)(toolId)
-        #        testDict = getattr(toolClass, 'getTests')()
-        #        if testDict:
-        #            logMessage('testDict: '+ repr(testDict))
-        #            hiddenDict.update(testDict)
-
-        return None
-
-    @classmethod
-    def parseTest(cls, test, typeList, toolClass, toolId):
-
-        resultDict = dict()
-        textMal= 'box%i%s'
-
-        eChoices = [eval(v) for v in test.split('(',1)[1].rsplit(')',1)[0].split('|')]
-        dType = getattr(toolClass, 'getOutputFormat')(eChoices)
-        resultDict['datatype'] = dType
-        resultDict['tool_id'] = toolId
-        resultDict['URL'] = 'http://dummy'
-        resultDict['tool_name'] = toolId
-        choices = [repr(v).replace("'",'') for v in eChoices]
-        #logMessage('my test choices table: ' + repr(choices))
-
-        for i,v in enumerate(choices):
-            if not v in ['','None']:
-                bName, bType = typeList[i]
-                if bType == 'genome':
-                    resultDict['dbkey'] = v.replace("'",'')
-                elif bType == 'multiHistory':
-                    for s,t in eval(v).items():
-                        resultDict[bName+'|%i'%s] = t.replace("'",'')
-                elif bType == 'track':
-                    resultDict[bName] = v
-                    #for s,t in enumerate(v.split(':')):
-                    #    resultDict[bName+'_%i'%s] = t
-                    #resultDict[bName+'_state'] = ''
-
-                elif bType == 'dict':
-                    for s,t in eval(v).items():
-                        resultDict[bName+'|%i'%s] = t.replace("'",'')
-                else:
-                    resultDict[bName] = v.replace("'",'')
-
-
-        return resultDict
-
-    #@classmethod
-    #def getOptionsBox3(cls, prevChoices):
-    #    jCode = '''<script type="text/javascript">$( "form" ).bind( "submit", function( event ) {
-    #
-    #    alert( unescape($("#box2").val()) );
-    #    event.preventDefault();} );</script>'''
-    #    return 'rawStr', jCode, False
-    @classmethod
-    def execute(cls, choices, galaxyFn=None, username=''):
-        pass
 
 class AddToolsToCollection(GeneralGuiTool):
     @staticmethod
