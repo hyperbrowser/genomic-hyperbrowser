@@ -2850,6 +2850,11 @@ for tool_class in [ Tool, SetMetadataTool, OutputParameterJSONTool,
 from proto.galaxy_tool_classes import proto_tool_types
 tool_types.update(proto_tool_types)
 
+# add HyperBrowser tool types
+from proto.hyperbrowser.galaxy_tool_classes import hb_tool_types
+tool_types.update(hb_tool_types)
+proto_tool_types.update(hb_tool_types)
+
 
 # ---- Utility classes to be factored out -----------------------------------
 class TracksterConfig:

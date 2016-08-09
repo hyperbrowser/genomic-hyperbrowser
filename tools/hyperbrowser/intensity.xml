@@ -22,7 +22,7 @@
 	
 	<description></description>
 
-<!--	<command interpreter="python">test_analysis.py $output intensity</command> -->
+<!--	<command interpreter="python">analyze_tracks.py $output intensity</command> -->
 	<command interpreter="python">intensity.py $output</command>
 	
 	<display>$GALAXY_URL $tool_id</display>

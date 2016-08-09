@@ -1,6 +1,3 @@
-<?xml version="1.0"?>
-
-<!--
 # Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
 # This file is part of The Genomic HyperBrowser.
 #
@@ -16,28 +13,10 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
--->
 
-<tool tool_type="hyperbrowser" name="Extract track from HyperBrowser repository" id="hb_extract_1">
-	
-	<description></description>
+import sys
 
-	<command interpreter="python">analyze_tracks.py $output extract</command>
-	
-	<display>$GALAXY_URL $tool_id</display>
-	
-	<inputs action="/hyper" check_values="false" method="get">
-		<param name="GALAXY_URL" type="baseurl" value="/tool_runner" />
-		<param name="tool_id" type="hidden" value="hb_extract_1" />
-		<param name="mako" type="hidden" value="/hyperbrowser/extract" />
-	</inputs>
-	<options sanitize="False"/>
+from proto.hyperbrowser.generictool import getController
 
-	
-
-	<outputs>
-		<data format="customtrack" name="output" />
-	</outputs>        
-			
-</tool>
+getController(None, sys.argv[1]).execute()
 

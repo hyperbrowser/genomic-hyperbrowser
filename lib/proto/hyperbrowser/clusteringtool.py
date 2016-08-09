@@ -7,6 +7,7 @@ from numpy import *
 from gold.application.GalaxyInterface import GalaxyInterface
 from proto.hyper_gui import *
 from proto.BaseToolController import *
+from HyperBrowserControllerMixin import HyperBrowserControllerMixin
 from gold.application.StatRunner import AnalysisDefJob
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 # from Pycluster import *
@@ -18,7 +19,7 @@ from quick.extra.clustering.FeatureCatalog import *
 from quick.util.CommonFunctions import extractIdFromGalaxyFn
 from quick.extra.clustering.ClusteringExecution import ClusteringExecution
 
-class ClusteringToolController(BaseToolController):
+class ClusteringToolController(HyperBrowserControllerMixin, BaseToolController):
     def __init__(self, trans, job):
         BaseToolController.__init__(self, trans, job)
     

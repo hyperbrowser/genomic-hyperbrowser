@@ -1,6 +1,4 @@
-import os
 from collections import namedtuple
-from urllib import quote
 
 from config.Config import DATA_FILES_PATH
 from gold.application.LogSetup import logMessage
@@ -9,17 +7,11 @@ from quick.application.SignatureDevianceLogging import takes,returns
 from third_party.typecheck import list_of
 from gold.gsuite.GSuiteParser import GSuiteContents
 from gold.gsuite import GSuiteConstants
+from proto.tools.GeneralGuiTool import GeneralGuiTool as ProtoGeneralGuiTool
+from proto.tools.GeneralGuiTool import MultiGeneralGuiTool as ProtoMultiGeneralGuiTool, HistElement, BoxGroup
 
-class HistElement(object):
-    def __init__(self, name, format, label=None, hidden=False):
-        self.name = name
-        self.format = format
-        self.label = label
-        self.hidden = hidden
 
-BoxGroup = namedtuple('BoxGroup', ['label','first','last'])
-
-class GeneralGuiTool(object):
+class GeneralGuiToolMixin(object):
 
     ##CONSTANTS
     ##Don't change values of this variables, they are intended to be constant
@@ -48,174 +40,54 @@ class GeneralGuiTool(object):
 
     ################
 
-    def __init__(self, toolId=None):
-        self.__class__.toolId = toolId
-
     # API methods
-    @staticmethod
-    def getInputBoxOrder():
-        return None
-
-    @staticmethod
-    def getInputBoxGroups(choices=None):
-        return None
-
-    @staticmethod
-    def getSubToolClasses():
-        return None
-
-    @classmethod
-    def getToolSelectionName(cls):
-        return cls.getToolName()
-
-    @staticmethod
-    def isPublic():
-        return False
-
-    @staticmethod
-    def isRedirectTool(choices=None):
-        return False
-
-    @staticmethod
-    def isHistoryTool():
-        return True
-
     @classmethod
     def isBatchTool(cls):
         return cls.isHistoryTool()
 
-    @staticmethod
-    def isDynamic():
-        return True
-
-    @staticmethod
-    def getResetBoxes():
-        '''
-        List of boxes which if their values are changed causes the succeding boxes to be reset to default values
-        '''
-        return []
-
-    @staticmethod
-    def getToolDescription():
-        return ''
-
-    @staticmethod
-    def getToolIllustration():
-        return None
-
-    @staticmethod
-    def getFullExampleURL():
-        return None
-
-    @classmethod
-    def doTestsOnTool(cls, galaxyFn, title, label):
-        from quick.application.GalaxyInterface import GalaxyInterface
-        from collections import OrderedDict
-        import sys
-
-        if hasattr(cls, 'getTests'):
-            galaxy_ext = None
-            testRunList = cls.getTests()
-            for indx, tRun in enumerate(testRunList):
-                choices = tRun.split('(',1)[1].rsplit(')',1)[0].split('|')
-                choices = [eval(v) for v in choices]
-                if not galaxy_ext:
-                    galaxy_ext = cls.getOutputFormat(choices)
-                output_filename = cls.makeHistElement(galaxyExt=galaxy_ext, title=title+str(indx), label=label+str(indx))
-                sys.stdout = open(output_filename, "w", 0)
-                cls.execute(choices, output_filename)
-            sys.stdout = open(galaxyFn, "a", 0)
-        else:
-            print open(galaxyFn, "a").write('No tests specified for %s' % cls.__name__)
-
-
-    @classmethod
-    def getTests(cls):
-        import shelve
-        SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%cls.toolId
-        if os.path.isfile(SHELVE_FN):
-
-            testDict = shelve.open(SHELVE_FN)
-            resDict = dict()
-            for k, v in testDict.items():
-                resDict[k] = cls.convertHttpParamsStr(v)
-            return resDict
-        return None
-
-    @staticmethod
-    def isDebugMode():
-        return False
-
-    @staticmethod
-    def getOutputFormat(choices=None):
-        return 'html'
-
-    @staticmethod
-    def validateAndReturnErrors(choices):
-        '''
-        Should validate the selected input parameters. If the parameters are not valid,
-        an error text explaining the problem should be returned. The GUI then shows this text
-        to the user (if not empty) and greys out the execute button (even if the text is empty).
-        If all parameters are valid, the method should return None, which enables the execute button.
-        '''
-        return None
+    # @classmethod
+    # def doTestsOnTool(cls, galaxyFn, title, label):
+    #     import sys
+    #
+    #     if hasattr(cls, 'getTests'):
+    #         galaxy_ext = None
+    #         testRunList = cls.getTests()
+    #         for indx, tRun in enumerate(testRunList):
+    #             choices = tRun.split('(', 1)[1].rsplit(')', 1)[0].split('|')
+    #             choices = [eval(v) for v in choices]
+    #             if not galaxy_ext:
+    #                 galaxy_ext = cls.getOutputFormat(choices)
+    #             output_filename = cls.makeHistElement(galaxyExt=galaxy_ext,
+    #                                                   title=title + str(indx),
+    #                                                   label=label + str(indx))
+    #             sys.stdout = open(output_filename, "w", 0)
+    #             cls.execute(choices, output_filename)
+    #         sys.stdout = open(galaxyFn, "a", 0)
+    #     else:
+    #         print open(galaxyFn, "a").write(
+    #             'No tests specified for %s' % cls.__name__)
+    #
+    # @classmethod
+    # def getTests(cls):
+    #     import shelve
+    #     SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve' % cls.toolId
+    #     if os.path.isfile(SHELVE_FN):
+    #
+    #         testDict = shelve.open(SHELVE_FN)
+    #         resDict = dict()
+    #         for k, v in testDict.items():
+    #             resDict[k] = cls.convertHttpParamsStr(v)
+    #         return resDict
+    #     return None
+    #
+    # @classmethod
+    # def formatTests(cls, choicesFormType, testRunList):
+    #     labels = cls.getOptionBoxNames()
+    #     if len(labels) != len(choicesFormType):
+    #         logMessage('labels and choicesFormType are different:(labels=%i, choicesFormType=%i)' % (len(labels), len(choicesFormType)))
+    #     return (testRunList, zip(labels, choicesFormType))
 
     # Convenience methods
-
-    @classmethod
-    def convertHttpParamsStr(cls, streng):
-        strTab = []
-        for v in streng.split('\n'):
-            if v:
-                strTab.append(v)
-
-        return dict([tuple(v.split(':',1)) for v in strTab])
-
-    @classmethod
-    def getOptionBoxNames(cls):
-        labels = cls.getInputBoxNames()
-        #inputOrder = range(len(labels) if not cls.getInputBoxOrder() else cls.getInputBoxOrder()
-        boxMal = 'box%i'
-        if type(labels[0]).__name__ == 'str':
-            return [boxMal%i for i in range(1, len(labels)+1)]
-            #return [boxMal % i for i in inputOrder]
-        else:
-            return [i[0] for i in labels]
-            #return [labels[i][0] for i in inputOrder]
-
-    @classmethod
-    def formatTests(cls, choicesFormType, testRunList):
-        labels = cls.getOptionBoxNames()
-        if len(labels) != len(choicesFormType):
-            logMessage('labels and choicesFormType are different:(labels=%i, choicesFormType=%i)' % (len(labels), len(choicesFormType)))
-        return (testRunList, zip(labels, choicesFormType))
-
-    @classmethod
-    def _getGalaxyFnFromHistoryChoice(self, historyChoice):
-        from quick.application.ExternalTrackManager import ExternalTrackManager
-        return ExternalTrackManager.extractFnFromGalaxyTN(historyChoice)
-
-    #@classmethod
-    #def _getPathAndUrlForFile(cls, galaxyFn, relFn):
-    #    '''
-    #    Gets a disk path and a URL for storing a run-specific file.
-    #    galaxyFn is connected to the resulting history item in Galaxy,
-    #      and is used to determine a unique disk path for this specific run.
-    #    relFn is a relative file name (i.e. only name, not full path) that one
-    #      wants a full disk path for, as well as a URL referring to the file.
-    #    '''
-    #    fullFn = cls._getDiskPathForFiles(galaxyFn) + os.sep + relFn
-    #    url = cls._getBaseUrlForFiles(fullFn)
-    #    return fullFn, url
-    #
-    #@staticmethod
-    #def _getDiskPathForFiles(galaxyFn):
-    #    galaxyId = extractIdFromGalaxyFn(galaxyFn)
-    #    return getUniqueWebPath(galaxyId)
-    #
-    #@staticmethod
-    #def _getBaseUrlForFiles(diskPath):
-    #    return getRelativeUrlFromWebPath(diskPath)
 
     @staticmethod
     def _getGenomeChoice(choices, genomeChoiceIndex):
@@ -432,80 +304,6 @@ class GeneralGuiTool(object):
         return tfName
 
     @classmethod
-    def getNamedTuple(cls):
-        names = cls.getInputBoxNames()
-        anyTuples = False
-        vals = []
-        for i in range(len(names)):
-            name = names[i]
-            if isinstance(name, tuple):
-                anyTuples = True
-                vals.append(name[1])
-            else:
-                vals.append('box' + str(1 + i))
-
-        if anyTuples:
-            return namedtuple('ChoiceTuple', vals)
-        else:
-            return None
-
-    @staticmethod
-    def _exampleText(text):
-        from gold.result.HtmlCore import HtmlCore
-        core = HtmlCore()
-        core.styleInfoBegin(styleClass='debug', linesep=False)
-        core.append(text.replace('\t','\\t'))
-        core.styleInfoEnd()
-        return str(core)
-
-    @classmethod
-    def makeHistElement(cls,  galaxyExt='html', title='new Dataset', label='Newly created dataset',):
-        import simplejson, glob
-        json_params =  cls.runParams
-        #print json_params
-        datasetId = json_params['output_data'][0]['dataset_id'] # dataset_id fra output_data
-        hdaId = json_params['output_data'][0]['hda_id'] # # hda_id fra output_data
-        metadata_parameter_file = open( json_params['job_config']['TOOL_PROVIDED_JOB_METADATA_FILE'], 'a' )
-        newFilePath = json_params['param_dict']['__new_file_path__']
-        numFiles = len(glob.glob(newFilePath+'/primary_%i_*'%hdaId))
-        #title += str(numFiles+1)
-        #print 'datasetId', datasetId
-        #print 'newFilePath', newFilePath
-        #print 'numFiles', numFiles
-        outputFilename = os.path.join(newFilePath , 'primary_%i_%s_visible_%s' % ( hdaId, title, galaxyExt ) )
-        #print 'outputFilename', outputFilename
-        metadata_parameter_file.write( "%s\n" % simplejson.dumps( dict( type = 'dataset', #new_primary_
-                                         dataset_id = datasetId,#base_
-                                         ext = galaxyExt,
-                                         #filename = outputFilename,
-                                         #name = label,
-                                         metadata = {'dbkey':['hg18']} )) )
-        metadata_parameter_file.close()
-        return outputFilename
-
-
-    @classmethod
-    def createGenericGuiToolURL(cls, tool_id, sub_class_name=None, tool_choices=None):
-        from GeneralGuiToolsFactory import GeneralGuiToolsFactory
-        tool = GeneralGuiToolsFactory.getWebTool(tool_id)
-        base_url = '?mako=generictool&tool_id=' + tool_id + '&'
-        if sub_class_name and isinstance(tool, MultiGeneralGuiTool):
-            for subClass in tool.getSubToolClasses():
-                if sub_class_name == subClass.__name__:
-                    tool = subClass()
-                    base_url += 'sub_class_id=' + quote(tool.getToolSelectionName()) + '&'
-
-        #keys = tool.getNamedTuple()._fields
-        if not tool_choices:
-            args = []
-        elif isinstance(tool_choices, dict):
-            args = [ '%s=%s' % (k,quote(v)) for k,v in tool_choices.items()]
-        elif isinstance(tool_choices, list):
-            args = [ '%s=%s' % ('box%d'%(i+1,), quote(tool_choices[i])) for i in range(0, len(tool_choices)) ]
-
-        return base_url + '&'.join(args)
-
-    @classmethod
     def _checkGSuiteRequirements(cls, gSuite, allowedFileFormats = [], allowedLocations = [],
                                  allowedTrackTypes = [], disallowedGenomes = []):
         errorString = ''
@@ -614,23 +412,8 @@ class GeneralGuiTool(object):
             core.descriptionLine('Maximal number of tracks', str(maxTrackCount) if maxTrackCount else 'no limit', emphasize=True)
 
 
-class MultiGeneralGuiTool(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
-        return "-----  Select tool -----"
+class GeneralGuiTool(GeneralGuiToolMixin, ProtoGeneralGuiTool):
+    pass
 
-    @staticmethod
-    def getToolSelectionName():
-        return "-----  Select tool -----"
-
-    @staticmethod
-    def getSubToolSelectionTitle():
-        return 'Select subtool:'
-
-    @staticmethod
-    def validateAndReturnErrors(choices):
-        return ''
-
-    @staticmethod
-    def getInputBoxNames():
-        return []
+class MultiGeneralGuiTool(GeneralGuiToolMixin, ProtoMultiGeneralGuiTool):
+    pass

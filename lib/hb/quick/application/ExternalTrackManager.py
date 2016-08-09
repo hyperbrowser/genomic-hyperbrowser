@@ -25,11 +25,12 @@ from gold.util.CommonFunctions import createDirPath, getClassName
 from gold.util.CustomExceptions import ShouldNotOccurError, InvalidFormatError
 from gold.application.DataTypes import getSupportedFileSuffixes
 from quick.util.GenomeInfo import GenomeInfo
-from quick.util.CommonFunctions import extractIdFromGalaxyFn as commonExtractIdFromGalaxyFn
 from quick.application.SignatureDevianceLogging import takes,returns
+import proto.CommonFunctions as protoFunctions
 
-class ExternalTrackManager:
-    '''
+
+class ExternalTrackManager(object):
+    """
     Handles external track names. These are of three types:
 
     ['external','...']: ExternalTN. Handled basically just as a standard
@@ -49,6 +50,8 @@ class ExternalTrackManager:
         used as id in the form [XXX, YYYY] The last element is the name of the
         track, only used for presentation purposes.
 
+        Note: GalaxyTN is is called datasetInfo in Galaxy ProTo.
+
     ['virtual','...'] VirtualMinimalTN. An especially coded TN, used for
         minimal runs of all statistics in order to display the analyses fitting
         for the selection of tracks in the user interface. The virtual track
@@ -64,7 +67,7 @@ class ExternalTrackManager:
         instead of the external track, which then does not need to have an
         associated original data file. Is handled by the createDirPath function
         in CommonFunctions.
-    '''
+    """
 
     @staticmethod
     def isHistoryTrack(tn):
@@ -98,53 +101,46 @@ class ExternalTrackManager:
 
     @staticmethod
     def extractIdFromGalaxyFn(fn):
-        return commonExtractIdFromGalaxyFn(fn)
+        return protoFunctions.extractIdFromGalaxyFn(fn)
 
     @classmethod
     def getEncodedDatasetIdFromGalaxyFn(cls, galaxyFn):
-        plainId = ExternalTrackManager.extractIdFromGalaxyFn(galaxyFn)[1]
-        return cls.getEncodedDatasetIdFromPlainGalaxyId(plainId)
+        return protoFunctions.getEncodedDatasetIdFromGalaxyFn(galaxyFn)
 
     @staticmethod
     def getEncodedDatasetIdFromPlainGalaxyId(plainId):
-        from quick.util.CommonFunctions import galaxySecureEncodeId
-        return galaxySecureEncodeId(plainId)
+        return protoFunctions.getEncodedDatasetIdFromPlainGalaxyId(plainId)
 
     @staticmethod
     def getGalaxyFnFromEncodedDatasetId(encodedId):
-        from quick.util.CommonFunctions import galaxySecureDecodeId, \
-                                               getGalaxyFnFromDatasetId
-
-        plainId = galaxySecureDecodeId(encodedId)
-        return getGalaxyFnFromDatasetId(plainId)
+        return protoFunctions.getGalaxyFnFromEncodedDatasetId(encodedId)
 
     @staticmethod
     def getGalaxyFilesDir(galaxyFn):
-        return galaxyFn[:-4] + '_files'
+        return protoFunctions.getGalaxyFilesDir(galaxyFn)
 
-    '''
-    id is the relative file hierarchy, encoded as a list of strings
-    '''
     @classmethod
     def getGalaxyFilesFilename(cls, galaxyFn, id):
-        return os.path.sep.join([cls.getGalaxyFilesDir(galaxyFn)] + id)
+        """
+        id is the relative file hierarchy, encoded as a list of strings
+        """
+        return protoFunctions.getGalaxyFilesFilename(galaxyFn, id)
 
     @staticmethod
     def getGalaxyFilesFnFromEncodedDatasetId(encodedId):
-        galaxyFn = ExternalTrackManager.getGalaxyFnFromEncodedDatasetId(encodedId)
-        return ExternalTrackManager.getGalaxyFilesDir(galaxyFn)
+        return protoFunctions.getGalaxyFilesFnFromEncodedDatasetId(encodedId)
 
     @staticmethod
     def createGalaxyFilesFn(galaxyFn, filename):
-        return os.path.sep.join([ExternalTrackManager.getGalaxyFilesDir(galaxyFn), filename])
+        return protoFunctions.createGalaxyFilesFn(galaxyFn, filename)
 
-    @staticmethod
-    def extractFnFromGalaxyTN(galaxyTN):
-        return galaxyTN[2] if type(galaxyTN) == list else galaxyTN.split(':')[2]
+    @classmethod
+    def extractFnFromGalaxyTN(cls, galaxyTN):
+        return protoFunctions.extractFnFromDatasetInfo(galaxyTN)
 
     @staticmethod
     def extractNameFromHistoryTN(galaxyTN):
-        if isinstance(galaxyTN, str):
+        if isinstance(galaxyTN, basestring):
             galaxyTN = galaxyTN.split(':')
         
         assert ExternalTrackManager.isHistoryTrack(galaxyTN)
@@ -156,12 +152,9 @@ class ExternalTrackManager:
 
     @staticmethod
     def extractFileSuffixFromGalaxyTN(galaxyTN, allowUnsupportedSuffixes=False):
-        if type(galaxyTN) == str:
-            galaxyTN = galaxyTN.split(':')
-        suffix = galaxyTN[1]
-        if not allowUnsupportedSuffixes and not suffix.lower() in getSupportedFileSuffixes():
-            raise ShouldNotOccurError('File type "' + suffix + '" is not supported.')
-        return suffix
+        fileSuffixFilterList = None if allowUnsupportedSuffixes else getSupportedFileSuffixes()
+        return protoFunctions.extractFileSuffixFromDatasetInfo\
+            (galaxyTN, fileSuffixFilterList=fileSuffixFilterList)
 
     @staticmethod
     def createSelectValueFromGalaxyTN(galaxyTN):

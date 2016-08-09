@@ -68,11 +68,13 @@ if updateRunDescription:
 	</select>
     </label>
 
-		<%chrArmNote = '<i><b>Note:</b> For hypothesis tests where the positions of elements are randomized, the centromeres ' \
+		<%
+            chrArmNote = '<i><b>Note:</b> For hypothesis tests where the positions of elements are randomized, the centromeres ' \
         'and other regions where the elements are never found should be removed from the analysis regions. ' \
         'In this case, use the chromosome arms as analysis regions, define specific bounding regions for the ' \
         'tracks, or use custom analysis regions. If this is not done, the resulting p-values are ' \
-        'generally better than what they should have been.</i>'%>
+        'generally better than what they should have been.</i>'
+        %>
 
 
     <p id="pnlRegion" class="hidden">
@@ -102,7 +104,7 @@ if updateRunDescription:
 
 		<p id="pnl__chrs__" class="hidden">
     <label>Which: <input size="30" name="__chrs__" value="${params.get('__chrs__', '*')}" ${jsValidate}></label>
-    <i>comma separated list of chromosomes, * means all. (E.g. chr1,chr3)
+    <i>comma separated list of chromosomes, * means all. (E.g. chr1,chr3)</i>
     </p>
 
     <p id="pnl__chrArms__" class="hidden">
@@ -112,7 +114,7 @@ if updateRunDescription:
 
     <p id="pnl__chrBands__" class="hidden">
     <label>Which: <input size="30" name="__chrBands__" value="${params.get('__chrBands__', '*')}" ${jsValidate}></label>
-    <i>comma separated list of cytobands (chromosome bands), * means all. (E.g. 1p36.33,1p36.23)
+    <i>comma separated list of cytobands (chromosome bands), * means all. (E.g. 1p36.33,1p36.23)</i>
     </p>
 
     <p id="pnl__genes__" class="hidden">

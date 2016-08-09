@@ -3,8 +3,10 @@ import quick.extra.GoogleMapsInterface as GMI
 
 from proto.hyper_gui import *
 from proto.BaseToolController import *
+from proto.hyperbrowser.HyperBrowserControllerMixin import HyperBrowserControllerMixin
 
-class GMapAllInfoController(BaseToolController):
+
+class GMapAllInfoController(BaseToolController, HyperBrowserControllerMixin):
     def __init__(self, trans, job):
         BaseToolController.__init__(self, trans, job)
     

@@ -15,12 +15,16 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 #
 # instance is dynamically imported into namespace of <modulename>.mako template (see web/controllers/hyper.py)
+
+
 import sys
 from gold.application.GalaxyInterface import GalaxyInterface
-from proto.hyper_gui import SelectElement, TrackWrapper
+from proto.hyperbrowser.hyper_gui import SelectElement, TrackWrapper
 from proto.BaseToolController import *
+from HyperBrowserControllerMixin import HyperBrowserControllerMixin
 
-class ToolController(BaseToolController):
+
+class ToolController(HyperBrowserControllerMixin, BaseToolController):
     def __init__(self, trans, job):
         BaseToolController.__init__(self, trans, job)
         self.genomes = GalaxyInterface.getAllGenomes(self.galaxy.getUserName() \
@@ -34,7 +38,6 @@ class ToolController(BaseToolController):
         self.track.legend = 'Track'
         self.track.fetchTracks()
 
-
     def execute(self):
         self.stdoutToHistory()
         #print self.params
@@ -43,7 +46,6 @@ class ToolController(BaseToolController):
         track = self.params['track1'] if self.params.has_key('track1') else []
         print 'GalaxyInterface.startPreProcessing', (self.genome, track, username)
         GalaxyInterface.startPreProcessing(self.genome, track, username)
-
 
 
 def getController(transaction = None, job = None):

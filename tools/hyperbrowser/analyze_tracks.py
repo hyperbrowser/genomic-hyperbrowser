@@ -25,7 +25,7 @@ from galaxy.util import restore_text
 
 from gold.application.GalaxyInterface import *
 from config.Config import URL_PREFIX
-import hyperbrowser.hyper_gui as hg
+import proto.hyperbrowser.hyper_gui as hg
 
 
 def getDataFilePath(root, id):
@@ -76,10 +76,8 @@ def main():
     for o, a in params.items():
         if a == "":
             continue
-        elif o == "dbkey":
-            #if genomes.has_key(a):
-            #    genome = genomes[a]
-            #else:
+        a = str(a)
+        if o == "dbkey":
             genome = a
         elif o == "tool":
             tool = a

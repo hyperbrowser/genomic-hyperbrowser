@@ -827,9 +827,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def userHasFullAccess(username):
-        if not username:
-            return False
-        return username in [x.strip() for x in RESTRICTED_USERS.split(',')]
+        from proto.config.Config import userHasFullAccess
+        return userHasFullAccess(username)
 
     @staticmethod
     def getSupportedGalaxyFileFormats():

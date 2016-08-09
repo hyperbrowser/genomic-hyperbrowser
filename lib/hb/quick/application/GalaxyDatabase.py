@@ -1,8 +1,15 @@
-import galaxy.config
-import galaxy.model.mapping
-from config.Config import getGalaxyConfiguration
+from config.Config import getUniverseConfigParser
+
+def getGalaxyConfiguration():
+    import galaxy.config
+    configParser = getUniverseConfigParser()
+    configDict = {}
+    for key, value in configParser.items("app:main"):
+        configDict[key] = value
+    return galaxy.config.Configuration(**configDict)
 
 def getGalaxyDatabaseModel():
+    import galaxy.model.mapping
     """
     Returns a SQLAlchemy model and session --
     """

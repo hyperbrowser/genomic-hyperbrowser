@@ -18,9 +18,9 @@
 import sys, traceback
 from cgi import escape
 from urllib import quote, unquote
-import simplejson as json
+import json
 
-import hyperbrowser.hyper_gui as gui
+import proto.hyperbrowser.hyper_gui as gui
 %>
 <%
 #reload(gui)

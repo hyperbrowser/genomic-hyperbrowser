@@ -19,6 +19,7 @@
 import os, sys, errno, subprocess, shutil
 import third_party.safeshelve as safeshelve
 from gold.application.GalaxyInterface import GalaxyInterface
+from proto.hyperbrowser.HyperBrowserControllerMixin import HyperBrowserControllerMixin
 from quick.util.CommonFunctions import extractIdFromGalaxyFn, getGalaxyFnFromDatasetId
 from quick.util.StaticFile import GalaxyRunSpecificFile
 from config.Config import *
@@ -31,7 +32,7 @@ PYTHON = 'python'
 IDENTIFY = 'identify'
 DPI = 150
 
-class GoogleMapController(BaseToolController):
+class GoogleMapController(BaseToolController, HyperBrowserControllerMixin):
     jsonMethods = ('saveMap', 'restoreMap')
 
     def __init__(self, trans, job):

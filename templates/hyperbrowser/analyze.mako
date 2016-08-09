@@ -23,7 +23,6 @@ from urllib import quote, unquote
 
 import proto.hyperbrowser.hyper_gui as gui
 
-
 %>
 <%
 #print context.get('self')
@@ -186,7 +185,7 @@ if hyper.isAccessibleGenome(genome, username):
                             imgURL= hyper.getIllustrationRelURL(stats)
 %>
 
-<%namespace name="functions" file="/proto/functions.mako" />
+<%namespace name="functions" file="/hyperbrowser/functions.mako" />
 <%inherit file="/proto/base.mako"/>
 
 <%def name="title()">The Genomic HyperBrowser (${hyper.getHbVersion()})</%def>

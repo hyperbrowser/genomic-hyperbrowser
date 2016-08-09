@@ -1,4 +1,4 @@
-from proto.tools.GeneralGuiTool import GeneralGuiTool
+from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 
 class ToolTemplate(GeneralGuiTool):
@@ -66,6 +66,10 @@ class ToolTemplate(GeneralGuiTool):
     # @classmethod
     # def isHistoryTool(cls):
     #     return True
+    #
+    # @classmethod
+    # def isBatchTool(cls):
+    #     return cls.isHistoryTool()
     #
     # @classmethod
     # def isDynamic(cls):

@@ -1,4 +1,4 @@
-from proto.tools.GeneralGuiTool import GeneralGuiTool
+from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 
 class ToolTemplate(GeneralGuiTool):
@@ -95,6 +95,10 @@ class ToolTemplate(GeneralGuiTool):
 
         Genome selection box:   '__genome__'
         - Returns: string
+
+        Track selection box:    '__track__'
+        - Requires genome selection box.
+        - Returns: colon-separated string denoting track name
 
         History selection box:  ('__history__',) |
                                 ('__history__', 'bed', 'wig')
@@ -295,6 +299,18 @@ class ToolTemplate(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: True
     #     """
     #     return True
+    #
+    # @classmethod
+    # def isBatchTool(cls):
+    #     """
+    #     Specifies if this tool could be run from batch using the batch. The
+    #     batch run line can be fetched from the info box at the bottom of the
+    #     tool.
+    #
+    #     Optional method. Default return value if method is not defined:
+    #         same as isHistoryTool()
+    #     """
+    #     return cls.isHistoryTool()
     #
     # @classmethod
     # def isDynamic(cls):

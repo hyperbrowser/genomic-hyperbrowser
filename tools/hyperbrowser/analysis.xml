@@ -22,13 +22,14 @@
 	
 	<description></description>
 	
-	<command interpreter="python">test_analysis.py $output</command>
+	<command interpreter="python">analyze_tracks.py $output</command>
 	
 	<display>$GALAXY_URL $tool_id</display>
 	
 	<inputs action="/hyper" check_values="false" method="get">
 		<param name="GALAXY_URL" type="baseurl" value="/tool_runner" />
 		<param name="tool_id" type="hidden" value="hb_test_1" />
+		<param name="mako" type="hidden" value="/hyperbrowser/analyze" />
 	</inputs>
 		
 	<outputs>
