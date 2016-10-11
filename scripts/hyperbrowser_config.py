@@ -2,11 +2,12 @@ import sys, os
 from getopt import GetoptError, getopt
 import shelve
 
-new_path = [ os.path.join( os.getcwd(), "lib" ) ]
-new_path.extend( sys.path[1:] )  # remove scripts/ from the path
+galaxy_dir = os.path.sep.join(os.path.realpath(__file__).split(os.path.sep)[:-2])
+new_path = [os.path.join(galaxy_dir, "lib")]
+new_path.extend(sys.path[1:])  # remove scripts/ from the path
 sys.path = new_path
 
-SHELVE_FN = os.getcwd() + '/database/hb_config.shelve'
+SHELVE_FN = galaxy_dir + '/database/hb_config.shelve'
 
 def usage():
     print '''
@@ -53,7 +54,7 @@ if __name__ == '__main__':
             release = True
 
     if not configConstant and not store and not release:
-        print configConstant, store, release
+        # print configConstant, store, release
         print 'Error, config constant needs to be specified. Usage:'
         usage()
         sys.exit(0)
