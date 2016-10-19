@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from config.AutoConfig import *
+from AutoConfig import *
 
 #
 # Version information
