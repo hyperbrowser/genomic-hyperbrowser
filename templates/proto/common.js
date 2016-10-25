@@ -1,5 +1,6 @@
+
 function reloadForm(form, element) {
-disablePage();
+    disablePage();
     if (!form) form = document.forms[0];
     //if (form.focused_element && element)
     //    form.focused_element.value = element.id;
