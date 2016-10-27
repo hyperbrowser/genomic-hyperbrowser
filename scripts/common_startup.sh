@@ -127,7 +127,7 @@ if [ $SET_VENV -eq 1 ]; then
         then
             printf "Setting up R in virtualenv at $GALAXY_VIRTUAL_ENV\n"
 
-            echo 'export R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
+            echo '\nexport R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
             for LIB in $GALAXY_VIRTUAL_ENV/lib/python*
             do
                 echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py
