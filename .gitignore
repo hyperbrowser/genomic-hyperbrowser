@@ -21,9 +21,6 @@ database/*.sqlite
 database/openid_consumer_cache
 database/proto-tool-cache.shelve
 
-# hyperbrowser/*
-imports.db
-
 # Python bytecode
 *.pyc
 
