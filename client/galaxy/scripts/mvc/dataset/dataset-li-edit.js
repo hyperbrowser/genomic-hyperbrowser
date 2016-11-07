@@ -172,7 +172,7 @@ var DatasetListItemEdit = _super.extend(
                     require([ 'mvc/tool/tool-form' ], function( ToolForm ){
                         var form = new ToolForm.View({ 'job_id' : creating_job });
                         form.deferred.execute( function(){
-                            console.log(form.options);
+                            // console.log(form.options);
                             if (form.options.model_class.startsWith('Proto'))
                                 galaxy_main.location = rerun_url;
                             else

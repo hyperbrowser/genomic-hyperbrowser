@@ -153,6 +153,8 @@
     ${self.head()}
 </%def>
 
+<%def name="javascript_app()"></%def>
+
 <%def name="head()"></%def>
 <%def name="action()"></%def>
 <%def name="toolHelp()"></%def>
