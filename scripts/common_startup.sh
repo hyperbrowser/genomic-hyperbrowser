@@ -220,10 +220,11 @@ if [ $INSTALL_R_PACKAGES -eq 1 ]; then
         echo "R library loading successful."
     else
         echo "R library loading failed."
+        exit 1
     fi
 fi
 
-set -e
+#set -e
 
 if [ $HYPERBROWSER_SETUP -eq 1 ]; then
     ./scripts/hyperbrowser_dirs.sh
