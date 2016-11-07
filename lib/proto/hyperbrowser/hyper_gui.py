@@ -85,9 +85,10 @@ class TrackWrapper:
     def _makeHistoryOption(self, dataset, sel = None):
         name = dataset.name.replace('[', '(')
         name = name.replace(']', ')')
-        sel_id = int(sel.split(',')[1]) if sel else 0
-        val = 'galaxy,' + str(dataset.dataset_id) + ',' + dataset.extension + ',' + str(dataset.hid) + quote(' - ' + name, safe='')
-        html = '<option value="%s" %s>%d: %s [%s]</option>\n' % (val, 'selected' if dataset.dataset_id == sel_id else '', dataset.hid, name, dataset.dbkey)
+        enc_dataset_id = self.galaxy.encode_id(dataset.dataset_id)
+        sel_id = sel.split(',')[1] if sel else None
+        val = 'galaxy,' + enc_dataset_id + ',' + dataset.extension + ',' + str(dataset.hid) + quote(' - ' + name, safe='')
+        html = '<option value="%s" %s>%d: %s [%s]</option>\n' % (val, 'selected' if enc_dataset_id == sel_id else '', dataset.hid, name, dataset.dbkey)
         return (html, val)
 
     def optionsFromHistory(self, sel = None, exts = None):
@@ -143,37 +144,25 @@ class TrackWrapper:
         return ':'.join(vals)
 
     def selected(self):
-        #self.hasSubtrack()
-        #print len(self.tracks[len(self.definition())]), self.hasSubtrack()
-#        if self.valueLevel(0) == '__recent_tracks':
-#            return False
         if (len(self.definition()) >= 1 and not self.hasSubtrack()) or self.valueLevel(0) == '':
-            #if self.galaxy.hasSessionParam('recent_tracks'):
-            #    recent = self.galaxy.getSessionParam('recent_tracks')
-            #    if not isinstance(recent, list):
-            #        recent = []
-            #else:
-            #    recent = []
-            #if not self.asString() in recent:
-            #    recent.append(self.asString())
-            #if len(recent) > 5:
-            #    recent = recent[len(recent)-5:]
-            #self.galaxy.setSessionParam('recent_tracks', recent)
             self.valid = self.api.trackValid(self.genome, self.definition())
             if self.valid == True:
                 return True
+        print self.valid
         return False
 
-    def definition(self, unquotehistoryelementname = True):
-        #if self._definition:
-        #    return self._definition
+    def definition(self, unquotehistoryelementname=True, use_path=False):
         arr = [self.main]
         if self.main == 'galaxy' and self.file:
             f = self.file.split(',')
-            path = self.galaxy.getDataFilePath(f[1])
-            #print path
+#            path = self.galaxy.getDataFilePath(f[1])
+            if not use_path:
+                dataset_id = self.galaxy.encode_id(f[1]) if len(f[1]) < 16 and f[1].isdigit() else f[1]
+            else:
+                dataset_id = self.galaxy.getDataFilePath(f[1])
+
             arr.append(str(f[2]))
-            arr.append(str(path))
+            arr.append(str(dataset_id))
             if unquotehistoryelementname:
                 arr.append(str(unquote(f[3])))
             else:
