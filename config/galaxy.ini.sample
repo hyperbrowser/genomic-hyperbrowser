@@ -370,6 +370,14 @@ paste.app_factory = galaxy.web.buildapp:app_factory
 # want to remove this option from the user registration form.
 #mailing_join_addr = galaxy-announce-join@bx.psu.edu
 
+# Subject line for the mail that is sent to the mailing list subscription
+# email address.
+#mailing_join_subject = Join Mailing List
+
+# Name of the mailing list, used to present the mailing list in the user
+# registration form.
+#mailing_list_name = galaxy-announce@bx.psu.edu
+
 # Datasets in an error state include a link to report the error.  Those reports
 # will be sent to this address.  Error reports are disabled if no address is
 # set.  Also this email is shown as a contact to user in case of Galaxy

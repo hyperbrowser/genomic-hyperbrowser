@@ -184,6 +184,8 @@ class Configuration( object ):
         self.admin_users = kwargs.get( "admin_users", "" )
         self.admin_users_list = [u.strip() for u in self.admin_users.split(',') if u]
         self.mailing_join_addr = kwargs.get('mailing_join_addr', 'galaxy-announce-join@bx.psu.edu')
+        self.mailing_join_subject = kwargs.get('mailing_join_subject', 'Join Mailing List')
+        self.mailing_list_name = kwargs.get('mailing_list_name', 'galaxy-announce@bx.psu.edu')
         self.error_email_to = kwargs.get( 'error_email_to', None )
         # activation_email was used until release_15.03
         activation_email = kwargs.get( 'activation_email', None )
