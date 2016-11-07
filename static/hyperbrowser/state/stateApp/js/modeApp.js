@@ -18,8 +18,13 @@
 				});
 				// Attach toggle mode functionality on frame border arrow
 				$(config.toolBorder).on('click', function(event) {
-					modeModel.toggleMode();
-				}); 
+					event.stopImmediatePropagation();
+					if (!window.Galaxy.page.left.hidden) {
+						modeModel.toggleMode({'mode': 'basic', 'triggerState': 'history'});
+					} else {
+						modeModel.toggleMode({'mode': 'advanced', 'triggerState': 'history'});
+					}
+				});
 				// Attach mode functionality to basic and advanced sections on gsuite main welcome page
 				mainFrame.on('load', function(e) {
 					mainContent  = $($(config.mainFrame)[0]).contents();
@@ -46,13 +51,14 @@
 				this.attachModeListeners(modeModel);
 			
 				// hide Analyse data tab
-				masthead.find('td').first().hide();
-				
+				masthead.find('ul#analysis').first().hide();
+				masthead.find('ul#analysis li').first().removeClass('active');
+
 				modeModel.initialize({mode: 'basic'});
-				modeView.init({model: modeModel, tagName: 'td', classNames: 'tab'});
+				modeView.init({model: modeModel, tagName: 'ul', classNames: 'nav navbar-nav'});
 				modeView.render();
 				masthead.prepend(modeView.el);
-				masthead.find('td').first().addClass('active');
+				//masthead.find('ul li').first().addClass('active');
 				modeCTRL.init({model: modeModel});
 				
 				return modeModel;

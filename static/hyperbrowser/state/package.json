@@ -19,7 +19,7 @@
   "devDependencies": {
     "browserify": "^11.1.0",
     "browserify-shim": "^3.8.10",
-    "gulp": "^3.9.0",
+    "gulp": "^3.9.1",
     "gulp-jshint": "^1.11.2",
     "gulp-rename": "^1.2.2",
     "gulp-streamify": "^1.0.2",
@@ -46,5 +46,9 @@
     "simplestorage.js": "^0.2.0",
     "spin.js": "^2.3.2",
     "underscore": "^1.8.3"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "author": "Johannes Andre Akse"
 }

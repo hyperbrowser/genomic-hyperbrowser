@@ -159,7 +159,7 @@ window.app = function app( options, bootstrapped ){
         // start the router - which will call any of the routes above
         Backbone.history.start({
             root        : Galaxy.root,
-            pushState   : true,
+            pushState   : false,
         });
     });
 };

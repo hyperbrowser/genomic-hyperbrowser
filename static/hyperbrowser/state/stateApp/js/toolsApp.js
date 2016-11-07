@@ -28,17 +28,23 @@
                         });
                         _setUpGsuiteTabs(modeModel);
                         // Get state when ever a form is loaded
-                        var formSelects = mainContent.find('form select');
-                        var form = mainContent.find('form'),
-                            serializedForm = form.serialize();
-                        if (form.length > 0) {
-                            toolModel.setToolState({
-                                serializedForm: serializedForm,
-                                currentSelection: e.currentTarget.name
-                            });
-                        } else if (uriAnchor.makeAnchorMap().mode === undefined) {
-                            // To account for situations where mode is not set in url
-                            modeModel.toggleMode({mode: modeModel.get('mode'), triggerState: 'history'});
+                        //var formSelects = mainContent.find('form select');
+//                        var form = mainContent.find('form'),
+//                         var form = mainContent.find('form.protoForm'),
+//                             serializedForm = '';
+//                             //serializedForm = form.serialize();
+//                         if (form.length > 0) {
+//                             toolModel.setToolState({
+//                                 serializedForm: serializedForm,
+//                                 currentSelection: e.currentTarget.name
+//                             });
+//                         } else if (uriAnchor.makeAnchorMap().mode === undefined) {
+//                             // To account for situations where mode is not set in url
+//                             modeModel.toggleMode({mode: modeModel.get('mode'), triggerState: 'history'});
+//                         }
+                        if (uriAnchor.makeAnchorMap().mode === undefined) {
+                             // To account for situations where mode is not set in url
+                             modeModel.toggleMode({mode: modeModel.get('mode'), triggerState: 'history'});
                         }
                     });
                 });

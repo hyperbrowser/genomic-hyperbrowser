@@ -13,15 +13,16 @@
 			var self;
 			return {
 				template: _.template(
-					'<a target="_self" id="mode" class="noLink" href="" ><%= this.toggleViewText(mode)%></a>' 
-					 + '<div class="submenu">'
-           	 + '<ul>'
-               + '<li class="<%= (mode === "basic"? "disabledMode": "") %>"><a href="" id="basic">Basic mode</a></li>'
-               + '<li class="<%= (mode === "advanced"? "disabledMode": "") %>"><a href="" id="advanced">Advanced mode</a></li>'
-             + '</ul>'
-           + '</div>'
+					'<li class="dropdown active">'
+					+ '<a target="_self" id="mode" class="dropdown-toggle noLink" href="" ><%= this.toggleViewText(mode)%></a>'
+           	 		+ '<ul class="dropdown-menu">'
+               		+ '<li class="<%= (mode === "basic"? "disabledMode": "") %>"><a href="" id="basic">Basic mode</a></li>'
+               		+ '<li class="<%= (mode === "advanced"? "disabledMode": "") %>"><a href="" id="advanced">Advanced mode</a></li>'
+             		+ '</ul>'
+					+ '</li>'
 					),
 				initialize: function(options) {
+					this.$el.attr('id', 'mode');
 					this.eventSetup();
 					self = this;
 				},
@@ -36,6 +37,8 @@
 					var attr = event.target.id;
 					if(attr !== 'mode') {
 						self.model.toggleMode({mode: attr, triggerState: 'history'});
+					} else {
+						self.$el.find('.dropdown-menu').toggle();
 					}
 				},
 				render: function(props) {
