@@ -23,6 +23,7 @@ import urllib
 import contextlib
 
 from proto.config.Config import GALAXY_BASE_DIR
+from proto.CommonConstants import THOUSANDS_SEPARATOR
 
 """
 Note on datasetInfo and datasetId (used in several functions):
@@ -147,7 +148,7 @@ def getEncodedDatasetIdFromPlainGalaxyId(plainId):
     return galaxySecureEncodeId(plainId)
 
 
-def getEncodedDatasetIdFromGalaxyFn(cls, galaxyFn):
+def getEncodedDatasetIdFromGalaxyFn(galaxyFn):
     plainId = extractIdFromGalaxyFn(galaxyFn)[1]
     return getEncodedDatasetIdFromPlainGalaxyId(plainId)
 
@@ -237,3 +238,55 @@ def getLoadToGalaxyHistoryURL(fn, genome='hg18', galaxyDataType='bed', urlPrefix
     assert galaxyDataType is not None
     return urlPrefix + '/tool_runner?tool_id=file_import&dbkey=%s&runtool_btn=yes&input=' % (genome,) \
             + base64.urlsafe_b64encode(fn) + ('&format=' + galaxyDataType if galaxyDataType is not None else '')
+
+
+def strWithStdFormatting(val, separateThousands=True, floatFormatFlag='g'):
+    try:
+        assert val != int(val)
+        integral, fractional = (('%#.' + str(OUTPUT_PRECISION) + floatFormatFlag) % val).split('.')
+    except:
+        integral, fractional = str(val), None
+
+    if not separateThousands:
+        return integral + ('.' + fractional if fractional is not None else '')
+    else:
+        try:
+            return ('-' if integral[0] == '-' else '') + \
+                '{:,}'.format(abs(int(integral))).replace(',', THOUSANDS_SEPARATOR) + \
+                ('.' + fractional if fractional is not None else '')
+        except:
+            return integral
+
+
+def strWithNatLangFormatting(val, separateThousands=True):
+    return strWithStdFormatting(val, separateThousands=separateThousands, floatFormatFlag='f')
+
+
+def sortDictOfLists(dictOfLists, sortColumnIndex, descending=True):
+    return OrderedDict(sorted(
+        list(dictOfLists.iteritems()), key=lambda t: (t[1][sortColumnIndex]), reverse=descending))
+
+
+def smartSortDictOfLists(dictOfLists, sortColumnIndex, descending=True):
+    """Sort numbers first than strings, take into account formatted floats"""
+    # convert = lambda text: int(text) if text.isdigit() else text
+    # alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return OrderedDict(sorted(
+        list(dictOfLists.iteritems()), key=lambda t: forceNumericSortingKey(t[1][sortColumnIndex]), reverse=descending))
+
+
+def _strIsFloat(s):
+    try:
+        float(s)
+        return True
+    except:
+        return False
+
+
+def forceNumericSortingKey(key):
+    sortKey1 = 0
+    sortKey2 = key
+    if _strIsFloat(str(key).replace(THOUSANDS_SEPARATOR, '')):
+        sortKey1 = 1
+        sortKey2 = float(str(key).replace(THOUSANDS_SEPARATOR, ''))
+    return [sortKey1, sortKey2]
