@@ -215,6 +215,7 @@ if [ $INSTALL_R_PACKAGES -eq 1 ]; then
         echo "R library loading successful."
     else
         echo "R library loading failed."
-        exit 0
     fi
 fi
+
+exit 0
