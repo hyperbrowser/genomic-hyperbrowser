@@ -59,7 +59,7 @@
 ## Renders dataset content. Function is used to render data in stand-along page and to provide content for embedded datasets as well.
 <%def name="render_item( data, data_to_render )">
     ${ render_deleted_data_message( data ) }
-    %if data_to_render:
+    %if data_to_render and data.ext != 'html':
         %if truncated:
             <div class="warningmessagelarge">
                  This dataset is large and only the first megabyte is shown below. |
