@@ -107,10 +107,6 @@ class ExploreToolsTool(MultiGeneralGuiTool):
         return "-----  Select tool -----"
 
     @staticmethod
-    def isBatchTool():
-        return False
-
-    @staticmethod
     def useSubToolPrefix():
         return True
     
@@ -211,10 +207,6 @@ class InstallToolsTool(GeneralGuiTool):
     @staticmethod
     def getResetBoxes():
         return [1]
-
-    @staticmethod
-    def isBatchTool():
-        return False
 
 #    @staticmethod
 #    def isHistoryTool():
@@ -380,10 +372,6 @@ class GenerateToolsTool(GeneralGuiTool):
     @staticmethod
     def getToolName():
         return "ProTo tool generator"
-
-    @staticmethod
-    def isBatchTool():
-        return False
 
     @staticmethod
     def getInputBoxNames():
