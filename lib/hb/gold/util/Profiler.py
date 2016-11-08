@@ -34,7 +34,14 @@ class Profiler:
     def run(self, runStr, globals, locals):
         self._prof = self._prof.runctx(runStr, globals, locals)
         self._stats = pstats.Stats(self._prof)
-        
+
+    def start(self):
+        self._prof.enable()
+
+    def stop(self):
+        self._prof.disable()
+        self._stats = pstats.Stats(self._prof)
+
     def printStats(self):
         if self._stats == None:
             return
