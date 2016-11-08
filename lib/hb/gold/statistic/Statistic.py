@@ -333,7 +333,7 @@ class Statistic(object):
     @staticmethod
     def getRawStatisticClass(rawStatistic):
         assert rawStatistic is not None
-        if type(rawStatistic) is str:
+        if isinstance(rawStatistic, basestring):
             from gold.statistic.AllStatistics import STAT_CLASS_DICT
             rawStatistic = STAT_CLASS_DICT[rawStatistic]
         return rawStatistic

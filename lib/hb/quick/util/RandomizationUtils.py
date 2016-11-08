@@ -12,7 +12,7 @@ from gold.track.RandomizedTrack import RandomizedTrack
 
 def getRandTrackClassList(randTrackClassNameList):
     #to be refactored:
-    if type(randTrackClassNameList) is str:
+    if isinstance(randTrackClassNameList, basestring):
         randTrackClassNameList = randTrackClassNameList.split('_')
         
     return [getRandTrackClass(x) for x in randTrackClassNameList]
@@ -20,7 +20,7 @@ def getRandTrackClassList(randTrackClassNameList):
 
 def getRandTrackClass(randTrackClassName):
     randTrackClass =  ( globals()[randTrackClassName] if randTrackClassName not in ['None',''] else None ) \
-        if type(randTrackClassName) is str else randTrackClassName 
+        if isinstance(randTrackClassName, basestring) else randTrackClassName
 
     assert randTrackClass in [None, PermutedSegsAndSampledIntersegsTrack, \
                        PermutedSegsAndIntersegsTrack, RandomGenomeLocationTrack, SegsSampledByIntensityTrack, ShuffledMarksTrack, SegsSampledByDistanceToReferenceTrack], getClassName(randTrackClass)

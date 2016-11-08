@@ -17,6 +17,21 @@ class SafeShelf(shelve.Shelf):
         shelf._closed = False
         shelf.__class__ = SafeShelf
         return shelf
+
+    def get(self, key):
+        if isinstance(key, unicode):
+            key = str(key)
+        return shelve.Shelf.get(self, key)
+
+    def __getitem__(self, key):
+        if isinstance(key, unicode):
+            key = str(key)
+        return shelve.Shelf.__getitem__(self, key)
+
+    def __setitem__(self, key, val):
+        if isinstance(key, unicode):
+            key = str(key)
+        shelve.Shelf.__setitem__(self, key, val)
         
     #def __setitem__(self, key, val):
     #    print key

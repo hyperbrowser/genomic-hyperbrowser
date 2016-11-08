@@ -266,7 +266,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         
         self._randTrackClass1, self._randTrackClass2 = \
             [ ( globals()[clsDef] if clsDef not in ['None',''] else None ) \
-                if type(clsDef) is str else clsDef for clsDef in [randTrackClass1, randTrackClass2] ]
+                if isinstance(clsDef, basestring) else clsDef for clsDef in [randTrackClass1, randTrackClass2]]
         
         assert not (randTrackClass1 is None and randTrackClass2 is None)
         for cls in [self._randTrackClass1, self._randTrackClass2]:
