@@ -28,7 +28,7 @@ from collections import Iterable, OrderedDict
 from config.Config import PROCESSED_DATA_PATH, DEFAULT_GENOME, \
     ORIG_DATA_PATH, OUTPUT_PRECISION, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
     PARSING_ERROR_DATA_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonConstants import THOUSANDS_SEPARATOR, BINARY_MISSING_VAL
+from gold.util.CommonConstants import BINARY_MISSING_VAL
 from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
@@ -244,28 +244,6 @@ def isNumber(s):
 
 def getClassName(obj):
     return obj.__class__.__name__
-
-
-def strWithStdFormatting(val, separateThousands=True, floatFormatFlag='g'):
-    try:
-        assert val != int(val)
-        integral, fractional = (('%#.' + str(OUTPUT_PRECISION) + floatFormatFlag) % val).split('.')
-    except:
-        integral, fractional = str(val), None
-
-    if not separateThousands:
-        return integral + ('.' + fractional if fractional is not None else '')
-    else:
-        try:
-            return ('-' if integral[0] == '-' else '') + \
-                '{:,}'.format(abs(int(integral))).replace(',', THOUSANDS_SEPARATOR) + \
-                ('.' + fractional if fractional is not None else '')
-        except:
-            return integral
-
-
-def strWithNatLangFormatting(val, separateThousands=True):
-    return strWithStdFormatting(val, separateThousands=separateThousands, floatFormatFlag='f')
 
 
 def smartStrLower(obj):
@@ -730,33 +708,3 @@ def getUniqueFileName(origFn):
         i += 1
 
     return newOrigFn
-
-
-def sortDictOfLists(dictOfLists, sortColumnIndex, descending=True):
-    return OrderedDict(sorted(
-        list(dictOfLists.iteritems()), key=lambda t: (t[1][sortColumnIndex]), reverse=descending))
-
-
-def smartSortDictOfLists(dictOfLists, sortColumnIndex, descending=True):
-    """Sort numbers first than strings, take into account formatted floats"""
-    # convert = lambda text: int(text) if text.isdigit() else text
-    # alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return OrderedDict(sorted(
-        list(dictOfLists.iteritems()), key=lambda t: forceNumericSortingKey(t[1][sortColumnIndex]), reverse=descending))
-
-
-def _strIsFloat(s):
-    try:
-        float(s)
-        return True
-    except:
-        return False
-
-
-def forceNumericSortingKey(key):
-    sortKey1 = 0
-    sortKey2 = key
-    if _strIsFloat(str(key).replace(THOUSANDS_SEPARATOR, '')):
-        sortKey1 = 1
-        sortKey2 = float(str(key).replace(THOUSANDS_SEPARATOR, ''))
-    return [sortKey1, sortKey2]

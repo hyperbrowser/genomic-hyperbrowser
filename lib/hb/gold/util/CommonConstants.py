@@ -41,15 +41,11 @@ LICENSE_STMT = \
 
 TRACK_TITLES_SEPARATOR = '|||'
 
-STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT = \
-dict(
-     {
-      'CountNumSegmentsStat' : 'Segment count',
-      'CountElementsStat' : 'Element count',
-      'CountSegmentsOverlappingWithT2Stat' : 'Overlapping segments with query track',
-      'CountStat' : 'Coverage (bps)',
-      'SingleValueOverlapStat' : 'Overlap (bps)',
-      }
-     )
+STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT = {
+  'CountNumSegmentsStat': 'Segment count',
+  'CountElementsStat': 'Element count',
+  'CountSegmentsOverlappingWithT2Stat': 'Overlapping segments with query track',
+  'CountStat': 'Coverage (bps)',
+  'SingleValueOverlapStat': 'Overlap (bps)',
+}
 
-THOUSANDS_SEPARATOR = ' '

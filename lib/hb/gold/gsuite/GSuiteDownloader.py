@@ -6,6 +6,7 @@ from gold.gsuite.GSuiteAllTracksVisitor import GSuiteAllTracksVisitor
 from gold.gsuite.GSuiteFunctions import getTitleAndSuffixWithCompressionSuffixesRemoved, \
                                     getTitleWithCompressionSuffixesRemoved, \
                                     getDuplicateIdx, renameBaseFileNameWithDuplicateIdx
+from gold.util.CustomExceptions import ShouldNotOccurError, InvalidFormatError
 from quick.util.CommonFunctions import ensurePathExists
 from third_party.Visitor import Visitor
 
