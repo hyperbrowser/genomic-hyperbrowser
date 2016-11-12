@@ -132,6 +132,7 @@ doc/build
 .stversions
 .stfolder
 .stignore
+.stglobalignore
 .syncthing*
 .svn
 ./**/.svn
