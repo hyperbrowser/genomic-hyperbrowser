@@ -14,15 +14,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-from config.Config import DATA_FILES_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CustomExceptions import NotSupportedError, ArgumentValueError
-from gold.util.CommonFunctions import strWithStdFormatting
-from third_party.roman import fromRoman
-from gold.result.HtmlCore import HtmlCore
-from collections import defaultdict, OrderedDict
-import third_party.safeshelve as safeshelve
 import copy
+import os
+from collections import defaultdict, OrderedDict
+
+import third_party.safeshelve as safeshelve
+from config.Config import DATA_FILES_PATH, IS_EXPERIMENTAL_INSTALLATION
+from gold.util.CommonFunctions import strWithStdFormatting
+from gold.util.CustomExceptions import ArgumentValueError
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from third_party.roman import fromRoman
 
 SHELVE_FN = DATA_FILES_PATH + os.sep + 'GenomeInfo.shelve'
 
@@ -206,7 +207,6 @@ class GenomeInfo(object):
     def isInstalled(self):
         # Caching added to improve reaction time when displaying genome selection box
         if not self.installed:
-            from gold.util.CommonFunctions import createDirPath
             from quick.application.ProcTrackOptions import ProcTrackOptions
 
             self.installed = self.timeOfInstallation is not None and \

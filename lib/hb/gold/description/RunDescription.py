@@ -14,23 +14,20 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from gold.description.Analysis import Analysis
-from gold.application.LogSetup import logException,logging, logMessage
-from config.Config import DebugConfig,STATIC_REL_PATH, URL_PREFIX, BATCH_COL_SEPARATOR
-from gold.result.HtmlCore import HtmlCore
-from gold.description.TrackInfo import TrackInfo
-from quick.util.GenomeInfo import GenomeInfo
-from gold.util.CommonFunctions import prettyPrintTrackName, getClassName
-from gold.description.Analysis import Analysis
-#from gold.description.StatDescriptionList import getDescription
-from quick.application.ExternalTrackManager import ExternalTrackManager
-import os
-import functools
-import re
-#from urllib import quote
-from gold.application.LogSetup import logMessage, logging
 import datetime
+import os
+import re
 from urllib import quote, unquote
+
+from config.Config import DebugConfig,STATIC_REL_PATH, URL_PREFIX, BATCH_COL_SEPARATOR
+from gold.application.LogSetup import logException
+from gold.application.LogSetup import logMessage, logging
+from gold.description.Analysis import Analysis
+from gold.description.TrackInfo import TrackInfo
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.util.GenomeInfo import GenomeInfo
+
 
 class RunDescription(object):
     @staticmethod

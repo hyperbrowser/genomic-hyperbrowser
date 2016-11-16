@@ -1,10 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+import os
+from cPickle import load
+
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.StaticFile import GalaxyRunSpecificFile
-from cPickle import load
-import os
-import time
-from gold.result.HtmlCore import HtmlCore    
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class ConcatenateHistoryItems(GeneralGuiTool):

@@ -1,22 +1,19 @@
 from collections import OrderedDict
 
 from gold.application.HBAPI import doAnalysis
-from gold.description import AnalysisList
-from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
+from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.description.AnalysisManager import AnalysisManager
 from gold.gsuite import GSuiteConstants, GSuiteComposer
-from gold.gsuite.GSuiteConstants import GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME, GSUITE_SUFFIX
-from gold.result.HtmlCore import HtmlCore
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountSegmentStat import CountSegmentStat
-from gold.util.CommonFunctions import strWithStdFormatting, strWithNatLangFormatting
+from gold.util.CommonFunctions import strWithNatLangFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.AvgElementLengthStat import AvgElementLengthStat
-from quick.statistic.AvgSegLenStat import AvgSegLenStat
 from quick.toolguide import ToolGuideConfig
 from quick.toolguide.controller.ToolGuide import ToolGuideController
-from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -312,7 +309,6 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        from gold.gsuite.GSuiteConstants import UNKNOWN, MULTIPLE
 
         if not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)

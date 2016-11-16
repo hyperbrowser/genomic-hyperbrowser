@@ -1,9 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.UserBinSource import parseRegSpec
-from gold.result.HtmlCore import HtmlCore
 from quick.application.AutoBinner import AutoBinner
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.application.UserBinSource import parseRegSpec
 from quick.util.CommonFunctions import createHyperBrowserURL
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -90,7 +91,7 @@ class NmerInspectTool(GeneralGuiTool):
         #regSpec = '*'
         #print 'Using binSize: ',binSpec
         #print 'TN1: ',trackName1
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         print str(HtmlCore().styleInfoBegin(styleClass='debug'))
         GalaxyInterface.run(trackName1, trackName2, analysisDef, regSpec, binSpec, genome, galaxyFn)
         print str(HtmlCore().styleInfoEnd())
@@ -116,7 +117,7 @@ class NmerInspectTool(GeneralGuiTool):
     #
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Inspect the frequency variation of occurrences of a given k-mer in a specified region along the selected genome. The tool tries to determine appropriate binning of the specified region, and outputs the number of k-mer occurrences per bin as a plot and as underlying textual data.')
         core.divider()

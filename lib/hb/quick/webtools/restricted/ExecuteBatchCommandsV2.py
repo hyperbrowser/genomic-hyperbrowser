@@ -1,7 +1,9 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.GalaxyInterface import GalaxyInterface
 import os
-from gold.result.HtmlCore import HtmlCore
+
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

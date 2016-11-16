@@ -1,32 +1,17 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.statistic.AllStatistics import STAT_CLASS_DICT
-from gold.statistic.MagicStatFactory import MagicStatFactory
-from quick.application.UserBinSource import UserBinSource
-#from gold.application.StatRunner import StatJob        
-from os import sep
-from quick.util.GenomeInfo import GenomeInfo
-from config.Config import NONSTANDARD_DATA_PATH
-from quick.application.GalaxyInterface import GalaxyInterface
+from collections import OrderedDict
+from collections import defaultdict
+from time import time
+
+from config.Config import DATA_FILES_PATH, HB_SOURCE_CODE_BASE_DIR
 from gold.application.StatRunner import *
-import re
-from collections import defaultdict, Counter
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
-from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import PlainTrack
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.MotifScanner import MotifScanner
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.result.HtmlCore import HtmlCore
+from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.util.StaticFile import StaticFile
-from collections import OrderedDict
-#This is a template prototyping GUI that comes together with a corresponding web page.
-#
-from third_party.safeshelve import shelve
-from config.Config import DATA_FILES_PATH, HB_SOURCE_CODE_BASE_DIR
-from time import time
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class AnalyzeTfsVersusSnv(GeneralGuiTool):

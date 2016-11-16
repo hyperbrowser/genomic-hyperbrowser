@@ -21,7 +21,7 @@ from gold.util.CommonFunctions import getFileSuffix, stripFileSuffix
 
 
 def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
-    from gold.result.HtmlCore import HtmlCore
+    from proto.hyperbrowser.HtmlCore import HtmlCore
     from quick.application.GalaxyInterface import GalaxyInterface
 
     core = HtmlCore()
@@ -131,7 +131,7 @@ def getAnalysisQuestionInfoHtml(bmQid):
     Builds the div element that contains the appropriate basic mode analysis question.
     '''
     from quick.toolguide import BasicModeQuestionCatalog
-    from gold.result.HtmlCore import HtmlCore
+    from proto.hyperbrowser.HtmlCore import HtmlCore
 
     if bmQid:
         htmlCore = HtmlCore()

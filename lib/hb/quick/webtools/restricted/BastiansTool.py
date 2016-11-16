@@ -1,10 +1,5 @@
-import os
-
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from collections import OrderedDict, namedtuple
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.result.HtmlCore import HtmlCore
-from config.Config import IS_EXPERIMENTAL_INSTALLATION
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

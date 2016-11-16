@@ -136,7 +136,7 @@ class WizardTestTool1(GeneralGuiTool):
         from quick.util.CommonFunctions import createToolURL
         redirectUrl = createToolURL(toolId=toolId, **kwArgs)
 
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.begin(redirectUrl=redirectUrl)
         core.paragraph('Redirecting to next tool')

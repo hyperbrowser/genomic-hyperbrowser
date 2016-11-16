@@ -1,5 +1,7 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from collections import OrderedDict
+
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class GSuiteSelectColumns(GeneralGuiTool):
     exception = None
@@ -246,7 +248,7 @@ class GSuiteSelectColumns(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         from gold.gsuite.GSuiteConstants import URI_COL, FILE_FORMAT_COL, \
                                                 TRACK_TYPE_COL, TITLE_COL
 

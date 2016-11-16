@@ -1,15 +1,15 @@
 from collections import defaultdict
 
-from quick.application.ExternalTrackManager import ExternalTrackManager as etm
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.application.DataTypes import getSupportedFileSuffixes
-import gold.gsuite.GSuiteConstants as GSuiteConstants
 import gold.gsuite.GSuiteComposer as GSuiteComposer
+import gold.gsuite.GSuiteConstants as GSuiteConstants
+from gold.application.DataTypes import getSupportedFileSuffixes
 from gold.gsuite.GSuiteUtils import createGalaxyGSuiteBySplittingInputFileOnAttribute
 from gold.origdata.FileFormatComposer import findMatchingFileFormatComposers, \
                                              getComposerClsFromFileFormatName
 from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import findKeysWithMaxVal, findKeysWithMinVal
+from quick.application.ExternalTrackManager import ExternalTrackManager as etm
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class CompileGSuiteFromSingleTrackAttributeTool(GeneralGuiTool):
     GSUITE_OUTPUT_LOCATION = GSuiteConstants.LOCAL
@@ -341,7 +341,7 @@ class CompileGSuiteFromSingleTrackAttributeTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.paragraph('This tools takes a single track as input. The user then'

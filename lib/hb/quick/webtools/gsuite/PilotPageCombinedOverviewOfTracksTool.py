@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.TrackReportCommon import generatePilotPageOneParagraphs,\
     generatePilotPageTwoParagraphs, generatePilotPageThreeParagraphs,\

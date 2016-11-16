@@ -1,7 +1,6 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-
 import gold.gsuite.GSuiteConstants as GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 '''
 Preprocess: Yes

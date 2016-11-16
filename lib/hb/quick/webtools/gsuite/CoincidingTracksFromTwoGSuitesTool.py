@@ -4,11 +4,11 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteStatUtils, GSuiteConstants
 from gold.result.HeatmapPresenter import HeatmapFromTableDataPresenter
-from gold.result.HtmlCore import HtmlCore
 from gold.result.MatrixGlobalValuePresenter import \
     MatrixGlobalValueFromTableDataPresenter
 from gold.track.Track import Track
 from gold.util import CommonConstants
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteFullAnalysisV2Stat import RAW_OVERLAP_TABLE_RESULT_KEY, \
@@ -17,7 +17,6 @@ from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat
 from quick.toolguide import ToolGuideConfig
 from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.util.StaticFile import GalaxyRunSpecificFile
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin

@@ -1,20 +1,28 @@
+import copy
+import itertools
+import math
+import urllib2
 from collections import OrderedDict
-from quick.util.CommonFunctions import ensurePathExists
+
 from gold.application.HBAPI import GlobalBinSource, PlainTrack
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.gsuite import GSuiteComposer
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
 from gold.track.Track import Track
 from gold.util.CommonFunctions import strWithStdFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import UserBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.MaxElementValueStat import MaxElementValueStat
 from quick.statistic.RawOverlapToSelfStat import RawOverlapToSelfStat
 from quick.statistic.RipleysKStat import RipleysKStat
-from quick.statistic.MaxElementValueStat import MaxElementValueStat
 from quick.statistic.SumTrackPointsStat import SumTrackPointsStat
+from quick.util.CommonFunctions import ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
 from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\
@@ -25,24 +33,7 @@ from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool, H
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
-import math
-#from gold.application.RSetup import r, robjects
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.gsuite.GSuite import GSuite
-from collections import Counter
-import itertools
-import pandas as pd
-import numpy as np
-import urllib2
-from gold.description.TrackInfo import TrackInfo
-from gold.gsuite.GSuiteTrack import HbGSuiteTrack, GSuiteTrack
-from gold.gsuite import GSuiteComposer
-from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
-import operator
-import numpy as np
-#import matplotlib.pyplot as plt
-import os
-import copy
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -648,8 +639,6 @@ class geneExpressionHist(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-
-        import operator
 
         annotation = choices.annotations
         type = choices.type

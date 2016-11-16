@@ -2,13 +2,14 @@ from proto.HtmlCore import HtmlCore as ProtoHtmlCore
 
 
 class HtmlCore(ProtoHtmlCore):
-    def tableHeader(self, headerRow, tableId=None,
+    def tableHeader(self, headerRow, tagRow=None, tableId=None,
                     addInstruction=False, **kwargs):
         if addInstruction:
             if not tableId:
                 tableId = 'tab0'
             self.addInstruction(tableId=tableId)
-        super(HtmlCore, self).tableHeader(headerRow, tableId=tableId, **kwargs)
+        super(HtmlCore, self).tableHeader(headerRow, tagRow=tagRow,
+                                          tableId=tableId, **kwargs)
 
     def addInstruction(self, tableId='tab0'):
         tableId = str(tableId).replace('"', '')

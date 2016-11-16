@@ -174,7 +174,7 @@ class Tool8(GeneralGuiTool):
         #print plot.getURL() + '<br>'
         #print plot.getDiskPath()
 
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.begin()
         core.bigHeader('Plot of row averages')

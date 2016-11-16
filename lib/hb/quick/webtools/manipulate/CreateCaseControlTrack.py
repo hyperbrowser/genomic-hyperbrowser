@@ -1,14 +1,18 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import sys, os, getopt, types
-from gold.application.GalaxyInterface import *
-from quick.application.ExternalTrackManager import ExternalTrackManager
 # Copied and modified from gops_subtract.py from Galaxy codebase
-#
 
-import sys, fileinput, tempfile
+import fileinput
+import sys
+import tempfile
+
 from bx.intervals.io import NiceReaderWrapper, ParseError
 from bx.intervals.operations.subtract import subtract
+
 from galaxy.tools.util.galaxyops import fail, skipped
+from gold.application.GalaxyInterface import *
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
@@ -270,7 +274,7 @@ class CreateCaseControlTrack(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('''
 This tool combines elements from two separate data sets into a single track where

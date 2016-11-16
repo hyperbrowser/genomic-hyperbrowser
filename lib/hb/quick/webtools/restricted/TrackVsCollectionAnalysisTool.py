@@ -1,7 +1,7 @@
 from gold.gsuite import GSuiteConstants, GSuiteFunctions
-from gold.result.HtmlCore import HtmlCore
 from gold.util.CommonFunctions import prettyPrintTrackName,\
     strWithNatLangFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

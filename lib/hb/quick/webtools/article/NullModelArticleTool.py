@@ -1,4 +1,4 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
+from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -51,7 +51,7 @@ class PlotFigure1Tool(NullModelArticleTool):
         from quick.util.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         sf = GalaxyRunSpecificFile(['fig1.png'], galaxyFn)
         sf.openRFigure()
@@ -84,7 +84,7 @@ class PlotFigure1Tool(NullModelArticleTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.descriptionLine('R-code', cls._exampleText(cls.rCode))
         return str(core)
@@ -135,7 +135,7 @@ class PlotFigure2Tool(NullModelArticleTool):
         from quick.util.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         sf = GalaxyRunSpecificFile(['fig2.png'], galaxyFn)
         sf.openRFigure()
@@ -168,7 +168,7 @@ class PlotFigure2Tool(NullModelArticleTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.descriptionLine('R-code', cls._exampleText(cls.rCode))
         return str(core)

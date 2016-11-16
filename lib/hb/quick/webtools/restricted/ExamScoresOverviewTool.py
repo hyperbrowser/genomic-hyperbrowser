@@ -1,8 +1,9 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.exam.ExamResultsAnalysis import ExamScoresOverview,\
     ExamResultsValidator
-from gold.result.HtmlCore import HtmlCore
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

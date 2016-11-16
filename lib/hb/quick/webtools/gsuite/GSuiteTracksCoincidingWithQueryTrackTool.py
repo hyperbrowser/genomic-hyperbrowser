@@ -8,13 +8,13 @@ from gold.gsuite import GSuiteConstants, GSuiteStatUtils
 from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, \
     GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME
 from gold.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
-from gold.result.HtmlCore import HtmlCore
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import prettyPrintTrackName, \
     strWithNatLangFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

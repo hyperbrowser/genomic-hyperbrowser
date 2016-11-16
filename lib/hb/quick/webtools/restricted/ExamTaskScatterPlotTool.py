@@ -1,9 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from collections import OrderedDict
+
+from proto.hyperbrowser import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.exam.ExamResultsAnalysis import ExamResultsReader,\
     TaskScatterPlotAnalysis, ExamResultsValidator
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from collections import OrderedDict
-from gold.result import HtmlCore
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

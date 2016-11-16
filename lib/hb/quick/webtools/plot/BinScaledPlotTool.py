@@ -1,5 +1,7 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.util.CommonFunctions import createHyperBrowserURL
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -117,7 +119,7 @@ class BinScaledPlotTool(GeneralGuiTool):
     #
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('''
 Used to reveal trends of how track elements are distributed relative to a set of

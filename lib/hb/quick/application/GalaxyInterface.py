@@ -14,64 +14,49 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-import functools
 import os
 import os.path
 import re
 import shutil
 import sys
 import time
-import traceback
-
 from copy import copy
 from datetime import datetime
-from tempfile import NamedTemporaryFile
 from urllib import unquote, quote
 
 from config.Config import DebugConfig, DEFAULT_GENOME, STATIC_REL_PATH,\
-    IS_EXPERIMENTAL_INSTALLATION, ORIG_DATA_PATH, HB_VERSION, RESTRICTED_USERS, \
-    DATA_FILES_PATH, USE_PARALLEL, BATCH_COL_SEPARATOR, URL_PREFIX, \
+    IS_EXPERIMENTAL_INSTALLATION, ORIG_DATA_PATH, HB_VERSION, DATA_FILES_PATH, USE_PARALLEL, BATCH_COL_SEPARATOR, URL_PREFIX, \
     CFG_ALLOW_COMP_BIN_SPLITTING #, brk
-
 from gold.application.LogSetup import logging, HB_LOGGER, usageAndErrorLogging, \
     runtimeLogging, logException, detailedJobRunHandler, logMessage, logLackOfSupport
 from gold.application.StatRunner import AnalysisDefJob, AssemblyGapJob #, CountBothTracksJob
-from gold.extra.nmers.NmerManager import NmerManager
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.TrackInfo import TrackInfo
-from gold.origdata.GenomeElementSource import GenomeElementSource
+from gold.extra.nmers.NmerManager import NmerManager
 from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
-from gold.result.HtmlCore import HtmlCore
-from gold.result.Results import Results
-from gold.statistic.ResultsMemoizer import ResultsMemoizer
-from gold.track.Track import Track, PlainTrack
-from gold.util.CommonFunctions import insertTrackNames, smartStrLower,\
+from gold.track.Track import PlainTrack
+from gold.util.CommonFunctions import smartStrLower,\
     getClassName, prettyPrintTrackName, createOrigPath, \
-    generateStandardizedBpSizeText, parseShortenedSizeSpec, getOrigFn, strWithStdFormatting
-from gold.util.CustomExceptions import ShouldNotOccurError, NotSupportedError, \
+    getOrigFn, strWithStdFormatting
+from gold.util.CustomExceptions import NotSupportedError, \
     Warning, InvalidFormatError, InvalidRunSpecException #, IncompatibleTracksError
-#from gold.description.Analysis import Analysis
-#from gold.description.AnalysisManager import AnalysisManager
-#from gold.description.RunDescription import RunDescription
-#from gold.result.ResultsViewer import ResultsViewerCollection
-
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.application.SignatureDevianceLogging import takes,returns
-from quick.application.UserBinSource import UserBinSource, UnfilteredUserBinSource, GlobalBinSource
-from quick.extra.CustomTrackCreator import CustomTrackCreator, TrackViewBasedCustomTrackCreator
+from quick.application.UserBinSource import GlobalBinSource
+from quick.extra.CustomTrackCreator import TrackViewBasedCustomTrackCreator
 from quick.extra.FunctionCategorizer import FunctionCategorizer
 from quick.extra.OrigFormatConverter import OrigFormatConverter
 from quick.extra.StandardizeTrackFiles import runParserClass
 from quick.extra.TrackExtractor import TrackExtractor
-
 from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
 from quick.util.StaticFile import GalaxyRunSpecificFile, StaticFile
+
+
 #from quick.batch.BatchRunner import BatchRunner,SuperBatchRunner
 #from quick.webtools.GeneralGuiToolsFactory import GeneralGuiToolsFactory
-
-from quick.util.debug import DebugUtil
 
 class GalaxyInterfaceVis:
     @staticmethod
@@ -253,7 +238,6 @@ class GalaxyInterfaceTools:
         from gold.origdata.GenomeElementSorter import GenomeElementSorter
         from gold.origdata.GEOverlapClusterer import GEOverlapClusterer
         from quick.origdata.GERegionBoundaryFilter import GERegionBoundaryFilter
-        from gold.origdata.GECategoryFilter import GECategoryFilter
         from quick.application.UserBinSource import GlobalBinSource
 
         superTN = ['Genes and Gene Prediction Tracks', 'Genes']
@@ -1061,7 +1045,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             res = job.run(printProgress=printProgress)
 
             if DebugConfig.USE_PROFILING:
-                from multiprocessing.managers import BaseManager
                 from quick.application.parallel.Config import PASSPHRASE
                 from config.Config import PP_MANAGER_PORT
                 import time
@@ -1273,7 +1256,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                     ti = TrackInfo(genome, trackNames[i])
                     if ti.timeOfPreProcessing is None or (datetime.now() - ti.timeOfPreProcessing).days > 0:
                         from quick.extra.StoreBioHelper import getUrlToSBFile
-                        import urllib2
                         url, hbFileName, hbTrackName = getUrlToSBFile(tn)#, STOREBIOINFO_USER, STOREBIOINFO_PASSWD
                         fn = createOrigPath(genome, tn, hbFileName)
                         ensurePathExists(fn)
@@ -1499,7 +1481,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def _getBatchResultFileAndLink(galaxyFn, batchToolId, line):
-        from quick.util.CommonFunctions import extractIdFromGalaxyFn
         from quick.util.StaticFile import GalaxyRunSpecificFile
 
         #batchLineSpecificId = extractIdFromGalaxyFn(galaxyFn) + [str(batchToolId)]

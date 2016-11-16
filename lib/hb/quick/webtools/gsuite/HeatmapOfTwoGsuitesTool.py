@@ -403,7 +403,7 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Loops through all combinations of tracks from two GSuite files '
                        'where the two tracks are from different GSuites. For all these '

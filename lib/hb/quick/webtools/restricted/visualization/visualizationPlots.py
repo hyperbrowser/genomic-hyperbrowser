@@ -15,8 +15,6 @@ import json
 #heatmapPlotNumber, heatmapPlot = drawHeatMap(dataY, colorMap, interaction, otherPlotNumber, otherPlotData) #draw single heatmap with interaction among plots
 #drawChartInteractionWithHeatmap([startEnd, startEndInterval], 10, type='line', seriesType=['column', 'line'],  minWidth=300, height=400, lineWidth=3, titleText='titleText', yAxisTitle='yAxisTitle', subtitleText='subtitleText', legend=True, heatmapPlot=heatmapPlot, heatmapPlotNumber=heatmapPlotNumber)
 
-from gold.result.HtmlCore import HtmlCore
-
 def addJSlibs():
     return """
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>

@@ -1,13 +1,17 @@
-import sys, os, subprocess, sqlite3, time
+import os
+import sqlite3
+import subprocess
+import sys
+import time
 
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.track.GenomeRegion import GenomeRegion
-from quick.util.GenomeInfo import GenomeInfo
-from gold.track.Track import PlainTrack
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from gold.result.HtmlCore import HtmlCore
 from config.Config import URL_PREFIX
+from gold.track.GenomeRegion import GenomeRegion
+from gold.track.Track import PlainTrack
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.util.GenomeInfo import GenomeInfo
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class VariantMeltingProfile(GeneralGuiTool):
     varmelt_dir = '/software/varmelt/'    

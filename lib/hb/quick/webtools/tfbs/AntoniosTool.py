@@ -1,17 +1,8 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import gold.gsuite.GSuiteConstants as GSuiteConstants
-from collections import OrderedDict
-from quick.extra.tfbs.TfbsTrackNameMappings import *
-from quick.extra.tfbs.TfTrackNameMappings import TfTrackNameMappings
-from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.extra.TrackIntersection import TrackIntersection
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGSuiteFile, getGSuiteFromGalaxyTN
-from gold.result.HtmlCore import HtmlCore
-import quick.webtools.restricted.visualization.visualizationPlots as vp
-from quick.util.GenomeInfo import GenomeInfo
-import numpy
+from quick.extra.tfbs.TfbsTrackNameMappings import *
 from quick.extra.tfbs.getTrackRelevantInfo import *
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 '''
 Created on Mar 7, 2015
 @author: Antonio Mora

@@ -441,7 +441,7 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
 
     @classmethod
     def getToolDescription(cls):
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
 

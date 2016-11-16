@@ -15,8 +15,9 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
-from gold.statistic.Statistic import Statistic
 from gold.statistic.MinAndMaxStat import MinAndMaxStat
+from gold.statistic.Statistic import Statistic
+
 
 class DiscreteMarksStat(MagicStatFactory):
     pass
@@ -40,8 +41,7 @@ class DiscreteMarksStatUnsplittable(Statistic):
         minVal, maxVal = [self._children[1].getResult()[x] for x in ['min','max']]
         if maxVal != minVal:
             step = 1.0*(maxVal-minVal) / self._numDiscreteVals
-            from config.Config import IS_EXPERIMENTAL_INSTALLATION
-#             from gold.statistic.BpIntensityStat import BpIntensityStatUnsplittable
+            #             from gold.statistic.BpIntensityStat import BpIntensityStatUnsplittable
             #if BpIntensityStatUnsplittable.VERBOSE_INTENSITY_CREATION or IS_EXPERIMENTAL_INSTALLATION:
             #    print '<br>'
             #    print 'Discretizing with marksStat: ', self._marksStat, ' in region: ', self._region
@@ -49,7 +49,7 @@ class DiscreteMarksStatUnsplittable(Statistic):
             #          ','.join([str(minVal+i*step) for i in range(self._numDiscreteVals)] )
             #    print '<br>'
             if self._printIntervals:
-                from gold.result.HtmlCore import HtmlCore
+                from proto.hyperbrowser.HtmlCore import HtmlCore
                 steps = [minVal+i*step for i in range(self._numDiscreteVals)]
                 row = [str(self._region)] + ['%.1e:%.1e'%(steps[i-1],steps[i]) for i in range(1, len(steps))] + ['%.1e-'%steps[-1]]
                 print HtmlCore().tableHeader(row, firstRow=False)

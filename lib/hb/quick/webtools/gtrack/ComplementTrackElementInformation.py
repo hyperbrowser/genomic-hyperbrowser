@@ -1,13 +1,10 @@
-import os
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.origdata.FullInfoDict import FullInfoDict, TupleFullInfoDict, IdFullInfoDict
-from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-from gold.origdata.GtrackComplementer import complementGtrackFileAndWriteToFile
-from gold.application.LogSetup import logMessage
-from gold.result.HtmlCore import HtmlCore
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from operator import itemgetter, attrgetter
 from collections import OrderedDict
+
+from gold.origdata.GtrackComplementer import complementGtrackFileAndWriteToFile
+from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 #This is a template prototyping GUI that comes together with a corresponding web page.

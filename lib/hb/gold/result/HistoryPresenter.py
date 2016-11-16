@@ -14,11 +14,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from gold.util.CustomExceptions import AbstractClassError
-from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
-from gold.result.HtmlCore import HtmlCore
-from gold.result.Presenter import Presenter
 import os
+
+from gold.result.Presenter import Presenter
+from gold.util.CustomExceptions import AbstractClassError
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.util.CommonFunctions import getLoadToGalaxyHistoryURL
+
 
 class HistoryPresenter(Presenter):
     def __init__(self, results, baseDir):

@@ -14,42 +14,34 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from gold.result.Results import Results
-from gold.result.HtmlCore import HtmlCore
-from gold.result.GlobalValuePresenter import GlobalValuePresenter, ForgivingGlobalValuePresenter
-from gold.result.MatrixGlobalValuePresenter import MatrixGlobalValueFromNumpyPresenter, MatrixGlobalCountsPresenter, \
-     MatrixGlobalPvalPresenter, MatrixGlobalSignificancePresenter, MatrixGlobalValueFromDictOfDictsPresenter
-#from gold.result.FDRSummaryPresenter import FDRSummaryPresenter
-from gold.result.TablePresenter import TablePresenter, DistributionTablePresenter
-from gold.result.TableFromDictOfDictsPresenter import TableFromDictOfDictsPresenter
-#from gold.result.WigPresenter import WigPresenter
+import os
+import re
+from logging import WARNING
+
+from gold.application.LogSetup import logException, logMessage, logging
+from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.result.BedGraphPresenter import BedGraphPresenter
-from gold.result.HistogramPresenter import HistogramPresenter, HistogramGlobalListPresenter, LogHistogramGlobalListPresenter
-from gold.result.DensityPresenter import DensityPresenter, DensityGlobalListPresenter
-from gold.result.HeatmapPresenter import HeatmapFromNumpyPresenter, HeatmapFromDictOfDictsPresenter
-from gold.result.ScatterPresenter import ScatterPresenter
-from gold.result.LinePlotPresenter import LinePlotPresenter
+from gold.result.GlobalValuePresenter import GlobalValuePresenter, ForgivingGlobalValuePresenter
 from gold.result.GlobalVectorPresenter import GlobalMeanSdVectorPresenter
 from gold.result.GwPlotPresenter import GwPlotPresenter
-from quick.presenter.RawTextTablePresenter import RawTextTablePresenter
-from quick.presenter.VisualizationPresenter import VisualizationPlotPresenter, VisualizationScatterPresenter, VisualizationScaledScatterPresenter
+from gold.result.HeatmapPresenter import HeatmapFromNumpyPresenter, HeatmapFromDictOfDictsPresenter
+from gold.result.HistogramPresenter import HistogramPresenter, HistogramGlobalListPresenter, LogHistogramGlobalListPresenter
+from gold.result.LinePlotPresenter import LinePlotPresenter
+from gold.result.MatrixGlobalValuePresenter import MatrixGlobalValueFromNumpyPresenter, MatrixGlobalCountsPresenter, \
+     MatrixGlobalPvalPresenter, MatrixGlobalSignificancePresenter, MatrixGlobalValueFromDictOfDictsPresenter
+from gold.result.ScatterPresenter import ScatterPresenter
+from gold.result.TableFromDictOfDictsPresenter import TableFromDictOfDictsPresenter
+from gold.result.TablePresenter import TablePresenter, DistributionTablePresenter
+from gold.util.CommonFunctions import getClassName, strWithStdFormatting
+from gold.util.CustomExceptions import InvalidRunSpecException, ShouldNotOccurError, AbstractClassError, SilentError
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.presenter.PixelBasedLocalResultsPresenter import PixelBasedLocalResultsPresenter
+from quick.presenter.ProcessedScatterPresenter import MeanLinePresenter,BinHistPresenter
 from quick.presenter.RawVisualizationPresenter import RawVisualizationPresenter
 from quick.presenter.TrackDataPresenter import TrackDataPresenter
 from quick.presenter.VennDataPresenter import VennDataPresenter
-from gold.util.CommonFunctions import getClassName, strWithStdFormatting
-from gold.util.CustomExceptions import InvalidRunSpecException, ShouldNotOccurError, AbstractClassError, SilentError
-#from config.Config import brk
-from quick.presenter.ProcessedScatterPresenter import MeanLinePresenter,BinHistPresenter
-from gold.description.AnalysisDefHandler import AnalysisDefHandler
-from gold.application.LogSetup import logException, logMessage, logging
-from copy import copy
-from logging import WARNING
+from quick.presenter.VisualizationPresenter import VisualizationPlotPresenter, VisualizationScatterPresenter, VisualizationScaledScatterPresenter
 from quick.util.StaticFile import GalaxyRunSpecificFile
-
-import os
-import re
-
 
 '''
 ResultsViewerCollection is responsible for returning the html-string that represents the result-web page.

@@ -1,6 +1,8 @@
-from gold.result.HtmlCore import HtmlCore
-from config.Config import STATIC_PATH
 import re
+
+from config.Config import STATIC_PATH
+from proto.hyperbrowser.HtmlCore import HtmlCore
+
 
 class GtrackSpecParser(object):
     def __init__(self, filPath, outFilePath):

@@ -1,17 +1,17 @@
-import os,re,datetime
-
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+import datetime
+import re
 from collections import OrderedDict
 from functools import partial
 
-from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
-from gold.util.CustomExceptions import AbstractClassError
-from gold.result.HtmlCore import HtmlCore
-
-from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack, HbGSuiteTrack
 import gold.gsuite.GSuiteComposer as GSuiteComposer
-import gold.gsuite.GSuiteParser as GSuiteParser
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack
+from gold.util.CustomExceptions import AbstractClassError
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 

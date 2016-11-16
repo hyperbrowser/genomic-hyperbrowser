@@ -1,9 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from collections import OrderedDict
-from quick.webtools.util import CommonFunctionsForTools
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from gold.gsuite.GSuiteEditor import selectRowsFromGSuiteByTitle
+
 from gold.gsuite.GSuiteComposer import composeToFile
+from gold.gsuite.GSuiteEditor import selectRowsFromGSuiteByTitle
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.util import CommonFunctionsForTools
+
 
 class GSuiteSelectRows(GeneralGuiTool):
     exception = None
@@ -289,7 +291,7 @@ class GSuiteSelectRows(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.paragraph('This tool provides the option of filtering tracks in a GSuite file '

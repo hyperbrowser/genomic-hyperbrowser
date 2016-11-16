@@ -1,8 +1,10 @@
-from config.Config import STATIC_PATH, STATIC_REL_PATH
-from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
-from gold.result.HtmlCore import HtmlCore
 import os
-from quick.application.SignatureDevianceLogging import takes,returns
+
+from config.Config import STATIC_PATH, STATIC_REL_PATH
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.SignatureDevianceLogging import takes
+from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
+
 
 class StaticFile(object):
     @takes('StaticFile',list)
@@ -43,11 +45,11 @@ class StaticFile(object):
         return str(HtmlCore().link(linkText, getLoadToGalaxyHistoryURL(self.getDiskPath(), galaxyDataType=galaxyDataType)) )
 
     def openRFigure(self, h=600, w=800):
-        from gold.application.RSetup import r, robjects
+        from gold.application.RSetup import r
         r.png(filename=self.getDiskPath(True), height=h, width=w, units='px', pointsize=12, res=72)
 
     def plotRHist(self, vals, breaks, main, saveRawData=True, alsoOpenAndClose=True, **kwArgs):
-        from gold.application.RSetup import r, rpy1, robjects
+        from gold.application.RSetup import r, robjects
         rvals = robjects.FloatVector(vals)
         if type(breaks) in [list,tuple]:
             rbreaks = robjects.FloatVector(breaks)

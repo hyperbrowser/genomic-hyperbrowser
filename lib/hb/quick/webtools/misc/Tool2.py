@@ -1,6 +1,8 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from functools import partial
 from collections import OrderedDict
+from functools import partial
+
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -54,7 +56,7 @@ class Tool2(GeneralGuiTool):
         header = 'File name, Experiment type, Type of data, Cell/tissue type, Target, Genome build, File suffix'.split(', ')
         row = 'wgEncodeUwHistoneK562H3k36me3StdPkRep1.narrowPeak.gz, ChIP-Seq, Peaks (narrow), K562, H3K36me3, hg19, narrowPeak'.split(', ')
         #return [header, row]
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         from collections import OrderedDict
         rowDict = OrderedDict()
         for i in range(10):

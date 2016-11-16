@@ -1,11 +1,14 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.description.TrackInfo import TrackInfo
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from gold.result.HtmlCore import HtmlCore
-from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
 from collections import defaultdict
+
+from gold.description.TrackInfo import TrackInfo
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.util.CommonFunctions import ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 class ReportTrackProperties(GeneralGuiTool):
     
     pieList = []

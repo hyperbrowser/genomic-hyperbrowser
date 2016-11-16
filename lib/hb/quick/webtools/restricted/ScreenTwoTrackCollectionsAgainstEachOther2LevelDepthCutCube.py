@@ -13,10 +13,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from collections import OrderedDict
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.result.HtmlCore import HtmlCore
-from Tkconstants import FIRST
+from proto.hyperbrowser.HtmlCore import HtmlCore
+
 '''
 Created on 
 

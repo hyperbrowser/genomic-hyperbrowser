@@ -1,17 +1,12 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.application.HBAPI import doAnalysis, GlobalBinSource, AnalysisSpec, PlainTrack
-from quick.statistic.HotSpotRegionsStat import HotSpotRegionsStat
-from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-import gold.gsuite.GSuiteComposer as GSuiteComposer
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from hashlib import md5
-from gold.gsuite.GSuiteTrack import HttpGSuiteTrack, HbGSuiteTrack
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from gold.description.AnalysisManager import AnalysisManager
+from gold.application.HBAPI import doAnalysis, AnalysisSpec, PlainTrack
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
+from gold.description.AnalysisManager import AnalysisManager
+from gold.gsuite.GSuite import GSuite
 from quick.application.UserBinSource import UserBinSource
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.HotSpotRegionsStat import HotSpotRegionsStat
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -84,7 +79,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool):
         else:
             binSourceParam = '10m'
         
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         
         htmlCore = HtmlCore()
         htmlCore.begin()

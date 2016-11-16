@@ -1,5 +1,4 @@
 from collections import namedtuple, OrderedDict
-from unittest.util import sorted_list_difference
 
 from gold.application.DataTypes import getSupportedFileSuffixes
 from gold.description.TrackInfo import TrackInfo
@@ -454,7 +453,7 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.paragraph('Description of what my tool does.')

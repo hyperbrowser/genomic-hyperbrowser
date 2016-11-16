@@ -19,9 +19,10 @@ Created on Mar 10, 2015
 @author: boris
 '''
 
-from gold.result.HtmlCore import HtmlCore
 import time
 from datetime import timedelta
+
+from proto.hyperbrowser.HtmlCore import HtmlCore
 
 UNKNOWN_TIME_REMAINING = 'Unknown'
 RELOAD_TIME = 5 # 15

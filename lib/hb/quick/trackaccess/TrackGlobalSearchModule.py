@@ -4,15 +4,17 @@ __author__="Abdulrahman Azab"
 __date__ ="$March 30, 2015$"
 __PythonVersion__= "2.7 [MSC v.1500 32 bit (Intel)]"
 
-import sys,re,os,random
+import os
+import random
+import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
 from collections import OrderedDict, namedtuple
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
-from gold.result.HtmlCore import HtmlCore
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 ##Search Tools:
 from quick.webtools.imports.EncodeTrackSearchTool import EncodeTrackSearchTool
@@ -25,14 +27,13 @@ from quick.webtools.imports.Epigenome2ImputedTrackSearchTool import Epigenome2Im
 from quick.webtools.imports.GWASTrackSearchTool import GWASTrackSearchTool
 
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack, HbGSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack
 import gold.gsuite.GSuiteUtils as GSuiteUtils
 #import gold.gsuite.GSuiteComposer as GSuiteComposer
 #import gold.gsuite.GSuiteParser as GSuiteParser
 
 #importing from: '/hyperbrowser/src/hb_core_developer/trunk/data'
 from config.Config import HB_SOURCE_DATA_BASE_DIR
-from quick.extra.ProgressViewer import ProgressViewer
 
 VocabularyElement = namedtuple('VocabularyElement', ('category', 'subCategory','sourceTool','sourceTable','sourceTableFilter','toolAttr','toolVal','fileType'))
 

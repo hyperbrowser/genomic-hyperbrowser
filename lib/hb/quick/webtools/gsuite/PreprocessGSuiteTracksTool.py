@@ -283,7 +283,7 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         from gold.origdata.GenomeElementSource import getAllGenomeElementSourceClasses
 
         core = HtmlCore()

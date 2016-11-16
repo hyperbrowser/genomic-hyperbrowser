@@ -1,6 +1,7 @@
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.gwas.GwasResults import GwasResults
-from gold.result.HtmlCore import HtmlCore
 from quick.util.StaticFile import GalaxyRunSpecificFile
+
 
 class MultiGwasResults(dict):
     'Has traits (diseases) as keys, and objects of class GwasResults as values'

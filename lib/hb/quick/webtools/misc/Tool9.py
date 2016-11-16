@@ -1,15 +1,15 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from cPickle import load
 import os
-import time
-from gold.result.HtmlCore import HtmlCore
-from quick.application.SignatureDevianceLogging import takes,returns
+from cPickle import load
 from collections import OrderedDict
-from gold.result.Results import Results
+
 import numpy
 
+from gold.result.Results import Results
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.SignatureDevianceLogging import returns
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class ResultCollection(OrderedDict):
@@ -47,7 +47,6 @@ class LocalResultCollection(ResultCollection):
         if self._chosenResDictKey == 'fdr':
             resultObject.inferAdjustedPvalues()
         for localResultKey in resultObject:
-            import urllib
             if self._imputeNAs:
                 resultValue = resultObject[localResultKey].get(self._chosenResDictKey)
             else:

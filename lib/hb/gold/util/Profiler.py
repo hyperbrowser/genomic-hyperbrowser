@@ -15,13 +15,13 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import cProfile
-import profile
 import pstats
 
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.util.CommonFunctions import ensurePathExists
 from quick.util.PstatsUtil import OverheadStats
 from quick.util.StaticFile import GalaxyRunSpecificFile
-from gold.result.HtmlCore import HtmlCore
-from quick.util.CommonFunctions import ensurePathExists
+
 
 class Profiler:
     PROFILE_HEADER = '--- Profile ---'

@@ -1,8 +1,8 @@
 import re
-from collections import OrderedDict, namedtuple
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from collections import namedtuple
+
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
-from gold.result.HtmlCore import HtmlCore
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 VocabularyElement = namedtuple('VocabularyElement', ('category', 'subCategory','sourceTool','sourceTable','toolAttr','toolVal'))
 class TrackGlobalSearchTool(GeneralGuiTool):
@@ -246,7 +246,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         desc = 'This tool provides a categorized and text search functionality for '\

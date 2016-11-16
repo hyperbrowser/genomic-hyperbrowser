@@ -1,5 +1,6 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import gold.gsuite.GSuiteConstants as GSuiteConstants
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -224,7 +225,7 @@ class ExtractSubtracksTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.paragraph('This tool can be used to compile a GSuite file referring to a subset of the tracks '

@@ -1,13 +1,11 @@
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
 from gold.track.Track import Track
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.MultitrackSummarizedInteractionWrapperStat import MultitrackSummarizedInteractionWrapperStat
-from quick.statistic.SummarizedInteractionWithOtherTracksStat import \
-    SummarizedInteractionWithOtherTracksStatUnsplittable
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -46,7 +44,7 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
 
         core = HtmlCore()

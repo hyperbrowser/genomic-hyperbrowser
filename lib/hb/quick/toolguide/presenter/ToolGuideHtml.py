@@ -18,8 +18,7 @@ Created on Feb 16, 2015
 
 @author: diana
 '''
-from quick.util import CommonFunctions
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.toolguide.ToolGuideConfig import TOOL_INPUT_TYPE_TO_TOOL_GUIDE_HELP_HEADER_DICT, TOOL_GUIDE_HELP_HEADER_TEXT, TOOL_GUIDE_HELP_HEADER_TEXT_TEXT
 
 class ToolGuideHtml(object):

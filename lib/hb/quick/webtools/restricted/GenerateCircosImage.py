@@ -1,13 +1,12 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.GalaxyInterface import GalaxyInterface
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.application.StatRunner import *
-from quick.application.UserBinSource import UserBinSource
-from gold.result.HtmlCore import HtmlCore
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from os.path import dirname
 from os import system
+from os.path import dirname
+
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.CommonFunctions import changedWorkingDir
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #import scipy.misc.pilutil as smp
 #from os import system
 #This is a template prototyping GUI that comes together with a corresponding web page.

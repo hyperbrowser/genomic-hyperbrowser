@@ -14,10 +14,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
-from gold.result.HtmlCore import HtmlCore
-from gold.result.HistoryPresenter import HistoryPresenter
 import os
+
+from gold.result.HistoryPresenter import HistoryPresenter
+from quick.util.CommonFunctions import ensurePathExists
+
 
 class WigPresenter(HistoryPresenter):
     def _writeContent(self, resDictKey, fn):

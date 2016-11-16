@@ -14,12 +14,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
+import os
+
 from config.Config import MAX_LOCAL_RESULTS_IN_TABLE
-from gold.result.HtmlCore import HtmlCore
 from gold.result.Presenter import Presenter
 from gold.util.CommonFunctions import strWithStdFormatting
-import os
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.util.CommonFunctions import ensurePathExists
+
 
 class RawTextTablePresenter(Presenter):
     def __init__(self, results, baseDir, header):

@@ -15,19 +15,19 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import numpy
 import traceback
-from subprocess import call
+
+import numpy
 
 from gold.application.LogSetup import logging, HB_LOGGER
+from gold.result.Presenter import Presenter
 from gold.util.CommonFunctions import isNumber
 from gold.util.CustomExceptions import AbstractClassError, ShouldNotOccurError,\
                                        SilentError
-from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
-from gold.result.HtmlCore import HtmlCore
-from gold.result.Presenter import Presenter
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.result.model.TableData import TableData
-from gold.result.Results import Results
+from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
+
 
 #from rpy import r, RException
 #from gold.application.RSetup import r

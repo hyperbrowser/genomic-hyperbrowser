@@ -1,6 +1,6 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.result.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
@@ -155,7 +155,7 @@ class SmoothedTrackTool(GeneralGuiTool):
 
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Create density distribution or smoothed version of any track, based on a sliding window across the genome.')
         core.divider()

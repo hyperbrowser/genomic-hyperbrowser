@@ -1,10 +1,12 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+import os
+
 from gold.origdata.GtrackHeaderExpander import expandHeadersOfGtrackFileAndWriteToFile, \
     expandHeadersOfGtrackFileAndReturnComposer, \
     EXPANDABLE_HEADERS, NOT_GUARANTEED_EXPANDABLE_HEADERS, VALUE_NOT_KEPT_HEADERS
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.result.HtmlCore import HtmlCore
-import os
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class ExpandGtrackHeaderTool(GeneralGuiTool):
     @staticmethod

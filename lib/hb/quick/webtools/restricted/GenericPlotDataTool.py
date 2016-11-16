@@ -1,14 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from gold.gsuite.GSuiteEditor import selectRowsFromGSuiteByIndex
-from gold.gsuite.GSuite import GSuite
-from gold.gsuite import GSuiteComposer
-from functools import partial
-from gold.gsuite.GSuiteConstants import TITLE_COL
-from gold.gsuite import GSuiteTrack
 from collections import OrderedDict
+
+from gold.gsuite.GSuiteConstants import TITLE_COL
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
-from gold.result.HtmlCore import HtmlCore
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

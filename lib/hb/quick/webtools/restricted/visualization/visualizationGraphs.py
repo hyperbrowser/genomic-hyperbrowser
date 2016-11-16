@@ -1,5 +1,5 @@
 import json
-import math
+
 '''
 create object with height (default 400px + 12px for each line in legend)
 use method:
@@ -38,7 +38,7 @@ Plan TODO:
 - heatmap
 '''
 
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 
 class visualizationGraphs(object):
     count =0

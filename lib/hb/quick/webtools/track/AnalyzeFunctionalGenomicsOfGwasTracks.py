@@ -1,17 +1,14 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.result.HtmlCore import HtmlCore
-from quick.gwas.GwasResults import GwasResults, EnrichmentGwasResults, HypothesisTestingGwasResults
-from quick.gwas.MultiGwasResults import MultiGwasResults
 from gold.util.CustomExceptions import InvalidRunSpecException
-from quick.application.ProcTrackOptions import ProcTrackOptions
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
-
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
+from quick.application.ProcTrackOptions import ProcTrackOptions
+from quick.gwas.GwasResults import EnrichmentGwasResults, HypothesisTestingGwasResults
+from quick.gwas.MultiGwasResults import MultiGwasResults
+from quick.util.StaticFile import PickleStaticFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #TEMP_NUM_BATCH_RUNS_SO_FAR = 0
-from quick.util.StaticFile import PickleStaticFile
-import shelve
+
 
 def directGetTestResults(diseaseTrack, refTrackLeaf, refTrackBase, kernelType, kernelParam, refTrackCoverageFunction, nullmodel, mcDepth='high', useCache=True, printProgress=False):
     RETRIEVE_FROM_CACHE = useCache
@@ -310,7 +307,6 @@ class AnalyzeFunctionalGenomicsOfGwasTracks(GeneralGuiTool):
 
     @staticmethod    
     def execute(choices, galaxyFn=None, username=''):
-        from gold.application.LogSetup import setupDebugModeAndLogging
         #setupDebugModeAndLogging()
         from time import time
         startTime=time()        

@@ -1,9 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.origdata.FileFormatComposer import findMatchingFileFormatComposers, getComposerClsFromFileFormatName
+from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.track.TrackFormat import TrackFormat
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class UniversalConverterTool(GeneralGuiTool):
     @staticmethod

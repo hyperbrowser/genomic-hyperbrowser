@@ -1,13 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.GalaxyInterface import GalaxyInterface
 from gold.application.DataTypes import getSupportedFileSuffixesForBinning
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from quick.presenter.RawVisualizationPresenter import RawVisualizationPresenter
-import os.path
-from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.util.CommonFunctions import ensurePathExists
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

@@ -1,12 +1,11 @@
 import pickle
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from xml.dom import minidom
-from gold.result.HtmlCore import HtmlCore
 from urllib import quote, unquote
-from gold.util.CustomExceptions import InvalidFormatError
-from gold.util.CommonFunctions import getFileSuffix
-import time
+
 import zmq
+
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 

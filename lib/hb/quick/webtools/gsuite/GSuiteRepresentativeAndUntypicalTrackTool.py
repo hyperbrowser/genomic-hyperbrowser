@@ -8,12 +8,12 @@ from gold.gsuite import GSuiteStatUtils, GSuiteConstants
 from gold.gsuite.GSuiteConstants import GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME,\
     GSUITE_SUFFIX
 from gold.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
-from gold.result.HtmlCore import HtmlCore
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
@@ -21,7 +21,6 @@ from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import 
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.toolguide import ToolGuideConfig
 from quick.toolguide.controller.ToolGuide import ToolGuideController
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from quick.webtools.gsuite.GSuiteTracksCoincidingWithQueryTrackTool import GSuiteTracksCoincidingWithQueryTrackTool
 from quick.webtools.mixin.DebugMixin import DebugMixin

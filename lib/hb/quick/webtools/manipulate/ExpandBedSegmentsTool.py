@@ -1,11 +1,13 @@
 from collections import OrderedDict
 from copy import copy
 
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.GalaxyInterface import GalaxyInterface
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.util.CommonFunctions import parseShortenedSizeSpec
 from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
+from gold.util.CommonFunctions import parseShortenedSizeSpec
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -153,7 +155,7 @@ class ExpandBedSegmentsTool(GeneralGuiTool):
     #
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('This tool expands the segments of a file in one or both directions. '+ \
                        'It can also flatten a segment to its start, middle or end point before expading. '+ \

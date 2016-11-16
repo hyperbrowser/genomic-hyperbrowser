@@ -14,15 +14,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
-from config.Config import MAX_LOCAL_RESULTS_IN_TABLE
-from gold.result.HtmlCore import HtmlCore
-from gold.result.TextCore import TextCore
-from gold.result.Presenter import Presenter
-from gold.util.CommonFunctions import isIter
-from gold.util.CustomExceptions import SilentError
-from gold.track.GenomeRegion import GenomeRegion
 import os
+
+from config.Config import MAX_LOCAL_RESULTS_IN_TABLE
+from gold.result.Presenter import Presenter
+from gold.track.GenomeRegion import GenomeRegion
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.TextCore import TextCore
+from quick.util.CommonFunctions import ensurePathExists
+
 
 class TablePresenter(Presenter):
     FILE_NAME_PREFIX = 'table'

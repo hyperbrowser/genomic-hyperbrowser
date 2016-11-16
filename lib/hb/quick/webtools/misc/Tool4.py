@@ -551,7 +551,7 @@
 from collections import OrderedDict
 
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteDataFromGalaxyTN
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\

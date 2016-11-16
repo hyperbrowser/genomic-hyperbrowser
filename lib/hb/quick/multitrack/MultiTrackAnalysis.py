@@ -13,12 +13,13 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from gold.util.CustomExceptions import AbstractClassError
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.result.HtmlCore import HtmlCore
-from collections import OrderedDict
-from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs, dataTransformer
 import math
+from collections import OrderedDict
+
+from gold.util.CustomExceptions import AbstractClassError
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs, dataTransformer
 
 '''
 Created on Nov 21, 2014

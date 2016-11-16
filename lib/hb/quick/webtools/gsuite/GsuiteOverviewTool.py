@@ -1,4 +1,4 @@
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.GSuiteOverview import GSuiteOverview
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

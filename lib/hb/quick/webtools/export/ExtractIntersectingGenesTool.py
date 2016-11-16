@@ -1,10 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.extra.TrackIntersection import GeneIntersection
-from quick.application.ProcTrackOptions import ProcTrackOptions
-from quick.util.GenomeInfo import GenomeInfo
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.result.HtmlCore import HtmlCore
 from gold.util.CommonFunctions import prettyPrintTrackName
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.application.ProcTrackOptions import ProcTrackOptions
+from quick.extra.TrackIntersection import GeneIntersection
+from quick.util.GenomeInfo import GenomeInfo
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #

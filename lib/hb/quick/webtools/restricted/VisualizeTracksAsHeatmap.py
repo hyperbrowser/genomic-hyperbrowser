@@ -1,16 +1,18 @@
-from PIL import Image
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from collections import defaultdict
-from quick.util.StaticFile import GalaxyRunSpecificFile, StaticImage
-from gold.track.GenomeRegion import GenomeRegion
-from quick.util.GenomeInfo import GenomeInfo
-from gold.application.LogSetup import logMessage
 import time
+from collections import defaultdict
+
+from PIL import Image
+
+from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import PlainTrack
-from third_party.alphanum import alphanum
 from gold.util.CommonFunctions import parseShortenedSizeSpec, prettyPrintTrackName
-from collections import OrderedDict
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.util.GenomeInfo import GenomeInfo
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from third_party.alphanum import alphanum
+
+
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
@@ -635,7 +637,7 @@ values at individual pixels.''')
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('''
 Visualizing track elements along a line, such as in the UCSC Genome Browser or

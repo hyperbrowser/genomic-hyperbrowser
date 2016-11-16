@@ -1,7 +1,8 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
 from gold.origdata.GtrackStandardizer import standardizeGtrackFileAndWriteToFile
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class ConvertToLinkedValuedSegments(GeneralGuiTool):
     @staticmethod

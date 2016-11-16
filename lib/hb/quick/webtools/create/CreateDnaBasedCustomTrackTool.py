@@ -1,8 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.extra.tfbs.TfInfo import TfInfo
-from quick.application.ProcTrackOptions import ProcTrackOptions
-from gold.application.LogSetup import logException, logMessage
-from gold.result.HtmlCore import HtmlCore
+
 
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
@@ -103,7 +100,7 @@ class CreateDnaBasedCustomTrackTool(GeneralGuiTool):
 
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Creates a function track based on a custom expression applied on a sliding windows across the genome.')
         core.divider()

@@ -13,15 +13,16 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+import os
 from collections import Iterable
+
+import numpy
 
 from gold.result.GraphicsPresenter import GraphicsPresenter, GlobalResultGraphicsMatrixDataFromNumpy, GlobalResultGraphicsMatrixDataFromDictOfDicts, \
     GlobalResultGraphicsMatrixDataFromTableData
-from quick.util.CommonFunctions import ensurePathExists
 from quick.result.model.TableData import TableData
-import os
-import numpy
-import math
+from quick.util.CommonFunctions import ensurePathExists
+
 
 class HeatmapPresenter(GraphicsPresenter):
     name = ('heatmap', 'Plot: heatmap')
@@ -111,7 +112,7 @@ class HeatmapPresenter(GraphicsPresenter):
               self._marginTop + self._mapHeight
 
         if self._printDimensions:
-            from gold.result.HtmlCore import HtmlCore
+            from proto.hyperbrowser.HtmlCore import HtmlCore
             print str(HtmlCore().styleInfoBegin(styleClass='debug'))
 
             print self._marginLeft, self._mapWidth, \
@@ -124,7 +125,6 @@ class HeatmapPresenter(GraphicsPresenter):
 
     def _getDendHeightInPixels(self, clust):
         maxDendHeight = clust.rx2('height')
-        from gold.application.RSetup import robjects
         if isinstance(maxDendHeight, Iterable):
             maxDendHeight = max(maxDendHeight)
         return int(maxDendHeight * self.DEND_PIXELS_PER_HEIGHT)

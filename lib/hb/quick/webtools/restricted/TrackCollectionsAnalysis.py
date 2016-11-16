@@ -3,9 +3,9 @@ from collections import OrderedDict
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
 from gold.track.Track import Track
 from gold.util.CommonFunctions import strWithStdFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.RawOverlapToSelfStat import RawOverlapToSelfStat

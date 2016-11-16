@@ -1,10 +1,12 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from _collections import defaultdict
-from gold.result.HtmlCore import HtmlCore
-from collections import OrderedDict
 import operator
+from _collections import defaultdict
+from collections import OrderedDict
+
 from gold.gsuite import GSuiteConstants
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

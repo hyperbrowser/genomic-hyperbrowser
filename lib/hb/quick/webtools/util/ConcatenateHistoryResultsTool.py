@@ -1,16 +1,13 @@
-import os
-import numpy
-import time
-
-from collections import OrderedDict
 from cPickle import load
+from collections import OrderedDict
 
-from gold.result.HtmlCore import HtmlCore
 from gold.result.Results import Results
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.application.SignatureDevianceLogging import takes,returns
+from quick.application.SignatureDevianceLogging import returns
 from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class ResultCollection(OrderedDict):
     def __init__(self, chosenResDictKey, imputeNAs=False, naChar='.', firstColLabel=''):

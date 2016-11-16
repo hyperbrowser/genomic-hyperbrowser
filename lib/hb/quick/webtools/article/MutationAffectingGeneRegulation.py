@@ -1,9 +1,9 @@
 import numpy as np
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
-from gold.result.HtmlCore import HtmlCore
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import Track, PlainTrack
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.UserBinSource import GlobalBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

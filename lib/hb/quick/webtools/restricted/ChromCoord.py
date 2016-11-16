@@ -1,10 +1,7 @@
+import os
+
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
-##########################################################################
-import os,sys,subprocess
 
 class ChromPosition(object):
     def __init__(self, genome):
@@ -193,7 +190,7 @@ class ChromCoord(GeneralGuiTool):
     #def getOptionsBox3(prevChoices): # Syntax 1 (old version)
     def getOptionsBoxPrev(prevChoices):
         #return repr(prevChoices),3,True
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.link('Download', 'ftp://something.com/')

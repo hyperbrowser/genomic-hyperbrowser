@@ -1,6 +1,6 @@
-import os
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from config.Config import HB_SOURCE_CODE_BASE_DIR
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -183,7 +183,7 @@ class RunSetupScriptTool(GeneralGuiTool):
                 setupFileFn = os.path.join(customSetupDir, setupFileCand)
 
         with open(galaxyFn, 'a', 0) as outFile:
-            from gold.result.HtmlCore import HtmlCore
+            from proto.hyperbrowser.HtmlCore import HtmlCore
             core = HtmlCore()
             core.begin(reloadTime=cls.RELOAD_TIME)
             core.styleInfoBegin(styleClass='debug', linesep=False)

@@ -1,12 +1,13 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.extra.GenomeImporter import GenomeImporter
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from collections import OrderedDict
-from quick.util.GenomeInfo import GenomeInfo
 import os
-from datetime import datetime
+from collections import OrderedDict
 from copy import copy
-from gold.application.LogSetup import logMessage
+from datetime import datetime
+
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.extra.GenomeImporter import GenomeImporter
+from quick.util.GenomeInfo import GenomeInfo
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class InstallGenomeTool(GeneralGuiTool):
     
@@ -303,7 +304,7 @@ class InstallGenomeTool(GeneralGuiTool):
     
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.orderedList(['Choose a file from history were you previously have used the '\
                          '"Download Genome Tool". If you have not first used that tool no '\

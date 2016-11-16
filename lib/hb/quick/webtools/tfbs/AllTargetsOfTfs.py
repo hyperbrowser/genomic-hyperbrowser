@@ -1,15 +1,17 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import gold.gsuite.GSuiteConstants as GSuiteConstants
 from collections import OrderedDict
+
+import gold.gsuite.GSuiteConstants as GSuiteConstants
+import quick.webtools.restricted.visualization.visualizationPlots as vp
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.ProcTrackOptions import ProcTrackOptions
+from quick.extra.TrackIntersection import TrackIntersection
+from quick.extra.tfbs.TfTrackNameMappings import TfTrackNameMappings
 from quick.extra.tfbs.TfbsTrackNameMappings import TfbsGSuiteNameMappings,\
     TfbsTrackNameMappings
-from quick.extra.tfbs.TfTrackNameMappings import TfTrackNameMappings
-from quick.application.ProcTrackOptions import ProcTrackOptions
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.extra.TrackIntersection import TrackIntersection
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGSuiteFile, getGSuiteFromGalaxyTN
-from gold.result.HtmlCore import HtmlCore
-import quick.webtools.restricted.visualization.visualizationPlots as vp
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 '''
 Created on Nov 12, 2014
 @author: Antonio Mora

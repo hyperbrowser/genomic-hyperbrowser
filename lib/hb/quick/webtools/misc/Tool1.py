@@ -1,9 +1,10 @@
-from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
+from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.util.CommonFunctions import mean
-from quick.webtools.misc.Tool3 import CreateGCFunction
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.StaticFile import GalaxyRunSpecificFile
-from gold.application.LogSetup import setupDebugModeAndLogging
+from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
+from quick.webtools.misc.Tool3 import CreateGCFunction
+
 
 #from quick.extra.tfbs.createTfbsMappings import *
 
@@ -610,7 +611,7 @@ class PlotFigure1Tool(GeneralGuiTool):
         from quick.util.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         sf = GalaxyRunSpecificFile(['fig1.png'], galaxyFn)
         sf.openRFigure()
@@ -644,7 +645,7 @@ class PlotFigure1Tool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.descriptionLine('R-code', cls._exampleText(cls.rCode))
         return str(core)
@@ -699,7 +700,7 @@ class PlotFigure2Tool(GeneralGuiTool):
         from quick.util.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         sf = GalaxyRunSpecificFile(['fig2.png'], galaxyFn)
         sf.openRFigure()
@@ -732,7 +733,7 @@ class PlotFigure2Tool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.descriptionLine('R-code', cls._exampleText(cls.rCode))
         return str(core)
@@ -991,7 +992,7 @@ class PrunePubmedPaperSummaries(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         import re
         import codecs
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         entries = []
         useLine=True
         outF = codecs.open(galaxyFn,'w', 'utf-8')
@@ -1114,7 +1115,8 @@ class AliaksanderDemo(GeneralGuiTool):
         print open(fn).readlines()
         #print choices[2], repr(choices[2])
 
-from gold.application.HBAPI import doAnalysis, RegionIter, GlobalBinSource, AnalysisDefHandler, AnalysisSpec, GenomeRegion, PlainTrack
+from gold.application.HBAPI import doAnalysis, GlobalBinSource, AnalysisSpec, \
+    PlainTrack
 class NewRunApiDemo(GeneralGuiTool):
     @staticmethod
     def getToolName():

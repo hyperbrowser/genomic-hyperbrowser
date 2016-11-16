@@ -1,7 +1,7 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.util.CommonFunctions import createHyperBrowserURL
-from quick.util.GenomeInfo import GenomeInfo
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.util.GenomeInfo import GenomeInfo
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
@@ -65,7 +65,7 @@ class NmerExtractTool(GeneralGuiTool):
     #
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Extract occurrences of a given k-mer in a specified region along the selected genome. K-mer occurrence track is extracted as a BED file.')
         core.divider()

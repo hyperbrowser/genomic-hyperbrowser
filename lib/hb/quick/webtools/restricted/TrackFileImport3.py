@@ -1,11 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+import datetime
+import os
 from collections import OrderedDict
 from functools import partial
-import cPickle
-import os
-import datetime
 
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.restricted.EncodeDatabase import EncodeDatabase
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -323,7 +323,6 @@ class TrackFileImport3(GeneralGuiTool):
                 TrackFileImport3.SELECTED_FILES_INDEXES.append(i)  
              i +=1
           import ftplib
-          import tarfile
           for i in TrackFileImport3.SELECTED_FILES_INDEXES:
               
               url = TrackFileImport3.RESULT_FILES_URLS[i]
@@ -403,7 +402,7 @@ class TrackFileImport3(GeneralGuiTool):
         colListString = colListString.replace('"','')
         
         
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.begin()
         

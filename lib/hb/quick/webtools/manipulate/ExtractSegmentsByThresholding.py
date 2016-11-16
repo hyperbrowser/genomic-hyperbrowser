@@ -2,16 +2,13 @@ from collections import OrderedDict
 
 from gold.origdata.FileFormatComposer import findMatchingFileFormatComposers, \
                                              getComposerClsFromFileFormatName
-from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.origdata.GEOverlapClusterer import GEOverlapClusterer_Segment
-from gold.origdata.GenomeElementSorter import GenomeElementSorter
 from gold.origdata.GESourceWrapper import ElementModifierGESourceWrapper
+from gold.origdata.GenomeElementSorter import GenomeElementSorter
 from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
-from gold.result.HtmlCore import HtmlCore
-from gold.track.BoundingRegionShelve import BoundingRegionShelve
 from gold.track.TrackFormat import TrackFormat
-from gold.util.CustomExceptions import ShouldNotOccurError, InvalidFormatError
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CustomExceptions import ShouldNotOccurError
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 

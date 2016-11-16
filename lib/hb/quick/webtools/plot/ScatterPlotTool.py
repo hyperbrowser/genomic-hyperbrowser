@@ -1,5 +1,7 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.util.CommonFunctions import createHyperBrowserURL
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -141,7 +143,7 @@ class ScatterPlotTool(GeneralGuiTool):
 
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Creates a scatter plot of the relation between two tracks across local bins along the genome.')
         core.divider()

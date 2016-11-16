@@ -1,5 +1,5 @@
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.TrackReportCommon import generatePilotPageFiveParagraphs
 from quick.webtools.GeneralGuiTool import GeneralGuiTool

@@ -13,25 +13,26 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from collections import OrderedDict
-from gold.description.AnalysisDefHandler import AnalysisSpec
-from gold.statistic.RawOverlapStat import RawOverlapStat
-from gold.application.HBAPI import doAnalysis
-from gold.track.Track import Track
-from gold.statistic.DerivedOverlapStat import DerivedOverlapStat
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.util.CommonFunctions import strWithNatLangFormatting
-from numpy import mean, float64, histogram
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from gold.result.HtmlCore import HtmlCore
-from quick.multitrack.GSuiteOverview import GSuiteOverview
-from quick.visualization.VisualizationUtil import normalizeMatrixData
-from quick.statistic.ThreeWayFocusedTrackProportionCoveragesAtDepthsRawStat import ThreeWayFocusedTrackProportionCoveragesAtDepthsRawStat
-from quick.statistic.MultitrackSummarizedInteractionStat import MultitrackSummarizedInteractionStat
-from quick.statistic.MultiTrackBpsCoveragePerDepthLevelStat import MultiTrackBpsCoveragePerDepthLevelStat
 from _collections import defaultdict
-from gold.statistic.MultitrackCoverageDepthStat import MultitrackCoverageDepthStat
+from collections import OrderedDict
 
+from numpy import mean, float64
+
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.statistic.DerivedOverlapStat import DerivedOverlapStat
+from gold.statistic.MultitrackCoverageDepthStat import MultitrackCoverageDepthStat
+from gold.statistic.RawOverlapStat import RawOverlapStat
+from gold.track.Track import Track
+from gold.util.CommonFunctions import strWithNatLangFormatting
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.multitrack.GSuiteOverview import GSuiteOverview
+from quick.statistic.MultiTrackBpsCoveragePerDepthLevelStat import MultiTrackBpsCoveragePerDepthLevelStat
+from quick.statistic.MultitrackSummarizedInteractionStat import MultitrackSummarizedInteractionStat
+from quick.statistic.ThreeWayFocusedTrackProportionCoveragesAtDepthsRawStat import ThreeWayFocusedTrackProportionCoveragesAtDepthsRawStat
+from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.visualization.VisualizationUtil import normalizeMatrixData
 
 '''
 Created on Dec 11, 2014
@@ -338,7 +339,6 @@ def addHistogramVisualization(tableData, tableHeader, plotType):
     #columnCharts - column chart with multi series
     #columnChart - single column chart
     #pieChart - single pie chart
-    from collections import Counter
     from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs, dataTransformer
     
     vg = visualizationGraphs(height=300)

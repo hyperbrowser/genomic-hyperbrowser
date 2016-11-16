@@ -1,16 +1,16 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.webtools.plot.VennHTML import htmlMal
-from quick.application.ProcTrackOptions import ProcTrackOptions
-from urllib import unquote
+import itertools
+import json
+from collections import OrderedDict
 from collections import defaultdict
 from string import ascii_uppercase
-from collections import OrderedDict
-import json
-import itertools
+from urllib import unquote
+
 from gold.application.LogSetup import logMessage
-from quick.multitrack.MultiTrackCommon import getGSuiteDataFromGalaxyTN,\
-    getGSuiteFromGalaxyTN
 from gold.gsuite import GSuiteConstants
+from quick.application.ProcTrackOptions import ProcTrackOptions
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.plot.VennHTML import htmlMal
 
 '''
 This tool takes individual tracks (also called categories) or a category track and calculates all the possible combinations of coverage (implicit across the genome).
@@ -521,7 +521,7 @@ class CreateBpsVennDIagram(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('Calculates the base pair overlaps between all combinations of tracks specified '
                        'in the input GSuite file. In the resulting output page, up to 5 '

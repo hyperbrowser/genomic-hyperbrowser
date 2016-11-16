@@ -1,8 +1,10 @@
-from gold.result.Results import Results
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from gold.result.ResultsViewer import ResultsViewer
-from gold.result.HtmlCore import HtmlCore
 import numpy
+
+from gold.result.Results import Results
+from gold.result.ResultsViewer import ResultsViewer
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.util.StaticFile import GalaxyRunSpecificFile
+
 
 class GwasResults(dict):
     "Keeps results for a single Gwas track. Inherits dict. Each key corresponds to a reference subtype (e.g. a single cell type or TF). Each value corresponds to a Results object"
@@ -43,7 +45,6 @@ class GwasResults(dict):
     def getResultTableLink(self, refSubType, linkText):
         assert self._galaxyFn is not None and self._gwasId is not None
         res = self.getResult(refSubType)
-        from quick.application.GalaxyInterface import GalaxyInterface
         basedir  = GalaxyRunSpecificFile(['ResultTableDetails', self._gwasId, refSubType],self._galaxyFn).getDiskPath(ensurePath=True)
         staticFile = GalaxyRunSpecificFile(['ResultTables', self._gwasId, refSubType+'.html'], self._galaxyFn)
 

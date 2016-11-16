@@ -1,9 +1,7 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
 from gold.util.CustomExceptions import ShouldNotOccurError
-from gold.application.StatRunner import *
-from quick.application.UserBinSource import UserBinSource
-from gold.result.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
@@ -150,7 +148,7 @@ class CreateFunctionTrackAsDistanceToNearestSegments(GeneralGuiTool):
     #
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         
         core.paragraph('''

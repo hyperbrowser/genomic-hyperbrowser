@@ -1,10 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
 from gold.origdata.GtrackSorter import sortedGeSourceHasOverlappingRegions
 from gold.util.CustomExceptions import InvalidFormatError
-from gold.application.LogSetup import logMessage
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.result.HtmlCore import HtmlCore
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -137,7 +138,6 @@ class ValidateGtrackFile(GeneralGuiTool):
         if genome == '':
             return 'Please select a genome build.'
 
-        from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
         return GeneralGuiTool._checkHistoryTrack(choices, 2, genome, 'GTrack', validateFirstLine=False)
 
     @staticmethod

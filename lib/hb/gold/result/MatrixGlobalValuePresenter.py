@@ -14,17 +14,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from gold.result.Presenter import Presenter
-from gold.util.CommonFunctions import strWithStdFormatting
+import os
+
 from gold.result.GraphicsPresenter import GlobalResultGraphicsMatrixDataFromNumpy, GlobalResultGraphicsMatrixDataFromDictOfDicts, \
     GlobalResultGraphicsMatrixDataFromTableData
-from gold.result.HtmlCore import HtmlCore
-from gold.result.TextCore import TextCore
-from quick.util.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL
+from gold.result.Presenter import Presenter
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.TextCore import TextCore
 from quick.result.model.TableData import TableData
-import os
-import numpy
-from copy import copy
+from quick.util.CommonFunctions import ensurePathExists
 
 
 class MatrixGlobalValuePresenter(Presenter):

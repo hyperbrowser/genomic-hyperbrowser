@@ -1,8 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.result.HtmlCore import HtmlCore
 from gold.application.GalaxyInterface import GalaxyInterface
-from quick.util.GenomeInfo import GenomeInfo
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ProcTrackOptions import ProcTrackOptions
+from quick.util.GenomeInfo import GenomeInfo
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 

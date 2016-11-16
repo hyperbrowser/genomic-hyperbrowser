@@ -1,31 +1,33 @@
-from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool,\
-    HistElement
-from gold.description.AnalysisManager import AnalysisManager
-from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
-from gold.application.HBAPI import doAnalysis, doAnalysisV2
-from quick.application.UserBinSource import GlobalBinSource
-from gold.gsuite import GSuiteComposer
-from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
-from quick.extra.ProgressViewer import ProgressViewer
-from gold.result.HtmlCore import HtmlCore
-from quick.util.CommonFunctions import createGalaxyToolURL
 import itertools
-from quick.statistic.SummarizedInteractionWithOtherTracksStat import SummarizedInteractionWithOtherTracksStatUnsplittable
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from gold.track.Track import Track
+from collections import OrderedDict
+
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
+from gold.description.AnalysisManager import AnalysisManager
+from gold.description.TrackInfo import TrackInfo
+from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import HbGSuiteTrack, GSuiteTrack
+from gold.track.Track import Track
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.application.UserBinSource import GlobalBinSource
+from quick.extra.ProgressViewer import ProgressViewer
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2StatUnsplittable
+from quick.statistic.QueryToReferenceCollectionWrapperStat import QueryToReferenceCollectionWrapperStat
+from quick.statistic.SummarizedInteractionWithOtherTracksStat import SummarizedInteractionWithOtherTracksStatUnsplittable
+from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2StatUnsplittable
+from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
+from quick.util.CommonFunctions import createGalaxyToolURL
 from quick.util.TrackReportCommon import generatePilotPageOneParagraphs,\
     generatePilotPageTwoParagraphs, generatePilotPageThreeParagraphs,\
     generatePilotPageFiveParagraphs
-from collections import OrderedDict
-from quick.statistic.QueryToReferenceCollectionWrapperStat import QueryToReferenceCollectionWrapperStat
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.gsuite.GSuite import GSuite
-from gold.description.TrackInfo import TrackInfo
-from gold.gsuite.GSuiteTrack import HbGSuiteTrack, GSuiteTrack
-from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2StatUnsplittable
-from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2StatUnsplittable
+from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool,\
+    HistElement
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -1562,6 +1564,5 @@ class CreateKmersTool(GeneralGuiTool):
     @classmethod
     def getExtraHistElements(cls, choices):
         return [HistElement('Kmers GSuite', 'gsuite')]
-    
     
     

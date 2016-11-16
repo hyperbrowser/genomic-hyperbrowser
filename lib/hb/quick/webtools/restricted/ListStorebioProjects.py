@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-import pickle
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from xml.dom import minidom
-from gold.result.HtmlCore import HtmlCore
-from urllib import quote, unquote
-from gold.util.CustomExceptions import InvalidFormatError
-from gold.util.CommonFunctions import getFileSuffix
-import zipfile
 import cStringIO
+import pickle
 import time
-import zmq
 import urllib2
+import zipfile
+from urllib import quote, unquote
+from xml.dom import minidom
+
+import zmq
+
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 #This is a template prototyping GUI that comes together with a corresponding web page.

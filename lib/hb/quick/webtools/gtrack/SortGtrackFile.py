@@ -1,8 +1,8 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.origdata.GtrackSorter import sortGtrackFileAndWriteToFile
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
-import os
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #

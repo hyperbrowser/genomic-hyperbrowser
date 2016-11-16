@@ -1,19 +1,9 @@
-import re, os
 from collections import OrderedDict, namedtuple
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
-from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
-from gold.result.HtmlCore import HtmlCore
 
-from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack, HbGSuiteTrack
 import gold.gsuite.GSuiteComposer as GSuiteComposer
-import gold.gsuite.GSuiteParser as GSuiteParser
-
-#/hyperbrowser/src/hb_core_developer/trunk/data
-from config.Config import HB_SOURCE_DATA_BASE_DIR
-
 from quick.extra.ProgressViewer import ProgressViewer
+from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 VocabularyElement = namedtuple('VocabularyElement', ('category', 'subCategory','sourceTool','sourceTable','toolAttr','toolVal'))
 
@@ -461,7 +451,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         desc = 'This tool provides a categorized search functionality for '\

@@ -1,24 +1,14 @@
 #from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool
-
-from quick.webtools.imports.EncodeTrackSearchTool import EncodeTrackSearchTool
-from quick.webtools.imports.CGAtlasTrackSearchTool import CGAtlasTrackSearchTool
-from quick.webtools.imports.FANTOM5TrackSearchTool import FANTOM5TrackSearchTool
-from quick.webtools.imports.ICGCTrackSearchTool import ICGCTrackSearchTool
-from quick.webtools.imports.EBIHubTrackSearchTool import EBIHubTrackSearchTool
-from quick.webtools.imports.Epigenome2TrackSearchTool import Epigenome2TrackSearchTool
-from quick.webtools.imports.Epigenome2ImputedTrackSearchTool import Epigenome2ImputedTrackSearchTool
-from quick.webtools.imports.GWASTrackSearchTool import GWASTrackSearchTool
-#from quick.webtools.imports.TrackGlobalSearchTool import TrackGlobalSearchTool
-
-#from quick.webtools.imports. GSuiteManager import GSuiteManager
-#from quick.webtools.imports.GSuiteDownloadFiles import GSuiteDownloadFiles
-#from quick.webtools.imports.GSuiteSelectColumns import GSuiteSelectColumns
-#from quick.webtools.imports.GSuiteSelectRows import GSuiteSelectRows
-
-#from quick.webtools.restricted.TrackFileImportEpigenome import TrackFileImportEpigenome
-#from quick.webtools.restricted.TrackDownload import TrackDownload
 import gold.gsuite.GSuiteConstants as GSuiteConstants
+from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool
+from quick.webtools.imports.CGAtlasTrackSearchTool import CGAtlasTrackSearchTool
+from quick.webtools.imports.EBIHubTrackSearchTool import EBIHubTrackSearchTool
+from quick.webtools.imports.EncodeTrackSearchTool import EncodeTrackSearchTool
+from quick.webtools.imports.Epigenome2ImputedTrackSearchTool import Epigenome2ImputedTrackSearchTool
+from quick.webtools.imports.Epigenome2TrackSearchTool import Epigenome2TrackSearchTool
+from quick.webtools.imports.FANTOM5TrackSearchTool import FANTOM5TrackSearchTool
+from quick.webtools.imports.GWASTrackSearchTool import GWASTrackSearchTool
+from quick.webtools.imports.ICGCTrackSearchTool import ICGCTrackSearchTool
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -79,7 +69,7 @@ class TrackSourceTestTool(MultiGeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
 
         core.paragraph('The tool provides a structured search for genomic tracks Stored in '

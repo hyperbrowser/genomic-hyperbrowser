@@ -1,12 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-#from quick.application.ExternalTrackManager import ExternalTrackManager
-#from gold.origdata.BedComposer import BedComposer
-#from gold.origdata.GtrackComposer import StdGtrackComposer
-#from gold.origdata.FastaComposer import FastaComposer
-#from gold.origdata.GffComposer import GffComposer
-from gold.gsuite import GSuiteConstants
 import shutil
+
+from gold.gsuite import GSuiteConstants
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
+
+
 #from quick.util.debug import DebugUtil
 
 # This is a template prototyping GUI that comes together with a corresponding
@@ -378,8 +376,7 @@ class GSuiteExportToHistoryTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
-        from gold.origdata.GenomeElementSource import getAllGenomeElementSourceClasses
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.smallHeader('General')

@@ -1,26 +1,15 @@
-import os
-import sys
 from numpy import *
-#from rpy import r
-#from gold.application.RSetup import rpy1
-#from gold.application.RSetup import r
-from gold.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import AnalysisDefJob
-from gold.statistic.MagicStatFactory import MagicStatFactory
-from gold.util.CommonFunctions import prettyPrintTrackName
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-# from Pycluster import *
-from test.sandbox.master.draw_dendrogram import draw_dendrogram
-from quick.util.StaticFile import StaticFile, GalaxyRunSpecificFile
+
 from gold.description.TrackInfo import TrackInfo
-#from quick.extra.clustering.FeatureCatalog import FeatureCatalog, DirectDistanceCatalog, LocalResultsAsFeaturesCatalog
-from quick.extra.clustering.FeatureCatalog import *
-from quick.util.CommonFunctions import extractIdFromGalaxyFn, silenceRWarnings
-from gold.result.HtmlCore import HtmlCore
-from gold.result.Results import Results
 from gold.result.HeatmapPresenter import HeatmapFromNumpyPresenter
+from gold.result.Results import Results
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.extra.clustering.FeatureCatalog import *
+from quick.util.CommonFunctions import silenceRWarnings
+from quick.util.StaticFile import GalaxyRunSpecificFile
+
+
 #import rpy2.robjects.numpy2ri as rpyn
-from gold.application.LogSetup import logMessage
 
 class ClusteringExecution(object):
     @classmethod

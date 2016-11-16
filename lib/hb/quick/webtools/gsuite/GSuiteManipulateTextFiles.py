@@ -2,11 +2,11 @@ import os
 from collections import OrderedDict
 from itertools import chain
 
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from gold.gsuite import GSuiteConstants
-
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
+from gold.gsuite import GSuiteConstants
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -324,7 +324,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         '''
         if prevChoices.operation and prevChoices.operation != cls.NO_OPERATION_TEXT:
             from quick.extra.StandardizeTrackFiles import getParserClassDocString
-            from gold.result.HtmlCore import HtmlCore
+            from proto.hyperbrowser.HtmlCore import HtmlCore
 
             docString = getParserClassDocString(cls.ALL_OPERATIONS[prevChoices.operation])
 
@@ -386,7 +386,6 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
         from gold.gsuite.GSuiteComposer import composeToFile
         from gold.gsuite.GSuiteFunctions import writeGSuiteHiddenTrackStorageHtml, getTitleWithSuffixReplaced
-        from quick.application.ExternalTrackManager import ExternalTrackManager
         from quick.extra.ProgressViewer import ProgressViewer
         from quick.util.CommonFunctions import ensurePathExists
 
@@ -444,7 +443,6 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        from gold.gsuite.GSuiteConstants import LOCAL, PREPROCESSED, MULTIPLE
 
         errorStr = GeneralGuiTool._checkGSuiteFile(choices.history)
         if errorStr:
@@ -537,7 +535,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.paragraph('This tool contains various operations for manipulating textual '

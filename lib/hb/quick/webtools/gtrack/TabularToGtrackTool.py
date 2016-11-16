@@ -1,21 +1,20 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-#from gold.application.LogSetup import logMessage
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.origdata.GtrackHeaderExpander import expandHeadersOfGtrackFileAndReturnComposer
-from gold.track.GenomeRegion import GenomeRegion
-from gold.util.CustomExceptions import InvalidFormatError, ShouldNotOccurError, InvalidFormatError
-from gold.result.HtmlCore import HtmlCore
-from itertools import chain
-from functools import partial
-from copy import copy
-from collections import namedtuple
-from tempfile import NamedTemporaryFile
-from StringIO import StringIO
 import os
-import shutil
 import subprocess
 import sys
+from StringIO import StringIO
+from collections import namedtuple
+from copy import copy
+from functools import partial
+from itertools import chain
+from tempfile import NamedTemporaryFile
+
+from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
+from gold.origdata.GtrackHeaderExpander import expandHeadersOfGtrackFileAndReturnComposer
+from gold.track.GenomeRegion import GenomeRegion
+from gold.util.CustomExceptions import InvalidFormatError
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 FileContentsInfo = namedtuple('FileContentsInfo', ['table', 'numCols', 'error'])
 

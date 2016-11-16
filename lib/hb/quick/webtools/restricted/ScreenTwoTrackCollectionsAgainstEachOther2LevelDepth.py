@@ -1,5 +1,5 @@
 from gold.application.HBAPI import doAnalysis, GlobalBinSource, AnalysisSpec, PlainTrack
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\
     STAT_OVERLAP_RATIO, STAT_FACTOR_OBSERVED_VS_EXPECTED, processResult,\

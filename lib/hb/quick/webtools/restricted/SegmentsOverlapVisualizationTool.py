@@ -1,11 +1,10 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
-from gold.origdata.GESourceWrapper import ElementModifierGESourceWrapper
-from gold.origdata.BedComposer import BedComposer
 from gold.gsuite import GSuiteConstants
+from gold.origdata.BedComposer import BedComposer
+from gold.origdata.GESourceWrapper import ElementModifierGESourceWrapper
+from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 # Author: Diana Domanska
 
@@ -376,7 +375,7 @@ class SegmentsOverlapVisualizationTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
 

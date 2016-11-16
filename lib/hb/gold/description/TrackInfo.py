@@ -15,17 +15,18 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import copy
+import datetime
 import os
 import os.path
+from collections import namedtuple
+
 import third_party.safeshelve as safeshelve
-import datetime
-from gold.util.CommonFunctions import createOrigPath, strWithStdFormatting
-from gold.result.HtmlCore import HtmlCore
 from config.Config import DATA_FILES_PATH
 from gold.track.TrackFormat import TrackFormatReq
+from gold.util.CommonFunctions import strWithStdFormatting
 from gold.util.CustomExceptions import ShouldNotOccurError
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.util.StaticFile import StaticImage
-from collections import namedtuple
 
 FieldInfo = namedtuple('FieldInfo', ['fullName', 'guiElementType'])
 
@@ -290,7 +291,6 @@ class TrackInfo(object):
     @classmethod
     def updateShelveItemsAndCopyToNewFile(cls, updateHg18=False, removeDanglingItems=False):
         from quick.util.CommonFunctions import getUniqueFileName
-        from gold.util.CommonFunctions import createDirPath
         from config.Config import LOG_PATH
         from quick.application.ProcTrackOptions import ProcTrackOptions
 

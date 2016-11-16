@@ -1,13 +1,10 @@
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
-from gold.result.HtmlCore import HtmlCore
 from gold.track.Track import Track
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.statistic.GenericMaxBinValueWrapperStat import GenericMaxBinValueWrapperStat
-from quick.statistic.SummarizedInteractionWithOtherTracksStat import \
-    SummarizedInteractionWithOtherTracksStatUnsplittable
 from quick.statistic.SummarizedWrapperStat import SummarizedWrapperStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin

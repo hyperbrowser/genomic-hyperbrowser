@@ -329,7 +329,7 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.paragraph('This tool takes a GSuite file as an input, and downloads the '
