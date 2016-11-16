@@ -141,7 +141,7 @@ def galaxySecureEncodeId(plainId):
 
 def galaxySecureDecodeId(encodedId):
     from proto.config.Config import GALAXY_SECURITY_HELPER_OBJ
-    return GALAXY_SECURITY_HELPER_OBJ.decode_id(encodedId)
+    return GALAXY_SECURITY_HELPER_OBJ.decode_id(str(encodedId))
 
 
 def getEncodedDatasetIdFromPlainGalaxyId(plainId):
