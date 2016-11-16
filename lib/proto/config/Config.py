@@ -4,6 +4,8 @@ import os
 
 GALAXY_BASE_DIR = os.path.abspath(os.path.dirname(__file__) + '/../../../.')
 
+OUTPUT_PRECISION = 4
+
 
 def getUniverseConfigParser():
     config = SafeConfigParser({'here': GALAXY_BASE_DIR})

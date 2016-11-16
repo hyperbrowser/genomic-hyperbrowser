@@ -15,15 +15,13 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import shelve
-import sys
-import functools
 import re
+import shelve
 import urllib
-import contextlib
+from collections import OrderedDict
 
-from proto.config.Config import GALAXY_BASE_DIR
 from proto.CommonConstants import THOUSANDS_SEPARATOR
+from proto.config.Config import GALAXY_BASE_DIR, OUTPUT_PRECISION
 
 """
 Note on datasetInfo and datasetId (used in several functions):
