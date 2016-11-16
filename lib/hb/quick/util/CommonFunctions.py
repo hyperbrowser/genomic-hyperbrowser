@@ -26,7 +26,7 @@ import operator
 from collections import Iterable, OrderedDict
 
 from config.Config import PROCESSED_DATA_PATH, DEFAULT_GENOME, \
-    ORIG_DATA_PATH, OUTPUT_PRECISION, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
+    ORIG_DATA_PATH, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
     PARSING_ERROR_DATA_PATH, IS_EXPERIMENTAL_INSTALLATION
 from gold.util.CommonConstants import BINARY_MISSING_VAL
 from quick.application.SignatureDevianceLogging import takes, returns
@@ -615,6 +615,11 @@ def convertTNstrToTNListFormat(tnStr, doUnquoting=False):
 
 
 # used by echo
+def name(item):
+    " Return an item's name. "
+    return item.__name__
+
+
 def format_arg_value(arg_val):
     """ Return a string representing a (name, value) pair.
 
