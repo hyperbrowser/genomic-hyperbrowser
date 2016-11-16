@@ -1,17 +1,32 @@
 import os
-from proto.config.Config import URL_PREFIX
-from collections import OrderedDict
-#from gold.util.CustomExceptions import ShouldNotOccurError
+from config.Config import URL_PREFIX
+from proto.CommonConstants import THOUSANDS_SEPARATOR
 import re
+from collections import OrderedDict
+
 
 class HtmlCore(object):
     def __init__(self):
         self._str = ''
 
-    def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=[]):
+    def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=[], redirectUrl=None, reloadTime=None):
         self._str = '''
 <html>
-<head>
+<head>'''
+
+        if redirectUrl:
+            self._str += '''
+<meta http-equiv="refresh" content="0; url=%s" />''' % redirectUrl
+
+        if reloadTime:
+            self._str += '''
+<script type="text/javascript">
+    var done = false;
+    setTimeout("if (!done) document.location.reload(true);", %s);
+</script>
+''' % (reloadTime * 1000)
+
+        self._str += '''
 <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
 <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/proto/sorttable.js"></script>
 '''
@@ -53,7 +68,12 @@ class HtmlCore(object):
     def smallHeader(self, title):
         return self.highlight(title)
 
-    def end(self):
+    def end(self, stopReload=False):
+        if stopReload:
+            self._str += '''
+<script type="text/javascript">
+    done = true;
+</script>'''
         self._str += '''
 </body>
 </html>'''
@@ -103,32 +123,187 @@ class HtmlCore(object):
         self._str += '<i>' + text + '</i>'
         return self
 
-    def tableHeader(self, headerRow, tagRow=None, firstRow=True, sortable=False, tableId=None):
+    def tableHeader(self, headerRow, tagRow=None, firstRow=True, sortable=False,
+                    tableId=None, tableClass='colored bordered', headerClass='header',
+                    style='table-layout:auto;word-wrap:break-word;', **kwargs):
         if firstRow:
-            tableId = 'id="%s" '%tableId if tableId else ''
-            sortable = ' sortable' if sortable else ''
-            self._str += '<table %sclass="colored bordered%s" width="100%%" style="table-layout:auto; word-wrap:break-word;">' \
-                % (tableId, sortable) + os.linesep
+            tableIdStr = 'id="%s" ' % tableId if tableId else ''
+            tableClassList = tableClass.split()
+            if sortable:
+                tableClassList.append('sortable')
+            tableClassStr = 'class="' + ' '.join(tableClassList) + '" ' \
+                if tableClassList else ''
+            self._str += '<table %s%s" width="100%%" style="%s">' \
+                % (tableIdStr, tableClassStr, style) + os.linesep
 
         if headerRow not in [None, []]:
             if tagRow is None:
                 tagRow = [''] * len(headerRow)
             self._str += '<tr>'
-            for tag,el in zip(tagRow, headerRow):
-                self._str += '<th class="header"' + (' ' + tag if tag!='' else '') + '>' + str(el) + '</th>'
+            headerClassStr = ' class="' + ' '.join(headerClass.split()) + '"' \
+                if headerClass else ''
+            for tag, el in zip(tagRow, headerRow):
+                self._str += '<th%s' % headerClassStr + \
+                             (' ' + tag if tag != '' else '') + \
+                             '>' + str(el) + '</th>'
             self._str += '</tr>' + os.linesep
 
         return self
 
-    def tableLine(self, row, rowSpanList=None):
-        self._str += '<tr>'
-        for i,el in enumerate(row):
-            self._str += '<td' + (' rowspan=' + str(rowSpanList[i]) if rowSpanList is not None else '') + '>' + str(el) + '</td>'
+    def tableLine(self, row, rowSpanList=None, **kwargs):
+        self.tableRowBegin(**kwargs)
+        for i, el in enumerate(row):
+            rowSpan = rowSpanList[i] if rowSpanList else None
+            self.tableCell(str(el), rowSpan=rowSpan, **kwargs)
+        self.tableRowEnd(**kwargs)
+        return self
+
+    def tableRowBegin(self, rowClass=None, **kwargs):
+        self._str += '<tr'
+        if rowClass:
+            self._str += ' class=%s' % rowClass
+        self._str += '>'
+        return self
+
+    def tableRowEnd(self, **kwargs):
         self._str += '</tr>' + os.linesep
         return self
 
-    def tableFooter(self):
+    def tableCell(self, content, cellClass=None, style=None,
+                  rowSpan=None, colSpan=None, **kwargs):
+        self._str += '<td'
+
+        try:
+            contentNoSpaces = content.replace(THOUSANDS_SEPARATOR, '')
+            float(contentNoSpaces)
+            self._str += ' sorttable_customkey="' + contentNoSpaces + '"'
+        except:
+            pass
+
+        if cellClass:
+            self._str += ' class="%s"' % cellClass
+        if style:
+            self._str += ' style="%s"' % style
+        if rowSpan:
+            self._str += ' rowspan="' + str(rowSpan) + '"'
+        if colSpan:
+            self._str += ' colspan="' + str(colSpan) + '"'
+        self._str += '>' + content + '</td>'
+
+    def tableFooter(self, **kwargs):
         self._str += '</table>'+ os.linesep
+        return self
+
+    def tableFromDictionary(self, dataDict, columnNames=None, sortable=True,
+                            tableId=None, expandable=False, visibleRows=6,
+                            presorted=None, **kwargs):
+        """Render a table from data in dataDict. Each key in dataDict is a row title,
+        each value is a list of values, each corresponding to the column given with columnNames.
+
+        If presorted is set to a number and tableId != None and sortable == True, that column will be presorted (using a hacky solution using jquery.
+        """
+
+        # transform dicts with a single value to a dict of lists for easier
+        # sorting and html table generation
+        dataDictOfLists = OrderedDict()
+        for key, val in dataDict.iteritems():
+            if isinstance(val, list):
+                dataDictOfLists[key] = val
+            elif isinstance(val, tuple):
+                dataDictOfLists[key] = list(val)
+            else:
+                dataDictOfLists[key] = [val]
+
+        if presorted is not None and presorted > -1:
+            assert isinstance(presorted, int), 'presorted must be int'
+            from quick.util import CommonFunctions
+            dataDictOfLists = CommonFunctions.smartSortDictOfLists(
+                dataDictOfLists, sortColumnIndex=presorted)
+
+        tableClass = 'colored bordered'
+        if expandable:
+            assert tableId, 'Table ID must be set for expandable tables.'
+            tableClass += ' expandable'
+
+        self.tableHeader(headerRow=columnNames, sortable=sortable,
+                         tableId=tableId,
+                         tableClass=tableClass, **kwargs)
+
+        for key, val in dataDictOfLists.iteritems():
+            if isinstance(val, list):
+                self.tableLine([key] + val)
+            else:
+                self.tableLine([key] + [val])
+
+        self.tableFooter()
+
+        # if tableId != None and sortable and presorted:
+        #     # Javascript code for clicking on the column (so that it is sorted client side)
+        #     # Hacky solution: Emulates a click on the header with a 500 ms delay so that sorttable.js is done first
+        #     self._str += "<script>$(document).ready(function(){ setTimeout(function(){ $('#" + tableId + " .header')[" + str(presorted) + "].click();}, 500) })</script>"
+
+        if expandable and len(dataDict) > visibleRows:
+            self.tableExpandButton(tableId, len(dataDict),
+                                   visibleRows=visibleRows)
+
+        return self
+
+    def tableFromDictOfDicts(self, dataDict, firstColName='', sortable=True,
+                             tableId=None, expandable=False, visibleRows=6,
+                             presorted=None, **kwargs):
+        """
+        # Note: it is assumed that dataDict is a full matrix, i.e. each element in
+        # the dict is a dict of the same size.
+        """
+
+        assert isinstance(dataDict, OrderedDict) and \
+               all(isinstance(x, OrderedDict) for x in dataDict.values()), \
+            'dataDict must be an OrderedDict of OrderedDicts'
+
+        colNames = []
+        convertedDataDict = OrderedDict()
+
+        for key1, val1 in dataDict.iteritems():
+            if not colNames:
+                colNames = [firstColName] + val1.keys()
+            convertedDataDict[key1] = val1.values()
+
+        return self.tableFromDictionary(convertedDataDict,
+                                        columnNames=colNames,
+                                        sortable=sortable, tableId=tableId,
+                                        expandable=expandable,
+                                        visibleRows=visibleRows,
+                                        presorted=presorted, **kwargs)
+
+    def tableExpandButton(self, tableId, totalRows, visibleRows=6):
+        self.script('''
+function expandTable(tableId) {
+    tblId = "#" + tableId;
+    $(tblId).find("tr").show();
+    btnDivId = "#toggle_table_" + tableId;
+    $(btnDivId).find("input").toggle();
+}
+
+function collapseTable(tableId, visibleRows) {
+    tblId = "#" + tableId;
+    trScltr = tblId + " tr:nth-child(n + " + visibleRows + ")";
+    $(trScltr).hide();
+    btnDivId = "#toggle_table_" + tableId;
+    $(btnDivId).find("input").toggle();
+}
+
+$(document).ready(function(){
+    hiddenRowsSlctr = "table.expandable tr:nth-child(n + %s)";
+    $(hiddenRowsSlctr).hide();
+}
+);''' % str(visibleRows + 2))  # '+2' for some reason (one of life's great mysteries)
+
+        self._str += '''<div id="toggle_table_%s" class="toggle_table_btn">
+                        <input type="button" value="Expand table (now showing %s of %s rows)..." id="expand_table_btn" style="background: #F5F5F5;" onclick="expandTable('%s')"/>
+                        <input type="button" value="Collapse table (now showing %s of %s rows)" id="collapse_table_btn" style="background: #F5F5F5; display: none;" onclick="collapseTable('%s', %s)"/>
+                        ''' % (
+            tableId, visibleRows, totalRows, tableId, totalRows, totalRows,
+            tableId, visibleRows + 1)
         return self
 
     def divider(self, withSpacing=False):
@@ -201,125 +376,14 @@ class HtmlCore(object):
         return self
 
     def _getStyleClassOrIdItem(self, styleClass, styleId):
+        assert styleClass or styleId
         if styleClass:
             return '.%s' % styleClass
         elif styleId:
             return '#%s' % styleId
-        else:
-            raise Exception()
-            #raise ShouldNotOccurError()
-    
-    def tableFromDictionary(self, dataDict, columnNames=None, sortable=True, tableId=None, expandable=False,
-                            visibleRows=6, presorted=None, addInstruction=None):
-        """Render a table from data in dataDict. Each key in dataDict is a row title,
-        each value is a list of values, each corresponding to the column given with columnNames.
 
-        If presorted is set to a number and tableId != None and sortable == True, that column will be presorted (using a hacky solution using jquery.
-        """
-
-        # transfom dicts with a single value to a dict of lists for easier sorting and html table generation
-        dataDictOfLists = OrderedDict()
-        for key, val in dataDict.iteritems():
-            if isinstance(val, list):
-                dataDictOfLists[key] = val
-            elif isinstance(val, tuple):
-                dataDictOfLists[key] = list(val)
-            else:
-                dataDictOfLists[key] = [val]
-
-        if presorted is not None and presorted > -1:
-            assert isinstance(presorted, int), 'presorted must be int'
-            from quick.util import CommonFunctions
-            dataDictOfLists = CommonFunctions.smartSortDictOfLists(dataDictOfLists, sortColumnIndex=presorted)
-
-        if expandable:
-            assert tableId is not None, 'Table ID must be set for expandable tables.'
-            self.tableHeaderWithClass(headerRow=columnNames, sortable=sortable, tableId=tableId,
-                                      tableClass='colored bordered expandable', addInstruction=addInstruction)
-        else:
-            self.tableHeader(headerRow=columnNames, sortable=sortable, tableId=tableId, addInstruction=addInstruction)
-
-        # for key, val in dataDict.iteritems():
-        for key, val in dataDictOfLists.iteritems():
-            if isinstance(val, list):
-                self.tableLine([key] + val)
-            else:
-                self.tableLine([key] + [val])
-
-        self.tableFooter()
-
-        # if tableId != None and sortable and presorted:
-        #     # Javascript code for clicking on the column (so that it is sorted client side)
-        #     # Hacky solution: Emulates a click on the header with a 500 ms delay so that sorttable.js is done first
-        #     self._str += "<script>$(document).ready(function(){ setTimeout(function(){ $('#" + tableId + " .header')[" + str(presorted) + "].click();}, 500) })</script>"
-
-        if expandable and len(dataDict) > visibleRows:
-            self._tableExpandButton(tableId, len(dataDict), visibleRows=visibleRows)
-
-        return self
-
-    def tableHeaderWithClass(self, headerRow, tableClass=None, tagRow=None, firstRow=True, sortable=False,
-                             addInstruction=False, tableId=None):
-        if firstRow:
-            if addInstruction == True:
-                if tableId == '':
-                    tableId = 'tab0'
-                self._str += self.addInstruction(tableName=tableId)
-            tableId = 'id="%s" ' % tableId if tableId else ''
-            styleClass = 'class="%s' % tableClass if tableClass else ''
-            if sortable:
-                if styleClass:
-                    styleClass += ' sortable"'
-                else:
-                    styleClass = 'class="sortable'
-            if styleClass:
-                styleClass += '"'
-            self._str += '<table %s %s width="100%%" style="table-layout:auto; word-wrap:break-word;">' \
-                         % (tableId, styleClass) + os.linesep
-
-        if headerRow not in [None, []]:
-            if tagRow is None:
-                tagRow = [''] * len(headerRow)
-            self._str += '<tr>'
-            for tag, el in zip(tagRow, headerRow):
-                self._str += '<th class="header"' + (' ' + tag if tag != '' else '') + '>' + str(el) + '</th>'
-            self._str += '</tr>' + os.linesep
-
-        return self
-
-    def _tableExpandButton(self, tableId, totalRows, visibleRows=6):
-
-        self.script('''
-
-            function expandTable(tableId) {
-                tblId = "#" + tableId;
-                $(tblId).find("tr").show();
-                btnDivId = "#toggle_table_" + tableId;
-                $(btnDivId).find("input").toggle();
-            }
-
-            function collapseTable(tableId, visibleRows) {
-                tblId = "#" + tableId;
-                trScltr = tblId + " tr:nth-child(n + " + visibleRows + ")";
-                $(trScltr).hide();
-                btnDivId = "#toggle_table_" + tableId;
-                $(btnDivId).find("input").toggle();
-            }
-
-            $(document).ready(function(){
-                hiddenRowsSlctr = "table.expandable tr:nth-child(n + %s)";
-                $(hiddenRowsSlctr).hide();
-            }
-            );
-
-        ''' % str(visibleRows + 2))  # '+2' for some reason (one of life's great mysteries)
-
-        self._str += '''<div id="toggle_table_%s" class="toggle_table_btn">
-                        <input type="button" value="Expand table (now showing %s of %s rows)..." id="expand_table_btn" style="background: #F5F5F5;" onclick="expandTable('%s')"/>
-                        <input type="button" value="Collapse table (now showing %s of %s rows)" id="collapse_table_btn" style="background: #F5F5F5; display: none;" onclick="collapseTable('%s', %s)"/>
-                        ''' % (tableId, visibleRows, totalRows, tableId, totalRows, totalRows, tableId, visibleRows + 1)
-
-    def toggle(self, text, styleClass=None, styleId=None, withDivider=False, otherAnchor=None, withLine=True):
+    def toggle(self, text, styleClass=None, styleId=None,
+               withDivider=False, otherAnchor=None, withLine=True):
         item = self._getStyleClassOrIdItem(styleClass, styleId)
         classOrId = styleClass if styleClass else styleId
 
@@ -340,6 +404,16 @@ class HtmlCore(object):
     $('%s').hide()
 </script>
 ''' % item
+
+    def fieldsetBegin(self, title=None):
+        self._str += '<fieldset>' + os.linesep
+        if title:
+            self._str += '<legend>%s</legend>' % title + os.linesep
+        return self
+
+    def fieldsetEnd(self):
+        self._str += '</fieldset>' + os.linesep
+        return self
 
     def image(self, imgFn, style=None):
         self._str += '''<img%s src="%s"/>''' % \
