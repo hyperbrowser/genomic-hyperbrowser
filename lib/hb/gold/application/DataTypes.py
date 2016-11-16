@@ -14,22 +14,29 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+
 def getSupportedFileSuffixesForBinning():
     return ['gtrack', 'bed', 'point.bed', 'category.bed', 'valued.bed', 'wig', \
             'targetcontrol.bedgraph', 'bedgraph', 'gff', 'gff3', 'category.gff', \
             'narrowpeak', 'broadpeak']
 
+
 def getSupportedFileSuffixesForPointsAndSegments():
     return getSupportedFileSuffixesForBinning()
+
 
 def getSupportedFileSuffixesForGSuite():
     return getSupportedFileSuffixesForPointsAndSegments() + ['fasta', 'microarray']
 
+
 def getSupportedFileSuffixesForFunction():
     return ['hbfunction']
 
+
 def getSupportedFileSuffixes():
-    return getSupportedFileSuffixesForGSuite() + getSupportedFileSuffixesForFunction()
+    return getSupportedFileSuffixesForGSuite() + \
+           getSupportedFileSuffixesForFunction()
+
 
 # Defined to stop searching for GTrackGenome subtypes online.
 def getUnsupportedFileSuffixes():
