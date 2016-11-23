@@ -81,12 +81,12 @@ class GalaxyWrapper:
                 self.params[key] = params[key]
 
     def encode_id(self, id):
-        from proto.CommonFunctions import galaxySecureEncodeId
+        from proto.config.Security import galaxySecureEncodeId
         return galaxySecureEncodeId(id)
         # return self.trans.security.encode_id(id)
 
     def decode_id(self, id):
-        from proto.CommonFunctions import galaxySecureDecodeId
+        from proto.config.Security import galaxySecureDecodeId
         return galaxySecureDecodeId(id)
         # return self.trans.security.decode_id(id)
 
@@ -114,11 +114,15 @@ class GalaxyWrapper:
             pass
         return datasets
 
-    def optionsFromHistory(self, exts, sel = None):
+    def optionsFromHistory(self, exts, sel=None, datasets=None):
         html = ''
-        for dataset in self.trans.get_history().active_datasets:
-            if exts == None or dataset.extension in exts:
-                option, val = self.makeHistoryOption(dataset, sel, ',')
+
+        if not datasets:
+            datasets = self.trans.get_history().active_datasets
+
+        for dataset in datasets:
+            if exts is None or dataset.extension in exts:
+                option = self.makeHistoryOption(dataset, sel)[0]
                 html += option
         return html
 
@@ -160,13 +164,26 @@ class GalaxyWrapper:
         html = '<option value="%s" %s>%d: %s [%s]</option>\n' % (val, selected(dataset.dataset_id, sel_id), dataset.hid, name, dataset.dbkey)
         return (html, val)
 
-    def getHistoryOptionId(self, select):
+    def getHistoryOptionSecureIdAndExt(self, select):
         if select and select.startswith('galaxy'):
             sep = select[6]
             if sep == ',':
-                id_sel = select.split(',')[1]
+                splitted = select.split(',')
+                id_sel = splitted[1]
+                ext = splitted[2]
             else:
-                id_sel = select.split(':')[2]
+                splitted = select.split(':')
+                id_sel = splitted[2]
+                ext = splitted[1]
+        else:
+            id_sel = 0
+            ext = ''
+        return id_sel, ext
+
+    def getHistoryOptionId(self, select):
+        id_sel = self.getHistoryOptionSecureIdAndExt(select)[0]
+        if id_sel:
+            sep = select[6]
             try:
                 sel_id = self.decode_id(id_sel)
             except:
@@ -174,8 +191,6 @@ class GalaxyWrapper:
                     sel_id = int(id_sel)
                 elif id_sel and os.path.exists(id_sel):
                     sel_id = int(re.findall(r'/dataset_([0-9]+)\.dat', id_sel)[0])
-                else:
-                    sel_id = 0
         else:
             sel_id = 0
         return sel_id
