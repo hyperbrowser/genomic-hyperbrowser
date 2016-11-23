@@ -106,15 +106,19 @@ class UserBinSource(BinSource):
                 genome = DEFAULT_GENOME
 
             from gold.origdata.GenomeElementSource import GenomeElementSource
-            if regSpec == 'file':
-                geSource = GenomeElementSource(binSpec, genome=genome)
-            elif regSpec == 'track':
+            if regSpec == 'track':
                 from quick.util.CommonFunctions import convertTNstrToTNListFormat
                 from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
                 trackName = convertTNstrToTNListFormat(binSpec)
                 geSource = FullTrackGenomeElementSource(genome, trackName, allowOverlaps=False)
             else:
-                geSource = GenomeElementSource(binSpec, genome=genome, suffix=regSpec)
+                from quick.application.ExternalTrackManager import ExternalTrackManager
+                try:
+                    fn = ExternalTrackManager.getGalaxyFnFromEncodedDatasetId(binSpec)
+                except:
+                    fn = binSpec
+                geSource = GenomeElementSource(fn, genome=genome,
+                                               suffix=regSpec if regSpec != 'file' else None)
 
             if categoryFilterList is not None:
                 from gold.origdata.GECategoryFilter import GECategoryFilter

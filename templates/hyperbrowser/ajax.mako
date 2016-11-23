@@ -65,13 +65,19 @@ try:
         region = method
         binsize = '*'
     elif method in ['binfile', '__history__']:
-        binfile = params.get('binfile','').split(',')
-        if len(binfile) > 3:
-            region = binfile[2]
-            binsize = galaxy.getDataFilePath(binfile[1])
-        else:
+        binsize, region = galaxy.getHistoryOptionSecureIdAndExt(params.get('binfile',''))
+        if not region:
             region = '__history__'
             binsize = ''
+
+##         binfile = params.get('binfile','').split(',')
+##         if len(binfile) > 3:
+##             region = binfile[2]
+##             binsize = galaxy.getDataFilePath(binfile[1])
+##         else:
+##             region = '__history__'
+##             binsize = ''
+
         #print binsize
         #region = userBins.split(',')[2]
 

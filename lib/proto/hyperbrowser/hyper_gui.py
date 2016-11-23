@@ -91,13 +91,8 @@ class TrackWrapper:
                 self.file = self.galaxy.makeHistoryOption(dataset)[1]
                 break
 
-    def optionsFromHistory(self, sel = None, exts = None):
-        html = ''
-        for dataset in self.datasets:
-            if exts == None or dataset.extension in exts:
-                option = self.galaxy.makeHistoryOption(dataset, sel)
-                html += option[0]
-        return html
+    def optionsFromHistory(self, sel=None, exts=None):
+        return self.galaxy.optionsFromHistory(exts, sel=sel, datasets=self.datasets)
 
     def getState(self, q = True):
         return quote(self.state) if self.state and q else self.state if self.state else ''

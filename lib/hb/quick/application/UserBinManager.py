@@ -192,7 +192,12 @@ class BinsFromHistoryUserBinSourceInfo(StdUserBinSourceInfo):
         if binSpec in [None, '']:
             return 'Please select a history element containing regions.'
             
-        binFn = binSpec
+        try:
+            from proto.CommonFunctions import getGalaxyFnFromEncodedDatasetId
+            binFn = getGalaxyFnFromEncodedDatasetId(binSpec)
+        except:
+            binFn = binSpec
+
         if not os.path.exists(binFn):
             return 'The specified file to be used for analysis regions does not exist: "%s"' % binFn
 
@@ -343,12 +348,12 @@ class UserBinSourceRegistry(object):
     def getUserBinSource(self, regSpec, binSpec):
         ubSourceInfo = self._getUserBinSourceInfo(regSpec)
         
-        try:
-            ubSource = ubSourceInfo.generateUserBinSource(regSpec, binSpec)
-            ubSource.description = ubSourceInfo.describeUserBinSource(regSpec, binSpec)
-            return ubSource
-        except Exception, e:
-            raise InvalidFormatError('Unable to parse region specification. Error message: "%s"' % e)
+        # try:
+        ubSource = ubSourceInfo.generateUserBinSource(regSpec, binSpec)
+        ubSource.description = ubSourceInfo.describeUserBinSource(regSpec, binSpec)
+        return ubSource
+        # except Exception, e:
+        #     raise InvalidFormatError('Unable to parse region specification. Error message: "%s"' % e)
 
     def validateRegAndBinSpec(self, regSpec, binSpec):
         ubSourceInfo = self._getUserBinSourceInfo(regSpec)
