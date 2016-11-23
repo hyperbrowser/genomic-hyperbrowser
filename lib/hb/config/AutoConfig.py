@@ -1,6 +1,7 @@
 #from config.LocalOSConfig import *
+
 from proto.config.Config import \
-    GALAXY_BASE_DIR, getUniverseConfigParser, config, getFromConfig, \
+    OUTPUT_PRECISION, GALAXY_BASE_DIR, getUniverseConfigParser, config, getFromConfig, \
     getUrlPrefix, GALAXY_SECURITY_HELPER_OBJ, URL_PREFIX, RESTRICTED_USERS
 
 from ConfigParser import SafeConfigParser
