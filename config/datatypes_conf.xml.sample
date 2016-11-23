@@ -441,23 +441,23 @@
     <datatype extension="scidx" type="galaxy.datatypes.interval:ScIdx" display_in_upload="true" />
 
     <!-- HyperBrowser datatypes -->
-    <datatype extension="R" type="galaxy.datatypes.data:Text" mimetype="text/plain" display_in_upload="false"/>
-    <datatype extension="microarray" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="point.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="valued.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="category.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="targetcontrol.bedgraph" type="galaxy.datatypes.interval:BedGraph" display_in_upload="true"/>
-    <datatype extension="gtrack" type="galaxy.datatypes.tabular:Tabular" display_in_upload="true"/>
-    <datatype extension="broadpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="narrowpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="gappedpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true"/>
-    <datatype extension="hbfunction" type="galaxy.datatypes.images:Html" display_in_upload="false"/>
-    <datatype extension="hbgenome" type="galaxy.datatypes.data:Text" display_in_upload="false"/>
-    <datatype extension="customhtml" type="galaxy.datatypes.images:Html" display_in_upload="false"/>
-    <datatype extension="gsuite.zip" type="galaxy.datatypes.binary:Binary" display_in_upload="true" mimetype="application/octet-stream"/>
-    <datatype extension="gsuite.tar" type="galaxy.datatypes.binary:Binary" display_in_upload="true" mimetype="application/octet-stream"/>
-    <datatype extension="gsuite" type="galaxy.datatypes.tabular:Tabular" display_in_upload="true"/>
-    <datatype extension="gsuite_storage" type="galaxy.datatypes.images:Html" display_in_upload="false"/>
+    <datatype extension="R" type="galaxy.datatypes.data:Text" mimetype="text/plain" display_in_upload="false" subclass="true"/>
+    <datatype extension="microarray" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="point.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="valued.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="category.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="targetcontrol.bedgraph" type="galaxy.datatypes.interval:BedGraph" display_in_upload="true" subclass="true"/>
+    <datatype extension="gtrack" type="galaxy.datatypes.tabular:Tabular" display_in_upload="true" subclass="true"/>
+    <datatype extension="broadpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="narrowpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="gappedpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
+    <datatype extension="hbfunction" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
+    <datatype extension="hbgenome" type="galaxy.datatypes.data:Text" display_in_upload="false" subclass="true"/>
+    <datatype extension="customhtml" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
+    <datatype extension="gsuite.zip" type="galaxy.datatypes.binary:CompressedArchive" display_in_upload="true" mimetype="application/octet-stream" subclass="true"/>
+    <datatype extension="gsuite.tar" type="galaxy.datatypes.binary:CompressedArchive" display_in_upload="true" mimetype="application/octet-stream" subclass="true"/>
+    <datatype extension="gsuite" type="galaxy.datatypes.tabular:Tabular" display_in_upload="true" subclass="true"/>
+    <datatype extension="gsuite_storage" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
     <datatype extension="btrack" type="galaxy.datatypes.binary:Binary" display_in_upload="true" subclass="true"/>
 
   </registration>

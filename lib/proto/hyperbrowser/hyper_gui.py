@@ -74,28 +74,28 @@ class TrackWrapper:
         self.main = self.valueLevel(0)
         self.file = params.get(self.nameFile)
         if not self.file and len(self.datasets) > 0:
-            self.file = self._makeHistoryOption(self.datasets[0])[1]
-            
+            self.file = self.galaxy.makeHistoryOption(self.datasets[0])[1]
+        else:
+            self._checkHistoryFile()
+
         self.tracks = []
         self.ucscTracks = ucscTracks
         self.genome = genome
         self.numLevels = len(self.asList())
         self.valid = True
 
-    def _makeHistoryOption(self, dataset, sel = None):
-        name = dataset.name.replace('[', '(')
-        name = name.replace(']', ')')
-        enc_dataset_id = self.galaxy.encode_id(dataset.dataset_id)
-        sel_id = sel.split(',')[1] if sel else None
-        val = 'galaxy,' + enc_dataset_id + ',' + dataset.extension + ',' + str(dataset.hid) + quote(' - ' + name, safe='')
-        html = '<option value="%s" %s>%d: %s [%s]</option>\n' % (val, 'selected' if enc_dataset_id == sel_id else '', dataset.hid, name, dataset.dbkey)
-        return (html, val)
+    def _checkHistoryFile(self):
+        did = self.galaxy.getHistoryOptionId(self.file)
+        for dataset in self.datasets:
+            if dataset.dataset_id == did:
+                self.file = self.galaxy.makeHistoryOption(dataset)[1]
+                break
 
     def optionsFromHistory(self, sel = None, exts = None):
         html = ''
         for dataset in self.datasets:
             if exts == None or dataset.extension in exts:
-                option = self._makeHistoryOption(dataset, sel)
+                option = self.galaxy.makeHistoryOption(dataset, sel)
                 html += option[0]
         return html
 
@@ -154,15 +154,14 @@ class TrackWrapper:
     def definition(self, unquotehistoryelementname=True, use_path=False):
         arr = [self.main]
         if self.main == 'galaxy' and self.file:
-            f = self.file.split(',')
-#            path = self.galaxy.getDataFilePath(f[1])
+            f = self.file.split(':')
             if not use_path:
-                dataset_id = self.galaxy.encode_id(f[1]) if len(f[1]) < 16 and f[1].isdigit() else f[1]
+                path = self.galaxy.encode_id(f[2]) if len(f[2]) < 16 and f[2].isdigit() else f[2]
             else:
-                dataset_id = self.galaxy.getDataFilePath(f[1])
-
-            arr.append(str(f[2]))
-            arr.append(str(dataset_id))
+                path = self.galaxy.getDataFilePath(f[2])
+            #print path
+            arr.append(str(f[1]))
+            arr.append(str(path))
             if unquotehistoryelementname:
                 arr.append(str(unquote(f[3])))
             else:
@@ -172,6 +171,8 @@ class TrackWrapper:
         else:
             arr = self.asList()
         return arr
+
+
 
     def getTracksForLevel(self, level):
         if not self.genome:
