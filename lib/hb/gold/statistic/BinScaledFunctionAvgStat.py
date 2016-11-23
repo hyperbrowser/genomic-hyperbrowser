@@ -48,4 +48,3 @@ class BinScaledFunctionAvgStatUnsplittable(BinsScaledDistributionStatUnsplittabl
     def _createChildren(self):
         self._addChild( BinSizeStat(self._region, self._track))
         self._addChild( RawDataStat(self._region, self._track, TrackFormatReq(val='number', dense=True)) )
-        

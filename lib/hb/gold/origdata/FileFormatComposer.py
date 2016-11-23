@@ -25,6 +25,7 @@ from gold.origdata.GEDependentAttributesHolder import GEDependentAttributesHolde
 MatchResult = namedtuple('MatchResult', ['match', 'trackFormatName'])
 ComposerInfo = namedtuple('ComposerInfo', ['trackFormatName','fileFormatName','fileSuffix'])
 
+
 def findMatchingFileFormatComposers(trackFormat):
     matchingComposers = []
     for composer in getAllComposers():
@@ -35,17 +36,20 @@ def findMatchingFileFormatComposers(trackFormat):
                                                   fileSuffix=composer.getDefaultFileNameSuffix()))
     return matchingComposers
 
+
 def getComposerClsFromFileFormatName(fileFormatName):
     for composerCls in getAllComposers():
         if fileFormatName.lower() == composerCls.FILE_FORMAT_NAME.lower():
             return composerCls
     raise InvalidFormatError("Error: file format composer for format '%s' was not found." % fileFormatName)
 
+
 def getComposerClsFromFileSuffix(fileSuffix):
     for composerCls in getAllComposers():
         if fileSuffix.lower() in [x.lower() for x in composerCls.FILE_SUFFIXES]:
             return composerCls
     raise InvalidFormatError("Error: file format composer for file suffix '%s' was not found." % fileSuffix)
+
 
 class FileFormatComposer(object):
     FILE_SUFFIXES = ['']
@@ -111,6 +115,7 @@ class FileFormatComposer(object):
     @classmethod
     def getDefaultFileNameSuffix(cls):
         return cls.FILE_SUFFIXES[0]
+
 
 def getAllComposers():
     from gold.origdata.GtrackComposer import StdGtrackComposer, ExtendedGtrackComposer
