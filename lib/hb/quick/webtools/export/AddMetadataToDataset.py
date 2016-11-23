@@ -45,8 +45,6 @@ class AddMetadataToDataset(GeneralGuiTool):
       
     @staticmethod    
     def getOptionsBox4(prevChoices):
-        #from quick.extra.WsStoreBioInfo import *
-        
         if prevChoices[0] and prevChoices[1]:
             if not prevChoices[-2]:
                 userName = prevChoices[0] if prevChoices[0] else ''
@@ -177,7 +175,6 @@ class AddMetadataToDataset(GeneralGuiTool):
         choices is a list of selections made by web-user in each options box.
         '''
         
-        #from quick.extra.WsStoreBioInfo import *
         params = ['username:='+choices[0],'password:='+choices[1], 'operation:=AddMetaDataToDataSet', 'class:=dataStorageService']
         result = []
         key = None

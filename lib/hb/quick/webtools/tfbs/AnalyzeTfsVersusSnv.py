@@ -3,7 +3,6 @@ from collections import defaultdict
 from time import time
 
 from config.Config import DATA_FILES_PATH, HB_SOURCE_CODE_BASE_DIR
-from gold.application.StatRunner import *
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import PlainTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore

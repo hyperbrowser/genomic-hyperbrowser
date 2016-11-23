@@ -1,11 +1,15 @@
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
-from quick.application.GalaxyInterface import *
-from quick.extra.TrackIntersection import *
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.application.ProcTrackOptions import ProcTrackOptions
+from gold.description.AnalysisDefHandler import AnalysisDefHandler
+from quick.extra.TrackIntersection import TrackIntersection
+from quick.extra.tfbs.TfbsTrackNameMappings import TfbsTrackNameMappings, TfbsGSuiteNameMappings
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.extra.tfbs.TfTrackNameMappings import TfTrackNameMappings
-from quick.extra.tfbs.TfbsTrackNameMappings import *
-from quick.extra.tfbs.getTrackRelevantInfo import *
-from quick.multitrack.MultiTrackCommon import *
+from quick.extra.tfbs.getTrackRelevantInfo import getTrackRelevantInfo
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGSuiteFile, getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
@@ -171,8 +175,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin):
     def countStatistics(similarityFunc, choices, genome, tracks, trackTitles):
         
         trackList = tracks[1:]
-        
-        
+
         resultsForStatistics=OrderedDict()
         
         llDict=OrderedDict()

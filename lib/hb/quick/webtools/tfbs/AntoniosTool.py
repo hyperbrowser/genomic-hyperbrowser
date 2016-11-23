@@ -1,6 +1,8 @@
+from collections import OrderedDict
+
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.extra.tfbs.TfbsTrackNameMappings import *
-from quick.extra.tfbs.getTrackRelevantInfo import *
+from quick.extra.tfbs.TfbsTrackNameMappings import HiCNameMappings
+from quick.extra.tfbs.getTrackRelevantInfo import getTrackRelevantInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 '''

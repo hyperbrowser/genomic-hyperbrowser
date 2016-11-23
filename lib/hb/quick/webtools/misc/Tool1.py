@@ -6,8 +6,6 @@ from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
 from quick.webtools.misc.Tool3 import CreateGCFunction
 
 
-#from quick.extra.tfbs.createTfbsMappings import *
-
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 

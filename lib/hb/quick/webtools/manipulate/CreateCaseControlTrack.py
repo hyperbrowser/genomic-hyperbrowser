@@ -8,7 +8,6 @@ from bx.intervals.io import NiceReaderWrapper, ParseError
 from bx.intervals.operations.subtract import subtract
 
 from galaxy.tools.util.galaxyops import fail, skipped
-from gold.application.GalaxyInterface import *
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 

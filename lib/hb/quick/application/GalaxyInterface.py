@@ -774,7 +774,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             #for track in tracks:
             #    opts.append((track, track, False))
         elif len(parentTrack) > 0 and GalaxyInterface.isStoreBioTrackName(parentTrack):
-            #from quick.extra.WsStoreBioInfo import *
             import zmq
             context = zmq.Context()
             socket = context.socket(zmq.REQ)
@@ -786,8 +785,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             socket.send('##'.join(params))
             message = socket.recv()
             opts = eval(message)
-            #dataStorageService = WsDataStorageService('hs', 'ssh')
-            #opts = dataStorageService.getSubTrackName(parentTrack)
         else:
             tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
             if includeAllSubtracksChoice:

@@ -1,10 +1,12 @@
-from numpy import *
+import numpy as np
 
 from gold.description.TrackInfo import TrackInfo
 from gold.result.HeatmapPresenter import HeatmapFromNumpyPresenter
 from gold.result.Results import Results
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.extra.clustering.FeatureCatalog import *
+from quick.application import GalaxyInterface
+from quick.extra.clustering.FeatureCatalog import DirectDistanceCatalog, FeatureCatalog, \
+    LocalResultsAsFeaturesCatalog
 from quick.util.CommonFunctions import silenceRWarnings
 from quick.util.StaticFile import GalaxyRunSpecificFile
 
@@ -114,7 +116,7 @@ class ClusteringExecution(object):
                 #baseDir = os.path.dirname(heatmap.getDiskPath(True))
 
                 resDict = Results([],[],'')
-                resDict.setGlobalResult({'result':{'Matrix':f_matrix, 'Rows':array(track_names), 'Cols':array(binNames), 'Significance':None, 'RowClust':r('hr'), 'ColClust':None}})
+                resDict.setGlobalResult({'result':{'Matrix':f_matrix, 'Rows':np.array(track_names), 'Cols':np.array(binNames), 'Significance':None, 'RowClust':r('hr'), 'ColClust':None}})
                 header = 'View the resulting heatmap plot <br>'
 
                 baseDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
@@ -175,7 +177,7 @@ class ClusteringExecution(object):
 
         f_matrix = cls.build_feature_vector(genome, cTracks[0], option, regSpec, binSpec)
         for i in range(1,len(cTracks)) :
-            f_matrix = vstack((f_matrix,cls.build_feature_vector(genome, cTracks[i], option, regSpec, binSpec)))
+            f_matrix = np.vstack((f_matrix,cls.build_feature_vector(genome, cTracks[i], option, regSpec, binSpec)))
 
         return f_matrix
 
@@ -188,7 +190,7 @@ class ClusteringExecution(object):
         if feature is not None: # must use "" here because the '' does not work
 
             l = len(tracks)
-            d_matrix = zeros((l,l))
+            d_matrix = np.zeros((l,l))
             for i in range(l) :
                 for j in range(l):
                     if i < j :
@@ -313,7 +315,7 @@ class ClusteringExecution(object):
 
             trackLen = len(tracks)
             refLen = len(refTracks)
-            f_matrix = zeros((trackLen, refLen))
+            f_matrix = np.zeros((trackLen, refLen))
             for i in range(trackLen):
                 for j in range(refLen):
                     #print 'len(options), refLen, len(tracks), trackLen, len(trackFormats):', len(options), refLen, len(tracks), trackLen, len(trackFormats)
@@ -379,8 +381,8 @@ class ClusteringExecution(object):
                 clusterSizes = r('hr$size') #size of every cluster
 
                 withinSS = r('hr$withinss')
-                clusters = array(r('hr$cluster')) #convert to array in order to handle the index more easily
-                track_names = array(track_names)
+                clusters = np.array(r('hr$cluster')) #convert to array in order to handle the index more easily
+                track_names = np.array(track_names)
                 for index1 in range(extra_option) : #extra_option actually the number of clusters
                     trackInCluster = [k for k,val in clusters.items() if val == index1]
 
@@ -397,7 +399,7 @@ class ClusteringExecution(object):
             ##r.png(heatmap_path, width=800, height=700)
 
             resDict = Results([],[],'ClusTrack')
-            resDict.setGlobalResult({'result':{'Matrix':f_matrix, 'Rows':array(track_names), 'Cols':array(reftrack_names), 'Significance':None, 'RowClust':r('hr'), 'ColClust':None}})
+            resDict.setGlobalResult({'result':{'Matrix':f_matrix, 'Rows':np.array(track_names), 'Cols':np.array(reftrack_names), 'Significance':None, 'RowClust':r('hr'), 'ColClust':None}})
             header = 'Heatmap of Feature matrix for "similarity of positional distribution along the genome" '
 
             baseDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
