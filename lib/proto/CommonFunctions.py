@@ -22,6 +22,7 @@ from collections import OrderedDict
 
 from proto.CommonConstants import THOUSANDS_SEPARATOR
 from proto.config.Config import GALAXY_BASE_DIR, OUTPUT_PRECISION
+from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId
 
 """
 Note on datasetInfo and datasetId (used in several functions):
@@ -130,16 +131,6 @@ def getGalaxyFnFromDatasetId(num, galaxyFilePath=None):
 
     id1, id2 = createFullGalaxyIdFromNumber(num)
     return os.path.join(galaxyFilePath, id1, 'dataset_%s.dat' % id2)
-
-
-def galaxySecureEncodeId(plainId):
-    from proto.config.Config import GALAXY_SECURITY_HELPER_OBJ
-    return GALAXY_SECURITY_HELPER_OBJ.encode_id(plainId)
-
-
-def galaxySecureDecodeId(encodedId):
-    from proto.config.Config import GALAXY_SECURITY_HELPER_OBJ
-    return GALAXY_SECURITY_HELPER_OBJ.decode_id(str(encodedId))
 
 
 def getEncodedDatasetIdFromPlainGalaxyId(plainId):

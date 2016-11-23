@@ -1185,3 +1185,8 @@ use_interactive = True
 # privileges. All Galaxy Admins will have full ProTo privileges without having to
 # be in the restricted users list.
 #restricted_users =
+
+# The number of significant digits in printed numbers for tools that make use
+# of the standard number formatting functionality of Galaxy ProTo
+# (strWithStdFormatting).
+#output_precision = 4
