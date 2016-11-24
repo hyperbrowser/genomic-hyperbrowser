@@ -20,7 +20,6 @@ RESTRICTED_USERS = [username.strip() for username in
 OUTPUT_PRECISION = int(config.getWithDefault('output_precision', '4', 'galaxy_proto'))
 STATIC_REL_PATH = URL_PREFIX + '/static/proto'
 STATIC_PATH = GALAXY_BASE_DIR + '/' + STATIC_REL_PATH
-GALAXY_URL = URL_PREFIX
 GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + config.getWithDefault('file_path', 'database/files')
 
 
