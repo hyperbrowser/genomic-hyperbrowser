@@ -27,8 +27,8 @@ class DatabaseTrackAccessModule(TrackAccessModule):
             self._db = DatabaseAdapter(host='localhost', database='abdulara',
                                        user='abdulara', password='144144')
         else:
-            from config.Config import SRC_PATH
-            self._db = DatabaseAdapter(db_file = SRC_PATH + '/quick/trackaccess/imports.db')
+            from config.Config import HB_SOURCE_DATA_BASE_DIR
+            self._db = DatabaseAdapter(db_file = HB_SOURCE_DATA_BASE_DIR + '/trackaccess/imports.db')
             
         self._db.raiseDBErrors = raiseDBErrors
     
