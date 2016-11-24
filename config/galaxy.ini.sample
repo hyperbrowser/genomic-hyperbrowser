@@ -1190,3 +1190,27 @@ use_interactive = True
 # of the standard number formatting functionality of Galaxy ProTo
 # (strWithStdFormatting).
 #output_precision = 4
+
+
+
+# ---- The Genomic HyperBrowser ------------------------------------------------
+
+# Settings for use in the Genomics HyperBrowser functionality
+
+[hyperbrowser]
+
+# External absolute paths (not used in the default setup)
+#ext_nonstandard_data_path =
+#ext_orig_data_path =
+#ext_parsing_error_data_path =
+#ext_processed_data_path =
+#ext_memoized_data_path =
+#ext_data_files_path =
+#ext_upload_files_path =
+#ext_static_files_path =
+#ext_tool_data_path =
+#ext_nmer_chain_data_path =
+#ext_maps_path =
+#ext_log_path =
+#ext_results_path =
+#ext_tmp_path =

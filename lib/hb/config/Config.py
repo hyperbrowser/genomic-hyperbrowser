@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-#from config.LocalOSConfig import *
+# from config.LocalOSConfig import *
 
 from config.DebugConfig import DebugConfig, DebugModes
 from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
@@ -26,9 +26,11 @@ from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
 
 HB_VERSION = 'v2.0'
 
+
 #
 # Functionality settings
 #
+
 IS_EXPERIMENTAL_INSTALLATION = True
 USE_MEMORY_MEMOIZATION = True
 LOAD_DISK_MEMOIZATION = IS_EXPERIMENTAL_INSTALLATION
@@ -36,6 +38,7 @@ STORE_DISK_MEMOIZATION = IS_EXPERIMENTAL_INSTALLATION
 PRINT_PROGRESS = True
 CFG_ALLOW_COMP_BIN_SPLITTING = False
 ALLOW_GSUITE_FILE_PROTOCOL = True
+
 
 #
 # Optimization and limits
@@ -51,8 +54,9 @@ BATCH_COL_SEPARATOR = '|'
 MULTIPLE_EXTRA_TRACKS_SEPARATOR = '&'
 MAX_CONCAT_LEN_FOR_OVERLAPPING_ELS = 20
 
+
 #
-# Paths
+# Relative paths from standard Galaxy config
 #
 
 GALAXY_REL_FILE_PATH = config.getWithDefault('file_path', 'database/files')
@@ -64,12 +68,16 @@ GALAXY_REL_DATATYPES_CONFIG_FILE = config.getWithDefault('datatypes_config_file'
 GALAXY_REL_JOB_WORKING_DIR = config.getWithDefault('job_working_directory', 'database/job_working_directory')
 GALAXY_TMP_DIR = config.getWithDefault('new_file_path','database/tmp')
 
+
+#
+# External absolute paths (not used in the default setup)
+#
+
 EXT_NONSTANDARD_DATA_PATH = config.getWithDefault('ext_nonstandard_data_path', '', 'hyperbrowser')
 EXT_ORIG_DATA_PATH = config.getWithDefault('ext_orig_data_path', '', 'hyperbrowser')
 EXT_PARSING_ERROR_DATA_PATH = config.getWithDefault('ext_parsing_error_data_path', '', 'hyperbrowser')
 EXT_PROCESSED_DATA_PATH = config.getWithDefault('ext_processed_data_path', '', 'hyperbrowser')
 EXT_MEMOIZED_DATA_PATH = config.getWithDefault('ext_memoized_data_path', '', 'hyperbrowser')
-
 EXT_DATA_FILES_PATH = config.getWithDefault('ext_data_files_path', '', 'hyperbrowser')
 EXT_UPLOAD_FILES_PATH = config.getWithDefault('ext_upload_files_path', '', 'hyperbrowser')
 EXT_STATIC_FILES_PATH = config.getWithDefault('ext_static_files_path', '', 'hyperbrowser')
@@ -80,13 +88,10 @@ EXT_LOG_PATH = config.getWithDefault('ext_log_path', '', 'hyperbrowser')
 EXT_RESULTS_PATH = config.getWithDefault('ext_results_path', '', 'hyperbrowser')
 EXT_TMP_PATH = config.getWithDefault('ext_tmp_path', '', 'hyperbrowser')
 
+
 #
 # Dependent constants
 #
-
-# COOKIE_PATH = URL_PREFIX if URL_PREFIX != '' else '/'
-
-HB_SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib/hb'
 
 GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + GALAXY_REL_FILE_PATH
 GALAXY_NEW_FILE_PATH = GALAXY_BASE_DIR + '/' + GALAXY_REL_NEW_FILE_PATH
@@ -100,15 +105,11 @@ GALAXY_COMPILED_TEMPLATES = GALAXY_BASE_DIR + '/database/compiled_templates'
 GALAXY_TEMPLATES_PATH = GALAXY_BASE_DIR + '/templates'
 GALAXY_LIB_PATH = GALAXY_BASE_DIR + '/lib'
 
-# HB_GALAXY_SOURCE_CODE_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/galaxy_hb'
-# HB_CONFIG_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/config'
-# HB_SETUP_CONFIG_BASE_DIR = HB_CONFIG_BASE_DIR + '/setup'
-# HB_SETUP_CONFIG_DEFAULT_FN = HB_SETUP_CONFIG_BASE_DIR + '/default/default.setup'
-HB_SOURCE_DATA_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/data'
-# HB_SRC_STATIC_PATH = HB_SOURCE_CODE_BASE_DIR + '/galaxy_hb/static/hyperbrowser'
-
 STATIC_REL_PATH = URL_PREFIX + '/static/hyperbrowser'
 STATIC_PATH = GALAXY_BASE_DIR + '/static/hyperbrowser'
+
+HB_SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib/hb'
+HB_SOURCE_DATA_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/data'
 
 HB_DATA_BASE_DIR = GALAXY_BASE_DIR + '/hyperbrowser'
 TRACKS_BASE_DIR = HB_DATA_BASE_DIR + '/tracks'
@@ -117,13 +118,10 @@ ORIG_DATA_PATH = TRACKS_BASE_DIR + '/standardizedTracks'
 PARSING_ERROR_DATA_PATH = TRACKS_BASE_DIR + '/parsingErrorTracks'
 PROCESSED_DATA_PATH = TRACKS_BASE_DIR + '/preProcessedTracks'
 NMER_CHAIN_DATA_PATH = TRACKS_BASE_DIR + '/nmerChains'
-
 DATA_FILES_PATH = HB_DATA_BASE_DIR + '/data'
 UPLOAD_FILES_PATH = HB_DATA_BASE_DIR + '/upload'
 LOG_PATH = HB_DATA_BASE_DIR + '/logs'
 SRC_PATH = HB_DATA_BASE_DIR + '/src'
-# SRC_STATIC_PATH = SRC_PATH + '/galaxy_hb/static/hyperbrowser'
-# HB_EGGS_FILE_PATH = SRC_PATH + '/galaxy_hb/hb_eggs.ini'
 
 RESULTS_PATH = HB_DATA_BASE_DIR + '/results'
 RESULTS_FILES_PATH = RESULTS_PATH + '/files'
@@ -133,8 +131,7 @@ RESULTS_STATIC_PATH = RESULTS_PATH + '/static'
 MAPS_PATH = RESULTS_STATIC_PATH + '/maps'
 MAPS_COMMON_PATH = MAPS_PATH + '/common'
 MAPS_TEMPLATE_PATH = GALAXY_TEMPLATES_PATH + '/hyperbrowser/gmap'
-# HB_LIB_PATH = HB_DATA_BASE_DIR + '/lib'
-# HB_R_LIBS_DIR = HB_LIB_PATH + '/R/library'
+
 
 #
 # To be removed
