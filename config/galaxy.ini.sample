@@ -1231,3 +1231,18 @@ use_interactive = True
 #ext_log_path =
 #ext_results_path =
 #ext_tmp_path =
+
+# Parallelization and cluster offload setup
+#cluster_accountname = user
+#cluster_temp_path = /tmp
+#cluster_source_code_directory = /src
+#only_use_entire_cluster_nodes = False
+#cluster_cores_per_node = 1
+#sbatch_path = /bin/sbatch
+#cluster_memory_per_core_in_mb = 2048
+#default_wallclock_limit_in_seconds = 3600
+#default_number_of_remote_workers = 8
+#pp_number_of_local_workers = 2
+#pp_passphrase = USING THE DEFAULT IS NOT SECURE!
+#pp_port = 8180
+#pp_manager_port = 8190

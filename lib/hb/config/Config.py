@@ -87,6 +87,27 @@ EXT_RESULTS_PATH = config.getWithDefault('ext_results_path', '', 'hyperbrowser')
 EXT_TMP_PATH = config.getWithDefault('ext_tmp_path', '', 'hyperbrowser')
 
 
+
+#
+# Parallelization and cluster offload setup
+#
+
+CLUSTER_ACCOUNTNAME = config.getWithDefault('cluster_accountname', 'user', 'hyperbrowser')
+CLUSTER_TEMP_PATH = config.getWithDefault('cluster_temp_path', '/tmp', 'hyperbrowser')
+CLUSTER_SOURCE_CODE_DIRECTORY = config.getWithDefault('cluster_source_code_directory', '/src', 'hyperbrowser')
+ONLY_USE_ENTIRE_CLUSTER_NODES = bool(config.getWithDefault('only_use_entire_cluster_nodes', False, 'hyperbrowser'))
+CLUSTER_CORES_PER_NODE = int(config.getWithDefault('cluster_cores_per_node', 1, 'hyperbrowser'))
+SBATCH_PATH = config.getWithDefault('sbatch_path', '/bin/sbatch', 'hyperbrowser')
+CLUSTER_MEMORY_PER_CORE_IN_MB = int(config.getWithDefault('cluster_memory_per_core_in_mb', 2048, 'hyperbrowser'))
+DEFAULT_WALLCLOCK_LIMIT_IN_SECONDS = int(config.getWithDefault('default_wallclock_limit_in_seconds', 3600, 'hyperbrowser'))
+DEFAULT_NUMBER_OF_REMOTE_WORKERS = int(config.getWithDefault('default_number_of_remote_workers', 8, 'hyperbrowser'))
+
+PP_NUMBER_OF_LOCAL_WORKERS = int(config.getWithDefault('pp_number_of_local_workers', 2, 'hyperbrowser'))
+PP_PASSPHRASE = config.getWithDefault('pp_passphrase', 'USING THE DEFAULT IS NOT SECURE!', 'hyperbrowser')
+PP_PORT = int(config.getWithDefault('pp_port', 8180, 'hyperbrowser'))
+PP_MANAGER_PORT = int(config.getWithDefault('pp_manager_port', 8190, 'hyperbrowser'))
+
+
 #
 # Dependent constants
 #
@@ -136,3 +157,5 @@ MAPS_TEMPLATE_PATH = GALAXY_TEMPLATES_PATH + '/hyperbrowser/gmap'
 #
 
 DEFAULT_GENOME = 'hg18'
+STOREBIOINFO_USER = 'hs'
+STOREBIOINFO_PASSWD = 'ssh123'
