@@ -1,4 +1,0 @@
-<tool id="hb_run_setup_script_tool" name="Run setup script" version="1.0.0"
-  tool_type="hyperbrowser_generic" proto_tool_module="quick.webtools.util.RunSetupScriptTool" proto_tool_class="RunSetupScriptTool">
-  <description></description>
-</tool>

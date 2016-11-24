@@ -269,7 +269,6 @@
     <tool file="hyperbrowser/agilezen_link.xml" />
     <tool file="proto/hyperbrowser/util/AddBatchLineToTestCollection.xml" />
     <tool file="proto/hyperbrowser/util/AddTestTool.xml" />
-    <tool file="proto/hyperbrowser/util/RunSetupScriptTool.xml" />
   </section>
 
   <section name="Assorted tools" id="assorted_tools">
