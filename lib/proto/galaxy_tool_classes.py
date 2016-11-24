@@ -23,9 +23,10 @@ class ProtoTool(DataSourceTool):
 
         for name, data in out_data.items():
             if name == 'output':
-                ext = param_dict.get('datatype')
+                ext = param_dict.get('datatype', param_dict.get('format'))
                 if ext:
-                    data = app.datatypes_registry.change_datatype(data, ext)    
+                    data = app.datatypes_registry.change_datatype(data, ext)
+                    param_dict['datatype'] = ext
             job_name = param_dict.get('job_name')
             if job_name:
                 if data.name == self.name:
