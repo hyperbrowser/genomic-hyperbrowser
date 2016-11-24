@@ -31,26 +31,26 @@ HB_VERSION = 'v2.0'
 # Functionality settings
 #
 
-IS_EXPERIMENTAL_INSTALLATION = bool(config.getWithDefault('is_experimental_installation', False))
-USE_MEMORY_MEMOIZATION = bool(config.getWithDefault('use_memory_memoization', True))
-LOAD_DISK_MEMOIZATION = bool(config.getWithDefault('load_disk_memoization', False))
-STORE_DISK_MEMOIZATION = bool(config.getWithDefault('store_disk_memoization', False))
-PRINT_PROGRESS = bool(config.getWithDefault('print_progress', True))
-ALLOW_COMP_BIN_SPLITTING = bool(config.getWithDefault('allow_comp_bin_splitting', False))
-ALLOW_GSUITE_FILE_PROTOCOL = bool(config.getWithDefault('allow_gsuite_file_protocol', False))
-USE_PARALLEL = bool(config.getWithDefault('use_parallel', False))
+IS_EXPERIMENTAL_INSTALLATION = bool(config.getWithDefault('is_experimental_installation', False, 'hyperbrowser'))
+USE_MEMORY_MEMOIZATION = bool(config.getWithDefault('use_memory_memoization', True, 'hyperbrowser'))
+LOAD_DISK_MEMOIZATION = bool(config.getWithDefault('load_disk_memoization', False, 'hyperbrowser'))
+STORE_DISK_MEMOIZATION = bool(config.getWithDefault('store_disk_memoization', False, 'hyperbrowser'))
+PRINT_PROGRESS = bool(config.getWithDefault('print_progress', True, 'hyperbrowser'))
+ALLOW_COMP_BIN_SPLITTING = bool(config.getWithDefault('allow_comp_bin_splitting', False, 'hyperbrowser'))
+ALLOW_GSUITE_FILE_PROTOCOL = bool(config.getWithDefault('allow_gsuite_file_protocol', False, 'hyperbrowser'))
+USE_PARALLEL = bool(config.getWithDefault('use_parallel', False, 'hyperbrowser'))
 
 
 #
 # Optimization and limits
 #
 
-COMP_BIN_SIZE = int(config.getWithDefault('comp_bin_size', 100000))
-MEMMAP_BIN_SIZE = int(config.getWithDefault('memmap_bin_size', 1024 * 1024))
-MAX_NUM_USER_BINS = int(config.getWithDefault('max_num_user_bins', 330000))
-MAX_LOCAL_RESULTS_IN_TABLE = int(config.getWithDefault('max_local_results_in_table', 100000))
+COMP_BIN_SIZE = int(config.getWithDefault('comp_bin_size', 100000, 'hyperbrowser'))
+MEMMAP_BIN_SIZE = int(config.getWithDefault('memmap_bin_size', 1024 * 1024, 'hyperbrowser'))
+MAX_NUM_USER_BINS = int(config.getWithDefault('max_num_user_bins', 330000, 'hyperbrowser'))
+MAX_LOCAL_RESULTS_IN_TABLE = int(config.getWithDefault('max_local_results_in_table', 100000, 'hyperbrowser'))
 MAX_CONCAT_LEN_FOR_OVERLAPPING_ELS = \
-    int(config.getWithDefault('max_concat_len_for_overlapping_els', 20))
+    int(config.getWithDefault('max_concat_len_for_overlapping_els', 20, 'hyperbrowser'))
 
 
 #
