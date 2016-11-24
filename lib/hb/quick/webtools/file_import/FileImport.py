@@ -36,6 +36,7 @@ class FileImport(GeneralGuiTool):
               (e.g. "firstKey")
         """
         return [('Input filename', 'input'),
+                ('Format', 'format'),
                 ('Datatype', 'datatype')]
 
     # @staticmethod
@@ -132,7 +133,11 @@ class FileImport(GeneralGuiTool):
         prevChoices[0] for the result of input box 1, or by key, e.g.
         prevChoices.key (case 2).
         """
-        return '__hidden__', 'bed'
+        return '__hidden__', prevChoices.format if prevChoices.format else 'bed'
+
+    @staticmethod
+    def getOptionsBoxFormat(prevChoices):
+        return '__hidden__', ''
 
     # @staticmethod
     # def getInfoForOptionsBoxKey(prevChoices):
@@ -193,12 +198,15 @@ class FileImport(GeneralGuiTool):
 
         input_real = os.path.realpath(input)
 
+        datatype = choices.format if choices.format else choices.datatype
+
         if (input_real.startswith(os.path.realpath(STATIC_PATH))
             or input_real.startswith(os.path.realpath(GALAXY_FILE_PATH))) \
-                and input.endswith('.' + choices.datatype):
+                and input.endswith('.' + datatype):
             shutil.copy(input, output)
         else:
-            print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), os.path.realpath(GALAXY_FILE_PATH)
+            print choices
+            print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), os.path.realpath(GALAXY_FILE_PATH), datatype
             raise Exception(input + ' not allowed to import!')
 
 
@@ -318,4 +326,4 @@ class FileImport(GeneralGuiTool):
 
     @staticmethod
     def getOutputFormat(choices):
-         return choices.datatype
+         return choices.format if choices.format else choices.datatype
