@@ -1,9 +1,9 @@
 from gold.application.DataTypes import getSupportedFileSuffixesForBinning
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.util.CommonFunctions import ensurePathExists
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 

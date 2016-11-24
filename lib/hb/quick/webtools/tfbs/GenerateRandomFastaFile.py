@@ -1,5 +1,8 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import zipfile
+
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -54,7 +57,7 @@ class GenerateRandomFastaFile(GeneralGuiTool):
         '''
         import subprocess
         import os
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         from config.Config import HB_SOURCE_CODE_BASE_DIR
         from quick.application.ExternalTrackManager import ExternalTrackManager
         

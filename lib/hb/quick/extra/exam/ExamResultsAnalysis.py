@@ -19,7 +19,7 @@ Created on Jan 16, 2015
 
 @author: boris
 '''
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from collections import OrderedDict
 from quick.extra.plot import RPlotUtil
 
@@ -703,4 +703,3 @@ class MissingColumnException(Exception):
 class DuplicateColumnException(Exception):
     pass
         
-                

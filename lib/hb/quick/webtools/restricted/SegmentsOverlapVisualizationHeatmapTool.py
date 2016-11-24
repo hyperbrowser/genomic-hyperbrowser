@@ -108,7 +108,7 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         #binSpec = targetTrackTitle
         #Phenotype and disease associations:Assorted experiments:Virus integration, HPV specific, Kraus and Schmitz, including 50kb flanks
         
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         staticFile=[]
         
         results = []

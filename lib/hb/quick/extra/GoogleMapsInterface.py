@@ -13,14 +13,13 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-
-import re, os
-import third_party.safeshelve as safeshelve
-from cgi import escape
-from urllib import quote, unquote
+import os
 from string import capwords
+from urllib import quote
+
+import third_party.safeshelve as safeshelve
+from config.Config import STATIC_PATH, STATIC_REL_PATH, URL_PREFIX
 from quick.application.GalaxyInterface import GalaxyInterface
-from config.Config import *
 
 BASE_DIR = STATIC_PATH + '/maps'
 BASE_URL = STATIC_REL_PATH + '/maps'
@@ -61,7 +60,7 @@ class Map:
         name = self._name
         if name.isdigit():
             from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
-            from quick.util.StaticFile import GalaxyRunSpecificFile
+            from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
             galaxyFn = getGalaxyFnFromDatasetId( int(name) )
             outDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
         else:

@@ -1,6 +1,9 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import re
-from quick.util.StaticFile import StaticFile
+
+from proto.hyperbrowser.StaticFile import StaticFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 

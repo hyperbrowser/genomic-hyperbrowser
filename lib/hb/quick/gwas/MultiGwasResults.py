@@ -1,6 +1,6 @@
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.gwas.GwasResults import GwasResults
-from quick.util.StaticFile import GalaxyRunSpecificFile
 
 
 class MultiGwasResults(dict):

@@ -1,9 +1,9 @@
 from os import system
 from os.path import dirname
 
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.CommonFunctions import changedWorkingDir
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 

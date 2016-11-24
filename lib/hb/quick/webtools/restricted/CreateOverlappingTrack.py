@@ -92,12 +92,10 @@ class CreateOverlappingTrack(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from quick.util.StaticFile import GalaxyRunSpecificFile
         from collections import defaultdict
         from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
         from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
-        import itertools, random
         from urllib import unquote
         print choices
         

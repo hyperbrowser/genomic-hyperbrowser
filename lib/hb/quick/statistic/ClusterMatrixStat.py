@@ -14,14 +14,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from gold.statistic.MagicStatFactory import MagicStatFactory
-from gold.statistic.Statistic import Statistic
-#from gold.application.RSetup import r
-from gold.util.CommonFunctions import isIter
-from quick.util.CommonFunctions import silenceRWarnings
 from collections import OrderedDict
 from copy import copy
+
 import numpy
+
+from gold.statistic.MagicStatFactory import MagicStatFactory
+from gold.statistic.Statistic import Statistic
+from gold.util.CommonFunctions import isIter
+from quick.util.CommonFunctions import silenceRWarnings
+
 
 class ClusterMatrixStat(MagicStatFactory):
     pass
@@ -208,7 +210,7 @@ function(matrix, distMethod, clustMethod, distMatrix){
     
     def _getClustFromPickledResult(self, id, clustKey, assertLen):
         from gold.application.RSetup import r
-        from quick.util.StaticFile import RunSpecificPickleFile
+        from proto.hyperbrowser.StaticFile import RunSpecificPickleFile
         from quick.util.CommonFunctions import createFullGalaxyIdFromNumber
         
         res = RunSpecificPickleFile(createFullGalaxyIdFromNumber(id)).loadPickledObject()

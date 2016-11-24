@@ -1,14 +1,17 @@
-from PIL import Image
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
 from collections import defaultdict
-from quick.util.StaticFile import GalaxyRunSpecificFile
 
+from PIL import Image
+
+from gold.application.LogSetup import logMessage
 from gold.origdata.BedGraphComposer import BedGraphComposer
 from gold.origdata.TrackGenomeElementSource import TrackGenomeElementSource
 from gold.track.GenomeRegion import GenomeRegion
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.GenomeInfo import GenomeInfo
-from gold.application.LogSetup import logMessage
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 

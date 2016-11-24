@@ -1,7 +1,7 @@
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.util.CommonFunctions import mean
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
 from quick.webtools.misc.Tool3 import CreateGCFunction
 
@@ -606,7 +606,7 @@ class PlotFigure1Tool(GeneralGuiTool):
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -695,7 +695,7 @@ class PlotFigure2Tool(GeneralGuiTool):
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -1302,7 +1302,7 @@ class TestRTool(GeneralGuiTool):
         from gold.application.RSetup import r, robjects
         from numpy import arange
         nums = arange(10)
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         sf = GalaxyRunSpecificFile(['test.png'],galaxyFn)
         sf.openRFigure()
         r.hist(robjects.FloatVector(nums))
@@ -1359,7 +1359,7 @@ class PlainScatterPlot(GeneralGuiTool):
         fn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         col1, col2 = zip(*[ [float(x) for x in line.strip().split('\t')] for line in open(fn)])
         from gold.application.RSetup import r, robjects
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
         sf = GalaxyRunSpecificFile(['plot.png'], galaxyFn)
         sf.openRFigure()

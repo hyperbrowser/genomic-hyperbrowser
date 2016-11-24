@@ -1,13 +1,12 @@
-from gold.application.RSetup import r, rpy1
-#from rpy import r
-#rpy1=r
-import time
 import os
-import numpy
 import random
-from quick.util.StaticFile import GalaxyRunSpecificFile
+import time
+
+from gold.application.RSetup import r, rpy1
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.statistic.McFdr import McFdr
-from gold.util.CommonFunctions import mean
+
+
 #from gold.util.CommonFunctions import smartSum
 
 #class PvalDistribution(object):

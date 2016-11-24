@@ -1,30 +1,22 @@
+import numpy as np
 
-import sys
-from numpy import *
-#from rpy import r
-#from gold.application.RSetup import rpy1 
-#from gold.application.RSetup import r
-from gold.application.GalaxyInterface import GalaxyInterface
-from proto.hyper_gui import *
-from proto.BaseToolController import *
 from HyperBrowserControllerMixin import HyperBrowserControllerMixin
 from gold.application.StatRunner import AnalysisDefJob
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-# from Pycluster import *
-from test.sandbox.master.draw_dendrogram import draw_dendrogram
-from quick.util.StaticFile import StaticFile, GalaxyRunSpecificFile
 from gold.description.TrackInfo import TrackInfo
-#from quick.extra.clustering.FeatureCatalog import FeatureCatalog, DirectDistanceCatalog, LocalResultsAsFeaturesCatalog
-from quick.extra.clustering.FeatureCatalog import * 
-from quick.util.CommonFunctions import extractIdFromGalaxyFn
+from proto.BaseToolController import BaseToolController
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.extra.clustering.ClusteringExecution import ClusteringExecution
+from quick.extra.clustering.FeatureCatalog import (SplittedRegionsAsFeaturesCatalog,
+                                                   DirectDistanceCatalog, FeatureCatalog,
+                                                   LocalResultsAsFeaturesCatalog)
+
 
 class ClusteringToolController(HyperBrowserControllerMixin, BaseToolController):
     def __init__(self, trans, job):
         BaseToolController.__init__(self, trans, job)
     
     def handlePairDistance(self, genome, tracks, track_names, clusterMethod, extra_option):
-        from gold.application.RSetup import r
         if self.params.has_key("pair_feature") : # must use "" here because the '' does not work
             feature = self.params.get('pair_feature')
             extra_feature = self.params.get('pair_feature+') #must be different from the text --select--
@@ -281,7 +273,7 @@ class ClusteringToolController(HyperBrowserControllerMixin, BaseToolController):
         But the (cov. por. intersection) over (cov. por1 * cov. por2) ratio can be directly used as the distance
         '''
         l = len(tracks)
-        matrix = zeros((l,l))
+        matrix = np.zeros((l,l))
         for i in range(l) :
             for j in range(l):
                 if i < j :
@@ -337,7 +329,7 @@ class ClusteringToolController(HyperBrowserControllerMixin, BaseToolController):
     def construct_feature_matrix_using_reftracks(self, genome, cTracks, rTracks, options) : #rTracks and options has the same length 
         c = len(cTracks)
         r = len(rTracks)
-        output = zeros((c, r))
+        output = np.zeros((c, r))
         for i in range(c) :
             for j in range(r) :
                 output[i,j] = self.extract_feature(genome,cTracks[i],rTracks[j],options[j])

@@ -26,7 +26,7 @@ from gold.track.TrackFormat import TrackFormatReq
 from gold.util.CommonFunctions import strWithStdFormatting
 from gold.util.CustomExceptions import ShouldNotOccurError
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.util.StaticFile import StaticImage
+from proto.hyperbrowser.StaticFile import StaticImage
 
 FieldInfo = namedtuple('FieldInfo', ['fullName', 'guiElementType'])
 

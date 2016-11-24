@@ -1,5 +1,7 @@
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.util.StaticFile import GalaxyRunSpecificFile
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 

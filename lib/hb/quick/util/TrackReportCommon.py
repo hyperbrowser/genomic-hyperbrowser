@@ -26,12 +26,12 @@ from gold.statistic.RawOverlapStat import RawOverlapStat
 from gold.track.Track import Track
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.GSuiteOverview import GSuiteOverview
 from quick.statistic.MultiTrackBpsCoveragePerDepthLevelStat import MultiTrackBpsCoveragePerDepthLevelStat
 from quick.statistic.MultitrackSummarizedInteractionStat import MultitrackSummarizedInteractionStat
 from quick.statistic.ThreeWayFocusedTrackProportionCoveragesAtDepthsRawStat import ThreeWayFocusedTrackProportionCoveragesAtDepthsRawStat
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.visualization.VisualizationUtil import normalizeMatrixData
 
 '''

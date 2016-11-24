@@ -1,10 +1,11 @@
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from quick.util.GenomeInfo import GenomeInfo
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import AnalysisDefJob
-from gold.util.CommonFunctions import getOrigFn
 import os
 from collections import Counter
+
+from gold.util.CommonFunctions import getOrigFn
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.util.GenomeInfo import GenomeInfo
+
 '''
 Created on ???
 @author: Geir-Kjetil Sandve???

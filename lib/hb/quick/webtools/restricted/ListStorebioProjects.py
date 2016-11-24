@@ -10,7 +10,7 @@ from xml.dom import minidom
 import zmq
 
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 

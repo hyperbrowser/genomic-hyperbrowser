@@ -14,6 +14,7 @@ from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
 from gold.track.Track import Track
 from gold.util.CommonFunctions import strWithStdFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import UserBinSource
@@ -24,7 +25,6 @@ from quick.statistic.RipleysKStat import RipleysKStat
 from quick.statistic.SumTrackPointsStat import SumTrackPointsStat
 from quick.util.CommonFunctions import ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\
     STAT_OVERLAP_RATIO, STAT_FACTOR_OBSERVED_VS_EXPECTED, processRawResults,\
     STAT_COVERAGE_RATIO_VS_REF_TRACK, STAT_COVERAGE_RATIO_VS_QUERY_TRACK,\

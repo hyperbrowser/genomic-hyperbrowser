@@ -1,12 +1,14 @@
-import os
-import sys
-import shutil
-from subprocess import Popen, PIPE
-from quick.extra.CustomFuncCatalog import parseMatrixTextFileToShelf, mergeShelvesTransitively, reverseMappingHavingListValues
-from config.Config import RESULTS_FILES_PATH, STATIC_PATH
-from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
-from quick.util.StaticFile import GalaxyRunSpecificFile
 import getpass
+import os
+import shutil
+import sys
+from subprocess import Popen, PIPE
+
+from config.Config import RESULTS_FILES_PATH, STATIC_PATH
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.extra.CustomFuncCatalog import parseMatrixTextFileToShelf, mergeShelvesTransitively, reverseMappingHavingListValues
+from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
+
 
 #print resultsFilesDir
 #print resultsStaticDir

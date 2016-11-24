@@ -1,12 +1,9 @@
-from quick.util.CommonFunctions import extractIdFromGalaxyFn
-from quick.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import AnalysisDefJob
-from quick.extra.tfbs.TfInfo import TfInfo
-from quick.util.GenomeInfo import GenomeInfo
-from gold.util.CommonFunctions import getOrigFn
 import os
+
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.extra.TrackIntersection import GeneIntersection
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from quick.extra.tfbs.TfInfo import TfInfo
+
 
 class GeneTargetsOfRegions(object):
     @staticmethod

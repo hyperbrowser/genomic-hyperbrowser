@@ -2,32 +2,33 @@
 #
 #pkg_resources.require( "sqlalchemy" )
 
-import shelve
+import glob
 import os
 import re
-import glob
-from time import time, sleep
-from quick.webtools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from collections import Counter, defaultdict, OrderedDict
-from gold.track.GenomeRegion import GenomeRegion
-from quick.util.GenomeInfo import GenomeInfo
-from gold.track.Track import PlainTrack
-from quick.util.CommonFunctions import changedWorkingDir, getGeSource
-from config.Config import PROCESSED_DATA_PATH, DATA_FILES_PATH
-from quick.application.ProcTrackOptions import ProcTrackOptions
-import numpy as np
-from gold.util.CommonFunctions import createOrigPath
-from shutil import copytree
-import urllib2
-from gold.origdata.GenomeElementSource import GenomeElementSource
-from gold.origdata.GtrackComposer import StdGtrackComposer
-from gold.origdata.GESourceWrapper import GEGenericFilter
-from gold.application.LogSetup import logMessage
+import shelve
 import urllib
+import urllib2
+from collections import Counter, defaultdict, OrderedDict
+from shutil import copytree
+from time import time
+
+import numpy as np
+
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH
-import json
+from config.Config import PROCESSED_DATA_PATH
+from gold.origdata.GESourceWrapper import GEGenericFilter
+from gold.origdata.GenomeElementSource import GenomeElementSource
+from gold.origdata.GtrackComposer import StdGtrackComposer
+from gold.track.GenomeRegion import GenomeRegion
+from gold.track.Track import PlainTrack
+from gold.util.CommonFunctions import createOrigPath
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.ProcTrackOptions import ProcTrackOptions
+from quick.util.CommonFunctions import changedWorkingDir, getGeSource
+from quick.util.GenomeInfo import GenomeInfo
+from quick.webtools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
+
 
 class Tool3(MultiGeneralGuiTool):
     @staticmethod
@@ -523,7 +524,6 @@ class AnalyzeTfsVersusSnvCore(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-        from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
 
         startTime = time()
 
@@ -755,7 +755,6 @@ class MakeMutationFastaFile(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-        from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
 
         startTime = time()
 
@@ -833,7 +832,6 @@ class FindSignificantPwmRegions(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-        from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
         genome = choices[0]
         resultDict = defaultdict(list)
 
@@ -914,7 +912,6 @@ class JoinToNonOverlappingRegions(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-        from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
         genome = choices[0]
         resultDict = defaultdict(dict)
 
@@ -1600,7 +1597,7 @@ class UploadFromInvitro(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         from quick.util.CommonFunctions import changedWorkingDir
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         import os
         filePaths = [v.strip() for v in choices[0].split('\n') if v]
         for index, filePath in enumerate(filePaths):
@@ -1848,12 +1845,11 @@ class MakeVennDiagram(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
 
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from quick.util.StaticFile import GalaxyRunSpecificFile
         from collections import defaultdict
         from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
         from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
-        import itertools, random
+        import itertools
         from urllib import unquote
         print choices
 
@@ -2296,10 +2292,6 @@ class PlotStockPrices(GeneralGuiTool):
         from quick.application.ProcTrackOptions import ProcTrackOptions
 
         from quick.application.GalaxyInterface import GalaxyInterface
-        import gold.application.StatRunner
-
-
-
 
         analysisDef = 'dummy [withOverlaps=no] -> MarksListStat'
 
@@ -2467,7 +2459,6 @@ class CalculateWeekdayProfits(GeneralGuiTool):
         from quick.application.ProcTrackOptions import ProcTrackOptions
 
         from quick.application.GalaxyInterface import GalaxyInterface
-        import gold.application.StatRunner
         analysisDef = 'dummy -> PercentageChangeStat'
         genome = choices[0]
         binSpec = '*'
@@ -2661,7 +2652,7 @@ class DownloadStockPrices(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         from datetime import date
         import time
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         headerMal = '##gtrack version: 1.0\n##track type: valued segments\n###genome\tseqid\tstart\tend\tvalue\tvolume'
         downloadMal = 'http://ichart.finance.yahoo.com/table.csv?s=%s.OL&a=00&b=3&c=1995&d=05&e=12&f=2013&g=d&ignore=.csv'
         stocksToDownload = [ k for k, v in choices[0].items() if v in [True, 'True']]
@@ -2780,7 +2771,7 @@ class BastianFirst(GeneralGuiTool):
         from quick.util.CommonFunctions import changedWorkingDir
         import os
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
         genomicReadsPath = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         smallRNAReadsPath = ExternalTrackManager.extractFnFromGalaxyTN(choices[1])
@@ -2838,11 +2829,10 @@ class BastianLast(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         from quick.util.CommonFunctions import changedWorkingDir
-        from subprocess import call
         import os
         from shutil import copy
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         import glob
 
         galaxyTN = choices[1].split(':')

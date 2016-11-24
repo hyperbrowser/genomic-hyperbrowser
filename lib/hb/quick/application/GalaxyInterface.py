@@ -41,6 +41,7 @@ from gold.util.CommonFunctions import smartStrLower,\
 from gold.util.CustomExceptions import NotSupportedError, \
     Warning, InvalidFormatError, InvalidRunSpecException #, IncompatibleTracksError
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile, StaticFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.application.SignatureDevianceLogging import takes,returns
@@ -52,7 +53,6 @@ from quick.extra.StandardizeTrackFiles import runParserClass
 from quick.extra.TrackExtractor import TrackExtractor
 from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
-from quick.util.StaticFile import GalaxyRunSpecificFile, StaticFile
 
 
 #from quick.batch.BatchRunner import BatchRunner,SuperBatchRunner
@@ -1129,7 +1129,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                            'Sequential Monte Carlo multiple testing</a>. Bioinformatics  2011, 27(23):3235-41.')
             return str(core)
 
-        from quick.util.StaticFile import StaticImage
+        from proto.hyperbrowser.StaticFile import StaticImage
         TRACK_TYPE_IMAGE = StaticImage(['illustrations','tracktypes.png'])
         core = HtmlCore()
         core.paragraph('A track is a dataset associated with the base pair positions of a genome. ' \
@@ -1478,7 +1478,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def _getBatchResultFileAndLink(galaxyFn, batchToolId, line):
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
         #batchLineSpecificId = extractIdFromGalaxyFn(galaxyFn) + [str(batchToolId)]
         #batchLineSpecificFile = GalaxyRunSpecificFile(['results.html'], batchLineSpecificId)

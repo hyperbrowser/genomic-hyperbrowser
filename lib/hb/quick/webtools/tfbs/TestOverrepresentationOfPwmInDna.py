@@ -1,9 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from itertools import combinations
 import math
-from third_party.MotifTools import Motif
-from third_party.Fasta import load
 import os
+from itertools import combinations
+
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from third_party.Fasta import load
+from third_party.MotifTools import Motif
+
 
 class TestOverrepresentationOfPwmInDna(GeneralGuiTool):
     @staticmethod
@@ -57,9 +59,8 @@ class TestOverrepresentationOfPwmInDna(GeneralGuiTool):
         from time import time
         startTime = time()
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from quick.util.StaticFile import GalaxyRunSpecificFile
-        import os
-        
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+
         motifFn = ExternalTrackManager.extractFnFromGalaxyTN( choices[0].split(':'))
         observedFasta = ExternalTrackManager.extractFnFromGalaxyTN( choices[1].split(':'))
 
@@ -88,8 +89,8 @@ class TestOverrepresentationOfPwmInDna(GeneralGuiTool):
         for motif,pval in sorted(pvals.items()):
             print motif+'\t'+('%.4f'%pval)
             
-        from quick.util.StaticFile import GalaxyRunSpecificFile
-        from gold.application.RSetup import r, robjects
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+        from gold.application.RSetup import robjects
         histStaticFile = GalaxyRunSpecificFile(['pvalHist.png'],galaxyFn)
         #histStaticFile.openRFigure()
         histStaticFile.plotRHist(pvals.values(), [x/40.0 for x in range(41)], 'Histogram of p-values', xlim=robjects.FloatVector([0.0, 1.0]))

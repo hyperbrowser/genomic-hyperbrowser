@@ -114,7 +114,7 @@ class AntoniosTool(GeneralGuiTool):
 
     @staticmethod
     def getHiCFileFromTargetBins(targetBins, galaxyFn):
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         staticFile = GalaxyRunSpecificFile(['PEI_regions.bed'], galaxyFn)
         fn = staticFile.getDiskPath()
         from quick.util.CommonFunctions import ensurePathExists

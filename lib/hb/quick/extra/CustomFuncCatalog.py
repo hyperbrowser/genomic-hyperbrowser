@@ -15,31 +15,27 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import os.path
-import sys
+import copy
 import math
+import os.path
 import re
 import shutil
-import third_party.safeshelve as safeshelve
+
 import numpy
 
-from config.Config import HB_SOURCE_CODE_BASE_DIR, NONSTANDARD_DATA_PATH, STATIC_PATH
-#from gold.application.RSetup import r
-from quick.application.AutoBinner import AutoBinner
-from gold.description.TrackInfo import TrackInfo
-from quick.origdata.OrigTrackFnSource import OrigTrackNameSource
-from quick.util.GenomeInfo import GenomeInfo
-from gold.description.AnalysisManager import AnalysisManager
-from gold.util.CustomExceptions import InvalidFormatError
-from gold.util.CommonConstants import LICENSE_STMT
-from gold.track.Track import PlainTrack
-from gold.track.GenomeRegion import GenomeRegion
-from quick.extra.StandardizeTrackFiles import SplitFasta
-
-import copy
 import gold.util.CommonFunctions as gcf
 import quick.util.CommonFunctions as qcf
+import third_party.safeshelve as safeshelve
+from config.Config import HB_SOURCE_CODE_BASE_DIR, NONSTANDARD_DATA_PATH, STATIC_PATH
+from gold.description.AnalysisManager import AnalysisManager
+from gold.description.TrackInfo import TrackInfo
+from gold.track.GenomeRegion import GenomeRegion
+from gold.track.Track import PlainTrack
+from gold.util.CommonConstants import LICENSE_STMT
+from quick.application.AutoBinner import AutoBinner
+from quick.origdata.OrigTrackFnSource import OrigTrackNameSource
+from quick.util.GenomeInfo import GenomeInfo
+
 
 # Note: do not import functions here, as they will become callable from the command line
 
@@ -270,7 +266,7 @@ def createShelvesBehindRankedGeneLists(galaxyId, mapId, countType):
     #hent txt
     
     from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
-    from quick.util.StaticFile import GalaxyRunSpecificFile
+    from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
     galaxyFn = getGalaxyFnFromDatasetId(id)
     resultsStaticDir = GalaxyRunSpecificFile([batchid], galaxyFn).getDiskPath()
     #legg shelf

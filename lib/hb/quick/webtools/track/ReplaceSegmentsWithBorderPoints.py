@@ -1,17 +1,14 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from gold.origdata.GenomeElementSource import GenomeElementSource
-from gold.origdata.GenomeElementSorter import GenomeElementSorter
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.util.Wrappers import GenomeElementTvWrapper
-from gold.track.Track import PlainTrack
-from gold.track.GenomeRegion import GenomeRegion
-from gold.origdata.BedGenomeElementSource import BedGenomeElementSource #, BedCategoryGenomeElementSource, BedValuedGenomeElementSource
-from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-from quick.util.GenomeInfo import GenomeInfo
-import numpy
 import os
-import time
 
+from gold.origdata.BedGenomeElementSource import BedGenomeElementSource #, BedCategoryGenomeElementSource, BedValuedGenomeElementSource
+from gold.origdata.GenomeElementSorter import GenomeElementSorter
+from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
+from gold.track.GenomeRegion import GenomeRegion
+from gold.track.Track import PlainTrack
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.util.GenomeInfo import GenomeInfo
+from quick.util.Wrappers import GenomeElementTvWrapper
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class ReplaceSegmentsWithBorderPoints(GeneralGuiTool):
@@ -153,8 +150,7 @@ class ReplaceSegmentsWithBorderPoints(GeneralGuiTool):
         
     @classmethod    
     def execute(cls, choices, galaxyFn=None, username=''):
-        from tempfile import NamedTemporaryFile
-        
+
         outputFile =  open(galaxyFn, 'w')
         genome = choices[0]
         histItem = choices[2]
@@ -167,7 +163,7 @@ class ReplaceSegmentsWithBorderPoints(GeneralGuiTool):
             
             trackType = choices[2].split(':')[1]
             
-            from quick.util.StaticFile import GalaxyRunSpecificFile
+            from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
             tempFn  = GalaxyRunSpecificFile(['fromHistory.'+trackType],galaxyFn).getDiskPath(True)
             
             fnSource = ExternalTrackManager.extractFnFromGalaxyTN(choices[2].split(':'))

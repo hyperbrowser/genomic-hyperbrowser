@@ -1,17 +1,14 @@
-from quick.util.CommonFunctions import extractIdFromGalaxyFn
-from gold.util.CommonFunctions import getOrigFn
-from quick.util.GenomeInfo import GenomeInfo
 import os
-from quick.application.GalaxyInterface import GalaxyInterface
-from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.application.StatRunner import AnalysisDefJob
-from quick.extra.tfbs.TfInfo import TfInfo
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from urllib import quote
-from quick.origdata.GERegionBoundaryFilter import GERegionBoundaryFilter
-from quick.application.UserBinSource import GlobalBinSource
-import cPickle
+
 from config.Config import HB_SOURCE_CODE_BASE_DIR, URL_PREFIX
+from gold.util.CommonFunctions import getOrigFn
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.extra.tfbs.TfInfo import TfInfo
+from quick.util.CommonFunctions import extractIdFromGalaxyFn
+from quick.util.GenomeInfo import GenomeInfo
 
 
 class TFsFromRegions(object):
@@ -245,7 +242,7 @@ class TFsFromGenes(TFsFromRegions):
         if not (upFlankSize == downFlankSize == 0):            
             unflankedGeneRegsTempFn = uniqueWebPath + os.sep + '_geneRegs.bed'
             #flankedGeneRegsTempFn  = uniqueWebPath + os.sep + 'flankedGeneRegs.bed'
-            from quick.util.StaticFile import GalaxyRunSpecificFile
+            from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
             flankedGeneRegsTempStaticFile = GalaxyRunSpecificFile(['flankedGeneRegs.bed'], galaxyFn)
             flankedGeneRegsTempFn = flankedGeneRegsTempStaticFile.getDiskPath()
             geneRegsTrackName = GenomeInfo.getStdGeneRegsTn(genome)

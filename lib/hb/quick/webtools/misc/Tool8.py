@@ -165,7 +165,7 @@ class Tool8(GeneralGuiTool):
             row = [float(x) for x in row]
             averages.append(sum(row)/len(row))
 
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         plot = GalaxyRunSpecificFile(['average.png'], galaxyFn)
         plot.openRFigure()
         from gold.application.RSetup import r

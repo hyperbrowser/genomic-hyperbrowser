@@ -16,15 +16,18 @@
 #
 # instance is dynamically imported into namespace of <modulename>.mako template (see web/controllers/hyper.py)
 
-import os, sys, errno, subprocess, shutil
-import third_party.safeshelve as safeshelve
-from gold.application.GalaxyInterface import GalaxyInterface
-from proto.hyperbrowser.HyperBrowserControllerMixin import HyperBrowserControllerMixin
-from quick.util.CommonFunctions import extractIdFromGalaxyFn, getGalaxyFnFromDatasetId
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from config.Config import *
+import errno
+import os
+import shutil
+import subprocess
+
 import quick.extra.GoogleMapsInterface as GoogleMapsInterface
-from proto.BaseToolController import *
+import third_party.safeshelve as safeshelve
+from config.Config import HB_SOURCE_CODE_BASE_DIR, STATIC_PATH
+from proto.BaseToolController import BaseToolController
+from proto.hyperbrowser.HyperBrowserControllerMixin import HyperBrowserControllerMixin
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
 
 #TILECUTTER_PATH = HB_SOURCE_CODE_BASE_DIR + '/third_party/tileCutter3-test.py'
 TILECUTTER_PATH = HB_SOURCE_CODE_BASE_DIR + '/third_party/tileCutter3.py'
@@ -38,10 +41,10 @@ class GoogleMapController(BaseToolController, HyperBrowserControllerMixin):
     def __init__(self, trans, job):
         BaseToolController.__init__(self, trans, job)
         
-    def execute(self, imageFn, html, dpi = None):
+    def execute(self, imageFn, html, dpi=None):
         #galaxyId = extractIdFromGalaxyFn(html)
         #outDir = getUniqueWebPath(galaxyId)
-        staticDir = GalaxyRunSpecificFile([], galaxyFn)
+        staticDir = GalaxyRunSpecificFile([], html)
         outDir = staticDir.getDiskPath()
         try:
             os.makedirs(outDir + '/tiles')

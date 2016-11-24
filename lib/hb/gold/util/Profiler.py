@@ -18,9 +18,9 @@ import cProfile
 import pstats
 
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.util.CommonFunctions import ensurePathExists
 from quick.util.PstatsUtil import OverheadStats
-from quick.util.StaticFile import GalaxyRunSpecificFile
 
 
 class Profiler:

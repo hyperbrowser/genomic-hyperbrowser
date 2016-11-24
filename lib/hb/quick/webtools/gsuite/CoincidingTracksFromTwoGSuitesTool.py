@@ -9,6 +9,7 @@ from gold.result.MatrixGlobalValuePresenter import \
 from gold.track.Track import Track
 from gold.util import CommonConstants
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteFullAnalysisV2Stat import RAW_OVERLAP_TABLE_RESULT_KEY, \
@@ -16,7 +17,6 @@ from quick.statistic.GSuiteVsGSuiteFullAnalysisV2Stat import RAW_OVERLAP_TABLE_R
 from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat
 from quick.toolguide import ToolGuideConfig
 from quick.toolguide.controller.ToolGuide import ToolGuideController
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin

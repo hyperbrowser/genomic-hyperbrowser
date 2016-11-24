@@ -3,7 +3,7 @@ import numpy
 from gold.result.Results import Results
 from gold.result.ResultsViewer import ResultsViewer
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
 
 class GwasResults(dict):

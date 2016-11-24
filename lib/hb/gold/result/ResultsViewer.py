@@ -35,13 +35,13 @@ from gold.result.TablePresenter import TablePresenter, DistributionTablePresente
 from gold.util.CommonFunctions import getClassName, strWithStdFormatting
 from gold.util.CustomExceptions import InvalidRunSpecException, ShouldNotOccurError, AbstractClassError, SilentError
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.presenter.PixelBasedLocalResultsPresenter import PixelBasedLocalResultsPresenter
 from quick.presenter.ProcessedScatterPresenter import MeanLinePresenter,BinHistPresenter
 from quick.presenter.RawVisualizationPresenter import RawVisualizationPresenter
 from quick.presenter.TrackDataPresenter import TrackDataPresenter
 from quick.presenter.VennDataPresenter import VennDataPresenter
 from quick.presenter.VisualizationPresenter import VisualizationPlotPresenter, VisualizationScatterPresenter, VisualizationScaledScatterPresenter
-from quick.util.StaticFile import GalaxyRunSpecificFile
 
 '''
 ResultsViewerCollection is responsible for returning the html-string that represents the result-web page.

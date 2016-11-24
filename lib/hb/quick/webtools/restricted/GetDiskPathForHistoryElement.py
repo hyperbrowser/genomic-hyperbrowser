@@ -1,5 +1,7 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
+
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
@@ -61,12 +63,11 @@ class GetDiskPathForHistoryElement(GeneralGuiTool):
         #print 'galaxyTN: ',galaxyTN , type(galaxyTN)
         fn = ExternalTrackManager.extractFnFromGalaxyTN(galaxyTN)
         print 'Disk path for selected history element: <br>%s<br><br>' % fn
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         staticFile = GalaxyRunSpecificFile([],fn)
         print 'HyperBrowser data path (static file path) corresponding to selected history element: <br>%s<br><br>' % staticFile.getDiskPath()
 
         from config.Config import EXT_PROCESSED_DATA_PATH
-        import urllib
         try:
             tn = ExternalTrackManager.getStdTrackNameFromGalaxyTN(galaxyTN)[:-1]
             preProcPath = '/'.join([EXT_PROCESSED_DATA_PATH,'100000','noOverlaps',genome] + tn)

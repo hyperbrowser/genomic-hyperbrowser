@@ -48,7 +48,7 @@ class PlotFigure1Tool(NullModelArticleTool):
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -132,7 +132,7 @@ class PlotFigure2Tool(NullModelArticleTool):
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         from gold.application.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore

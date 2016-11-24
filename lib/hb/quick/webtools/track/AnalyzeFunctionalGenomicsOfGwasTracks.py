@@ -1,11 +1,12 @@
 from gold.util.CustomExceptions import InvalidRunSpecException
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import PickleStaticFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.gwas.GwasResults import EnrichmentGwasResults, HypothesisTestingGwasResults
 from quick.gwas.MultiGwasResults import MultiGwasResults
-from quick.util.StaticFile import PickleStaticFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 #TEMP_NUM_BATCH_RUNS_SO_FAR = 0
 

@@ -1,7 +1,7 @@
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.AutoBinner import AutoBinner
 from quick.application.UserBinSource import parseRegSpec
 from quick.util.CommonFunctions import createHyperBrowserURL
-from quick.util.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 

@@ -16,7 +16,7 @@
 
 from gold.result.Presenter import Presenter
 from gold.util.CommonFunctions import strWithStdFormatting
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.plot.CreateBpsVennDIagram import CreateBpsVennDIagram
 class VennDataPresenter(Presenter):
     def __init__(self, results, baseDir=None):

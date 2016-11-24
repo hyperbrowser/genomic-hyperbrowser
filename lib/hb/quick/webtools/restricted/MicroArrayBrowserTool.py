@@ -1,24 +1,17 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from config.Config import EXT_ORIG_DATA_PATH, DATA_FILES_PATH
 import os
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
-from collections import OrderedDict
-from quick.util.StaticFile import GalaxyRunSpecificFile
-import re
-#import resys
 import tempfile
+from collections import OrderedDict
+
+from config.Config import DATA_FILES_PATH
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 os.environ['HOME'] = "/tmp"
 
 from gold.application.MatPlotLibSetup import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib import rc
-from matplotlib.cbook import iterable
 import matplotlib.font_manager
-import subprocess
-from itertools import *
 from numpy import arange
 
 
@@ -81,7 +74,6 @@ class MicroArrayBrowserTool(GeneralGuiTool):
     
     @classmethod
     def mysqlConnect(cls):
-        import MySQLdb
         import MySQLdb.cursors
         if not cls.conn:
             cls.conn = MySQLdb.connect (host = "127.0.0.1",
@@ -303,7 +295,6 @@ class MicroArrayBrowserTool(GeneralGuiTool):
 
     @classmethod  
     def getOptionsBox6(cls, prevChoices): # Alternatively: getOptionsBoxKey2()
-        import MySQLdb
         import MySQLdb.cursors
 
         vals = []

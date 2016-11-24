@@ -6,10 +6,9 @@ from config.Config import DATA_FILES_PATH, HB_SOURCE_CODE_BASE_DIR
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import PlainTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import StaticFile, GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.MotifScanner import MotifScanner
-from quick.util.StaticFile import GalaxyRunSpecificFile
-from quick.util.StaticFile import StaticFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
