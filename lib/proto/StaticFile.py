@@ -1,6 +1,6 @@
 from proto.config.Config import STATIC_PATH, STATIC_REL_PATH
 from proto.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL, \
-    extractNameFromDatasetInfo
+    extractNameFromDatasetInfo, extractIdFromGalaxyFn, getGalaxyFilesFilename
 from proto.HtmlCore import HtmlCore
 import os
 
@@ -132,7 +132,6 @@ class StaticImage(StaticFile):
         StaticFile.__init__(self, ['images']+id)
 
 
-from proto.CommonFunctions import extractIdFromGalaxyFn, getGalaxyFilesFilename
 class GalaxyRunSpecificFile(StaticFile):
     '''
     Handles file path and URL of static (web-accessible) files which are specific
@@ -161,10 +160,6 @@ class GalaxyRunSpecificFile(StaticFile):
 
     def getId(self):
         return extractIdFromGalaxyFn(self._galaxyFn) + self._relativeId
-
-    def getExternalTrackName(self):
-        name = extractNameFromDatasetInfo(self._galaxyFn)
-        return createStdTrackName(self.getId(), name)
 
 
 class PickleStaticFile(StaticFile):
