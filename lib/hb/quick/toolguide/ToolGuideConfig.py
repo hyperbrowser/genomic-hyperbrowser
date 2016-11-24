@@ -23,7 +23,7 @@ Configuration for the Tool guide.
 '''
 
 from quick.util.CommonFunctions import createGalaxyToolURL, createToolURL
-from config.AutoConfig import STATIC_REL_PATH
+from config.Config import STATIC_REL_PATH
 
 GSUITE_INPUT = 'gsuite'
 TRACK_INPUT = 'track'

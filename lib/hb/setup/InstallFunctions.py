@@ -63,7 +63,7 @@ def executePythonFile(pyFn, args='', cwd=None, printError=True, onError='exit', 
         cmd = 'stdbuf -oL ' + cmd
 
     if setPythonPath:
-        from config.Config import HB_SOURCE_CODE_BASE_DIR, GALAXY_BASE_DIR, HB_PYTHONPATH
+        from config.Config import HB_SOURCE_CODE_BASE_DIR, HB_PYTHONPATH, GALAXY_BASE_DIR
 
         cmd = 'export PYTHONPATH="%s:%s:%s:%s"; ' % \
               (HB_SOURCE_CODE_BASE_DIR, GALAXY_LIB_PATH, GALAXY_BASE_DIR + os.sep + 'eggs', HB_PYTHONPATH) + cmd

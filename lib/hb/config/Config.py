@@ -14,15 +14,17 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from config.AutoConfig import *
+#from config.LocalOSConfig import *
+
+from config.DebugConfig import DebugConfig, DebugModes
+from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
+                                 GALAXY_BASE_DIR, OUTPUT_PRECISION)
 
 #
 # Version information
 #
 
-HB_VERSION = 'v1.6'
-# GALAXY_VERSION = 'fa0b5c68d097'
-# '26920e20157f'
+HB_VERSION = 'v2.0'
 
 #
 # Functionality settings
@@ -50,134 +52,89 @@ MULTIPLE_EXTRA_TRACKS_SEPARATOR = '&'
 MAX_CONCAT_LEN_FOR_OVERLAPPING_ELS = 20
 
 #
-# Debug options
+# Paths
 #
 
-#VERBOSE = False
-#PASS_ON_VALIDSTAT_EXCEPTIONS = False
-#PASS_ON_COMPUTE_EXCEPTIONS = False
-#PASS_ON_BATCH_EXCEPTIONS = True
-#USE_PROFILING = False
-#USE_CALLGRAPH = USE_PROFILING
-#TRACE_STAT = {'computeStep': True, 'compute': True, '_compute': True, '_combineResults': True, '_createChildren': True, '__init__': True, '_afterComputeCleanup' : True, '_setNotMemoizable' : True, '_updateInMemoDict' : True, 'printRegions':True, 'printTrackNames':True}
-#TRACE_STAT = {'computeStep': False, 'compute': False, '_compute': False, '_combineResults': False, '_createChildren': False, '__init__': True, '_afterComputeCleanup' : True, '_setNotMemoizable' : True, '_updateInMemoDict' : True, 'printRegions':True, 'printTrackNames':True}
+GALAXY_REL_FILE_PATH = config.getWithDefault('file_path', 'database/files')
+GALAXY_REL_NEW_FILE_PATH = config.getWithDefault('new_file_path', 'database/tmp')
+GALAXY_REL_TOOL_CONFIG_FILE = config.getWithDefault('tool_config_file', 'config/tool_conf.xml')
+GALAXY_REL_TOOL_PATH = config.getWithDefault('tool_path', 'tools')
+GALAXY_REL_TOOL_DATA_PATH = config.getWithDefault('tool_data_path', 'tool-data')
+GALAXY_REL_DATATYPES_CONFIG_FILE = config.getWithDefault('datatypes_config_file', 'config/datatypes_conf.xml')
+GALAXY_REL_JOB_WORKING_DIR = config.getWithDefault('job_working_directory', 'database/job_working_directory')
+GALAXY_TMP_DIR = config.getWithDefault('new_file_path','database/tmp')
 
-class DebugModes(object):
-    NO_DEBUG = 'No debugging'
-    PROFILING = 'Profiling with call graphs'
-    UNCHANGED_LOGIC_VERBOSE = 'Debug without changing logic (verbose)'
-    UNCHANGED_LOGIC_TRACE_CREATE_VERBOSE = 'Debug without changing logic (tracing statistic creation, verbose)'
-    UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE = 'Debug without changing logic (tracing statistic compute, verbose)'
-    UNCHANGED_LOGIC_FULL_TRACE_VERBOSE = 'Debug without changing logic (tracing statistic creation and compute, verbose)'
-    RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE = 'Debug by raising hidden exceptions'
-    RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE = 'Debug by raising hidden exceptions (tracing statistic creation and compute, verbose)'
-    RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE = 'Debug by raising hidden exceptions incl. stats returning None (only in special cases, verbose)'
-    RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE = 'Debug by raising hidden exceptions incl. stats returning None (special cases, full trace, verbose)'
+EXT_NONSTANDARD_DATA_PATH = config.getWithDefault('ext_nonstandard_data_path', '', 'hyperbrowser')
+EXT_ORIG_DATA_PATH = config.getWithDefault('ext_orig_data_path', '', 'hyperbrowser')
+EXT_PARSING_ERROR_DATA_PATH = config.getWithDefault('ext_parsing_error_data_path', '', 'hyperbrowser')
+EXT_PROCESSED_DATA_PATH = config.getWithDefault('ext_processed_data_path', '', 'hyperbrowser')
+EXT_MEMOIZED_DATA_PATH = config.getWithDefault('ext_memoized_data_path', '', 'hyperbrowser')
 
-class DebugConfigMeta(type):
-    def __init__(cls, name, bases, d):
-        type.__init__(cls, name, bases, d)
-        cls._init()
+EXT_DATA_FILES_PATH = config.getWithDefault('ext_data_files_path', '', 'hyperbrowser')
+EXT_UPLOAD_FILES_PATH = config.getWithDefault('ext_upload_files_path', '', 'hyperbrowser')
+EXT_STATIC_FILES_PATH = config.getWithDefault('ext_static_files_path', '', 'hyperbrowser')
+EXT_TOOL_DATA_PATH = config.getWithDefault('ext_tool_data_path', '', 'hyperbrowser')
+EXT_NMER_CHAIN_DATA_PATH = config.getWithDefault('ext_nmer_chain_data_path', '', 'hyperbrowser')
+EXT_MAPS_PATH = config.getWithDefault('ext_maps_path', '', 'hyperbrowser')
+EXT_LOG_PATH = config.getWithDefault('ext_log_path', '', 'hyperbrowser')
+EXT_RESULTS_PATH = config.getWithDefault('ext_results_path', '', 'hyperbrowser')
+EXT_TMP_PATH = config.getWithDefault('ext_tmp_path', '', 'hyperbrowser')
 
-    def __str__(cls):
-        settings = ''
-        for constant in ['VERBOSE',
-                         'PASS_ON_VALIDSTAT_EXCEPTIONS',
-                         'PASS_ON_COMPUTE_EXCEPTIONS',
-                         'PASS_ON_BATCH_EXCEPTIONS',
-                         'PASS_ON_FIGURE_EXCEPTIONS',
-                         'PASS_ON_NONERESULT_EXCEPTIONS',
-                         'USE_SLOW_DEFENSIVE_ASSERTS',
-                         'USE_PROFILING',
-                         'USE_CALLGRAPH',
-                         'TRACE_STAT',
-                         'TRACE_PRINT_REGIONS',
-                         'TRACE_PRINT_TRACK_NAMES']:
-            settings += '%s: %s\n' % (constant, getattr(cls, constant))
-        return settings
+#
+# Dependent constants
+#
 
-class DebugConfig(object):
-    __metaclass__ = DebugConfigMeta
+# COOKIE_PATH = URL_PREFIX if URL_PREFIX != '' else '/'
 
-    @classmethod
-    def _init(cls):
-        cls.VERBOSE = False
-        cls.PASS_ON_VALIDSTAT_EXCEPTIONS = False
-        cls.PASS_ON_COMPUTE_EXCEPTIONS = False
-        cls.PASS_ON_BATCH_EXCEPTIONS = False
-        cls.PASS_ON_FIGURE_EXCEPTIONS = False
-        cls.PASS_ON_NONERESULT_EXCEPTIONS = False
-        cls.USE_SLOW_DEFENSIVE_ASSERTS = False
-        cls.USE_PROFILING = False
-        cls.USE_CALLGRAPH = False
-        cls.TRACE_STAT = {'computeStep': False,
-                          'compute': False,
-                          '_compute': False,
-                          '_combineResults': False,
-                          '_createChildren': False,
-                          '__init__': False,
-                          '_afterComputeCleanup' : False,
-                          '_setNotMemoizable' : False,
-                          '_updateInMemoDict' : False}
-        cls.TRACE_PRINT_REGIONS = False
-        cls.TRACE_PRINT_TRACK_NAMES = False
+HB_SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib/hb'
 
-    @classmethod
-    def changeMode(cls, debugMode):
-        cls._init()
+GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + GALAXY_REL_FILE_PATH
+GALAXY_NEW_FILE_PATH = GALAXY_BASE_DIR + '/' + GALAXY_REL_NEW_FILE_PATH
+GALAXY_TOOL_CONFIG_FILE = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
+GALAXY_TOOL_PATH = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_PATH
+GALAXY_TOOL_DATA_PATH = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_DATA_PATH
+GALAXY_DATATYPES_CONFIG_FILE = GALAXY_BASE_DIR + '/' + GALAXY_REL_DATATYPES_CONFIG_FILE
+GALAXY_JOB_WORKING_DIR = GALAXY_BASE_DIR + '/' + GALAXY_REL_JOB_WORKING_DIR
 
-        if debugMode != DebugModes.NO_DEBUG:
-            cls.USE_SLOW_DEFENSIVE_ASSERTS = True
+GALAXY_COMPILED_TEMPLATES = GALAXY_BASE_DIR + '/database/compiled_templates'
+GALAXY_TEMPLATES_PATH = GALAXY_BASE_DIR + '/templates'
+GALAXY_LIB_PATH = GALAXY_BASE_DIR + '/lib'
 
-        if debugMode not in [DebugModes.NO_DEBUG,
-                             DebugModes.PROFILING,
-                             DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE]:
-            cls.VERBOSE = True
+# HB_GALAXY_SOURCE_CODE_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/galaxy_hb'
+# HB_CONFIG_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/config'
+# HB_SETUP_CONFIG_BASE_DIR = HB_CONFIG_BASE_DIR + '/setup'
+# HB_SETUP_CONFIG_DEFAULT_FN = HB_SETUP_CONFIG_BASE_DIR + '/default/default.setup'
+HB_SOURCE_DATA_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/data'
+# HB_SRC_STATIC_PATH = HB_SOURCE_CODE_BASE_DIR + '/galaxy_hb/static/hyperbrowser'
 
-        if debugMode == DebugModes.PROFILING:
-            cls.USE_PROFILING = True
-            cls.USE_CALLGRAPH = True
+STATIC_REL_PATH = URL_PREFIX + '/static/hyperbrowser'
+STATIC_PATH = GALAXY_BASE_DIR + '/static/hyperbrowser'
 
-        if debugMode in [DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
-            cls.PASS_ON_VALIDSTAT_EXCEPTIONS = True
-            cls.PASS_ON_COMPUTE_EXCEPTIONS = True
-            cls.PASS_ON_BATCH_EXCEPTIONS = True
-            cls.PASS_ON_FIGURE_EXCEPTIONS = True
+HB_DATA_BASE_DIR = GALAXY_BASE_DIR + '/hyperbrowser'
+TRACKS_BASE_DIR = HB_DATA_BASE_DIR + '/tracks'
+NONSTANDARD_DATA_PATH = TRACKS_BASE_DIR + '/collectedTracks'
+ORIG_DATA_PATH = TRACKS_BASE_DIR + '/standardizedTracks'
+PARSING_ERROR_DATA_PATH = TRACKS_BASE_DIR + '/parsingErrorTracks'
+PROCESSED_DATA_PATH = TRACKS_BASE_DIR + '/preProcessedTracks'
+NMER_CHAIN_DATA_PATH = TRACKS_BASE_DIR + '/nmerChains'
 
-        if debugMode in [DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
-            cls.PASS_ON_NONERESULT_EXCEPTIONS = True
+DATA_FILES_PATH = HB_DATA_BASE_DIR + '/data'
+UPLOAD_FILES_PATH = HB_DATA_BASE_DIR + '/upload'
+LOG_PATH = HB_DATA_BASE_DIR + '/logs'
+SRC_PATH = HB_DATA_BASE_DIR + '/src'
+# SRC_STATIC_PATH = SRC_PATH + '/galaxy_hb/static/hyperbrowser'
+# HB_EGGS_FILE_PATH = SRC_PATH + '/galaxy_hb/hb_eggs.ini'
 
-        if debugMode in [DebugModes.UNCHANGED_LOGIC_TRACE_CREATE_VERBOSE,
-                         DebugModes.UNCHANGED_LOGIC_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
-            cls.TRACE_STAT['_createChildren'] = True
-            cls.TRACE_STAT['__init__'] = True
-
-        if debugMode in [DebugModes.UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE,
-                         DebugModes.UNCHANGED_LOGIC_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
-            cls.TRACE_STAT['computeStep'] = True
-            cls.TRACE_STAT['compute'] = True
-            cls.TRACE_STAT['_compute'] = True
-            cls.TRACE_STAT['_combineResults'] = True
-            cls.TRACE_STAT['_afterComputeCleanup'] = True
-
-        if debugMode in [DebugModes.UNCHANGED_LOGIC_TRACE_CREATE_VERBOSE,
-                         DebugModes.UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE,
-                         DebugModes.UNCHANGED_LOGIC_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
-                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
-            cls.TRACE_STAT['_setNotMemoizable'] = True
-            cls.TRACE_STAT['_updateInMemoDict'] = True
-            cls.TRACE_PRINT_REGIONS = True
-            cls.TRACE_PRINT_TRACK_NAMES = True
-
+RESULTS_PATH = HB_DATA_BASE_DIR + '/results'
+RESULTS_FILES_PATH = RESULTS_PATH + '/files'
+RESULTS_JOB_WORKING_DIR = RESULTS_PATH + '/job_working_directory'
+MEMOIZED_DATA_PATH = RESULTS_PATH + '/memoizedData'
+RESULTS_STATIC_PATH = RESULTS_PATH + '/static'
+MAPS_PATH = RESULTS_STATIC_PATH + '/maps'
+MAPS_COMMON_PATH = MAPS_PATH + '/common'
+MAPS_TEMPLATE_PATH = GALAXY_TEMPLATES_PATH + '/hyperbrowser/gmap'
+# HB_LIB_PATH = HB_DATA_BASE_DIR + '/lib'
+# HB_R_LIBS_DIR = HB_LIB_PATH + '/R/library'
 
 #
 # To be removed

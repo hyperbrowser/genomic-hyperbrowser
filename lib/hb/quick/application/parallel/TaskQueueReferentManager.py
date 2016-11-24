@@ -1,8 +1,7 @@
 from multiprocessing.managers import BaseManager
-from config.Config import PP_PASSPHRASE, PP_MANAGER_PORT, PP_NUMBER_OF_LOCAL_WORKERS
+from config.Config import GALAXY_BASE_DIR, PP_PASSPHRASE, PP_MANAGER_PORT, PP_NUMBER_OF_LOCAL_WORKERS
 from quick.application.parallel.TaskQueue import TaskQueueReferent
 from quick.application.parallel.StartTitanJob import TitanJobScript
-from config.Config import GALAXY_BASE_DIR
 import sys
 import threading
 import time

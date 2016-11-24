@@ -1,12 +1,14 @@
-from config.Config import getUniverseConfigParser
+from proto.config.GalaxyConfigParser import GalaxyConfigParser
+
 
 def getGalaxyConfiguration():
     import galaxy.config
-    configParser = getUniverseConfigParser()
+    configParser = GalaxyConfigParser()
     configDict = {}
     for key, value in configParser.items("app:main"):
         configDict[key] = value
     return galaxy.config.Configuration(**configDict)
+
 
 def getGalaxyDatabaseModel():
     import galaxy.model.mapping

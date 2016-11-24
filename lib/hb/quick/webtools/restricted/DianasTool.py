@@ -6282,7 +6282,7 @@ class removeFromBedFile(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -6605,7 +6605,7 @@ class divideBedFile(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -7022,7 +7022,7 @@ class showGSuiteResultsInTable(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -7202,7 +7202,7 @@ class gSuiteInverse(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -7946,7 +7946,7 @@ class VisTrackFrequency(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -8207,7 +8207,7 @@ class KseniagSuite(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -8375,7 +8375,7 @@ class DivideBedFileForChosenPhrase(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
@@ -8716,7 +8716,7 @@ class GenerateRipleysK(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None

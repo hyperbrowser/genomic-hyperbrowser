@@ -1,5 +1,5 @@
 from ModFiles import ModFiles
-from config.Config import HB_GALAXY_SOURCE_CODE_BASE_DIR, GALAXY_BASE_DIR
+from config.Config import GALAXY_BASE_DIR, HB_GALAXY_SOURCE_CODE_BASE_DIR
 import shutil
 import sys
 import os

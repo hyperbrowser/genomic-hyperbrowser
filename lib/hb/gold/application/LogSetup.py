@@ -26,7 +26,8 @@ from logging.handlers import RotatingFileHandler
 #from gold.util.CommonFunctions import getClassName
 from urllib import unquote
 from third_party.decorator import decorator
-from config.Config import GALAXY_BASE_DIR, LOG_PATH, IS_EXPERIMENTAL_INSTALLATION, DebugModes, DebugConfig
+from config.Config import LOG_PATH, IS_EXPERIMENTAL_INSTALLATION, GALAXY_BASE_DIR, \
+    DebugModes, DebugConfig
 
 HB_LOGGER = 'hb'
 USAGE_LOGGER = 'hb.usage'

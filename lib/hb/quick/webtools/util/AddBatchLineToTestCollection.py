@@ -201,7 +201,7 @@ class AddBatchLineToTestCollection(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #    name. The base directory is STATIC_PATH as defined by Config.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None
