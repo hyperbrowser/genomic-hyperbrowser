@@ -5,7 +5,7 @@
 from proto.config.GalaxyConfigParser import GalaxyConfigParser
 
 
-def galaxyGetSecurityHelper(config):
+def galaxyGetSecurityHelper():
     from galaxy.web.security import SecurityHelper
 
     config = GalaxyConfigParser()
@@ -16,7 +16,7 @@ def galaxyGetSecurityHelper(config):
 
 
 try:
-    GALAXY_SECURITY_HELPER_OBJ = galaxyGetSecurityHelper(config)
+    GALAXY_SECURITY_HELPER_OBJ = galaxyGetSecurityHelper()
 except:
     GALAXY_SECURITY_HELPER_OBJ = None
 
