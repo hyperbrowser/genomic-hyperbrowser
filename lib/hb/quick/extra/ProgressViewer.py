@@ -134,7 +134,7 @@ class ProgressViewer(object):
         nameCellColSpan = 4 #colspan for the first cell that displays the process name
 
         for progressObj in self._progressObjList:
-            htmlCore.tableHeaderWithClass([], tableClass='progress')
+            htmlCore.tableHeader([], tableClass='progress')
             htmlCore.tableRowBegin(rowClass='progressRow')
             htmlCore.tableCell(progressObj.name, colSpan=nameCellColSpan)
 
