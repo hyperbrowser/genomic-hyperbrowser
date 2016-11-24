@@ -44,7 +44,7 @@ def doAnalysis(analysisSpec, analysisBins, tracks):
     silenceNumpyWarnings()
 
     if len(tracks) > 2:
-        from config.Config import MULTIPLE_EXTRA_TRACKS_SEPARATOR
+        from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
         analysisSpec.addParameter(
             'extraTracks',
             MULTIPLE_EXTRA_TRACKS_SEPARATOR.join(

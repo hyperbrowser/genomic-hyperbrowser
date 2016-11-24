@@ -19,7 +19,8 @@ import os
 import re
 from urllib import quote, unquote
 
-from config.Config import DebugConfig,STATIC_REL_PATH, URL_PREFIX, BATCH_COL_SEPARATOR
+from config.Config import DebugConfig,STATIC_REL_PATH, URL_PREFIX
+from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from gold.application.LogSetup import logException
 from gold.application.LogSetup import logMessage, logging
 from gold.description.Analysis import Analysis

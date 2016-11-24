@@ -25,8 +25,10 @@ from datetime import datetime
 from urllib import unquote, quote
 
 from config.Config import DebugConfig, DEFAULT_GENOME, STATIC_REL_PATH,\
-    IS_EXPERIMENTAL_INSTALLATION, ORIG_DATA_PATH, HB_VERSION, DATA_FILES_PATH, USE_PARALLEL, BATCH_COL_SEPARATOR, URL_PREFIX, \
-    CFG_ALLOW_COMP_BIN_SPLITTING #, brk
+    IS_EXPERIMENTAL_INSTALLATION, ORIG_DATA_PATH, HB_VERSION, DATA_FILES_PATH, USE_PARALLEL, \
+    URL_PREFIX
+from config.Config import ALLOW_COMP_BIN_SPLITTING as CFG_ALLOW_COMP_BIN_SPLITTING
+from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from gold.application.LogSetup import logging, HB_LOGGER, usageAndErrorLogging, \
     runtimeLogging, logException, detailedJobRunHandler, logMessage, logLackOfSupport
 from gold.application.StatRunner import AnalysisDefJob, AssemblyGapJob #, CountBothTracksJob

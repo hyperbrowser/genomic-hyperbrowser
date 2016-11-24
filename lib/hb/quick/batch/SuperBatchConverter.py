@@ -15,7 +15,8 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from quick.application.ProcTrackOptions import ProcTrackOptions
-from config.Config import DEFAULT_GENOME, BATCH_COL_SEPARATOR
+from config.Config import DEFAULT_GENOME
+from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from urllib import quote, unquote
 
 class SuperBatchConverter:

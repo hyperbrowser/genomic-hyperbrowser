@@ -705,7 +705,7 @@ class MultipleTrackStatistic(Statistic):
                 self._kwArgs['extraTracks'] = self._kwArgs['trackNameIntensity']
 
         if 'extraTracks' in self._kwArgs:
-            from config.Config import MULTIPLE_EXTRA_TRACKS_SEPARATOR
+            from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
             extraTracks = self._kwArgs['extraTracks']
             if type(extraTracks) == str:
                 extraTracks = extraTracks.split(MULTIPLE_EXTRA_TRACKS_SEPARATOR)

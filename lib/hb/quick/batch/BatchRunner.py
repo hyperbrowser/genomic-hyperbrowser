@@ -29,7 +29,8 @@ from quick.application.UserBinSource import UserBinSource
 from quick.util.CommonFunctions import wrapClass
 
 from quick.application.ProcTrackOptions import ProcTrackOptions
-from config.Config import DEFAULT_GENOME, DebugConfig, BATCH_COL_SEPARATOR, USE_PARALLEL
+from config.Config import DEFAULT_GENOME, DebugConfig, USE_PARALLEL
+from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from quick.application.ProcTrackNameSource import ProcTrackNameSource
 from gold.application.LogSetup import logMessage, logException
 

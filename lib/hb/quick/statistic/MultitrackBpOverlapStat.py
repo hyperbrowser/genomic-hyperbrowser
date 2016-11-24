@@ -26,7 +26,7 @@ from quick.util.CommonFunctions import numAsPaddedBinary
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic,\
     StatisticDictSumResSplittable
-from config.Config import MULTIPLE_EXTRA_TRACKS_SEPARATOR
+from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
 
 
 class MultitrackBpOverlapStat(MagicStatFactory):

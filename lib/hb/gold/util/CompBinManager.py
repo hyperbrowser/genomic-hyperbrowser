@@ -14,7 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from config.Config import COMP_BIN_SIZE, IS_EXPERIMENTAL_INSTALLATION, CFG_ALLOW_COMP_BIN_SPLITTING
+from config.Config import COMP_BIN_SIZE, IS_EXPERIMENTAL_INSTALLATION
+from config.Config import ALLOW_COMP_BIN_SPLITTING as CFG_ALLOW_COMP_BIN_SPLITTING
 from gold.track.GenomeRegion import GenomeRegion
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CommonFunctions import isIter

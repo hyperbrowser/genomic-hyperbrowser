@@ -31,28 +31,26 @@ HB_VERSION = 'v2.0'
 # Functionality settings
 #
 
-IS_EXPERIMENTAL_INSTALLATION = True
-USE_MEMORY_MEMOIZATION = True
-LOAD_DISK_MEMOIZATION = IS_EXPERIMENTAL_INSTALLATION
-STORE_DISK_MEMOIZATION = IS_EXPERIMENTAL_INSTALLATION
-PRINT_PROGRESS = True
-CFG_ALLOW_COMP_BIN_SPLITTING = False
-ALLOW_GSUITE_FILE_PROTOCOL = True
+IS_EXPERIMENTAL_INSTALLATION = bool(config.getWithDefault('is_experimental_installation', False))
+USE_MEMORY_MEMOIZATION = bool(config.getWithDefault('use_memory_memoization', True))
+LOAD_DISK_MEMOIZATION = bool(config.getWithDefault('load_disk_memoization', False))
+STORE_DISK_MEMOIZATION = bool(config.getWithDefault('store_disk_memoization', False))
+PRINT_PROGRESS = bool(config.getWithDefault('print_progress', True))
+ALLOW_COMP_BIN_SPLITTING = bool(config.getWithDefault('allow_comp_bin_splitting', False))
+ALLOW_GSUITE_FILE_PROTOCOL = bool(config.getWithDefault('allow_gsuite_file_protocol', False))
+USE_PARALLEL = bool(config.getWithDefault('use_parallel', False))
 
 
 #
 # Optimization and limits
 #
 
-COMP_BIN_SIZE = 100000
-MEMMAP_BIN_SIZE = 1024 * 1024
-MAX_NUM_USER_BINS = 330000
-MAX_LOCAL_RESULTS_IN_TABLE = 100000
-TEST_DEBUG = False
-USE_PARALLEL = False
-BATCH_COL_SEPARATOR = '|'
-MULTIPLE_EXTRA_TRACKS_SEPARATOR = '&'
-MAX_CONCAT_LEN_FOR_OVERLAPPING_ELS = 20
+COMP_BIN_SIZE = int(config.getWithDefault('comp_bin_size', 100000))
+MEMMAP_BIN_SIZE = int(config.getWithDefault('memmap_bin_size', 1024 * 1024))
+MAX_NUM_USER_BINS = int(config.getWithDefault('max_num_user_bins', 330000))
+MAX_LOCAL_RESULTS_IN_TABLE = int(config.getWithDefault('max_local_results_in_table', 100000))
+MAX_CONCAT_LEN_FOR_OVERLAPPING_ELS = \
+    int(config.getWithDefault('max_concat_len_for_overlapping_els', 20))
 
 
 #
