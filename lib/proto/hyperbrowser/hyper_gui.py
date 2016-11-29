@@ -239,3 +239,27 @@ class TrackSelectElement(SelectElement):
         if opts:
             self.options.extend(opts)
 
+
+def optionListFromDatasets(datasets, exts = None, sel = None):
+    assert False, 'fix or remove me'
+    list = []
+    for dataset in datasets:
+        if exts == None or dataset.extension in exts:
+            val = 'galaxy,' + str(dataset.dataset_id) + ',' + dataset.extension
+            txt = '%d: %s [%s]' % (dataset.hid, dataset.name, val)
+            tup = (txt, val, False)
+            list.append(tup)
+    return list
+
+
+# def getValidRScripts(self):
+#     datasets = []
+#     try:
+#         for dataset in self.getHistory(['R']):
+#             rfilename = self.getDataFilePath(dataset.dataset_id)
+#             qid = '[scriptFn:=' + rfilename.encode('hex_codec') + ':] -> CustomRStat'
+#             # if hyper.isRScriptValid(tracks[0].definition(), tracks[1].definition(), qid):
+#             datasets.append(dataset)
+#     except AttributeError:
+#         pass
+#     return datasets

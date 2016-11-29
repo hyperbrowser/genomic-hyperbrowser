@@ -441,7 +441,6 @@
     <datatype extension="scidx" type="galaxy.datatypes.interval:ScIdx" display_in_upload="true" />
 
     <!-- HyperBrowser datatypes -->
-    <datatype extension="R" type="galaxy.datatypes.data:Text" mimetype="text/plain" display_in_upload="false" subclass="true"/>
     <datatype extension="microarray" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
     <datatype extension="point.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
     <datatype extension="valued.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>

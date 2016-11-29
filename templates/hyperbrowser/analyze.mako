@@ -151,7 +151,7 @@ if hyper.isAccessibleGenome(genome, username):
                             if a[1] == _stats:
                                 analcat = cat[1]
                     
-        rscripts = galaxy.getValidRScripts()
+        rscripts = galaxy.getHistory(['R'])
         if len(rscripts) > 0 and tracks[0].selected() and tracks[1].selected():
             analCats.append(('Custom R-scripts', 'R', False))
             
