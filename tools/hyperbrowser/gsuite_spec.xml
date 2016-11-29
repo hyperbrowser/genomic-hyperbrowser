@@ -26,7 +26,7 @@
 	
 	<display></display>
 	
-	<inputs action="/static/hyperbrowser/gsuite/GSuite_specification.txt" check_values="false" method="get">
+	<inputs action="/static/hyperbrowser/gsuite/GSuite_specification.html" check_values="false" method="get">
 		<param name="x" type="hidden" value="x" />
 	</inputs>
     <uihints minwidth="800"/>  
