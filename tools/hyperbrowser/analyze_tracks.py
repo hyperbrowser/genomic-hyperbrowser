@@ -23,7 +23,7 @@ from urllib import quote, unquote
 import galaxy.eggs
 from galaxy.util import restore_text
 
-from gold.application.GalaxyInterface import *
+from gold.application.GalaxyInterface import GalaxyInterface
 from config.Config import URL_PREFIX
 import proto.hyperbrowser.hyper_gui as hg
 
@@ -48,13 +48,7 @@ def main():
     intensityTrackName = None
     subName1 = ""
     subName2 = ""
-    track1File = None
-    track1FileType = None
-    track1FileDescr = None
     track1State = None
-    track2File = None
-    track2FileType = None
-    track2FileDescr = None
     track2State = None
     intensityTrackFile = None
     intensityTrackFileType = None
@@ -70,7 +64,6 @@ def main():
     segLength = 0
     overlaps = None
     genome = 'hg18'
-    #genomes = {'NCBI36': 'hg18'} #,'hg17': 'NCBI35','hg16': 'NCBI34','hg15': 'NCBI33'}
     username = None
 
     for o, a in params.items():
@@ -116,16 +109,6 @@ def main():
         elif o == "binfile":
             region = "bed"
             userBins = a
-        elif o == "track1file":
-            dummy, track1File, track1FileType, track1FileDescr = a.split(',')
-        elif o == "track2file":
-            dummy, track2File, track2FileType, track2FileDescr = a.split(',')
-        elif o == "trackIntensityfile":
-            dummy, intensityTrackFile, intensityTrackFileType, intensityTrackFileDescr = a.split(',')
-        elif o == 'track1type':
-            track1FileType = a
-        elif o == 'track2type':
-            track2FileType = a
         elif o == 'track1_state':
             track1State = unquote(a)
         elif o == 'track2_state':
@@ -139,16 +122,6 @@ def main():
         elif o == "userEmail":
             username = a
 
-#
-#    binFiles = {'chrom': '/data1/rrresearch/standardizedTracks/hg18/Mapping and Sequencing Tracks/_Chromosomes/chromosomes.bed',
-#       'arms': '/data1/rrresearch/standardizedTracks/hg18/Mapping and Sequencing Tracks/Chromosome arms/ucscChrArms.bed',
-#        'bands': '/data1/rrresearch/standardizedTracks/hg18/Mapping and Sequencing Tracks/Chromosome bands/ucscChrBands.bed'
-#       }
-#
-#    if method in binFiles.keys():
-#        region = 'file'
-#        binSize = binFiles[method]
-
     if method in ['__chrs__', '__chrBands__', '__chrArms__', '__genes__']:
         region = method
         binSize = params[method]
@@ -156,35 +129,26 @@ def main():
         region = method
         binSize = '*'
 
-    if userBins and userBins.startswith('galaxy'):
-        binSize = getDataFilePath(file_path, userBins.split(',')[1])
-        region = userBins.split(',')[2]
+    if userBins and userBins[0] == 'galaxy':
+        binSize = userBins[1]
+        region = userBins[2]
 
-#    if track1File != None:
-#        tracks1 = ['galaxy', track1FileType, getDataFilePath(file_path, track1File), unquote(track1FileDescr)]
-#    else:
     tracks1 = trackName1.split(':')
 
-#    if track2File != None:
-#        tracks2 = ['galaxy', track2FileType, getDataFilePath(file_path, track2File), unquote(track2FileDescr)]
-#    else:
     tracks2 = trackName2.split(':')
 
-#    if intensityTrackFile != None:
-#        intensityTracks = ['galaxy', intensityTrackFileType, getDataFilePath(file_path, intensityTrackFile), unquote(intensityTrackFileDescr)]
     if intensityTrackName != None:
         intensityTracks = intensityTrackName.split(':')
     else:
         intensityTracks = []
 
-    if statClassName.startswith('galaxy'):
-        statsFileId = statClassName.split(',')[1]
-        statsFile = getDataFilePath(file_path, statsFileId)
-        #hashDir = '/%03d/' % (int(statsFileId) / 1000)
-        #statsFile = file_path + hashDir + 'dataset_' + statsFileId + '.dat'
-        statClassName = '[scriptFn:=' + statsFile.encode('hex_codec') + ':] -> CustomRStat'
+    # if statClassName.startswith('galaxy'):
+    #     statsFileId = statClassName.split(',')[1]
+    #     statsFile = getDataFilePath(file_path, statsFileId)
+    #     #hashDir = '/%03d/' % (int(statsFileId) / 1000)
+    #     #statsFile = file_path + hashDir + 'dataset_' + statsFileId + '.dat'
+    #     statClassName = '[scriptFn:=' + statsFile.encode('hex_codec') + ':] -> CustomRStat'
 
-    #print tracks1, tracks2, statClassName, statsFile
 
     if tool == 'extract':
         #print 'GalaxyInterface.parseExtFormatAndExtractTrackManyBins*', (genome, tracks1, region, binSize, True, overlaps, output)
@@ -196,17 +160,10 @@ def main():
             GalaxyInterface.parseExtFormatAndExtractTrackManyBins(genome, tracks1, region, binSize, True, overlaps, output)
 
     else: #run analysis
-# already validated
-#        validation = GalaxyInterface.runValid(tracks1, tracks2, statClassName, region, binSize)
-        validation = True
-        if validation == True:
-            if output != None:
-                sys.stdout = open(output, "w", 0)
-            #print params
-            demoID = params['demoID'] if params.has_key('demoID') else None
-            GalaxyInterface.run(tracks1, tracks2, statClassName, region, binSize, genome, output, intensityTracks, username, track1State, track2State, demoID)
-        else:
-            print validation
+        if output != None:
+            sys.stdout = open(output, "w", 0)
+        demoID = params['demoID'] if params.has_key('demoID') else None
+        GalaxyInterface.run(tracks1, tracks2, statClassName, region, binSize, genome, output, intensityTracks, username, track1State, track2State, demoID)
 
 
 if __name__ == "__main__":
