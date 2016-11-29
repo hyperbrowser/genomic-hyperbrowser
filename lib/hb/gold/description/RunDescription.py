@@ -230,7 +230,7 @@ class RunDescription(object):
             fullBatchList = ['='.join(assignment) for assignment in batchVariables.items()] + [batchComposition]
             fullBatch = '<br>'.join(fullBatchList)
 
-            batchLinkDef = '<a href="%s/hyper?mako=generictool&tool_id=hb_batch_run_tool&box1=%s&dbkey=%s">%s</a>'
+            batchLinkDef = '<a href="%s/hyper?mako=generictool&tool_id=hb_batch_run_tool&command=%s&dbkey=%s">%s</a>'
             oneLineBatchLink = batchLinkDef % (URL_PREFIX, quote(oneLineBatch), genome, 'single line version')
             fullBatchLink = batchLinkDef % (URL_PREFIX, quote('\n'.join(fullBatchList)), genome, 'variable based version')
 
