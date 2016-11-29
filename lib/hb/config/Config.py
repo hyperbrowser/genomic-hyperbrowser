@@ -31,26 +31,35 @@ HB_VERSION = 'v2.0'
 # Functionality settings
 #
 
-IS_EXPERIMENTAL_INSTALLATION = bool(config.getWithDefault('is_experimental_installation', False, 'hyperbrowser'))
-USE_MEMORY_MEMOIZATION = bool(config.getWithDefault('use_memory_memoization', True, 'hyperbrowser'))
-LOAD_DISK_MEMOIZATION = bool(config.getWithDefault('load_disk_memoization', False, 'hyperbrowser'))
-STORE_DISK_MEMOIZATION = bool(config.getWithDefault('store_disk_memoization', False, 'hyperbrowser'))
-PRINT_PROGRESS = bool(config.getWithDefault('print_progress', True, 'hyperbrowser'))
-ALLOW_COMP_BIN_SPLITTING = bool(config.getWithDefault('allow_comp_bin_splitting', False, 'hyperbrowser'))
-ALLOW_GSUITE_FILE_PROTOCOL = bool(config.getWithDefault('allow_gsuite_file_protocol', False, 'hyperbrowser'))
-USE_PARALLEL = bool(config.getWithDefault('use_parallel', False, 'hyperbrowser'))
+IS_EXPERIMENTAL_INSTALLATION = config.getWithDefault('is_experimental_installation', False, 'hyperbrowser')
+USE_MEMORY_MEMOIZATION = config.getWithDefault('use_memory_memoization', True, 'hyperbrowser')
+LOAD_DISK_MEMOIZATION = config.getWithDefault('load_disk_memoization', False, 'hyperbrowser')
+STORE_DISK_MEMOIZATION = config.getWithDefault('store_disk_memoization', False, 'hyperbrowser')
+PRINT_PROGRESS = config.getWithDefault('print_progress', True, 'hyperbrowser')
+ALLOW_COMP_BIN_SPLITTING = config.getWithDefault('allow_comp_bin_splitting', False, 'hyperbrowser')
+ALLOW_GSUITE_FILE_PROTOCOL = config.getWithDefault('allow_gsuite_file_protocol', False, 'hyperbrowser')
+USE_PARALLEL = config.getWithDefault('use_parallel', False, 'hyperbrowser')
 
+#
+# Debugging
+#
+
+DEBUG_MODE = config.getWithDefault('debug_mode', 'NO_DEBUG', 'hyperbrowser').upper()
+try:
+    DebugConfig.changeMode(getattr(DebugModes, DEBUG_MODE))
+except AttributeError:
+    pass
 
 #
 # Optimization and limits
 #
 
-COMP_BIN_SIZE = int(config.getWithDefault('comp_bin_size', 100000, 'hyperbrowser'))
-MEMMAP_BIN_SIZE = int(config.getWithDefault('memmap_bin_size', 1024 * 1024, 'hyperbrowser'))
-MAX_NUM_USER_BINS = int(config.getWithDefault('max_num_user_bins', 330000, 'hyperbrowser'))
-MAX_LOCAL_RESULTS_IN_TABLE = int(config.getWithDefault('max_local_results_in_table', 100000, 'hyperbrowser'))
+COMP_BIN_SIZE = config.getWithDefault('comp_bin_size', 100000, 'hyperbrowser')
+MEMMAP_BIN_SIZE = config.getWithDefault('memmap_bin_size', 1024 * 1024, 'hyperbrowser')
+MAX_NUM_USER_BINS = config.getWithDefault('max_num_user_bins', 330000, 'hyperbrowser')
+MAX_LOCAL_RESULTS_IN_TABLE = config.getWithDefault('max_local_results_in_table', 100000, 'hyperbrowser')
 MAX_CONCAT_LEN_FOR_OVERLAPPING_ELS = \
-    int(config.getWithDefault('max_concat_len_for_overlapping_els', 20, 'hyperbrowser'))
+    config.getWithDefault('max_concat_len_for_overlapping_els', 20, 'hyperbrowser')
 
 
 #
@@ -95,17 +104,17 @@ EXT_TMP_PATH = config.getWithDefault('ext_tmp_path', '', 'hyperbrowser')
 CLUSTER_ACCOUNTNAME = config.getWithDefault('cluster_accountname', 'user', 'hyperbrowser')
 CLUSTER_TEMP_PATH = config.getWithDefault('cluster_temp_path', '/tmp', 'hyperbrowser')
 CLUSTER_SOURCE_CODE_DIRECTORY = config.getWithDefault('cluster_source_code_directory', '/src', 'hyperbrowser')
-ONLY_USE_ENTIRE_CLUSTER_NODES = bool(config.getWithDefault('only_use_entire_cluster_nodes', False, 'hyperbrowser'))
-CLUSTER_CORES_PER_NODE = int(config.getWithDefault('cluster_cores_per_node', 1, 'hyperbrowser'))
+ONLY_USE_ENTIRE_CLUSTER_NODES = config.getWithDefault('only_use_entire_cluster_nodes', False, 'hyperbrowser')
+CLUSTER_CORES_PER_NODE = config.getWithDefault('cluster_cores_per_node', 1, 'hyperbrowser')
 SBATCH_PATH = config.getWithDefault('sbatch_path', '/bin/sbatch', 'hyperbrowser')
-CLUSTER_MEMORY_PER_CORE_IN_MB = int(config.getWithDefault('cluster_memory_per_core_in_mb', 2048, 'hyperbrowser'))
-DEFAULT_WALLCLOCK_LIMIT_IN_SECONDS = int(config.getWithDefault('default_wallclock_limit_in_seconds', 3600, 'hyperbrowser'))
-DEFAULT_NUMBER_OF_REMOTE_WORKERS = int(config.getWithDefault('default_number_of_remote_workers', 8, 'hyperbrowser'))
+CLUSTER_MEMORY_PER_CORE_IN_MB = config.getWithDefault('cluster_memory_per_core_in_mb', 2048, 'hyperbrowser')
+DEFAULT_WALLCLOCK_LIMIT_IN_SECONDS = config.getWithDefault('default_wallclock_limit_in_seconds', 3600, 'hyperbrowser')
+DEFAULT_NUMBER_OF_REMOTE_WORKERS = config.getWithDefault('default_number_of_remote_workers', 8, 'hyperbrowser')
 
-PP_NUMBER_OF_LOCAL_WORKERS = int(config.getWithDefault('pp_number_of_local_workers', 2, 'hyperbrowser'))
+PP_NUMBER_OF_LOCAL_WORKERS = config.getWithDefault('pp_number_of_local_workers', 2, 'hyperbrowser')
 PP_PASSPHRASE = config.getWithDefault('pp_passphrase', 'USING THE DEFAULT IS NOT SECURE!', 'hyperbrowser')
-PP_PORT = int(config.getWithDefault('pp_port', 8180, 'hyperbrowser'))
-PP_MANAGER_PORT = int(config.getWithDefault('pp_manager_port', 8190, 'hyperbrowser'))
+PP_PORT = config.getWithDefault('pp_port', 8180, 'hyperbrowser')
+PP_MANAGER_PORT = config.getWithDefault('pp_manager_port', 8190, 'hyperbrowser')
 
 
 #

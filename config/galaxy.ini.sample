@@ -1199,7 +1199,10 @@ use_interactive = True
 
 [hyperbrowser]
 
+#
 # Setup
+#
+
 #is_experimental_installation = False
 #use_memory_memoization = True
 #load_disk_memoization = False
@@ -1209,14 +1212,60 @@ use_interactive = True
 #allow_gsuite_file_protocol = False
 #use_parallel = False
 
+#
+# Debugging
+#
+
+# Debug mode. Must be one of (case insensitive):
+#    NO_DEBUG
+#    # No debugging
+#
+#    PROFILING
+#    # Profiling with call graphs
+#
+#    UNCHANGED_LOGIC_VERBOSE
+#    # Debug without changing logic (verbose)
+#
+#    UNCHANGED_LOGIC_TRACE_CREATE_VERBOSE
+#    # Debug without changing logic (tracing statistic creation, verbose)
+#
+#    UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE
+#    # Debug without changing logic (tracing statistic compute, verbose)
+#
+#    UNCHANGED_LOGIC_FULL_TRACE_VERBOSE
+#    # Debug without changing logic (tracing statistic creation and compute,
+#    #                               verbose)
+#
+#    RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE
+#    # Debug by raising hidden exceptions
+#
+#    RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE
+#    # Debug by raising hidden exceptions (tracing statistic creation and
+#    #                                     compute, verbose)
+#
+#    RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE
+#    # Debug by raising hidden exceptions incl. stats returning None
+#    #   (only in special cases, verbose)
+#
+#    RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE
+#    # Debug by raising hidden exceptions incl. stats returning None
+#    #   (special cases, full trace, verbose)
+#debug_mode = NO_DEBUG
+
+#
 # Optimization and limits
+#
+
 #comp_bin_size = 100000
 #memmap_bin_size = 1048576
 #max_num_user_bins = 330000
 #max_local_results_in_table = 100000
 #max_concat_len_for_overlapping_els = 20
 
+#
 # External absolute paths (not used in the default setup)
+#
+
 #ext_nonstandard_data_path =
 #ext_orig_data_path =
 #ext_parsing_error_data_path =
@@ -1232,7 +1281,10 @@ use_interactive = True
 #ext_results_path =
 #ext_tmp_path =
 
+#
 # Parallelization and cluster offload setup
+#
+
 #cluster_accountname = user
 #cluster_temp_path = /tmp
 #cluster_source_code_directory = /src
