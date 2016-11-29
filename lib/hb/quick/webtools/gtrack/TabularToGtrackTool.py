@@ -142,7 +142,7 @@ class TabularToGtrackTool(GeneralGuiTool):
                 if numCols > TabularToGtrackTool.NUM_COLUMN_FUNCTIONS:
                     error = 'Error: the tabular file has more columns than is allowed by the tool (%s > %s).' % (numCols, TabularToGtrackTool.NUM_COLUMN_FUNCTIONS)
 
-            return ('__hidden__', FileContentsInfo(table=table, numCols=numCols, error=error))
+            return '__hidden__', FileContentsInfo(table=table, numCols=numCols, error=error)
 
     @staticmethod
     def getOptionsBoxColumnSelection(prevChoices):
@@ -198,7 +198,8 @@ class TabularToGtrackTool(GeneralGuiTool):
     def _getFileContentsInfo(prevChoices):
         fileContentsInfo = prevChoices.fileContentsInfo
         if isinstance(fileContentsInfo, basestring):
-            fileContentsInfo = eval(fileContentsInfo)
+            fileContentsInfo = eval(fileContentsInfo,
+                                    {'FileContentsInfo': FileContentsInfo})
         return fileContentsInfo
 
     @staticmethod
@@ -248,7 +249,8 @@ class TabularToGtrackTool(GeneralGuiTool):
             table = copy(fileContentsInfo.table)
             numCols = fileContentsInfo.numCols
 
-            table = [TabularToGtrackTool._getHeaders(prevChoices)] + table
+            table = [["%s.&nbsp;%s" % (i+1, header) for i, header in
+                      enumerate(TabularToGtrackTool._getHeaders(prevChoices))]] + table
             for row in table:
                 if len(row) < numCols:
                     row += [''] * (numCols - len(row))
