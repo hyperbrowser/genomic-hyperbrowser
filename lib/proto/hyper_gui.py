@@ -94,34 +94,26 @@ class GalaxyWrapper:
         from proto.CommonFunctions import getGalaxyFnFromAnyDatasetId
         return getGalaxyFnFromAnyDatasetId(id)
 
-    def getHistory(self, ext, dbkey = None):
+    def getHistory(self, exts = None, dbkey = None):
         datasets = []
-        for dataset in self.trans.get_history().active_datasets:
-            if dataset.visible and dataset.state == 'ok':
-                if dataset.extension in ext and (dbkey == None or dataset.dbkey == dbkey):
-                    datasets.append(dataset)
+        if self.trans.get_history():
+            for dataset in self.trans.get_history().active_datasets:
+                if dataset.visible and dataset.state == 'ok':
+                    if exts is None or (dataset.extension in exts and (dbkey is None or dataset.dbkey == dbkey)) \
+                            or any([isinstance(dataset.datatype, ext) for ext in exts if isinstance(ext, type)]):
+                        datasets.append(dataset)
         return datasets
 
-    def getValidRScripts(self):
-        datasets = []
-        try:
-            for dataset in self.getHistory(['R']):
-                rfilename = self.getDataFilePath(dataset.dataset_id)
-                qid = '[scriptFn:=' + rfilename.encode('hex_codec') + ':] -> CustomRStat'
-                #if hyper.isRScriptValid(tracks[0].definition(), tracks[1].definition(), qid):
-                datasets.append(dataset)
-        except AttributeError:
-            pass
-        return datasets
 
     def optionsFromHistory(self, exts, sel=None, datasets=None):
         html = ''
 
         if not datasets:
-            datasets = self.trans.get_history().active_datasets
+            #datasets = self.trans.get_history().active_datasets
+            datasets = self.getHistory(exts)
 
         for dataset in datasets:
-            if exts is None or dataset.extension in exts:
+            #if exts is None or dataset.extension in exts:
                 option = self.makeHistoryOption(dataset, sel)[0]
                 html += option
         return html
@@ -129,24 +121,24 @@ class GalaxyWrapper:
     def optionsFromHistoryFn(self, exts = None, tools = None, select = None):
         html = '<option value=""> --- Select --- </option>\n'
         vals = [None]
-        for dataset in self.trans.get_history().active_datasets:
+        for dataset in self.getHistory(exts):
             if tools:
                 job = getJobFromDataset(dataset)
                 tool_id = job.tool_id if job else None
-            if dataset.visible and dataset.state == 'ok':
-                if exts == None or dataset.extension in exts or any([isinstance(dataset.datatype, ext) for ext in exts if isinstance(ext, type)]):
-                    if tools == None or tool_id in tools:
-                        option, val = self.makeHistoryOption(dataset, select)
-                        vals.append(val)
-                        html += option
+            #if dataset.visible and dataset.state == 'ok':
+            #    if exts == None or dataset.extension in exts or any([isinstance(dataset.datatype, ext) for ext in exts if isinstance(ext, type)]):
+            if tools is None or tool_id in tools:
+                option, val = self.makeHistoryOption(dataset, select)
+                vals.append(val)
+                html += option
         return html, vals
 
     def itemsFromHistoryFn(self, exts = None):
         items = OrderedDict()
-        for dataset in self.trans.get_history().active_datasets:
-            if (exts == None or dataset.extension in exts) and dataset.state == 'ok':
-                option_tag, val = self.makeHistoryOption(dataset)
-                items[str(dataset.dataset_id)] = val
+        for dataset in self.getHistory(exts):
+            #if (exts == None or dataset.extension in exts) and dataset.state == 'ok':
+            option_tag, val = self.makeHistoryOption(dataset)
+            items[str(dataset.dataset_id)] = val
         return items
 
     def makeHistoryOption(self, dataset, select=None, sep=':'):
@@ -246,17 +238,6 @@ def disabled(opt, sel):
 
 def _disabled(opt, sel):
     return ' disabled="disabled" ' if opt != sel else ''
-
-def optionListFromDatasets(datasets, exts = None, sel = None):
-    assert False, 'fix or remove me'
-    list = []
-    for dataset in datasets:
-        if exts == None or dataset.extension in exts:
-            val = 'galaxy,' + str(dataset.dataset_id) + ',' + dataset.extension
-            txt = '%d: %s [%s]' % (dataset.hid, dataset.name, val)
-            tup = (txt, val, False)
-            list.append(tup)
-    return list
 
 
 def joinAttrs(attrs):
