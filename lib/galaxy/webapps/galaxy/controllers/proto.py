@@ -49,6 +49,7 @@ class ProtoController( BaseUIController ):
         exc_info = None
         html = ''
         #response.send_bytes('ping')
+
         try:
             html, exc_info = self.run_tool(mako, trans)
         except Exception, e:
@@ -60,6 +61,7 @@ class ProtoController( BaseUIController ):
 
         response.send_bytes(html)
         response.close()
+        trans.sa_session.flush()
 
     def run_tool(self, mako, trans):
         toolController = None
@@ -112,6 +114,7 @@ class ProtoController( BaseUIController ):
                 proc.terminate()
                 log.warn('Fork did not exit, terminated.')
 
+        trans.sa_session.flush()
         return html
 
 
