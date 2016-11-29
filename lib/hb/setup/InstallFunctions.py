@@ -81,7 +81,7 @@ def executeShellFile(shFn, args='', cwd=None, printError=True, onError='exit', b
                 origShFn, 'shell', cwd=cwd, printError=printError, onError=onError, background=background,
                 stdout=stdout, stderr=stderr, noBuffer=noBuffer)
     
-def executeShellCmd(cmd, args='', pipe=True, printError=True, onError='exit', background=False,
+def executeShellCmd(cmd, args='', cwd=None, pipe=True, printError=True, onError='exit', background=False,
                     stdout=None, stderr=None, noBuffer=True):
-    return _executeCmd(cmd, None, 'shell', pipe=pipe, printError=printError, onError=onError,
+    return _executeCmd(cmd, None, 'shell', cwd=cwd, pipe=pipe, printError=printError, onError=onError,
                        background=background, stdout=stdout, stderr=stderr, noBuffer=noBuffer)
