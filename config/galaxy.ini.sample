@@ -486,6 +486,10 @@ nglims_config_file = tool-data/nglims.yaml
 # Append "/{brand}" to the "Galaxy" text in the masthead.
 #brand = None
 
+# Title of the site HTML page, displayed in the browser as title of the window
+# or tab.
+#html_title = Galaxy
+
 # Format string used when showing date and time information.
 # The string may contain:
 # - the directives used by Python time.strftime() function (see
