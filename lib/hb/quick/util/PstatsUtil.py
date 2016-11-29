@@ -3,7 +3,7 @@ import pygraphviz
 import re
 import timeit
 
-from gprof2dot import gprof2dot
+from third_party import gprof2dot
 from math import fsum
 from pstats import Stats
 

@@ -224,7 +224,7 @@ if [ $INSTALL_R_PACKAGES -eq 1 ]; then
     fi
 fi
 
-#set -e
+set -e
 
 if [ $HYPERBROWSER_SETUP -eq 1 ]; then
     ./scripts/hyperbrowser_dirs.sh

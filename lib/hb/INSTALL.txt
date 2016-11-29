@@ -16,6 +16,7 @@ the Genomic HyperBrowser:
 - Xvfb
 - ImageMagick 6.2.8 or later
 - rsync
+- Graphviz
 
 Make sure that all software is available for the setup script (e.g. using PATH,
 PYTHONPATH, RHOME and R_LIBS paths.)
