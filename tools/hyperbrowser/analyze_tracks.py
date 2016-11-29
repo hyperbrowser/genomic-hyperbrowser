@@ -14,23 +14,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-#from dbgp.client import brkOnExcept
-#brkOnExcept(host='localhost', port=9000, idekey='galaxy')
-
 import sys, os, getopt, types
 from urllib import quote, unquote
 
-import galaxy.eggs
-from galaxy.util import restore_text
-
 from gold.application.GalaxyInterface import GalaxyInterface
-from config.Config import URL_PREFIX
+# from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
+
 import proto.hyperbrowser.hyper_gui as hg
 
-
-def getDataFilePath(root, id):
-    hashDir = '/%03d/' % (int(id) / 1000)
-    return root + hashDir + 'dataset_' + str(id) + '.dat'
 
 def main():
     filename = sys.argv[1]
@@ -144,11 +135,8 @@ def main():
 
     # if statClassName.startswith('galaxy'):
     #     statsFileId = statClassName.split(',')[1]
-    #     statsFile = getDataFilePath(file_path, statsFileId)
-    #     #hashDir = '/%03d/' % (int(statsFileId) / 1000)
-    #     #statsFile = file_path + hashDir + 'dataset_' + statsFileId + '.dat'
+    #     statsFile = getGalaxyFnFromDatasetId(statsFileId)
     #     statClassName = '[scriptFn:=' + statsFile.encode('hex_codec') + ':] -> CustomRStat'
-
 
     if tool == 'extract':
         #print 'GalaxyInterface.parseExtFormatAndExtractTrackManyBins*', (genome, tracks1, region, binSize, True, overlaps, output)
