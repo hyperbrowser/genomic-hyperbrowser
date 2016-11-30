@@ -32,7 +32,7 @@ try:
     params = galaxy.params
     genome = params.get('dbkey', 'hg18')
 
-    datasets = galaxy.getHistory(['bed','wig'])
+    datasets = galaxy.getHistory(hyper.getSupportedGalaxyFileFormats())
     username = galaxy.getUserName()
 
     tracks = [None] * 3
@@ -101,7 +101,7 @@ try:
                 else:
                     data['valid'] = valid
             else:
-                data = valid = 'No region defined'
+                data['valid'] = 'No region defined'
 
         elif ajax == 'config':
             optDict = {}
