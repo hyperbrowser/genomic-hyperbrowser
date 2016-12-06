@@ -141,7 +141,7 @@ class GenericToolController(BaseToolController):
             idxList = range(len(self.inputIds))
         else:
             for i in inputList:
-                if isinstance(i, str):
+                if isinstance(i, basestring):
                     try:
                         idx = self.inputIds.index(i)
                     except ValueError:
@@ -156,7 +156,7 @@ class GenericToolController(BaseToolController):
         return idxList
 
     def _getIdxForBoxId(self, i):
-        if isinstance(i, str):
+        if isinstance(i, basestring):
             try:
                 idx = self.inputIds.index(i)
             except ValueError:
@@ -285,7 +285,7 @@ class GenericToolController(BaseToolController):
                         values[k] = bool(self.params.get(id + '|' + k , False) if val else v)
                     val = values
 
-            elif isinstance(opts, str) or isinstance(opts, unicode):
+            elif isinstance(opts, basestring):
                 if opts == '__genome__':
                     self.inputTypes += ['__genome__']
                     try:
@@ -347,7 +347,7 @@ class GenericToolController(BaseToolController):
                         val = opts[1]
                     #elif val:
                     #    val = unquote(val)
-                elif len(opts) in [2, 3] and (isinstance(opts[0], str) or isinstance(opts[0], unicode)):
+                elif len(opts) in [2, 3] and (isinstance(opts[0], basestring)):
                     if len(opts) == 2:
                         opts = opts + (False,)
                     if isinstance(opts[1], int):
@@ -500,8 +500,8 @@ class GenericToolController(BaseToolController):
         ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds)
         choices = ChoiceTuple._make(self.inputValues)
 
-        #batchargs = '|'.join([';'.join(c.itervalues()) if not isinstance(c, str) else c for c in choices])
-        #batchargs = '|'.join([repr(c.items()) if not isinstance(c, str) else c for c in choices])
+        #batchargs = '|'.join([';'.join(c.itervalues()) if not isinstance(c, basestring) else c for c in choices])
+        #batchargs = '|'.join([repr(c.items()) if not isinstance(c, basestring) else c for c in choices])
 
         #print choices
         if outputFormat == 'html':
