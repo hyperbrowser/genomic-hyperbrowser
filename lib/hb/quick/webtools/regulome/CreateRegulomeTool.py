@@ -83,8 +83,8 @@ class CreateRegulomeTool(GeneralGuiTool):
     def getRedirectURL(choices):
         
         genome = choices[0]
-        track1file = ExternalTrackManager.createSelectValueFromGalaxyTN(choices[1].split(':'))
-        track2file = ExternalTrackManager.createSelectValueFromGalaxyTN(choices[2].split(':'))
+        track1file = ExternalTrackManager.createSelectValueFromGalaxyTN(choices[1])
+        track2file = ExternalTrackManager.createSelectValueFromGalaxyTN(choices[2])
         return createHyperBrowserURL(genome, trackName1=['galaxy'], trackName2=['galaxy'], \
                                      track1file=track1file, track2file=track2file, \
                                      analysis='Category pairs differentially co-located?', \
