@@ -183,7 +183,11 @@ def createGalaxyFilesFn(galaxyFn, filename):
 def extractFnFromDatasetInfo(datasetInfo):
     if isinstance(datasetInfo, basestring):
         datasetInfo = datasetInfo.split(':')
-    return getGalaxyFnFromEncodedDatasetId(datasetInfo[2])
+    try:
+        return getGalaxyFnFromEncodedDatasetId(datasetInfo[2])
+    except TypeError:
+        # full path, not id
+        return datasetInfo[2]
 
 
 def extractFileSuffixFromDatasetInfo(datasetInfo, fileSuffixFilterList=None):
@@ -217,7 +221,7 @@ def createGalaxyToolURL(toolId, **kwArgs):
             ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
 
 
-def getLoadToGalaxyHistoryURL(fn, genome='hg18', galaxyDataType='bed', urlPrefix=None):
+def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=None):
     if urlPrefix is None:
         from proto.config.Config import URL_PREFIX
         urlPrefix = URL_PREFIX
@@ -225,8 +229,10 @@ def getLoadToGalaxyHistoryURL(fn, genome='hg18', galaxyDataType='bed', urlPrefix
     import base64
 
     assert galaxyDataType is not None
-    return urlPrefix + '/tool_runner?tool_id=file_import&dbkey=%s&runtool_btn=yes&input=' % (genome,) \
-            + base64.urlsafe_b64encode(fn) + ('&format=' + galaxyDataType if galaxyDataType is not None else '')
+    return urlPrefix + '/tool_runner?tool_id=file_import' + \
+                       ('&dbkey=' + genome if genome else '') + \
+                       '&runtool_btn=yes&input=' + base64.urlsafe_b64encode(fn) + \
+                       ('&format=' + galaxyDataType if galaxyDataType is not None else '')
 
 
 def strWithStdFormatting(val, separateThousands=True, floatFormatFlag='g'):

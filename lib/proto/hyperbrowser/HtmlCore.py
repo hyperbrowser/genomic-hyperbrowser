@@ -45,6 +45,6 @@ $('.%sclickmeTable').on('click', function(e) {
     $('#%stable').slideToggle('fast');
 });
 </script>
-""" % (tuple(tableId) * 3)
+""" % ((tableId,) * 3)
         
         return self
