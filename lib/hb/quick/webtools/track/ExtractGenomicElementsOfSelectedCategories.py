@@ -1,3 +1,5 @@
+import ast
+
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 # This is a template prototyping GUI that comes together with a corresponding
@@ -117,7 +119,7 @@ class ExtractGenomicElementsOfSelectedCategories(GeneralGuiTool):
     @staticmethod    
     def getOptionsBox4(prevChoices):
         if prevChoices[-2]:
-            catSet = eval(prevChoices[-2])
+            catSet = ast.literal_eval(prevChoices[-2])
             from collections import OrderedDict
             return OrderedDict([(k, False) for k in sorted(catSet)])
             

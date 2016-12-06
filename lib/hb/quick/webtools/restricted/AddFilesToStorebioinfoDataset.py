@@ -1,3 +1,4 @@
+import ast
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from xml.dom import minidom
@@ -31,7 +32,7 @@ class AddFilesToStorebioinfoDataset(GeneralGuiTool):
         #from quick.extra.WsStoreBioInfo import *
         params = 'params:='+repr(inList)
         AddFilesToStorebioinfoDataset.socket.send('##'.join(['username:='+userName,'password:='+password, params, 'operation:=getSubTrackName','class:=dataStorageService']))
-        responseList = eval(AddFilesToStorebioinfoDataset.socket.recv_unicode().encode('ascii','ignore'))
+        responseList = ast.literal_eval(AddFilesToStorebioinfoDataset.socket.recv_unicode().encode('ascii','ignore'))
         return ['--select--']+[v[0] for v in responseList]
     
     

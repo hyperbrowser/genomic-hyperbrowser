@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import StatisticConcatNumpyArrayResSplittable, Statistic, OnlyGloballySplittable
 from gold.statistic.RawDataStat import RawDataStat
@@ -32,8 +34,8 @@ class MarksListStatUnsplittable(Statistic):
         assert( withOverlaps in ['no','yes'] )
         self._withOverlaps = withOverlaps
         self._markType = markType
-        if type(enforcePoints) == str:
-            enforcePoints = eval(enforcePoints)
+        if isinstance(enforcePoints, basestring):
+            enforcePoints = ast.literal_eval(enforcePoints)
         self._enforcePoints = enforcePoints
         Statistic.__init__(self, region, track, track2, withOverlaps=withOverlaps, markType=markType, enforcePoints=enforcePoints, **kwArgs)
     

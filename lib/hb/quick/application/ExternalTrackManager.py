@@ -158,6 +158,12 @@ class ExternalTrackManager(object):
 
     @staticmethod
     def createSelectValueFromGalaxyTN(galaxyTN):
+        if not galaxyTN:
+            return ''
+
+        if isinstance(galaxyTN, basestring):
+            galaxyTN = galaxyTN.split(':')
+
         assert(galaxyTN[0].lower() == 'galaxy')
         return ','.join(['galaxy',\
                         ExternalTrackManager.extractIdFromGalaxyFn\
@@ -167,10 +173,10 @@ class ExternalTrackManager(object):
 
     @classmethod
     def getStdTrackNameFromGalaxyTN(cls, galaxyTN, allowUnsupportedSuffixes=False):
-        if type(galaxyTN) == str:
+        if isinstance(galaxyTN, basestring):
             galaxyTN = galaxyTN.split(':')
 
-        assert galaxyTN[0].lower() == 'galaxy'
+        assert galaxyTN[0].lower() == 'galaxy', str(galaxyTN)
         if not allowUnsupportedSuffixes and not galaxyTN[1].lower() in getSupportedFileSuffixes():
             raise InvalidFormatError('File type "%s" is not supported.' % galaxyTN[1].lower())
 

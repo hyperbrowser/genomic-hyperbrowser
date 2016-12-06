@@ -15,6 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 #!/usr/bin/env python
+import ast
 import os
 import sys
 import re
@@ -163,9 +164,9 @@ if __name__ == "__main__":
     if len(sys.argv) in [2,3] and sys.argv[1].lower() == 'summary':
         ProfilingStorage.printSummary(int(sys.argv[2]) if len(sys.argv) >= 3 else None)
     elif len(sys.argv) == 4:
-        ProfilingStorage.printProfiling(sys.argv[1], int(sys.argv[2]), eval(sys.argv[3]))
+        ProfilingStorage.printProfiling(sys.argv[1], int(sys.argv[2]),
+                                        ast.literal_eval(sys.argv[3]))
     else:
         print 'Syntax: python ProfilingStorage.py summary [numRecords]'
         print '        python ProfilingStorage.py testMethodName revision memoized'
         print '  (e.g) python ProfilingStorage.py TestStatistics.testCountStat 640 False'
-    

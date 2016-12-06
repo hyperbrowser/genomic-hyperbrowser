@@ -276,7 +276,7 @@ class AnalyzeTfsVersusSnv(GeneralGuiTool):
 class MultiExactlySpecifiedTF(dict):
     
     def __setitem__(self, key, item):
-        assert type(key) == str
+        assert isinstance(key, basestring)
         assert isinstance(item, ExactlySpecifiedTF)
         dict.__setitem__(self, key, item)
     

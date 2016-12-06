@@ -2,6 +2,7 @@
 #
 #pkg_resources.require( "sqlalchemy" )
 
+import ast
 import glob
 import os
 import re
@@ -351,7 +352,7 @@ class TestDbConnection(GeneralGuiTool):
 
         if prevChoices[-2]:
             #return prevChoices[-2], 5, True
-            data = eval(urllib.unquote(prevChoices[-2]))
+            data = ast.literal_eval(urllib.unquote(prevChoices[-2]))
             sortedList = sorted([(urllib.unquote(k), sum(v.values())) for k ,v in data.items()], key=lambda i: i[1], reverse=True )
 
             return OrderedDict([(k, False) for k, v in sortedList])#,30, True
@@ -386,7 +387,7 @@ class TestDbConnection(GeneralGuiTool):
             startDate = datetime(int(a),int(b),int(c)).toordinal()
             a, b, c = prevChoices[1].split('-')
             lastDate = datetime(int(a),int(b),int(c)).toordinal()
-            data = eval(urllib.unquote(prevChoices[-4]))
+            data = ast.literal_eval(urllib.unquote(prevChoices[-4]))
 
             candidateStats = [k for k, v in prevChoices[-3].items() if v]
             if prevChoices[-2] == 'show time series':
@@ -652,7 +653,7 @@ class ExtractIndividualTracksFromCategoryTrack(GeneralGuiTool):
     @classmethod
     def getOptionsBox7(cls, prevChoices):
         if prevChoices[-2] == 'select categories':
-            return OrderedDict([(v,False) for v in  eval(urllib.unquote(prevChoices[4]))])
+            return OrderedDict([(v,False) for v in ast.literal_eval(urllib.unquote(prevChoices[4]))])
 
     @classmethod
     def getOptionsBox8(cls, prevChoices):
@@ -665,7 +666,7 @@ class ExtractIndividualTracksFromCategoryTrack(GeneralGuiTool):
         utFil = open(galaxyFn, 'w')
         genome = choices[0]
         track = choices[2].split(':') if choices[1] == cls.histChoice else choices[3].split(':')
-        categories = sorted(eval(urllib.unquote(choices[4]))) if choices[5] == 'get all categories' else sorted([k for k,v  in choices[6].items() if v])
+        categories = sorted(ast.literal_eval(urllib.unquote(choices[4]))) if choices[5] == 'get all categories' else sorted([k for k,v  in choices[6].items() if v])
         categoryFileDict = dict()
         if choices[5] == 'select categories' and choices[7] == 'Yes':
             for cat in categories:
@@ -1883,7 +1884,7 @@ class MakeVennDiagram(GeneralGuiTool):
 
         for index, geSource in enumerate(geSourceList):
             primeNum = primeList[index]
-            #if type(fn) == str:
+            #if isinstance(fn, basestring):
             #    for line in open(fn):
             #        row = line.split()
             #        posDict[row[0]] += [int(v) for v in row[1:3]]

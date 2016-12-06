@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.statistic.RawDataStat import RawDataStat
@@ -32,7 +34,7 @@ class PwmScoreArrayStatUnsplittable(Statistic):
         self._pfmFileName = pfmFileName.replace('^','/')
         
         assert complement in ['True', 'False']
-        self._complement = eval(complement)
+        self._complement = ast.literal_eval(complement)
 
     def _compute(self):
         from Bio.Alphabet import IUPAC

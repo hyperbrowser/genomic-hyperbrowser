@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+
 import numpy as np
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
@@ -35,9 +37,9 @@ class GraphAsMatrixStatUnsplittable(Statistic):
         self._normalizationMethod = normalizationMethod
         self._minimal = minimal
         assert complete in ['False', 'True']
-        self._complete = eval(complete)
+        self._complete = ast.literal_eval(complete)
         assert rowsAsFromNodes in ['False', 'True']
-        self._rowsAsFromNodes = eval(rowsAsFromNodes)
+        self._rowsAsFromNodes = ast.literal_eval(rowsAsFromNodes)
 
     def _numpyRemoveInfs(self, a):
         a = np.array(a)

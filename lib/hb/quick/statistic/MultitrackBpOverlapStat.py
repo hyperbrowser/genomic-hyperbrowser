@@ -48,8 +48,8 @@ class MultitrackBpOverlapStatUnsplittable(Statistic):
         assert self._track2 is not None, 'self._track2 missing'
         
         extraTracksArg = self._kwArgs['extraTracks']
-        assert isinstance(extraTracksArg, (list, str)), extraTracksArg
-        if isinstance(extraTracksArg, str):
+        assert isinstance(extraTracksArg, (list, basestring)), extraTracksArg
+        if isinstance(extraTracksArg, basestring):
             extraTracksArg = extraTracksArg.split(MULTIPLE_EXTRA_TRACKS_SEPARATOR)
         numTracks = 2 + len(extraTracksArg)
         

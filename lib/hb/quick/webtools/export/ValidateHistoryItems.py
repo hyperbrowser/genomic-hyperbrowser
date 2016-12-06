@@ -1,3 +1,5 @@
+import ast
+
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 # This is a template prototyping GUI that comes together with a corresponding
@@ -109,7 +111,7 @@ class ValidateHistoryItems(GeneralGuiTool):
         if prevChoices[-2]:
             dTypeStr = ', '.join([repr(k) for k, v in prevChoices[-2].items() if v])
             if dTypeStr:
-                return eval(returnStmnt+dTypeStr)
+                return ast.literal_eval(returnStmnt+dTypeStr)
             
 
     #@staticmethod    

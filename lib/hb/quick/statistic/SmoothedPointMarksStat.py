@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticConcatResSplittable, OnlyGloballySplittable
 from gold.extra.SlidingWindow import SlidingWindow
@@ -33,7 +35,7 @@ class SmoothedPointMarksStatUnsplittable(Statistic):
         self._windowSize = int(windowSize)
         self._windowBpSize = int(windowBpSize)
         self._sdOfGaussian = int(sdOfGaussian)
-        self._guaranteeBpCoverByWindow = eval(guaranteeBpCoverByWindow)
+        self._guaranteeBpCoverByWindow = ast.literal_eval(guaranteeBpCoverByWindow)
         assert( withOverlaps in ['no','yes'])
         self._withOverlaps = withOverlaps
         Statistic.__init__(self,region,track,track2,windowSize=windowSize, windowBpSize=windowBpSize, sdOfGaussian=sdOfGaussian, guaranteeBpCoverByWindow=guaranteeBpCoverByWindow, withOverlaps=withOverlaps, **kwArgs)

@@ -15,6 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 #!/usr/bin/env python
+import ast
 import unittest
 import os
 import sys
@@ -45,8 +46,9 @@ class TestTrackPreProcessor(ProfiledIntegrationTest, TestWithGeSourceData):
         self._removeDir(noOverlapsPath, trackName)
         self._removeDir(withOverlapsPath, trackName)
 
-        self._runWithProfiling('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' + repr(trackName) + ', username="Test").process()',\
-                                   globals(), locals())
+        self._runWithProfiling('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' +
+                               repr(trackName) + ', username="Test").process()',
+                               {'PreProcessAllTracksJob', PreProcessAllTracksJob})
 
         if noOverlapsFileCount is not None:
             self.assertEquals(noOverlapsFileCount, len([x for x in os.listdir(noOverlapsPath) if not x.startswith('.')]))
@@ -276,7 +278,7 @@ class TestGESourceTracksPreprocessing(TestTrackPreProcessor):
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        TestTrackPreProcessor.VERBOSE = eval(sys.argv[1])
+        TestTrackPreProcessor.VERBOSE = ast.literal_eval(sys.argv[1])
         sys.argv = sys.argv[:-1]
     #TestTrackPreProcessor().run()
     #TestTrackPreProcessor().debug()

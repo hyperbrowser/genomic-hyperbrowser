@@ -95,7 +95,7 @@ class BedComposer(FileFormatComposer):
                     elif colName == 'strand':
                         value = getStringFromStrand(value)
 
-                    if isinstance(value, str) and colName not in ('name', 'id'):
+                    if isinstance(value, basestring) and colName not in ('name', 'id'):
                         if '|' in value or any('|' in getattr(ge, col) \
                                                for col in colInfo.checkExtra if hasattr(ge,col)):
                             cols[i] = colInfo.defaultVal

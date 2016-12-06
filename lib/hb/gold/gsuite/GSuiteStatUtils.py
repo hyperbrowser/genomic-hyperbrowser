@@ -74,7 +74,7 @@ def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=No
     resultsDict = OrderedDict()
     additionalAnalysisSpec = AnalysisSpec(GenericResultsCombinerStat)
     
-    statsParam = stats if isinstance(stats, str) else "^".join([x.__name__ for x in stats])
+    statsParam = stats if isinstance(stats, basestring) else "^".join([x.__name__ for x in stats])
     
     additionalAnalysisSpec.addParameter('rawStatistics', statsParam) #use ^ separator to add additional stat classes.
     for refTrack in gsuite.allTracks():

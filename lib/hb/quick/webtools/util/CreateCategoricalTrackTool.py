@@ -1,3 +1,4 @@
+import ast
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.application.ExternalTrackManager import ExternalTrackManager
 import math
@@ -34,7 +35,7 @@ class CreateCategoricalTrackTool(GeneralGuiTool):
 
     @staticmethod
     def getOptionsBox3(prevChoices):
-        prevDict = eval(prevChoices[-1]) if prevChoices[-1] else {}
+        prevDict = ast.literal_eval(prevChoices[-1]) if prevChoices[-1] else {}
         index2name = prevDict
 
         selectedHists = [ExternalTrackManager.extractNameFromHistoryTN(unquote(val).split(':')) \
@@ -54,7 +55,7 @@ class CreateCategoricalTrackTool(GeneralGuiTool):
 
     @classmethod
     def _getSelectedValue(cls, prevChoices, index):
-        index2name = eval(prevChoices[2])
+        index2name = ast.literal_eval(prevChoices[2])
         return index2name.get(index)
 
     @classmethod
@@ -78,7 +79,7 @@ class CreateCategoricalTrackTool(GeneralGuiTool):
         genome = choices[0]
         outputFile=open(galaxyFn,"w")
 
-        index2name = eval(choices[2])
+        index2name = ast.literal_eval(choices[2])
         name2index = dict([(name, idx) for idx,name in index2name.iteritems()])
         galaxyTnList = [tn.split(':') for tn in choices[1].values() if tn]
         #print>>outputFile,'\n'.join([str(i)+':\t'+str(v) for i, v in enumerate(choices)])
@@ -116,7 +117,7 @@ class CreateCategoricalTrackTool(GeneralGuiTool):
                 return errorStr
 
         catList = []
-        for ind, name in eval(choices[2]).iteritems():
+        for ind, name in ast.literal_eval(choices[2]).iteritems():
             if name is not None:
                 index = ind*2 + 4
                 if choices[index] == '':

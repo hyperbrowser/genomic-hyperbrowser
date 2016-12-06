@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import ast
+
 import mechanize
 import time
 import os.path
@@ -25,7 +27,7 @@ class UcscHandler(object):
             temp = state.split('#')
             self._sessionId = temp[0]
             self._genome = temp[-2]
-            self.valueListOfDicts = eval(temp[-1])
+            self.valueListOfDicts = ast.literal_eval(temp[-1])
         else:
             self._sessionId = self._genome = None
             self.valueListOfDicts = []

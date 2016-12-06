@@ -14,12 +14,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+import numpy
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticNumpyMatrixSplittable
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import TrackFormatReq
 from collections import OrderedDict
-import numpy
 
 class CategoryPointCountInSegsMatrixStat(MagicStatFactory):
     pass
@@ -30,8 +32,8 @@ class CategoryPointCountInSegsMatrixStatSplittable(StatisticNumpyMatrixSplittabl
 class CategoryPointCountInSegsMatrixStatUnsplittable(Statistic):    
     VERSION = '1.3'
     def __init__(self, region, track, track2, calcPointTotals=False, **kwArgs):
-        if type(calcPointTotals) == str:
-            calcPointTotals = eval(calcPointTotals)
+        if isinstance(calcPointTotals, basestring):
+            calcPointTotals = ast.literal_eval(calcPointTotals)
         self._calcPointTotals = calcPointTotals
         Statistic.__init__(self, region, track, track2, \
                            calcPointTotals=calcPointTotals, **kwArgs)

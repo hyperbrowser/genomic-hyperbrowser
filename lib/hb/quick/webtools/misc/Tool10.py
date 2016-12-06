@@ -1,3 +1,4 @@
+import ast
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 # This is a template prototyping GUI that comes together with a corresponding
@@ -118,7 +119,8 @@ class Tool10(GeneralGuiTool):
 
     @classmethod
     def getOptionsBox4(cls, prevChoices):
-        return cls.createGenericGuiToolURL(prevChoices[1],'EpigenomeTrackSearchTool', eval(prevChoices[2]) if prevChoices[2] else None), 1, True
+        return cls.createGenericGuiToolURL(prevChoices[1],'EpigenomeTrackSearchTool',
+                                           ast.literal_eval(prevChoices[2]) if prevChoices[2] else None), 1, True
 
     #@staticmethod
     #def getOptionsBox4(prevChoices):

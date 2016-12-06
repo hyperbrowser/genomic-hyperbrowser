@@ -707,7 +707,7 @@ class MultipleTrackStatistic(Statistic):
         if 'extraTracks' in self._kwArgs:
             from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
             extraTracks = self._kwArgs['extraTracks']
-            if type(extraTracks) == str:
+            if isinstance(extraTracks, basestring):
                 extraTracks = extraTracks.split(MULTIPLE_EXTRA_TRACKS_SEPARATOR)
             for extraT in extraTracks:
                 
@@ -720,7 +720,7 @@ class MultipleTrackStatistic(Statistic):
                         tracks.append(self._trackDict[str(extraT)])
                 #####################################
                 else:
-                    if type(extraT) == str:
+                    if isinstance(extraT, basestring):
                         #extraT = extraT.split('|')
                         #extraT = re.split('\^|\|',extraT)
                         extraT = convertTNstrToTNListFormat(extraT, doUnquoting=False)
@@ -743,7 +743,7 @@ class MultipleTrackStatistic(Statistic):
         return tracks
 
             #suppliedT3 = self._kwArgs['trackNameIntensity']
-            #if type(suppliedT3) == str:
+            #if isinstance(suppliedT3, basestring):
                 #if suppliedT3 == 'test':
                 #    print 'WARNING! USING FIXED TEST DATA AS TRACK 3 - Sample tracks|Unmarked segments'
                 #    suppliedT3 = 'Sample tracks|Unmarked segments'

@@ -13,6 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+
 from urllib import unquote
 from gold.util import CommonConstants
 from collections import OrderedDict
@@ -54,10 +55,10 @@ class GenericGSuiteVsGSuiteV2StatUnsplittable(StatisticV2):
 
         self._queryTrackTitles = [unquote(t) for t in
                                   queryTrackTitleList.split(CommonConstants.TRACK_TITLES_SEPARATOR)] if \
-            isinstance(queryTrackTitleList, str) else [unquote(t) for t in queryTrackTitleList]
+            isinstance(queryTrackTitleList, basestring) else [unquote(t) for t in queryTrackTitleList]
 
         self._refTrackTitles = [unquote(t) for t in refTrackTitleList.split(CommonConstants.TRACK_TITLES_SEPARATOR)] \
-            if isinstance(refTrackTitleList, str) else [unquote(t) for t in refTrackTitleList]
+            if isinstance(refTrackTitleList, basestring) else [unquote(t) for t in refTrackTitleList]
 
         self._removeZeroRow = removeZeroRow == 'Yes'
         self._removeZeroCol = removeZeroColumn == 'Yes'

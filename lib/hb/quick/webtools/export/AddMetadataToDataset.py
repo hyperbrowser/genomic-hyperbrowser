@@ -1,3 +1,4 @@
+import ast
 import pickle
 from urllib import quote, unquote
 
@@ -53,7 +54,7 @@ class AddMetadataToDataset(GeneralGuiTool):
                 params = 'params:='+repr(['StoreBioInfo'])
                     
                 AddMetadataToDataset.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
-                responseList = eval(AddMetadataToDataset.socket.recv_unicode().encode('ascii','ignore'))
+                responseList = ast.literal_eval(AddMetadataToDataset.socket.recv_unicode().encode('ascii','ignore'))
                 return [v[0].split('(')[0].strip() for v in responseList]
             else:
                 dsList = pickle.loads(unquote(prevChoices[2]))

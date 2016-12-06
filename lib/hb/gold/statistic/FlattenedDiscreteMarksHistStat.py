@@ -37,7 +37,7 @@ class FlattenedDiscreteMarksHistStatUnsplittable(AbstractHistStatUnsplittable):
         self._controlTrackNameList = controlTrackNameList
         
         numControlTracks = len([x.split('^') for x in controlTrackNameList.split('^^')] \
-            if type(controlTrackNameList) == str else controlTrackNameList)
+            if isinstance(controlTrackNameList, basestring) else controlTrackNameList)
         assert numControlTracks > 0
 
         self._numHistBins = int(reducedNumDiscreteVals)**numControlTracks

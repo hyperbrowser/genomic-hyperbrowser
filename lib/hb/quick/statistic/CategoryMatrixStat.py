@@ -40,7 +40,7 @@ class CategoryMatrixStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
     def __init__(self, region, track, track2, rawStatistic=None, **kwArgs):        
         assert rawStatistic is not None
-        assert type(rawStatistic) == str
+        assert isinstance(rawStatistic, basestring)
         CompBinManager.ALLOW_COMP_BIN_SPLITTING = False
         from gold.statistic.AllStatistics import STAT_CLASS_DICT
         self._rawStatistic = STAT_CLASS_DICT[rawStatistic] 

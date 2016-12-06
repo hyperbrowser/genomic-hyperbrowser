@@ -61,7 +61,7 @@ class TonysTool(GeneralGuiTool):
         lineTab = []
         if type(fn) == type(None):
             return resDict
-        elif type(fn) == str:
+        elif isinstance(fn, basestring):
             lineTab = open(fn,'r').read().split('\n')
         else:
             lineTab = fn.returnComposed().split('\n')

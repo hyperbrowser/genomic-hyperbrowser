@@ -33,7 +33,7 @@ def slowPlainSolution(fn):
     
 from numpy import *            
 def fastNumpySolution(fnOrArray):
-    if type(fnOrArray) == str:
+    if isinstance(fnOrArray, basestring):
         numpyFn = fnOrArray
         s1Seq = memmap(numpyFn,dtype='S1')[:]
     else:

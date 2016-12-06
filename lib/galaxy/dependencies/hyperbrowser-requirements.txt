@@ -21,6 +21,7 @@ Unidecode>=0.04.18
 pyliftover>=0.3
 progressbar>=2.3
 python_dateutil>=1.5
+asteval==0.9.8
 
 #Might be needed
 #pycairo>=1.8.10

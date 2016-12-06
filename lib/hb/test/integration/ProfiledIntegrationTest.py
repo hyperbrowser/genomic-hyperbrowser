@@ -17,6 +17,8 @@
 import sys
 import StringIO
 
+from asteval import Interpreter
+
 from gold.util.Profiler import Profiler
 from test.integration.ProfilingStorage import ProfilingStorage
 from test.util.Asserts import TestCaseWithImprovedAsserts
@@ -43,12 +45,16 @@ class ProfiledIntegrationTest(TestCaseWithImprovedAsserts):
     def _usesProfiling(self):
         return self._profiler is not None
     
-    def _runWithProfiling(self, runStr, globals, locals):
+    def _runWithProfiling(self, runStr, symbolDict={}):
+        aeval = Interpreter()
+        if symbolDict:
+            aeval.symtable.update(symbolDict)
+
         if not self._usesProfiling():
-            return eval(runStr, globals, locals)
+            return aeval(runStr)
         else:
             print 'Running with profiling..'
-            res = self._profiler.run(runStr, globals, locals)
+            res = self._profiler.run('aeval(%s)' % runStr, globals, locals)
             self._profiler.printStats()
             return res
         

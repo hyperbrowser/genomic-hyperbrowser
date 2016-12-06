@@ -305,7 +305,7 @@ class ClusteringExecution(object):
 
             for index, track in enumerate(refTracks) :
                 #print track, '<br>'
-                if type(track) == str :
+                if isinstance(track, basestring) :
                     track = track.split(":")
                 refTracks[index] = track[:-1] if track[-1] == "-- All subtypes --" else track
 

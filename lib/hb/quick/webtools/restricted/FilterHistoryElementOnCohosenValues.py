@@ -1,9 +1,10 @@
+from asteval import Interpreter
+
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 #from gold.application.LogSetup import logMessage
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from gold.util.CustomExceptions import InvalidFormatError
-#This is a template prototyping GUI that comes together with a corresponding web page.
-#
+
 
 class FilterHistoryElementOnCohosenValues(GeneralGuiTool):
     @staticmethod
@@ -123,9 +124,10 @@ class FilterHistoryElementOnCohosenValues(GeneralGuiTool):
         else:
             for i in inputFile:
                 temptab = i.split('\t')
+                aeval = Interpreter()
                 for index in range(len(temptab)):
-                    locals()['c'+str(index)] = temptab[index]
-                if eval(choices[5]):
+                    aeval.symtable['c'+str(index)] = temptab[index]
+                if aeval(choices[5]):
                     print>>outputFile, i
                     
         inputFile.close()

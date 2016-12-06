@@ -293,7 +293,7 @@ class VisualizeTracksAsHeatmap(GeneralGuiTool):
         startTime = time.time()
         if type(fn) == type(None):
             return resDict
-        elif type(fn) == str:
+        elif isinstance(fn, basestring):
             for line in open(fn,'r'):
                 row = line.split('\t')
                 try:

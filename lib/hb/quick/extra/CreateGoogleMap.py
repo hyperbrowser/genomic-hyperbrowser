@@ -1,3 +1,4 @@
+import ast
 import getpass
 import os
 import shutil
@@ -17,7 +18,7 @@ from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
 #print self.CUR_DIR_ON_INVITRO
 #print self.CUR_DIR_ON_MEDSEQPROD
 
-class GoogleMapCreator():
+class GoogleMapCreator(object):
     USERNAME = getpass.getuser()
     #todo: needs fix for generality
     HOME_DIR_ON_INVITRO = '/cluster/home/' + USERNAME
@@ -214,7 +215,7 @@ if __name__ == "__main__":
 
 
     id, batchid, name, mapId = [sys.argv[x] for x in [1,2,3,4]]
-    doTiling, doCreateResultShelves, doCreateIndexFile = [eval(sys.argv[x]) for x in [5,6,7]]
+    doTiling, doCreateResultShelves, doCreateIndexFile = [ast.literal_eval(sys.argv[x]) for x in [5,6,7]]
     assert all([x in [False, True] for x in [doTiling, doCreateResultShelves, doCreateIndexFile]])
 
     if len(sys.argv) >= 9:
@@ -223,7 +224,7 @@ if __name__ == "__main__":
         title = name
 
     if len(sys.argv) == 10:
-        onMedSeqProd = eval(sys.argv[9])
+        onMedSeqProd = ast.literal_eval(sys.argv[9])
     else:
         onMedSeqProd = False
 

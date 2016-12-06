@@ -316,7 +316,7 @@ class ReportTrackProperties(GeneralGuiTool):
     def makeSinglePieChartSubstance(cls,divId, table, title):
         anchorStr = '<div id="%s" style="width: 500px; height: 300px;"></div>' % divId
         pieStr = '''var chart = new google.visualization.PieChart(document.getElementById('%s'));\n\t
-        chart.draw(google.visualization.arrayToDataTable(%s), {title: '%s'});\n\t'''% (divId, repr(table) if type(table)!=str else table, title)
+        chart.draw(google.visualization.arrayToDataTable(%s), {title: '%s'});\n\t'''% (divId, repr(table) if not isinstance(table, basestring) else table, title)
         
         return anchorStr, pieStr 
     

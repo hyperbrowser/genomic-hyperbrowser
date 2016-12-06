@@ -14,6 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 from collections import OrderedDict
 from copy import copy
 
@@ -36,7 +37,7 @@ class ClusterMatrixStatUnsplittable(Statistic):
               childStat=None, numClustersRows='1', numClustersCols='1', complete='False', \
               rowClustId='None', colClustId='None', **kwArgs):
         assert childStat is not None
-        assert type(childStat) == str
+        assert isinstance(childStat, basestring)
         from gold.statistic.AllStatistics import STAT_CLASS_DICT
         self._childStat = STAT_CLASS_DICT[childStat]
         self._distMethod = distMethod
@@ -44,9 +45,9 @@ class ClusterMatrixStatUnsplittable(Statistic):
         self._numClustersRows = int(numClustersRows)
         self._numClustersCols = int(numClustersCols)
         assert complete in ['False', 'True']
-        self._complete = eval(complete)
-        self._rowClustId = eval(rowClustId)
-        self._colClustId = eval(colClustId)
+        self._complete = ast.literal_eval(complete)
+        self._rowClustId = ast.literal_eval(rowClustId)
+        self._colClustId = ast.literal_eval(colClustId)
         for id in [self._rowClustId, self._colClustId]:
             if id is not None:
                 assert isinstance(id, int)

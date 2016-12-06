@@ -38,7 +38,7 @@ class MultiDiscreteMarkFlattenerStatUnsplittable(Statistic):
 
         assert controlTrackNameList is not None
         self._controlTrackNameList = [x.split('^') for x in controlTrackNameList.split('^^')] \
-            if type(controlTrackNameList) == str else controlTrackNameList
+            if isinstance(controlTrackNameList, basestring) else controlTrackNameList
         assert len(controlTrackNameList) > 0
 
         Statistic.__init__(self, region, track, track2, numDiscreteVals=numDiscreteVals, \

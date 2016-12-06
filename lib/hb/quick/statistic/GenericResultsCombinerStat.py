@@ -26,7 +26,7 @@ class GenericResultsCombinerStat(MagicStatFactory):
             
 class GenericResultsCombinerStatUnsplittable(Statistic):
     def _init(self, rawStatistics=[], **kwArgs):
-        if type(rawStatistics)==str:
+        if isinstance(rawStatistics, basestring):
             from gold.statistic.AllStatistics import STAT_CLASS_DICT
             
             rawStatistics = [STAT_CLASS_DICT[rawStat] for rawStat in rawStatistics.split('^')]

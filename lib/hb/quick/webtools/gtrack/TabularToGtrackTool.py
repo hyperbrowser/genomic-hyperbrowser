@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from asteval import Interpreter
 from StringIO import StringIO
 from collections import namedtuple
 from copy import copy
@@ -198,8 +199,9 @@ class TabularToGtrackTool(GeneralGuiTool):
     def _getFileContentsInfo(prevChoices):
         fileContentsInfo = prevChoices.fileContentsInfo
         if isinstance(fileContentsInfo, basestring):
-            fileContentsInfo = eval(fileContentsInfo,
-                                    {'FileContentsInfo': FileContentsInfo})
+            aeval = Interpreter()
+            aeval.symtable['FileContentsInfo'] = FileContentsInfo
+            fileContentsInfo = aeval(fileContentsInfo)
         return fileContentsInfo
 
     @staticmethod

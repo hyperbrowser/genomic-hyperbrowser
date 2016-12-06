@@ -14,6 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticConcatDictOfListResSplittable, OnlyGloballySplittable
 from gold.statistic.RawDataStat import RawDataStat
@@ -41,7 +42,7 @@ class NearestSegmentDistsStatUnsplittable(Statistic):
         self._distDirection = distDirection
         
         assert addSegmentLengths in ['True', 'False']
-        self._addSegmentLengths = eval(addSegmentLengths)
+        self._addSegmentLengths = ast.literal_eval(addSegmentLengths)
 
     def _append(self, dists, dist, toNames, name):
         dists.append(dist)

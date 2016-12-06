@@ -288,7 +288,8 @@ class TrackFormatReq(TrackFormat):
 
         assert all(x in [None, False, True] for x in [dense, interval, linked, strand, id])
         assert all(x in [None, False] + TrackFormat.VAL_TYPE_NAME_DICT.keys() for x in [val, weights])
-        assert extra in [None, False] or (type(extra) in [list, tuple] and len(extra) > 0 and type(extra[0]) == str)
+        assert extra in [None, False] or (type(extra) in [list, tuple] and len(extra) > 0 and
+                                          isinstance(extra[0], basestring))
         assert allowOverlaps in [None, False, True]
         assert borderHandling in [None, 'crop','discard','include','duplicate']
 

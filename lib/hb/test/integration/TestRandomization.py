@@ -15,6 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 #!/usr/bin/env python
+import ast
 import unittest
 import os
 import tempfile
@@ -72,7 +73,7 @@ class TestRandomization(GalaxyIntegrationTest):
     
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        TestRandomization.VERBOSE = eval(sys.argv[1])
+        TestRandomization.VERBOSE = ast.literal_eval(sys.argv[1])
         sys.argv = sys.argv[:-1]
     #TestRandomization().debug()
     #TestRandomization().run()

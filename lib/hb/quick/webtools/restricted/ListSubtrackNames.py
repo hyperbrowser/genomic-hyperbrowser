@@ -57,7 +57,7 @@ class ListSubtrackNames(GeneralGuiTool):
         varList = []
         if prevChoices[0] != '----- Select -----':
             prefix = '@T%i= ' if prevChoices[1] == '----- Select -----' else '@T%i= '+ prevChoices[1]+':'
-            if type(prevChoices[2]) == str:
+            if isinstance(prevChoices[2], basestring):
                 prefix = '@T'
                 for i, v in enumerate(prevChoices[2].split('\n')):
                     tmp = prefix

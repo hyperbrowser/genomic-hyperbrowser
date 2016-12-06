@@ -13,6 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+
 from quick.statistic.StatisticV2 import StatisticV2
 from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2Stat
 from gold.statistic.MagicStatFactory import MagicStatFactory
@@ -37,7 +38,7 @@ class GSuiteRepresentativenessOfTracksRankingsV2StatUnsplittable(StatisticV2):
         self._ascending = ascending == 'Yes'
         assert isinstance(trackTitles, (str, list)), 'Mandatory parameter trackTitles is missing or is of wrong type (allowed types: str and list)'
         self._trackTitles = [unquote(t) for t in trackTitles.split(CommonConstants.TRACK_TITLES_SEPARATOR)] if \
-        isinstance(trackTitles, str) else [unquote(t) for t in trackTitles]
+        isinstance(trackTitles, basestring) else [unquote(t) for t in trackTitles]
     
     def _compute(self):
         resultsList = self._children[0].getResult()

@@ -130,8 +130,8 @@ class TestTrackFormat(unittest.TestCase):
                                     self.assertEqual(isCompatible, tfReq.isCompatibleWith(tf))
 
     def _assertFormatsReqs(self, tfReq, dense, val, interval, linked, strand, id, weights, extra):
-        valued = True if type(val) == str else val
-        weighted = True if type(weights) == str else weights
+        valued = True if isinstance(val, basestring) else val
+        weighted = True if isinstance(weights, basestring) else weights
         hasExtra = True if type(extra) == list else extra
         self._assertFunctions(tfReq, '', dense, valued, interval, linked, None, strand, id, weighted, hasExtra, val=val, weights=weights, extra=extra)
         reqList = [dense,valued,interval,linked,strand,id,weighted,hasExtra,\

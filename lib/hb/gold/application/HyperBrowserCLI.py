@@ -1,4 +1,5 @@
 import os
+import ast
 import quick.application.SignatureDevianceLogging as sdl
 
 from gold.result.Results import Results
@@ -13,8 +14,8 @@ def integrateTrackFromFile(inFn, genome, newTrackName, username='', privateAcces
     from quick.util.CommonFunctions import convertTNstrToTNListFormat
     newTrackName = convertTNstrToTNListFormat(newTrackName, doUnquoting=True)
 
-    if type(privateAccess) == str:
-        privateAccess = eval(privateAccess)
+    if isinstance(privateAccess, basestring):
+        privateAccess = ast.literal_eval(privateAccess)
     assert privateAccess in [False, True]
 
     from gold.util.CommonFunctions import createOrigPath
@@ -31,8 +32,8 @@ def integrateTrackFromFile(inFn, genome, newTrackName, username='', privateAcces
 @sdl.returns(str)
 def createHashBasedTrackNameFromFile(inFn, printTrackName='False'):
     """inFn printTrackName=False"""
-    if type(printTrackName) == str:
-        printTrackName = eval(printTrackName)
+    if isinstance(printTrackName, basestring):
+        printTrackName = ast.literal_eval(printTrackName)
     assert printTrackName in [False, True]
 
     from hashlib import sha224

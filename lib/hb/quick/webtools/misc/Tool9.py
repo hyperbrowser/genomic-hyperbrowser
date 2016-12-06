@@ -63,7 +63,7 @@ class GlobalResultCollection(ResultCollection):
 
     def __setitem__(self, entryLabel, resultObject):
         'sets item, not directly to the passed value (which is resultDict), but to a subResult given by self._chosenResDictKey'
-        assert type(entryLabel)==str
+        assert isinstance(entryLabel, basestring)
         assert type(resultObject)==Results, (type(resultObject), resultObject)
         try:
             resultValue = resultObject.getGlobalResult()[self._chosenResDictKey]

@@ -104,7 +104,7 @@ def usageAndErrorLogging(func, *args, **kwArgs):
     try:
         MAX_ARG_LEN = 25000
 
-        if len(args) >= 3 and type(args[2]) == str:
+        if len(args) >= 3 and isinstance(args[2], basestring):
             args = list(args)
             args[2] = unquote(args[2])
         modifiedKwArgs = copy(kwArgs)
@@ -140,7 +140,7 @@ def runtimeLogging(func, *args, **kwArgs):
         return func(*args, **kwArgs)
 
     try:
-        #if len(args) >= 3 and type(args[2]) == str:
+        #if len(args) >= 3 and isinstance(args[2], basestring):
         #    args = list(args)
         #    args[2] = unquote(args[2])
         modifiedKwArgs = copy(kwArgs)

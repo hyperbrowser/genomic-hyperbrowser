@@ -37,7 +37,7 @@ class TcVsCategoryMatrixStat(MagicStatFactory):
 class TcVsCategoryMatrixStatUnsplittable(Statistic):    
     def __init__(self, region, track, track2, rawStatistic=None, **kwArgs):        
         assert rawStatistic is not None
-        assert type(rawStatistic) == str
+        assert isinstance(rawStatistic, basestring)
         from gold.statistic.AllStatistics import STAT_CLASS_DICT
         self._rawStatistic = STAT_CLASS_DICT[rawStatistic] 
         

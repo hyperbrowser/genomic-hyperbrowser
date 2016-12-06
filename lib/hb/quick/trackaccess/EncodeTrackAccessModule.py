@@ -1,5 +1,10 @@
-import os,sys,shutil
-import urllib2,re
+import ast
+
+import os
+import sys
+import shutil
+import urllib2
+import re
 #Not needed anymore:
 sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
@@ -58,7 +63,7 @@ class HttpRemoteAccessSite(object):
     def retrieveJSON(self,path):
         try:
             response = urllib2.urlopen(self._URL + path).read()
-            return eval(response)
+            return ast.literal_eval(response)
         except:
             return None
     

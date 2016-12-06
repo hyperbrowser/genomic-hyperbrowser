@@ -14,6 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 import copy
 import datetime
 import os
@@ -135,7 +136,7 @@ class TrackInfo(object):
 
     @staticmethod
     def createInstanceFromAttrsFromStrRepr(genome, strReprOfAttrDict):
-        attrDict = eval(strReprOfAttrDict)
+        attrDict = ast.literal_eval(strReprOfAttrDict)
         trackName = attrDict['trackName']
         ti = TrackInfo(genome, trackName)
         ti.__dict__.update(attrDict)

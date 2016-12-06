@@ -13,6 +13,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+
+import ast
 import os
 from string import capwords
 from urllib import quote
@@ -256,7 +258,7 @@ class MarkInfo:
             else:
                 hits[i][0] = self._convertNameToCorrectCase(hit[0], lowerCaseName2NameShelf)
 
-        hits = [eval(x) for x in set([repr(x) for x in hits])]
+        hits = [ast.literal_eval(x) for x in set([repr(x) for x in hits])]
         return sorted(hits, key=lambda x:[ int(x[1]), x[0] ])
 
     def getIndexesFromRowName(self, query):
@@ -658,7 +660,7 @@ return(syms) }'''
             geneSymbols = robjects.r(convertFunc)(robjects.StrVector(probes))
 
             html += '<h3>Gene symbol%s for selected %s</h3>' % ('s' if rowOrCol[-1] == 's' else '', rowOrCol)
-            html += ' | '.join(geneSymbols) if type(geneSymbols) != str else geneSymbols
+            html += ' | '.join(geneSymbols) if not isinstance(geneSymbols, basestring) else geneSymbols
 
             #html += '<h3>Gene ontology report for selected %s</h3>' % rowOrCol
             #html += robjects.r(doHyperGTest)(robjects.StrVector(probes), geneUniverseFn)

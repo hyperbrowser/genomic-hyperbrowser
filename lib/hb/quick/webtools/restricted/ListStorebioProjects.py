@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import ast
 import cStringIO
 import pickle
 import time
@@ -100,7 +101,7 @@ class ListStorebioProjects(GeneralGuiTool):
             params = 'params:='+repr(['StoreBioInfo'])
             
             ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
-            responseList = eval(ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore'))
+            responseList = ast.literal_eval(ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore'))
             return ['--select--']+[v[0].split('(')[0].strip() for v in responseList]
         
     
@@ -119,7 +120,7 @@ class ListStorebioProjects(GeneralGuiTool):
             params = 'params:='+repr(['StoreBioInfo',dsName])
             
             ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
-            responseList = eval(ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore'))
+            responseList = ast.literal_eval(ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore'))
             return ['--select--']+[v[0] for v in responseList]
         
     @staticmethod    
@@ -138,7 +139,7 @@ class ListStorebioProjects(GeneralGuiTool):
             ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
             resp = ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore')
             if resp != '':
-                return ['--select--']+[v[0] for v in eval(resp)]
+                return ['--select--']+[v[0] for v in ast.literal_eval(resp)]
     
     
     @staticmethod    
@@ -157,7 +158,7 @@ class ListStorebioProjects(GeneralGuiTool):
                 ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
                 resp = ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore')
                 if resp != '':
-                    return ['--select--']+[v[0] for v in eval( resp )]
+                    return ['--select--']+[v[0] for v in ast.literal_eval( resp )]
     
     @staticmethod    
     def getOptionsBox12(prevChoices):
@@ -175,7 +176,7 @@ class ListStorebioProjects(GeneralGuiTool):
                 ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
                 resp = ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore')
                 if resp != '':
-                    return ['--select--']+[v[0] for v in eval( resp )]
+                    return ['--select--']+[v[0] for v in ast.literal_eval( resp )]
     
     
     @staticmethod    
@@ -194,7 +195,7 @@ class ListStorebioProjects(GeneralGuiTool):
                 ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
                 resp = ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore')
                 if resp != '':
-                    return ['--select--']+[v[0] for v in eval( resp )]
+                    return ['--select--']+[v[0] for v in ast.literal_eval( resp )]
     
     @staticmethod    
     def getOptionsBox14(prevChoices):
@@ -212,7 +213,7 @@ class ListStorebioProjects(GeneralGuiTool):
                 ListStorebioProjects.socket.send('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
                 resp = ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore')
                 if resp != '':
-                    return ['--select--']+[v[0] for v in eval( resp )]
+                    return ['--select--']+[v[0] for v in ast.literal_eval( resp )]
     
     
     @staticmethod    
@@ -231,19 +232,19 @@ class ListStorebioProjects(GeneralGuiTool):
                 ListStorebioProjects.socket.send_unicode('##'.join(['username:='+userName,'password:='+pwd, params, 'operation:='+operation,'class:=dataStorageService']))
                 resp = ListStorebioProjects.socket.recv_unicode().encode('ascii','ignore')
                 if resp != '':
-                    return ['--select--']+[v[0] for v in eval( resp )]
+                    return ['--select--']+[v[0] for v in ast.literal_eval( resp )]
             
             
     @staticmethod    
     def getOptionsBox16(prevChoices):
     
-        if prevChoices[4] != None and prevChoices[2] == 'Download file from Dataset' and len([v for v in prevChoices[9:] if type(v) == str  and v.find(',FILE')>0])>0:
+        if prevChoices[4] != None and prevChoices[2] == 'Download file from Dataset' and len([v for v in prevChoices[9:] if isinstance(v, basestring)  and v.find(',FILE')>0])>0:
             filPathTab = []
             
             for value in prevChoices[-7:-1]:
                 if value and value.find(',')>0:
                     filPathTab.append(value.split(',')[0])
-            if '/'.join([v for v in prevChoices[-7:-1]if type(v)==str]).find(',FILE')>0:
+            if '/'.join([v for v in prevChoices[-7:-1]if isinstance(v, basestring)]).find(',FILE')>0:
                 
                 userName = prevChoices[0] if prevChoices[0] else ''
                 pwd = prevChoices[1] if prevChoices[1] else ''
@@ -497,7 +498,7 @@ class ListStorebioProjects(GeneralGuiTool):
                 return 'Invalid Username/Password combination!!'
             
             if choices[4] != None and choices[2] == 'Download file from Dataset':
-                if '/'.join([v for v in choices[9:16] if type(v) == str]).find(',FILE')<0:
+                if '/'.join([v for v in choices[9:16] if isinstance(v, basestring)]).find(',FILE')<0:
                     return 'No file has been selected yet'
         else:
             return ''
@@ -544,7 +545,7 @@ class ListStorebioProjects(GeneralGuiTool):
         if choices[2] in ['List Projects', 'List Datasets']:
             return 'html'
         returnType = 'bed'
-        fileList = [v for v in choices[9:] if type(v) == str  and v.find(',FILE')>0]
+        fileList = [v for v in choices[9:] if isinstance(v, basestring)  and v.find(',FILE')>0]
         if len(fileList)>0:
             returnType = fileList[0].split(',')[0].strip().split('.')[-1]
             if returnType in ['png','jpg', 'jpeg', 'gif']:

@@ -13,6 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.statistic.StatisticV2 import StatisticV2
 from collections import OrderedDict
@@ -43,7 +44,7 @@ class GSuiteSimilarityToQueryTrackRankingsAndPValuesV2StatUnsplittable(Statistic
     def _init(self, trackTitles='', **kwArgs):
         assert isinstance(trackTitles, (str, list)), 'Mandatory parameter trackTitles is missing or is of wrong type (allowed types: str and list)'
         self._trackTitles = [unquote(t) for t in trackTitles.split(CommonConstants.TRACK_TITLES_SEPARATOR)] if \
-        isinstance(trackTitles, str) else [unquote(t) for t in trackTitles]
+        isinstance(trackTitles, basestring) else [unquote(t) for t in trackTitles]
      
     def _compute(self):
         resultTuples = []

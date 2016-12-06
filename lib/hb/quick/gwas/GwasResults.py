@@ -29,7 +29,7 @@ class GwasResults(dict):
         return localRegions
     
     def __setitem__(self, key, item):
-        assert type(key) == str
+        assert isinstance(key, basestring)
         assert isinstance(item, Results), (key,item)
         dict.__setitem__(self, key, item)
         

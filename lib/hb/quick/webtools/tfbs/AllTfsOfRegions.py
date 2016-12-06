@@ -132,7 +132,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin):
                 falses = ['False']*len(subtypes)
                 return OrderedDict(zip(subtypes,falses))
             elif sourceTfs == cls.REGIONS_FROM_HISTORY:
-                if isinstance(sourceTfsDetails, str):
+                if isinstance(sourceTfsDetails, basestring):
                     galaxyTN = sourceTfsDetails.split(':')
                     if galaxyTN[1] == "gsuite":  #ExternalTrackManager.extractFileSuffixFromGalaxyTN(prevChoices.sourceTfsDetails, allowUnsupportedSuffixes=True) == "gsuite"
                         errorString = GeneralGuiTool._checkGSuiteFile(sourceTfsDetails)
@@ -662,7 +662,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin):
             if sourceTfsDetails == AllTfsOfRegions.SELECT:
                 return 'Please select a TF track.'
             else:
-                if isinstance(sourceTfsDetails, str):
+                if isinstance(sourceTfsDetails, basestring):
                     trackType = sourceTfsDetails.split(':')[1]
                     if trackType == "gsuite":
                         errorString = GeneralGuiTool._checkGSuiteFile(sourceTfsDetails)

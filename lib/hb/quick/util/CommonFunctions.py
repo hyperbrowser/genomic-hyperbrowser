@@ -667,7 +667,7 @@ def getGeSource(track, genome=None):
     from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
     from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
 
-    if type(track) == str:
+    if isinstance(track, basestring):
         track = track.split(':')
 
     try:

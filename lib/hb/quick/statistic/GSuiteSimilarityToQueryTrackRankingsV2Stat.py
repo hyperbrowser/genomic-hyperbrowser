@@ -33,10 +33,11 @@ class GSuiteSimilarityToQueryTrackRankingsV2Stat(MagicStatFactory):
 
 class GSuiteSimilarityToQueryTrackRankingsV2StatUnsplittable(StatisticV2):
     def _init(self, trackTitles='', **kwArgs):
-        assert isinstance(trackTitles, (
-        str, list)), 'Mandatory parameter trackTitles is missing or is of wrong type (allowed types: str and list)'
+        assert isinstance(trackTitles, (basestring, list)), \
+            'Mandatory parameter trackTitles is missing or is of wrong type (allowed types: ' \
+            'basestring and list)'
         self._trackTitles = [unquote(t) for t in trackTitles.split(CommonConstants.TRACK_TITLES_SEPARATOR)] if \
-            isinstance(trackTitles, str) else [unquote(t) for t in trackTitles]
+            isinstance(trackTitles, basestring) else [unquote(t) for t in trackTitles]
 
     def _compute(self):
         resultsList = self._children[0].getResult()

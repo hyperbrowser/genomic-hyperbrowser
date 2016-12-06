@@ -12,6 +12,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
+from asteval import Interpreter
 from collections import OrderedDict, namedtuple
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -67,11 +68,16 @@ class TrackGlobalSearchModule(object):
             sourceTool = lineList[2]
             sourceTable = None
 
+            aeval = Interpreter()
+            for sourceTool in self.SOURCE.keys():
+                aeval.symtable[sourceTool] = locals()[sourceTool]
+
             for k in self.SOURCE.keys():
                 if self.SOURCE[k].upper() == lineList[2].upper():
                     sourceTool = k
-                    sourceTable =  eval(k)._getTableName()
-                    sourceTableFilter = eval(k)._getGlobalSQLFilter()
+                    sourceToolCls = aeval(k)
+                    sourceTable = sourceToolCls._getTableName()
+                    sourceTableFilter = sourceToolCls._getGlobalSQLFilter()
                     break
 
             toolInput = lineList[-1].split(':')[1]

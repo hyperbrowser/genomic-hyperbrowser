@@ -1,3 +1,4 @@
+import ast
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import urllib
 from quick.util.CommonFunctions import getGeSource
@@ -65,7 +66,7 @@ class ExtractIndividualTracksFromCategoryTrack(GeneralGuiTool):
     @classmethod
     def getOptionsBox7(cls, prevChoices):
         if prevChoices[-2] == 'select categories':
-            return OrderedDict([(v,False) for v in  eval(urllib.unquote(prevChoices[4]))])
+            return OrderedDict([(v,False) for v in ast.literal_eval(urllib.unquote(prevChoices[4]))])
 
     @classmethod
     def getOptionsBox8(cls, prevChoices):
@@ -78,7 +79,7 @@ class ExtractIndividualTracksFromCategoryTrack(GeneralGuiTool):
         utFil = open(galaxyFn, 'w')
         genome = choices[0]
         track = choices[2].split(':') if choices[1] == cls.histChoice else choices[3].split(':')
-        categories = sorted(eval(urllib.unquote(choices[4]))) if choices[5] == 'get all categories' else sorted([k for k,v  in choices[6].items() if v])
+        categories = sorted(ast.literal_eval(urllib.unquote(choices[4]))) if choices[5] == 'get all categories' else sorted([k for k,v  in choices[6].items() if v])
         categoryFileDict = dict()
         if choices[5] == 'select categories' and choices[7] == 'Yes':
             for cat in categories:

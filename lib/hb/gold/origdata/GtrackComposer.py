@@ -363,12 +363,12 @@ class StdGtrackComposer(FileFormatComposer):
         valTypeInfo = Gtrack.VAL_TYPE_DICT[valueType]
 
         if valueDim == 'scalar':
-            if not isinstance(val, str) and hasattr(val, '__len__') and len(val)==1:
+            if not isinstance(val, basestring) and hasattr(val, '__len__') and len(val)==1:
                 val = val[0]
 
             if (val == valTypeInfo.missingVal) or (isNan(val) and isNan(valTypeInfo.missingVal)):
                 return '.'
-            elif isinstance(val, str):
+            elif isinstance(val, basestring):
                 return self._formatPhraseWithCorrectChrUsage(val, useUrlEncoding=True, notAllowedChars='#.,;=\t')
             else:
                 if isinstance(val, bool):

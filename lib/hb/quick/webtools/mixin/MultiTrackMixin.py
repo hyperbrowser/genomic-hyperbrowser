@@ -203,12 +203,14 @@ class MultiTrackMixin(object):
         trackParamNames = [('Track1Source', 'Track1'), ('Track2Source', 'Track2'),('Track3Source','Track3'),\
                             ('Track4Source', 'Track4'),('Track5Source', 'Track5'),('Track6Source','Track6')]  
         count = 0
-        for trackNumber, source, trackName in [(t, getattr(choices, s), getattr(choices,t).split(':')) for s,t in trackParamNames if type(getattr(choices,t))==str]:
-            count+=1
+        for trackNumber, source, trackName in \
+                [(t, getattr(choices, s),
+                 getattr(choices, t).split(':')) for s,t in trackParamNames
+                 if isinstance(getattr(choices, t), basestring)]:
+            count += 1
             if source == 'Tracks':
                 if not ProcTrackOptions.isValidTrack(choices.Genome, trackName):
                     return 'Invalid track: the path for %s is not correctly specified' % trackNumber
-        if count==0:
+        if count == 0:
             return 'No valid tracks chosen'
     
-            

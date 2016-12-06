@@ -626,7 +626,7 @@ class visualizationGraphs(object):
         if seriesName is None:
             seriesName=''
         else:
-            if isinstance(seriesName, str):
+            if isinstance(seriesName, basestring):
                 legendSize =  len(max(seriesName, key = len)) + 10
                 legendSizeExtra = len(seriesName)
                 legendSizeExtra = legendSizeExtra / ( int(1000 / (legendSize*6)) )*15
@@ -720,7 +720,7 @@ class visualizationGraphs(object):
         if seriesName is None:
             seriesName=''
         else:
-            if isinstance(seriesName, str):
+            if isinstance(seriesName, basestring):
                 legendSize =  len(max(seriesName, key = len))+10
                 legendSizeExtra = len(seriesName)
                 legendSizeExtra = legendSizeExtra / ( int(1000 / (legendSize*6)) )*12
@@ -2903,7 +2903,7 @@ class visualizationGraphs(object):
                     if titleText is None:
                         tT=None
                     else:
-                        if isinstance(titleText, str):
+                        if isinstance(titleText, basestring):
                             tT=titleText
                         else:
                             tT=titleText[eldY]
@@ -3040,7 +3040,7 @@ class visualizationGraphs(object):
                     if titleText is None:
                         tT=None
                     else:
-                        if isinstance(titleText, str):
+                        if isinstance(titleText, basestring):
                             tT=titleText
                         else:
                             tT=titleText[eldY]
@@ -3283,7 +3283,7 @@ class dataTransformer(object):
         data = self._results.values()
         
         for elD in range(0, len(data)):
-            if isinstance(data[elD], str):
+            if isinstance(data[elD], basestring):
                 data[elD] = "".join(i for i in data[elD] if i in "0123456789.")
 
         return None, categories, data
@@ -3354,7 +3354,7 @@ class dataTransformer(object):
         newData=[]
         
         for elD in range(0, len(data)):
-            if isinstance(data[elD], str):
+            if isinstance(data[elD], basestring):
                 data[elD] = "".join(i for i in data[elD] if i in "0123456789.")
               
         if categories:

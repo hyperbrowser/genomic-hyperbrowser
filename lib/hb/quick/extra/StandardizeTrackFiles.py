@@ -15,6 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 import bz2
 import os
 import sys
@@ -667,8 +668,8 @@ class SplitFasta(GeneralTrackDataModifier):
         chromFile=None
         includechromosome=False
 
-        if isinstance(chromNamesDict, str):
-            chromNamesDict = eval(chromNamesDict)
+        if isinstance(chromNamesDict, basestring):
+            chromNamesDict = ast.literal_eval(chromNamesDict)
 
         for l in fastaFile:
             if l[0]==">":
@@ -1056,13 +1057,13 @@ class SubtypesAsCategories(GeneralTrackDataAdder):
     @classmethod
     def parseFile(cls, inFn, outFn, trackName, keepCategories='False', numHeaderLines='0', firstSubType=False, firstFile=False, numCols='12', **kwArgs):
         print inFn, outFn
-        if type(keepCategories) == str:
+        if isinstance(keepCategories, basestring):
             keepCategories = {'True':True, 'False':False}[keepCategories]
 
-        if type(numHeaderLines) == str:
+        if isinstance(numHeaderLines, basestring):
             numHeaderLines = int(numHeaderLines)
 
-        if type(numCols) == str:
+        if isinstance(numCols, basestring):
             numCols = int(numCols)
 
         if not any([inFn.endswith(x) for x in ['.bed', '.bedgraph']]):
@@ -1467,7 +1468,7 @@ class TrackFileCopier(GeneralTrackDataAdder, PlainTransfer):
         assert newTrackName is not None, 'You must provide a new track name'
         newTrackName = newTrackName.replace('/',':').split(':')
 
-        parentsAsPrefix = eval(parentsAsPrefix)
+        parentsAsPrefix = ast.literal_eval(parentsAsPrefix)
         assert parentsAsPrefix in [False, True]
 
         inPath, outPath = cls._prepareInputOutputPaths(genome, trackName, direction, differentOutputTrackName=\
@@ -1518,8 +1519,8 @@ class FilterOnColumnVal(GeneralTrackDataModifier):
     def parseFile(cls, inFn, outFn, trackName, genome, valCol='3', valType='float', valKeepFunc='lambda x:True', append='False', **kwArgs):
         inFile = open(inFn)
         ensurePathExists(outFn)
-        if isinstance(append, str):
-            append = eval(append)
+        if isinstance(append, basestring):
+            append = ast.literal_eval(append)
         outFile = open(outFn, 'a' if append else 'w')
         for line in inFile:
 #            if line.startswith('track'):
@@ -1528,10 +1529,10 @@ class FilterOnColumnVal(GeneralTrackDataModifier):
             valCol = int(valCol)
             if not valCol < len(cols):
                 continue
-            if isinstance(valKeepFunc, str):
-                valKeepFunc = eval(valKeepFunc)
-            if isinstance(valType, str):
-                valType = eval(valType)
+            if isinstance(valKeepFunc, basestring):
+                valKeepFunc = ast.literal_eval(valKeepFunc)
+            if isinstance(valType, basestring):
+                valType = ast.literal_eval(valType)
             if not valKeepFunc(valType(cols[valCol])):
                 continue
             outFile.write( '\t'.join(cols) + os.linesep)
@@ -1563,13 +1564,13 @@ class ShuffleAndAddColumns(GeneralTrackDataModifier):
                 outStr = ''
                 for v in colOrderTab:
                     try:
-                        outStr+= str(eval(v)) +'\t'
+                        outStr+= str(ast.literal_eval(v)) +'\t'
                     except:
                         for i in range(len(lineTab)):
                             if v.find('c'+str(i)):
                                 locals()['c'+str(i)] = str(locals()['c'+str(i)])
 
-                        outStr+= str(eval(v)) +'\t'
+                        outStr+= str(ast.literal_eval(v)) +'\t'
                 print>>outFile, outStr.strip()
 
             outFile.close()
@@ -1608,10 +1609,10 @@ class ImportTabularToGtrack(GeneralTrackDataModifier):
         ensurePathExists(outFn)
         outFile = open(outFn+('.gtrack' if not outFn.endswith('.gtrack') else ''), 'w')
 
-        if type(oneIndexed) == str:
-            oneIndexed = eval(oneIndexed)
-        if type(endInclusive) == str:
-            endInclusive = eval(endInclusive)
+        if isinstance(oneIndexed, basestring):
+            oneIndexed = ast.literal_eval(oneIndexed)
+        if isinstance(endInclusive, basestring):
+            endInclusive = ast.literal_eval(endInclusive)
 
         if oneIndexed:
             outFile.write('##1-indexed: True\n')
@@ -1676,6 +1677,8 @@ class ImportMitfExcel(GeneralTrackDataModifier):#
 #    '''Evaluates a custom lambda function on a selected column, replacing the column value with what the lambda evaluates to
 #    Example: 'lambda x:str(int(x)*2) would replace the values at the selected column with that of its double..
 #    '''
+#    from asteval import Interpreter
+#
 #    @classmethod
 #    def parseFile(cls, inFn, outFn, trackName, genome, col='3', customLambda='lambda x:x', **kwArgs):
 #        pass
@@ -1689,7 +1692,7 @@ class ImportMitfExcel(GeneralTrackDataModifier):#
 #            valCol = int(valCol)
 #            if not valCol < len(cols):
 #                continue
-#            if not eval(valKeepFunc)(float(cols[valCol])):
+#            if not Interpreter()(valKeepFunc)(float(cols[valCol])):
 #                continue
 #            outFile.write( '\t'.join(cols) + os.linesep)
 #        outFile.close()
@@ -1707,7 +1710,7 @@ class CalculateHypergeometricPVal(GeneralTrackDataModifier):
         ensurePathExists(outFn)
 
         assert outFn.endswith('.bed')
-        if eval(makeCategoryBed) and not outFn.endswith('.category.bed'):
+        if ast.literal_eval(makeCategoryBed) and not outFn.endswith('.category.bed'):
             outFn = outFn.replace('.bed', '.category.bed')
         outFile = open(outFn, 'w')
 
@@ -1724,7 +1727,7 @@ class CalculateHypergeometricPVal(GeneralTrackDataModifier):
                 if cols[3] not in onlyIncludeCats:
                     continue
             else:
-                if cols[3] in eval(excludeCats):
+                if cols[3] in ast.literal_eval(excludeCats):
                     continue
 
             q, m, n, k = int(cols[6]), int(cols[7]), int(n) - int(cols[7]), int(cols[8])
@@ -1736,7 +1739,9 @@ class CalculateHypergeometricPVal(GeneralTrackDataModifier):
             if q < int(minQ):
                 continue
 
-            pval = r('function(q, m, n, k, log) { phyper(q, m, n, k, lower.tail=FALSE, log.p=log) }')(q, m, n, k, eval(useLog))
+            pval = r('function(q, m, n, k, log) { phyper'
+                     '(q, m, n, k, lower.tail=FALSE, log.p=log) }')\
+                     (q, m, n, k, ast.literal_eval(useLog))
             maxPvalBonfCorr = float(maxPval)/int(numTests)
 
             if useLog:
@@ -1744,7 +1749,7 @@ class CalculateHypergeometricPVal(GeneralTrackDataModifier):
                 maxPvalBonfCorr = log(maxPvalBonfCorr)
             if pval > maxPvalBonfCorr:
                 continue
-            if eval(increaseEnds):
+            if ast.literal_eval(increaseEnds):
                 cols[2] = str(int(cols[2]) + 1)
 
             outFile.write('\t'.join(cols[0:4] + [str(pval), cols[5]]) + os.linesep)
@@ -1790,7 +1795,7 @@ class ExpandBedSegments(GeneralTrackDataModifier):
     def parseFile(cls, inFn, outFn, trackName, genome, upFlank='0', downFlank='0',
                   treatTrackAs='segments', removeChrBorderCrossing='False', suffix='bed', **kwArgs):
         assert removeChrBorderCrossing in [False, True, 'False', 'True']
-        removeChrBorderCrossing = eval(removeChrBorderCrossing)
+        removeChrBorderCrossing = ast.literal_eval(removeChrBorderCrossing)
 
         from gold.util.CommonFunctions import parseShortenedSizeSpec, getFileSuffix
         upFlank = parseShortenedSizeSpec(upFlank)
@@ -1872,7 +1877,7 @@ def getFormattedParamList(parserClass, argStr='%s', kwArgStr='%s=%s'):
                     paramList.append(argStr % methodParams[i])
                 else:
                     defaultVal = defaultVals[i-numMandatoryParams]
-                    if type(defaultVal) == str:
+                    if isinstance(defaultVal, basestring):
                         defaultVal = '"%s"' % defaultVal
                     else:
                         defaultVal = str(defaultVal)

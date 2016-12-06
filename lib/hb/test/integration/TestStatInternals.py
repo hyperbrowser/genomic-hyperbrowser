@@ -15,6 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 #!/usr/bin/env python
+import ast
 import sys
 import unittest
 from test.integration.GalaxyIntegrationTest import GalaxyIntegrationTest
@@ -35,6 +36,6 @@ if __name__ == "__main__":
     #TestStatInternals().run()
     #TestStatInternals().debug()
     if len(sys.argv) == 2:
-        TestStatInternals.VERBOSE = eval(sys.argv[1])
+        TestStatInternals.VERBOSE = ast.literal_eval(sys.argv[1])
         sys.argv = sys.argv[:-1]
     unittest.main()

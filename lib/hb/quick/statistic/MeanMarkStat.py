@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.statistic.RawDataStat import RawDataStat
@@ -29,7 +31,7 @@ class MeanMarkStat(MagicStatFactory):
 class MeanMarkStatUnsplittable(Statistic):
     def _init(self, logScale='True', **kwArgs):
         assert logScale in ['False', 'True']
-        self._logScale = eval(logScale)
+        self._logScale = ast.literal_eval(logScale)
 
 
     def _compute(self):

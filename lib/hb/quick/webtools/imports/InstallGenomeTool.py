@@ -29,7 +29,7 @@ class InstallGenomeTool(GeneralGuiTool):
     
     @staticmethod
     def _getTempChromosomeNames(galaxyTn):
-        if isinstance(galaxyTn, str):
+        if isinstance(galaxyTn, basestring):
             galaxyTn = galaxyTn.split(":")
         tempinfofile=ExternalTrackManager.extractFnFromGalaxyTN(galaxyTn)
         #abbrv=GenomeImporter.getGenomeAbbrv(tempinfofile)

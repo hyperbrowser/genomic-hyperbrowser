@@ -31,7 +31,7 @@ class ZipperStatUnsplittable(Statistic):
         #self._kwArgs = kwArgs
         if type(statClassList) == list:
             self._statClassList = statClassList
-        elif type(statClassList) == str:
+        elif isinstance(statClassList, basestring):
             from gold.statistic.AllStatistics import STAT_CLASS_DICT
             self._statClassList = [STAT_CLASS_DICT[x] for x in \
                 statClassList.replace(' ','').replace('^','|').split('|')]

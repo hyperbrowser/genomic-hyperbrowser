@@ -15,6 +15,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 import copy
 import math
 import os.path
@@ -126,7 +127,7 @@ def parseMatrixTextFileToShelf(txtFn, outShelfFn, rowPos2NameShelfFn=None, colPo
                 try:
                     val = float(curVal)
                 except:
-                    val = eval(curVal)
+                    val = ast.literal_eval(curVal)
             if countType=='binary':
                 val = 1 if val>0 else 0
             elif countType=='log':
@@ -152,7 +153,7 @@ def parseMatrixTextFileTo1dShelf(txtFn, outShelfFn, rowOrCol='row', ignoreFirstC
     assert rowOrCol in ['row','col']
     assert ignoreFirstColName in ['False', 'True']
 
-    ignoreFirstColName = eval(ignoreFirstColName)
+    ignoreFirstColName = ast.literal_eval(ignoreFirstColName)
     map = {}
     firstRealLine = True
     
@@ -241,7 +242,7 @@ def _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2Tfb
     
     allTfs = set([])
     for key in geneAndTf2TfbsCountShelf:
-        allTfs.add(eval(key)[0])
+        allTfs.add(ast.literal_eval(key)[0])
 
     for tf in allTfs:
         for disease in allDiseases:
@@ -306,8 +307,8 @@ def mergeShelvesTransitively(inShelf1Fn, inShelf2Fn, outShelfFn, includeSecondSh
     The values of the first shelf can be a list.
     """
 
-    if type(includeSecondShelf) == str:
-        includeSecondShelf = eval(includeSecondShelf)
+    if isinstance(includeSecondShelf, basestring):
+        includeSecondShelf = ast.literal_eval(includeSecondShelf)
     assert includeSecondShelf in [True, False]
 
     inShelf1 = safeshelve.open(inShelf1Fn,'r')
@@ -828,7 +829,7 @@ def compareRegulomeWithDirectPubmedTfData(pValThresholdReg, pValThresholdTf, use
     rowCountRegFn = STATIC_PATH + "/maps/final_tfbs_diseases_binary_average_euc_0.01_rowcount/data/Result_pval_table.txt"
     rowSumRegFn = STATIC_PATH + "/maps/final_tfbs_diseases_binary_average_euc_0.01_rowsum/data/Result_pval_table.txt"
 
-    regFn = rowCountRegFn if eval(useRowCount) else rowSumRegFn
+    regFn = rowCountRegFn if ast.literal_eval(useRowCount) else rowSumRegFn
 
     tfDir = gcf.createOrigPath('hg18', ['Private', 'disease' 'all diseases, hyperg., only TFs'])
     v2tfFn = '/projects/rrresearch/eivindto/v2tf-sort-ok.txt'

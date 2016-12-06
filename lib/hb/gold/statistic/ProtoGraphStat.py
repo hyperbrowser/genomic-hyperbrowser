@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticSplittable
 from gold.track.TrackFormat import TrackFormatReq
@@ -36,7 +38,7 @@ class ProtoGraphStatUnsplittable(Statistic):
     def _init(self, isDirected='fromTrack', **kwArgs):
         assert isDirected in ['fromTrack','True','False']
         self._forceIsDirected = isDirected != 'fromTrack'
-        self._isDirected = eval(isDirected) if self._forceIsDirected else None
+        self._isDirected = ast.literal_eval(isDirected) if self._forceIsDirected else None
 
     def _compute(self):
         tv = self._children[0].getResult()

@@ -14,6 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 import os
 import sys
 from zipfile import ZipFile
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     trackName = parseTrackNameSpec(sys.argv[1])
     regions = parseRegSpec(sys.argv[2])
     assert len(regions) == 1
-    asOriginal = eval(sys.argv[3])
+    asOriginal = ast.literal_eval(sys.argv[3])
         
     fn = sys.argv[4] if len(sys.argv) == 5 else None
     

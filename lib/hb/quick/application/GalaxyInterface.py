@@ -14,12 +14,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+import ast
 import os
 import os.path
 import re
 import shutil
 import sys
 import time
+from asteval import Interpreter
 from copy import copy
 from datetime import datetime
 from urllib import unquote, quote
@@ -53,7 +55,7 @@ from quick.extra.FunctionCategorizer import FunctionCategorizer
 from quick.extra.OrigFormatConverter import OrigFormatConverter
 from quick.extra.StandardizeTrackFiles import runParserClass
 from quick.extra.TrackExtractor import TrackExtractor
-from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists
+from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists, getToolPrototype
 from quick.util.GenomeInfo import GenomeInfo
 
 
@@ -158,8 +160,8 @@ class GalaxyInterfaceTools:
     def getGeneTrackFromGeneList(genome, geneRegsTrackName, geneList, outFn):
         from gold.origdata.BedComposer import CategoryBedComposer
 
-        if type(geneList) == str:
-            geneList = eval(geneList, {"__builtins__":None},{})
+        if isinstance(geneList, basestring):
+            geneList = ast.literal_eval(geneList)
             assert type(geneList) in [tuple, list]
 
         geneRegsFn = getOrigFn(genome, geneRegsTrackName, '.category.bed')
@@ -283,23 +285,24 @@ class GalaxyInterfaceTools:
 
     @staticmethod
     def filterMarkedSegments(inFn, outFn, criteria, genome):
-        if type(criteria) == str:
-            criteriaFunc = eval(criteria)
-        elif type(criteriaFunc) in [list,tuple]:
+        if isinstance(criteria, basestring):
+            criteriaFunc = Interpreter()(criteria)
+        elif type(criteria) in [list,tuple]:
             criteriaFunc = lambda x: (criteria[0] is None or x>=criteria[0]) and (criteria[1] is None or x<=criteria[1])
         else:
             criteriaFunc = criteria
         OrigFormatConverter.filterMarkedSegments(inFn, outFn, criteriaFunc, genome)
-    #should be refactored to instead use a geSource, which would accept both vStep and bedGraph-formats etc..
 
+    # TODO: should be refactored to instead use a geSource, which would accept both vStep
+    # and bedGraph-formats etc..
     @staticmethod
     def filterSegmentsByLength(inFn, outFn, criteria):
         if type(criteria) in [list,tuple]:
             assert len(criteria) == 2
             criteriaFunc = lambda x: (criteria[0] is None or x>=criteria[0]) and (criteria[1] is None or x<=criteria[1])
         else:
-            assert type(criteria) == str
-            criteriaFunc = eval(criteria)
+            assert isinstance(criteria, basestring)
+            criteriaFunc = Interpreter()(criteria)
         OrigFormatConverter.filterSegmentsByLength(inFn, outFn, criteriaFunc)
 
     @staticmethod
@@ -307,8 +310,15 @@ class GalaxyInterfaceTools:
         print 'This will be joined file contents..'
         return
 
-    @staticmethod
-    def wrappedDnaFunc(tv, expression, midPointIsZero):
+    @classmethod
+    def _getDnaBasedExpressionInterpreter(cls, locals):
+        aeval = Interpreter()
+        localObjectNames = ['s', 'a', 'c', 'g', 't', 'n', 'winSize', 'winIndexes']
+        aeval.symtable.update(dict([(name, locals.get(name)) for name in localObjectNames]))
+        return aeval
+
+    @classmethod
+    def wrappedDnaFunc(cls, tv, expression, midPointIsZero):
         s = tv.valsAsNumpyArray()
 
         winSize = len(s)
@@ -336,24 +346,15 @@ class GalaxyInterfaceTools:
         t[s=='T'] = 1
         n[s=='N'] = 1
 
-        #assert not 'import' in expression
-        #max,min,sum,if,else ...
-        #su = sum #make it local..
-        #return eval(expression,{'__builtins__':[]},locals())
-        #allowedWords = 'winSize,winIndexes,sum,max,min,if,else,for,in,len,range'.split(',')
-        #for word in re.findall('[a-zA-Z]{2,}',expression):
-        #    if not word in allowedWords:
-        #        print 'Sorry, due to security concerns only a limited set of terms are allowed. Your term "%s" is not currently allowed. Please contact us if you think it should be added.' % word
-        #        logging.getLogger(LACK_OF_SUPPORT_LOGGER).debug('Unsupported word encountered in createDnaBasedCustomTrack: '+word)
-        #        raise NotSupportedError
-        GalaxyInterface.validateDnaBasedExpressionAndReturnError(winSize, expression, \
-                                                                 raiseExceptions=True, logUnsupported=True)
+        cls.validateDnaBasedExpressionAndReturnError(winSize, expression, \
+                                                     raiseExceptions=True, logUnsupported=True)
+        aeval = cls._getDnaBasedExpressionInterpreter(locals())
+        return aeval(expression)
 
-        return eval(expression)
     #$createDnaBasedCustomTrack('testMit','Private:GK:test3011','21','g[0]+c[0]')
     #$createDnaBasedCustomTrack('testMit','Private:GK:test2','5','sum([g[i]+c[i] for i in winIndexes])')
-    @staticmethod
-    def createDnaBasedCustomTrack(genome, outTrackName, windowSize, expression, midPointIsZero=False, username=''):
+    @classmethod
+    def createDnaBasedCustomTrack(cls, genome, outTrackName, windowSize, expression, midPointIsZero=False, username=''):
         inTrackName = GenomeInfo.getSequenceTrackName(genome)
         #funcStr = 'lambda s:'+expression
         #GalaxyInterface.createCustomTrack(genome, inTrackName, outTrackName, windowSize, funcStr)
@@ -363,10 +364,11 @@ class GalaxyInterfaceTools:
         func = quick.application.parallel.PickleTools.FunctionPickleWrapper(expression, midPointIsZero)
         pickle.dumps(func)
 
-        GalaxyInterface.createCustomTrack(genome, inTrackName, outTrackName, windowSize, func, username)
+        cls.createCustomTrack(genome, inTrackName, outTrackName, windowSize, func, username)
 
-    @staticmethod
-    def validateDnaBasedExpressionAndReturnError(windowSize, expression, raiseExceptions=False, logUnsupported=False):
+    @classmethod
+    def validateDnaBasedExpressionAndReturnError(cls, windowSize, expression,
+                                                 raiseExceptions=False, logUnsupported=False):
         try:
             winSize = int(windowSize)
         except Exception, e:
@@ -404,7 +406,8 @@ class GalaxyInterfaceTools:
         n = numpy.zeros(winSize)
 
         try:
-            eval(expression)
+            aeval = cls._getDnaBasedExpressionInterpreter(locals())
+            aeval(expression)
         except Exception, e:
             if raiseExceptions:
                 raise
@@ -420,7 +423,7 @@ class GalaxyInterfaceTools:
         if type(windowSize) is str:
             windowSize = int(windowSize)
         #if type(func) is str:
-        #    func = eval(func)
+        #    func = Interpreter()(func)
 
         inTrackName = GalaxyInterface._cleanUpTracks([inTrackName], genome, True)[0]
 
@@ -452,7 +455,7 @@ class GalaxyInterfaceTools:
     #@staticmethod
     #def createCustomTrackChr(genome, trackName, windowSize, funcStr, chr):
     #    GalaxyInterface.cleanUpTrackName(trackName)
-    #    TrackViewBasedCustomTrackCreator.createTrackChr(genome, trackName, int(windowSize), eval(funcStr), chr)
+    #    TrackViewBasedCustomTrackCreator.createTrackChr(genome, trackName, int(windowSize), Interpreter()(funcStr), chr)
 
     @staticmethod
     def createSegmentation(genome, inTrackName, outTrackName, categorizerMethodLines, minSegLen=5, username=''):
@@ -474,7 +477,7 @@ class GalaxyInterfaceTools:
 
     @staticmethod
     def startPreProcessing(genome, trackNameFilter=[], username='', mergeChrFolders=True):
-        if type(trackNameFilter) == str:
+        if isinstance(trackNameFilter, basestring):
             trackNameFilter = trackNameFilter.split(':')
         print '<PRE>'
         print 'Genome: %s' % genome
@@ -522,11 +525,11 @@ class GalaxyInterfaceTools:
     @classmethod
     #expands segments of inTrackName to a new track with outTrackName
     def expandBedSegmentsFromTrackName(cls, inTrackName, outTrackName, uniqueStaticId, genome, upFlank, downFlank, treatTrackAs='segments', removeChrBorderCrossing=False):
-        if type(inTrackName)==str:
+        if isinstance(inTrackName, basestring):
             inTrackName = inTrackName.split(':')
-        if type(outTrackName)==str:
+        if isinstance(outTrackName, basestring):
             outTrackName = outTrackName.split(':')
-        if type(uniqueStaticId)==str:
+        if isinstance(uniqueStaticId, basestring):
             uniqueStaticId= uniqueStaticId.split(':')
 
         #extract inTrackName to fn
@@ -629,7 +632,7 @@ class GalaxyInterfaceTools:
         mainTrackName = cleanedTrackNames[0]
         controlTrackNameList = cleanedTrackNames[1:]
 
-        if type(outTrackName)==str:
+        if isinstance(outTrackName, basestring):
             outTrackName = outTrackName.split(':')
 
         if ExternalTrackManager.isGalaxyTrack(outTrackName):
@@ -786,7 +789,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                       'params:='+repr(parentTrack), 'class:=dataStorageServicePub']
             socket.send('##'.join(params))
             message = socket.recv()
-            opts = eval(message)
+            opts = ast.literal_eval(message)
         else:
             tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
             if includeAllSubtracksChoice:
@@ -1471,7 +1474,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 res = GalaxyInterface._executeEvalLine(batchLineSpecificFile, line, galaxyFn)
 
                 if printResults:
-                    print 'Result:', res
+                    print>>open(batchLineSpecificFile.getDiskPath(), 'a'), 'Result:', res
 
             if printProgress:
                 print 'Time spent executing line %s: %.1f seconds' % (line, time.time()-startTime)
@@ -1493,7 +1496,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     def _executeToolLine(batchLineSpecificFile, line, username, galaxyFn):
         import re
         from collections import OrderedDict
-        from quick.webtools.GeneralGuiToolsFactory import GeneralGuiToolsFactory
 
         match = re.search('\[([A-Za-z0-9_-]+)\]', line)
         if not match:
@@ -1514,13 +1516,17 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 tupleName, contents = match.groups()
                 if tupleName not in builtins:
                     fieldNames = re.findall('([A-Za-z0-9_-]+)=', contents)
-                    globalsDict[tupleName] = eval("namedtuple('%s', %s)" % (tupleName, fieldNames), \
-                                                  {"__builtins__": builtins}, {'namedtuple': namedtuple})
+                    aeval = Interpreter()
+                    aeval.symtable['namedtuple'] = namedtuple
+                    globalsDict[tupleName] = aeval("namedtuple('%s', %s)" % (tupleName, fieldNames))
 
-        choices = [eval(x, {"__builtins__": builtins}, globalsDict) for x in rawChoices]
+        globalsDict['OrderedDict'] = OrderedDict
+        aeval = Interpreter()
+        aeval.symtable.update(globalsDict)
+        choices = [aeval(x) for x in rawChoices]
         #choices = [choice.replace('\\\\', '\\|') for choice in choices]
 
-        webTool = GeneralGuiToolsFactory.getWebTool(toolId)
+        webTool = getToolPrototype(toolId)
         ChoiceTuple = webTool.getNamedTuple()
         if ChoiceTuple is not None:
             choices = ChoiceTuple(*choices)
@@ -1538,9 +1544,12 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     def _executeEvalLine(batchLineSpecificFile, line, galaxyFn):
         #import math
         import inspect
+        aeval = Interpreter()
+        aeval.symtable['GalaxyInterface'] = GalaxyInterface
+
         if '(' in line:
             funcStr = line.split('(')[0]
-            func = eval('GalaxyInterface.' + funcStr, globals(), locals())
+            func = aeval('GalaxyInterface.' + funcStr)
             funcArgs = inspect.getargspec(func)
             if funcArgs.defaults is not None:
                 if 'galaxyFn' in funcArgs.args[-len(funcArgs.defaults):]:
@@ -1550,14 +1559,14 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         if DebugConfig.USE_PROFILING:
             from gold.util.Profiler import Profiler
             profiler = Profiler()
-            res = profiler.run("eval('GalaxyInterface.' + line, globals(), locals())", globals(), locals())
+            res = profiler.run("aeval('GalaxyInterface.' + line)")
             profiler.printStats()
             profiler.printLinkToCallGraph(['profile_runBatchLines'], galaxyFn)
         else:
             #logMessage(line)
             #logMessage(repr(globals()))
             #logMessage(repr(locals()))
-            res = eval('GalaxyInterface.' + line, globals(), locals())
+            res = aeval('GalaxyInterface.' + line)
 
         return res
 
@@ -1878,7 +1887,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #
     @classmethod
     def isAccessibleGenome(cls, genome, username):
-        if not genome:
+        if not genome or genome == '?':
             return False
 
         #Caching hack to increase speed of displaying genome selection menu

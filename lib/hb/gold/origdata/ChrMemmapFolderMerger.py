@@ -15,7 +15,11 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-import shutil, os, sys
+import ast
+import os
+import shutil
+import sys
+
 from gold.util.CommonFunctions import createDirPath
 from gold.track.CommonMemmapFunctions import createMemmapFileFn, parseMemmapFileFn, findEmptyVal
 from gold.track.TrackSource import TrackSource
@@ -122,6 +126,6 @@ if __name__ == "__main__":
     genome = sys.argv[1]
     trackName = sys.argv[2].split(':')
     assert sys.argv[3] in ['False', 'True']
-    allowOverlaps = eval(sys.argv[3])
+    allowOverlaps = ast.literal_eval(sys.argv[3])
     
     ChrMemmapFolderMerger.merge(genome, trackName, allowOverlaps)

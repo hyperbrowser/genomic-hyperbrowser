@@ -1,3 +1,4 @@
+import ast
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from gold.util.CommonFunctions import createOrigPath
@@ -91,7 +92,7 @@ class UploadDataToStorebio(GeneralGuiTool):
     @staticmethod    
     def getOptionsBox4(prevChoices):
         if prevChoices[-2]:
-            projectList = eval(prevChoices[-2])#UploadDataToStorebio.ProjectList#eval(prevChoices[-2])
+            projectList = ast.literal_eval(prevChoices[-2])#UploadDataToStorebio.ProjectList#eval(prevChoices[-2])
             return [v[0] for v in projectList]
             resList = []
             for i in projectList:
@@ -114,7 +115,7 @@ class UploadDataToStorebio(GeneralGuiTool):
             #params = list(prevChoices[1:3])+['List DataSetType', 'dataStorageService']
             UploadDataToStorebio.socket.send(messageSep.join(params))
             message = UploadDataToStorebio.socket.recv_unicode().encode('utf-8')#, 'ignore'
-            return ['--select--'] + eval(message)
+            return ['--select--'] + ast.literal_eval(message)
             #wsXmlParser = ParseXml()
             #UploadDataToStorebio.DataSetTypeList = wsXmlParser.ParseDataSetType(minidom.parseString(message))
             #return ['--select--']+[i['Name'] for i in UploadDataToStorebio.DataSetTypeList]
