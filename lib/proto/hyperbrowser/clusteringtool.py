@@ -85,7 +85,7 @@ class ClusteringToolController(HyperBrowserControllerMixin, BaseToolController):
         #                
         #    for index, track in enumerate(refTracks) :
         #        print track, '<br>'
-        #        if type(track) == str :
+        #        if isinstance(track, basestring) :
         #            track = track.split(":")
         #        refTracks[index] = track[:-1] if track[-1] == "-- All subtypes --" else track
         #        
@@ -221,7 +221,7 @@ class ClusteringToolController(HyperBrowserControllerMixin, BaseToolController):
     def trackPrepare(self, inputTracks, genome) : #just filter out the -- All subtypes -- tag if it exists
         output = []
         for track in inputTracks :
-            if type(track) == str :
+            if isinstance(track, basestring) :
                 track = track.split(":")
             if track[-1] == "-- All subtypes --" :
                 output.append(track[:-1])
