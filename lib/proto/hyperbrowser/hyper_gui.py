@@ -32,45 +32,25 @@ class TrackWrapper:
         self.nameMain = name
         self.nameFile = self.nameMain + 'file'
         self.nameState = self.nameMain + '_state'
-#        self.nameRecent = self.nameMain + '_recent'
         self.state = params.get(self.nameState)
         if self.state != None:
             self.state = unquote(self.state)
 
-#        if params.has_key(name) and (not params.has_key(self.nameLevel(0)) or params.get(self.nameRecent)):
         if params.has_key(name) and (not params.has_key(self.nameLevel(0))):
             parts = params[name].split(':')
             if len(parts) == 4 and parts[0] == 'galaxy':
-                dataset_id = int(parts[2].split('/dataset_')[-1].split('.dat')[0]) if not parts[2].isdigit() else int(parts[2])
-                params[self.nameFile] = ','.join([parts[0],str(dataset_id),parts[1],parts[3]])
+                params[self.nameFile] = params[name]
                 self.setValueLevel(0, parts[0])
             else:
                 for i in range(len(parts)):
                     self.setValueLevel(i, parts[i])
         
-        #if self.valueLevel(0) == '__recent_tracks' and params.get(self.nameRecent):
-        #    #raise Exception(params[self.nameRecent])
-        #    parts = params[self.nameRecent].split(':')
-        #    for i in range(len(parts)):
-        #        self.setValueLevel(i, parts[i])
-            
-        
-        #self.preTracks = preTracks
         self.preTracks = []
         self.extraTracks = []
-#        self.recentTracks = []
-#        self.extraTracks.append(('UCSC tracks', 'ucsc', False))
         if len(datasets) > 0:
             self.extraTracks.append(('-- From history (bed, wig, ...) --', 'galaxy', False))
         self.extraTracks += preTracks
 
-#        if self.galaxy.hasSessionParam('recent_tracks'):
-#            self.extraTracks.append(('-- Recently selected tracks --', '__recent_tracks', False))
-#            self.recentTracks = self.galaxy.getSessionParam('recent_tracks')
-
-        #self.main = params.get(self.nameMain)
-        #if self.main == '-':
-        #    self.main = None
         self.main = self.valueLevel(0)
         self.file = params.get(self.nameFile)
         if not self.file and len(self.datasets) > 0:
@@ -103,8 +83,6 @@ class TrackWrapper:
         self.numLevels = len(self.tracks)
    
     def hasSubtrack(self):
-        #sub = self.valueLevel(self.numLevels - 1)
-        #print self.has_subtrack, sub, len(self.tracks), self.numLevels, self.valueLevel(self.numLevels - 1)
         ldef = len(self.definition())
         if len(self.tracks) > ldef:
             if len(self.tracks[ldef]) > 0:
@@ -130,7 +108,6 @@ class TrackWrapper:
             if val != None and val != '-':
                 vals.append(val)
             else:
-            #    vals.append(None)
                 break
         return vals
 
@@ -154,7 +131,6 @@ class TrackWrapper:
                 path = self.galaxy.encode_id(f[2]) if len(f[2]) < 16 and f[2].isdigit() else f[2]
             else:
                 path = self.galaxy.getDataFilePath(f[2])
-            #print path
             arr.append(str(f[1]))
             arr.append(str(path))
             if unquotehistoryelementname:
@@ -199,16 +175,12 @@ class TrackWrapper:
                 try:
                     tracks, self.state = self.api.getSubTrackNames(self.genome, trk, False, self.galaxy.getUserName(), self.state)
                 except OSError, e:
-                    #print e, level, i
                     self.setValueLevel(i, None)
                     self.has_subtrack = False
                     if e.errno != 2:
                         raise e
                 if tracks and len(tracks) > 0:
                     self.has_subtrack = True
-                    #tracks = None
-                #if tracks and len(tracks) == 1 and not tracks[0][1]:
-                #    tracks = None
         if tracks == None:
             self.setValueLevel(level, None)
         else:
@@ -217,12 +189,7 @@ class TrackWrapper:
 
     def mainTracks(self):
         tracks = self.api.getMainTrackNames(self.genome, self.preTracks, self.extraTracks, self.galaxy.getUserName(), self.ucscTracks)
-#        for i in range(len(tracks)):
-#            if tracks[i][1] == self.main:
-#                tracks[i] = (tracks[i][0], tracks[i][1], True)
         return tracks
-
-    #return self.api.getMainTrackNames(self.preTracks, [('-- From history (bed-file) --', 'bed', False), ('-- From history (wig-file) --', 'wig', False)])
 
 
 
