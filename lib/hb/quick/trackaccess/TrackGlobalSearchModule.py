@@ -12,7 +12,6 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
-from asteval import Interpreter
 from collections import OrderedDict, namedtuple
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -35,6 +34,7 @@ import gold.gsuite.GSuiteUtils as GSuiteUtils
 
 #importing from: '/hyperbrowser/src/hb_core_developer/trunk/data'
 from config.Config import HB_SOURCE_DATA_BASE_DIR
+from third_party.asteval_raise_errors import Interpreter
 
 VocabularyElement = namedtuple('VocabularyElement', ('category', 'subCategory','sourceTool','sourceTable','sourceTableFilter','toolAttr','toolVal','fileType'))
 

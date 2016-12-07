@@ -1,9 +1,8 @@
-from asteval import Interpreter
-
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 #from gold.application.LogSetup import logMessage
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from gold.util.CustomExceptions import InvalidFormatError
+from third_party.asteval_raise_errors import Interpreter
 
 
 class FilterHistoryElementOnCohosenValues(GeneralGuiTool):

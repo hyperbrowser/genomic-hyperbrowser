@@ -1,7 +1,6 @@
 import os
 import subprocess
 import sys
-from asteval import Interpreter
 from StringIO import StringIO
 from collections import namedtuple
 from copy import copy
@@ -16,6 +15,7 @@ from gold.util.CustomExceptions import InvalidFormatError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from third_party.asteval_raise_errors import Interpreter
 
 FileContentsInfo = namedtuple('FileContentsInfo', ['table', 'numCols', 'error'])
 

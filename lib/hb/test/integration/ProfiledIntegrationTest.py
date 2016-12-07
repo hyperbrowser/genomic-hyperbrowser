@@ -17,11 +17,10 @@
 import sys
 import StringIO
 
-from asteval import Interpreter
-
 from gold.util.Profiler import Profiler
 from test.integration.ProfilingStorage import ProfilingStorage
 from test.util.Asserts import TestCaseWithImprovedAsserts
+from third_party.asteval_raise_errors import Interpreter
 
 class ProfiledIntegrationTest(TestCaseWithImprovedAsserts):
     VERBOSE = False

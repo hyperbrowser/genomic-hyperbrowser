@@ -21,7 +21,6 @@ import re
 import shutil
 import sys
 import time
-from asteval import Interpreter
 from copy import copy
 from datetime import datetime
 from urllib import unquote, quote
@@ -57,6 +56,7 @@ from quick.extra.StandardizeTrackFiles import runParserClass
 from quick.extra.TrackExtractor import TrackExtractor
 from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists, getToolPrototype
 from quick.util.GenomeInfo import GenomeInfo
+from third_party.asteval_raise_errors import Interpreter
 
 
 #from quick.batch.BatchRunner import BatchRunner,SuperBatchRunner

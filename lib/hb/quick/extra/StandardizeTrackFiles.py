@@ -25,6 +25,7 @@ import re
 import inspect
 from glob import glob
 from collections import OrderedDict
+
 from gold.util.CustomExceptions import InvalidFormatError, AbstractClassError
 from quick.util.CommonFunctions import ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
@@ -37,6 +38,7 @@ from config.Config import PARSING_ERROR_DATA_PATH, NONSTANDARD_DATA_PATH, ORIG_D
 from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
 from config.Config import DATA_FILES_PATH
 from _collections import defaultdict
+from third_party.asteval_raise_errors import Interpreter
 
 SHELVE_FN = DATA_FILES_PATH + os.sep + 'StandardizerTool.shelve'
 
@@ -1548,6 +1550,8 @@ class ShuffleAndAddColumns(GeneralTrackDataModifier):
     @classmethod
     def parseFile(cls, inFn, outFn, trackName, genome, numHeaderLines='0', colOrder=None, **kwArgs):
         if colOrder:
+            aeval = Interpreter()
+
             inFile = open(inFn)
             ensurePathExists(outFn)
             outFile = open(outFn, 'w')
@@ -1560,17 +1564,17 @@ class ShuffleAndAddColumns(GeneralTrackDataModifier):
                 lineTab = line.strip().split('\t')
                 for i in range(len(lineTab)):
                     val = int(lineTab[i]) if lineTab[i].isdigit() else lineTab[i]
-                    locals()['c'+str(i)] = val
+                    aeval.symtable['c'+str(i)] = val
                 outStr = ''
                 for v in colOrderTab:
                     try:
-                        outStr+= str(ast.literal_eval(v)) +'\t'
+                        outStr += str(aeval(v)) +'\t'
                     except:
                         for i in range(len(lineTab)):
                             if v.find('c'+str(i)):
-                                locals()['c'+str(i)] = str(locals()['c'+str(i)])
+                                aeval.symtable['c'+str(i)] = str(aeval.symtable['c'+str(i)])
 
-                        outStr+= str(ast.literal_eval(v)) +'\t'
+                        outStr += str(aeval(v)) +'\t'
                 print>>outFile, outStr.strip()
 
             outFile.close()
@@ -1677,8 +1681,6 @@ class ImportMitfExcel(GeneralTrackDataModifier):#
 #    '''Evaluates a custom lambda function on a selected column, replacing the column value with what the lambda evaluates to
 #    Example: 'lambda x:str(int(x)*2) would replace the values at the selected column with that of its double..
 #    '''
-#    from asteval import Interpreter
-#
 #    @classmethod
 #    def parseFile(cls, inFn, outFn, trackName, genome, col='3', customLambda='lambda x:x', **kwArgs):
 #        pass
