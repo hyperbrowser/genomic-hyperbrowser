@@ -72,13 +72,13 @@ class CreateDnaBasedCustomTrackTool(GeneralGuiTool):
         #else:
         trackName = 'galaxy:hbfunction:%s:Create track from DNA sequence' % galaxyFn
 
-        with open(galaxyFn, 'w+') as outputFile:
-            print>>outputFile, GalaxyInterface.getHbFunctionOutputBegin(galaxyFn, withDebug=True)
+        # with open(galaxyFn, 'w+') as outputFile:
+        print GalaxyInterface.getHbFunctionOutputBegin(galaxyFn, withDebug=True)
 
-            GalaxyInterface.createDnaBasedCustomTrack(genome, trackName, winSize, expression, midPointIsZero)
+        GalaxyInterface.createDnaBasedCustomTrack(genome, trackName, winSize, expression, midPointIsZero)
 
-            infoMsg = 'A custom track has been created by applying the expression "%s" on DNA sequence of a sliding window of size %s along the genome (%s).' % (expression, winSize,indexScheme)
-            print>>outputFile, GalaxyInterface.getHbFunctionOutputEnd(infoMsg, withDebug=True)
+        infoMsg = 'A custom track has been created by applying the expression "%s" on DNA sequence of a sliding window of size %s along the genome (%s).' % (expression, winSize,indexScheme)
+        print GalaxyInterface.getHbFunctionOutputEnd(infoMsg, withDebug=True)
 
 
     @staticmethod
