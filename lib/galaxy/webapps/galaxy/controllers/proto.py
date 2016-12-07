@@ -27,10 +27,22 @@ import traceback
 from multiprocessing import Process, Pipe, Queue
 from importlib import import_module
 
+#from sqlalchemy import create_engine, event, exc
+#from sqlalchemy.orm.session import Session, sessionmaker
+#from sqlalchemy.orm.scoping import scoped_session
+
+
 
 class ProtoController( BaseUIController ):
 
     def run_fork(self, response, trans, mako):
+        # this can close active connections in parent threads, since db server endpoint closes
+        #trans.sa_session.get_bind().dispose()
+
+        # don't know why this has no effect
+        #engine = create_engine(trans.app.config.database_connection, pool_size=1)
+        #trans.app.model.context = scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=True))
+
         # logging locks and/or atexit handlers may be cause of deadlocks in a fork from thread
         # attempt to fix by shutting down and reloading logging module and clear exit handlers
         # logging.shutdown()
@@ -61,7 +73,9 @@ class ProtoController( BaseUIController ):
 
         response.send_bytes(html)
         response.close()
-        trans.sa_session.flush()
+
+        #trans.sa_session.flush()
+        #engine.dispose()
 
     def run_tool(self, mako, trans):
         toolController = None
@@ -82,6 +96,7 @@ class ProtoController( BaseUIController ):
 
     @web.expose
     def index(self, trans, mako = 'generictool', **kwd):
+
         if kwd.has_key('rerun_hda_id'):
             self._import_job_params(trans, kwd['rerun_hda_id'])
                     
@@ -91,10 +106,22 @@ class ProtoController( BaseUIController ):
         retry = 3
         while retry > 0:
             retry -= 1
-            trans.sa_session.flush()
 
             my_end, your_end = Pipe()
             proc = Process(target=self.run_fork, args=(your_end,trans,str(mako)))
+
+            #trans.sa_session.flush()
+
+            # this avoids database exceptions in fork, but defies the point of having a
+            # connection pool
+            #trans.sa_session.get_bind().dispose()
+
+            # attempt to fully load history/dataset objects to avoid "lazy" loading from
+            # database in forked process
+            if trans.get_history():
+                for hda in trans.get_history().active_datasets:
+                    _ = hda.visible, hda.state, hda.dbkey, hda.extension, hda.datatype
+
             proc.start()
             html = ''
             if proc.is_alive():
@@ -114,7 +141,6 @@ class ProtoController( BaseUIController ):
                 proc.terminate()
                 log.warn('Fork did not exit, terminated.')
 
-        trans.sa_session.flush()
         return html
 
 
