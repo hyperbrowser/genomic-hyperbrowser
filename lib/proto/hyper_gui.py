@@ -83,12 +83,10 @@ class GalaxyWrapper:
     def encode_id(self, id):
         from proto.config.Security import galaxySecureEncodeId
         return galaxySecureEncodeId(id)
-        # return self.trans.security.encode_id(id)
 
     def decode_id(self, id):
         from proto.config.Security import galaxySecureDecodeId
         return galaxySecureDecodeId(id)
-        # return self.trans.security.decode_id(id)
 
     def getDataFilePath(self, id):
         from proto.CommonFunctions import getGalaxyFnFromAnyDatasetId
@@ -104,18 +102,15 @@ class GalaxyWrapper:
                         datasets.append(dataset)
         return datasets
 
-
     def optionsFromHistory(self, exts, sel=None, datasets=None):
         html = ''
 
         if not datasets:
-            #datasets = self.trans.get_history().active_datasets
             datasets = self.getHistory(exts)
 
         for dataset in datasets:
-            #if exts is None or dataset.extension in exts:
-                option = self.makeHistoryOption(dataset, sel)[0]
-                html += option
+            option = self.makeHistoryOption(dataset, sel)[0]
+            html += option
         return html
 
     def optionsFromHistoryFn(self, exts = None, tools = None, select = None):
@@ -125,8 +120,6 @@ class GalaxyWrapper:
             if tools:
                 job = getJobFromDataset(dataset)
                 tool_id = job.tool_id if job else None
-            #if dataset.visible and dataset.state == 'ok':
-            #    if exts == None or dataset.extension in exts or any([isinstance(dataset.datatype, ext) for ext in exts if isinstance(ext, type)]):
             if tools is None or tool_id in tools:
                 option, val = self.makeHistoryOption(dataset, select)
                 vals.append(val)
@@ -136,7 +129,6 @@ class GalaxyWrapper:
     def itemsFromHistoryFn(self, exts = None):
         items = OrderedDict()
         for dataset in self.getHistory(exts):
-            #if (exts == None or dataset.extension in exts) and dataset.state == 'ok':
             option_tag, val = self.makeHistoryOption(dataset)
             items[str(dataset.dataset_id)] = val
         return items
@@ -147,7 +139,6 @@ class GalaxyWrapper:
         sel_id = self.getHistoryOptionId(select)
 
         if sep == ',':
-            #vals = ['galaxy', self.encode_id(dataset.dataset_id), dataset.extension, self.makeHistoryOptionName(dataset)]
             vals = ['galaxy', self.encode_id(dataset.dataset_id), dataset.extension]
         else:
             vals = ['galaxy', dataset.extension, self.encode_id(dataset.dataset_id), self.makeHistoryOptionName(dataset)]
