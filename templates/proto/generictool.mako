@@ -16,7 +16,6 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os, traceback, json
-import cPickle as pickle
 from zlib import compress
 from base64 import urlsafe_b64encode
 from cgi import escape
