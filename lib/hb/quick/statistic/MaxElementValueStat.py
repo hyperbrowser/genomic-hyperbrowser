@@ -20,7 +20,7 @@ from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import TrackFormatReq
 
 class MaxElementValueStat(MagicStatFactory):
-    "Takes the maximum value of elements inside the bin"
+    "The maximum value of elements inside each bin"
     pass
 
 class MaxElementValueStatSplittable(StatisticSplittable):
@@ -32,7 +32,13 @@ class MaxElementValueStatUnsplittable(Statistic):
     def _compute(self):
         rawData = self._children[0].getResult()
         vals = rawData.valsAsNumpyArray()
-        return vals.max()   
+
+        assert vals is not None
+
+        if len(vals) == 0:
+            return None
+
+        return vals.max()
 
     def _createChildren(self):
         self._addChild( RawDataStat(self._region, self._track, TrackFormatReq(allowOverlaps=True)) )

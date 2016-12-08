@@ -50,7 +50,7 @@ class RawRipleysKChrStatUnsplittable(Statistic):
     #@repackageException(Exception, ShouldNotOccurError)    
     def _compute(self):
         tv = self._children[0].getResult() 
-        print tv.genomeAnchor.chr
+        # print tv.genomeAnchor.chr
         points = self._children[0].getResult().startsAsNumpyArray()
         binSize = self._children[1].getResult()
         globalPointCount = self._children[2].getResult()

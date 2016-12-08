@@ -739,7 +739,7 @@ ROC-score: ROC-score if track1 are mixture of TP- and FP- segments, and values o
 ROC-score: ROC-score if track1 are mixture of TP- and FP- segments, and overlap with track2 is used to rank the track1-segments $EXPERIMENTAL$ -> ROCScoreOverlapBasedStat
 CC: Pearson's correlation coefficient of track1 and track2 -> CorrCoefStat
 CC: Pearson's correlation coefficient of values for corresponding points in track1 and track2 -> CorrespondingPointMarkCCStat
-Max element value: Takes the maximum value of elements inside the bin -> MaxElementValueStat
+Max element value: The maximum value of elements inside each bin -> MaxElementValueStat
 Mean at points: The mean value of track1 at positions of track2 -> MeanValAtPointsStat
 Mean inside: The mean value of track2 inside track1 -> MeanInsideStat
 Most common value: The most common track1 value inside a track2 segment $EXPERIMENTAL$ -> MostCommonCategoryStat

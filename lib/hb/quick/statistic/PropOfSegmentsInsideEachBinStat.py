@@ -17,7 +17,9 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.statistic.CountSegmentStat import CountSegmentStat
+from gold.util.CustomExceptions import SplittableStatNotAvailableError
 from quick.application.UserBinSource import GlobalBinSource, MinimalBinSource, UserBinSource
+from quick.util.CommonFunctions import isIter
 
 
 class PropOfSegmentsInsideEachBinStat(MagicStatFactory):
@@ -31,6 +33,9 @@ class PropOfSegmentsInsideEachBinStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
 
     def _init(self, globalSource='', minimal=False):
+        if isIter(self._region):
+            raise SplittableStatNotAvailableError()
+
         if minimal:
             self._globalSource = MinimalBinSource(self._region.genome)
         elif globalSource == 'test':

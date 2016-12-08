@@ -61,7 +61,7 @@ class RawVisualizationPresenter(GraphicsPresenter):
         halfMax = maxVal/2
         for tv in rawData:
             #print tv.genomeAnchor,
-            print tv.genomeAnchor.chr
+            # print tv.genomeAnchor.chr
             yLabels.append('"'+tv.genomeAnchor.chr+': %s"'% ':'.join(str(tv.genomeAnchor).split()[0].split(':')[1:]))
             startArr, endArr = tv.startsAsNumpyArray(),tv.endsAsNumpyArray()
             if tv.normalizeRows:

@@ -36,18 +36,16 @@ class SumTrackPointsStatUnsplittable(MultipleTrackStatistic):
     IS_MEMOIZABLE = False
         
     def _compute(self):
-        
-        print 'bin:::' + str(self._binSizeStat.getResult()) + '<br />'
+        # print 'bin:::' + str(self._binSizeStat.getResult()) + '<br />'
         if self._binSizeStat.getResult() > 1:
             result = zeros(self._binSizeStat.getResult())
             
-            print 'result:::' + str(result)
+            # print 'result:::' + str(result)
             for track in self._children[:-1]:
-                print 'track:::' + str(track)
+                # print 'track:::' + str(track)
                 result += track.getResult().getBinaryBpLevelArray()
-    
-            
-            print result
+
+            # print result
             exit()
 
     def _createChildren(self):
