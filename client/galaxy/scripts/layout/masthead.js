@@ -60,7 +60,7 @@ var View = Backbone.View.extend({
     },
 
     render: function() {
-        this.$navbarBrandTitle.html( 'v1.6 <a href="https://galaxyproject.org/">(powered by Galaxy)</a> ' + ( this.options.brand && '/ ' + this.options.brand || '' ) );
+        this.$navbarBrandTitle.html( 'v2.0 <a href="https://galaxyproject.org/">(powered by Galaxy)</a> ' + ( this.options.brand && '/ ' + this.options.brand || '' ) );
         this.$navbarBrandLink.attr( 'href', this.options.logo_url );
         this.$navbarBrandImage.attr( 'src', Galaxy.root + 'static/hyperbrowser/images/logo/HB_logo_title_small.png' );
         this.quotaMeter.render();
