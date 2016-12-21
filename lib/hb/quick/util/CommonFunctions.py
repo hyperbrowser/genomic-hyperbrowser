@@ -713,3 +713,17 @@ def getUniqueFileName(origFn):
         i += 1
 
     return newOrigFn
+
+
+def cleanUpTrackType(trackTypeStr):
+    REPLACE_DICT = {
+        'unmarked': '',
+        'Unmarked': '',
+        'marked': 'valued',
+        'Marked': 'Valued'
+    }
+
+    for old, new in REPLACE_DICT.iteritems():
+        trackTypeStr = trackTypeStr.replace(old, new).strip()
+
+    return trackTypeStr

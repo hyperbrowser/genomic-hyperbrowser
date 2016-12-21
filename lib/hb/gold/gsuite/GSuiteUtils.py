@@ -4,10 +4,10 @@ from threading import Thread, RLock, Condition, current_thread, Lock
 
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack, GalaxyGSuiteTrack
-from gold.util.CommonFunctions import prettyPrintTrackName
 from gold.gsuite import GSuiteComposer
 from gold.origdata.GESourceWrapper import GESourceWrapper
 from gold.origdata.GenomeElementSource import GenomeElementSource
+from quick.util.CommonFunctions import prettyPrintTrackName, cleanUpTrackType
 
 printLock = Lock()
 
@@ -23,6 +23,7 @@ def getSubtracksAsGSuite(genome, parentTrack, username=''):
     gSuite = GSuite()
     for trackName in procTrackNameSource.yielder(parentTrack):
         trackType = TrackInfo(genome, trackName).trackFormatName.lower()
+        trackType = cleanUpTrackType(trackType)
         uri = HbGSuiteTrack.generateURI(trackName=trackName)
         title = prettyPrintTrackName(trackName)
         if title.startswith("'") and title.endswith("'") and len(title) > 1:
