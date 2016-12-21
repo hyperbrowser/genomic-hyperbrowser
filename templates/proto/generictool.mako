@@ -56,7 +56,7 @@ else:
         %elif control.inputTypes[i] == 'multi':
             ${functions.multichoice(control.inputIds[i], control.options[i], control.inputValues[i], control.inputNames[i], info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'checkbox':
-            ${functions.checkbox(control.inputIds[i], control.options[i], control.displayValues[i], control.inputNames[i], info=control.inputInfo[i])}
+            ${functions.checkbox(control.inputIds[i], control.options[i], control.inputValues[i], control.inputNames[i], info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'text':
             ${functions.text(control.inputIds[i], control.displayValues[i], control.inputNames[i], control.options[i][1], readonly=False, reload=control.prototype.isDynamic(), info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'text_readonly':
