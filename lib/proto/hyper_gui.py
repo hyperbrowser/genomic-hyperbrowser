@@ -148,19 +148,8 @@ class GalaxyWrapper:
         return (html, val)
 
     def getHistoryOptionSecureIdAndExt(self, select):
-        if select and select.startswith('galaxy'):
-            sep = select[6]
-            if sep == ',':
-                splitted = select.split(',')
-                id_sel = splitted[1]
-                ext = splitted[2]
-            else:
-                splitted = select.split(':')
-                id_sel = splitted[2]
-                ext = splitted[1]
-        else:
-            id_sel = 0
-            ext = ''
+        from proto.CommonFunctions import getSecureIdAndExtFromDatasetInfoAsStr
+        id_sel, ext = getSecureIdAndExtFromDatasetInfoAsStr(select)
         return id_sel, ext
 
     def getHistoryOptionId(self, select):

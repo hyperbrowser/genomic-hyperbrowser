@@ -103,6 +103,7 @@ class ProtoController( BaseUIController ):
         if isinstance(mako, list):
             mako = mako[0]
 
+        timeout = 30
         retry = 3
         while retry > 0:
             retry -= 1
@@ -125,13 +126,13 @@ class ProtoController( BaseUIController ):
             proc.start()
             html = ''
             if proc.is_alive():
-                if my_end.poll(15):
+                if my_end.poll(timeout):
                     #ping = my_end.recv_bytes()
                     html = my_end.recv_bytes()
                     my_end.close()
                     break
                 else:
-                    log.warn('Fork timed out after 15 sec. Retrying...')
+                    log.warn('Fork timed out after %d sec. Retrying...' % (timeout,))
             else:
                 log.warn('Fork died on startup.')
                 break

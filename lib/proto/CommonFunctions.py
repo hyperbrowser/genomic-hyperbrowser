@@ -210,6 +210,22 @@ def extractNameFromDatasetInfo(datasetInfo):
     return unquote(datasetInfo[-1])
 
 
+def getSecureIdAndExtFromDatasetInfoAsStr(datasetInfo):
+        if datasetInfo and datasetInfo.startswith('galaxy'):
+            sep = datasetInfo[6]
+            if sep == ',':
+                splitted = datasetInfo.split(',')
+                id_sel = splitted[1]
+                ext = splitted[2]
+            else:
+                splitted = datasetInfo.split(':')
+                id_sel = splitted[2]
+                ext = splitted[1]
+        else:
+            id_sel = 0
+            ext = ''
+        return id_sel, ext
+
 def createToolURL(toolId, **kwArgs):
     from proto.tools.GeneralGuiTool import GeneralGuiTool
     return GeneralGuiTool.createGenericGuiToolURL(toolId, tool_choices=kwArgs)

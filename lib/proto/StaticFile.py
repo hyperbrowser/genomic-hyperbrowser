@@ -5,18 +5,21 @@ from proto.HtmlCore import HtmlCore
 import os
 
 class StaticFile(object):
+    STATIC_PATH = STATIC_PATH
+    STATIC_REL_PATH = STATIC_REL_PATH
+
     def __init__(self, id):
         #assert id[0] in ['files','images','run_specific'], 'Only a restricted set of first elements of id is supported, in order to have control of phyical storage locations. ID: '+str(id)
         assert id[0] in ['files','images'], 'Only a restricted set of first elements of id is supported, in order to have control of phyical storage locations. ID: '+str(id)
         self._id = id
 
     def getDiskPath(self, ensurePath=False):
-        fn = os.sep.join([STATIC_PATH] + self._id)
+        fn = os.sep.join([self.STATIC_PATH] + self._id)
         if ensurePath:
             ensurePathExists(fn)
         return fn
 
-    def getFile(self,mode='w'):
+    def getFile(self, mode='w'):
         fn = self.getDiskPath(True)
         return open(fn,mode)
 
@@ -29,7 +32,7 @@ class StaticFile(object):
         f.close()
 
     def getURL(self):
-        return os.sep.join([STATIC_REL_PATH] + self._id)
+        return os.sep.join([self.STATIC_REL_PATH] + self._id)
 
     def getLink(self, linkText):
         return str(HtmlCore().link(linkText, self.getURL()))
