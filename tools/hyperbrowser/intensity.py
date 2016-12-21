@@ -20,7 +20,7 @@ from urllib import quote, unquote
 from quick.application.GalaxyInterface import *
 from config.Config import URL_PREFIX
 
-import hyperbrowser.hyper_gui as hg
+import proto.hyperbrowser.hyper_gui as hg
 
 
 def main():

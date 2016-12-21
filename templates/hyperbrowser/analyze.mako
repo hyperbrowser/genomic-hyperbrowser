@@ -186,7 +186,7 @@ if hyper.isAccessibleGenome(genome, username):
 %>
 
 <%namespace name="functions" file="/hyperbrowser/functions.mako" />
-<%inherit file="/proto/base.mako"/>
+<%inherit file="base.mako"/>
 
 <%def name="title()">The Genomic HyperBrowser (${hyper.getHbVersion()})</%def>
 <%def name="head()">

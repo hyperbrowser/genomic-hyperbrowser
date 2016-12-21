@@ -20,7 +20,7 @@ from cgi import escape
 from urllib import quote, unquote
 
 import quick.extra.GoogleMapsInterface as gmi
-import hyperbrowser.hyper_gui as gui
+import proto.hyperbrowser.hyper_gui as gui
 
 %>
 <%

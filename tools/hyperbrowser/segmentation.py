@@ -18,7 +18,7 @@ import sys, os, getopt,types
 
 from gold.application.GalaxyInterface import *
 
-import hyperbrowser.hyper_gui as hg
+import proto.hyperbrowser.hyper_gui as hg
 
 def main():
     #print "running"

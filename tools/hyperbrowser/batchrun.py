@@ -23,7 +23,7 @@ import sys, os, getopt,types
 from gold.application.GalaxyInterface import *
 from config.Config import URL_PREFIX
 
-import hyperbrowser.hyper_gui as hg
+import proto.hyperbrowser.hyper_gui as hg
 
 def main():
     #print "running"

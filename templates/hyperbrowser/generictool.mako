@@ -23,6 +23,12 @@
 
 <%inherit file="/proto/generictool.mako" />
 
+<%def name="stylesheets()">
+    ${h.css('base')}
+    ${h.css('proto')}
+    ${h.css('hb_base')}
+</%def>
+
 <%def name="includeScripts()">\
     <script type="text/javascript">
         <%include file="common.js"/>

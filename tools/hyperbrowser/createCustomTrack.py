@@ -22,7 +22,7 @@ from galaxy.util import restore_text
 
 from gold.application.GalaxyInterface import *
 
-import hyperbrowser.hyper_gui as hg
+import proto.hyperbrowser.hyper_gui as hg
 
 def main():
     filename = sys.argv[1]

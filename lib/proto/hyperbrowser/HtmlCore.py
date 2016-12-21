@@ -2,6 +2,14 @@ from proto.HtmlCore import HtmlCore as ProtoHtmlCore
 
 
 class HtmlCore(ProtoHtmlCore):
+    def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=['hb_base.css'],
+              redirectUrl=None, reloadTime=None):
+        return super(HtmlCore, self).begin(extraJavaScriptFns=extraJavaScriptFns,
+                                           extraJavaScriptCode=extraJavaScriptCode,
+                                           extraCssFns=extraCssFns,
+                                           redirectUrl=redirectUrl,
+                                           reloadTime=reloadTime)
+
     def tableHeader(self, headerRow, tagRow=None, tableId=None,
                     addInstruction=False, **kwargs):
         if addInstruction:

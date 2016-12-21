@@ -21,7 +21,7 @@ import sys, os
 from cgi import escape
 from urllib import quote, unquote
 
-import hyperbrowser.hyper_gui as gui
+import proto.hyperbrowser.hyper_gui as gui
 import quick.extra.GoogleMapsInterface as gmi
 
 %>

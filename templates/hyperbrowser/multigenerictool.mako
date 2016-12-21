@@ -19,7 +19,7 @@ import sys, os, traceback, json, pickle
 from cgi import escape
 from urllib import quote, unquote
 
-import hyperbrowser.hyper_gui as gui
+import proto.hyperbrowser.hyper_gui as gui
 
 %>
 <%

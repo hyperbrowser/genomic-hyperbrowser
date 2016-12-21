@@ -18,7 +18,7 @@ import sys, os, getopt,types, time, subprocess, shutil
 
 from gold.application.GalaxyInterface import *
 
-import hyperbrowser.hyper_gui as hg
+import proto.hyperbrowser.hyper_gui as hg
 
 # checks if job is running/queued on titan
 def checkjob(id):

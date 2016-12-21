@@ -1,14 +1,28 @@
 @import "bootstrap.less";
 @import "galaxy_variables.less";
+@import "hb_variables.less";
+
+h3 {
+	font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+}
+
+p {
+	margin: 12px 0 12px;
+}
 
 body  {
-    font: 130% verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif; 
+    font: 130% verdana, "Bitstream Vera Sans", geneva, arial, helvetica, helve, sans-serif;
     background: @welcome_bg_bottom;
     color: @welcome_text;
     background-image: url(welcome_bg.png);
     background-repeat: repeat-x;
     background-position: top;
     padding: 10px;
+    margin: 8px;
 }
 
 div.section {
@@ -135,12 +149,6 @@ td {
     width:118px;
 }
 
-.arrowsandboxes-graph-wrapper {
-    height:450px !important;
-    width:580px !important;
-    margin:auto;
-}
-
 p.inner_title   {
     margin: 6px 0 0 0;
 }
@@ -238,7 +246,7 @@ div.infoBox{
   display:block;
   background-color:#dad4c0;
   border:1px dotted #000000;
-  padding: 0px 10px 10px;
+  padding: 10px 10px 10px;
   margin-left: 20px;
   margin-top: -15px;
 }
