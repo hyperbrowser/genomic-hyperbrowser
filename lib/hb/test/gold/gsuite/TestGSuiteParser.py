@@ -50,8 +50,8 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
                           GSuiteParser._parseHeaderLine('##location:Local\n'))
         self.assertEquals(('file format', 'primary'),
                           GSuiteParser._parseHeaderLine('##File format:  primary\n'))
-        self.assertEquals(('genome', 'hg18'),
-                          GSuiteParser._parseHeaderLine('##genome:  hg18\n'))
+        self.assertEquals(('genome', 'HG18'),
+                          GSuiteParser._parseHeaderLine('##genome:  HG18\n'))
 
     def testParseColSpecLineDirectly(self):
         colSpecLine = '###uri\tantibody'

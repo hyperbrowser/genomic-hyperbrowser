@@ -24,16 +24,19 @@ GSuiteContents = namedtuple('GSuiteContents', ['genome', 'colNames', 'headerVars
 
 def _parseHeaderLine(line):
     headerLine = line[2:]
-    splitLine = headerLine.lower().split(':')
+    splitLine = headerLine.split(':')
 
     if len(splitLine) != 2:
         raise InvalidFormatError('Header line not understood: ' + repr(headerLine))
 
     key, val = splitLine
+    key = key.lower()
     val = val.strip()
 
     if key == GENOME_HEADER:
         val = unquote(val)
+    else:
+        val = val.lower()
 
     if key not in HEADER_VAR_DICT:
         if key.endswith(' '):
