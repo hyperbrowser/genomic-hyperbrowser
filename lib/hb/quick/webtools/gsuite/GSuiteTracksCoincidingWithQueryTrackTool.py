@@ -12,7 +12,7 @@ from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.util import CommonConstants
-from gold.util.CommonFunctions import prettyPrintTrackName, \
+from quick.util.CommonFunctions import prettyPrintTrackName, \
     strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -29,6 +29,8 @@ from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats, \
+    UserBinSourceRegistryForHypothesisTests
 
 
 # This is a template prototyping GUI that comes together with a corresponding
@@ -44,6 +46,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
@@ -81,20 +84,20 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         Note: the key has to be camelCase and start with a non-capital letter (e.g. "firstKey")
         """
-        return [('Basic user mode', 'isBasic'),
-                ('Select query track from history', 'queryTrack'),
-                ('Select reference GSuite', 'gsuite')] + \
-               cls.getInputBoxNamesForGenomeSelection() + \
-               [
-                   ('Which analysis question do you want to run?', 'analysisQName'),
-                   ('Select track to track similarity/distance measure', 'similarityFunc'),
-                   ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                   ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
-                   ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
-               GSuiteResultsTableMixin.getInputBoxNamesForAttributesSelection() + \
-               [('Concatenate the main results as columns to the input GSuite', 'addResults')
-                ] + UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+        return \
+            [('Basic user mode', 'isBasic'),
+             ('Select query track from history', 'queryTrack'),
+             ('Select reference GSuite', 'gsuite')] + \
+            cls.getInputBoxNamesForGenomeSelection() + \
+            [('Which analysis question do you want to run?', 'analysisQName'),
+             ('Select track to track similarity/distance measure', 'similarityFunc'),
+             ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
+             ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
+             ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+            cls.getInputBoxNamesForAttributesSelection() + \
+            [('Concatenate the main results as columns to the input GSuite', 'addResults')] + \
+            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForDebug()
 
     # @staticmethod
     # def getInputBoxOrder():
@@ -521,18 +524,21 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if errorString:
             return errorString
 
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        if prevChoices.analysisQName == cls.Q1:
+            return UserBinSourceRegistryForDescriptiveStats
+        else:  # Q2, Q3
+            return UserBinSourceRegistryForHypothesisTests
+
     @staticmethod
     def _getGenome(choices):
         return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return gsuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+        return [track.trackName for track in gsuite.allTracks()]
 
     # @staticmethod
     # def getSubToolClasses():

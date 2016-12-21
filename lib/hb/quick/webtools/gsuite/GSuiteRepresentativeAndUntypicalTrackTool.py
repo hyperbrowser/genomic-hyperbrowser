@@ -15,6 +15,8 @@ from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
+from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import GSuiteRepresentativenessOfTracksRankingsWrapperStat
@@ -43,6 +45,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
     
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
@@ -62,8 +65,8 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         '''
         return "Which tracks (in a suite) are most representative and most atypical?"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -82,17 +85,17 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         '''
         return [('Basic user mode', 'isBasic'),
                 ('Select a GSuite', 'gsuite')] + \
-               GenomeMixin.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForGenomeSelection() + \
                [
                 ('Which analysis question do you want to run?','analysisName'),
                 ('Select track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
                 ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
-               GSuiteResultsTableMixin.getInputBoxNamesForAttributesSelection() + \
+               cls.getInputBoxNamesForAttributesSelection() + \
                [('Concatenate the main results as columns to the input GSuite', 'addResults')] + \
-               UserBinMixin.getUserBinInputBoxNames() + \
-                DebugMixin.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -445,19 +448,22 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
-        
+
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        if prevChoices.analysisName in [cls.Q1, cls.Q2]:
+            return UserBinSourceRegistryForDescriptiveStats
+        else:  # Q3, Q4
+            return UserBinSourceRegistryForHypothesisTests
+
     @staticmethod
     def _getGenome(choices):
         return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return gsuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+        return [track.trackName for track in gsuite.allTracks()]
 
     #@staticmethod
     #def getSubToolClasses():
