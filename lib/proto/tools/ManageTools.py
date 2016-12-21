@@ -59,41 +59,62 @@ class GalaxyToolConfig:
 
 def getProtoToolList(except_class_names=[]):
     except_class_names.append('ToolTemplate')
+    except_class_names.append('ToolTemplateMinimal')
+    tmp_tools = {}
     tools = {}
     tool_classes = []
+    all_sub_classes = set()
     pys = []
     for d in os.walk(PROTO_TOOL_DIR, followlinks=True):
         if d[0].find('.svn') == -1:
             pys += [os.path.join(d[0], f) for f in d[2] if f.endswith('.py') and not any(f.startswith(x) for x in ['.', '#'])]
-    
-    #print 'Num py', len(pys)        
+
+    # To fix import issue if there are modules in /lib and /lib/proto with the
+    # same name (e.g. 'config').
+    tmpSysPath = sys.path
+    if sys.path[0].endswith('/proto'):
+        sys.path = tmpSysPath[1:]
+
+    #print 'Num py', len(pys)
     for fn in pys:
         with open(fn) as f:
             for line in f:
                 m = re.match(r'class +(\w+) *\((\w+)\)', line)
                 if m:
                     class_name = m.group(1)
-                    if class_name not in except_class_names:
-                        module_name = os.path.splitext(os.path.relpath(os.path.abspath(fn), SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
-                        # print module_name
-                        try:
+                    module_name = os.path.splitext(os.path.relpath(os.path.abspath(fn), SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
+                    try:
+                        if module_name != __name__:
                             module = import_module(module_name)
                             prototype_cls = getattr(module, class_name)
-                            if issubclass(prototype_cls, GeneralGuiTool) and not issubclass(prototype_cls, MultiGeneralGuiTool) and hasattr(prototype_cls, 'getToolName'):
-                                prototype = prototype_cls('hb_no_tool_id_yet')
-                                toolModule = module_name.split('.')[2:]
-                                if class_name != toolModule[-1]:
-                                    toolSelectionName = '.'.join(toolModule) + ' [' + class_name + ']'
-                                else:
-                                    toolSelectionName = '.'.join(toolModule)
+                            if issubclass(prototype_cls, GeneralGuiTool):
+                                if issubclass(prototype_cls, MultiGeneralGuiTool):
+                                    if prototype_cls.getSubToolClasses():
+                                        for sub_cls in prototype_cls.getSubToolClasses():
+                                            all_sub_classes.add(sub_cls)
+                                elif hasattr(prototype_cls, 'getToolName'):
+                                    if class_name not in except_class_names:
+                                        prototype = prototype_cls('hb_no_tool_id_yet')
+                                        tool_module = module_name.split('.')[2:]
+                                        if class_name != tool_module[-1]:
+                                            tool_selection_name = '.'.join(tool_module) + ' [' + class_name + ']'
+                                        else:
+                                            tool_selection_name = '.'.join(tool_module)
 
-                                # print (fn, m.group(2), prototype_cls, module_name)
-                                tools[toolSelectionName] = (fn, m.group(2), prototype_cls, module_name)
-                                tool_classes.append(prototype_cls)
-                        except Exception as e:
-                            traceback.print_exc()
+                                        # print (fn, m.group(2), prototype_cls, module_name)
+                                        tmp_tools[tool_selection_name] = (fn, m.group(2), prototype_cls, module_name)
+                    except Exception as e:
+                        traceback.print_exc()
                         #break
     #print 'Num protopy', len(tools)
+
+    for tool_selection_name, tool_info in tmp_tools.iteritems():
+        prototype_cls = tool_info[2]
+        if prototype_cls not in all_sub_classes:
+            tools[tool_selection_name] = tool_info
+            tool_classes.append(prototype_cls)
+
+    sys.path = tmpSysPath
     return tools, tool_classes
 
 
@@ -113,7 +134,8 @@ class ExploreToolsTool(MultiGeneralGuiTool):
     @classmethod
     def getSubToolClasses(cls):
         tool_shelve = shelve.open(TOOL_SHELVE, 'r')
-        installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys() if os.path.exists(os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) + '.py') ]                
+        installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys()
+                             if os.path.exists(os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) + '.py') ]
         tool_shelve.close()
         tool_list = getProtoToolList(installed_classes)[1]
         return sorted(tool_list, key=lambda c: c.__module__)
