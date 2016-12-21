@@ -7,7 +7,7 @@ from collections import OrderedDict
 from setup.ShellCommands import ShellCommands
 
 def checkDependencies():
-    from setup.InstallFunctions import executeShellCmd
+    from quick.util.InstallFunctions import executeShellCmd
     pythonVersion = sys.version_info[:2]
     if pythonVersion == ( 2, 7 ):
         print 'OK: Python version as required (2.7).'
@@ -125,7 +125,7 @@ def getWorkingGalaxyPath(galaxyPath):
     return galaxyPath
 
 def checkGalaxyVersion(hbPath, galaxyPath):
-    from setup.InstallFunctions import executeShellCmd
+    from quick.util.InstallFunctions import executeShellCmd
     #from config.Config import GALAXY_VERSION
     reqVersion = ''
     configFileFn = os.sep.join([hbPath, 'config', 'Config.py'])
@@ -244,7 +244,7 @@ def _installAndCheckRLibrary(library):
     print "OK: Found R package '%s'." % library
 
 def installAndCheckRLibraries():
-    from setup.InstallFunctions import executeShellCmd
+    from quick.util.InstallFunctions import executeShellCmd
     r = executeShellCmd('Xvfb :8.0 -screen 0 1600x1200x24 -nolisten tcp > \dev\null 2>&1 &', pipe=False, onError='nothing', background=True)
 
     old_display = os.environ.get('DISPLAY')
@@ -287,7 +287,7 @@ def installAndCheckRLibraries():
 def extractTestGenomeAndPreProcess(hbPath):
     from config.Config import ORIG_DATA_PATH
     from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
-    from setup.InstallFunctions import executeShellCmd
+    from quick.util.InstallFunctions import executeShellCmd
     from gold.util.CommonFunctions import createDirPath
     from quick.util.GenomeInfo import GenomeInfo
     from quick.application.ProcTrackOptions import ProcTrackOptions
@@ -358,7 +358,7 @@ def setupHB(galaxyPath='', ignoreVersionChecking=False, installationSetupFn=''):
 
     # addPathsToLocalOSConfigIfNecessary(hbPath, galaxyPath)
 
-    from setup.InstallFunctions import executePythonFile
+    from quick.util.InstallFunctions import executePythonFile
     executePythonFile(os.sep.join(['setup', 'Install.py']), cwd=hbPath, setPythonPath=False)
     # executePythonFile(os.sep.join(['scripts', 'hb_scramble.py']), cwd=os.path.realpath(galaxyPath), setPythonPath=True)
     # executePythonFile(os.sep.join(['setup', 'CompileStyle.py']), cwd=hbPath, setPythonPath=True)
