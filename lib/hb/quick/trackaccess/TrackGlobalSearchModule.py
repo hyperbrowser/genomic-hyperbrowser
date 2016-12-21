@@ -70,7 +70,7 @@ class TrackGlobalSearchModule(object):
 
             aeval = Interpreter()
             for sourceTool in self.SOURCE.keys():
-                aeval.symtable[sourceTool] = locals()[sourceTool]
+                aeval.symtable[sourceTool] = globals()[sourceTool]
 
             for k in self.SOURCE.keys():
                 if self.SOURCE[k].upper() == lineList[2].upper():

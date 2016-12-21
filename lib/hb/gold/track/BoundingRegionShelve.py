@@ -1,7 +1,3 @@
-#from galaxy import eggs
-#import pkg_resources
-#pkg_resources.require('blist')
-
 import os
 #from blist import sorteddict
 import third_party.safeshelve as safeshelve

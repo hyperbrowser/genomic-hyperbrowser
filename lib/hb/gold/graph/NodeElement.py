@@ -7,7 +7,7 @@ class NodeElement(TrackElement):
     'A track element that also includes references to its neighbors as other NodeElements'
     def __init__(self, trackView, index, graphView):
         TrackElement.__init__(self, trackView, index=index)
-        if trackView._weightsList == None:
+        if trackView._weightsList is None:
             self.weights = noneFunc
         # Weak proxy is used to remove memory leak caused by circular reference when GraphView is deleted
         self._graphView = weakref.proxy(graphView)

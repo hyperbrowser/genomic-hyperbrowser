@@ -1,14 +1,14 @@
 #from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import gold.gsuite.GSuiteConstants as GSuiteConstants
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool
-from quick.webtools.imports.CGAtlasTrackSearchTool import CGAtlasTrackSearchTool
-from quick.webtools.imports.EBIHubTrackSearchTool import EBIHubTrackSearchTool
-from quick.webtools.imports.EncodeTrackSearchTool import EncodeTrackSearchTool
-from quick.webtools.imports.Epigenome2ImputedTrackSearchTool import Epigenome2ImputedTrackSearchTool
-from quick.webtools.imports.Epigenome2TrackSearchTool import Epigenome2TrackSearchTool
-from quick.webtools.imports.FANTOM5TrackSearchTool import FANTOM5TrackSearchTool
-from quick.webtools.imports.GWASTrackSearchTool import GWASTrackSearchTool
-from quick.webtools.imports.ICGCTrackSearchTool import ICGCTrackSearchTool
+from proto.tools.hyperbrowser.imports.CGAtlasTrackSearchTool import CGAtlasTrackSearchTool
+from proto.tools.hyperbrowser.imports.EBIHubTrackSearchTool import EBIHubTrackSearchTool
+from proto.tools.hyperbrowser.imports.EncodeTrackSearchTool import EncodeTrackSearchTool
+from proto.tools.hyperbrowser.imports.Epigenome2ImputedTrackSearchTool import Epigenome2ImputedTrackSearchTool
+from proto.tools.hyperbrowser.imports.Epigenome2TrackSearchTool import Epigenome2TrackSearchTool
+from proto.tools.hyperbrowser.imports.FANTOM5TrackSearchTool import FANTOM5TrackSearchTool
+from proto.tools.hyperbrowser.imports.GWASTrackSearchTool import GWASTrackSearchTool
+from proto.tools.hyperbrowser.imports.ICGCTrackSearchTool import ICGCTrackSearchTool
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

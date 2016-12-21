@@ -1604,38 +1604,38 @@ if __name__ == '__main__':
                         htmResult = pickle.dumps(runObject.ListDataSetsForUser())
                         
                     elif operationToExec == 'GetFileUrlsFromDataSet':
-                        param1, param2 = ast.literal_evalparams[0]), ast.literal_evalparams[1])
+                        param1, param2 = ast.literal_eval(params[0]), ast.literal_eval(params[1])
                         print 'running GetFileUrlsFromDataSet..'
                         print runObject
                         htmResult = runObject.GetFileUrlsFromDataSet2(param1, param2 )
                     
                         
                     elif operationToExec == 'getSubTrackName':
-                        parentTrack = ast.literal_evalparams[0])
+                        parentTrack = ast.literal_eval(params[0])
                         htmResult = repr(runObject.getSubTrackName(userName, parentTrack))
                         
                     elif operationToExec == 'List DataSetType':
                         htmResult = runObject.ListTypesOfDataSet()
                     
                     elif operationToExec == 'GetFilePreview':
-                        htmResult = runObject.GetFilePreview( params[0], ast.literal_evalparams[1]) )
+                        htmResult = runObject.GetFilePreview( params[0], ast.literal_eval(params[1]) )
                         
                     elif operationToExec == 'Add DataSet':
                         #[userName, password, 'Add DataSet', name, quotaId, type, url, resourceType, description, projectAccessControlList, 'dataStorageService']
                         name, quotaId, type, url ,resourceType, galaxyUser, galaxyPassword, = params[0], params[1], params[2], params[3], params[4], 'ehovig', 'voo5lagC'
-                        description, projectAccessControlList  = params[5], ast.literal_evalparams[6])
+                        description, projectAccessControlList  = params[5], ast.literal_eval(params[6])
                         htmResult = runObject.AddDataSet(name, quotaId, type, url ,resourceType, galaxyUser, galaxyPassword, description, projectAccessControlList)
                     
                     elif operationToExec == 'AddDataSetWithFTP':
                         #def AddDataSetWithFTP(self, name, quotaId, type, localRootDir, description=None, projectAccessControlList=None)
                         name, quotaId, type, url = params[0], params[1], params[2], params[3]
-                        description, projectAccessControlList  = params[4], ast.literal_evalparams[5])
+                        description, projectAccessControlList  = params[4], ast.literal_eval(params[5])
                         htmResult = runObject.AddDataSetWithFTP(name, quotaId, type, url, description, projectAccessControlList)
                     
                     elif operationToExec == 'CreateDataSet':
                         #def AddDataSetWithFTP(self, name, quotaId, type, localRootDir, description=None, projectAccessControlList=None)
                         name, quotaId, type = params[0], params[1], params[2]
-                        description, projectAccessControlList  = params[3], ast.literal_evalparams[4])
+                        description, projectAccessControlList  = params[3], ast.literal_eval(params[4])
                         htmResult = runObject.CreateDataSet(name, quotaId, type, description, projectAccessControlList)
                     
                     
@@ -1645,13 +1645,13 @@ if __name__ == '__main__':
                         htmResult = runObject.AddFileToDataSet(dataSetId, subtype, pathInSubtype, url, 'ehovig', 'voo5lagC')    
                         
                     elif operationToExec == 'AddMetaDataToDataSet':
-                        htmResult = runObject.AddMetaDataToDataSet( params[0], ast.literal_evalparams[1]) )
+                        htmResult = runObject.AddMetaDataToDataSet( params[0], ast.literal_eval(params[1]) )
                     
                     elif operationToExec == 'GetFilePreviewFromPublicDataset':
-                        htmResult = runObject.GetFilePreviewFromPublicDataset( params[0], ast.literal_evalparams[1])).Preview
+                        htmResult = runObject.GetFilePreviewFromPublicDataset( params[0], ast.literal_eval(params[1])).Preview
                     
                     elif operationToExec == 'getDatasetsByProject':
-                        projId, includeMetaData, includeSubTypes = params[0], ast.literal_evalparams[1]), ast.literal_evalparams[2])
+                        projId, includeMetaData, includeSubTypes = params[0], ast.literal_eval(params[1]), ast.literal_eval(params[2])
                         htmResult = pickle.dumps(runObject.getDatasetsByProject(projId, includeMetaData, includeSubTypes))
                     
                     else:

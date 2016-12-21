@@ -141,10 +141,6 @@ class TrackSearchTool(GeneralGuiTool):
         except:
             '''In case that this attribute value has no associated record'''
             return rName,rName
-    
-    @staticmethod
-    def getToolName():
-        raise AbstractClassError()
 
     @classmethod
     def getInputBoxNames(cls):

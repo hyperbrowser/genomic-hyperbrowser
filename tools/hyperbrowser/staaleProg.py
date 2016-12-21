@@ -2,7 +2,6 @@
 """
 Adapted from bx/scripts/axt_to_fasta.py
 """
-#from galaxy import eggs
 import rpy2.robjects as robjects
 import sys
 

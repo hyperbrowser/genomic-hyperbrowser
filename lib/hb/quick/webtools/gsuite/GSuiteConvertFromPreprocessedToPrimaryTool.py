@@ -168,11 +168,14 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
     @classmethod
     def getOptionsBoxOutputFormat(cls, prevChoices): # Alternatively: getOptionsBox2()
         if prevChoices.changeFormat == cls.OUTPUT_FORMAT_OTHER:
-            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            genome = prevChoices.genome
+            try:
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                genome = prevChoices.genome
 
-            outputFormatDict = cls._getOutputFormatDict(gSuite, genome)
-            return outputFormatDict.keys()
+                outputFormatDict = cls._getOutputFormatDict(gSuite, genome)
+                return outputFormatDict.keys()
+            except:
+                return []
 
     @classmethod
     def _getOutputFormatDict(cls, gSuite, genome):

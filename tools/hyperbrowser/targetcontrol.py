@@ -21,9 +21,6 @@ from gold.application.GalaxyInterface import *
 #
 # Copied and modified from gops_subtract.py from Galaxy codebase
 #
-from galaxy import eggs
-import pkg_resources
-pkg_resources.require( "bx-python" )
 
 import sys, fileinput, tempfile
 from bx.intervals.io import NiceReaderWrapper, ParseError

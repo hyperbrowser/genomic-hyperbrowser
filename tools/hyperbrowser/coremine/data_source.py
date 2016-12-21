@@ -2,7 +2,6 @@
 # Retrieves data from external data source applications and stores in a dataset file.
 # Data source application parameters are temporarily stored in the dataset file.
 import socket, urllib, sys, os
-from galaxy import eggs #eggs needs to be imported so that galaxy.util can find docutils egg...
 from galaxy.util.json import from_json_string, to_json_string
 import galaxy.model # need to import model before sniff to resolve a circular import dependency
 from galaxy.datatypes import sniff

@@ -1,7 +1,7 @@
 #from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool
 
-from quick.webtools.restricted.TestTool import TestTool
+# from quick.webtools.restricted.TestTool import TestTool
 from quick.webtools.restricted.TestTool1 import TestTool1
 from collections import OrderedDict
 
@@ -28,7 +28,7 @@ class AbdulrahmansTool(MultiGeneralGuiTool):
 
     @staticmethod
     def getSubToolClasses():
-        return [TestTool,TestTool1]
+        return [TestTool1]
         
     @staticmethod
     def isPublic():
@@ -52,4 +52,3 @@ class AbdulrahmansTool(MultiGeneralGuiTool):
     @staticmethod
     def getFullExampleURL():
         return 'https://hyperbrowser.uio.no/dev2/u/azab/p/universal-import-tool-user-guide'   
-    

@@ -8,7 +8,6 @@ from gold.util.RandomUtil import random
 import time
 from os import makedirs, symlink, sep
 from xml.dom import minidom
-from quick.extra.WsStoreBioInfo import messageSep, ParseXml
 import shutil
 import pickle
 class UploadDataToStorebio(GeneralGuiTool):
@@ -82,7 +81,8 @@ class UploadDataToStorebio(GeneralGuiTool):
     def getOptionsBox3(prevChoices):
         if prevChoices[-2] not in [None, '']:
             params = ['username:=%s' % prevChoices[-3], 'password:=%s' % prevChoices[-2], 'operation:=List Projects', 'class:=userMngtService']
-            
+
+            from quick.extra.WsStoreBioInfo import messageSep
             UploadDataToStorebio.socket.send(messageSep.join(params))
             projects = pickle.loads(UploadDataToStorebio.socket.recv_unicode().encode('utf-8'))#, 'ignore'
             UploadDataToStorebio.ProjectList = [(v.name, v.id, v.quota.id) for v in projects]
@@ -113,6 +113,7 @@ class UploadDataToStorebio(GeneralGuiTool):
             params = ['username:=%s' % prevChoices[0], 'password:=%s' % prevChoices[1], 'operation:=List DataSetType', 'class:=dataStorageService']
             
             #params = list(prevChoices[1:3])+['List DataSetType', 'dataStorageService']
+            from quick.extra.WsStoreBioInfo import messageSep
             UploadDataToStorebio.socket.send(messageSep.join(params))
             message = UploadDataToStorebio.socket.recv_unicode().encode('utf-8')#, 'ignore'
             return ['--select--'] + ast.literal_eval(message)
@@ -142,6 +143,7 @@ class UploadDataToStorebio(GeneralGuiTool):
     @staticmethod
     def ParseProjectListXmlDoc(xmlDoc):  
         ProjectsList = []
+        from quick.extra.WsStoreBioInfo import ParseXml
         wsXmlParser = ParseXml()
         for project in  xmlDoc.getElementsByTagName('Project'):
             
@@ -193,7 +195,8 @@ class UploadDataToStorebio(GeneralGuiTool):
         
         params = ['username:='+userName, 'password:='+password, 'operation:=CreateDataSet', 'class:=dataStorageService',\
                   'params:='+'<#>'.join([name, quotaId, dsType, description, repr(projectAccessControlList)])]
-        
+
+        from quick.extra.WsStoreBioInfo import messageSep
         UploadDataToStorebio.socket.send_unicode(messageSep.join(params))
         message = UploadDataToStorebio.socket.recv_unicode().encode('utf-8')#, 'ignore'
         if message != 'something went wrong...':
