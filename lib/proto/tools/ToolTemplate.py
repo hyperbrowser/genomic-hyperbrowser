@@ -395,3 +395,13 @@ class ToolTemplate(GeneralGuiTool):
     #     'html'
     #     """
     #     return 'html'
+    #
+    # @classmethod
+    # def getOutputName(cls, choices=None):
+    #     return cls.getToolSelectionName()
+    #     """
+    #     The title (name) of the main output history element.
+    #
+    #     Optional method. Default return value if method is not defined:
+    #     the name of the tool.
+    #     """

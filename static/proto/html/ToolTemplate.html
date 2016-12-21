@@ -230,6 +230,10 @@ page,&nbsp;use&nbsp;the&nbsp;restricted&nbsp;output&nbsp;format&nbsp;'customhtml
 Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:<br>
 'html'</tt></dd></dl>
 
+<dl><dt><a name="ToolTemplate-getOutputName"><strong>getOutputName</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>The title (name) of the main output history element.<br>
+ <br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;the name of the tool.</tt></dd></dl>
+
 <dl><dt><a name="ToolTemplate-getRedirectURL"><strong>getRedirectURL</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>This&nbsp;method&nbsp;is&nbsp;called&nbsp;to&nbsp;return&nbsp;an&nbsp;URL&nbsp;if&nbsp;the&nbsp;isRedirectTool&nbsp;method<br>
 returns&nbsp;True.<br>
 &nbsp;<br>
@@ -281,12 +285,6 @@ Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nb
 is&nbsp;clicked.<br>
 &nbsp;<br>
 Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;True</tt></dd></dl>
-
-<dl><dt><a name="ToolTemplate-isBatchTool"><strong>isBatchTool</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;if&nbsp;this&nbsp;tool&nbsp;could&nbsp;be&nbsp;run&nbsp;from&nbsp;batch&nbsp;using&nbsp;the&nbsp;batch.&nbsp;The<br>
-batch&nbsp;run&nbsp;line&nbsp;can&nbsp;be&nbsp;fetched&nbsp;from&nbsp;the&nbsp;info&nbsp;box&nbsp;at&nbsp;the&nbsp;bottom&nbsp;of&nbsp;the<br>
-tool.<br>
-&nbsp;<br>
-Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;same as isHistoryTool()</tt></dd></dl>
 
 <dl><dt><a name="ToolTemplate-isPublic"><strong>isPublic</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;whether&nbsp;the&nbsp;tool&nbsp;is&nbsp;accessible&nbsp;to&nbsp;all&nbsp;users.&nbsp;If&nbsp;False,&nbsp;the<br>
 tool&nbsp;is&nbsp;only&nbsp;accessible&nbsp;to&nbsp;a&nbsp;restricted&nbsp;set&nbsp;of&nbsp;users&nbsp;as&nbsp;well&nbsp;as&nbsp;admin<br>

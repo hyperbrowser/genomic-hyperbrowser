@@ -55,8 +55,10 @@ class GeneralGuiTool(object):
     def getInputBoxOrder():
         return None
 
-    @staticmethod
-    def getInputBoxGroups(choices=None):
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        if hasattr(super(GeneralGuiTool, cls), 'getInputBoxGroups'):
+            return super(GeneralGuiTool, cls).getInputBoxGroups(choices)
         return None
 
     @staticmethod
@@ -78,6 +80,10 @@ class GeneralGuiTool(object):
     @staticmethod
     def getOutputFormat(choices=None):
         return 'html'
+
+    @classmethod
+    def getOutputName(cls, choices=None):
+        return cls.getToolSelectionName()
 
     @staticmethod
     def validateAndReturnErrors(choices):
