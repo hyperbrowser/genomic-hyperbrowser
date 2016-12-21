@@ -55,7 +55,7 @@ import proto.hyper_gui as gui
 </%def>
 
 <%def name="checkbox(name, opts, value, label = None, info = None)">
-    <p><label><input onchange="reloadForm(form, this)" id="${name}" name="${name}" type="checkbox" value="True" ${'checked=checked' if value else ''}> ${label}</label>
+    <p id="${name}"><label><input onchange="reloadForm(form, this)" name="${name}" type="checkbox" value="True" ${'checked=checked' if value else ''}> ${label}</label>
     ${staticInfoBox(name, info)}
     </p>
 </%def>
