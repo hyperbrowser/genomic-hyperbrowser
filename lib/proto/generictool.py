@@ -469,12 +469,14 @@ class GenericToolController(BaseToolController):
 
         return choice
 
+    @staticmethod
+    def _getStdOutToHistoryDatatypes():
+        return ['html', 'customhtml']
 
     def execute(self):
         outputFormat = self.params['datatype'] if self.params.has_key('datatype') else 'html'
-        if outputFormat in ['html','customhtml','hbfunction']:
+        if outputFormat in self._getStdOutToHistoryDatatypes():
             self.stdoutToHistory()
-        #print self.params
 
         for i in range(len(self.inputIds)):
             id = self.inputIds[i]
