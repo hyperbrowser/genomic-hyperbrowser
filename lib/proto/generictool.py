@@ -25,12 +25,15 @@ from urllib import quote, unquote
 from proto.tools.GeneralGuiTool import HistElement
 from proto.HtmlCore import HtmlCore
 from proto.config.Config import URL_PREFIX, GALAXY_BASE_DIR
+from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, GALAXY_SECURITY_HELPER_OBJ
 from BaseToolController import BaseToolController
 from proto.CommonFunctions import getToolPrototype
 from proto.StaticFile import StaticImage
 
+
 def getClassName(obj):
     return obj.__class__.__name__
+
 
 class GenericToolController(BaseToolController):
     initChoicesDict = None
@@ -205,25 +208,46 @@ class GenericToolController(BaseToolController):
     def _initCache(self):
         self.input_changed = False
         try:
-            self.cachedParams = json.loads(decompress(urlsafe_b64decode(str(self.params.get('cached_params')))))
-        except:
+            self.cachedParams = self.decodeCache(self.params.get('cached_params'))
+        except Exception as e:
+            #print 'cached_params', e
             self.cachedParams = {}
             
         try:
-            self.cachedOptions = json.loads(decompress(urlsafe_b64decode(str(self.params.get('cached_options')))))
-        except:
+            self.cachedOptions = self.decodeCache(self.params.get('cached_options'))
+        except Exception as e:
+            #print 'cached_options', e
             self.cachedOptions = {}
 
         try:
-            self.cachedExtra = json.loads(decompress(urlsafe_b64decode(str(self.params.get('cached_extra')))))
-        except:
+            self.cachedExtra = self.decodeCache(self.params.get('cached_extra'))
+        except Exception as e:
+            #print 'cached_extra', e
             self.cachedExtra = {}
+
+    def encodeCache(self, data):
+        if not data:
+            return ''
+        return GALAXY_SECURITY_HELPER_OBJ.encode_guid(json.dumps(data))
+        #return urlsafe_b64encode(compress(json.dumps(data)))
+
+    def decodeCache(self, data):
+        if not data:
+            raise Exception('Nothing to decode')
+        return json.loads(GALAXY_SECURITY_HELPER_OBJ.decode_guid(str(data)))
+        #return json.loads(decompress(urlsafe_b64decode(str(data))))
 
     def putCacheData(self, id, data):
         self.cachedExtra[id] = pickle.dumps(data)
 
     def getCacheData(self, id):
         return pickle.loads(str(self.cachedExtra[id]))
+
+    def putCachedOption(self, id, data):
+        self.cachedOptions[id] = pickle.dumps(data)
+
+    def getCachedOption(self, id):
+        return pickle.loads(str(self.cachedOptions[id]))
 
     def getOptionsBox(self, id, i, val):
         #print id, '=', val, 'cache=', self.cachedParams[id] if id in self.cachedParams else 'NOT'
@@ -233,7 +257,7 @@ class GenericToolController(BaseToolController):
             self.input_changed = True
         else:
             try:
-                opts, info = pickle.loads(str(self.cachedOptions[id]))
+                opts, info = self.getCachedOption(id)
                 #print 'from cache:',id
                 self.input_changed = (val != self.cachedParams[id])
             except Exception as e:
@@ -243,7 +267,7 @@ class GenericToolController(BaseToolController):
         
         #print repr(opts)
         self.cachedParams[id] = val
-        self.cachedOptions[id] = pickle.dumps((opts, info))        
+        self.putCachedOption(id, (opts, info))
         self.inputInfo.append(info)
         return opts
 
@@ -291,8 +315,10 @@ class GenericToolController(BaseToolController):
                     try:
                         genomeCache = self.getCacheData(id)
                     except Exception as e:
-                        print 'genome cache error', e
+                        #raise e
+                        print 'genome cache empty', e
                         genomeCache = self._getAllGenomes()
+                        #print genomeCache
                         self.putCacheData(id, genomeCache)
                         
                     opts = self.getGenomeElement(id, genomeCache)
