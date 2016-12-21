@@ -156,7 +156,7 @@ class ResultsViewerBase(ResultsViewer):
             if len(self._results.getAllErrors() ) > 0:
                 return str(self._generateErrorText(HtmlCore))
             else:
-                return str( HtmlCore().line('This analysis gave no results (might be due to too limited data). '))
+                return str(HtmlCore().line('This analysis gave no results (might be due to too limited data). '))
                 
         self._results.inferAdjustedPvalues()
         self._presenters = []
@@ -209,7 +209,7 @@ class ResultsViewerBase(ResultsViewer):
         onlyLocalPvals = self._results.hasOnlyLocalPvals()
         globalPval = self._results.getGlobalResult().get(self._results.getPvalKey()) if not onlyLocalPvals else None
 
-        tableFile = GalaxyRunSpecificFile(['table.html'], galaxyFn)
+        tableFile = GalaxyRunSpecificFile(['table.html'], galaxyFn='')
         localPvalsUrl = tableFile.getURL() #problematic dependency towards fn in tablePresenter..
         
         core = coreCls()
