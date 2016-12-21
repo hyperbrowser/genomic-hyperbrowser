@@ -35,7 +35,8 @@ class FileImport(GeneralGuiTool):
         Note: the key has to be camelCase and start with a non-capital letter
               (e.g. "firstKey")
         """
-        return [('Input filename', 'input'),
+        return [('', 'basicQuestionId'),
+                ('Input filename', 'input'),
                 ('Format', 'format'),
                 ('Datatype', 'datatype')]
 
@@ -66,7 +67,7 @@ class FileImport(GeneralGuiTool):
     #     return None
 
     @staticmethod
-    def getOptionsBoxInput():  # Alternatively: getOptionsBox1()
+    def getOptionsBoxBasicQuestionId():  # Alternatively: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -123,7 +124,11 @@ class FileImport(GeneralGuiTool):
         return '__hidden__', ''
 
     @staticmethod
-    def getOptionsBoxDatatype(prevChoices):  # Alternatively: getOptionsBox2()
+    def getOptionsBoxInput(prevChoices):  # Alternatively: getOptionsBox2()
+        return '__hidden__', ''
+
+    @staticmethod
+    def getOptionsBoxDatatype(prevChoices):
         """
         See getOptionsBoxFirstKey().
 
@@ -195,6 +200,7 @@ class FileImport(GeneralGuiTool):
 
         # tmp hack:
         input = input.replace('/galaxy_developer/', '/galaxy_gsuite/', 1)
+        input = input.replace('/galaxy_gsuite_submit/', '/galaxy_gsuite/', 1)
 
         input_real = os.path.realpath(input)
 
@@ -205,8 +211,8 @@ class FileImport(GeneralGuiTool):
                 and input.endswith('.' + datatype):
             shutil.copy(input, output)
         else:
-            print choices
-            print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), os.path.realpath(GALAXY_FILE_PATH), datatype
+            # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
+            #     os.path.realpath(GALAXY_FILE_PATH), datatype
             raise Exception(input + ' not allowed to import!')
 
 
@@ -220,7 +226,7 @@ class FileImport(GeneralGuiTool):
         parameters are valid, the method should return None, which enables
         the execute button.
         """
-        return None
+        return ''
 
     # @staticmethod
     # def getSubToolClasses():
