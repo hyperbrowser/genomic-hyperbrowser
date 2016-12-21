@@ -208,7 +208,7 @@ if [ $FETCH_WHEELS -eq 1 ]; then
     pip install -r hyperbrowser-requirements.txt
 fi
 
-set +e
+#set +e
 
 if [ $FETCH_WHEELS -eq 1 ]; then
     pip install -r proto-requirements.txt || echo "Failed to install rpy2. R code will not work"
@@ -224,7 +224,7 @@ if [ $INSTALL_R_PACKAGES -eq 1 ]; then
     fi
 fi
 
-set -e
+#set -e
 
 if [ $HYPERBROWSER_SETUP -eq 1 ]; then
     ./scripts/hyperbrowser_dirs.sh
