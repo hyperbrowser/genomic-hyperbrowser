@@ -13,7 +13,7 @@
 			toolBorder  			: '#left .panel-collapse',
 			gsuitebox   			: '.gsuitebox a',
 			toolLinks   			: 'a.tool-link',
-			isBasic     			: '#isBasic',
+			isBasic     			: '#isBasic input',
 			analysisTab 			: '#tab-links',
 			basicTab    			: '#tab-links li:nth-child(2)',
 			advancedTab 			: '#tab-links li:nth-child(3)',

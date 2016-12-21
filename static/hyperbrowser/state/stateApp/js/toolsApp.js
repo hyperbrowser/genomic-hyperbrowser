@@ -83,10 +83,10 @@
                         modeModel.toggleMode({mode: 'advanced', triggerState: 'history'});
                     });
                 }
-                // Decides if the tool provides both basic and advanced view, ie is a g-suite tool
-                if (isBasic.length >= 1) {
-                    isBasic.parent().hide();
-                }
+                // // Decides if the tool provides both basic and advanced view, ie is a g-suite tool
+                // if (isBasic.length >= 1) {
+                //     isBasic.parent().hide();
+                // }
             };
 
         return {

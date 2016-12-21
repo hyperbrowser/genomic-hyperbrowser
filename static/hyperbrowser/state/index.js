@@ -11813,7 +11813,7 @@ return jQuery;
 				var serializedForm, form;
 				if(currentMode === 'basic' ) {
     				isBasic.prop('checked', 'checked');
-    		} 
+    		    }
 				if(currentMode === 'advanced' ) {
 					isBasic.removeAttr('checked');
 				}
@@ -12991,7 +12991,7 @@ module.exports = Controller;
 			toolBorder  			: '#left .panel-collapse',
 			gsuitebox   			: '.gsuitebox a',
 			toolLinks   			: 'a.tool-link',
-			isBasic     			: '#isBasic',
+			isBasic     			: '#isBasic input',
 			analysisTab 			: '#tab-links',
 			basicTab    			: '#tab-links li:nth-child(2)',
 			advancedTab 			: '#tab-links li:nth-child(3)',
@@ -13008,6 +13008,7 @@ module.exports = Controller;
 	}());
 	module.exports = stateAppConfig;
 }());
+
 },{}],19:[function(require,module,exports){
 (function () {
     'use strict';
@@ -13094,10 +13095,10 @@ module.exports = Controller;
                         modeModel.toggleMode({mode: 'advanced', triggerState: 'history'});
                     });
                 }
-                // Decides if the tool provides both basic and advanced view, ie is a g-suite tool
-                if (isBasic.length >= 1) {
-                    isBasic.parent().hide();
-                }
+                // // Decides if the tool provides both basic and advanced view, ie is a g-suite tool
+                // if (isBasic.length >= 1) {
+                //     isBasic.parent().hide();
+                // }
             };
 
         return {
@@ -13145,8 +13146,8 @@ module.exports = Controller;
 					'<li class="dropdown active">'
 					+ '<a target="_self" id="mode" class="dropdown-toggle noLink" href="" ><%= this.toggleViewText(mode)%></a>'
            	 		+ '<ul class="dropdown-menu">'
-               		+ '<li class="<%= (mode === "basic"? "disabledMode": "") %>"><a href="" id="basic">Basic mode</a></li>'
-               		+ '<li class="<%= (mode === "advanced"? "disabledMode": "") %>"><a href="" id="advanced">Advanced mode</a></li>'
+               		+ '<li class="<%= (mode === "basic"? "disabledMode disabled": "") %>"><a href="" id="<%= (mode === "basic"? "": "basic") %>">Basic mode</a></li>'
+               		+ '<li class="<%= (mode === "advanced"? "disabledMode disabled": "") %>"><a href="" id="<%= (mode === "advanced"? "": "advanced") %>">Advanced mode</a></li>'
              		+ '</ul>'
 					+ '</li>'
 					),
@@ -13164,7 +13165,7 @@ module.exports = Controller;
 					event.preventDefault();
 					event.stopPropagation();
 					var attr = event.target.id;
-					if(attr !== 'mode') {
+					if(attr === 'basic' || attr === 'advanced') {
 						self.model.toggleMode({mode: attr, triggerState: 'history'});
 					} else {
 						self.$el.find('.dropdown-menu').toggle();
@@ -13188,6 +13189,7 @@ module.exports = Controller;
 	module.exports = ModeView; 
 
 }());
+
 },{"../prototypes/viewPrototype":17,"simplestorage.js":3,"underscore":5}],21:[function(require,module,exports){
 (function(){
 	'use strict';

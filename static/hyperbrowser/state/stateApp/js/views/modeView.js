@@ -16,8 +16,8 @@
 					'<li class="dropdown active">'
 					+ '<a target="_self" id="mode" class="dropdown-toggle noLink" href="" ><%= this.toggleViewText(mode)%></a>'
            	 		+ '<ul class="dropdown-menu">'
-               		+ '<li class="<%= (mode === "basic"? "disabledMode": "") %>"><a href="" id="basic">Basic mode</a></li>'
-               		+ '<li class="<%= (mode === "advanced"? "disabledMode": "") %>"><a href="" id="advanced">Advanced mode</a></li>'
+               		+ '<li class="<%= (mode === "basic"? "disabledMode disabled": "") %>"><a href="" id="<%= (mode === "basic"? "": "basic") %>">Basic mode</a></li>'
+               		+ '<li class="<%= (mode === "advanced"? "disabledMode disabled": "") %>"><a href="" id="<%= (mode === "advanced"? "": "advanced") %>">Advanced mode</a></li>'
              		+ '</ul>'
 					+ '</li>'
 					),
@@ -35,7 +35,7 @@
 					event.preventDefault();
 					event.stopPropagation();
 					var attr = event.target.id;
-					if(attr !== 'mode') {
+					if(attr === 'basic' || attr === 'advanced') {
 						self.model.toggleMode({mode: attr, triggerState: 'history'});
 					} else {
 						self.$el.find('.dropdown-menu').toggle();

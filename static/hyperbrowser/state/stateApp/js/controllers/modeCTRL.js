@@ -37,7 +37,7 @@
 				var serializedForm, form;
 				if(currentMode === 'basic' ) {
     				isBasic.prop('checked', 'checked');
-    		} 
+    		    }
 				if(currentMode === 'advanced' ) {
 					isBasic.removeAttr('checked');
 				}
