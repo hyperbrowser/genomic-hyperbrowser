@@ -65,7 +65,8 @@ try:
         region = method
         binsize = '*'
     elif method in ['binfile', '__history__']:
-        binsize, region = galaxy.getHistoryOptionSecureIdAndExt(params.get('binfile',''))
+        binfile = params.get('binfile','')
+        binsize, region = galaxy.getHistoryOptionSecureIdAndExt(binfile)
         if not region:
             region = '__history__'
             binsize = ''

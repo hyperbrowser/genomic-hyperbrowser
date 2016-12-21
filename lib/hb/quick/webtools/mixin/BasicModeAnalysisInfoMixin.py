@@ -33,13 +33,18 @@ class BasicModeAnalysisInfoMixin(object):
         return [
                 ('Basic mode question ID', 'bmQid'),
                 ('Analysis info', 'analysisInfo')]
+
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        if hasattr(super(BasicModeAnalysisInfoMixin, cls), 'getInputBoxGroups'):
+            return super(BasicModeAnalysisInfoMixin, cls).getInputBoxGroups(choices)
+        return None
     
     @staticmethod
     def getOptionsBoxBmQid():
         return '__hidden__', None
      
     @staticmethod
-
     def getOptionsBoxAnalysisInfo(prevChoices):
         if prevChoices.bmQid and prevChoices.bmQid not in ('None', '', None):
             htmlCore = GSuiteFunctions.getAnalysisQuestionInfoHtml(prevChoices.bmQid)

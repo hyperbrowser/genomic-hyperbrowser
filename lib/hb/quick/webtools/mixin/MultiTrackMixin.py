@@ -24,9 +24,13 @@ class MultiTrackMixin(object):
         return [('Select genome','Genome'),('Select source of track 1', 'Track1Source'), ('Select track 1','Track1'), ('Select source of track 2', 'Track2Source'), ('Select track 2', 'Track2'),\
         ('Select source of track 3', 'Track3Source'), ('Select track 3', 'Track3'),('Select source of track 4', 'Track4Source'), ('Select track 4', 'Track4'),\
         ('Select source of track 5', 'Track5Source'), ('Select track 5', 'Track5'),('Select source of track 6', 'Track6Source'), ('Select track 6', 'Track6')]
-        
 
-    
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        if hasattr(super(GSuiteResultsTableMixin, cls), 'getInputBoxGroups'):
+            return super(GSuiteResultsTableMixin, cls).getInputBoxGroups(choices)
+        return None
+
     @staticmethod    
     def getOptionsBoxGenome(): # Alternatively: getOptionsBoxKey()
         '''

@@ -19,6 +19,7 @@ from urllib import quote, unquote
 
 from gold.application.GalaxyInterface import GalaxyInterface
 # from quick.util.CommonFunctions import getGalaxyFnFromDatasetId
+from proto.CommonFunctions import getSecureIdAndExtFromDatasetInfoAsStr
 
 import proto.hyperbrowser.hyper_gui as hg
 
@@ -120,9 +121,12 @@ def main():
         region = method
         binSize = '*'
 
-    if userBins and userBins[0] == 'galaxy':
-        binSize = userBins[1]
-        region = userBins[2]
+    if userBins:
+        if userBins[0] == 'galaxy':  # For backwards compatibility
+            binSize = userBins[1]
+            region = userBins[2]
+        elif userBins.startswith('galaxy'):
+            binSize, region = getSecureIdAndExtFromDatasetInfoAsStr(userBins)
 
     tracks1 = trackName1.split(':')
 

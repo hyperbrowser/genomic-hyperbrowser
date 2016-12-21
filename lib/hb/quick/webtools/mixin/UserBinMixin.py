@@ -1,215 +1,268 @@
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from gold.util.CustomExceptions import AbstractClassError, ShouldNotOccurError
+from proto.tools.GeneralGuiTool import BoxGroup
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.util.CustomExceptions import AbstractClassError
 from quick.application.GalaxyInterface import GalaxyInterface
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
 
 
 class UserBinMixin(object):
+    from quick.application.UserBinManager import \
+        getNameAndProtoRegSpecLabelsForAllUserBinSources, \
+        getNameAndProtoBinSpecLabelsForAllUserBinSources
 
-    @staticmethod
-    def getUserBinInputBoxNames():
-        '''
-        Specifies a list of headers for the input boxes, and implicitly also the
-        number of input boxes to display on the page. The returned list can have
-        two syntaxes:
+    REG_SPEC_NAMES, REG_SPEC_LABELS = zip(*getNameAndProtoRegSpecLabelsForAllUserBinSources())
+    BIN_SPEC_NAMES, BIN_SPEC_LABELS = zip(*getNameAndProtoBinSpecLabelsForAllUserBinSources())
 
-            1) A list of strings denoting the headers for the input boxes in
-               numerical order.
-            2) A list of tuples of strings, where each tuple has
-               two items: a header and a key.
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        """
+        Must be overridden by the subclass. A tool should either:
+          - subclass one of the existing UserBinMixin variants:
 
-        The contents of each input box must be defined by the function
-        getOptionsBoxK, where K is either a number in the range of 1 to the
-        number of boxes (case 1), or the specified key (case 2).
-        '''
-        return [('Compare in','CompareIn'),('Which: (comma separated list, * means all)', 'Bins'), ('Genome region: (Example: chr1:1-20m, chr2:10m-) ','CustomRegion'),\
-        ('Bin size: (* means whole region k=Thousand and m=Million E.g. 100k)', 'BinSize'), ('Bins from history', 'HistoryBins')]
+              UserBinMixinForDescriptiveStats
+              UserBinMixinForHypothesisTests
+              UserBinMixinForExtraction
 
+            Each of these specify a default ordering of the user bin choice selection
+            box.
 
+          - override the _getUserBinRegistrySubCls method in the tool:
 
-    @staticmethod
-    def getOptionsBoxCompareIn(prevChoices): # Alternatively: getOptionsBoxKey()
-        '''
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to other
-        methods. These are lists of results, one for each input box (in the
-        order specified by getInputBoxOrder()).
+            If none of the subclasses above fits (if e.g. the tool supports both descriptive
+            statistics and hypothesis tests), one needs to override the _getUserBinRegistrySubCls
+            method and either:
 
-        The input box is defined according to the following syntax:
+                - return one of the subclasses above
+                - create and return a new subclass of UserBinSourceRegistry
 
-        Selection box:          ['choice1','choice2']
-        - Returns: string
+            In both cases, one can make use of prevChoices, if needed.
+        """
+        raise AbstractClassError()
 
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - Returns: string
+    @classmethod
+    def getInputBoxNamesForUserBinSelection(cls):
+        """
+        Should be added at the end of the list in the getUserBinInputBoxNames()
+        method in the subclass. E.g.:
 
-        Password field:         '__password__'
-        - Returns: string
+        @classmethod
+        def getUserBinInputBoxNames(cls):
+            return [('First choice', 'first') + \
+                    ('Secont choice', 'second')] + \
+                    cls.getInputBoxNamesForUserBinSelection()
+        """
+        cls.setupExtraBoxMethods()
 
-        Genome selection box:   '__genome__'
-        - Returns: string
+        inputBoxNames = [('Compare in:', 'compareIn')]
 
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
+        for i, label in enumerate(cls.REG_SPEC_LABELS):
+            inputBoxNames += [(label, 'regSpec%s' % i)]
+            inputBoxNames += [('', 'regSpecHelpText%s' % i)]
 
-        History selection box:  ('__history__',) | ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting galaxy track name, as
-                   specified in ExternalTrackManager.py.
+        for i, label in enumerate(cls.BIN_SPEC_LABELS):
+            inputBoxNames += [(label, 'binSpec%s' % i)]
+            inputBoxNames += [('', 'binSpecHelpText%s' % i)]
 
-        History check box list: ('__multihistory__', ) | ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with galaxy track name as key and selection
-                   status (bool) as value.
+        inputBoxNames += [('', 'sourceHelpText')]
 
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
+        return inputBoxNames
 
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'], ['cell2_1','cell2_2']]
-        - Returns: None
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        prevBoxGroups = None
+        if hasattr(super(UserBinMixin, cls), 'getInputBoxGroups'):
+            prevBoxGroups = super(UserBinMixin, cls).getInputBoxGroups(choices)
 
-        Check box list:         OrderedDict([('key1', True), ('key2', False), ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
-        '''
+        if choices.compareIn:
+            if not prevBoxGroups:
+                prevBoxGroups = []
+            return prevBoxGroups + \
+                   [BoxGroup(label='Region and scale', first='compareIn', last='sourceHelpText')]
+        else:
+            return prevBoxGroups
 
-        #This code checks if the tool is in basic mode, we don't want to display user bin selection in basic mode. 
-        #For this to work you must name the optionBox isBasic in your tool.
+    @classmethod
+    def _getUserBinSourceRegistry(cls, prevChoices):
+        ubSourceRegistryCls = cls._getUserBinRegistrySubCls(prevChoices)
+
+        genome = cls._getGenome(prevChoices)
+        if not genome:
+            return None
+
+        trackNameList = cls._getTrackNameList(prevChoices)
+        return ubSourceRegistryCls(genome, trackNameList)
+
+    @classmethod
+    def _getNamesOfAllUserBinSources(cls, prevChoices):
+        ubSourceRegistry = cls._getUserBinSourceRegistry(prevChoices)
+        if not ubSourceRegistry:
+            return []
+
+        return ubSourceRegistry.getNamesOfAllUserBinSourcesForSelection()
+
+    @classmethod
+    def _getUserBinSourceInfoFromSelection(cls, prevChoices):
+        ubSourceRegistry = cls._getUserBinSourceRegistry(prevChoices)
+        if not ubSourceRegistry:
+            return None
+
+        return ubSourceRegistry.getUserBinSourceInfoFromName(prevChoices.compareIn)
+
+    @classmethod
+    def _isBasicMode(cls, prevChoices):
+        # This code checks if the tool is in basic mode, we don't want to
+        # display user bin selection in basic mode.
+        # For this to work you must name the optionBox isBasic in your tool.
         try:
             isBasicMode = prevChoices.isBasic
         except:
             pass
         else:
             if isBasicMode:
-                return None
-        ########################
-        
-        return ['Chromosome arms','Chromosomes','Cytobands','Genes(Ensembl)','Custom specification','Bins from history']
-
-    @staticmethod
-    def getOptionsBoxBins(prevChoices):
-        '''
-        See getOptionsBoxCompareIn().
-
-        '''
-        if prevChoices.CompareIn in ['Chromosome arms','Chromosomes','Cytobands','Genes(Ensembl)']:
-            return '*'
-
-    @staticmethod
-    def getOptionsBoxCustomRegion(prevChoices):
-        '''
-        See getOptionsBoxCompareIn().
-
-        '''
-        if prevChoices.CompareIn == 'Custom specification':
-            return '*'
-
-
-    @staticmethod
-    def getOptionsBoxBinSize(prevChoices):
-        '''
-        See getOptionsBoxCompareIn().
-        '''
-        if prevChoices.CompareIn == 'Custom specification':
-            return '*'
-
+                return True
+        return False
 
     @classmethod
-    def getOptionsBoxHistoryBins(cls, prevChoices):
-        if prevChoices.CompareIn == 'Bins from history':
-            from gold.application.DataTypes import getSupportedFileSuffixesForBinning
-            return cls.getHistorySelectionElement(*getSupportedFileSuffixesForBinning())
+    def getOptionsBoxCompareIn(cls, prevChoices):
+        if cls._isBasicMode(prevChoices):
+            return None
 
+        allSources = cls._getNamesOfAllUserBinSources(prevChoices)
+        if allSources:
+            return allSources
 
-    @staticmethod
-    def getRegsAndBinsSpec(choices):
-        '''
-        Returns the regSpec and binSpec for the choices made on the gui.
-        '''
-        regsMapper = {'Chromosome arms':'__chrArms__','Chromosomes':'__chrs__','Cytobands':'__chrBands__','Genes(Ensembl)':'__genes__'}
-        
+    @classmethod
+    def getInfoForOptionsBoxCompareIn(cls, prevChoices):
+        core = HtmlCore()
+        core.paragraph('Select the region(s) of the genome in which to analyze and '
+                       'possibly how the analysis regions should be divided into bins. '
+                       'First select the main category, and if needed, provide further '
+                       'details in the subsequent fields.')
+        return str(core)
+
+    @classmethod
+    def getOptionsBoxSourceHelpText(cls, prevChoices):
+        if cls._isBasicMode(prevChoices) or not prevChoices.compareIn:
+            return None
+
+        ubSourceInfo = cls._getUserBinSourceInfoFromSelection(prevChoices)
+        if ubSourceInfo:
+            return '__rawStr__', ubSourceInfo.helpTextForUserBinSource()
+
+    @classmethod
+    def _getOptionBoxRegSpec(cls, prevChoices, index):
+        if index < len(cls.REG_SPEC_LABELS):
+            if prevChoices.compareIn == cls.REG_SPEC_NAMES[index]:
+                ubSourceInfo = cls._getUserBinSourceInfoFromSelection(prevChoices)
+                return ubSourceInfo.protoRegSpecOptionsBoxForUserBinSource()
+
+    @classmethod
+    def _getOptionBoxRegSpecHelpText(cls, prevChoices, index):
+        if index < len(cls.REG_SPEC_LABELS):
+            if prevChoices.compareIn == cls.REG_SPEC_NAMES[index]:
+                ubSourceInfo = cls._getUserBinSourceInfoFromSelection(prevChoices)
+                return '__rawStr__', ubSourceInfo.protoRegSpecHelpTextForUserBinSource()
+
+    @classmethod
+    def _getOptionBoxBinSpec(cls, prevChoices, index):
+        if index < len(cls.BIN_SPEC_LABELS):
+            if prevChoices.compareIn == cls.BIN_SPEC_NAMES[index]:
+                ubSourceInfo = cls._getUserBinSourceInfoFromSelection(prevChoices)
+                return ubSourceInfo.protoBinSpecOptionsBoxForUserBinSource()
+
+    @classmethod
+    def _getOptionBoxBinSpecHelpText(cls, prevChoices, index):
+        if index < len(cls.BIN_SPEC_LABELS):
+            if prevChoices.compareIn == cls.BIN_SPEC_NAMES[index]:
+                ubSourceInfo = cls._getUserBinSourceInfoFromSelection(prevChoices)
+                return '__rawStr__', ubSourceInfo.protoBinSpecHelpTextForUserBinSource()
+
+    @classmethod
+    def setupExtraBoxMethods(cls):
+        from functools import partial
+
+        for i in range(len(cls.REG_SPEC_LABELS)):
+            setattr(cls, 'getOptionsBoxRegSpec%s' % i,
+                    partial(cls._getOptionBoxRegSpec, index=i))
+            setattr(cls, 'getOptionsBoxRegSpecHelpText%s' % i,
+                    partial(cls._getOptionBoxRegSpecHelpText, index=i))
+
+        for i in range(len(cls.BIN_SPEC_LABELS)):
+            setattr(cls, 'getOptionsBoxBinSpec%s' % i,
+                    partial(cls._getOptionBoxBinSpec, index=i))
+            setattr(cls, 'getOptionsBoxBinSpecHelpText%s' % i,
+                    partial(cls._getOptionBoxBinSpecHelpText, index=i))
+
+    @classmethod
+    def getRegsAndBinsSpec(cls, choices):
+        """
+        Returns the regSpec and binSpec for the choices made in the gui.
+        """
+
+        if cls._isBasicMode(choices):
+            return "__chrs__", "*"
+
+        regIndex = cls.REG_SPEC_NAMES.index(choices.compareIn)
+        regSpec = getattr(choices, 'regSpec%s' % regIndex)
+
         try:
-            isBasic = choices.isBasic
+            binIndex = cls.BIN_SPEC_NAMES.index(choices.compareIn)
+            binSpec = getattr(choices, 'binSpec%s' % binIndex)
+        except:
+            binSpec = ''
+
+        try:
+            from proto.CommonFunctions import extractFnFromDatasetInfo, \
+                extractFileSuffixFromDatasetInfo
+            binSpec, regSpec = extractFnFromDatasetInfo(binSpec), \
+                               extractFileSuffixFromDatasetInfo(binSpec)
         except:
             pass
-        else:
-            if isBasic:
-                return "__chrs__", "*"
-        
-        if choices.CompareIn == 'Custom specification':
-            regSpec = choices.CustomRegion
-            binSpec = choices.BinSize
-        elif regsMapper.get(choices.CompareIn):
-            regSpec = regsMapper[choices.CompareIn]
-            binSpec = choices.Bins
-        else:
-            if choices.HistoryBins:
-                histItem = choices.HistoryBins.split(':')
-                binSpec = ExternalTrackManager.extractFnFromGalaxyTN(histItem)
-                regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(histItem)
-            else:
-                return None, None
 
         return regSpec, binSpec
 
-
     @classmethod
     def validateUserBins(cls, choices):
-        '''
-        See getOptionsBox1().
-        '''
-        
-        try:
-            isBasic = choices.isBasic
-        except:
-            pass
-        else:
-            if isBasic:
-                return None
-        
-        genome = cls._getGenome(choices)
-        trackName1 = cls._getTrackName1(choices)
-        trackName2 = cls._getTrackName2(choices)
+        if cls._isBasicMode(choices):
+            return None
 
         regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
-        #if not regSpec or not binSpec:
-        #    return 'Please select a history element for binning.'
+        return cls._getUserBinSourceRegistry(choices).validateRegAndBinSpec(regSpec, binSpec)
 
-        errorString = GalaxyInterface._validateRegAndBinSpec(regSpec, binSpec, genome, [trackName1, trackName2])
+        errorString = GalaxyInterface._validateRegAndBinSpec(regSpec, binSpec, genome,
+                                                             [trackName1, trackName2])
         if errorString:
             return errorString
-#
-#         regsMapper = {'Chromosome arms':'__chrArms__','Chromosomes':'__chrs__','Cytobands':'__chrBands__','Genes(Ensembl)':'__genes__','ENCODE Pilot regions':'__encode__'}
-#         if choices.CompareIn == 'Custom specification':
-#
-#             regSpec = choices.CustomRegion
-#             binSpec = choices.BinSize
-#             if re.match('[0-9]+[mk]?', binSpec).end() != len(binSpec):
-#                 return 'Invalid Syntax for Bin size(only numbers and the characters "mk" allowed)'
-#
-#         elif regsMapper.get(choices.CompareIn):
-#             regSpec = regsMapper[choices.CompareIn]
-#             binSpec = choices.Bins
-#         else:
-#             histItem = choices.HistoryBins.split(':')
-#             binSpec = ExternalTrackManager.extractFnFromGalaxyTN(histItem)
-#             regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(histItem)
-#
-#         return regSpec, binSpec
 
-    @staticmethod
-    def _getGenome(choices):
+    @classmethod
+    def _getGenome(cls, choices):
         if hasattr(choices, 'genome'):
             return choices.genome
         else:
-            raise AbstractClassError()
+            raise ShouldNotOccurError(
+                'Subclass of UserBinMixin needs to override the cls._getGenome method')
 
-    @staticmethod
-    def _getTrackName1(choices):
-        return None
+    @classmethod
+    def _getTrackNameList(cls, choices):
+        return []
 
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+
+class UserBinMixinForDescriptiveStats(UserBinMixin):
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
+        return UserBinSourceRegistryForDescriptiveStats
+
+
+class UserBinMixinForHypothesisTests(UserBinMixin):
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
+        return UserBinSourceRegistryForHypothesisTests
+
+
+class UserBinMixinForExtraction(UserBinMixin):
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        from quick.application.UserBinManager import UserBinSourceRegistryForExtraction
+        return UserBinSourceRegistryForExtraction

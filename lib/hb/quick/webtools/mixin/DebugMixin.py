@@ -21,6 +21,12 @@ class DebugMixin(object):
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]
 
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        if hasattr(super(DebugMixin, cls), 'getInputBoxGroups'):
+            return super(DebugMixin, cls).getInputBoxGroups(choices)
+        return None
+
     @staticmethod
     def _setDebugModeIfSelected(choices):
         if choices.debugMode:

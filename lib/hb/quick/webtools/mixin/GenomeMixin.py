@@ -1,5 +1,6 @@
 import gold.gsuite.GSuiteConstants as GSuiteConstants
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.tools.GeneralGuiTool import BoxGroup
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 '''
@@ -110,12 +111,24 @@ class GenomeMixin(object):
 
     @classmethod
     def getInputBoxNamesForGenomeSelection(cls):
-        return [('Fieldset start', 'fieldsetBegin'),
-                (cls.OPTIONS_BOX_MSG % cls.WHAT_GENOME_IS_USED_FOR, 'specifyGenomeFromGsuites'),
+        return [(cls.OPTIONS_BOX_MSG % cls.WHAT_GENOME_IS_USED_FOR, 'specifyGenomeFromGsuites'),
                 ('Genome mismatch note', 'genomeMismatchNote'),
                 ('Genome build:', 'specifyGenomeFromList'),
-                ('Genome', 'genome'),
-                ('Fieldset end', 'fieldsetEnd')]
+                ('Genome', 'genome')]
+
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        prevBoxGroups = None
+        if hasattr(super(GenomeMixin, cls), 'getInputBoxGroups'):
+            prevBoxGroups = super(GenomeMixin, cls).getInputBoxGroups(choices)
+
+        if choices.specifyGenomeFromGsuites:
+            if not prevBoxGroups:
+                prevBoxGroups = []
+            return prevBoxGroups + \
+                   [BoxGroup(label='Genome', first='specifyGenomeFromGsuites', last='genome')]
+        else:
+            return prevBoxGroups
 
     @classmethod
     def _getGsuiteGenomes(cls, prevChoices):
@@ -159,22 +172,6 @@ class GenomeMixin(object):
     @classmethod
     def _allowMultipleGenomes(cls, prevChoices):
         return cls.ALLOW_MULTIPLE_GENOMES
-
-    @classmethod
-    def getOptionsBoxFieldsetBegin(cls, prevChoices):
-        if cls._getGsuiteGenomes(prevChoices):
-            core = HtmlCore()
-            core.fieldsetBegin(title='Genome')
-            core.divBegin()
-            return '__rawstr__', str(core)
-
-    @classmethod
-    def getOptionsBoxFieldsetEnd(cls, prevChoices):
-        if cls._getGsuiteGenomes(prevChoices):
-            core = HtmlCore()
-            core.divEnd()
-            core.fieldsetEnd()
-            return '__rawstr__', str(core)
 
     @classmethod
     def getOptionsBoxSpecifyGenomeFromGsuites(cls, prevChoices):

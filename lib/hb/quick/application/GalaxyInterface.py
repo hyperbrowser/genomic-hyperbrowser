@@ -42,7 +42,8 @@ from gold.util.CommonFunctions import smartStrLower,\
     getClassName, prettyPrintTrackName, createOrigPath, \
     getOrigFn, strWithStdFormatting
 from gold.util.CustomExceptions import NotSupportedError, \
-    Warning, InvalidFormatError, InvalidRunSpecException #, IncompatibleTracksError
+    Warning, InvalidFormatError, InvalidRunSpecException, \
+    ShouldNotOccurError  #, IncompatibleTracksError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile, StaticFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -1940,25 +1941,18 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         return ubSourceRegistry.getNameAndKeyTuplesOfAllUserBinSources()
 
     @classmethod
-    def getBinningCategoryTuples(cls, genome, trackName1, trackName2):
-        from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
-        return cls._getBinningCategoryTuplesCommon(genome, trackName1, trackName2, UserBinSourceRegistryForHypothesisTests)
-
-    # New solution, temporarily commented out
-    #
-    #@classmethod
-    #def getBinningCategoryTuples(cls, category, genome, trackName1, trackName2):
-    #    from gold.description.AnalysisManager import AnalysisManager
-    #    assert category in AnalysisManager.getMainCategoryNames()
-    #    if category == 'Hypothesis testing':
-    #        from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
-    #        ubSourceRegistryCls = UserBinSourceRegistryForHypothesisTests
-    #    elif category == 'Descriptive statistics':
-    #        from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
-    #        ubSourceRegistryCls = UserBinSourceRegistryForDescriptiveStats
-    #    else:
-    #        raise ShouldNotOccurError()
-    #    return cls._getBinningCategoryTuplesCommon(genome, trackName1, trackName2, ubSourceRegistryCls)
+    def getBinningCategoryTuples(cls, category, genome, trackName1, trackName2):
+       from gold.description.AnalysisManager import AnalysisManager
+       assert category in AnalysisManager.getMainCategoryNames()
+       if category == 'Hypothesis testing':
+           from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
+           ubSourceRegistryCls = UserBinSourceRegistryForHypothesisTests
+       elif category == 'Descriptive statistics':
+           from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
+           ubSourceRegistryCls = UserBinSourceRegistryForDescriptiveStats
+       else:
+           raise ShouldNotOccurError()
+       return cls._getBinningCategoryTuplesCommon(genome, trackName1, trackName2, ubSourceRegistryCls)
 
     @classmethod
     def getBinningCategoryTuplesForExtraction(cls, genome, trackName1, trackName2=None):

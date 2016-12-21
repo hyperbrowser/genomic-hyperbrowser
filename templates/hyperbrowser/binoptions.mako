@@ -16,7 +16,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-<%page args="galaxy=None,gui=None,hyper=None,genome=None,methodLabel='Compare in',updateRunDescription=True,useBinSize=True,methodOptions=None,method=None,track1=None,track2=None,extract=False"/>
+<%page args="galaxy=None,gui=None,hyper=None,genome=None,methodLabel='Compare in',updateRunDescription=True,useBinSize=True,methodOptions=None,method=None,track1=None,track2=None,category=None,extract=False"/>
 
 <%
 #if methodOptions == None:
@@ -32,8 +32,12 @@ if track2 is not None:
 else:
     trackName2 = None
 
-#binCatFilter = hyper.getBinningCategories(genome, trackName1, trackName2)
-methodOptions = hyper.getBinningCategoryTuples(genome, trackName1, trackName2)
+# binCatFilter = hyper.getBinningCategories(genome, trackName1, trackName2)
+
+## methodOptions = hyper.getBinningCategoryTuples(genome, trackName1, trackName2)
+if not methodOptions:
+    assert category is not None
+    methodOptions = hyper.getBinningCategoryTuples(category, genome, trackName1, trackName2)
 
 params = galaxy.params
 region = params.get('region', '*')
@@ -97,7 +101,7 @@ if updateRunDescription:
 		<p id="pnl__brs__" class="hidden">
     <i>Use the bounding regions of the selected track(s), if defined. If more than one track is selected,
 		   the intersection of the bounding regions is used, i.e. where the bounding regions are overlapping.
-			 ${chrArmNote if not extract else ''}<br><br></i>
+        <br><br></i>
        <a href="#help_bounding_regions" title="Help" onclick="getHelp('bounding_regions')">More information about bounding regions</a>
        <div id="help_bounding_regions" class="infomessagesmall help"></div>
     </p>

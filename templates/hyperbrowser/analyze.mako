@@ -342,7 +342,7 @@ if hyper.isAccessibleGenome(genome, username):
 
         <a name="region_scale"></a>
         <fieldset><legend>Region and scale</legend>
-            <%include file="binoptions.mako" args="galaxy=galaxy,gui=gui,hyper=hyper,genome=genome,track1=tracks[0],track2=tracks[1]"/>
+            <%include file="binoptions.mako" args="galaxy=galaxy,gui=gui,hyper=hyper,genome=genome,track1=tracks[0],track2=tracks[1],category=analcat"/>
                     ${self.help('binning')}        
         </fieldset>
 

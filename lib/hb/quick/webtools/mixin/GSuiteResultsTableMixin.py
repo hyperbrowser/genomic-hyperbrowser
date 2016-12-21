@@ -36,6 +36,12 @@ class GSuiteResultsTableMixin(object):
                 ('Select the leading attribute (by default "title")', 'leadAttribute')]
 
     @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        if hasattr(super(GSuiteResultsTableMixin, cls), 'getInputBoxGroups'):
+            return super(GSuiteResultsTableMixin, cls).getInputBoxGroups(choices)
+        return None
+
+    @classmethod
     def getOptionsBoxResultsExplanation(cls, prevChoices):
         core = HtmlCore()
         core.divBegin(divClass='resultsExplanation')
