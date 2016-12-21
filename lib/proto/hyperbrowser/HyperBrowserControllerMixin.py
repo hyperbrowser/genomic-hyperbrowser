@@ -32,7 +32,7 @@ class HyperBrowserControllerMixin(object):
             cachedTracks = self.getCacheData(id)
             track = self.getTrackElement(id, name, tracks=cachedTracks)
         except:
-            print 'track cache fail'
+            print 'track cache is empty'
             track = self.getTrackElement(id, name)
             self.putCacheData(id, track.tracks)
 
@@ -75,4 +75,8 @@ class HyperBrowserControllerMixin(object):
             element.fetchTracks()
         element.legend = label
         return element
+
+    @staticmethod
+    def _getStdOutToHistoryDatatypes():
+        return ['html', 'customhtml', 'hbfunction']
 
