@@ -187,7 +187,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
     #    for fn in xmls:
     #        tree = ET.parse(HB_TOOL_DIR + fn)
     #        root = tree.getroot()
-    #        if root.tag == 'tool' and root.attrib.get('tool_type') == 'hyperbrowser_generic':
+    #        if root.tag == 'tool' and root.attrib.get('tool_type') == 'hb_generic':
     #            tool_id = root.attrib['id']
     #            tools[tool_id] = root.attrib
     #    return tools
@@ -247,7 +247,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxToolType(cls, prevchoices):
-        return ['proto']
+        return ['hb', 'proto']
 
     @classmethod
     def getOptionsBoxToolID(cls, prevchoices):

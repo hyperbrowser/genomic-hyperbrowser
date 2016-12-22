@@ -1,4 +1,4 @@
 <tool id="file_import_bedgraph" name="Import BedGraph file to history" version="1.0.0" hidden="True"
-  tool_type="hyperbrowser_generic" proto_tool_module="quick.webtools.file_import.FileImport" proto_tool_class="FileImport">
+  tool_type="hb_generic" proto_tool_module="quick.webtools.file_import.FileImport" proto_tool_class="FileImport">
   <description></description>
 </tool>

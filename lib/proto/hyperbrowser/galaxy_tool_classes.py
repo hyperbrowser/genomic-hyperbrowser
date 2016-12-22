@@ -6,7 +6,7 @@ class ProtoHBTool(ProtoTool):
 
 
 class ProtoHBGenericTool(ProtoGenericTool):
-    tool_type = 'hyperbrowser_generic'
+    tool_type = 'hb_generic'
     # mako = '/proto/generictool'
     proto_action = '/hyper'
     proto_command = '$GALAXY_ROOT_DIR/lib/proto/hyperbrowser/HBToolExecute.py $output'
@@ -16,5 +16,5 @@ class ProtoHBGenericTool(ProtoGenericTool):
 
 
 hb_tool_types = {'hyperbrowser': ProtoHBTool,
-                 'hyperbrowser_generic': ProtoHBGenericTool}
+                 'hb_generic': ProtoHBGenericTool}
 
