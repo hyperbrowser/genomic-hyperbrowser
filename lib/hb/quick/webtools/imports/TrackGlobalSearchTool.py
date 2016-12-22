@@ -230,11 +230,10 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     def getOptionsBoxDownloadAndPreprocess(cls, prevChoices):
         #if prevChoices.searchType != 'Categorized Search for Tracks':
         #    return
-        #return '__hidden__','Yes'
-        if not prevChoices.source or prevChoices.transfer == 'Yes':
-            return
-        #return '__hidden__','Yes'
-        return ['Yes','No']
+        return '__hidden__','Yes'
+        # if not prevChoices.source or prevChoices.transfer == 'Yes':
+        #     return
+        # return ['Yes','No']
 
     @classmethod
     def getOptionsBoxGenome(cls, prevChoices):
