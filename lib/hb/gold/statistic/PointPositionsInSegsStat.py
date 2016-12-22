@@ -13,6 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+import ast
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticConcatResSplittable, OnlyGloballySplittable
@@ -31,7 +32,7 @@ class PointPositionsInSegsStatUnsplittable(Statistic):
     "Computes a list of positions of points relative to segments they occur inside. Ignores points outside segments. Currently only supports scaled positions of points, that is scaled between 0 at upstream end and 1 at downstream end." #could also support absolute offsets inside segs..
 
     def _init(self, scaledPositions='True', **kwArgs):
-        self._scaledPositions = eval(scaledPositions)
+        self._scaledPositions = ast.literal_eval(scaledPositions)
 
     def _compute(self):
         tvSegs = self._children[1].getResult()
