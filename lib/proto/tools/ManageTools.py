@@ -20,7 +20,7 @@ TOOL_XML_REL_PATH = 'hyperbrowser/'
 class GalaxyToolConfig:
 
     tool_xml_template = '''<tool id="%s" name="%s" version="1.0.0"
-  tool_type="proto_generic" proto_tool_module="%s" proto_tool_class="%s">
+  tool_type="%s_generic" proto_tool_module="%s" proto_tool_class="%s">
   <description>%s</description>
 </tool>\n'''
 
@@ -52,8 +52,9 @@ class GalaxyToolConfig:
         with open(self.tool_conf_fn, 'w') as f:
             f.write(self.tool_conf_data)
         
-    def createToolXml(self, tool_fn, tool_id, tool_name, tool_module, tool_cls, tool_descr):
-        tool_xml = self.tool_xml_template % (tool_id, tool_name, tool_module, tool_cls, tool_descr)
+    def createToolXml(self, tool_fn, tool_id, tool_name, tool_type, tool_module, tool_cls, tool_descr):
+        tool_xml = self.tool_xml_template % (tool_id, tool_name, tool_type,
+                                             tool_module, tool_cls, tool_descr)
         return tool_xml
 
 
@@ -220,6 +221,7 @@ class InstallToolsTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         return [('Select tool', 'tool'),
+                ('Tool type', 'toolType'),
                 ('Tool ID', 'toolID'),
                 ('Tool name', 'name'),
                 ('Tool description', 'description'),
@@ -228,7 +230,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getResetBoxes():
-        return [1]
+        return [1, 2]
 
 #    @staticmethod
 #    def isHistoryTool():
@@ -244,11 +246,18 @@ class InstallToolsTool(GeneralGuiTool):
         return ['-- Select tool --'] + sorted(tool_list)
 
     @classmethod
+    def getOptionsBoxToolType(cls, prevchoices):
+        return ['proto']
+
+    @classmethod
     def getOptionsBoxToolID(cls, prevchoices):
+        import inflection
         if prevchoices.tool is None or prevchoices.tool.startswith('--'):
             return ''
         tool_list = cls._getToolList()
-        return 'ProTo_' + tool_list[prevchoices.tool][2].__name__
+        module_name = tool_list[prevchoices.tool][2].__name__
+        return prevchoices.toolType + '_' + inflection.underscore(module_name)
+
 
     @classmethod
     def getOptionsBoxName(cls, prevchoices):
@@ -300,9 +309,13 @@ class InstallToolsTool(GeneralGuiTool):
         tool_cls = choices.tool
         prototype = cls._getProtoType(choices.tool)
         tool_file = choices.toolXMLPath
+        tool_type = choices.toolType
         toolConf = GalaxyToolConfig()
         xml = toolConf.addTool(choices.section, tool_file)
-        tool_xml = toolConf.createToolXml(tool_file, choices.toolID, choices.name, prototype.__module__, prototype.__class__.__name__, choices.description)
+        tool_xml = toolConf.createToolXml(tool_file, choices.toolID,
+                                          choices.name, prototype.__module__,
+                                          prototype.__class__.__name__,
+                                          choices.description)
         
         abs_tool_xml_path = GALAXY_TOOL_XML_PATH + choices.toolXMLPath
         try:
