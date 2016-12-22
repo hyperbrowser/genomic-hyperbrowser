@@ -3,7 +3,7 @@ from quick.extra.exam.ExamResultsAnalysis import ExamResultsReader,\
     TaskCorrelationAnalysis, ExamResultsValidator
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from collections import OrderedDict
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.

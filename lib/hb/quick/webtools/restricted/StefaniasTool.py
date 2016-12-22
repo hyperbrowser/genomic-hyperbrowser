@@ -1,4 +1,4 @@
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool, HistElement
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -72,7 +72,7 @@ class ClustAnalysis(GeneralGuiTool):
         # with inputFile as f:
         #     data = [x.strip('\n') for x in f.readlines()]
         # f.closed
-        from quick.util.StaticFile import GalaxyRunSpecificFile
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         sf = GalaxyRunSpecificFile(["matrix.pickle"],galaxyFn)
         sfPng = GalaxyRunSpecificFile(["matrix.png"], galaxyFn)
         sfPng1 = GalaxyRunSpecificFile(["Flat1.csv"], galaxyFn)

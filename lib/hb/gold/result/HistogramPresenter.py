@@ -50,7 +50,7 @@ class HistogramPresenter(LocalResultsGraphicsData, GraphicsPresenter):
         import numpy
         data = numpy.bincount(self._getRawData(resDictKey))
         import quick.webtools.restricted.visualization.visualizationPlots as vp
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         self.__class__.numCount +=1
         if self.__class__.numCount==1:
             htmlCore = HtmlCore()

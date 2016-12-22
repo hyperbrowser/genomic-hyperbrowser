@@ -7,7 +7,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from collections import OrderedDict
 from quick.application.GalaxyInterface import GalaxyInterface
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 import operator
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs

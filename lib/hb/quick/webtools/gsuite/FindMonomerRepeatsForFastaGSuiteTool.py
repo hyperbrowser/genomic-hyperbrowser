@@ -4,10 +4,10 @@ from collections import OrderedDict
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.CommonFunctions import ensurePathExists
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from gold.gsuite import GSuiteConstants

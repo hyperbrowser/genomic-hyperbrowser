@@ -12,7 +12,7 @@ from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\
     STAT_LIST_INDEX
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 from quick.statistic.RawOverlapToSelfStat import RawOverlapToSelfStat
 from gold.track.Track import Track

@@ -2,7 +2,7 @@
 #import sqlite3
 
 from gold.util.CustomExceptions import AbstractClassError
-#from quick.util.StaticFile import StaticFile
+#from proto.hyperbrowser.StaticFile import StaticFile
 #from quick.util.CommonFunctions import ensurePathExists
 from collections import namedtuple
 #from itertools import chain

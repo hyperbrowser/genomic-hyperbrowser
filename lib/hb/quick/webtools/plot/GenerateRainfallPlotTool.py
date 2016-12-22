@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import math
 
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool

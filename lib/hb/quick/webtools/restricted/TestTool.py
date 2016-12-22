@@ -129,7 +129,7 @@ class TestTool(GeneralGuiTool):
     #def getOptionsBox3(prevChoices): # Syntax 1 (old version)
     def getOptionsBoxPrev(prevChoices):
         #return repr(prevChoices),3,True
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
         core.link('Download', 'ftp://something.com/')

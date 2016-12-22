@@ -126,7 +126,7 @@ class GeneTargetsOfTF(GeneTargetsOfRegions):
     #    #alt:
     #    print '%i Ensemble genes being targets of TF %s.<br>' % (len(targetBins), selectedTF)
     #
-    #    from quick.util.StaticFile import GalaxyRunSpecificFile
+    #    from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
     #    idFileNamer = GalaxyRunSpecificFile(['allGeneIds'],'txt',galaxyFn)
     #    #idFile = idFileNamer.getFile()
     #    #idFile.write(', '.join([str(bin.val) for bin in targetBins if res[bin][resDictKey]>0]) + os.sep)

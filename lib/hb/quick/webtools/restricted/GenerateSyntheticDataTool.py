@@ -1,7 +1,7 @@
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.CommonFunctions import ensurePathExists
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement

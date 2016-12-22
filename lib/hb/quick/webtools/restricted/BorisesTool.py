@@ -3,7 +3,7 @@ import subprocess
 from collections import OrderedDict, defaultdict, Counter
 
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec

@@ -20,8 +20,8 @@
 # from collections import namedtuple, OrderedDict, defaultdict
 # from urllib import quote, unquote
 # from quick.webtools.GeneralGuiTool import HistElement
-# from quick.util.StaticFile import StaticImage
-# from gold.result.HtmlCore import HtmlCore
+# from proto.hyperbrowser.StaticFile import StaticImage
+# from proto.hyperbrowser.HtmlCore import HtmlCore
 # from config.Config import URL_PREFIX
 # from gold.application.LogSetup import usageAndErrorLogging
 # from gold.util.CommonFunctions import getClassName

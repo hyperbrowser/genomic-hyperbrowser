@@ -2,7 +2,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from collections import OrderedDict
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 import math
 
 # This is a template prototyping GUI that comes together with a corresponding

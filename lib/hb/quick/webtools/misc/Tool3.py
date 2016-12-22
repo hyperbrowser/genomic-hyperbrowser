@@ -1543,7 +1543,7 @@ class ModifyHistItems(GeneralGuiTool):
 
 
         #from quick.util.CommonFunctions import changedWorkingDir
-        #from quick.util.StaticFile import GalaxyRunSpecificFile
+        #from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         #import os
         #print cls.runParams
         #return True

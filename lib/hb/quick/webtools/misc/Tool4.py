@@ -17,10 +17,10 @@
 # from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
 # from gold.track.GenomeRegion import GenomeRegion
 # from gold.track.Track import PlainTrack
-# from quick.util.StaticFile import GalaxyRunSpecificFile
+# from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 # from quick.extra.MotifScanner import MotifScanner
 # from quick.application.GalaxyInterface import GalaxyInterface
-# from gold.result.HtmlCore import HtmlCore
+# from proto.hyperbrowser.HtmlCore import HtmlCore
 # from collections import OrderedDict
 # #This is a template prototyping GUI that comes together with a corresponding web page.
 # #

@@ -149,7 +149,7 @@ class CreateGoogleMap(GeneralGuiTool):
         '''
 
         from quick.application.GalaxyInterface import GalaxyInterface
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
 
         print GalaxyInterface.getHtmlBeginForRuns(galaxyFn)
         print GalaxyInterface.getHtmlForToggles(withRunDescription=False)

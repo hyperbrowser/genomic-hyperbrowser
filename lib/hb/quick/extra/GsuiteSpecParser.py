@@ -1,4 +1,4 @@
-from gold.result.HtmlCore import HtmlCore
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from config.Config import HB_SRC_STATIC_PATH
 import re
 

@@ -85,4 +85,4 @@ class FunctionDefResultType(object):
         text = self.functionText + '\n' + '\n'.join(self.testTexts)
         return text
         #return text.replace('\n','<br>')
-        #from quick.util.StaticFile import 
+        #from proto.hyperbrowser.StaticFile import

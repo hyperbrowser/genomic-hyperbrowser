@@ -1,7 +1,7 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import os
 import third_party.safeshelve as safeshelve
-from quick.util.StaticFile import GalaxyRunSpecificFile
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from config.Config import DATA_FILES_PATH
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #

@@ -84,7 +84,7 @@ class RenameTrackTool(GeneralGuiTool):
     
     @staticmethod
     def getToolDescription():
-        from gold.result.HtmlCore import HtmlCore
+        from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.paragraph('This tool is used to rename or move a track.')
         core.divider()
