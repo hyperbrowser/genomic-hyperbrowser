@@ -19,7 +19,7 @@ from gold.statistic.Statistic import Statistic
 from gold.statistic.CountPointStat import CountPointStat
 from quick.statistic.PointCountInsideSegsStat import PointCountInsideSegsStat
 from gold.statistic.ProportionCountStat import ProportionCountStat
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 import math
 from collections import OrderedDict
 
@@ -38,7 +38,7 @@ class PointCountInSegsPvalStatUnsplittable(Statistic):
         Statistic.__init__(self, region, track, track2, assumptions=assumptions, tail=tail, **kwArgs)
     
     def _compute(self):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         #r("require(Defaults)")
         #r('setDefaults(q, save="no")')
         #r("useDefaults(q)")

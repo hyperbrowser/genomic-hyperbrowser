@@ -25,12 +25,13 @@ from gold.util.CustomExceptions import ShouldNotOccurError
 from quick.application.UserBinSource import parseRegSpec
 from quick.util.CommonFunctions import ensurePathExists
 
+
 class TrackExtractor:
     ALLOW_OVERLAPS_TRUE_TEXT = 'possibly overlapping'
     ALLOW_OVERLAPS_FALSE_TEXT = 'any overlaps merged'
     ORIG_FILE_FORMAT_TEXT = 'original file format'
     DEFAULT_FILE_FORMAT_NAME = 'gtrack'
-    
+
     @classmethod
     def getAttrsFromExtractionFormat(cls, extractionFormat):
         asOriginal = extractionFormat.lower().startswith(cls.ORIG_FILE_FORMAT_TEXT)

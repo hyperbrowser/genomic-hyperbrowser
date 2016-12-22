@@ -351,8 +351,8 @@ class VisualizeTracksAsHeatmap(GeneralGuiTool):
           google.load("visualization", "1", {packages:["corechart"]});\n google.setOnLoadCallback(drawLine);
           function drawLine(divId) {\n}
       </script>
-        <style type="text/css">\n    #slider { margin: 10px; }\n  </style>\n  <script type="text/javascript">\n  jQuery(document).ready(function() {\n    jQuery("#slider").slider({min: 0, value: 370, max: %i });\n  });\n  </script>\n\n\n  <link rel="stylesheet" type="text/css" href="http://hyperbrowser.uio.no/dev2/static/hyperbrowser/files/kaitre//image_zoom/styles/stylesheet.css" />
-                    \n<script language="javascript" type="text/javascript" src="http://hyperbrowser.uio.no/dev2/static/hyperbrowser/files/kaitre//image_zoom/scripts/mootools-1.2.1-core.js">\n</script><script language="javascript" type="text/javascript" src="http://hyperbrowser.uio.no/dev2/static/hyperbrowser/files/kaitre//image_zoom/scripts/mootools-1.2-more.js">\n</script><script language="javascript" type="text/javascript" src="http://hyperbrowser.uio.no/dev2/static/hyperbrowser/files/kaitre//image_zoom/scripts/ImageZoom.js"></script>\n
+        <style type="text/css">\n    #slider { margin: 10px; }\n  </style>\n  <script type="text/javascript">\n  jQuery(document).ready(function() {\n    jQuery("#slider").slider({min: 0, value: 370, max: %i });\n  });\n  </script>\n\n\n  <link rel="stylesheet" type="text/css" href="http://hyperbrowser.uio.no/gsuite/static/hyperbrowser/files/kaitre//image_zoom/styles/stylesheet.css" />
+                    \n<script language="javascript" type="text/javascript" src="http://hyperbrowser.uio.no/gsuite/static/hyperbrowser/files/kaitre//image_zoom/scripts/mootools-1.2.1-core.js">\n</script><script language="javascript" type="text/javascript" src="http://hyperbrowser.uio.no/gsuite/static/hyperbrowser/files/kaitre//image_zoom/scripts/mootools-1.2-more.js">\n</script><script language="javascript" type="text/javascript" src="http://hyperbrowser.uio.no/gsuite/static/hyperbrowser/files/kaitre//image_zoom/scripts/ImageZoom.js"></script>\n
         \n\n\n\n<script type="text/javascript" >\nliste =%s;\ncounter = 0;\n\n\nfunction point_it2(event){\n
         document.myform.posAnchor.value = "";
         chrom = %s;\n
@@ -381,7 +381,7 @@ class VisualizeTracksAsHeatmap(GeneralGuiTool):
          <br/>%s</body></html>''' # onchange="jQuery('zoomer_region').css({ 'left': '31px', 'top': '15px'});"
         
         tableRowEntryTemplate = """<div class="tabbertab"><h2>%s</h2><a href="%s"><img src="%s" /></a></div>"""
-        htmlPageTemplate = """<html><head>\n<script type="text/javascript" src="/dev2/static/scripts/tabber.js"></script>\n<link href="/dev2/static/style/tabber.css" rel="stylesheet" type="text/css" />\n
+        htmlPageTemplate = """<html><head>\n<script type="text/javascript" src="/gsuite/static/scripts/tabber.js"></script>\n<link href="/gsuite/static/style/tabber.css" rel="stylesheet" type="text/css" />\n
                     </head><body>%s</body></html>"""
         
         #fileDict = dict()

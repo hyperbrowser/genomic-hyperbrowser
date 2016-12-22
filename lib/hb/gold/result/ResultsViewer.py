@@ -655,7 +655,7 @@ Noticable methods:
 ''' 
 class DistributionResultsViewer(ResultsViewerBase):
     def _addAllPresenters(self):
-        self._presCollectidionType = 'distribution'
+        self._presCollectionType = 'distribution'
         #brk(host='localhost', port=9000, idekey='galaxy')
         #self._addPresenter(GlobalValuePresenter(self._results, self._baseDir))
         self._addPresenter(DistributionTablePresenter, True)

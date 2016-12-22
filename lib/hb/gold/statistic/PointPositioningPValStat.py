@@ -71,12 +71,12 @@ class PointPositioningPValStatUnsplittable(Statistic):
         if n<2:
             pval = None
         elif n<30:
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             #print 'w,n: ',w,n
             pval = r.psignrank(w,n)
             distribution = 'Wilcoxon'
         else:
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             mean = n*(n+1)/4.0
             var = n*(n+1)*(2*n+1)/24.0
             pval = r.pnorm(w, mean, var**0.5)

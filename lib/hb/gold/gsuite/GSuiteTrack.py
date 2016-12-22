@@ -56,8 +56,8 @@ class GSuiteTrackFactory(type):
             scheme = urlparse.urlparse(uri).scheme
 
             if scheme == '':
-                raise InvalidFormatError('GSuite track line does not have a specified ' \
-                                         'protocol.')
+                raise InvalidFormatError('GSuite track URI does not have a specified ' \
+                                         'protocol. URI: ' + uri)
 
             if scheme not in _GSUITE_TRACK_REGISTRY:
                 raise InvalidFormatError('Track protocol "%s" is not supported in ' % scheme +\
@@ -227,7 +227,7 @@ class GSuiteTrack(object):
     @attributes.setter
     def attributes(self, attributes):
         self._attributes = OrderedDict()
-
+        
         for key,val in attributes.iteritems():
             if val is not None:
                 if val == '':
@@ -253,11 +253,13 @@ class GSuiteTrack(object):
         if param is not None and param not in HEADER_VAR_DICT[header].allowed:
             raise InvalidFormatError('Header "%s" value is not allowed: "%s". ' % (header, param) +\
                                      'Allowed values: ' + ', '.join(HEADER_VAR_DICT[header].allowed))
+
     def __getattr__(self, item):
         try:
             return self.__dict__['_attributes'][item]
         except KeyError:
-            raise AttributeError
+            raise AttributeError("Member '%s' not found in class '%s'" %
+                                 (item, self.__class__.__name__))
 
     @classmethod
     def generateURI(cls):

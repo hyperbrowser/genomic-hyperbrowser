@@ -34,7 +34,7 @@ class PixelBasedLocalResultsPresenter(LocalResultsGraphicsData, GraphicsPresente
     #    return True
         
     def _customRExecution(self, resDictKey, xlab, main):
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         #rCode = 'ourHist <- function(ourList, xlab, main, numBins) {vec <- unlist(ourList); hist(vec, col="blue", breaks=numBins, xlab=xlab, main=main)}'
         rCode = '''
         plot(2,2)

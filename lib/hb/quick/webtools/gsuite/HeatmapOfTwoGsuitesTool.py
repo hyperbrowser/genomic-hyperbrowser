@@ -446,7 +446,7 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         Specifies whether debug messages are printed.
         '''
-        return True
+        return False
     #
     @staticmethod
     def getOutputFormat(choices):

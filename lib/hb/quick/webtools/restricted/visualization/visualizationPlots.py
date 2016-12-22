@@ -18,7 +18,7 @@ import json
 def addJSlibs():
     return """
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-    <script src="https://code.highcharts.com/4.2.0/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
     """
     
 def addJSlibsPolar():
@@ -94,12 +94,11 @@ def _addGuidelineV1(tableName='tn'):
         
         """
         
-        strText += """
-        <div id ='""" + str(tableName) + """plot'  style='display:none;min-width:400px;margin-top:10px;border:1px solid #000033;padding:10px;color:#181818' >
+        strText += """ <div id ='""" + str(tableName) + """plot'  style='display:none;min-width:400px;margin-top:10px;border:1px solid #000033;padding:10px;color:#181818' >
             <div id ='guideLine'  style='font-weght:bold;text-transform:uppercase;margin-bottom:5px;'>
             Guidelines for viewing the plots:
             </div>
-            
+
             <div id ='option1d'  style='font-weght:bold;margin-bottom:5px;margin-top:5px;'>
             Sorting:
             </div>
@@ -109,33 +108,33 @@ def _addGuidelineV1(tableName='tn'):
             Zooming:
             </div>
             
-            - To zoom a plot representing one dataset, e.g. one line, click on the plot and drag your mouse to the left/right side.<br \>
+            - To zoom a plot representing one dataset, e.g. one line, click on the plot and drag your mouse to the left/right side.<br \>s
             - To zoom when viewing multiple plots that represent related datasets, in the same output page, zooming one plot will automatically zoom all plots.<br \>
-            - To reset the zooming press the button: \"Reset zoom\"
-        
+            - To reset the zooming press the button: Reset zoom
+
             <div id ='option1d'  style='font-weght:bold;margin-bottom:5px;margin-top:5px;'>
             Show/Hide:
             </div>
-        
+
             - To show/hide a specific dataset in the plot, click the colored checkbox next to the name of that dataset located in the legend below the plot.
-        
+
             <div id ='option1d'  style='font-weght:bold;margin-bottom:5px;margin-top:5px;'>
             Print and download:
             </div>
-        
+
             - To print or download, open the context menu, located in the top right corner of the plot, and choose from there.
-       
+
            <div id ='option1d'  style='font-weght:bold;margin-bottom:5px;margin-top:5px;'>
             Heatmap:
             </div>
-            - To select a specific region and download it locally as a group of .bed files, click the region of interest (or multiple regions by using ctrl/cmd) and press the \"Get selected regions\" button. The .bed file/files will appear above the heatmap where they can be downloaded.
+            - To select a specific region and download it locally as a group of .bed files, click the region of interest (or multiple regions by using ctrl/cmd) and press the Get selected regions button. The .bed file/files will appear above the heatmap where they can be downloaded.
 
-        
-       
+
+
         </div>
-        
+
         """
-        
+
         strText += """
         <script>
         

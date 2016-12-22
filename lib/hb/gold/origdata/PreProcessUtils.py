@@ -61,12 +61,11 @@ class PreProcessUtils(object):
     
     @staticmethod
     def _hasOldTypeChromSubDirs(dirPath, genome):
-        if os.path.isdir(dirPath):
-            for subDir in os.listdir(dirPath):
-                fullSubDirPath = os.path.join(dirPath, subDir)
-                if os.path.isdir(fullSubDirPath) and \
-                    PreProcessUtils._isOldTypeChromDirectory(fullSubDirPath, genome):
-                        return True
+        for subDir in os.listdir(dirPath):
+            fullSubDirPath = os.path.join(dirPath, subDir)
+            if os.path.isdir(fullSubDirPath) and \
+                PreProcessUtils._isOldTypeChromDirectory(fullSubDirPath, genome):
+                    return True
         return False
     
     @staticmethod
@@ -221,4 +220,4 @@ class PreProcessUtils(object):
                 complementEdgeWeightDict[edgeId][id] = weight
             else:
                 complementEdgeWeightDict[edgeId] = {id: weight}
-    
+

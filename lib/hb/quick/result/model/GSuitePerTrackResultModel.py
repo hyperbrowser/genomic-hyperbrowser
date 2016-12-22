@@ -49,7 +49,7 @@ class GSuitePerTrackResultModel(object):
         else: #>1
             assert (len(mainResultTitles) == len(resultsDict.values()[0])), 'Invalid number of main result column titles, %s. %s expected.' % (str(mainResultTitles), str(len(resultsDict.values()[0])))
         
-    def generateColumnTitlesAndResultsDict(self, primaryAttributeName = None):
+    def generateColumnTitlesAndResultsDict(self, primaryAttributeName=None):
         '''The primary attribute name, is the attribute that you wish to have in the first column after the ranking index. 
         When None the default first column is the track titles. If set, the name must one of the keys in the additionalAttributesDict'''
         

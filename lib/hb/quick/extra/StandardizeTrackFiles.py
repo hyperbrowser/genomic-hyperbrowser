@@ -21,7 +21,7 @@ import os
 import sys
 import shutil
 import re
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 import inspect
 from glob import glob
 from collections import OrderedDict
@@ -732,6 +732,49 @@ class CutColumns(GeneralTrackDataModifier):
             cols = line.strip().split('\t')
             outFile.write('\t'.join(cols[x] for x in colList) + os.linesep)
 
+class SubsampleTracks(GeneralTrackDataModifier):
+    @classmethod
+    def parseFile(cls,inFn, outFn, numElements=None, **kwargs):
+        assert numElements != None
+        numElements = int(numElements)
+        lines = open(inFn).readlines()
+        outF = open(outFn, 'w')
+
+        if lines[0].startswith('track'):
+            outF.write( lines[0])
+            lines = lines[1:]
+
+        import numpy.random as nr
+        lineNumbers = range(len(lines))
+        nr.shuffle(lineNumbers)
+        lineNumbers = lineNumbers[0:numElements]
+
+        for lineNum in lineNumbers:
+            outF.write( lines[lineNum] )
+
+class ConvertVcfTo3ColBed(GeneralTrackDataModifier):
+    @classmethod
+    def parseFile(cls,inFn, outFn, **kwargs):
+        outF = open(outFn, 'w')
+
+        for line in open(inFn):
+            if line.startswith('#'):
+                continue
+            chrPart, pos = line.split('\t')[0:2]
+            outF.write('\t'.join(['chr'+chrPart, str(int(pos)-1), pos ]) + '\n')
+
+class ConvertMafTo3ColBed(GeneralTrackDataModifier):
+    @classmethod
+    def parseFile(cls,inFn, outFn, **kwargs):
+        outF = open(outFn, 'w')
+
+        for line in open(inFn):
+            if line.startswith('#'):
+                continue
+            if line.startswith('Hugo_Symbol'): #header..
+                continue
+            chrPart, start, end = line.split('\t')[4:7]
+            outF.write('\t'.join(['chr'+chrPart, str(int(start)-1), end ]) + '\n')
 
 class ICGCToGTrack(GeneralTrackDataModifier):
     '''
@@ -1704,7 +1747,7 @@ class CalculateHypergeometricPVal(GeneralTrackDataModifier):
     @classmethod
     def parseFile(cls, inFn, outFn, trackName, genome, n='1', minQ='2', excludeCats='[]', onlyIncludeCatsFn='', minArticles='0', \
                   maxPval='1.0', numTests='1', useLog='True', increaseEnds='False', makeCategoryBed='False', **kwArgs):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
 
         minArticles = int(minArticles)
 
@@ -1934,6 +1977,22 @@ def runParserClass(args, printUsageWhenError=True):
             globals()[parserClass].cleanUp(genome, trackName, **kwArgs)
             raise
 
+class AddChrExplicitlyInBedFile(GeneralTrackDataModifier):
+    "Take a file in ENSEMBL chromosome naming and change to UCSC chr naming (e.g. from 1 to chr1)"
+    @classmethod
+    def parseFile(cls, inFn, outFn, trackName, **kwArgs):
+        inFile = open(inFn)
+
+        outFn += '.bed'
+        ensurePathExists(outFn)
+        outFile = open(outFn,'w')
+
+        for line in inFile:
+            cols = line.strip().split()
+            cols[0] = 'chr' + cols[0]
+            outFile.write( '\t'.join(cols) +'\n')
+
+
 if __name__ == "__main__":
     if len(sys.argv)==3 and sys.argv[1] == '-h':
         parserClass = sys.argv[2]
@@ -1962,3 +2021,4 @@ if __name__ == "__main__":
         sys.exit(0)
 
     runParserClass(sys.argv[1:])
+

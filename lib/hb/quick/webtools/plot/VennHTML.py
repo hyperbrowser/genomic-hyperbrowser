@@ -2,7 +2,7 @@ htmlMal = '''
 <html>
     <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <base href="https://hyperbrowser.uio.no/dev2/" />
+    <base href="https://hyperbrowser.uio.no/gsuite/" />
 <style>
 body{ font-family:Arial, Helvetica, sans-serif;}
 </style>
@@ -194,7 +194,7 @@ body{ font-family:Arial, Helvetica, sans-serif;}
                  return(false)
              }
           }
-        //http://hyperbrowser.uio.no/dev2/tool_runner?tool_id=create_combination_track&runtool_btn=yes&input=test&dbkey=hg19    
+        //http://hyperbrowser.uio.no/gsuite/tool_runner?tool_id=create_combination_track&runtool_btn=yes&input=test&dbkey=hg19
                  
          var selection = {}
          //for(key in series.name)

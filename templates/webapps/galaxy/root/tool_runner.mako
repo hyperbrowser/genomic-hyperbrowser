@@ -8,8 +8,10 @@
             setTimeout( function() { top.location.href = '${h.url_for( "/" )}'; }, 3000 );
 
             function basicRedirect(basicQuestionId) {
-                top.document.getElementById('history-refresh-button').click();
-                window.location.href = '${h.url_for( "/static/welcome.html?basicQuestionId=")}' + basicQuestionId;
+                if (basicQuestionId != 'None') {
+                    top.document.getElementById('history-refresh-button').click();
+                    window.location.href = '${h.url_for( "/static/welcome.html?basicQuestionId=")}' + basicQuestionId;
+                }
             }
         </script>
     </head>

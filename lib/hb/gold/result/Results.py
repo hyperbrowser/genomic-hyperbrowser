@@ -13,17 +13,17 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from gold.description.ResultInfo import ResultInfo
-from gold.util.CommonFunctions import isIter
-
-#from gold.application.RSetup import r
-import numpy
 import re
-from quick.application.SignatureDevianceLogging import returns
 from collections import OrderedDict
+
+import numpy
+
+from gold.description.ResultInfo import ResultInfo
+from gold.track.TrackView import TrackView
+from gold.util.CommonFunctions import isIter
+from quick.application.SignatureDevianceLogging import returns
 from quick.result.model.ResultTypes import GlobalVisualizationResultType, \
     LinePlotResultType, RawVisualizationResultType
-from gold.track.TrackView import TrackView
 
 """This class is a specialized dict that stores data from an analysis run wich includes metadata, localresults and globalresult
     The keys for Results(dict) are GenomeRegion objects that represents the regions an analysis has been performed on.
@@ -169,7 +169,6 @@ class Results(dict):
             if ASSEMBLY_GAP_KEY in keys and len(keys) > 0:
                 pairs.append( (self._resultInfo.getColumnLabel(ASSEMBLY_GAP_KEY),ASSEMBLY_GAP_KEY) ) 
             self._resDictKeys = [key for label,key in pairs]
-        
         return self._resDictKeys
         
     def getAllRegionKeys(self):
@@ -362,9 +361,7 @@ class Results(dict):
             return None
 
     def __str__(self):
-        globalRes = str(self.getGlobalResult())
-        localRes = '<br>\n'.join([(str(key) + ': ' + str(self[key])) for key in self.keys()])
-        return 'Global result:<br>\n %s <br>\n, Local results:<br>\n%s' % (globalRes, localRes )
+        return 'Global result: %s, Local results: %s' % (str(self.getGlobalResult()), dict.__str__(self) )
     
     #def getAdjustedPVals(self, resDictKey, adjustMethod):
     #    pValKey = 'p-value'

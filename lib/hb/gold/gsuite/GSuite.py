@@ -95,31 +95,6 @@ class GSuite(object):
 
         return allAttributes.keys()
     
-    def attributesType(self):
-        allAttributes = OrderedDict()
-
-        for track in self._trackList:
-            for attribute in track.attributes:
-                allAttributes[attribute] = ''
-        
-        i=0
-        for x in self.allTracks():
-            if i==0:
-                for attribute in allAttributes.keys():
-                    t = x.getAttribute(attribute)
-                    if t == None:
-                        allAttributes[attribute] = False
-                    else:
-                        try:
-                            t = float(t)
-                            allAttributes[attribute] = True
-                        except:
-                            allAttributes[attribute] = False
-                        
-            i+=1
-        
-        return allAttributes
-
     def isPreprocessed(self):
         return self.location == LOCAL and self.fileFormat == PREPROCESSED
 
@@ -195,29 +170,6 @@ class GSuite(object):
 
     def isEmpty(self):
         return len(list(self.allTracks())) == 0
-
-    def getRandomTracks(self, number, seed = 9001):
-        import random
-        randomTrackList = []
-        trackIndexList = [i for i in range(len(self._trackList))]
-        
-        random.seed(seed)
-        for i in range(number):
-            if len(trackIndexList) == 0:
-                break
-            index = random.randint(0,len(trackIndexList)-1)
-            randomTrackList.append(self._trackList[trackIndexList[index]])
-            trackIndexList.pop(index)
-        
-        return randomTrackList
-    
-    def getRandomGSuite(self, number, seed = 9001):
-        rGSuite = GSuite()
-        randomTrackList = self.getRandomTracks(number, seed)
-        for track in randomTrackList:
-            rGSuite.addTrack(track)
-        
-        return rGSuite
     
     def getAttributeValueList(self, attrName):
         assert attrName in self.attributes, attrName
@@ -225,6 +177,7 @@ class GSuite(object):
 
     def __getattribute__(self, attr):
         if not object.__getattribute__(self, '_updatedHeaders') and \
-            not attr.startswith('_') and not attr in ('addTrack', 'addTracks'):
-                self._updateGSuiteHeaders()
+                not attr.startswith('_') and \
+                attr not in ('addTrack', 'addTracks'):
+            self._updateGSuiteHeaders()
         return object.__getattribute__(self, attr)

@@ -40,12 +40,13 @@ class TrackSourceTestTool(MultiGeneralGuiTool):
         return [EncodeTrackSearchTool,
                 #EpigenomeTrackSearchTool,
                 Epigenome2TrackSearchTool,
-                Epigenome2ImputedTrackSearchTool,
+                #Epigenome2ImputedTrackSearchTool,
                 CGAtlasTrackSearchTool,
-                FANTOM5TrackSearchTool,
+                # FANTOM5TrackSearchTool,
                 ICGCTrackSearchTool,
-                EBIHubTrackSearchTool,
-                GWASTrackSearchTool]
+                #EBIHubTrackSearchTool,
+                GWASTrackSearchTool
+                ]
 
     @staticmethod
     def getSubToolSelectionTitle():
@@ -117,6 +118,6 @@ class TrackSourceTestTool(MultiGeneralGuiTool):
         #string += '<li>Select a subset of columns from a GSuite file</li></ol>'
         #string += '<i>Version 1.0.2 has an additional functionality that attribute lists appear accumulatively in the same order of the selection</i>'
 
-    @staticmethod
-    def getFullExampleURL():
-        return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/compile-gsuite-from-external-database---user-guide'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/compile-gsuite-from-external-database---user-guide'

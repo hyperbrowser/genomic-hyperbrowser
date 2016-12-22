@@ -39,6 +39,234 @@ Plan TODO:
 '''
 
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from random import randint
+
+class colorList:
+    def __init__(self):
+        pass
+
+    def rgb_to_hex(self):
+        return '#%02x%02x%02x' % (randint(0,255),randint(0,255),randint(0,255))
+
+    def fullColorList(self, lenColorList=0):
+
+        colors=['#19198c',
+                '#ED561B',
+                '#DDDF00',
+                '#24CBE5',
+                '#64E572',
+                '#FF9655',
+                '#FFF263',
+                '#6AF9C4',
+                '#7cb5ec',
+                '#FCE9A1',
+                '#E7DEC5',
+                '#B58AA5',
+                '#50B432',
+                '#fdd07c',
+                '#C3C3E5',
+                '#C8CF78',
+                '#4a6c8d',
+                '#ffe063',
+                '#C4B387',
+                '#84596B',
+                '#ffb037',
+                '#443266',
+                '#a6ab5b',
+                '#6699FF',
+                '#91e8e1',
+                '#7A991F',
+                '#525266',
+                '#1A334C',
+                '#334C80',
+                '#292900',
+                '#142900',
+                '#99993D',
+                '#009999',
+                '#1A1A0A',
+                '#5C85AD',
+                '#804C4C',
+                '#1A0F0F',
+                '#A3A3CC',
+                '#660033',
+                '#3D4C0F',
+                '#fde720',
+                '#554e44',
+                '#1ce1ce',
+                '#dedbbb',
+                '#facade',
+                '#baff1e',
+                '#aba5ed',
+                '#f2b3b3',
+                '#f9e0e0',
+                '#abcdef',
+                '#f9dcd3',
+                '#eb9180',
+                '#c2dde5',
+                '#008B8B',
+                '#B8860B',
+                '#A9A9A9',
+                '#006400',
+                '#BDB76B',
+                '#8B008B',
+                '#556B2F',
+                '#FF8C00',
+                '#9932CC',
+                '#8B0000',
+                '#E9967A',
+                '#8FBC8F',
+                '#483D8B',
+                '#2F4F4F',
+                '#00CED1',
+                '#9400D3',
+                '#FF1493',
+                '#00BFFF',
+                '#696969',
+                '#1E90FF',
+                '#B22222',
+                '#FFFAF0',
+                '#228B22',
+                '#FF00FF',
+                '#DCDCDC',
+                '#F8F8FF',
+                '#FFD700',
+                '#DAA520',
+                '#808080',
+                '#008000',
+                '#ADFF2F',
+                '#F0FFF0',
+                '#FF69B4',
+                '#CD5C5C',
+                '#4B0082',
+                '#FFFFF0',
+                '#F0E68C',
+                '#E6E6FA',
+                '#FFF0F5',
+                '#7CFC00',
+                '#FFFACD',
+                '#ADD8E6',
+                '#F08080',
+                '#E0FFFF',
+                '#FAFAD2',
+                '#D3D3D3',
+                '#90EE90',
+                '#FFB6C1',
+                '#FFA07A',
+                '#20B2AA',
+                '#87CEFA',
+                '#778899',
+                '#B0C4DE',
+                '#FFFFE0',
+                '#00FF00',
+                '#32CD32',
+                '#FAF0E6',
+                '#FF00FF',
+                '#800000',
+                '#66CDAA',
+                '#0000CD',
+                '#BA55D3',
+                '#9370DB',
+                '#3CB371',
+                '#7B68EE',
+                '#00FA9A',
+                '#48D1CC',
+                '#C71585',
+                '#191970',
+                '#F5FFFA',
+                '#FFE4E1',
+                '#FFE4B5',
+                '#FFDEAD',
+                '#000080',
+                '#FDF5E6',
+                '#808000',
+                '#6B8E23',
+                '#FFA500',
+                '#FF4500',
+                '#DA70D6',
+                '#EEE8AA',
+                '#98FB98',
+                '#AFEEEE',
+                '#DB7093',
+                '#FFEFD5',
+                '#FFDAB9',
+                '#CD853F',
+                '#FFC0CB',
+                '#DDA0DD',
+                '#B0E0E6',
+                '#800080',
+                '#663399',
+                '#FF0000',
+                '#BC8F8F',
+                '#4169E1',
+                '#8B4513',
+                '#FA8072',
+                '#F4A460',
+                '#2E8B57',
+                '#FFF5EE',
+                '#A0522D',
+                '#C0C0C0',
+                '#87CEEB',
+                '#6A5ACD',
+                '#708090',
+                '#FFFAFA',
+                '#00FF7F',
+                '#4682B4',
+                "#00CED1",
+                "#00FA9A",
+                "#00FF00",
+                "#00FF7F",
+                "#00FFFF",
+                "#00FFFF",
+                "#191970",
+                "#1E90FF",
+                "#20B2AA",
+                "#228B22",
+                "#2E8B57",
+                "#2F4F4F",
+                "#32CD32",
+                "#3CB371",
+                "#40E0D0",
+                "#4169E1",
+                "#4682B4",
+                "#483D8B",
+                "#48D1CC",
+                "#4B0082",
+                "#556B2F",
+                "#5F9EA0",
+                "#6495ED",
+                "#663399",
+                "#66CDAA",
+                "#808000",
+                "#808080",
+                "#87CEEB",
+                "#87CEFA",
+                "#8A2BE2",
+                "#8B0000",
+                "#8B008B",
+                "#8B4513",
+                "#8FBC8F",
+                "#90EE90",
+                "#9370DB",
+                "#9400D3",
+                "#98FB98",
+                "#9932CC",
+                "#9ACD32",
+                "#A0522D",
+                "#A52A2A",
+                "#A9A9A9",
+                "#ADD8E6",
+                "#ADFF2F",
+                "#AFEEEE",
+                "#B0C4DE",
+                "#B0E0E6",
+                "#B22222"
+                ]
+
+        if len(colors) < lenColorList:
+            for el in range(0, lenColorList - len(colors)):
+                colors.append(self.rgb_to_hex())
+
+        return colors
 
 class visualizationGraphs(object):
     count =0
@@ -50,6 +278,211 @@ class visualizationGraphs(object):
         self._interactionNumberStart = 0
         self._interactionNumberEnd = 0
         
+        self._colorList =[
+                          '#1ebff0',   
+                '#050708', 
+                '#e62725',
+                '#cbcacb', 
+                '#a1cf64',  
+                '#edc8c5',
+                '#C8CF78',
+                
+                '#4a6c8d',
+                '#ffe063', 
+                '#C4B387', 
+                '#84596B',  
+                '#ffb037',  
+                '#443266',  
+                '#a6ab5b',
+                  
+                '#6699FF',
+                '#91e8e1',
+                '#7A991F',
+                '#525266',
+                '#1A334C',
+                '#334C80',
+                '#292900',
+                '#142900',
+                '#99993D',
+                '#009999',
+                '#1A1A0A',
+                '#5C85AD',
+                '#804C4C',
+                '#1A0F0F',
+                '#A3A3CC',
+                '#660033',
+                '#3D4C0F',
+                '#fde720',
+                '#554e44',
+                '#1ce1ce',
+                '#dedbbb',
+                '#facade',
+                '#baff1e',
+                '#aba5ed',
+                '#f2b3b3',
+                '#f9e0e0',
+                '#abcdef',
+                '#f9dcd3',
+                '#eb9180',
+                '#c2dde5',
+                '#008B8B',
+                '#B8860B',
+                '#A9A9A9',
+                '#006400',
+                '#BDB76B',
+                '#8B008B',
+                '#556B2F',
+                '#FF8C00',
+                '#9932CC',
+                '#8B0000',
+                '#E9967A',
+                '#8FBC8F',
+                '#483D8B',
+                '#2F4F4F',
+                '#00CED1',
+                '#9400D3',
+                '#FF1493',
+                '#00BFFF',
+                '#696969',
+                '#1E90FF',
+                '#B22222',
+                '#FFFAF0',
+                '#228B22',
+                '#FF00FF',
+                '#DCDCDC',
+                '#F8F8FF',
+                '#FFD700',
+                '#DAA520',
+                '#808080',
+                '#008000',
+                '#ADFF2F',
+                '#F0FFF0',
+                '#FF69B4',
+                '#CD5C5C',
+                '#4B0082',
+                '#FFFFF0',
+                '#F0E68C',
+                '#E6E6FA',
+                '#FFF0F5',
+                '#7CFC00',
+                '#FFFACD',
+                '#ADD8E6',
+                '#F08080',
+                '#E0FFFF',
+                '#FAFAD2',
+                '#D3D3D3',
+                '#90EE90',
+                '#FFB6C1',
+                '#FFA07A',
+                '#20B2AA',
+                '#87CEFA',
+                '#778899',
+                '#B0C4DE',
+                '#FFFFE0',
+                '#00FF00',
+                '#32CD32',
+                '#FAF0E6',
+                '#FF00FF',
+                '#800000',
+                '#66CDAA',
+                '#0000CD',
+                '#BA55D3',
+                '#9370DB',
+                '#3CB371',
+                '#7B68EE',
+                '#00FA9A',
+                '#48D1CC',
+                '#C71585',
+                '#191970',
+                '#F5FFFA',
+                '#FFE4E1',
+                '#FFE4B5',
+                '#FFDEAD',
+                '#000080',
+                '#FDF5E6',
+                '#808000',
+                '#6B8E23',
+                '#FFA500',
+                '#FF4500',
+                '#DA70D6',
+                '#EEE8AA',
+                '#98FB98',
+                '#AFEEEE',
+                '#DB7093',
+                '#FFEFD5',
+                '#FFDAB9',
+                '#CD853F',
+                '#FFC0CB',
+                '#DDA0DD',
+                '#B0E0E6',
+                '#800080',
+                '#663399',
+                '#FF0000',
+                '#BC8F8F',
+                '#4169E1',
+                '#8B4513',
+                '#FA8072',
+                '#F4A460',
+                '#2E8B57',
+                '#FFF5EE',
+                '#A0522D',
+                '#C0C0C0',
+                '#87CEEB',
+                '#6A5ACD',
+                '#708090',
+                '#FFFAFA',
+                '#00FF7F',
+                '#4682B4',
+                "#00CED1",
+                "#00FA9A",
+                "#00FF00",
+                "#00FF7F",
+                "#00FFFF",
+                "#00FFFF",
+                "#191970",
+                "#1E90FF",
+                "#20B2AA",
+                "#228B22",
+                "#2E8B57",
+                "#2F4F4F",
+                "#32CD32",
+                "#3CB371",
+                "#40E0D0",
+                "#4169E1",
+                "#4682B4",
+                "#483D8B",
+                "#48D1CC",
+                "#4B0082",
+                "#556B2F",
+                "#5F9EA0",
+                "#6495ED",
+                "#663399",
+                "#66CDAA",
+                "#808000",
+                "#808080",
+                "#87CEEB",
+                "#87CEFA",
+                "#8A2BE2",
+                "#8B0000",
+                "#8B008B",
+                "#8B4513",
+                "#8FBC8F",
+                "#90EE90",
+                "#9370DB",
+                "#9400D3",
+                "#98FB98",
+                "#9932CC",
+                "#9ACD32",
+                "#A0522D",
+                "#A52A2A",
+                "#A9A9A9",
+                "#ADD8E6",
+                "#ADFF2F",
+                "#AFEEEE",
+                "#B0C4DE",
+                "#B0E0E6",
+                "#B22222"
+                ]
         
         
     
@@ -610,7 +1043,7 @@ class visualizationGraphs(object):
         
             
     
-    def _parseData(self, dataY, type, seriesType, seriesName, multiYAxis, visible, yAxisMulti, markerRadius):
+    def _parseData(self, dataY, type, seriesType, seriesName, multiYAxis, visible, yAxisMulti, multiXAxis, xAxisMulti, markerRadius):
         
         
         dataYdepth = self._depth(dataY)        
@@ -648,14 +1081,22 @@ class visualizationGraphs(object):
         if markerRadius!=None:
             marker += 'marker: { '
             if markerRadius!=None:
-                marker+= 'radius: ' + str(markerRadius) + ', '
+                marker += 'radius: ' + str(markerRadius) + ', '
+                marker += "symbol: 'circle'" + ', '
             marker += '},'
-            
-        
+
+
         if isinstance(dataY[0], list) == True:
             
             if multiYAxis == True:
+
+                halfDataColor = len(dataY) / 2
+                colorsList = colorList().fullColorList(halfDataColor)
+
+
+
                 i=0
+                j=0
                 for d in dataY:
                     
                     try:
@@ -663,20 +1104,54 @@ class visualizationGraphs(object):
                     except Exception, e:
                         d=d
 
+                    if i == halfDataColor:
+                        j=0
                     
                     if i==0:
-                        # yAxisMultiVal=str(i)
-                        # if yAxisMultiVal is not None:
-                        #     yAxisMultiVal = yAxisMulti[i]
-                        #
-                        # data = '{0}{1}{2}{3}{4}{5}{6}'.format(""" type: '""" + seriesType[0] + """', """, """yAxis: """ + str(yAxisMultiVal) + """ ,""" ,  visible + """  name: """, "'" if seriesName=='' else "'" + seriesName[i] ,"""', data: """, d, """ } """ )
-                        data = '{0}{1}{2}{3}{4}{5}'.format(""" type: '""" + seriesType[0] + """', """ + """ """ ,  visible + marker +"""  name: """, "'" if seriesName=='' else "'" + seriesName[i] ,"""', data: """, d, """ } """ )
+                        if seriesType[0] != 'scatter':
+                            marker1 = ''
+                        else:
+                            marker1 = marker
+                        data = '{0}{1}{2}{3}{4}{5}'.format(""" color: '""" + colorsList[j] + """', """ + """ type: '""" + seriesType[0] + """', """ + """ """ ,  visible + marker1 +"""  name: """, "'" if seriesName=='' else "'" + seriesName[i] ,"""', data: """, d, """ } """ )
                     else:
                         yAxisMultiVal=str(i)
                         if yAxisMultiVal is not None:
                             yAxisMultiVal = yAxisMulti[i]
-                        data = data + '{0}{1}{2}{3}{4}{5}{6}'.format(""" , { type: '"""  + seriesType[i] + """', """ , """yAxis: """ + str(yAxisMultiVal) + """ ,""", visible + marker + """name: """ , "'" if seriesName=='' else "'" + seriesName[i] , """', data: """, d, """ } """ )
+                        if seriesType[i] != 'scatter':
+                            marker1 = ''
+                        else:
+                            marker1=marker
+                        data = data + '{0}{1}{2}{3}{4}{5}{6}'.format( """ , { """ + """ color: '""" + colorsList[j] + """', """ +  """ type: '"""  + seriesType[i] + """', """ , """yAxis: """ + str(yAxisMultiVal) + """ ,""", visible + marker1 + """name: """ , "'" if seriesName=='' else "'" + seriesName[i] , """', data: """, d, """ } """ )
+
                     i+=1
+                    j+=1
+
+            elif multiXAxis == True:
+                i = 0
+                for d in dataY:
+
+                    try:
+                        d = json.dumps(d).replace('"', "")
+                    except Exception, e:
+                        d = d
+
+                    if i == 0:
+                        data = '{0}{1}{2}{3}{4}{5}{6}'.format(""" type: '""" + seriesType[0] + """', """ + """ ""","""xAxis: """ + str(0) + """ ,""",
+                                                           visible + marker + """  name: """,
+                                                           "'" if seriesName == '' else "'" + seriesName[i],
+                                                           """', data: """, d, """ }  """)
+
+
+                    else:
+                        xAxisMultiVal = str(i)
+                        if xAxisMultiVal is not None:
+                            xAxisMultiVal = xAxisMulti[i]
+                        data = data + '{0}{1}{2}{3}{4}{5}{6}'.format(""" , { type: '""" + seriesType[i] + """', """,
+                                                                     """xAxis: """ + str(xAxisMultiVal) + """ ,""",
+                                                                     visible + marker + """name: """,
+                                                                     "'" if seriesName == '' else "'" + seriesName[i],
+                                                                     """', data: """, d, """ } """)
+                    i += 1
             else:
                 
                 i=0
@@ -721,16 +1196,16 @@ class visualizationGraphs(object):
             seriesName=''
         else:
             if isinstance(seriesName, basestring):
-                legendSize =  len(max(seriesName, key = len))+10
-                legendSizeExtra = len(seriesName)
+                legendSize =  len(max(str(seriesName), key = len))+10
+                legendSizeExtra = len(str(seriesName))
                 legendSizeExtra = legendSizeExtra / ( int(1000 / (legendSize*6)) )*12
             else:
-                legendSize = len(max(seriesName, key = len)) + 10
-                legendSizeExtra = len(seriesName)
+                legendSize = len(max(str(seriesName), key = len)) + 10
+                legendSizeExtra = len(str(seriesName))
                 legendSizeExtra = 15
             
 
-
+        
 
         data='data: ['        
         if isinstance(dataY[0], list) == False:
@@ -869,7 +1344,8 @@ class visualizationGraphs(object):
     
         
     def _useXAxis(self, xAxisTitle, tickInterval, tickMinValue, categories, typeAxisXScale, \
-                  xAxisRotation, labelX, interaction, type, histogram, plotLines, plotLinesName):
+                  xAxisRotation, labelX, interaction, type, histogram, plotLines, plotLinesName, \
+                   plotBands, plotBandsColor, multiXAxis, xAxisMulti):
         
         #print self.__class__.count
         #print interaction
@@ -882,43 +1358,124 @@ class visualizationGraphs(object):
             minX=''
        
         
+        
         if plotLines!=None:
             plLin=''
             if isinstance(plotLines, list):
                 plLin += """plotLines: ["""
                 id=0
                 for el in plotLines:
+                    
                     plName=''
                     if plotLinesName!=None:
                         plName = plotLinesName[id]
+                    
+                    width=1
+                    if type == 'column':
+                        el = el-0.5
+                        width = 2
+                        
+                    if plotBandsColor == None:
+                        plotBandsColorV = '#a8a8a8'
+                    elif plotBandsColor == True:
+                        plotBandsColorV = self._colorList[id]
+                        
                     id+=1
                     plLin += """{
                     id: '"""+str(id)+ """',
-                    color: '#ffc04d', // Color value
+                    color: '""" + str(plotBandsColorV) + """', // Color value
                     dashStyle: 'solid', // Style of the plot line. Default to solid
                     value: """ + str(el) + """, // Value of where the line will appear
-                    width: 1, 
-                    label: { text: '""" + str(plName) + """', style: { color:'#cc8400' },
+                    width: """ + str(width) + """, 
+                    label: { text: '""" + str(plName) + """', style: { color:'""" + str(plotBandsColorV) + """' },
                     }    
                     },
                     """
                 plLin+="],"
                 plotLines=plLin
             else:
+                
                 plName=''
                 if plotLinesName!=None:
                     plName = plotLinesName
+                
+                width=1
+                if type == 'column':
+                    el = el-0.5
+                    width = 2
+                    
                 plLin += """plotLines: [{
-                color: '#ffc04d', // Color value
+                color: '#a8a8a8', // Color value
                 dashStyle: 'solid', // Style of the plot line. Default to solid
                 value: """ + str(plotLines) + """, // Value of where the line will appear
-                width: 1, 
-                    label: { text: '""" + str(plName) + """', style: { color:'#cc8400' },
+                width: """ + str(width) + """, 
+                    label: { text: '""" + str(plName) + """', style: { color:'#a8a8a8' },
                     }        
                 }],"""
                 plotLines=plLin
         else:
-            plotLines=''     
+            plotLines=''
+            
+            
+#         if plotBands!=None:
+#             
+#             plLin=''
+#             if isinstance(plotBands, list):
+#                 plLin += """plotBands: ["""
+#                 id=0
+#                 for el in plotBands:
+#                     
+#                     plName=''
+#                     if plotLinesName!=None:
+#                         plName = plotLinesName[id]
+#                     
+#                     
+#                     if type == 'column':
+#                         for eNum in range(0, len(el)):
+#                             el[eNum] = el[eNum]-0.5
+#                     
+#                         
+#                     if plotBandsColor == None:
+#                         plotBandsColorV = '#a8a8a8'
+#                     elif plotBandsColor == True:
+#                         plotBandsColorV = self._colorList[id]
+#                         
+#                     id+=1
+#                     plLin += """{
+#                     id: '"""+str(id)+ """',
+#                     color: '""" + str(plotBandsColorV) + """', // Color value
+#                     from: """ + str(el[0]) + """, // Value of where the line will appear
+#                     to: """ + str(el[1]) + """, // Value of where the line will appear
+#                      
+#                     label: { text: '""" + str(plName) + """', style: { color:'#000000' },
+#                     }    
+#                     },
+#                     """
+#                 plLin+="],"
+#                 plotLines=plLin
+#             else:
+#                 plName=''
+#                 if plotLinesName!=None:
+#                     plName = plotLinesName
+#                 
+#                 
+#                 if type == 'column':
+#                     plotBands[0] = plotBands[0]-0.5
+#                     plotBands[1] = plotBands[1]-0.5
+#                 
+#                     
+#                 plLin += """plotBands: [{
+#                 color: '#a8a8a8', // Color value
+#                 from: """ + str(plotBands[0]) + """, // Value of where the line will appear
+#                 to: """ + str(plotBands[1]) + """, // Value of where the line will appear
+#                  
+#                     label: { text: '""" + str(plName) + """', style: { color: '#000000' },
+#                     }        
+#                 }],"""
+#                 plotLines=plLin
+#         else:
+#             plotLines=''
+                 
         
         if type == 'heatmap' or type=='largeHeatmap':
             if categories!=None and categories!='':
@@ -940,8 +1497,44 @@ class visualizationGraphs(object):
         
         
         if type!='heatmap' and type!='largeHeatmap':
-            xAxis = """
-        xAxis: {  
+
+            xAxis = ''
+            if multiXAxis == True:
+
+                for wel in range(0, len(xAxisMulti)):
+
+                    if wel==0:
+                        xAxis += """
+                            xAxis:["""
+
+                    leftVal = 200 * wel
+
+
+                    if wel ==0:
+                        leftVal = 'width: 100,'
+                    else:
+                        leftVal = 'left:' + str(leftVal) + ', offset:0,' + 'width: 100,'
+
+                    xAxis += """
+                         {
+                         """ + str(minX) + str(plotLines) + str(leftVal) + """
+                         title: {
+                         """ + self._useAttribute1(xAxisTitle, "text") + """
+                         },
+                         """ + self._useAttribute2(tickInterval, "tickInterval") + self._useAttribute4(tickMinValue,
+                                                                                                       "min") + categories + self._useAttribute1(
+                        typeAxisXScale, "type") + """
+                         labels: {
+                             """ + self._useAttribute1(xAxisRotation, "rotation") + """
+                         }
+                         """ + labelX + ",},"
+                    wel+=2
+                xAxis += """],"""
+
+            else:
+
+                xAxis = """
+                 xAxis: {
                   """ + str(minX) + str(plotLines) + """
                   title: { 
                   """ + self._useAttribute1(xAxisTitle, "text") + """
@@ -993,7 +1586,8 @@ class visualizationGraphs(object):
                         }
                 }
         """
-        xAxis += "},"
+        if multiXAxis != True:
+            xAxis += "},"
         
         return xAxis
     
@@ -1178,7 +1772,8 @@ class visualizationGraphs(object):
             pointPadding: 0, // Defaults to 0.1
             groupPadding: 0, // Defaults to 0.2
             """
-        
+
+
         if extraArg is None: 
             return """
             plotOptions: {
@@ -1299,8 +1894,9 @@ class visualizationGraphs(object):
     
     def _draw(self, dataY, legendSize, legendSizeExtra, type, height,addOptions,  tickInterval, tickMinValue, label, lineWidth, titleText, subtitleText, xAxisTitle, yAxisTitle, categories, 
                legend, xAxisRotation, dataLabels, polar, stacking, shared, overMouseAxisX, overMouseLabelX, showChartClickOnLink, typeAxisXScale, pointStartLog, zoomType, marginTop, 
-               interaction, multiYAxis, showInLegend, extraArg, allowDecimals, maxY, yAxisType, extraScriptButton, addTable, histogram, sortableAccordingToTable, sortableAccordingToTableDataY, tableName,
-               sortableAccordingToTableIndexWithTrackTitle, plotOptions, tooltipVal, reversed, minY, plotLines, categoriesY, plotLinesName):
+               interaction, multiYAxis, multiXAxis,xAxisMulti, showInLegend, extraArg, allowDecimals, maxY, yAxisType, extraScriptButton, addTable, histogram, sortableAccordingToTable, sortableAccordingToTableDataY, tableName,
+               sortableAccordingToTableIndexWithTrackTitle, plotOptions, tooltipVal, reversed, minY, plotLines, categoriesY, plotLinesName,
+               plotBands, plotBandsColor):
         
         
         container=''
@@ -1407,9 +2003,10 @@ class visualizationGraphs(object):
         
         functionJS1 += str(self._useChart(height, polar, marginTop, zoomType, self.__class__.count, type)) 
         functionJS1 += str(self._useTitle(titleText)) 
-        functionJS1 += str(self._useSubTitle(subtitleText)) 
+        functionJS1 += str(self._useSubTitle(subtitleText))
         functionJS1 += str(self._useXAxis(xAxisTitle, tickInterval, tickMinValue, categories, typeAxisXScale, xAxisRotation, \
-                                          labelX, interaction, type, histogram, plotLines, plotLinesName))
+                                          labelX, interaction, type, histogram, plotLines, plotLinesName,
+                                          plotBands, plotBandsColor, multiXAxis,xAxisMulti))
         
         if multiYAxis==True:
             functionJS1 += str(self._useMultiYAxis(yAxisTitle, reversed, minY))
@@ -1912,7 +2509,9 @@ class visualizationGraphs(object):
                       addTable=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                      ):
         
         graph=''
@@ -1927,7 +2526,7 @@ class visualizationGraphs(object):
         
             type='line'
             data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type = type, seriesType=seriesType, seriesName=seriesName, multiYAxis=False, 
-                                                                visible=visible, yAxisMulti=None, markerRadius=None)
+                                                                visible=visible, yAxisMulti=None, multiXAxis=False, xAxisMulti=None, markerRadius=None)
 
 
             graph = self._draw(
@@ -1958,7 +2557,7 @@ class visualizationGraphs(object):
                            zoomType=zoomType, 
                            marginTop=marginTop, 
                            interaction=interaction,
-                           multiYAxis=False,
+                           multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                            showInLegend=None,
                            extraArg=extraArg,
                            allowDecimals=allowDecimals,
@@ -1977,8 +2576,121 @@ class visualizationGraphs(object):
                             minY=minY, 
                             plotLines=plotLines, 
                             categoriesY=None,
-                            plotLinesName=plotLinesName
+                            plotLinesName=plotLinesName,
+                            plotBands=plotBands, 
+                      plotBandsColor=plotBandsColor
                            )
+        return graph
+
+    def drawAreaChart(self,
+                          dataY,
+                          height=None,
+                          addOptions=None,
+                          tickInterval=None,
+                          tickMinValue=None,
+                          label='<b>{series.name}: </b>{point.y} <br \>',
+                          lineWidth=1,
+                          titleText=None,
+                          subtitleText=None,
+                          xAxisTitle=None,
+                          yAxisTitle=None,
+                          categories=None,
+                          seriesType=None,
+                          seriesName=None,
+                          legend=None,
+                          xAxisRotation=0,
+                          dataLabels=True,
+                          shared=True,
+                          overMouseAxisX=False,
+                          overMouseLabelX=' + this.value + ',
+                          showChartClickOnLink=False,
+                          typeAxisXScale=None,
+                          pointStartLog=None,
+                          zoomType='x',
+                          marginTop=60,
+                          interaction=False,
+                          extraArg=None,
+                          allowDecimals=None,
+                          maxY=None,
+                          yAxisType=None,
+                          extraScriptButton=None,
+                          visible=None,
+                          addTable=None,
+                          minY=None,
+                          plotLines=None,
+                          plotLinesName=None,
+                          plotBands=None,
+                          plotBandsColor=None
+                          ):
+
+
+        graph = ''
+
+        if len(dataY) > 0:
+
+            tooltipVal = None
+            if categories is not None:
+                tooltipVal = 'categories'
+            if seriesName is not None:
+                tooltipVal = 'seriesName'
+
+            type = 'area'
+            data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type=type, seriesType=seriesType,
+                                                                seriesName=seriesName, multiYAxis=False,
+                                                                visible=visible, yAxisMulti=None, multiXAxis=False,
+                                                                xAxisMulti=None, markerRadius=None)
+
+            graph = self._draw(
+                data, legendSize, legendSizeExtra,
+                type=type,
+                height=height,
+                addOptions=addOptions,
+                tickInterval=tickInterval,
+                tickMinValue=tickMinValue,
+                label=label,
+                lineWidth=lineWidth,
+                titleText=titleText,
+                subtitleText=subtitleText,
+                xAxisTitle=xAxisTitle,
+                yAxisTitle=yAxisTitle,
+                categories=categories,
+                legend=legend,
+                xAxisRotation=xAxisRotation,
+                dataLabels=dataLabels,
+                polar=None,
+                stacking=None,
+                shared=shared,
+                overMouseAxisX=overMouseAxisX,
+                overMouseLabelX=overMouseLabelX,
+                showChartClickOnLink=showChartClickOnLink,
+                typeAxisXScale=typeAxisXScale,
+                pointStartLog=pointStartLog,
+                zoomType=zoomType,
+                marginTop=marginTop,
+                interaction=interaction,
+                multiYAxis=False, multiXAxis=False, xAxisMulti=None,
+                showInLegend=None,
+                extraArg=extraArg,
+                allowDecimals=allowDecimals,
+                maxY=maxY,
+                yAxisType=yAxisType,
+                extraScriptButton=extraScriptButton,
+                addTable=addTable,
+                histogram=None,
+                sortableAccordingToTable=None,
+                sortableAccordingToTableDataY=None,
+                tableName=None,
+                sortableAccordingToTableIndexWithTrackTitle=0,
+                plotOptions=None,
+                tooltipVal=tooltipVal,
+                reversed=None,
+                minY=minY,
+                plotLines=plotLines,
+                categoriesY=None,
+                plotLinesName=plotLinesName,
+                plotBands=plotBands,
+                plotBandsColor=plotBandsColor
+            )
         return graph
     
     def drawHeatmapLargeChart(self, 
@@ -2023,7 +2735,9 @@ class visualizationGraphs(object):
                       plotOptions=None,
                       minY=None,
                       plotLines=None,
-                      categoriesY=None
+                      categoriesY=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                      ):
         
         
@@ -2084,7 +2798,7 @@ class visualizationGraphs(object):
                                zoomType=zoomType, 
                                marginTop=marginTop, 
                                interaction=interaction,
-                               multiYAxis=False,
+                               multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                                showInLegend=showInLegend,
                                extraArg=extraArg,
                                allowDecimals=allowDecimals,
@@ -2098,7 +2812,9 @@ class visualizationGraphs(object):
                                tableName =tableName,
                                sortableAccordingToTableIndexWithTrackTitle=sortableAccordingToTableIndexWithTrackTitle,
                                plotOptions=plotOptions,
-                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=categoriesY,plotLinesName=None
+                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=categoriesY,plotLinesName=None,
+                plotBands=None, 
+                      plotBandsColor=None
                                )
             
         return graph
@@ -2147,7 +2863,9 @@ class visualizationGraphs(object):
                       minY=None,
                       plotLines=None,
                       categoriesY=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                      ):
         
         
@@ -2207,7 +2925,7 @@ class visualizationGraphs(object):
                                zoomType=zoomType, 
                                marginTop=marginTop, 
                                interaction=interaction,
-                               multiYAxis=False,
+                               multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                                showInLegend=showInLegend,
                                extraArg=extraArg,
                                allowDecimals=allowDecimals,
@@ -2221,7 +2939,9 @@ class visualizationGraphs(object):
                                tableName =tableName,
                                sortableAccordingToTableIndexWithTrackTitle=sortableAccordingToTableIndexWithTrackTitle,
                                plotOptions=plotOptions,
-                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=categoriesY,plotLinesName=None
+                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=categoriesY,plotLinesName=None,
+                plotBands=None, 
+                      plotBandsColor=None
                                )
             
         return graph
@@ -2268,7 +2988,10 @@ class visualizationGraphs(object):
                       plotOptions=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None,
+                      stacking = None
                      ):
         
         
@@ -2289,7 +3012,7 @@ class visualizationGraphs(object):
 
             
             data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type = type, seriesType=seriesType, seriesName=seriesName, multiYAxis=False, 
-                                                                visible=visible, yAxisMulti=None, markerRadius=None)
+                                                                visible=visible, yAxisMulti=None, multiXAxis=False, xAxisMulti=None, markerRadius=None)
             
             #print 'data' + str(data)
             
@@ -2321,7 +3044,7 @@ class visualizationGraphs(object):
                                xAxisRotation=xAxisRotation, 
                                dataLabels=dataLabels, 
                                polar=None, 
-                               stacking=None, 
+                               stacking=stacking,
                                shared=shared, 
                                overMouseAxisX=overMouseAxisX, 
                                overMouseLabelX=overMouseLabelX, 
@@ -2331,7 +3054,7 @@ class visualizationGraphs(object):
                                zoomType=zoomType, 
                                marginTop=marginTop, 
                                interaction=interaction,
-                               multiYAxis=False,
+                               multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                                showInLegend=showInLegend,
                                extraArg=extraArg,
                                allowDecimals=allowDecimals,
@@ -2345,7 +3068,9 @@ class visualizationGraphs(object):
                                tableName =tableName,
                                sortableAccordingToTableIndexWithTrackTitle=sortableAccordingToTableIndexWithTrackTitle,
                                plotOptions=plotOptions,
-                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName
+                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName,
+                plotBands=plotBands, 
+                      plotBandsColor=plotBandsColor
                                )
             
         return graph
@@ -2386,7 +3111,9 @@ class visualizationGraphs(object):
                       markerRadius=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                      ):
         
         
@@ -2399,7 +3126,7 @@ class visualizationGraphs(object):
             tooltipVal=None
         
             data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type = type, seriesType=seriesType, seriesName=seriesName, multiYAxis=False, 
-                                                                visible=visible, yAxisMulti=None, markerRadius=markerRadius)
+                                                                visible=visible, yAxisMulti=None, multiXAxis=False, xAxisMulti=None, markerRadius=markerRadius)
             
             #print 'data' + str(data)
             
@@ -2431,7 +3158,7 @@ class visualizationGraphs(object):
                            zoomType=zoomType, 
                            marginTop=marginTop, 
                            interaction=interaction,
-                           multiYAxis=False,
+                           multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                            showInLegend=None,
                            extraArg=extraArg,
                            allowDecimals=allowDecimals,
@@ -2445,7 +3172,9 @@ class visualizationGraphs(object):
                           tableName = None,
                           sortableAccordingToTableIndexWithTrackTitle=None,
                           plotOptions=None,
-                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName
+                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName,
+                plotBands=plotBands, 
+                      plotBandsColor=plotBandsColor
                            )
         
         return graph
@@ -2486,7 +3215,7 @@ class visualizationGraphs(object):
                       tableName=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
                      ):
         
         
@@ -2500,7 +3229,7 @@ class visualizationGraphs(object):
             tooltipVal=None
 
             data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type = type, seriesType=seriesType, seriesName=seriesName, multiYAxis=False, 
-                                                                visible=visible, yAxisMulti=None, markerRadius=None)
+                                                                visible=visible, yAxisMulti=None, multiXAxis=False, xAxisMulti=None, markerRadius=None)
             
             #print 'data' + str(data)
             
@@ -2534,7 +3263,7 @@ class visualizationGraphs(object):
                            zoomType=zoomType, 
                            marginTop=marginTop, 
                            interaction=interaction,
-                           multiYAxis=False,
+                           multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                            showInLegend=None,
                            extraArg=extraArg,
                            allowDecimals=allowDecimals,
@@ -2548,7 +3277,9 @@ class visualizationGraphs(object):
                            tableName = tableName,
                            sortableAccordingToTableIndexWithTrackTitle=None,
                            plotOptions=None,
-                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None, plotLinesName=plotLinesName
+                tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None, plotLinesName=plotLinesName,
+                plotBands=None, 
+                      plotBandsColor=None
                            )
         
         return graph
@@ -2588,7 +3319,9 @@ class visualizationGraphs(object):
                       addTable=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                      ):
         
         
@@ -2605,7 +3338,7 @@ class visualizationGraphs(object):
                 tooltipVal = 'seriesName'
         
             data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type = type, seriesType=seriesType, seriesName=seriesName, multiYAxis=False, 
-                                                                visible=visible, yAxisMulti=None, markerRadius=None)
+                                                                visible=visible, yAxisMulti=None, multiXAxis=False, xAxisMulti=None, markerRadius=None)
             
             #print 'data' + str(data)
             
@@ -2637,7 +3370,7 @@ class visualizationGraphs(object):
                            zoomType=zoomType, 
                            marginTop=marginTop, 
                            interaction=interaction,
-                           multiYAxis=False,
+                           multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                            showInLegend=None,
                            extraArg=extraArg,
                            allowDecimals=allowDecimals,
@@ -2651,7 +3384,9 @@ class visualizationGraphs(object):
                       tableName = None,
                       sortableAccordingToTableIndexWithTrackTitle=None,
                       plotOptions=None,
-                        tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName
+                        tooltipVal=tooltipVal, reversed=None, minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName,
+                        plotBands=None, 
+                      plotBandsColor=None
                            )
         
         return graph
@@ -2660,7 +3395,7 @@ class visualizationGraphs(object):
     
     def drawLineChartMultiYAxis(self, 
                       dataY, 
-                      height=None, 
+                      height=None,
                       addOptions=None,
                       tickInterval=None, 
                       tickMinValue=None, 
@@ -2696,7 +3431,9 @@ class visualizationGraphs(object):
                       reversed=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                      ):
         
         graph=''
@@ -2710,7 +3447,7 @@ class visualizationGraphs(object):
                 tooltipVal = 'seriesName'
             
             data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type = 'line', seriesType=seriesType, seriesName=seriesName, multiYAxis=True, 
-                                                                visible=visible, yAxisMulti=yAxisMulti, markerRadius=markerRadius)
+                                                                visible=visible, yAxisMulti=yAxisMulti, multiXAxis=False, xAxisMulti=None, markerRadius=markerRadius)
             graph = self._draw(
                            data, legendSize, legendSizeExtra, 
                            type='line', 
@@ -2739,7 +3476,7 @@ class visualizationGraphs(object):
                            zoomType=zoomType, 
                            marginTop=marginTop, 
                            interaction=interaction,
-                           multiYAxis=True,
+                           multiYAxis=True,multiXAxis=False,xAxisMulti=None,
                            showInLegend=None,
                            extraArg=extraArg,
                            allowDecimals=allowDecimals,
@@ -2755,8 +3492,119 @@ class visualizationGraphs(object):
                           plotOptions=None,
                 tooltipVal=tooltipVal,
                 reversed=reversed,
-                minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName
+                minY=minY,plotLines=plotLines, categoriesY=None,plotLinesName=plotLinesName,
+                plotBands=None, 
+                      plotBandsColor=None
                            )
+        return graph
+
+    def drawLineChartMultiXAxis(self,
+                        dataY,
+                        height=None,
+                        addOptions=None,
+                        tickInterval=None,
+                        tickMinValue=None,
+                        label='<b>{series.name}: </b>{point.y} <br \>',
+                        lineWidth=1,
+                        titleText=None,
+                        subtitleText=None,
+                        xAxisTitle=None,
+                        yAxisTitle=None,
+                        categories=None,
+                        seriesType=None,
+                        seriesName=None,
+                        legend=None,
+                        xAxisRotation=0,
+                        dataLabels=True,
+                        shared=True,
+                        overMouseAxisX=False,
+                        overMouseLabelX=' + this.value + ',
+                        showChartClickOnLink=False,
+                        typeAxisXScale=None,
+                        pointStartLog=None,
+                        zoomType='x',
+                        marginTop=60,
+                        interaction=False,
+                        extraArg=None,
+                        allowDecimals=None,
+                        yAxisType=None,
+                        extraScriptButton=None,
+                        visible=None,
+                        addTable=None,
+                        yAxisMulti=None,
+                        markerRadius=None,
+                        reversed=None,
+                        minY=None,
+                        plotLines=None,
+                        plotLinesName=None,
+                        plotBands=None,
+                        plotBandsColor=None,
+                        xAxisMulti=None
+                        ):
+
+
+        graph = ''
+
+        if len(dataY) > 0:
+
+            tooltipVal = None
+            if categories is not None:
+                tooltipVal = 'categories'
+            if seriesName is not None:
+                tooltipVal = 'seriesName'
+
+            data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type='line', seriesType=seriesType,
+                                                                seriesName=seriesName, multiYAxis=False,
+                                                                visible=visible, yAxisMulti=yAxisMulti, multiXAxis=True, xAxisMulti=xAxisMulti,
+                                                                markerRadius=markerRadius)
+            graph = self._draw(
+                data, legendSize, legendSizeExtra,
+                type='line',
+                height=height,
+                addOptions=addOptions,
+                tickInterval=tickInterval,
+                tickMinValue=tickMinValue,
+                label=label,
+                lineWidth=lineWidth,
+                titleText=titleText,
+                subtitleText=subtitleText,
+                xAxisTitle=xAxisTitle,
+                yAxisTitle=yAxisTitle,
+                categories=categories,
+                legend=legend,
+                xAxisRotation=xAxisRotation,
+                dataLabels=dataLabels,
+                polar=None,
+                stacking=None,
+                shared=shared,
+                overMouseAxisX=overMouseAxisX,
+                overMouseLabelX=overMouseLabelX,
+                showChartClickOnLink=showChartClickOnLink,
+                typeAxisXScale=typeAxisXScale,
+                pointStartLog=pointStartLog,
+                zoomType=zoomType,
+                marginTop=marginTop,
+                interaction=interaction,
+                multiYAxis=False,multiXAxis=True,xAxisMulti=xAxisMulti,
+                showInLegend=None,
+                extraArg=extraArg,
+                allowDecimals=allowDecimals,
+                maxY=None,
+                yAxisType=yAxisType,
+                extraScriptButton=extraScriptButton,
+                addTable=addTable,
+                histogram=None,
+                sortableAccordingToTable=None,
+                sortableAccordingToTableDataY=None,
+                tableName=None,
+                sortableAccordingToTableIndexWithTrackTitle=None,
+                plotOptions=None,
+                tooltipVal=tooltipVal,
+                reversed=False,
+                minY=minY, plotLines=plotLines, categoriesY=None, plotLinesName=plotLinesName,
+                plotBands=None,
+                plotBandsColor=None
+            )
         return graph
     
     def drawPieChart(self, dataY, height=None, addOptions=None, 
@@ -2802,7 +3650,7 @@ class visualizationGraphs(object):
                            zoomType=None, 
                            marginTop=None, 
                            interaction=None,
-                           multiYAxis=False,
+                           multiYAxis=False,multiXAxis=False,xAxisMulti=None,
                            showInLegend=True,
                            extraArg=extraArg,
                            allowDecimals=None,
@@ -2816,7 +3664,13 @@ class visualizationGraphs(object):
                            tableName = None,
                            sortableAccordingToTableIndexWithTrackTitle=None,
                            plotOptions=None,
-                           tooltipVal=tooltipVal, reversed=None, minY=None,plotLines=None, categoriesY=None,plotLinesName=None
+                           tooltipVal=tooltipVal, reversed=None, minY=None,plotLines=None, categoriesY=None,plotLinesName=None,
+                           plotBands=None, 
+                      plotBandsColor=None
+
+
+
+
                            )
         return graph
     
@@ -2860,7 +3714,10 @@ class visualizationGraphs(object):
                       plotOptions=None,
                       minY=None,
                       plotLines=None,
-                      plotLinesName=None
+                      plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
+
                  ):
         
         graph=''
@@ -2930,7 +3787,9 @@ class visualizationGraphs(object):
                          sortableAccordingToTableDataY = dataY,
                          tableName =tableName,
                          sortableAccordingToTableIndexWithTrackTitle=sortableAccordingToTableIndexWithTrackTitle,
-                         plotOptions=plotOptions, minY=minY, plotLines=pLine, plotLinesName=pLineName
+                         plotOptions=plotOptions, minY=minY, plotLines=pLine, plotLinesName=pLineName,
+                         plotBands=None, 
+                      plotBandsColor=None
                          )
             else:
                 graph += self.drawColumnChart(dataY, height=height, addOptions=addOptions, tickInterval=tickInterval,
@@ -2955,7 +3814,9 @@ class visualizationGraphs(object):
                      sortableAccordingToTableDataY = dataY,
                      tableName =tableName,
                      sortableAccordingToTableIndexWithTrackTitle=sortableAccordingToTableIndexWithTrackTitle,
-                     plotOptions=plotOptions, minY=minY, plotLines=plotLines, plotLinesName=plotLinesName
+                     plotOptions=plotOptions, minY=minY, plotLines=plotLines, plotLinesName=plotLinesName,
+                     plotBands=None, 
+                      plotBandsColor=None
                      )
         return str(graph) + '<div style="clear:both"></div>'
     
@@ -3144,7 +4005,9 @@ class visualizationGraphs(object):
                       yAxisType=None,
                       extraScriptButton=None,
                       visible=None,
-                      addTable=None, minY=None, plotLines=None, plotLinesName=None
+                      addTable=None, minY=None, plotLines=None, plotLinesName=None,
+                      plotBands=None, 
+                      plotBandsColor=None
                  ):
         
         graph=''
@@ -3235,7 +4098,9 @@ class visualizationGraphs(object):
                          allowDecimals=allowDecimals,
                          maxY=maxY,
                          visible=visible,
-                         addTable=addTable, minY=minY,plotLines=pLine, plotLinesName=pLineName
+                         addTable=addTable, minY=minY,plotLines=pLine, plotLinesName=pLineName,
+                         plotBands=None, 
+                      plotBandsColor=None
                          )
                 if interaction == True:
                     graph += self._interactionAmongCharts(numCountList)
@@ -3255,7 +4120,9 @@ class visualizationGraphs(object):
                      allowDecimals=allowDecimals,
                      maxY=maxY,
                      visible=visible,
-                     addTable=addTable, minY=minY,plotLines=plotLines, plotLinesName=plotLinesName
+                     addTable=addTable, minY=minY,plotLines=plotLines, plotLinesName=plotLinesName,
+                     plotBands=None, 
+                      plotBandsColor=None
                      )
         return str(graph) + '<div style="clear:both"></div>'
     

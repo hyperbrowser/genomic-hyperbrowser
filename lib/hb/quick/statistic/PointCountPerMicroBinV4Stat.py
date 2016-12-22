@@ -39,8 +39,9 @@ class PointCountPerMicroBinV4StatUnsplittable(Statistic):
         starts = tv.startsAsNumpyArray()
         binArray = starts/self.microBin
         binCounts = np.bincount(binArray)
-        numMicroBins = int( math.ceil( float(self._region.end) / self.microBin) )
+        numMicroBins = int( math.ceil( float(len(self._region)) / self.microBin) )
         binCounts = np.concatenate([binCounts, np.zeros(numMicroBins-len(binCounts), dtype='int')])
+        #print 'temp1: ', len(binCounts)
         assert [i*self.microBin for i in xrange(len(binCounts))] == range(0, len(self._region), self.microBin), ([i*self.microBin for i in xrange(len(binCounts))], range(0, len(self._region), self.microBin) )
         startList = [i*self.microBin for i in xrange(len(binCounts))]
         assert [min( (i+1)*self.microBin, len(self._region)) for i in xrange(len(binCounts))] == startList[1:] + [len(self._region)]

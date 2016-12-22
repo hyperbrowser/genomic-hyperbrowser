@@ -27,7 +27,7 @@ from quick.statistic.BinSizeStat import BinSizeStat
 import numpy
 from collections import OrderedDict
 #from scipy.stats import distributions
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 #fixme: Should be checked for correctness!!
 from quick.statistic.CommonStatisticalTests import studentsT_uneqSize_uneqVar, \
@@ -84,7 +84,7 @@ class HigherFunctionInSegsPValStatUnsplittable(Statistic):
         if numpy.isnan(t) or numpy.isnan(degreesOfFreedom):
             pval = numpy.nan
         else:
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             pval = r.pt( -numpy.abs(t),degreesOfFreedom) * 2
         return OrderedDict([ ('P-value', pval), ('Test statistic: T-score', t), ('meanInside', meanInside), ('meanOutside', meanOutside), \
                             ('diffOfMeanInsideOutside', meanInside - meanOutside), ('varInside', varInside) , ('varOutside', varOutside) ])

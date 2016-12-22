@@ -21,18 +21,18 @@ from gold.statistic.PointFreqInSegsVsSegMarksStat import \
 from test.gold.statistic.StatUnitTest import StatUnitTest
 from test.gold.track.common.SampleTrackView import SampleTV, SampleTV_Num
 import numpy
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 class TestPointFreqInSegsVsSegMarksStatUnsplittable(StatUnitTest):
     CLASS_TO_CREATE = PointFreqInSegsVsSegMarksStat
 
     def setUp(self):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('sink(file("/dev/null", open="wt"), type="message")')
         StatUnitTest.setUp(self)
 
     def testDown(self):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('sink(type="message")')
         StatUnitTest.tearDown(self)
     

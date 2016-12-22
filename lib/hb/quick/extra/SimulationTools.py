@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 #!/usr/bin/env python
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from quick.util.GenomeInfo import GenomeInfo
 from quick.util.CommonFunctions import ensurePathExists
 from gold.util.CommonFunctions import createOrigPath
@@ -104,22 +104,33 @@ class ElIter(object):
     def _getChrLen(self):
         return GenomeInfo.getChrLen(self.genome, self.chr)
 
-class PointIter(ElIter):    
-    def __init__(self, genome, chr, interRate, intraRate, interProb):
+class PointIterInterval(ElIter):
+    def __init__(self, genome, chr, interRate, intraRate, interProb, chrMin, chrMax):
         self.genome, self.chr = genome, chr
         self.interRate, self.intraRate, self.interProb  = float(interRate), float(intraRate), float(interProb)
+        self.chrMin, self.chrMax = int(chrMin), int(chrMax)
         assert interProb > 0
-        
+
     def __iter__(self):
-        from gold.application.RSetup import r
-        pos = 0
-        maxPos = self._getChrLen()
+        from proto.RSetup import r
+
+        #maxPos = self._getChrLen()
+        maxPos = self.chrMax
+        minPos = self.chrMin
+
+        pos = minPos
+
         while True:
-            if r.runif(1) < self.interProb:
-                pos += int( max(1,r.rexp(1,self.interRate)))
+            runif = r.runif(1)
+
+            if runif < self.interProb:
+                rexp = r.rexp(1,self.interRate)
+                pos += int( max(1,rexp)) # among clusters
             else:
-                pos += int( max(1,r.rexp(1,self.intraRate)))
-            
+                rexp = r.rexp(1,self.intraRate) # inside cluster
+                pos += int( max(1,rexp))
+
+
             if pos < maxPos:
                 yield [pos,pos+1]
             else:
@@ -132,7 +143,37 @@ class PointIter(ElIter):
         else:
             params = 'avgInClustDist%i_avgBetClustDist%i_clustProb%.2f' % ((1.0/self.intraRate), (1.0/self.interRate), self.interProb)
         return ['Sample data','Simulated','Points',maintype,params]
-    
+
+class PointIter(ElIter):
+    def __init__(self, genome, chr, interRate, intraRate, interProb):
+        self.genome, self.chr = genome, chr
+        self.interRate, self.intraRate, self.interProb  = float(interRate), float(intraRate), float(interProb)
+        assert interProb > 0
+
+    def __iter__(self):
+        from proto.RSetup import r
+        pos = 0
+        maxPos = self._getChrLen()
+        while True:
+            if r.runif(1) < self.interProb:
+                pos += int( max(1,r.rexp(1,self.interRate)))
+            else:
+                pos += int( max(1,r.rexp(1,self.intraRate)))
+
+            if pos < maxPos:
+                yield [pos,pos+1]
+            else:
+                break
+
+    def getTrackName(self):
+        maintype = 'Independent' if self.interProb == 1 else 'Clustered'
+        if self.interProb == 1:
+            params = 'avgDist%i' % (1.0/self.interRate)
+        else:
+            params = 'avgInClustDist%i_avgBetClustDist%i_clustProb%.2f' % ((1.0/self.intraRate), (1.0/self.interRate), self.interProb)
+        return ['Sample data','Simulated','Points',maintype,params]
+
+
     
 class SegIter(PointIter):
     def __init__(self, genome, chr, interRate, intraRate, interProb, minSegLen, maxSegLen):
@@ -140,7 +181,7 @@ class SegIter(PointIter):
         self.minSegLen, self.maxSegLen = int(minSegLen), int(maxSegLen)
         
     def __iter__(self):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         pos = 0
         maxPos = self._getChrLen()
         while True:
@@ -173,7 +214,7 @@ class FunctionIterOneLevel(ElIter):
         self.repeatTimes = 1
         
     def __iter__(self):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         a, b, s = self.a, self.b, self.s
         
         val = r.rnorm(1,a,1.0*s/(1-b**2)**0.5 )
@@ -217,7 +258,7 @@ class PointSampledByIntensityIter:
         assert self.factor<1
         
     def __iter__(self):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         chr = self.chr
         trackName1, genome = self.trackName1, self.genome
         factor = self.factor
@@ -327,9 +368,8 @@ class SimulationPointIter:
             cls.createChrTrack(genome, chr, iterClass, outFn, paramInterRate, paramIntraRate, paramInterProb)
             
     @staticmethod
-    def createChrTrack(genome, chr, iterClass, outFn, paramInterRate, paramIntraRate, paramInterProb):
-        
-        iter = PointIter(genome, chr, paramInterRate, paramIntraRate, paramInterProb)
+    def createChrTrack(genome, chr, iterClass, outFn, paramInterRate, paramIntraRate, paramInterProb, chrMin, chrMax):
+        iter = PointIterInterval(genome, chr, paramInterRate, paramIntraRate, paramInterProb, chrMin, chrMax)
         writerClass = OrigPointBedWriter
         writerClass.writeChrAdd(genome, chr, 'trackName', iter, outFn)
 

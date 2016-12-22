@@ -131,7 +131,7 @@ class GwasResults(dict):
         #if not ( 0 < (float(sum(values)) / len(values)) < 100000):
         #    return 'Not generated, due to too small/large values (average: %s)' % (float(sum(values)) / len(values))
         maxVal = max(values)
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         r('library(gplots)')
         dataMatrix = r.matrix(robjects.FloatVector(values),nrow=numRows)
         if (r.length(r.unique(r.colSums(dataMatrix))) <= 1) or (r.length(r.unique(r.rowSums(dataMatrix))) <= 1):

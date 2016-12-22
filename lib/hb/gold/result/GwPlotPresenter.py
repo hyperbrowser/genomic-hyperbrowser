@@ -16,7 +16,7 @@
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
 from gold.result.GraphicsPresenter import GraphicsPresenter, LocalResultsGraphicsData
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from quick.util.CommonFunctions import silenceRWarnings
 import shutil
 import os.path
@@ -43,7 +43,7 @@ class GwPlotPresenter(GraphicsPresenter):
         forHistoryFn = self._historyFilePresenter._getFn(resDictKey)
         #outDir = self._baseDir
         outDir = os.path.split(fn)[0]
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('source("%s")' % PLOT_BED_FN)
         r('source("%s")' % PLOT_CHR_FN)
         r('loadedBedData <- plot.bed("%s")' % forHistoryFn)

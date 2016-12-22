@@ -19,7 +19,7 @@ from quick.util.CommonFunctions import ensurePathExists
 from gold.util.CommonFunctions import isNumber
 import os
 import numpy
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 class ScatterPresenter(LocalResultsGraphicsData, GraphicsPresenter):
     name = ('scatter','Scatter plot')
@@ -41,7 +41,7 @@ class ScatterPresenter(LocalResultsGraphicsData, GraphicsPresenter):
         outF.write( 'Ys: ' + ','.join([ str(x) for x in rawData[1]]) + os.linesep )
 
     def _customRExecution(self, resDictKey, xlab, main):
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         
         xs, ys = self._getRawData(resDictKey)
         xVec = robjects.FloatVector(xs)

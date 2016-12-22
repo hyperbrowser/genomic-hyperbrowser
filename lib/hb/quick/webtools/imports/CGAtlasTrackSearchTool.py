@@ -43,7 +43,7 @@ class CGAtlasTrackSearchTool(TrackSearchTool):
         (cls.DB._db.getTableCols(cls.TABLE_NAME))
         colListString = ''
         cols.insert(0, cols.pop(cols.index('"url"')))
-        cols.insert(0, cols.pop(cols.index('"hb_datatype"')))
+        cols.insert(1, cols.pop(cols.index('"hb_datatype"')))
         for col in cols:
             colListString += col + ','
         

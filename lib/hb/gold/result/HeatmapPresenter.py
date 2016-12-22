@@ -52,7 +52,7 @@ class HeatmapPresenter(GraphicsPresenter):
         self._printDimensions = printDimensions
 
     def _getLineHeigthInPixels(self):
-        # from gold.application.RSetup import r
+        # from proto.RSetup import r
         # return r("par('mai')[1]/par('mar')[1]*72")
         #
         # For some mysterious reason, the above is not correct.
@@ -77,7 +77,7 @@ class HeatmapPresenter(GraphicsPresenter):
 
         self._cex = 1.0 * self.LABEL_TEXT_SIZE / self.POINT_SIZE
 
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         charWidthHeightRatio = r("par('cin')[1]/par('cin')[2]")
         marginBottom = int(colNames.dtype.itemsize * charWidthHeightRatio * self.LABEL_TEXT_SIZE)
         marginRight = int(rowNames.dtype.itemsize * charWidthHeightRatio * self.LABEL_TEXT_SIZE)
@@ -137,7 +137,7 @@ class HeatmapPresenter(GraphicsPresenter):
         return margin
 
     def _customRExecution(self, resDictKey, xlab, main):
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
 
         rCode = ('ourHeatmap <- function(matrix, rowNames, colNames, rowClust,'
                                         'colClust, dendrogram, marginLeft, '

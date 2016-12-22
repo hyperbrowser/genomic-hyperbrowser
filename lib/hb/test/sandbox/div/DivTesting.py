@@ -41,7 +41,7 @@
 #    
 #print len(pvals)
 #
-##from gold.application.RSetup import r
+##from proto.RSetup import r
 #open('/Users/sandve/Desktop/pvalsToR.txt','w').write('\n'.join(pvals))
 #r.hist(pvals,breaks=100)
 for week in range(7,10):

@@ -1,5 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 

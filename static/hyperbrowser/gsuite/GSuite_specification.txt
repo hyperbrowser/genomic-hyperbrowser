@@ -2,10 +2,10 @@
 | Specification of the GSuite file format |
 |-----------------------------------------|
 
-GSuite version: 0.1
-Document version: 0.1
-Date: July 6, 2015
-Authors: Boris Simovski, Sveinung Gundersen, Abdulrahman Azab, Diana Domanska,
+GSuite version: 0.9
+Document version: 0.2
+Date: May 27, 2015
+Authors: Sveinung Gundersen, Boris Simovski, Abdulrahman Azab, Diana Domanska,
          Eivind Hovig, Geir Kjetil Sandve
 
 
@@ -59,14 +59,18 @@ Authors: Boris Simovski, Sveinung Gundersen, Abdulrahman Azab, Diana Domanska,
   the GSuite format allows heterogeneous tracks to be banded together in a
   single file, such files will typically not be useful for analysis purposes, as
   one would almost always need to restrict the contents and/or format as
-  required by the analysis tools. For this reason, the GSuite file format
-  specifies a set of four header variables that could (and should) be stated in
-  the beginning of the file. These header variables function as a summary over
-  the tracks in the file, providing a specific value if all the tracks are in
-  accordance with each other. If the different tracks varies on this particular
-  aspect, the header variable is set to the reserved keyword "multiple". This
-  typically indicates that the collection of tracks is not yet focused enough to
-  be usable as a suite of tracks for analysis purposes.
+  required by the analysis tools. For instance, a tool that finds the
+  intersection of base pairs covered by all tracks in a suite would require all
+  tracks to be of type "points" or "segments", not "function", as tracks of that
+  type cover all base pairs (see section Track Types below for more info). For
+  this reason, the GSuite file format specifies a set of four header variables
+  that could (and should) be stated in the beginning of the file. These header
+  variables function as a summary over the tracks in the file, providing a
+  specific value if all the tracks are in accordance with each other. If the
+  different tracks varies on this particular aspect, the header variable is set
+  to the reserved keyword "multiple". This typically indicates that the
+  collection of tracks is not yet focused enough to be usable as a suite of
+  tracks for analysis purposes.
 
 
   ------------------
@@ -74,10 +78,15 @@ Authors: Boris Simovski, Sveinung Gundersen, Abdulrahman Azab, Diana Domanska,
   ------------------
 
   In order to analyze multiple tracks, one obviously needs to acquire such
-  tracks. Some tracks one might have aquired directly from sequencing endeavors
+  tracks. Some tracks one might have acquired directly from sequencing endeavors
   (e.g. ChIP-seq peaks), but often one needs to fetch such tracks from public
   repositories and databases such as those provided by the ENCODE [1] and
-  Roadmap Epigenomics [2] projects. GSuites supports the specifi
+  Roadmap Epigenomics [2] projects. GSuite supports the specification of suites
+  of tracks before the actual track files has been retrieved from a server. In
+  such cases, the location of the tracks are termed "remote" and the GSuite file
+  would typically contain an HTTP or FTP address to the remote location. Tracks
+  that have been retrieved and is stored at the same place as the GSuite file
+  are termed as "local".
 
 
   -----------------------------------------------------
@@ -94,15 +103,16 @@ Authors: Boris Simovski, Sveinung Gundersen, Abdulrahman Azab, Diana Domanska,
   (often hundreds) this step will thus consume a significant amount of time.
   Carrying out the preprocessing step as a one-time process, instead of every
   time one runs an analysis tool, will thus save much time for the user.
-  Analysis tools thus typically requires the tracks in a GSuite to be
-  preprocessed in forehand.
+  Analysis tools therefore typically require the tracks in a GSuite to be
+  preprocessed in advance.
 
-  Preprocessing of a GSuite file results in the tracks being stored I the BTrack
-  format. BTrack is a binary format for genomic tracks that allows for fast
-  retrieval and efficient analyses by the storage of data columns as numeric
-  arrays. An analogue to the BTrack format in the domain of sequence alignment
-  is the BAM format, which is a binary version of the textual SAM format. BTrack
-  is thus the binary version of the previously published GTrack format [3].
+  Preprocessing of a GSuite file results in the tracks being stored in the
+  BTrack format. BTrack is a binary format for genomic tracks that allows for
+  fast retrieval and efficient analyses by the storage of data columns as
+  numeric arrays. An analogue to the BTrack format in the domain of sequence
+  alignment is the BAM format, which is a binary version of the textual SAM
+  format. BTrack is thus the binary version of the previously published GTrack
+  format [3].
 
   BTrack is the new name for the previously unnamed internal track storage
   format used in the Genomic HyperBrowser [3,4]. The BTrack format has seen
@@ -117,7 +127,7 @@ Authors: Boris Simovski, Sveinung Gundersen, Abdulrahman Azab, Diana Domanska,
   Track types
   -----------
 
-  The concept of track types have been examined in detail in a previous
+  The concept of track types has been examined in detail in a previous
   publication [2]. Briefly, a track type is a characterization of a the
   geometrical/mathematical properties of a track. A track is typically
   envisioned as data somehow located along the DNA sequence of a particular
@@ -126,7 +136,7 @@ Authors: Boris Simovski, Sveinung Gundersen, Abdulrahman Azab, Diana Domanska,
   common ones, which represents regions of the DNA, e.g. genes. With the
   addition of values and/or cross-genomic links, a total of 15 track types was
   delineated in [3]. The main usage scenario of track types is to limit which
-  tracks that makes sense to use as input to a particular analysis tool. For
+  tracks it makes sense to use as input to a particular analysis tool. For
   example, an analysis of the base pair overlap of two tracks would typically
   require the tracks to be of type "segments". When it comes to the analysis of
   multiple tracks, one would typically require the tracks to be analyzed to be
@@ -180,7 +190,7 @@ ftp://www.server3.com/path/to/new_file.gff
 
 
 # Example 3: List of URLs with header lines, comments, extra columns, and
-# GSuite-specific URI schemes
+# GSuite-specific URI (Uniform Resource Identifier) schemes
 
 ##location: multiple
 ##file format: multiple
@@ -214,9 +224,10 @@ hb:/my/track/name   track_6   .
     2.  Column specification line
     3.  Track lines
 
-  Note: The number preceding each line type defines the order in which the lines
-  must be present, excluding roman numbers. I.e. column specification must
-  follow the header lines, but comments may be present anywhere.
+  Note: The arabic number preceding each line type defines the order in which
+  the lines must be present. I.e. column specification must follow the header
+  lines. Roman numbers indicate comments and emtpy lines, which may be present
+  anywhere.
 
 
   --------------
@@ -253,7 +264,8 @@ hb:/my/track/name   track_6   .
 
       Comments are allowed anywhere and will be ignored by parsers. Note that a
       comment line following a track line is considered to be a comment for that
-      line and can be used to present track-specific error messages to the user.
+      track and can for instance be used by tools that creates GSuite files to
+      present track-specific error messages to the user.
 
   
   ---------------
@@ -310,7 +322,7 @@ hb:/my/track/name   track_6   .
       Multiple: if at least one track has a different value than the others, the
         value of the GSuite header variable will be "multiple" (unless the value
         for one of the tracks is "unknown", in which case that keyword takes
-        precedence.
+        precedence).
 
 
   Reserved header variable names
@@ -325,10 +337,10 @@ hb:/my/track/name   track_6   .
     e.g. a web server, but the tracks of the GSuite is still considered as local
     if they are on the same server as the service.
 
-    The location header is a summary of the different types off URI schemes
+    The location header is a summary of the different types of URI schemes
     present in the "uri" column in the track lines (see the section "Column
-    specification line" below). All URIs are thus defined as either remote or
-    local.
+    specification line" below). All supported types of URIs are thus defined as
+    either remote or local.
 
     Allowed values: unknown, remote, local, multiple
 
@@ -441,24 +453,26 @@ hb:/my/track/name   track_6   .
 
       file:///path/to/file/bed
 
-    Note that the "file" scheme does not support files reciding other places
-    than "localhost". The host part of the URI is thus unnedded, hence the
+    Note that the "file" scheme does not support files residing other places
+    than "localhost". The host part of the URI is thus uneeded, hence the
     triple '/' characters.
 
     Two more specifically specified URIs schemes are supported by GSuite:
 
       "galaxy" and "hb"
 
-    The "Galaxy" scheme uniqueliy identified a history element in the current
-    installation of the Galaxy analysis framework [6]. The syntax is as follows:
+    The "Galaxy" scheme uniquely identifies a Galaxy dataset, but currently only
+    works for the local installation of the Galaxy analysis framework that is
+    set up with GSuite support, i.e. one cannot (yet) provide an URI to a remote
+    Galaxy installation [6]. The syntax is as follows:
 
-      galaxy:/history_api_key[/directory/structure/to/file]
+      galaxy:/dataset_key[/directory/structure/to/file]
 
     Multiple files can be stored within one Galaxy history element using the
     directory structure syntax.
 
     The "HB" scheme identifies a track stored as the BTrack format within the
-    current Genomic HyperBrowser installation. The syntax is as follows:
+    local installation of GSuite HyperBrowser. The syntax is as follows:
 
       hb:/track/name/hierarchy
 
@@ -468,12 +482,12 @@ hb:/my/track/name   track_6   .
       ftp://ftp.server.com/path/to/file;bed
 
     This usable if the file path itself does not contain the suffix, and hence
-    no information on the actual file format of the track.
+    does not contain any information on the actual file format of the track.
     
     - Parser notes:
 
-      Note that services available from e.g. the web
-      should disable the "file" scheme, as is in inherently insecure.
+      Note that services available from e.g. the web should disable the "file"
+      scheme, as this is inherently insecure.
 
 
   - Title:
@@ -578,17 +592,19 @@ hb:/my/track/name   track_6   .
     References
 ------------------
 
-[1] ENCODE reference
-[2] Roadmap Epigenomics reference
-[3] Gundersen S, Kalas M, Abul O, Frigessi A, Hovig E, Sandve GK: Identifying
-    elemental genomic track types and representing them uniformly. BMC
-    Bioinformatics 2011, 12:494.
-[4] Sandve, Geir K., et al: The Genomic HyperBrowser: inferential genomics at
-    the sequence level. Genome biology 11.12 (2010): R121.
+[1] ENCODE Project Consortium. "An integrated encyclopedia of DNA elements in
+    the human genome." Nature 489.7414 (2012): 57-74.
+[2] Kundaje, Anshul, et al. "Integrative analysis of 111 reference human
+    epigenomes." Nature 518.7539 (2015): 317-330.
+[3] Gundersen, Sveinung, et al. "Identifying elemental genomic track types and
+    representing them uniformly." BMC Bioinformatics 12.1 (2011): 1.
+[4] Sandve, Geir K., et al. "The Genomic HyperBrowser: inferential genomics at
+    the sequence level." Genome biology 11.12 (2010): 1-12.
 [5] Uniform Resource Identifier (URI): Generic Syntax
-      (https://tools.ietf.org/html/rfc3986)
-[6] Galaxy reference
-
+    (https://tools.ietf.org/html/rfc3986)
+[6] Goecks, Jeremy, Anton Nekrutenko, and James Taylor. "Galaxy: a comprehensive
+    approach for supporting accessible, reproducible, and transparent
+    computational research in the life sciences." Genome Biol 11.8 (2010): R86.
 
 ------------------
     Change log
@@ -597,3 +613,8 @@ hb:/my/track/name   track_6   .
 v0.1 - 2015.07.06:
 
     * Initial version of the GSuite specification document.
+
+v0.2 - 2016.07.06:
+
+    * Fixed typos and cleaned up text several places. Ready for initial
+      submission og the GSuite HyperBrowser manuscript.

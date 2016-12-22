@@ -84,4 +84,4 @@ class GeneRegulatorsTool(GeneralGuiTool):
 
     @staticmethod
     def isDebugMode():
-        return True
+        return False

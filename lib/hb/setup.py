@@ -82,7 +82,7 @@ def checkDependencies():
         print 'FAILED: Requires rpy2 version >= 2.7.'
         sys.exit(1)
 
-    from gold.application.RSetup import getRVersion
+    from proto.RSetup import getRVersion
     rVersion = getRVersion()
     if rVersion >= '3.2':
         print 'OK: R version >= 3.2 found: %s' % rVersion
@@ -201,7 +201,7 @@ def addPathsToLocalOSConfigIfNecessary(hbPath, galaxyPath):
     return _addPathsToLocalOSConfigIfNecessary(baseConfigDict, hbPath)
 
 def _installAndCheckRLibrary(library):
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     from config.Config import HB_R_LIBS_DIR
     from quick.util.CommonFunctions import silenceRWarnings, silenceROutput
     silenceRWarnings()
@@ -215,30 +215,31 @@ def _installAndCheckRLibrary(library):
             r("library('%s', lib.loc='%s')" % (library, HB_R_LIBS_DIR))
         except:
             try:
-                r("install.packages('%s', repos='http://cran.r-project.org', lib='%s')" \
+                r("install.packages('%s', INSTALL_opts = c('--no-lock'), repos='http://cran.r-project.org', lib='%s')" \
                   % (library, HB_R_LIBS_DIR))
                 r("library('%s', lib.loc='%s')" % (library, HB_R_LIBS_DIR))
                 print "OK: Installed R package '%s'." % library
                 return
             except Exception, e1:
                 try:
-                    r("source('http://www.bioconductor.org/biocLite.R'); biocLite('%s', lib='%s')" \
-                      % (library, HB_R_LIBS_DIR))
+                    r("install.packages('%s', INSTALL_opts = c('--no-lock'), repos='http://hyperbrowser.uio.no/eggs_repo/R', lib='%s')" \
+                        % (library, HB_R_LIBS_DIR))
                     r("library('%s', lib.loc='%s')" % (library, HB_R_LIBS_DIR))
                     print "OK: Installed R package '%s'." % library
                     return
                 except Exception, e2:
                     try:
-                        r("install.packages('%s', repos='http://hyperbrowser.uio.no/eggs_repo/R', lib='%s')" \
-                            % (library, HB_R_LIBS_DIR))
+                        r("source('http://www.bioconductor.org/biocLite.R'); biocLite('%s', lib='%s')" \
+                          % (library, HB_R_LIBS_DIR))
                         r("library('%s', lib.loc='%s')" % (library, HB_R_LIBS_DIR))
                         print "OK: Installed R package '%s'." % library
                         return
+
                     except Exception, e3:
                         print "FAILED: Did not find or manage to install R package '%s'. Error:" % library
                         print "        " + str(e1).strip()
                         print "        " + str(e2).strip()
-                        raise Exception
+                        raise
 #                        sys.exit(1)
 
     print "OK: Found R package '%s'." % library

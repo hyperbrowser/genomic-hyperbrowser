@@ -356,4 +356,4 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
 
     @staticmethod
     def isDebugMode():
-        return True
+        return False

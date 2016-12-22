@@ -184,10 +184,10 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
         (e.g. generated image files). choices is a list of selections made by
         web-user in each options box.
         '''
-
         from gold.gsuite.GSuitePreprocessor import GSuitePreprocessor
         import gold.gsuite.GSuiteComposer as GSuiteComposer
-        from gold.gsuite.GSuiteFunctions import writeGSuiteHiddenTrackStorageHtml
+        from quick.gsuite.GSuiteHbIntegration import \
+            writeGSuiteHiddenTrackStorageHtml
         from quick.extra.ProgressViewer import ProgressViewer
         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
@@ -360,9 +360,9 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/fetch-remote-gsuite-datasets---user-guide'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/fetch-remote-gsuite-datasets---user-guide'
 
     #@classmethod
     #def isBatchTool(cls):

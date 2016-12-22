@@ -491,9 +491,9 @@ class TrackCollectionsAnalysis(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return None
 
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/screen-two-track-collections-against-each-other'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/screen-two-track-collections-against-each-other'
     
     #@classmethod
     #def isBatchTool(cls):

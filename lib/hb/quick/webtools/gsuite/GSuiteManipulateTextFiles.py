@@ -27,8 +27,17 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
                                   ('Expand all points and segments equally', 'ExpandBedSegments')
                                   ])
 
-    ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns')
+    ALL_PRIVATE_OPERATIONS = dict([('Subsample elements of each track', 'SubsampleTracks'),
+                                   ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),
+                                   ('Convert maf to 3-column bed', 'ConvertMafTo3ColBed')
                                   ])
+
+    # ShuffleAndAddColumns has been temporarily removed due to a security hole
+    # ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns'),
+    #                                ('Subsample elements of each track', 'SubsampleTracks'),
+    #                                ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),
+    #                                ('Convert maf to 3-column bed', 'ConvertMafTo3ColBed')
+    #                               ])
 
     ALL_OPERATIONS = OrderedDict(sorted(dict(ALL_PUBLIC_OPERATIONS, **ALL_PRIVATE_OPERATIONS).iteritems())) \
         if IS_EXPERIMENTAL_INSTALLATION else \
@@ -385,7 +394,9 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         from gold.gsuite.GSuite import GSuite
         from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
         from gold.gsuite.GSuiteComposer import composeToFile
-        from gold.gsuite.GSuiteFunctions import writeGSuiteHiddenTrackStorageHtml, getTitleWithSuffixReplaced
+        from gold.gsuite.GSuiteFunctions import getTitleWithSuffixReplaced
+        from quick.gsuite.GSuiteHbIntegration import \
+            writeGSuiteHiddenTrackStorageHtml
         from quick.extra.ProgressViewer import ProgressViewer
         from quick.util.CommonFunctions import ensurePathExists
 
@@ -585,9 +596,9 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/manipulate-textual-track-files-referred-to-in-gsuite---example'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/manipulate-textual-track-files-referred-to-in-gsuite---example'
     #
     #@classmethod
     #def isBatchTool(cls):

@@ -1,6 +1,6 @@
 # !/software/VERSIONS/python2-2.7.6/bin/python
 
-__author__="Sveinung and Azab"
+__author__="Azab and Sveinung"
 __date__ ="$Sep 4, 2014$"
 __PythonVersion__= "2.7 [MSC v.1500 32 bit (Intel)]"
 
@@ -10,6 +10,7 @@ import sqlite3
 import re
 from collections import namedtuple
 import sys
+#sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
 from quick.trackaccess.TrackAccessModule import TrackAccessModule
@@ -136,7 +137,7 @@ class DatabaseTrackAccessModule(TrackAccessModule):
         if len(result) > 0:
             return result[0][0]
         else:
-            return
+            raise DatabaseError('Attribute readable name "%s" has no associated column name\nQuery:%s' % (rName,query))
     def getAttributeReadableNameFromName(self, tablename, name):
         query = "SELECT col_readable_name FROM file_col_metadata WHERE table_name LIKE '" + tablename + "' AND col_val = '.' AND col_name LIKE '" + name + "';"
         result = self._db.runQuery(query)
@@ -183,6 +184,7 @@ class DatabaseTrackAccessModule(TrackAccessModule):
     
     
     def getDataType(self,filename,database):
+        from fnmatch import fnmatch
         #query = "SELECT type_name FROM file_type WHERE extensions LIKE '%"+extension+"%';"
         query = "SELECT type_name,"+database+" FROM data_type;"
         output = self._db.runQuery(query)
@@ -192,7 +194,10 @@ class DatabaseTrackAccessModule(TrackAccessModule):
             if exts.strip() == '.':
                 continue
             for ext in exts.lower().split(','):
-                if filename.lower().endswith(ext):
+                if not ext.startswith('*'):
+                    ext = '*'+ext
+                if fnmatch(filename.lower(),ext):
+                #if filename.lower().endswith(ext):
                     return type_name
         return 'Others'
     
@@ -295,20 +300,24 @@ class DatabaseAdapter(object):
 
     # Add "<col-name>" for column names with reserved psql words
     def correctColumNames(self,cols):
+        #print cols
         if self._connection == None:
             print 'Error: No open db connection'
             return
         #print cols
+        if None in cols:
+            cols.pop(cols.index(None))
         if type(cols) is list:
-          for i in range(len(cols)):
-              #for w in self._reservedWords:
-              #    if cols[i].strip() == w.strip():
-                     cols[i] = '"' + cols[i] + '"'
+            for i in range(len(cols)):
+                  #for w in self._reservedWords:
+                  #    if cols[i].strip() == w.strip():
+                         cols[i] = '"' + cols[i] + '"'
         elif type(cols) is dict:
-           for k in cols.keys():
-              #for w in self._reservedWords:
-              #    if k.strip() == w.strip():
-                     cols['"' + k + '"'] = cols.pop(k)
+            for k in cols.keys():
+                  #for w in self._reservedWords:
+                  #    if k.strip() == w.strip():
+                         cols['"' + k + '"'] = cols.pop(k)
+        
 
         return cols
 
@@ -353,14 +362,20 @@ class DatabaseAdapter(object):
         
     def getWildCardsMatchingValues(self, table_name, col_name, wc_formula):
         from fnmatch import fnmatch
-        query = "SELECT " + col_name + " FROM " + table_name + " WHERE " + col_name + " IS NOT NULL;"
+        query = "SELECT " + col_name + ", count(*) FROM " + table_name + " WHERE " + col_name + " IS NOT NULL group by " + col_name + ";"
         rows = self.runQuery(query)
         List = []
+        import unicodedata
         for row in rows:
             '''Here, we ignore the case'''
             #print row[0].upper(),wc_formula.upper()
-            if fnmatch(row[0].upper(),wc_formula.upper()) and not row[0] in List:
+            val = row[0]
+            if isinstance(row[0], unicode):
+                val = unicodedata.normalize("NFKD", row[0])
+            if fnmatch(val.upper(),wc_formula.upper()) and not row[0] in List:
                 List.append(row[0])
+        # if len(List) == 0:
+        #     raise DatabaseError('Error for query "%s":\nreturned zero matching rows for the formula: %s' % (query,wc_formula))
         return List
     def getREMatchingValues(self, table_name, col_name, re_formula):
         query = "SELECT " + col_name + " FROM " + table_name + " WHERE " + col_name + " IS NOT NULL;"
@@ -542,6 +557,20 @@ class DatabaseAdapter(object):
            else:
               return float(filter(lambda x: x.isdigit(), strVal+'0'))
 
+    def getRowsDicts(self,cols,query):
+        rows = self.runQuery(query)
+        result = []
+        for row in rows:
+            if row == None or len(row)<len(cols):
+               continue
+            rowDict = {}
+            i = 0
+            for col in cols:
+                rowDict[col] = row[i]
+                i+=1
+            result.append(rowDict)
+        return result
+    
     def runQuery(self, query):
         cr = self._connection.cursor()
         if not self.isSqlite:
@@ -611,7 +640,7 @@ class DatabaseAdapter(object):
 #======================================================
 #print db.getColGroup('file_encode','lab')
 #======================================================
-#db = DatabaseTrackAccessModule(True)
+db = DatabaseTrackAccessModule(True)
 ############################Database Tests########################################
 #print db._db.dropTable('tab')
 #print db._db.createTableFromList('tab', ['a1','b1','c1'], pk = 'a1')
@@ -631,7 +660,7 @@ class DatabaseAdapter(object):
 #print db.getAttributeValuesDetails('file_cgatlas',{'acc':'cancertype','blca':'cancertype','brca':'cancertype'})
 #print db.getAttributesDetails('file_fantom5',['Comment [sequence_raw_file]','Parameter [run_name]','Protocol REF__2__'])
 #print db.getValueListWithCounts('file_encode','antibody',{'cell':['RCC_7860','BC_Small_Intestine_01-11002','Myometr','Dnd41']})
-#print db.getAttributeNameFromReadableName('file_encode','Table Name')
+#print db.getAttributeNameFromReadableName('file_gwas','CNV')
 #print db.getAttributeReadableNameFromName('file_encode','tablename')
 #print db.getAttributeNameFromReadableName('file_epigenome2','%COLOR%')
 #print db.getAttributeReadableNameFromName('file_epigenome2','color~~')
@@ -641,4 +670,5 @@ class DatabaseAdapter(object):
 #print len(db._db.getREMatchingValues('file_encode','tablename','(.*H3k0?4me1.*)'))
 #print db._db.getREMatchingValues('file_encode','cell','(ag0.*)')##Returns an empty list
 #print db._db.getWildCardsMatchingValues('file_encode','tablename','wgEncode????Histone*H3k04me1*')
+#print db._db.getWildCardsMatchingValues('file_epigenome2','"Standardized Epigenome name~~"','Primary Natural Killer cells from peripheral*')
 ##db.disconnect()

@@ -16,7 +16,7 @@
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import TrackFormatReq
 from gold.util.CustomExceptions import IncompatibleAssumptionsError
@@ -49,7 +49,7 @@ class SimpleFunctionCorrelationPvalStatUnsplittable(Statistic):
             pval = None
             testStat = None
         else:
-            from gold.application.RSetup import r
+            from proto.RSetup import r
 
             #rpy1
             #xAsR = r.unlist([float(num) for num in x])

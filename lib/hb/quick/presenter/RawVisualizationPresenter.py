@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from gold.result.GraphicsPresenter import GraphicsPresenter#, LocalResultsGraphicsData, GlobalResultGraphicsData
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 #import os
 
 #class VisualizationPresenter(LocalResultsGraphicsData, GraphicsPresenter):
@@ -81,7 +81,7 @@ class RawVisualizationPresenter(GraphicsPresenter):
                 rectVals += [rectTemplate % (start+extra1, yFloor, end+extra1, yFloor+10, 'red', 'red') for start, end in zip(startArr, endArr)]
             yFloor+=20
         
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         #numericX = (type(xList[0]) in [int,float])
         if len(rectTemplate)>0:
             rScript = rCode % (maxVal,len(yLabels), ','.join(yLabels), '\n'.join(rectVals))

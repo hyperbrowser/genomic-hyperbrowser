@@ -170,14 +170,14 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool):
     #    '''
     #    return None
     #
-    #@staticmethod
-    #def isPublic():
-    #    '''
-    #    Specifies whether the tool is accessible to all users. If False, the
-    #    tool is only accessible to a restricted set of users as defined in
-    #    LocalOSConfig.py.
-    #    '''
-    #    return False
+    @staticmethod
+    def isPublic():
+       '''
+       Specifies whether the tool is accessible to all users. If False, the
+       tool is only accessible to a restricted set of users as defined in
+       LocalOSConfig.py.
+       '''
+       return True
     #
     #@staticmethod
     #def isRedirectTool():

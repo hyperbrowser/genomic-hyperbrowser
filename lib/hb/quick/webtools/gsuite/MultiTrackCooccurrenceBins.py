@@ -1,9 +1,13 @@
+from collections import OrderedDict
+
 from gold.application.HBAPI import doAnalysis
-from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
+from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.track.Track import Track
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GSuiteStatUtils
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.MultitrackSummarizedInteractionWrapperStat import MultitrackSummarizedInteractionWrapperStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -23,10 +27,14 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
     GSUITE_ALLOWED_FILE_TYPES = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
                                   GSuiteConstants.VALUED_SEGMENTS]
+    SUMMARY_FUNC_DEFAULT = 'avg'
+
+    Q1 = "Show me a list of all bins and the co-occurence within each bin"
+    Q2 = "Show me a list of all bins and the co-occurence within each bin, and also compute a p-value for the highest ranked bin"
 
     # Override UserbinMixin bin selector to only allow certain choices
-    UserBinMixin.getOptionsBoxCompareIn = lambda self, prevChoises: ['Genes(Ensembl)','Custom specification','Bins from history']
-    UserBinMixin.getOptionsBoxBinSize = lambda self, prevChoises: "1m" if prevChoises.CompareIn == 'Custom specification' else None
+    UserBinMixin.getOptionsBoxCompareIn = lambda self, prevChoises: ['Custom specification', 'Genes(Ensembl)', 'Bins from history'] if prevChoises.genome == "hg19" else ['Custom specification', 'Bins from history']
+    UserBinMixin.getOptionsBoxBinSize = lambda self, prevChoises: "250k" if prevChoises.CompareIn == 'Custom specification' else None
 
 
     @staticmethod
@@ -75,23 +83,44 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [    ('', 'description')] +\
+        return [ ('Basic user mode', 'isBasic'), ('', 'description'), ('Which analysis question do you want to run?','analysisName')] +\
                     [('GSuite file to analyse:', 'gsuite')] +\
                     cls.getInputBoxNamesForGenomeSelection() +\
-                    [('Select how to concatinate the computed statistic over tracks inside a bin: ', 'summaryFunc')] +\
+                    [('Select track to track similarity/distance measure', 'similarityFunc'),
+                     ('Select how to concatenate the computed statistic over tracks inside a bin: ', 'summaryFunc')] +\
+                    [('Select MCFDR sampling depth', 'mcfdrDepth')] +\
                     [('Choose how to select regions/bins to rank: ','CompareIn'),('Which regions/bins: (comma separated list, * means all)', 'Bins'), ('Genome region: (Example: chr1:1-20m, chr2:10m-) ','CustomRegion'),\
                             ('Bin size: (* means whole region k=Thousand and m=Million E.g. 100k)', 'BinSize'), ('Bins from history', 'HistoryBins')] +\
                     DebugMixin.getInputBoxNamesForDebug()
 
+
     @staticmethod
-    def getOptionsBoxDescription():  # Alternatively: getOptionsBox1()
+    def getOptionsBoxIsBasic():
+        return False
+
+
+    @staticmethod
+    def getOptionsBoxDescription(prevChoices):  # Alternatively: getOptionsBox1()
         desc = '<b>Description: </b> This tool ranks specified genomic regions (bins) based on average pairwise track co-occurrence. ' + \
                 'You will need to specify which bins you want to rank. This will typically be done by selecting <i>Custom specification</i>' + \
                 ' and choosing a main region (e.g. <i>chr1, chr2</i>) and a bin size, resulting in evenly distributed bins within those regions, all having the same size. ' +\
-                '<br><br>These bins are ranked based on the average pairwise statistic between tracks inside each bin.' + \
-                ' You can instead choose to rank based on the <i>maximum</i> pairwise statistic over all pairs of tracks, by selecting that option in the select menu. <br><hr><br>'
+                '<br><br>These bins are ranked based on the average pairwise statistic between tracks inside each bin.'
+
+        if not prevChoices.isBasic:
+                desc += ' You can instead choose to rank based on the <i>maximum</i> pairwise statistic over all pairs of tracks, by selecting that option in the select menu.<br><br>' +\
+                'A statistical test is carried out asking <i>Does the highest ranking bin have a significant number of co-occurences for the tracks in question?</i> You can choose the number of samples for the Monte Carlo simulation for this test.'
+
+        desc += '<br><hr><br>'
+
         return '__rawstr__', desc
 
+
+    @staticmethod
+    def getOptionsBoxSummaryFunc(prevChoices):
+        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
+
+    def getOptionsBoxAnalysisName(cls, prevChoices):
+        return [cls.Q1, cls.Q2]
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoises):  # Alternatively: getOptionsBox1()
@@ -150,19 +179,23 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         '''
         return ('__history__',)
 
+
+    @staticmethod
+    def getOptionsBoxSimilarityFunc(prevChoices):
+        if not prevChoices.isBasic:
+            return GSuiteStatUtils.PAIRWISE_STAT_LABELS
+
     # @staticmethod
     # def getOptionsBoxBinSize(prevChoices):  # Alternatively: getOptionsBox1()
     #
     #     if prevChoices.CompareIn == 'Custom specification':
     #         return ('1000000')
 
-    @staticmethod
-    def getOptionsBoxQuestion(prevChoices):  # Alternatively: getOptionsBox1()
-        return ['question 6', 'question 7', 'question 8']
 
     @staticmethod
     def getOptionsBoxStat(prevChoices):
-        return [
+        if not prevChoices.isBasic:
+            return [
                 'PropOfReferenceTrackInsideTargetTrackStat',
                 'PropOfReferenceTrackInsideUnionStat',
                 'RatioOfIntersectionToGeometricMeanStat',
@@ -172,21 +205,27 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
     @staticmethod
     def getOptionsBoxSummaryFunc(prevChoices):
 
-        # Hack: Return raw html since this select box gives short uninformative names:
-        html = "<p>Select how to combine the computed statistic over tracks:</p><p><select name='summaryFunc'>" + \
-               "<option value='avg'>Take the average over all tracks</option>" + \
-               "<option value='max'>Take the maximum value over all tracks</option>" + \
-               "</select></p>"
+        if not prevChoices.isBasic:
+            # Hack: Return raw html since this select box gives short uninformative names:
+            html = "<p>Select how to combine the computed statistic over tracks:</p><p><select name='summaryFunc'>" + \
+                   "<option value='avg'>Take the average over all tracks</option>" + \
+                   "<option value='max'>Take the maximum value over all tracks</option>" + \
+                   "</select></p>"
 
-        return '__rawstr__', html
+            return '__rawstr__', html
 
-        #return sorted(SummarizedInteractionWithOtherTracksStatUnsplittable.
-        #              functionDict.keys())
 
     @staticmethod
     def getOptionsBoxPermutationStrat(prevChoices):
         '''hardcoded for now to 'PermutedSegsAndIntersegsTrack' '''
         return None
+
+
+    @classmethod
+    def getOptionsBoxMcfdrDepth(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisName == cls.Q2:
+            analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$'])
+            return analysisSpec.getOptionsAsText().values()[0]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -200,22 +239,72 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         web-user in each options box.
         '''
 
+        import warnings
+        #warnings.simplefilter('error')
+
         cls._setDebugModeIfSelected(choices)
+
+        similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
+
+        summaryFunc = choices.summaryFunc if choices.summaryFunc else cls.SUMMARY_FUNC_DEFAULT
+
+        pairwiseStatName = GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName]
+
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        tracks = [Track(x.trackName) for x in gsuite.allTracks()]
+
+        statTxt = "Average"
+        if(summaryFunc == "max"): statTxt = "Maximum"
+
+
+        if choices.analysisName == cls.Q2:
+
+
+            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+
+            # First compute pvalue by running the statistic through a wrapper stat that computes the max per bin
+            #from quick.statistic.CollectionBinnedHypothesisWrapperStat import CollectionBinnedHypothesisWrapperStat
+            #analysisSpec = AnalysisSpec(CollectionBinnedHypothesisWrapperStat)
+
+            analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> CollectionBinnedHypothesisWrapperStat'
+            analysisSpec = AnalysisDefHandler(analysisDefString)
+            analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+
+            analysisSpec.addParameter("rawStatistic", "GenericMaxBinValueStat")
+            # analysisSpec.addParameter('perBinStatistic', 'SummarizedStat')
+            analysisSpec.addParameter('perBinStatistic', 'MultitrackSummarizedInteractionV2Stat')
+            # analysisSpec.addParameter('mcSamplerClass', 'NaiveMCSamplingV2Stat')
+            analysisSpec.addParameter('pairwiseStatistic', 'ObservedVsExpectedStat')
+            analysisSpec.addParameter('summaryFunc', summaryFunc)
+            # analysisSpec.addParameter('evaluatorFunc','evaluatePvalueAndNullDistribution')
+            analysisSpec.addParameter('tail', 'right-tail')
+            analysisSpec.addParameter('assumptions', 'RandomGenomeLocationTrack')
+            #analysisSpec.addParameter('maxSamples', 10)
+            analysisSpec.addParameter('multitrackSummaryFunc', summaryFunc)
+
+
+
+
+            regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+
+            analysisBins = GalaxyInterface._getUserBinSource(regSpec,
+                                                             binSpec,
+                                                             choices.genome)
+
+            results = doAnalysis(analysisSpec, analysisBins, tracks)
+            results = results.getGlobalResult()
+            resultsTxt = "The highest ranking bin based on the " + statTxt.lower() + " of the Forbes similarity measure for pairs of tracks within each bin had a score of <b>%.3f</b> with p-value <b>%.6f</b>" % (results["TSMC_GenericMaxBinValueStat"], results['P-value'])
+
+
 
         # Stat question 7
         core = HtmlCore()
         core.begin()
-        core.divBegin(divClass='resultsExplanation')
-        core.paragraph('''
-             You here see all the chosen bins, ranked by co-occurrence of tracks within each bin.
-            ''')
-        core.divEnd()
-
-
         analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWrapperStat)
-        analysisSpec.addParameter('pairwiseStatistic', 'ObservedVsExpectedStat')
-        analysisSpec.addParameter('summaryFunc', choices.summaryFunc)
-        analysisSpec.addParameter('multitrackSummaryFunc', choices.summaryFunc)
+        #analysisSpec.addParameter('pairwiseStatistic', 'ObservedVsExpectedStat')
+        analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
+        analysisSpec.addParameter('summaryFunc', summaryFunc)
+        analysisSpec.addParameter('multitrackSummaryFunc', summaryFunc)
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         tracks = [Track(x.trackName) for x in gsuite.allTracks()]
 
@@ -225,16 +314,30 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
                                                          binSpec,
                                                          choices.genome)
         results = doAnalysis(analysisSpec, analysisBins, tracks)
+        #print '<br>results: ', results, '<br><br>'
 
-        prettyResults = {}
+
+
+
+
+        prettyResults = OrderedDict()
         for key, val in results.iteritems():
             if "Result" in val.keys():
                 prettyResults[key] = val["Result"]
             else:
                 prettyResults[key] = "No result"
 
-        core.header("Average of the Forbes similarity measure for pairs of tracks within each bin")
-        topTrackTitle = results.keys()[0]
+
+        core.header(statTxt + " co-occurence between pairs of tracks within each bin")
+
+        if choices.analysisName == cls.Q2:
+            core.paragraph(resultsTxt)
+
+        core.divBegin(divClass='resultsExplanation')
+        core.paragraph('The following is a list of all bins and the <b>' + statTxt.lower() + '</b> co-occurrence of tracks within each bin.')
+        core.divEnd()
+
+
         """
         core.paragraph('''
             Suite data is coinciding the most in bin %s
@@ -279,9 +382,10 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         if errorString:
             return errorString
 
-        errorString = cls.validateUserBins(choices)
-        if errorString:
-            return errorString
+        if choices.genome:
+            errorString = cls.validateUserBins(choices)
+            if errorString:
+                return errorString
 
         return None
 
@@ -298,7 +402,7 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         '''
         Specifies whether the debug mode is turned on.
         '''
-        return True
+        return False
 
     @staticmethod
     def getOutputFormat(choices):
@@ -310,3 +414,7 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         history item box.
         '''
         return 'customhtml'
+
+    @staticmethod
+    def isPublic():
+        return True

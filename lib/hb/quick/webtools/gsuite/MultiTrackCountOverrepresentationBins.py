@@ -10,6 +10,8 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.statistic.GSuiteBinEnrichmentPValWrapperStat import GSuiteBinEnrichmentPValWrapperStat
+from quick.application.UserBinSource import GlobalBinSource
 
 
 class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
@@ -23,10 +25,15 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
     GSUITE_ALLOWED_FILE_TYPES = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
                                   GSuiteConstants.VALUED_SEGMENTS]
+    SUMMARY_FUNC_DEFAULT = 'avg'
 
     # Override UserbinMixin bin selector to only allow certain choices
-    UserBinMixin.getOptionsBoxCompareIn = lambda self, prevChoises: ['Custom specification', 'Genes(Ensembl)', 'Bins from history'] if prevChoises.genome == "hg19" else ['test']
-    UserBinMixin.getOptionsBoxBinSize = lambda self, prevChoises: "1m" if prevChoises.CompareIn == 'Custom specification' else None
+    UserBinMixin.getOptionsBoxCompareIn = lambda self, prevChoises: ['Custom specification', 'Genes(Ensembl)', 'Bins from history'] if prevChoises.genome == "hg19" else ['Custom specification', 'Bins from history']
+    UserBinMixin.getOptionsBoxBinSize = lambda self, prevChoises: "250k" if prevChoises.CompareIn == 'Custom specification' else None
+
+    Q1 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments"
+    Q2 = "Show me a list of all bins and the enrichment within each bin, based on the number of base pairs covered by segments"
+    Q3 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments. Also compute p-values for each bin."
 
 
     @staticmethod
@@ -61,22 +68,36 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return  [('', 'description')] +\
-                [('GSuite file to analyse:', 'gsuite')] +\
+        return  [('Basic user mode', 'isBasic'), ('', 'description'), ('<p>Which analysis question do you want to run?<p>','analysisName')] +\
+                [('<br><p>Select a GSuite file containing the tracks you want to analyse:</p>', 'gsuite')] +\
                 cls.getInputBoxNamesForGenomeSelection() +\
                 [('', 'summaryFunc')] +\
-                [('Choose how to select regions/bins to rank: ','CompareIn'),('Which regions/bins: (comma separated list, * means all)', 'Bins'), ('Genome region: (Example: chr1:1-20m, chr2:10m-) ','CustomRegion'),\
+                [('<br><p>Choose how to select regions/bins to rank:</p>','CompareIn'),('Which regions/bins: (comma separated list, * means all)', 'Bins'), ('Genome region: (Example: chr1:1-20m, chr2:10m-) ','CustomRegion'),\
                         ('Bin size: (* means whole region k=Thousand and m=Million E.g. 100k)', 'BinSize'), ('Bins from history', 'HistoryBins')] +\
                 DebugMixin.getInputBoxNamesForDebug()
 
     @staticmethod
-    def getOptionsBoxDescription():  # Alternatively: getOptionsBox1()
-        desc = '<b>Description: </b> This tool ranks specified genomic regions (bins) based on track enrichment. ' + \
+    def getOptionsBoxIsBasic():
+        return False
+
+    @staticmethod
+    def getOptionsBoxDescription(prevChoices):  # Alternatively: getOptionsBox1()
+        desc = '<p><b>Tool description: </b></p> <p>This tool ranks specified genomic regions (bins) based on track enrichment. ' + \
                 'You will need to specify which bins you want to rank. This will typically be done by selecting <i>Custom specification</i>' + \
-                ' and choosing a main region (e.g. <i>chr1, chr2</i>) and a bin size, resulting in evenly distributed bins within those regions, all having the same size. ' +\
-                '<br><br>These bins are ranked based on the average track enrichment (base pairs covered by track divided by size of bin).' + \
-                ' You can instead choose to rank based on the <i>maximum</i> track enrichment inside the bin, by selecting that option in the select menu. <br><hr><br>'
+                ' and choosing a main region (e.g. <i>chr1, chr2</i>) and a bin size, resulting in evenly distributed bins within those regions, all having the same size.</p> ' +\
+                '<p>These bins are ranked based on the average or maximum track enrichment, which can be computed either based on number of base pairs covered by segments or the number of segments within each bin.</p>' + \
+                '<p>Note: if p-values are to be computed, only average enrichment is supported (not maximum track enrichment).</p>'
+
+        #if not prevChoices.isBasic:
+            #desc += ' You can instead choose to rank based on the <i>maximum</i> track enrichment inside the bin, by selecting that option in the select menu.<br><br>'
+
+        desc += ' <br><hr><br>'
+
         return '__rawstr__', desc
+
+
+    def getOptionsBoxAnalysisName(cls, prevChoices):
+        return [cls.Q1, cls.Q2, cls.Q3]
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):  # Alternatively: getOptionsBox1()
@@ -135,7 +156,6 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         '''
         return ('__history__',)
 
-
     @staticmethod
     def getOptionsBoxQuestion(prevChoices):  # Alternatively: getOptionsBox1()
         return ['question 6', 'question 7', 'question 8']
@@ -149,13 +169,19 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
                 'RatioOfOverlapToUnionStat'
                 ]
 
-    @staticmethod
-    def getOptionsBoxSummaryFunc(prevChoices):
+    @classmethod
+    def getOptionsBoxSummaryFunc(cls, prevChoices):
         # Hack: Return raw html since this select box gives short uninformative names:
-        html = "<p>Select how to combine the computed statistic over tracks:</p><p><select name='summaryFunc'>" + \
-               "<option value='avg'>Take the average over all tracks</option>" + \
-               "<option value='max'>Take the maximum value over all tracks</option>" + \
+
+        if prevChoices.analysisName == cls.Q3:
+            html = "<br><p>Select how to combine the computed statistic over tracks:</p><p><select name='summaryFunc'></p>" + \
+               "<option value='avg'>Take the average over all tracks  (max not allowed when computing p-values)</option>" + \
                "</select></p>"
+        else:
+            html = "<br><p>Select how to combine the computed statistic over tracks:</p><p><select name='summaryFunc'>" + \
+                   "<option value='avg'>Take the average over all tracks</option>" + \
+                   "<option value='max'>Take the maximum value over all tracks</option>" + \
+                   "</select></p>"
 
         return '__rawstr__', html
 
@@ -210,38 +236,76 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
 
         print results.getGlobalResult()
         """
-        # Stat question 6
+        # Stat question 4
+        summaryFunc = choices.summaryFunc if choices.summaryFunc else cls.SUMMARY_FUNC_DEFAULT
+        statTxt = "Average"
+        if(summaryFunc == "max"): statTxt = "Maximum"
+
+        statDesc = 'number of <b>segments</b> per base'
+        if choices.analysisName == cls.Q2:
+            statDesc = 'number of <b>base pairs covered by segments</b>'
+
+
         core = HtmlCore()
         core.begin()
+        core.header("Enrichment of GSuite tracks across regions")
         core.divBegin(divClass='resultsExplanation')
-        core.paragraph('''
-                You here see all the chosen bins, ranked by track enrichment within each bin.
-            ''')
-
+        core.paragraph('The following is a list of all regions (bins) and the <b>' + statTxt.lower() + '</b> ' + statDesc + ' across the tracks within each region.')
         core.divEnd()
+
+
+        if choices.analysisName == cls.Q3:
+
+            # Compute p-value per bin
+            analysisSpec = AnalysisSpec(GSuiteBinEnrichmentPValWrapperStat)
+            analysisSpec.addParameter('rawStatistic', 'BinSizeStat')
+            #analysisSpec.addParameter('pairwiseStatistic', 'ProportionElementCountStat')
+            #analysisSpec.addParameter('pairwiseStatistic', 'ProportionElementCountStat')
+            #analysisSpec.addParameter('summaryFunc', summaryFunc)
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            tracks = [Track(x.trackName) for x in gsuite.allTracks()]
+            regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+            from quick.statistic.GenericRelativeToGlobalStat import GenericRelativeToGlobalStatUnsplittable
+            #analysisSpec.addParameter("globalSource", GenericRelativeToGlobalStatUnsplittable.getGlobalSource('test', choices.genome, False))
+            analysisSpec.addParameter("globalSource", 'userbins')
+            analysisBins = GalaxyInterface._getUserBinSource(regSpec,
+                                                             binSpec,
+                                                             choices.genome)
+            results_pval = doAnalysis(analysisSpec, analysisBins, tracks)
+
+        #print results_pval
 
         analysisSpec = AnalysisSpec(SummarizedWrapperStat)
         analysisSpec.addParameter('rawStatistic', 'SummarizedWrapperStat')
-        analysisSpec.addParameter('pairwiseStatistic', 'ProportionCountStat')
-        analysisSpec.addParameter('summaryFunc', choices.summaryFunc)
+
+        countStat = 'ProportionElementCountStat'
+        if choices.analysisName == cls.Q2:
+            countStat = 'ProportionCountStat'
+
+        # analysisSpec.addParameter('pairwiseStatistic', 'ProportionCountStat')
+        analysisSpec.addParameter('pairwiseStatistic', countStat)
+        analysisSpec.addParameter('summaryFunc', summaryFunc)
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         tracks = [Track(x.trackName) for x in gsuite.allTracks()]
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
-                                                         binSpec,
                                                          choices.genome)
         results = doAnalysis(analysisSpec, analysisBins, tracks)
 
         prettyResults = {}
+        #print results
+
         for key, val in results.iteritems():
             if "Result" in val.keys():
-                prettyResults[key] = val["Result"]
+
+                if choices.analysisName == cls.Q3:
+                    prettyResults[key] = (val["Result"], results_pval[key]["Result"])
+                else:
+                    prettyResults[key] = (val["Result"])
             else:
                 prettyResults[key] = "No result"
 
-        core.header("List of bins and number of elements per base across the suite")
         topTrackTitle = results.keys()[0]
         """
         core.paragraph('''
@@ -249,8 +313,11 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         ''' % ('test'))
         """
 
+        columnNames = ['Bin', 'Representation within the bin']
+        if choices.analysisName == cls.Q3:
+            columnNames.append('p-value')
 
-        core.tableFromDictionary(prettyResults, columnNames=['Bin', 'Representation within the bin'], sortable=True, presorted=0, tableId='res')
+        core.tableFromDictionary(prettyResults, columnNames=columnNames, sortable=True, presorted=0, tableId='res')
         core.divEnd()
         core.end()
 
@@ -286,9 +353,10 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         if errorString:
             return errorString
 
-        errorString = cls.validateUserBins(choices)
-        if errorString:
-            return errorString
+        if choices.genome:
+            errorString = cls.validateUserBins(choices)
+            if errorString:
+                return errorString
 
         return None
 
@@ -305,7 +373,7 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         '''
         Specifies whether the debug mode is turned on.
         '''
-        return True
+        return False
 
     @staticmethod
     def getOutputFormat(choices):
@@ -317,3 +385,7 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         history item box.
         '''
         return 'customhtml'
+
+    @staticmethod
+    def isPublic():
+        return True

@@ -99,6 +99,9 @@ class GtrackSpecParser(object):
     
     def parseSpecFile(self):
         contentList =  self.getContentList()
+        # TODO: make sure that scripts and css are imported
+        # relatively with "../../" instead of absolute path
+        # For now, change the resulting HTLM file manually
         self.core.begin()
         self.core.script("function ShowHide(divId)\n{\nif(document.getElementById(divId).style.display == 'none')\n{\ndocument.getElementById(divId).style.display='block';\n}\nelse\n{\ndocument.getElementById(divId).style.display = 'none';\n}\n}\n")
         self.core.append('<pre class="largefont">'+self.specStr.split(contentList[0])[0])

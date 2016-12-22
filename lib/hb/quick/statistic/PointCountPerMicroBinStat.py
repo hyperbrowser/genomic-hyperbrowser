@@ -34,11 +34,12 @@ class PointCountPerMicroBinStatUnsplittable(Statistic):
         self.microBin = int(microBin)
             
     def _compute(self):
-        starts = self._children[0].getResult().startsAsNumpyArray()
+        tv = self._children[0].getResult()
+        starts = tv.startsAsNumpyArray()
         binArray = starts/self.microBin
         binCounts = np.bincount(binArray)
-        numMicroBins = int( math.ceil( float(self._region.end) / self.microBin) )
-        binCounts = np.concatenate([binCounts, np.zeros(numMicroBins-len(binCounts))])
+        numMicroBins = int( math.ceil( float(len(self._region)) / self.microBin) )
+        binCounts = np.concatenate([binCounts, np.zeros(numMicroBins-len(binCounts), dtype='int')])
         
         return dict( [ (str(index), binCounts[index]) for index in xrange(len(binCounts)) ] )
     

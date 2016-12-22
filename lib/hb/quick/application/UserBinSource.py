@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from gold.util.CommonFunctions import parseShortenedSizeSpec
-from gold.util.CustomExceptions import ShouldNotOccurError
+from gold.util.CustomExceptions import ShouldNotOccurError, InvalidFormatError
 from config.Config import DEFAULT_GENOME
 from gold.origdata.GenomeElementSorter import GenomeElementSorter
 from gold.application.DataTypes import getSupportedFileSuffixesForBinning
@@ -98,10 +98,8 @@ class UserBinSource(BinSource):
     (chrReg,binSize) where chrReg is a Region specification as in UCSC Genome browser (string), 
     or '*' to denote whole genome, and where binSize is a number specifying length of each bin that the region should be split into.
     '''
-    def __new__(cls, regSpec, binSpec, genome=None, categoryFilterList=None, strictMatch=True): #,fileType):
+    def __new__(cls, regSpec, binSpec, genome=None, categoryFilterList=None, strictMatch=True):
         if regSpec in ['file', 'track'] + getSupportedFileSuffixesForBinning():
-            #if fileType != 'bed':
-            #    raise NotImplementedError
             if genome is None:
                 genome = DEFAULT_GENOME
 

@@ -21,7 +21,7 @@ Created on Feb 12, 2015
 '''
 
 def drawLineplot(plotDataDict, mainTitle, xLabels, maxPercentage, xTitle, yTitle):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     matplot = robjects.r.matplot
     cbind = robjects.r.cbind
@@ -38,7 +38,7 @@ def drawVioplot(plotDataMatrix, xlabels, mainTitle,
                 xTitle, yTitle, vioplotColor, 
                 xAxisAt, xLimMin, xLimMax, xLas, 
                 yAxisAt, yLimMin, yLimMax, yLas):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
     
     convertedData = [robjects.FloatVector(x) for x in plotDataMatrix]
     rplot = robjects.r.plot 
@@ -71,7 +71,7 @@ def dataIntoBins(xData, yData, xLimMax, bins):
 
 
 def drawSmoothedLinePlot(xData, yData, colors, smoothingParameter, displayPoints):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     smoothSpline = robjects.r['smooth.spline']
     lines = robjects.r.lines
@@ -121,7 +121,8 @@ def drawMovingAvgSmoothedLinePlot(xData, yData, col, displayPoints=False, spar=0
 
 
 def drawHeatmap(heatmapPlotData, rowLabels, colLabels, mainTitle, symm=True):
-    from gold.application.RSetup import robjects
+    """heatmapPlotData is a matrix represented by a list of lists"""
+    from proto.RSetup import robjects
 
     from numpy import matrix
     heatmap = robjects.r.heatmap
@@ -131,14 +132,14 @@ def drawHeatmap(heatmapPlotData, rowLabels, colLabels, mainTitle, symm=True):
     heatmap(rmatrix(data, nrow=len(rowLabels)), labRow=rowLabels, labCol=colLabels, main=mainTitle, symm=symm)
     
 def getRainbowColors(nrColors):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     rainbow = robjects.r.rainbow
     colors = rainbow(nrColors)
     return colors
 
 def drawHistogram(data, mainTitle, xTitle, yTitle, xLim, yLim=None, color='cadetblue2'):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     hist = robjects.r.hist
     if yLim:
@@ -149,7 +150,7 @@ def drawHistogram(data, mainTitle, xTitle, yTitle, xLim, yLim=None, color='cadet
              xlim=robjects.FloatVector(xLim), col=color)
 
 def drawMultiHistogram(data, mainTitle, xTitle, yTitle, names=None, colors=None, hasLegend = False):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     from rpy2.robjects.packages import importr
     plotrix = importr('plotrix')
@@ -164,21 +165,21 @@ def drawMultiHistogram(data, mainTitle, xTitle, yTitle, names=None, colors=None,
 
 
 def drawVerticalLine(verticalLine):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     abline = robjects.r.abline
     abline(v=verticalLine)
 
 
 def drawBarplot(data, mainTitle, xTitle, yTitle, names, col):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     barplot = robjects.r.barplot
     barplot(robjects.FloatVector(data), main=mainTitle, xlab=xTitle, ylab=yTitle,
              names = names, col=col)
 
 def drawXYPlot(xData, yData, plotType, xLim, yLim, mainTitle, xTitle, yTitle):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     rPlot = robjects.r.plot
     rPlot(xData, yData, type=plotType, xlim=robjects.FloatVector(xLim), ylim=robjects.FloatVector(yLim), 
@@ -193,11 +194,11 @@ def drawEmptyPlot(xTitle, yTitle, mainTitle, xLim, yLim):
     drawXYPlot([1], [1], 'n', xLim, yLim, mainTitle, xTitle, yTitle)
 
 def drawLegend(position, names, colors):
-    from gold.application.RSetup import robjects
+    from proto.RSetup import robjects
 
     legend = robjects.r.legend
     legend(position, legend=names, lty=1, col=colors, bty='n', cex=0.75)
 
 def rDevOff():
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     r('dev.off()')

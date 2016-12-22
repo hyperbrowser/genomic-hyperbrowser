@@ -2,7 +2,7 @@ import os
 import random
 import time
 
-from gold.application.RSetup import r, rpy1
+from proto.RSetup import r, rpy1
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.statistic.McFdr import McFdr
 

@@ -109,7 +109,7 @@ class MultiGwasResults(dict):
         if None in values:
             return 'Not generated, due to missing values'
         
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         r('library(gplots)')
         dataMatrix = r.matrix(robjects.FloatVector(values),nrow=numRows)
         dataMatrix= r('function(data,names){rownames(data)=names; data}')(dataMatrix,refSubTypes)

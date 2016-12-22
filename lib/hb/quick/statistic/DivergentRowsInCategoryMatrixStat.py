@@ -18,7 +18,7 @@ from quick.statistic.CategoryMatrixStat import CategoryMatrixStatUnsplittable
 from gold.statistic.MagicStatFactory import MagicStatFactory
 import numpy
 from collections import OrderedDict
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 #from gold.statistic.Statistic import Statistic, StatisticDictSumResSplittable
 #from gold.track.Track import Track
 #from gold.statistic.RawDataStat import RawDataStat
@@ -64,7 +64,7 @@ class DivergentRowsInCategoryMatrixStatUnsplittable(CategoryMatrixStatUnsplittab
         df = (numRows-1)*(numCols-1)
         
         #pval = 1.0-r.pchisq(x,df)
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         pval = r.pchisq(x,df,0,False)
         
         rowDiffCase = diffTerms[:,0]

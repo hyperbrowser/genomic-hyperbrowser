@@ -32,7 +32,7 @@ def setManualSeed(seed):
         
     random.seed(seed)
     numpy.random.seed(seed)
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     r('function(seed) {set.seed(seed)}')(seed)
     
 def getManualSeed():
@@ -51,11 +51,11 @@ def returnToStoredState():
     
     random.setstate(random._storedStates[0])
     numpy.random.set_state(random._storedStates[1])
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     r('function(state) {.Random.seed <- state}')(random._storedStates[2])
 
 def storeState():
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     r('runif(1)')
     random._storedStates = [random.getstate(), numpy.random.get_state(), r('.Random.seed')]
     

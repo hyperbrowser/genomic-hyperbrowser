@@ -27,7 +27,7 @@ from quick.postprocess.HistBinnerPP import HistBinnerPP
 from quick.postprocess.YSummarizerPP import YSummarizerPP
 from gold.statistic.AllStatistics import MeanInsideOutsideTwoTailRandStat
 from config.Config import *
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from numpy import *
 import profile
 import hotshot, hotshot.stats

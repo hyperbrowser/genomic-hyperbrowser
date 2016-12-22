@@ -1,9 +1,12 @@
 import datetime
 import re
+
 from collections import OrderedDict
 from functools import partial
 
 import gold.gsuite.GSuiteComposer as GSuiteComposer
+import quick.gsuite.GSuiteUtils as GSuiteUtils
+from gold.application.DataTypes import getSupportedFileSuffixesForGSuite
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack
 from gold.util.CustomExceptions import AbstractClassError
@@ -11,9 +14,6 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
 
 class TrackSearchTool(GeneralGuiTool):
     # Other constants
@@ -25,6 +25,13 @@ class TrackSearchTool(GeneralGuiTool):
     OUTPUT_GENOME = 'hg19'
 
     exception = None
+
+    NONE_CHOICE = '--- None ---'
+    SELECT_CHOICE = '--- Select ---'
+    ALL_CHOICE = '--- Select ---'
+    RANGE_CHOICE = '--- Select ---'
+    RESULT_COLS = ['hb_datatype','hb_cell_tissue_type','hb_target','hb_genomebuild','hb_filesuffix']
+    RESULT_COLS_HEADER = ['Type of data','Cell/Tissue type','Target','Genome build','File suffix']
 
     def __new__(cls, *args, **kwArgs):
         cls.DOWNLOAD_PROTOCOL = cls._getDownloadProtocol()
@@ -163,6 +170,7 @@ class TrackSearchTool(GeneralGuiTool):
                 ('','repoInfo'), \
                 ('Search for tracks using metadata?', 'search'), \
                 ('','staticInfo'),\
+                ('Limit file formats?', 'filterFileSuffix'), \
                 ('HIDDEN_0','hidden'),\
                 ('Session Id','sessionId'),
                 #('Select an attribute:','attributes'),\
@@ -177,9 +185,10 @@ class TrackSearchTool(GeneralGuiTool):
                  attrBoxes +\
                 [#('HIDDEN_1','dbTemp'),\
                  #('<h3>Select File Types</h3>', 'filetype'),\
-                 ('<h3>Select Data Type</h3>', 'dataType'),\
+                 ('<h3>Select type of data</h3>', 'dataType'),\
                  ('<h3>Limit selection of tracks?</h3>', 'presentResults'),\
-                 ('<h3>Results</h3>','results'),\
+                 ('<h3>Select Tracks</h3>','results'),\
+                 ('<h3>Results</h3>','resultsTable'),\
                  ('<h3>Output Format</h3>','outFormat')]
 
     #@staticmethod
@@ -241,6 +250,10 @@ class TrackSearchTool(GeneralGuiTool):
         'by the Genomic HyperBrowser project.'
     
     @classmethod
+    def getOptionsBoxFilterFileSuffix(cls,prevChoices):
+        return ['Limit to file formats supported by GSuite HyperBrowser',\
+                'Do not limit file formats (I just want to download the data)']
+    @classmethod
     def getOptionsBoxHidden(cls,prevChoices):
         return 
 
@@ -265,8 +278,8 @@ class TrackSearchTool(GeneralGuiTool):
     #        colsList.append(col)
 
         #return OrderedDict(colsList)
-    #    colsList.insert(0,'--None--')
-        #colsList.insert(1,'--All--')
+    #    colsList.insert(0,cls.NONE_CHOICE)
+        #colsList.insert(1,cls.ALL_CHOICE)
     #    return colsList
 
 
@@ -274,7 +287,7 @@ class TrackSearchTool(GeneralGuiTool):
     #def getOptionsBoxDbTemp(prevChoices):
     #
     #    selected_attr = prevChoices.attributes
-    #    if selected_attr in [None,'--None--'] :
+    #    if selected_attr in [None,cls.NONE_CHOICE] :
     #       TrackSearchTool.DB._db.runQuery\
     #       ("delete from temp where session_id like '"+prevChoices.sessionId+"';")
     #       return
@@ -282,7 +295,7 @@ class TrackSearchTool(GeneralGuiTool):
     #    rows = TrackSearchTool.DB._db.runQuery\
     #    ("select attr from temp where session_id like '"+prevChoices.sessionId+"';")
     #    selected_attrs_db = [x[0] for x in rows]
-    #    if selected_attr == '--All--':
+    #    if selected_attr == cls.ALL_CHOICE:
     #       for x in TrackSearchTool.ATTRIBUTES:
     #          if not selected_attr in selected_attrs_db:
     #             TrackSearchTool.DB._db.insertRow\
@@ -318,7 +331,7 @@ class TrackSearchTool(GeneralGuiTool):
         #selected_attrs = [x[0] for x in rows]
         #if not cls.ATTRIBUTES[index] in selected_attrs:
         #   return
-        #if getattr(prevChoices, 'valueList%s' % index) == '--Range--':
+        #if getattr(prevChoices, 'valueList%s' % index) == cls.RANGE_CHOICE:
         #   return ''
 
     @classmethod
@@ -327,14 +340,14 @@ class TrackSearchTool(GeneralGuiTool):
         Getting the list of attributes, e.g. "cell" and "datatype" for ENCODE
         '''
         if index > 0 and getattr(prevChoices, 'valueList%s' % (index-1))\
-         in [None,'--Select--','']:
+         in [None, cls.SELECT_CHOICE, cls.NONE_CHOICE, '']:
             return
-        
+
         if index > 0 and getattr(prevChoices, 'multiSelect%s' % (index-1)) in ['Multiple Selection','Text Search']:
             val = getattr(prevChoices, 'valueList%s' % (index-1))
             if len([x[0] for x in val.items() if x[1]]) == 0:
                 return
-                
+
         #if val == None:
         #   return
         colsList = [cls._getAttributeReadableNameFromName(name) for name in cls.ATTRIBUTES]
@@ -342,31 +355,38 @@ class TrackSearchTool(GeneralGuiTool):
         if index == 0:
             #cols,colListString = cls.getColListString()
             #count = cls.getALLRowsCount(colListString)
-            colsList.insert(0,'--None--')
+            colsList.insert(0, cls.SELECT_CHOICE)
             if prevChoices.search != 'Yes':
-                return #['--ALL['+str(count)+']--'] 
+                return #['--ALL['+str(count)+']--']
             else:
                 return colsList
+        else:
+            colsList.insert(0, cls.NONE_CHOICE)
+
         for i in xrange(len(cls.ATTRIBUTES)):
             if i >= index:
                break
             val = getattr(prevChoices, 'attributeList%s' % i)
-            if val in [None,'--None--']:
-               continue
-            elif val in colsList:
-               colsList.remove(val)
+            # if val in [None,cls.NONE_CHOICE]:
+            #     continue
+            # elif val in colsList:
+            #     colsList.remove(val)
+
+            if val in colsList:
+                colsList.remove(val)
 
             #   colsList.append(TrackSearchTool.ATTRIBUTES[i])
             #elif getattr(prevChoices, 'valueList%s' % i) == None:
             #   colsList.append(TrackSearchTool.ATTRIBUTES[i])
         colsList.sort()
-        ##colsList.insert(0,'--None--')
+        colsList.insert(0, colsList.pop(colsList.index(cls.NONE_CHOICE)))
+        ##colsList.insert(0,cls.NONE_CHOICE)
         return colsList
 
     @classmethod
     def _getMultiSelectBox(cls, prevChoices, index):
         attribute = getattr(prevChoices, 'attributeList%s' % index)
-        if attribute in [None,'--None--']:
+        if attribute in [None, cls.SELECT_CHOICE, cls.NONE_CHOICE, '']:
             return
         else:
             return ['Single Selection','Multiple Selection','Text Search']
@@ -394,7 +414,7 @@ class TrackSearchTool(GeneralGuiTool):
         #("select attr from temp where session_id like '"+prevChoices.sessionId+"';")
         #selected_attrs = [x[0] for x in rows]
         attribute = getattr(prevChoices, 'attributeList%s' % index)
-        if attribute in [None, '--None--']:
+        if attribute in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']:
             return
         attribute_col_name = cls._getAttributeNameFromReadableName(attribute)
 
@@ -408,7 +428,7 @@ class TrackSearchTool(GeneralGuiTool):
             ##else:
             ##    multi_val_rec = '(.*' + multi_val_rec + '.*)'
             ##multi_val_list = cls.DB._db.getREMatchingValues(cls.TABLE_NAME,cls.DB._db.correctColumNames([attribute_col_name])[0],multi_val_rec)
-            
+
             #multi_val_list.append(','.join([cls.TABLE_NAME,attribute_col_name,multi_val_rec]))
             #return [multi_val_rec]
 
@@ -428,20 +448,21 @@ class TrackSearchTool(GeneralGuiTool):
             rep_val = getattr(prevChoices, 'valueList%s' % i)
 
             if type(rep_val) is list:
-                if attr in [None,'--None--'] or rep_val in ['--Select--','--Range--',None,'']:
+                if attr in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, ''] or \
+                                rep_val in [cls.SELECT_CHOICE, cls.RANGE_CHOICE, None, '']:
                     continue
                 val = cls._getAttributeValueNameFromReadableName(rep_val)[1]
                 prevSelected[col] = val
 
             elif type(rep_val) is OrderedDict:
                 selected_vals = [x for x,selected in rep_val.iteritems() if selected]
-                if attr in [None,'--None--'] or len(selected_vals) == 0:
+                if attr in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, ''] or len(selected_vals) == 0:
                     continue
                 vals = [cls._getAttributeValueNameFromReadableName(val)[1] for val in selected_vals]
                 prevSelected[col] = vals##
             else:
                 selected_vals = [x.strip() for x in rep_val.split('\n')]
-                if attr in [None,'--None--'] or len(selected_vals) == 0:
+                if attr in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, ''] or len(selected_vals) == 0:
                     continue
                 vals = [cls._getAttributeValueNameFromReadableName(val)[1] for val in selected_vals]
                 prevSelected[col] = vals##
@@ -486,6 +507,7 @@ class TrackSearchTool(GeneralGuiTool):
             else:
                 ##return multi_val_list
                 ##return OrderedDict([(x,False) for x in rep_valuesList])
+                cls.exception = 'No attributes matching the search text'
                 return
                 #return OrderedDict([(cls.TABLE_NAME+','+attribute_col_name+','+multi_val_rec+','+str(len(multi_val_list)),False)]+[(x,False) for x in rep_valuesList])
             #return OrderedDict([(x,True) for x in rep_valuesList])
@@ -493,7 +515,7 @@ class TrackSearchTool(GeneralGuiTool):
             return OrderedDict([(x,False) for x in rep_valuesList])
         else:
 
-            return ['--Select--'] + rep_valuesList
+            return [cls.SELECT_CHOICE] + rep_valuesList
             #[(a,b,cls.ATTRIBUTE_VALUES_DETAILS[(a,b)][0],cls.ATTRIBUTE_VALUES_DETAILS[(a,b)][1]) for a,b in cls.ATTRIBUTE_VALUES_DETAILS.keys()] +\
 
 
@@ -539,84 +561,90 @@ class TrackSearchTool(GeneralGuiTool):
         return '__hidden__',cls.TIME_STAMP
 
     @classmethod
-    def getOptionsBoxPresentResults(cls, prevChoices):
-        if len(cls.ATTRIBUTES) > 1 and \
-        getattr(prevChoices, 'attributeList0') in [None, '--None--']:
-            return
+    def _getNumSelectedAttrs(cls, prevChoices):
         selected_attrs = 0
         for i in xrange(len(cls.ATTRIBUTES)):
-            if not getattr(prevChoices, 'valueList%s' % i) in [None,'','--Select--']:
-                #New requested by SG
-                if getattr(prevChoices, 'multiSelect%s' % (i)) in ['Multiple Selection','Text Search']:
+            if not getattr(prevChoices, 'valueList%s' % i) in [None, '',
+                                                               cls.SELECT_CHOICE]:
+                # New requested by SG
+                if getattr(prevChoices, 'multiSelect%s' % (i)) in \
+                        ['Multiple Selection', 'Text Search']:
                     val = getattr(prevChoices, 'valueList%s' % (i))
                     if len([x[0] for x in val.items() if x[1]]) == 0:
                         continue
-                selected_attrs+=1
-
-        if selected_attrs == 0 or len([x for x,selected in prevChoices.dataType.iteritems() if selected]) == 0:
-            return
-        else:
-            cols,colListString = cls.getColListString()
-            count = len(cls._getValidRows(prevChoices, cls.getFilteredRows(prevChoices,colListString)))
-            return ['Select all tracks['+str(count)+']','Select tracks manually']
-            #'List search results','Download results as history elements']#,'Download and convert to GTrack']
+                selected_attrs += 1
+        return selected_attrs
 
     @classmethod
     def getOptionsBoxDataType(cls, prevChoices):
-        selected_attrs = 0
-        for i in xrange(len(cls.ATTRIBUTES)):
-            if not getattr(prevChoices, 'valueList%s' % i) in [None,'','--Select--']:
-                #New requested by SG
-                if getattr(prevChoices, 'multiSelect%s' % (i)) in ['Multiple Selection','Text Search']:
-                    val = getattr(prevChoices, 'valueList%s' % (i))
-                    if len([x[0] for x in val.items() if x[1]]) == 0:
-                        continue
-                selected_attrs+=1
-        
+        selected_attrs = cls._getNumSelectedAttrs(prevChoices)
+
         if selected_attrs == 0:
-            #and not getattr(prevChoices, 'attributeList0') in [None,'--None--']:
+            #and not getattr(prevChoices, 'attributeList0') in [None,cls.NONE_CHOICE]:
             return
-        
+
         cols,colListString = cls.getColListString()
         rows = cls.getFilteredRows(prevChoices,colListString)
         
+        #print 'rows: '+str(len(rows))
         #test#return OrderedDict([(str(row),True) for row in rows])
-        
+
         if rows[0][0].find('EMPTY') > -1:
             cls.exception = rows[0]
             return []
         WHERE = cls.getSQLFilter(prevChoices,colListString)
         datatypes = cls.DB.getTableDataTypes(cls.TABLE_NAME,WHERE)
+
+
+        return OrderedDict([(el[0] + ' [hits:'+str(el[1])+']',True) for el in datatypes])
         
-        return OrderedDict([(el[0] + ' ['+str(el[1])+']',True) for el in datatypes])
-        
-    # @classmethod
+
+    @classmethod
+    def getOptionsBoxPresentResults(cls, prevChoices):
+        if len(cls.ATTRIBUTES) > 1 and getattr(prevChoices, 'attributeList0') \
+                in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']:
+            return
+
+        selected_attrs = cls._getNumSelectedAttrs(prevChoices)
+
+        if selected_attrs == 0 or prevChoices.dataType is None or\
+                len([x for x, selected in prevChoices.dataType.iteritems() if selected]) == 0:
+            return
+        else:
+            cols, colListString = cls.getColListString()
+            count = len(cls._getValidRows(prevChoices, cls.getFilteredRows(prevChoices, colListString)))
+            return ['Keep all tracks as selected above [hits:' + str(count) + ']',
+                    'Select tracks manually','select 10 random tracks','select 50 random tracks']
+            # 'List search results','Download results as history elements']#,'Download and convert to GTrack']
+
+
+        # @classmethod
     # def getOptionsBoxFiletype(cls, prevChoices):
     #     selected_attrs = 0
     #     for i in xrange(len(cls.ATTRIBUTES)):
-    #         if not getattr(prevChoices, 'valueList%s' % i) in [None,'','--Select--']:
+    #         if not getattr(prevChoices, 'valueList%s' % i) in [None,'',cls.SELECT_CHOICE]:
     #             #New requested by SG
     #             if getattr(prevChoices, 'multiSelect%s' % (i)) in ['Multiple Selection','Text Search']:
     #                 val = getattr(prevChoices, 'valueList%s' % (i))
     #                 if len([x[0] for x in val.items() if x[1]]) == 0:
     #                     continue
     #             selected_attrs+=1
-    # 
+    #
     #     #print 'ttt'+str(selected_attrs)
     #     if selected_attrs == 0:
-    #         #and not getattr(prevChoices, 'attributeList0') in [None,'--None--']:
+    #         #and not getattr(prevChoices, 'attributeList0') in [None,cls.NONE_CHOICE]:
     #         return
-    # 
+    #
     #     cols,colListString = cls.getColListString()
     #     rows = cls.getFilteredRows(prevChoices,colListString)
-    #     
+    #
     #     #test#return OrderedDict([(str(row),True) for row in rows])
-    #     
+    #
     #     if rows[0][0].find('EMPTY') > -1:
     #         cls.exception = rows[0]
     #         #print 'ttt2'+str(selected_attrs)
     #         return []
-    #     
+    #
     #     fileExtList = cls.DB.getAllFileExtensions()
     #     fileTypes = []
     #     for ext in fileExtList:
@@ -626,28 +654,31 @@ class TrackSearchTool(GeneralGuiTool):
     #             if '.*' in ext and re.match(ext.lower(), filename) or \
     #             filename.lower().endswith('.'+ext.lower()):
     #                 count += 1
-    #         
+    #
     #         if count > 0:
     #             #Skip showing the filetype count for now (problems, e.g. 'bam' and 'bai')
     #             #fileTypes.extend([x+'['+str(count)+']' for x in cls.DB.getFileTypes(ext)])
     #             fileTypes.extend([x for x in cls.DB.getFileTypes(ext)])
-    #     
+    #
     #     fileTypes = list(set(fileTypes))
     #     #print 'ttt'+str(selected_attrs)
     #     return OrderedDict([(el,True) for el in fileTypes])
 
     @classmethod
     def getOptionsBoxOutFormat(cls, prevChoices):
-        if prevChoices.presentResults != None or (len(cls.ATTRIBUTES) > 1 and getattr(prevChoices, 'attributeList0') in [None,'--None--']):
-           return ['gsuite','Html']
-           #return '__hidden__','gsuite'
+        if prevChoices.presentResults != None or \
+                (len(cls.ATTRIBUTES) > 1 and getattr(prevChoices, 'attributeList0')
+                in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']):
+           #return ['gsuite','Html']
+           return '__hidden__','gsuite'
 
 
     @classmethod
     def getOptionsBoxResults(cls, prevChoices):
-        if len(cls.ATTRIBUTES) > 1 and getattr(prevChoices, 'attributeList0') in [None,'--None--']:
+        if len(cls.ATTRIBUTES) > 1 and getattr(prevChoices, 'attributeList0') in \
+                [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']:
             return
-        if prevChoices.presentResults is None or 'Select all tracks' in prevChoices.presentResults:
+        if prevChoices.presentResults is None or 'all tracks' in prevChoices.presentResults or 'random' in prevChoices.presentResults:
            return
         cols,colListString = cls.getColListString()
         rows = cls._getValidRows(prevChoices, cls.getFilteredRows(prevChoices,colListString))
@@ -659,8 +690,8 @@ class TrackSearchTool(GeneralGuiTool):
             return
         list_ = []
         for i, row in enumerate(rows):
-            if row == None or len(row)<len(cols):
-               continue
+            if row is None or len(row)<len(cols):
+                continue
 
             #line = ''
             #for i in xrange(len(row)):
@@ -677,18 +708,69 @@ class TrackSearchTool(GeneralGuiTool):
         return OrderedDict(list_)
 
 
+    @classmethod
+    def getOptionsBoxResultsTable(cls, prevChoices):#To display results in HTML table
+        if len(cls.ATTRIBUTES) > 1 and getattr(prevChoices, 'attributeList0') in \
+                [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']:
+            return
+        if prevChoices.presentResults in [None,'select 10 random tracks','select 50 random tracks']:
+            return
+        cols,colListString = cls.getColListString()
+        rows = cls._getValidRows(prevChoices, cls.getFilteredRows(prevChoices,colListString))
+        if len(rows) == 0:
+            return
+        elif rows[0][0].find('EMPTY') > -1:
+            cls.exception = rows[0]
+            return
+
+        avail_table_attrs = {}
+        for col in cols:
+            if col.strip('"') in cls.RESULT_COLS:
+                avail_table_attrs[col.strip('"')] = cols.index(col)
+
+
+
+
+        output = {}#{'<b>Track</b>':['<b>'+x+'</b>' for x in cls.RESULT_COLS_HEADER]}
+        list_ = []
+        for i, row in enumerate(cls._getSelectedRows(prevChoices, rows)):
+            if row is None or len(row)<len(cols):
+                continue
+
+            filename = row[0].split('/')[-1]
+            rowList = []
+            for attr in cls.RESULT_COLS:
+                if attr in avail_table_attrs:
+                    try:
+                        rowList.append(row[avail_table_attrs[attr]].encode("utf-8"))
+                    except:
+                        rowList.append('None')
+            output['<a href="'+row[0]+'">'+filename+'</a>'] = rowList
+
+
+
+
+        #for i in xrange(0,len(list_)-1):
+        #    output['x'+str(i)] = [1,2,3,4,5]
+        html = HtmlCore()
+        html.tableFromDictionary(output, columnNames = ['File name'] + cls.RESULT_COLS_HEADER,\
+                                 tableId='t1', expandable=True)
+        return '__rawstr__',str(html)
     #@staticmethod
     @classmethod
     def execute(cls,choices, galaxyFn=None, username=''):
+
         cols, colListString = cls.getColListString()
 
-        if len(cls.ATTRIBUTES) > 1 and getattr(choices, 'attributeList0') in [None,'--None--']:
+
+        if len(cls.ATTRIBUTES) > 1 and getattr(choices, 'attributeList0') in \
+                [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']:
             #rows = cls.getAllRows(colListString)
             rows = cls._getValidRows(choices, cls.getAllRows(colListString))
         else:
             rows = cls._getValidRows(choices, cls.getFilteredRows(choices,colListString))
-        
-        
+
+
         if choices.outFormat == 'Html':
            cls.printHtml(choices,cols,rows,colListString,galaxyFn)
         else:
@@ -707,11 +789,11 @@ class TrackSearchTool(GeneralGuiTool):
     @classmethod
     def getALLRowsCount(cls, colListString):
         return cls.getRowsCount(colListString)
-    
+
     @classmethod
     def getAllRows(cls, colListString):
         return cls.getRows(colListString)
-    
+
     @classmethod
     def getFilteredRows(cls, choices,colListString):
         WHERE = cls.getSQLFilter(choices,colListString)
@@ -719,23 +801,33 @@ class TrackSearchTool(GeneralGuiTool):
     
     @classmethod
     def getSQLFilter(cls, choices,colListString):
-        
+
         WHERE = cls._getGlobalSQLFilter()
         if WHERE is not None:
             WHERE += ' AND '
         else:
             WHERE = ''
 
+        if choices.filterFileSuffix == 'Limit to file formats supported by GSuite HyperBrowser':
+            suffixes = getSupportedFileSuffixesForGSuite()
+            WHERE += 'hb_filesuffix in ('
+
+            for s in suffixes:
+                WHERE += '"'+s+'",'
+            WHERE = WHERE.rstrip(',')+') AND '
+
         for i in xrange(len(cls.ATTRIBUTES)):
 
             attr = getattr(choices, 'attributeList%s' % i)
-            if attr in [None,'--None--']:
+            if attr in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']:
                continue
-            
+
             col = cls._getAttributeNameFromReadableName(attr)
             col = cls.DB._db.correctColumNames([col])[0]
 
             rep_val = getattr(choices, 'valueList%s' % i)
+            if rep_val is None:
+                continue
 
             if getattr(choices, 'multiSelect%s' % i) in ['Multiple Selection','Text Search']:#type(rep_val) is OrderedDict:
                 selected_vals = [x for x,selected in rep_val.iteritems() if selected]
@@ -749,7 +841,7 @@ class TrackSearchTool(GeneralGuiTool):
                     WHERE = WHERE.strip(', ')
                 WHERE += ') AND '
             elif getattr(choices, 'multiSelect%s' % i) == 'Single Selection':
-                if rep_val in ['--Select--','--Range--',None,'']:
+                if rep_val in [cls.SELECT_CHOICE,cls.RANGE_CHOICE,None,'']:
                     continue
                 val = cls._getAttributeValueNameFromReadableName(rep_val)[1]
                 WHERE += col  + " LIKE '" + val + "' AND "
@@ -781,6 +873,7 @@ class TrackSearchTool(GeneralGuiTool):
             else:
                 WHERE += ' AND '+ g_WHERE
         
+
         query = "SELECT count(*) FROM "+cls.TABLE_NAME+" "
         if WHERE != '':
            query += "WHERE " + WHERE + "ORDER BY "+colListString+";"
@@ -803,6 +896,7 @@ class TrackSearchTool(GeneralGuiTool):
             else:
                 WHERE += ' AND '+ g_WHERE
         
+
         query = "SELECT "+colListString+" FROM "+cls.TABLE_NAME+" "
         if WHERE != '':
            query += "WHERE " + WHERE + "ORDER BY "+colListString+";"
@@ -831,10 +925,12 @@ class TrackSearchTool(GeneralGuiTool):
     def _getValidRows(cls, choices, allRows):#With selected file-types
         rows = []
         if not choices.dataType in [None,'',[]]:
-            print 'datatype'+str(choices.dataType)
+            #test#print 'datatype'+str(choices.dataType)
             dataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems() if selected]
+
             for row in allRows:
                     datatype = row[1].strip()
+                    #test#print row
                     if datatype in dataTypes:
                         rows.append(row)
         else:
@@ -988,46 +1084,75 @@ class TrackSearchTool(GeneralGuiTool):
             #row = rows[i]
             if row == None or len(row)<len(cols):
                continue
-
+            if row[0] is None:
+                print row
             url = row[0].strip()
             if cls.DOWNLOAD_PROTOCOL != None:
                 protocol = url.split(':')[0]
                 url = url.replace(protocol+':',cls.DOWNLOAD_PROTOCOL+':')
 
-            from gold.gsuite.GSuiteTrack import urlparse
-            parsedUrl = urlparse.urlparse(url)
+            uri = url
 
-            sitename = parsedUrl.netloc
-            filepath = parsedUrl.path
-            query = parsedUrl.query
-            #sitename = url.split(':')[1].strip('/').split('/')[0]
-            ###filename = url.split('/')[-1]
-            #filepath = url.split(sitename)[1]
-            suffix = cls._getGSuiteTrackSuffix(url)
-            uri = None
-            if url.startswith('ftp:'):
-                uri = FtpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
-            elif url.startswith('http:'):
-                uri = HttpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
-            elif url.startswith('https:'):
-                uri = HttpsGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
-            elif url.startswith('rsync:'):
-                uri = RsyncGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # from gold.gsuite.GSuiteTrack import urlparse
+            # parsedUrl = urlparse.urlparse(url)
+            #
+            # sitename = parsedUrl.netloc
+            # filepath = parsedUrl.path
+            # query = parsedUrl.query
+            # #sitename = url.split(':')[1].strip('/').split('/')[0]
+            # ###filename = url.split('/')[-1]
+            # #filepath = url.split(sitename)[1]
+            # suffix = cls._getGSuiteTrackSuffix(url)
+            # uri = None
+            # if url.startswith('ftp:'):
+            #     uri = FtpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # elif url.startswith('http:'):
+            #     uri = HttpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # elif url.startswith('https:'):
+            #     uri = HttpsGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # elif url.startswith('rsync:'):
+            #     uri = RsyncGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # else:
+            #     raise Exception("Unsupported protocol: " + url.split(':')[0])
 
             attr_val_list = []
             for j in range(1,len(row)):
-                if str(row[j]).strip() in ['None','']:
+                if unicode(row[j]) in ['None','']:
                     continue
                 colReadableName = cls._getAttributeReadableNameFromName(colList[j])
                 ## some datatypes are not string, e.g. datetime, and some others contain non-printable characters, e.g. \x00
                 import string
-                value = filter(lambda x: x in string.printable, str(row[j]))
-                attr_val_list.append((colReadableName,value))
+                if isinstance(row[j],basestring):
+                    value = row[j].encode('utf-8').strip()
+                else:
+                    value = str(row[j]).encode('utf-8').strip()
+                value = filter(lambda x: x in string.printable, unicode(value.decode('utf-8')))
+                gsuiteAttr = cls._makeGSuiteAttribute(colList[j],colReadableName)
+                if gsuiteAttr:
+                    attr_val_list.append((gsuiteAttr,value))
                 
+            #print attr_val_list
             gSuite.addTrack(GSuiteTrack(uri, doUnquote = cls._unquoteTrackURL(),
                                         genome=cls._getOutputGenome(), attributes=OrderedDict(attr_val_list)))
 
+        if choices.presentResults == 'select 10 random tracks':
+            gSuite = GSuiteUtils.getRandomGSuite(gSuite, 10)
+        elif choices.presentResults == 'select 50 random tracks':
+            gSuite = GSuiteUtils.getRandomGSuite(gSuite, 50)
+
         contents = GSuiteComposer.composeToFile(gSuite, outFileName)
+
+    @classmethod
+    def _makeGSuiteAttribute(cls,name,rName):
+        if rName.startswith('*'):
+            return rName.strip('*')
+        elif 'hb_datatype' in name:
+            return 'Type of data'
+        elif 'hb_filesuffix' in name:
+            return
+        else:
+            return name.strip('"').strip('_')
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -1050,22 +1175,16 @@ class TrackSearchTool(GeneralGuiTool):
             return str(cls.exception)
 
         try:# The list will be 'None' when the page is initially loaded
-            if not (len(cls.ATTRIBUTES) > 1 and getattr(choices, 'attributeList0') in [None,'--None--']):
+            if not (len(cls.ATTRIBUTES) > 1 and getattr(choices, 'attributeList0')
+                    in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']):
                 #Return all rows in this case
-                selected_attrs = 0
-                for i in xrange(len(cls.ATTRIBUTES)):
-                    if not getattr(choices, 'valueList%s' % i) in [None,'','--Select--']:
-                        #New requested by SG
-                        if getattr(choices, 'multiSelect%s' % (i)) == 'Multiple Selection':
-                            val = getattr(choices, 'valueList%s' % (i))
-                            if len([x[0] for x in val.items() if x[1]]) == 0:
-                                continue
-                        selected_attrs+=1
+                selected_attrs = cls._getNumSelectedAttrs(choices)
     
                 if selected_attrs == 0:
-                   return 'You have to select at least one attribute value filter'#+str(selected_attrs)+'--'+str(len(cls.ATTRIBUTES))
+                   return 'You need to select at least one attribute value filter'#+str(selected_attrs)+'--'+str(len(cls.ATTRIBUTES))
+            else: raise Exception
         except Exception as e:
-            return str(e) + '--You have to select at least one attribute'
+            return str(e) + 'You need to select at least one attribute'
 
 
 
@@ -1146,10 +1265,10 @@ class TrackSearchTool(GeneralGuiTool):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        from quick.webtools.imports.TrackSourceTestTool import TrackSourceTestTool
-        return TrackSourceTestTool.getFullExampleURL()
+    # @staticmethod
+    # def getFullExampleURL():
+    #     from quick.webtools.imports.TrackSourceTestTool import TrackSourceTestTool
+    #     return TrackSourceTestTool.getFullExampleURL()
     #
     #@classmethod
     #def isBatchTool(cls):

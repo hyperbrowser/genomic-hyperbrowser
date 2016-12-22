@@ -29,6 +29,10 @@ class PointPositionsInSegsStatSplittable(StatisticConcatResSplittable, OnlyGloba
 
 class PointPositionsInSegsStatUnsplittable(Statistic):
     "Computes a list of positions of points relative to segments they occur inside. Ignores points outside segments. Currently only supports scaled positions of points, that is scaled between 0 at upstream end and 1 at downstream end." #could also support absolute offsets inside segs..
+
+    def _init(self, scaledPositions='True', **kwArgs):
+        self._scaledPositions = eval(scaledPositions)
+
     def _compute(self):
         tvSegs = self._children[1].getResult()
         tvPoints = self._children[0].getResult()
@@ -50,9 +54,15 @@ class PointPositionsInSegsStatUnsplittable(Statistic):
             while point.start() < seg.end():
                 if point.start() >= seg.start():
                     if point.strand() in [None, BINARY_MISSING_VAL] or seg.strand() in [None, BINARY_MISSING_VAL] or point.strand() == seg.strand() :
-                        relPos = 1.0 * (point.start()-seg.start()) / ( (seg.end()-1) - seg.start() )
-                        if seg.strand() == False:
-                            relPos = 1-relPos
+                        if self._scaledPositions:
+                            relPos = 1.0 * (point.start()-seg.start()) / ( (seg.end()-1) - seg.start() )
+                            if seg.strand() == False:
+                                relPos = 1-relPos
+                        else:
+                            if seg.strand() == False:
+                                relPos = seg.end()-1-point.start()
+                            else:
+                                relPos = point.start()-seg.start()
                         relPosList.append(relPos)
                 try:
                     point = tvPointIter.next()

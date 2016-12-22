@@ -16,7 +16,7 @@
 
 from gold.result.GraphicsPresenter import GraphicsPresenter, LocalResultsGraphicsData, GlobalResultGraphicsData
 from numpy import isnan
-#from gold.application.RSetup import r
+#from proto.RSetup import r
  
 class DensityPresenter(LocalResultsGraphicsData, GraphicsPresenter):
     name = ('density','Density plot')
@@ -34,7 +34,7 @@ class DensityPresenter(LocalResultsGraphicsData, GraphicsPresenter):
         rCode = 'plotFunc <- function(ourList, xlab, main) {vec <- unlist(ourList); plot(density(vec'+fromTo+'), xlab=xlab, main=main)}'
         #print (self._getRawData(resDictKey), xlab, main)
         rawData = [float(x) for x in self._getRawData(resDictKey)]
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r(rCode)(rawData, xlab, main)
         
         

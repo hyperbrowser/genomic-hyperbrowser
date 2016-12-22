@@ -70,7 +70,7 @@ class McfdrExplorationTool(GeneralGuiTool):
         return
     
     
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         from numpy import array,minimum
         pVal,minNumSamples,maxNumSamples,chunkSize,numTests = [float(x) for x in choices[:-1]]
         print 'pVal:%.2f, minNumSamples:%i, maxNumSamples:%i, chunkSize:%i, numTests:%i' % (pVal,minNumSamples,maxNumSamples,chunkSize,numTests)

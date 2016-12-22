@@ -488,7 +488,7 @@ class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         Specifies whether the debug mode is turned on.
         '''
-        return True    
+        return False
     #@staticmethod
     #def isRedirectTool():
     #    '''

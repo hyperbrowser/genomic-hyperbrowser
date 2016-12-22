@@ -18,10 +18,10 @@ from collections import OrderedDict
 
 BINARY_MISSING_VAL = -1
 
-RESERVED_PREFIXES = OrderedDict([(x,None) for x in ('start', 'end', 'val', 'strand', 'id', 'edges', 'weights')])
-    
+RESERVED_PREFIXES = OrderedDict([(x, None) for x in ('start', 'end', 'val', 'strand', 'id', 'edges', 'weights')])
+
 LICENSE_STMT = \
-'''# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
+    '''# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
 # This file is part of The Genomic HyperBrowser.
 #
 #    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
@@ -41,13 +41,12 @@ LICENSE_STMT = \
 
 TRACK_TITLES_SEPARATOR = '|||'
 
-STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT = {
-  'CountNumSegmentsStat': 'Segment count',
-  'CountElementsStat': 'Element count',
-  'CountSegmentsOverlappingWithT2Stat': 'Overlapping segments with query track',
-  'CountStat': 'Coverage (bps)',
-  'SingleValueOverlapStat': 'Overlap (bps)',
-}
+STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT = \
+    dict(CountNumSegmentsStat='Nr. of segments in track',
+         CountElementStat='Nr. of reference track elements',
+         CountSegmentsOverlappingWithT2Stat='Nr. of overlapping segments with query track',
+         CountStat='Genome coverage of track (bps)',
+         SingleValueOverlapStat='Overlap between query and reference track (bps)')
 
 BATCH_COL_SEPARATOR = '|'
 MULTIPLE_EXTRA_TRACKS_SEPARATOR = '&'

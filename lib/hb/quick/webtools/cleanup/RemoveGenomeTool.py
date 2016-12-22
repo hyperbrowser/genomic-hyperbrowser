@@ -4,28 +4,33 @@ from config.Config import NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_D
 from quick.util.CommonFunctions import ensurePathExists
 from gold.util.CommonFunctions import createDirPath
 import shutil, os
+from collections import OrderedDict
+
 
 class RemoveGenomeTool(GeneralGuiTool):
+    ALL_PATHS = OrderedDict([('collectedTracks', NONSTANDARD_DATA_PATH),
+                             ('standardizedTracks', ORIG_DATA_PATH),
+                             ('parsingErrorTracks', PARSING_ERROR_DATA_PATH),
+                             ('nmerChains', NMER_CHAIN_DATA_PATH),
+                             ('preProcessedTracks (noOverlaps)', createDirPath('', '', allowOverlaps=False)),
+                             ('preProcessedTracks (withOverlaps)', createDirPath('', '', allowOverlaps=True))])
+
     @staticmethod
     def getToolName():
         return "Remove genome"
 
     @staticmethod
     def getInputBoxNames():
-        "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
-        return ['Genome']
+        return [('Genome', 'genome'),
+                ('From which paths to remove the genome', 'paths')]
 
     @staticmethod    
-    def getOptionsBox1():
-        "Returns a list of options to be displayed in the first options box"
+    def getOptionsBoxGenome():
         return "__genome__"
     
-    #@staticmethod    
-    #def getOptionsBox2(prevChoices): 
-    #    '''Returns a list of options to be displayed in the second options box, which will be displayed after a selection is made in the first box.
-    #    prevChoices is a list of selections made by the web-user in the previous input boxes (that is, list containing only one element for this case)        
-    #    '''
-    #    return ['']
+    @classmethod
+    def getOptionsBoxPaths(cls, prevChoices):
+        return OrderedDict([(key, True) for key in cls.ALL_PATHS.keys()])
     
     #@staticmethod    
     #def getOptionsBox3(prevChoices):
@@ -50,11 +55,10 @@ class RemoveGenomeTool(GeneralGuiTool):
             
         print 'Executing... starting to remove ' + choices[0] + os.linesep
 
-        paths = [NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_DATA_PATH, NMER_CHAIN_DATA_PATH] +\
-                 [createDirPath('', '', allowOverlaps=x) for x in [False, True]]
-        
+        paths = [cls.ALL_PATHS[key] for key,val in choices.paths.iteritems() if val]
+
         for p in paths:
-            genome = choices[0]
+            genome = choices.genome
             origPath = os.sep.join([ p, genome ])
             trashPath = os.sep.join([ p, ".trash", genome ])
 
@@ -72,7 +76,11 @@ class RemoveGenomeTool(GeneralGuiTool):
         to the user (if not empty) and greys out the execute button (even if the text is empty).
         If all parameters are valid, the method should return None, which enables the execute button.
         '''
-        return None
+        if not choices.genome:
+            return 'Please select a genome'
+
+        if not any([val for val in choices.paths.values()]):
+            return 'Please select at least one path'
     
     #@staticmethod
     #def isPublic():

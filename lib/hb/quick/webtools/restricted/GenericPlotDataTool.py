@@ -5,33 +5,44 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
+import math
+from gold.gsuite import GSuiteConstants, GSuiteFunctions
 
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
 class GenericPlotDataTool(GeneralGuiTool):
+    
+    
+    ALLOW_UNKNOWN_GENOME = True
+    
     @staticmethod
     def getToolName():
         '''
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Generate plot"
+        return "Plot GSuite metadata"
+        #Plot tabular values
 
     @staticmethod
     def getInputBoxNames():
         return [
                 ('Select GSuite','gSuite'),
-                ('Show series on', 'plotSeries'),
-                ('Select type of plot', 'plotType'),
+                ('Select way of showing series as', 'plotSeries'),
+                ('Select type of chart', 'plotType'),
                 ('Select value for x-Axis', 'columnX'),
-                ('Select value for y-Axis', 'columnY')
+                ('Select type of scale for x-Axis', 'axesScaleX'),
+                ('Select value for y-Axis', 'columnY'),
+                ('Select type of scale for y-Axis', 'axesScaleY'),
+                #('Select results of plotting', 'plotRes'),
                 ]
 
     @staticmethod
     def getOptionsBoxGSuite():
-        return GeneralGuiTool.getHistorySelectionElement('gsuite', 'txt', 'tabular')
+        #return GeneralGuiTool.getHistorySelectionElement('gsuite', 'txt', 'tabular')
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
     def getOptionsBoxPlotSeries(cls, prevChoices): 
@@ -40,9 +51,11 @@ class GenericPlotDataTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxPlotType(cls, prevChoices):
         if prevChoices.plotSeries == 'Single': 
-            return ['Column', 'Scatter', 'Heatmap']
+            #return ['Column', 'Heatmap', 'Line', 'Pie', 'Scatter']
+            return ['Column', 'Scatter']
         else:
             return ['Column', 'Scatter']
+            #return ['Column', 'Line', 'Pie', 'Scatter']
     
     
     @classmethod
@@ -53,7 +66,13 @@ class GenericPlotDataTool(GeneralGuiTool):
         gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
         attributeList = gSuite.attributes
         
-        return ['Iterate'] + [TITLE_COL] + attributeList
+        return ['line number'] + [TITLE_COL] + attributeList
+    
+    
+    @staticmethod
+    def getOptionsBoxAxesScaleX(prevChoices):
+        return ['linear', 'log10', 'no uniform scale (sorted values as labels)']
+
     
     @classmethod
     def getOptionsBoxColumnY(cls, prevChoices): # Alternatively: getOptionsBox2()
@@ -61,152 +80,123 @@ class GenericPlotDataTool(GeneralGuiTool):
             return
         
         gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
-        attribute = gSuite.attributesType()
+
+        from quick.gsuite.GSuiteUtils import attributesType
+        attribute = attributesType(gSuite)
         
         att=OrderedDict()
         for key, it in attribute.iteritems():
             if it == True:
                 att[key] = False
         
+        if prevChoices.plotSeries == 'Single': 
+            if prevChoices.plotType == 'Pie':
+                return att.keys()
+        
         return att
     
+    @staticmethod
+    def getOptionsBoxAxesScaleY(prevChoices):
+        return ['linear', 'log10']
     
-    #@staticmethod
-    #def getInputBoxOrder():
-    #    '''
-    #    Specifies the order in which the input boxes should be displayed, as a
-    #    list. The input boxes are specified by index (starting with 1) or by
-    #    key. If None, the order of the input boxes is in the order specified by
-    #    getInputBoxNames.
-    #    '''
-    #    return None
-    #
-    #@staticmethod
-    #def getInputBoxGroups(choices=None):
-    #    '''
-    #    Creates a visual separation of groups of consecutive option boxes from the rest (fieldset).
-    #    Each such group has an associated label (string), which is shown to the user. To define
-    #    groups of option boxes, return a list of BoxGroup namedtuples with the label, the key 
-    #    (or index) of the first and last options boxes (inclusive).
-    #
-    #    Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey', last='secondKey')]
-    #    '''
-    #    return None
-
-
 #     @staticmethod
-#     def getOptionsBoxFirstKey(): # Alternatively: getOptionsBox1()
-#         '''
-#         Defines the type and contents of the input box. User selections are
-#         returned to the tools in the prevChoices and choices attributes to other
-#         methods. These are lists of results, one for each input box (in the
-#         order specified by getInputBoxOrder()).
-# 
-#         The input box is defined according to the following syntax:
-# 
-#         Selection box:          ['choice1','choice2']
-#         - Returns: string
-# 
-#         Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-#         - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-#         - The contents is the default value shown inside the text area
-#         - Returns: string
-# 
-#         Raw HTML code:          '__rawstr__', 'HTML code'
-#         - This is mainly intended for read only usage. Even though more advanced
-#           hacks are possible, it is discouraged.
-# 
-#         Password field:         '__password__'
-#         - Returns: string
-# 
-#         Genome selection box:   '__genome__'
-#         - Returns: string
-# 
-#         Track selection box:    '__track__'
-#         - Requires genome selection box.
-#         - Returns: colon-separated string denoting track name
-# 
-#         History selection box:  ('__history__',) | ('__history__', 'bed', 'wig')
-#         - Only history items of specified types are shown.
-#         - Returns: colon-separated string denoting galaxy track name, as
-#                    specified in ExternalTrackManager.py.
-# 
-#         History check box list: ('__multihistory__', ) | ('__multihistory__', 'bed', 'wig')
-#         - Only history items of specified types are shown.
-#         - Returns: OrderedDict with galaxy id as key and galaxy track name
-#                    as value if checked, else None.
-# 
-#         Hidden field:           ('__hidden__', 'Hidden value')
-#         - Returns: string
-# 
-#         Table:                  [['header1','header2'], ['cell1_1','cell1_2'], ['cell2_1','cell2_2']]
-#         - Returns: None
-# 
-#         Check box list:         OrderedDict([('key1', True), ('key2', False), ('key3', False)])
-#         - Returns: OrderedDict from key to selection status (bool).
-#         '''
-#         return ['testChoice1', 'testChoice2', '...']
-
-
-
-    #@staticmethod
-    #def getOptionsBox3(prevChoices):
-    #    return ['']
-
-    #@staticmethod
-    #def getOptionsBox4(prevChoices):
-    #    return ['']
-
-    #@staticmethod
-    #def getInfoForOptionsBoxKey(prevChoices):
-    #    '''
-    #    If not None, defines the string content of an clickable info box beside
-    #    the corresponding input box. HTML is allowed.
-    #    '''
-    #    return None
-    #
-    #@staticmethod
-    #def getDemoSelections():
-    #    return ['testChoice1','..']
-    #
-    #@classmethod
-    #def getExtraHistElements(cls, choices):
-    #    return None
+#     def getOptionsBoxPlotRes(prevChoices):
+#         
+#         if not prevChoices.gSuite:
+#             return
+#         
+#         columnX = prevChoices.columnX
+#         columnY = prevChoices.columnY
+#         
+#         if prevChoices.plotType == 'Scatter' or prevChoices.plotType == 'Line':
+#             if columnX in columnY.keys():
+#                 return ['separate', 'combine']
+#                 
+                
+  
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         
+        #data from choices
         gSuite = choices.gSuite
         plotType = choices.plotType
         columnX = choices.columnX
         columnY = choices.columnY
         plotSeries = choices.plotSeries
         
+        axesScaleX = choices.axesScaleX 
+        axesScaleY = choices.axesScaleY
+        
+        #'linear', 'log10', 'no uniform scale (sorted values as labels)'
+        if axesScaleX == 'linear':
+        #plotRes = choices.plotRes
+            plotRes = 'combine'
+        elif  axesScaleX == 'log10':
+            plotRes = 'separate'
+        elif axesScaleX == 'no uniform scale (sorted values as labels)':
+            plotRes = 'separate'
+        
+        
+        
+        #unpack gsuite
         gSuite = getGSuiteFromGalaxyTN(gSuite)
+        
+        #full list of attributes (meta-data)
         attributeList = gSuite.attributes
+        
+        #fill list of attributes plus title
         attributeList = [TITLE_COL] + attributeList
         
+        #dictNum - include numerical values which can be presented in y-axes
+        #need to do that because pie can have only one chocie and then it is not returing dict
+        from quick.gsuite.GSuiteUtils import attributesType
+        attribute = attributesType(gSuite)
+
+        dictNum=OrderedDict()
+        for key, it in attribute.iteritems():
+            if it == True:
+                dictNum[key] = False
+        
+        #check if it is dict or not
+        if not isinstance(columnY, dict):
+            tempDict={}
+            tempDict[columnY] = 'True'
+            columnY=tempDict
+        
+        
         seriesName=[]
+        
+        #check if user selected categoriesNumber and it is possible to use combinate 
+        categoriesNumber = False
              
         sortedCat=None
         categories=None
         if columnX == TITLE_COL:
             categories = gSuite.allTrackTitles()
-        elif columnX == 'Iterate':
+        elif columnX == 'line number':
             categories = None
         else:
-            if columnX in columnY.keys():
+            if columnX in dictNum.keys():
                 categoriesBefore = [float(v) for v in gSuite.getAttributeValueList(columnX)]
+                
+                if axesScaleX == 'log10':
+                    for cbN in range(0, len(categoriesBefore)):
+                        if categoriesBefore[cbN]!=0:
+                            categoriesBefore[cbN]=math.log(categoriesBefore[cbN], 10)
+                
                 sortedCat = sorted(range(len(categoriesBefore)), key=lambda k: categoriesBefore[k])
                 categories=[]
                 for n in sortedCat:
                     categories.append(categoriesBefore[n])
+                
+                categoriesNumber=True
+                
             else:
                 categories = gSuite.getAttributeValueList(columnX)
                 
         
+        #data are sorted according to numerical values
         data=[]
         for key, it in columnY.iteritems():
             if it == 'True':
@@ -215,7 +205,13 @@ class GenericPlotDataTool(GeneralGuiTool):
                 dataPart = []
                 for x in gSuite.getAttributeValueList(key):
                     try:
-                        dataPart.append(float(x))
+                        if axesScaleY == 'log10':
+                            if x!=0:
+                                dataPart.append(math.log(float(x), 10))
+                            else:
+                                dataPart.append(0)
+                        else:
+                            dataPart.append(float(x))
                     except:
                         # need to support None in heatmap
                         if plotType == 'Heatmap':
@@ -240,6 +236,36 @@ class GenericPlotDataTool(GeneralGuiTool):
         
 #         'Column', 'Scatter', 'Heatmap'
         
+        if axesScaleX == 'log10':
+            xAxisTitle = str(columnX) + ' (' + str(axesScaleX) + ')'
+        else:
+            xAxisTitle = str(columnX)
+        
+        if axesScaleY == 'log10':
+            yAxisTitle = str('values') + ' (' + str(axesScaleY) + ')'
+        else:
+            yAxisTitle = str('values')    
+        
+        minFromList = min(min(d) for d in data)
+        if minFromList > 0:
+            minFromList = 0
+        
+        
+        #combain series with data
+        if plotRes == 'combine':
+            if categoriesNumber == True:
+                newData=[]
+                for d in data:
+                    newDataPart=[]
+                    for cN in range(0, len(categories)):
+                        newDataPart.append([categories[cN], d[cN]])
+                    newData.append(newDataPart)
+                data=newData
+                categories=None
+                        
+                    
+        
+        
         res=''
         if plotSeries == 'Single':
             if plotType == 'Scatter':
@@ -248,22 +274,48 @@ class GenericPlotDataTool(GeneralGuiTool):
                      categories = categories,
                      xAxisRotation = 90,
                      marginTop = 30,
-                     xAxisTitle = str(columnX),
+                     xAxisTitle = xAxisTitle,
+                     yAxisTitle = yAxisTitle,
                      height = 500,
                      seriesName = seriesName,
                      label = label,
+                     minY=minFromList
 #                      titleText = 'Plot',
                      )
+            if plotType == 'Pie':
+                res += vg.drawPieChart(
+                    data[0],
+                    seriesName = categories,
+                    height = 400,
+                    titleText = seriesName[0],
+                    )
+                
             if plotType == 'Column':
                 res += vg.drawColumnChart(
                      data,
                      categories = categories,
                      xAxisRotation = 90,
                      marginTop = 30,
-                     xAxisTitle = str(columnX),
+                     xAxisTitle = xAxisTitle,
+                     yAxisTitle = yAxisTitle,
                      height = 500,
                      seriesName = seriesName,
                      label = label,
+                     minY=minFromList
+#                      titleText = 'Plot',
+                     )
+            if plotType == 'Line':
+                res += vg.drawLineChart(
+                     data,
+                     categories = categories,
+                     xAxisRotation = 90,
+                     marginTop = 30,
+                     xAxisTitle = xAxisTitle,
+                     yAxisTitle = yAxisTitle,
+                     height = 500,
+                     seriesName = seriesName,
+                     label = label,
+                     minY=minFromList
 #                      titleText = 'Plot',
                      )
             if plotType == 'Heatmap':
@@ -272,7 +324,8 @@ class GenericPlotDataTool(GeneralGuiTool):
                      categories = categories,
                      xAxisRotation = 90,
                      marginTop = 30,
-                     xAxisTitle = str(columnX),
+                     xAxisTitle = xAxisTitle,
+                     yAxisTitle = yAxisTitle,
                      height = 500,
                      seriesName = seriesName,
                      label = label,
@@ -281,15 +334,19 @@ class GenericPlotDataTool(GeneralGuiTool):
         elif plotSeries == 'Multi':
             if plotType == 'Scatter':
                 for nrD in range(0, len(data)):
+                    if plotRes == 'combine':
+                        data[nrD]=[data[nrD]]
                     res += vg.drawScatterChart(
                          data[nrD],
                          categories = categories,
                          xAxisRotation = 90,
                          marginTop = 30,
-                         xAxisTitle = str(columnX),
+                         xAxisTitle = xAxisTitle,
+                         yAxisTitle = yAxisTitle,
                          height = 500,
                          seriesName = [seriesName[nrD]],
                          label = label,
+                         minY=minFromList
     #                      titleText = 'Plot',
                          )
             if plotType == 'Column':
@@ -298,12 +355,31 @@ class GenericPlotDataTool(GeneralGuiTool):
                      categories = [categories for x in range(0, len(data))],
                      xAxisRotation = 90,
                      marginTop = 30,
-                     xAxisTitle = str(columnX),
+                     xAxisTitle = xAxisTitle,
+                     yAxisTitle = yAxisTitle,
                      height = 500,
                      seriesName = [[seriesName[elD]] for elD in range(0, len(data))],
                      label = label,
+                     minY=minFromList
 #                      titleText = 'Plot',
-                     )                     
+                     ) 
+            if plotType == 'Line':
+                for nrD in range(0, len(data)):
+                    if plotRes == 'combine':
+                        data[nrD]=[data[nrD]]
+                    res += vg.drawLineChart(
+                         data[nrD],
+                         categories = categories,
+                         xAxisRotation = 90,
+                         marginTop = 30,
+                         xAxisTitle = xAxisTitle,
+                         yAxisTitle = yAxisTitle,
+                         height = 500,
+                         seriesName = [seriesName[nrD]],
+                         label = label,
+                         minY=minFromList
+    #                      titleText = 'Plot',
+                         )                  
         
         htmlCore = HtmlCore()
         htmlCore.begin()
@@ -318,16 +394,26 @@ class GenericPlotDataTool(GeneralGuiTool):
         
         print htmlCore
         
-    @staticmethod
-    def validateAndReturnErrors(choices):
-        '''
-        Should validate the selected input parameters. If the parameters are not
-        valid, an error text explaining the problem should be returned. The GUI
-        then shows this text to the user (if not empty) and greys out the
-        execute button (even if the text is empty). If all parameters are valid,
-        the method should return None, which enables the execute button.
-        '''
-        return None
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
+        
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gSuite)
+        if errorString:
+            return errorString
+        
+        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gSuite)
+        
+        if errorString:
+            return errorString
+        
+        columnY = choices.columnY
+        if isinstance(columnY, dict):
+            if not True in columnY.values():
+                errorString = 'Check at least one value for y-Axis'
+                return errorString
+
 
     #@staticmethod
     #def getSubToolClasses():
@@ -397,13 +483,63 @@ class GenericPlotDataTool(GeneralGuiTool):
     #    '''
     #    return []
     #
-    #@staticmethod
-    #def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
-    #
+    
+    @staticmethod
+    def createDescription(toolDescription=None, stepsToRunTool=None, toolResult=None, limitation=None):
+        core = HtmlCore()
+        
+        if toolDescription!=None or stepsToRunTool!=None or toolResult!=None or limitation!=None:
+            core.divBegin(divId='decription-page')
+            core.divBegin(divClass='decription-section')
+            core.header('Description')  
+            
+            #small description of tool (The resaon of creating the tool)
+            if toolDescription!=None:
+                core.divBegin(divClass='decription-section-main')
+                core.paragraph(toolDescription)
+                core.divEnd()
+    
+            #how to use tool
+            if stepsToRunTool!=None:
+                core.paragraph('To run the tool, follow these steps:')
+                core.orderedList(stepsToRunTool)
+    
+            #what is the result of tool
+            if toolDescription!=None:
+                core.divBegin(divClass='decription-section-main')
+                core.paragraph(toolResult)
+                core.divEnd()
+            
+            #what are the limitation for tool
+    #         if limitation:
+    #             limits...
+            
+            
+            core.divEnd()
+            core.divEnd()
+        
+        return str(core)
+    
+    @staticmethod
+    def getToolDescription():
+        
+        toolDescription = 'The tool allow to present metadata columns from gSuite or results from tabular file in the chart.'
+        
+        stepsToRunTool = ['Select GSuite or file with tabular from history',
+                          'Select way of showing series as single or multi charts',
+                          'Select type of chart',
+                          'Select value for x-Axis',
+                          'Select type of scale for x-Axis',
+                          'Select value for y-Axis',
+                          'Select type of scale for y-Axis',
+                          'Select results of plotting (option available for selected type of charts)']
+        
+        toolResult = 'The results are presented in an interactive chart'
+        
+        return GenericPlotDataTool.createDescription(toolDescription=toolDescription, 
+                                              stepsToRunTool=stepsToRunTool, 
+                                              toolResult=toolResult)
+    
     #@staticmethod
     #def getToolIllustration():
     #    '''
@@ -427,11 +563,4 @@ class GenericPlotDataTool(GeneralGuiTool):
     #
     @staticmethod
     def getOutputFormat(choices):
-        '''
-        The format of the history element with the output of the tool. Note
-        that html output shows print statements, but that text-based output
-        (e.g. bed) only shows text written to the galaxyFn file.In the latter
-        case, all all print statements are redirected to the info field of the
-        history item box.
-        '''
         return 'customhtml'

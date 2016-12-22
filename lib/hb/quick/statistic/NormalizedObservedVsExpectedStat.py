@@ -61,6 +61,6 @@ class NormalizedObservedVsExpectedStatUnsplittable(MultipleTrackStatistic):
                 self._region,
                 ts,
                 pairwiseStatistic='ObservedVsExpectedStat',
-                summaryFunc='sum',
+                summaryFunc='avg',
                 reverse=(self._kwArgs['reverse'] if 'reverse' in self._kwArgs else 'No'))
         )

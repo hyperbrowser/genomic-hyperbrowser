@@ -29,7 +29,7 @@ class TwoLevelOverlapPreferenceStatSplittable(StatisticDictSumResSplittable):
         self._result['ExpBothBpProportionGivenIndividualBinCoverage'] = self._result['ExpBothBpCoverageGivenIndividualBinCoverage'] / self._result['NumBps']
         self._result['ExpBothBpProportionFromGlobalIndividualCoverage'] = self._result['t1prop'] * self._result['t2prop']
 
-        from gold.application.RSetup import robjects, r
+        from proto.RSetup import robjects, r
         t1Props = [x['t1prop'] for x in self._childResults]
         t2Props = [x['t2prop'] for x in self._childResults]
 

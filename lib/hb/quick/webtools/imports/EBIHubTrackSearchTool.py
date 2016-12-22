@@ -15,13 +15,13 @@ class EBIHubTrackSearchTool(TrackSearchTool):
     def _getTableName(cls):
         return 'file_ebihub'
     
-    @classmethod
-    def _getGSuiteTrackSuffix(cls,url):
-        s = url.split('/')[-1].split('.')[-1]
-        if s.lower() == 'gz':
-            return '.'.join(url.split('/')[-1].split('.')[-2:])
-        else:
-            return s
+    # @classmethod
+    # def _getGSuiteTrackSuffix(cls,url):
+    #     s = url.split('/')[-1].split('.')[-1]
+    #     if s.lower() == 'gz':
+    #         return '.'.join(url.split('/')[-1].split('.')[-2:])
+    #     else:
+    #         return s
     
     @classmethod
     def _getClassAttributes(cls, db):

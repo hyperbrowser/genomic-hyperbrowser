@@ -18,7 +18,7 @@ from gold.result.GraphicsPresenter import GraphicsPresenter, LocalResultsGraphic
 from quick.util.CommonFunctions import ensurePathExists
 import os
 import numpy
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 class LinePlotPresenter(LocalResultsGraphicsData, GraphicsPresenter):
     name = ('line','Line plot')
@@ -39,7 +39,7 @@ class LinePlotPresenter(LocalResultsGraphicsData, GraphicsPresenter):
         outF.write( yLabel + ': ' + ','.join([ str(x) for x in yList]) + os.linesep )
 
     def _customRExecution(self, resDictKey, xlab, main):
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         
         xList, yList, xLabel, yLabel = self._getRawData(resDictKey)
         xVec = robjects.FloatVector(xList)

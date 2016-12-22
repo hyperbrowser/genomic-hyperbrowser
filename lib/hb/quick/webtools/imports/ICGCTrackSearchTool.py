@@ -15,13 +15,13 @@ class ICGCTrackSearchTool(TrackSearchTool):
     def _getTableName(cls):
         return 'file_icgc'
     
-    @classmethod
-    def _getGSuiteTrackSuffix(cls,url):
-        s = url.split('/')[-1].split('.')[-1]
-        if s.lower() == 'gz':
-            return '.'.join(url.split('/')[-1].split('.')[-2:])
-        else:
-            return s
+    # @classmethod
+    # def _getGSuiteTrackSuffix(cls,url):
+    #     s = url.split('/')[-1].split('.')[-1]
+    #     if s.lower() == 'gz':
+    #         return '.'.join(url.split('/')[-1].split('.')[-2:])
+    #     else:
+    #         return s
     
     @classmethod
     def _getClassAttributes(cls, db):
@@ -32,6 +32,7 @@ class ICGCTrackSearchTool(TrackSearchTool):
             attributes.append(col)
         attributes.remove('url')
         attributes.remove('hb_datatype')
+        attributes.remove('hb_filesuffix')
                 
         return attributes
 

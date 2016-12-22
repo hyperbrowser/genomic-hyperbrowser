@@ -179,8 +179,12 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
         from gold.gsuite.GSuiteArchiver import ArchiveToGalaxyGSuiteTrackIterator, \
                                                convertArchiveToGSuite
         import gold.gsuite.GSuiteComposer as GSuiteComposer
-        from gold.gsuite.GSuiteFunctions import writeGSuiteHiddenTrackStorageHtml
+        from quick.gsuite.GSuiteHbIntegration import \
+            writeGSuiteHiddenTrackStorageHtml
         from quick.extra.ProgressViewer import ProgressViewer
+
+        from quick.util.debug import DebugUtil
+        # DebugUtil.insertBreakPoint(username=username, currentUser='boris.simovski@gmail.com')
 
         archive = cls._getArchiveReader(choices)
         trackCount = sum(1 for file in archive)

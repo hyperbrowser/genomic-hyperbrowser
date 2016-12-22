@@ -17,7 +17,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.statistic.PointCountPerSegStat import PointCountPerSegStat
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from quick.util.CommonFunctions import silenceRWarnings
 from gold.statistic.MarksListStat import MarksListStat
 from collections import OrderedDict
@@ -68,9 +68,9 @@ class PointFreqInSegsVsSegMarksStatUnsplittable(Statistic):
             compatibleMarks = [int(x) for x in marks]
         compatibleNumPoints = [int(x) for x in numPoints]
 
-        #from gold.application.RSetup import rpy1
+        #from proto.RSetup import rpy1
         #res = rpy1(rVecCor)(compatibleNumPoints, compatibleMarks )
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         pval, tau = r(rVecCor)(compatibleNumPoints, compatibleMarks )
         #print float(res['p.value'])
         

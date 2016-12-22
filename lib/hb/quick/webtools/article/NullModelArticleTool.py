@@ -49,7 +49,7 @@ class PlotFigure1Tool(NullModelArticleTool):
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
@@ -133,7 +133,7 @@ class PlotFigure2Tool(NullModelArticleTool):
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])

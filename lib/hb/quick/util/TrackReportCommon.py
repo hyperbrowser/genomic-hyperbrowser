@@ -112,12 +112,16 @@ def processResult(singleResult):
     The value contains the list of statistics for that reference track
     and is later displayed as a row in the results table.
     '''
+    
+    
+    
+    
     regionLength = singleResult['Neither'] + singleResult['Only1'] + singleResult['Only2'] + singleResult['Both']
     processedResults = [] #0
     both = int(singleResult['Both'])
     processedResults.append(both) #0
     query = int(singleResult['Only1']) + both
-    processedResults.append(query) #1
+    #processedResults.append(query) #1
     reference = int(singleResult['Only2']) + both
     processedResults.append(reference) #2
     overlapRatio = both * 1.0 / regionLength
@@ -356,7 +360,7 @@ def addHistogramVisualization(tableData, tableHeader, plotType):
         elif plotType == 'columnChart':
             seriesName, categories, data = dT.changeDictIntoList()
             
-            from gold.application.RSetup import r, robjects
+            from proto.RSetup import r, robjects
             #count histoggram
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
             dd=robjects.FloatVector(data)

@@ -22,6 +22,7 @@ pyliftover>=0.3
 progressbar>=2.3
 python_dateutil>=1.5
 asteval==0.9.8
+python-Levenshtein==0.12.0
 
 #Might be needed
 #pycairo>=1.8.10

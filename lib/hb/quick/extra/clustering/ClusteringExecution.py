@@ -21,7 +21,7 @@ class ClusteringExecution(object):
         #r('rsave <- function(f){save(d,file=f)}')
         #r.rsave(DebugRObj.getDiskPath(True))
         ##TEMP DEBUG END
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         silenceRWarnings()
 
         r('library(flashClust)')
@@ -46,7 +46,7 @@ class ClusteringExecution(object):
     @classmethod
     def executeSelfFeature(cls, genome, tracks, track_names, clusterMethod, extra_option, feature, distanceType, kmeans_alg, galaxyFn, regSpec, binSpec):
         
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         #regSpec, binSpec = 'bed', '/usit/invitro/data/galaxy/galaxy-dist-hg-dev/./database/files/017/dataset_17084.dat'
         silenceRWarnings()
 
@@ -183,7 +183,7 @@ class ClusteringExecution(object):
 
     @classmethod
     def executePairDistance(cls, genome, tracks, track_names, clusterMethod, extra_option, feature, extra_feature, galaxyFn, regSpec, binSpec):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         silenceRWarnings()
         #jobFile = galaxyFn
 
@@ -261,7 +261,7 @@ class ClusteringExecution(object):
 
     @classmethod
     def executeReferenceTrack(cls, genome, tracks, track_names, clusterMethod, extra_option, distanceType, kmeans_alg, galaxyFn, regSpec, binSpec, numreferencetracks=None, refTracks=None, refFeatures=None, yesNo=None, howMany=None, upFlank=None, downFlank=None):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         silenceRWarnings()
         jobFile = open(galaxyFn, 'w')
         print>>jobFile, '<h3>Results for the "similarity of relations to other sets of genomic features" way of clustering<h3/><br/><br/>'

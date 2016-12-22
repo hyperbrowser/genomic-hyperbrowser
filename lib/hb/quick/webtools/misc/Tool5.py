@@ -96,9 +96,10 @@ class Tool5(GeneralGuiTool):
     
     @staticmethod
     def writeTrackData(choices, genome, tn):
-        import random
+        from gold.util.RandomUtil import random
         from gold.util.CommonFunctions import createCollectedPath
         from quick.util.CommonFunctions import ensurePathExists
+
         trackFn = createCollectedPath(genome, tn, 'simulatedTracks.category.bed')
         ensurePathExists(trackFn)
         trackFile = open(trackFn, 'w')

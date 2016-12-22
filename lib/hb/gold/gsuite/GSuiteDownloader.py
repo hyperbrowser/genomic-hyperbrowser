@@ -1,3 +1,5 @@
+import os
+
 from gold.gsuite.GSuiteConstants import REMOTE, COMPRESSION_SUFFIXES, \
                                         OPTIONAL_STD_COL_NAMES, OPTIONAL_STD_COL_SPECS
 from gold.gsuite.GSuiteRequirements import GSuiteRequirements
@@ -113,27 +115,29 @@ class GSuiteCachedTrackDownloader(GSuiteTrackDownloader):
         cache = GSUITE_TRACK_CACHE
 
         if cache.isCached(gSuiteTrack):
-            return cache.getCachedGalaxyUri(gSuiteTrack)
-        else:
-            if extraFileName:
-                from quick.application.ExternalTrackManager import ExternalTrackManager
-                outGalaxyFn = ExternalTrackManager.createGalaxyFilesFn(galaxyFn, extraFileName)
-                ensurePathExists(outGalaxyFn)
-                if extraFileName.endswith('.' + uncomprSuffix):
-                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName)
-                else:
-                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName, suffix=uncomprSuffix)
+            cachedUri = cache.getCachedGalaxyUri(gSuiteTrack)
+            if os.path.exists(GSuiteTrack(cachedUri).path):
+                return cache.getCachedGalaxyUri(gSuiteTrack)
+
+        if extraFileName:
+            from quick.application.ExternalTrackManager import ExternalTrackManager
+            outGalaxyFn = ExternalTrackManager.createGalaxyFilesFn(galaxyFn, extraFileName)
+            ensurePathExists(outGalaxyFn)
+            if extraFileName.endswith('.' + uncomprSuffix):
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName)
             else:
-                outGalaxyFn = galaxyFn
-                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=outGalaxyFn, suffix=uncomprSuffix)
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName, suffix=uncomprSuffix)
+        else:
+            outGalaxyFn = galaxyFn
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=outGalaxyFn, suffix=uncomprSuffix)
 
-            uncompressorAndDownloader = GSuiteTrackUncompressorAndDownloader()
-            uncompressorAndDownloader.visit(gSuiteTrack, outGalaxyFn)
+        uncompressorAndDownloader = GSuiteTrackUncompressorAndDownloader()
+        uncompressorAndDownloader.visit(gSuiteTrack, outGalaxyFn)
 
-            if cache.shouldBeCached(gSuiteTrack):
-                cache.cache(gSuiteTrack, uri)
+        if cache.shouldBeCached(gSuiteTrack):
+            cache.cache(gSuiteTrack, uri)
 
-            return uri
+        return uri
 
 
 class GSuiteTrackExclusiveGalaxyFnDownloader(GSuiteCachedTrackDownloader):

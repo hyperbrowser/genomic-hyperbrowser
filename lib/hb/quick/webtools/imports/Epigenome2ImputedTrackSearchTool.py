@@ -26,7 +26,7 @@ class Epigenome2ImputedTrackSearchTool(TrackSearchTool):
         ##for col in colList:
         ##    attributes.append(col)
         ##attributes.remove('url')
-        attributes = ['EID','MARK','MARK CLASS','TYPE~~','ANATOMY~~','GROUP~~',\
+        attributes = ['hb_filesuffix','EID','MARK','MARK CLASS','TYPE~~','ANATOMY~~','GROUP~~',\
                 'Epigenome name (from EDACC Release 9 directory)',\
                 'Standardized Epigenome name~~','E-Mnemonic']
 
@@ -38,7 +38,7 @@ class Epigenome2ImputedTrackSearchTool(TrackSearchTool):
         ##(cls.DB._db.getTableCols(cls.TABLE_NAME))
         ##cols.insert(0, cols.pop(cols.index('"url"')))
         colListString = ''
-        cols = ['"url"','"hb_datatype"','"EID"','"MARK"','"MARK CLASS"','"TYPE~~"','"ANATOMY~~"','"GROUP~~"',\
+        cols = ['"url"','"hb_datatype"','"hb_filesuffix"','"EID"','"MARK"','"MARK CLASS"','"TYPE~~"','"ANATOMY~~"','"GROUP~~"',\
                 '"Epigenome name (from EDACC Release 9 directory)"',\
                 '"Standardized Epigenome name~~"','"E-Mnemonic"']
         for col in cols:

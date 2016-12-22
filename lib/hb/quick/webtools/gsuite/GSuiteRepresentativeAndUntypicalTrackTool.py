@@ -4,10 +4,9 @@ from urllib import quote
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
-from gold.gsuite import GSuiteStatUtils, GSuiteConstants
+from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteConstants import GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME,\
     GSUITE_SUFFIX
-from gold.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
@@ -15,6 +14,8 @@ from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GSuiteStatUtils
+from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
 from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
 from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -175,7 +176,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
 
     @classmethod
     def getOptionsBoxAnalysisName(cls, prevChoices):
-        return [cls.Q1, cls.Q2, cls.Q3, cls.Q4]
+        return [cls.Q1, cls.Q3, cls.Q4]
 
     @staticmethod
     def getOptionsBoxSimilarityFunc(prevChoices):
@@ -234,6 +235,8 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         (e.g. generated image files). choices is a list of selections made by
         web-user in each options box.
         '''
+        import numpy
+        numpy.seterr(all='raise')
         cls._setDebugModeIfSelected(choices)
         # DebugUtil.insertBreakPoint(username=username, currentUser='boris.simovski@gmail.com')
         genome = choices.genome
@@ -559,7 +562,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
        '''
        Specifies whether debug messages are printed.
        '''
-       return True
+       return False
 
     @staticmethod
     def getOutputFormat(choices):

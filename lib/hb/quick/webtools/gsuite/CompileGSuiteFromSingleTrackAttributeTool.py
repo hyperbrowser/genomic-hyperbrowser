@@ -3,13 +3,14 @@ from collections import defaultdict
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import gold.gsuite.GSuiteConstants as GSuiteConstants
 from gold.application.DataTypes import getSupportedFileSuffixes
-from gold.gsuite.GSuiteUtils import createGalaxyGSuiteBySplittingInputFileOnAttribute
 from gold.origdata.FileFormatComposer import findMatchingFileFormatComposers, \
                                              getComposerClsFromFileFormatName
 from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import findKeysWithMaxVal, findKeysWithMinVal
 from quick.application.ExternalTrackManager import ExternalTrackManager as etm
+from quick.gsuite.GSuiteUtils import createGalaxyGSuiteBySplittingInputFileOnAttribute
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class CompileGSuiteFromSingleTrackAttributeTool(GeneralGuiTool):
     GSUITE_OUTPUT_LOCATION = GSuiteConstants.LOCAL
@@ -372,7 +373,7 @@ class CompileGSuiteFromSingleTrackAttributeTool(GeneralGuiTool):
     #    '''
     #    Specifies an id used by StaticFile.py to reference an illustration file
     #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by Config.py. The
+    #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
     #    full path is created from the base directory followed by the id.
     #    '''
     #    return None

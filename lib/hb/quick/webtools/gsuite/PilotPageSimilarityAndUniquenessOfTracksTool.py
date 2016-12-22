@@ -164,4 +164,4 @@ class PilotPageSimilarityAndUniquenessOfTracksTool\
         '''
         Specifies whether debug messages are printed.
         '''
-        return True
+        return False

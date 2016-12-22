@@ -22,7 +22,7 @@ from gold.extra.SlidingWindow import SlidingWindow
 from quick.util.Wrappers import GenomeElementTvWrapper
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import TrackFormatReq
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 class SmoothedPointMarksStat(MagicStatFactory):
     pass
@@ -55,7 +55,7 @@ class SmoothedPointMarksStatUnsplittable(Statistic):
 
     @staticmethod
     def _weightedValForWindowsYielder(slidingWindows, windowSize, windowBpSize, sdOfGaussian, guaranteeBpCoverByWindow):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         mode = 'start'
         assert windowSize%2==1
         for window in slidingWindows:

@@ -17,6 +17,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticSplittable
 
+
 class GenericT1T2BinValuesCorrelationStat(MagicStatFactory):
     "takes as parameter another statistic class, gets results for this per bin, then at the global level returns the max of values per bin"
     pass
@@ -27,7 +28,7 @@ class GenericT1T2BinValuesCorrelationStatSplittable(StatisticSplittable):
         self._corrMethod = corrMethod
         
     def _combineResults(self):
-        from gold.application.RSetup import robjects, r
+        from proto.RSetup import robjects, r
         rVec1 = robjects.FloatVector([x[0] for x in self._childResults])
         rVec2 = robjects.FloatVector([x[1] for x in self._childResults])
         return r.cor(rVec1, rVec2, method=self._corrMethod)

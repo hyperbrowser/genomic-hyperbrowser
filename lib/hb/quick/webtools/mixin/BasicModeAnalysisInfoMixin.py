@@ -13,21 +13,21 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from gold.gsuite import GSuiteFunctions
-'''
+
+"""
 Created on Nov 26, 2015
 
 @author: boris
-'''
+"""
 
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+import quick.gsuite.GSuiteHbIntegration
 
 
 class BasicModeAnalysisInfoMixin(object):
-    '''
+    """
     classdocs
     
-    '''
+    """
     @staticmethod
     def getInputBoxNamesForAnalysisInfo():
         return [
@@ -39,7 +39,7 @@ class BasicModeAnalysisInfoMixin(object):
         if hasattr(super(BasicModeAnalysisInfoMixin, cls), 'getInputBoxGroups'):
             return super(BasicModeAnalysisInfoMixin, cls).getInputBoxGroups(choices)
         return None
-    
+
     @staticmethod
     def getOptionsBoxBmQid():
         return '__hidden__', None
@@ -47,5 +47,5 @@ class BasicModeAnalysisInfoMixin(object):
     @staticmethod
     def getOptionsBoxAnalysisInfo(prevChoices):
         if prevChoices.bmQid and prevChoices.bmQid not in ('None', '', None):
-            htmlCore = GSuiteFunctions.getAnalysisQuestionInfoHtml(prevChoices.bmQid)
+            htmlCore = quick.gsuite.GSuiteHbIntegration.getAnalysisQuestionInfoHtml(prevChoices.bmQid)
             return '__rawstr__', str(htmlCore)

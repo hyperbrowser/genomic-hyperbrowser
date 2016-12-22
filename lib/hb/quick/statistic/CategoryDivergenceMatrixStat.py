@@ -23,7 +23,7 @@ from quick.statistic.CategoryPointCountNoOverlapsStat import CategoryPointCountN
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.util.CustomExceptions import ShouldNotOccurError
 import numpy
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from gold.statistic.Statistic import Statistic
 from copy import copy
 from gold.util.CommonFunctions import isIter
@@ -135,7 +135,7 @@ class CategoryDivergenceMatrixStatUnsplittable(Statistic):
         return newRes
 
     def _calcBinomialPVals(self, countMatrix, colSums, rowSums, N):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         pValMatrix = numpy.zeros(countMatrix.shape)
         for i in xrange(pValMatrix.shape[0]):
             for j in xrange(pValMatrix.shape[1]):
@@ -150,7 +150,7 @@ class CategoryDivergenceMatrixStatUnsplittable(Statistic):
         return pValMatrix
     
     def _calcHypergeometricPVals(self, countMatrix, colSums, rowCounts, N):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         pValMatrix = numpy.zeros(countMatrix.shape)
         for i in xrange(pValMatrix.shape[0]):
             for j in xrange(pValMatrix.shape[1]):
@@ -167,7 +167,7 @@ class CategoryDivergenceMatrixStatUnsplittable(Statistic):
 
     def _calcSignificanceMatrix(self, pValMatrix):
         if self._pValueAdjustment == 'fdr':
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             pValMatrix = r('p.adjust')(pValMatrix, 'fdr')
         return pValMatrix < self._threshold
     

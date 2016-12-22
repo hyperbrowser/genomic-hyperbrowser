@@ -100,7 +100,7 @@ class DiffRelFreqPValStatUnsplittable(Statistic):
             b = int(n1-c1) #n1-a
             c = int(c2) #q*n2
             d = int(n2-c2)# n2-c
-            from gold.application.RSetup import r, robjects
+            from proto.RSetup import r, robjects
             twoByTwo = r.matrix(robjects.IntVector([a,b,c,d]), nrow=2) 
             res = r('fisher.test')(twoByTwo)
             pval = r('function(x){x$p.value}')(res)

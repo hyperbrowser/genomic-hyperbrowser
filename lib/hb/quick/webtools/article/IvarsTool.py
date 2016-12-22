@@ -870,6 +870,7 @@ class MatchTFsWithPWMs(GeneralGuiTool, UserBinMixin, GenomeMixin):
 
         import shelve
         mapper = shelve.open("/hyperbrowser/data/tfbs/tfNames2pwmIds.shelf")
+        mapper["CTCF"] = ["REN_20"]
         print "Test"
 
         outfile = open(galaxyFn, "w")

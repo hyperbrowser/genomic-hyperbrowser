@@ -12,13 +12,17 @@ from quick.extra.tfbs.TfbsTrackNameMappings import TfbsGSuiteNameMappings,\
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGSuiteFile, getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
+from quick.webtools.mixin.DebugMixin import DebugMixin
+
 '''
 Created on Nov 12, 2014
 @author: Antonio Mora
-Last update: Antonio Mora; Nov 10, 2015
+Last update: Antonio Mora; Jun 14, 2016
 '''
 
-class AllTargetsOfTfs(GeneralGuiTool):
+
+
+class AllTargetsOfTfs(GeneralGuiTool, DebugMixin):
     REGIONS_FROM_HISTORY = 'Track from History'
     SELECT = '--- Select ---'
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
@@ -43,7 +47,7 @@ class AllTargetsOfTfs(GeneralGuiTool):
                 #('Downstream Flank Size (bp)','downFlankSize'),\
                 ('TF Source', 'sourceTfs'),\
                 ('TF Tracks', 'tfTracks'),\
-                ]
+                ] + DebugMixin.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxGenome():
@@ -63,9 +67,10 @@ class AllTargetsOfTfs(GeneralGuiTool):
     @staticmethod
     def getInfoForOptionsBoxGenomicRegionsSource(prevChoices):
         if prevChoices.genome == 'hg19':
-            return 'This tool will allow you to compare one transcription factor track against one or more genomic region tracks.<p>In this step,\
+            return 'This tool will allow you to determine overlap between one transcription factor track and one or more genomic region tracks \
+            (compare binding of one transcription factor across multiple regions).<p>In this step,\
             you can choose between three sources of genomic region tracks: The single tracks stored in the hyperbrowser repository, the cell-line\
-            specific multi-tracks (GSuite) stored in the hyperbrowser repository, or tracks that you have previously uploaded to Galaxy History.<p>\
+            specific multi-tracks (GSuite) stored in the GSuite hyperbrowser repository, or tracks that you have previously uploaded to Galaxy History.<p>\
             The single tracks in the hyperbrowser repository include:<ul>\
             <li><a href="http://www.ensembl.org/Homo_sapiens/Info/Index">Ensemble Genes, Exons and Introns</a></li>\
             <li><a href="http://www.ncbi.nlm.nih.gov/refseq/rsg/">RefSeq Genes, Exons and Introns</a></li>\
@@ -74,7 +79,7 @@ class AllTargetsOfTfs(GeneralGuiTool):
             <li><a href="http://enhancer.binf.ku.dk/presets/">FANTOM5/Transcribed-Enhancer-Atlas Robust Enhancers</a></li>\
             <li><a href="http://enhancer.binf.ku.dk/presets/">FANTOM5/Transcribed-Enhancer-Atlas Ubiquitous Enhancers -cell-based</a></li>\
             <li><a href="http://enhancer.binf.ku.dk/presets/">FANTOM5/Transcribed-Enhancer-Atlas Ubiquitous Enhancers -anatomy-based</a></li>\
-            </ul><p>The multi-tracks in the hyperbrowser repository include:<ul>\
+            </ul><p>The multi-tracks in the GSuite hyperbrowser repository include:<ul>\
             <li><a href="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=wgEncodeHistoneSuper">Enhancer-associated histone marks per cell type (H3K4me1, H3K27ac, and H3K36me3, for GM12878, H1HESC, HeLaS3, HepG2, HUVEC, K562, and NHEK cells)</a></li>\
             <li><a href="http://enhancer.binf.ku.dk/presets/">Enhancer per tissue/organ (FANTOM5 enhancers for 41 different tissues/organs)</a></li>\
             <li><a href="http://enhancer.binf.ku.dk/presets/">Enhancer per cell type (FANTOM5 enhancers for 71 different cell types)</a></li>\
@@ -82,14 +87,15 @@ class AllTargetsOfTfs(GeneralGuiTool):
             <li><a href="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=wgEncodeAwgSegmentation">Segmentation per cell type (Segway predictions for GM12878, H1HESC, HeLaS3, HepG2, HUVEC, and K562 cells, plus ChromHMM predictions for K562 cells)</a></li>\
             </ul><p>'
         elif prevChoices.genome == 'mm9':
-            return 'This tool will allow you to compare one transcription factor track against one or more genomic region tracks.<p>In this step,\
+            return 'This tool will allow you to determine overlap between one transcription factor track and one or more genomic region tracks \
+            (compare binding of one transcription factor across multiple regions).<p>In this step,\
             you can choose between three sources of genomic region tracks: The single tracks stored in the hyperbrowser repository, the cell-line\
-            specific multi-tracks (GSuite) stored in the hyperbrowser repository, or tracks that you have previously uploaded to Galaxy History.\
+            specific multi-tracks (GSuite) stored in the GSuite hyperbrowser repository, or tracks that you have previously uploaded to Galaxy History.\
             The single tracks in the hyperbrowser repository include:<ul>\
             <li><a href="http://www.ensembl.org/Mus_musculus/Info/Index">Ensemble Genes</a></li>\
             <li><a href="http://www.ncbi.nlm.nih.gov/refseq/rsg/">RefSeq Genes, Exons, Introns and Intergenic regions</a></li>\
             <li><a href="http://fantom.gsc.riken.jp/5/data/">FANTOM5 Cage Peak Robust</a></li>\
-            </ul><p>The multi-tracks in the hyperbrowser repository include:<ul>\
+            </ul><p>The multi-tracks in the GSuite hyperbrowser repository include:<ul>\
             <li><a href="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=wgEncodeHistoneSuper">Enhancer-associated histone marks per cell type (H3K4me1, H3K27ac, and H3K36me3, for ES-E14 and MEL cells)</a></li>\
             <li><a href="http://genome.ucsc.edu/cgi-bin/hgTrackUi?g=wgEncodeDNAseSuper">Open chromatin per cell type (ENCODE synthesis data for ES-E14 and MEL cells)</a></li>\
             </ul><p>'
@@ -141,12 +147,14 @@ class AllTargetsOfTfs(GeneralGuiTool):
     @staticmethod
     def getInfoForOptionsBoxSourceTfs(prevChoices):
         if prevChoices.genome == 'hg19':
-            return 'This tool will allow you to compare one transcription factor track against one or more genomic region tracks.<p>In this step,\
+            return 'This tool will allow you to determine overlap between one transcription factor track and one or more genomic region tracks \
+            (compare binding of one transcription factor across multiple regions).<p>In this step,\
             you can choose between three sources of transcription factor tracks: The TFBS Conserved Track (<a href="http://genome.ucsc.edu/cgi-bin/hgTables?hgta_doSchemaDb=hg19&hgta_doSchemaTable=tfbsConsSites">see for details</a>),\
             the track with ChIP-seq uniform peaks from ENCODE (<a href="http://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&g=wgEncodeAwgTfbsUniform">see for details</a>),\
             or tracks that you have previously uploaded to Galaxy History.'
         elif prevChoices.genome == 'mm9':
-            return 'This tool will allow you to compare one transcription factor track against one or more genomic region tracks.<p>In this step,\
+            return 'This tool will allow you to determine overlap between one transcription factor track and one or more genomic region tracks \
+            (compare binding of one transcription factor across multiple regions).<p>In this step,\
             you can choose between two sources of transcription factor tracks: Either Stanford & Yale TFBS ChIP-seq track (<a href=\
             "http://genome.ucsc.edu/cgi-bin/hgTables?db=mm9&hgta_group=regulation&hgta_track=wgEncodeSydhTfbs">see for details</a>), or\
             tracks that you have previously uploaded to Galaxy History.'
@@ -169,6 +177,8 @@ class AllTargetsOfTfs(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        cls._setDebugModeIfSelected(choices)
+
         genome = choices.genome
         genomicRegionsSource = choices.genomicRegionsSource
         genomicRegions = choices.genomicRegions
@@ -223,6 +233,8 @@ class AllTargetsOfTfs(GeneralGuiTool):
 
         n = 0
         allTargetBins = []; dataY = []; allRefSetNames = []
+        #print 'all:', selectedTrackNames, '<p>'
+        #print 'tf:', tfTrackName, '<p>'
         for i in selectedTrackNames:
             n = n+1
             #newGalaxyFn = galaxyFn.split(".")[0] + str(n) + "." + "dat"
@@ -256,6 +268,7 @@ class AllTargetsOfTfs(GeneralGuiTool):
 
             # Print output to table:
             line = [refSetName] + [len(targetBins)] + [regFileNamer.getLink('Download bed-file')] + [regFileNamer.getLoadToHistoryLink('Download bed-file to History')]
+            #print line, '<p>'
             htmlCore.tableLine(line)
 
         line = ['Total'] + [len(allTargetBins)] + [''] + ['']
@@ -303,57 +316,57 @@ class AllTargetsOfTfs(GeneralGuiTool):
         htmlCore.end()
         print htmlCore
 
-    @staticmethod
-    def validateAndReturnErrors(choices):
-        genomicRegionsSource = choices.genomicRegionsSource
-        genomicRegions = choices.genomicRegions
-        sourceTfs = choices.sourceTfs
-        tfTracks = choices.tfTracks
-
-        # Check that all boxes have data:
-        if genomicRegionsSource == AllTargetsOfTfs.SELECT:
-            return 'Please select a genomic region source.'
-        if not genomicRegions:
-            return 'Please select a genomic region.'
-
-        # Check tracks for Genomic Regions-History:
-        if genomicRegionsSource=='History (user-defined)':
-            if len(genomicRegions.split(":")) > 1:
-                if genomicRegions.split(":")[1] == "gsuite":
-                    errorString = GeneralGuiTool._checkGSuiteFile(genomicRegions)
-                    if errorString:
-                        return errorString
-                    else:
-                        gSuite = getGSuiteFromGalaxyTN(genomicRegions)
-                        sizeErrorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuite, 1, 1000)
-                        if sizeErrorString:
-                            return sizeErrorString
-                        else:
-                            reqErrorString = GeneralGuiTool._checkGSuiteRequirements \
-                                (gSuite,
-                                 AllTargetsOfTfs.GSUITE_ALLOWED_FILE_FORMATS,
-                                 AllTargetsOfTfs.GSUITE_ALLOWED_LOCATIONS,
-                                 AllTargetsOfTfs.GSUITE_ALLOWED_TRACK_TYPES,
-                                 AllTargetsOfTfs.GSUITE_DISALLOWED_GENOMES)
-                            if reqErrorString:
-                                return reqErrorString
-                else:
-                    errorString = GeneralGuiTool._checkTrack(choices, 'genomicRegions', 'genome')
-                    if errorString:
-                        return errorString
-
-        if sourceTfs == AllTargetsOfTfs.SELECT:
-            return 'Please select a TF source.'
-        if not tfTracks:
-            return 'Please select a TF track.'
-
-        # Check tracks for TFs-History:
-        if sourceTfs=='History (user-defined)':
-            tfErrorString = GeneralGuiTool._checkTrack(choices, 'tfTracks', 'genome')
-            if tfErrorString:
-                return tfErrorString
-
-        return None
+    # @staticmethod
+    # def validateAndReturnErrors(choices):
+    #     genomicRegionsSource = choices.genomicRegionsSource
+    #     genomicRegions = choices.genomicRegions
+    #     sourceTfs = choices.sourceTfs
+    #     tfTracks = choices.tfTracks
+    #
+    #     # Check that all boxes have data:
+    #     if genomicRegionsSource == AllTargetsOfTfs.SELECT:
+    #         return 'Please select a genomic region source.'
+    #     if not genomicRegions:
+    #         return 'Please select a genomic region.'
+    #
+    #     # Check tracks for Genomic Regions-History:
+    #     if genomicRegionsSource=='History (user-defined)':
+    #         if len(genomicRegions.split(":")) > 1:
+    #             if genomicRegions.split(":")[1] == "gsuite":
+    #                 errorString = GeneralGuiTool._checkGSuiteFile(genomicRegions)
+    #                 if errorString:
+    #                     return errorString
+    #                 else:
+    #                     gSuite = getGSuiteFromGalaxyTN(genomicRegions)
+    #                     sizeErrorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuite, 1, 1000)
+    #                     if sizeErrorString:
+    #                         return sizeErrorString
+    #                     else:
+    #                         reqErrorString = GeneralGuiTool._checkGSuiteRequirements \
+    #                             (gSuite,
+    #                              AllTargetsOfTfs.GSUITE_ALLOWED_FILE_FORMATS,
+    #                              AllTargetsOfTfs.GSUITE_ALLOWED_LOCATIONS,
+    #                              AllTargetsOfTfs.GSUITE_ALLOWED_TRACK_TYPES,
+    #                              AllTargetsOfTfs.GSUITE_DISALLOWED_GENOMES)
+    #                         if reqErrorString:
+    #                             return reqErrorString
+    #             else:
+    #                 errorString = GeneralGuiTool._checkTrack(choices, 'genomicRegions', 'genome')
+    #                 if errorString:
+    #                     return errorString
+    #
+    #     if sourceTfs == AllTargetsOfTfs.SELECT:
+    #         return 'Please select a TF source.'
+    #     if not tfTracks:
+    #         return 'Please select a TF track.'
+    #
+    #     # Check tracks for TFs-History:
+    #     if sourceTfs=='History (user-defined)':
+    #         tfErrorString = GeneralGuiTool._checkTrack(choices, 'tfTracks', 'genome')
+    #         if tfErrorString:
+    #             return tfErrorString
+    #
+    #     return None
 
     @staticmethod
     def getOutputFormat(choices=None):
@@ -365,21 +378,19 @@ class AllTargetsOfTfs(GeneralGuiTool):
 
     @staticmethod
     def getToolDescription():
-        return '<b>Transcription Factor Binding Site Scanning Tool, v.1.0</b><p>\
-        This tool performs an intersection between two types of tracks: a selected genomic region\
+        return '<b>Transcription Factor Analysis Workbench, v.1.0</b><p>\
+        This tool performs an intersection between two types of tracks: One or more selected genomic regions\
         and a track of putative TF binding sites, which allows the user to explore:<p>\
         * Genes, exons or promoters in the vicinity of putative binding sites for a given Transcription Factor.<p>\
-        * Transcription Factor Binding Sites for a given Transcription Factor.\
-        The sites are determined through putative TF binding sites found in open chromatin regions such\
-        as enhancers and DNaseI hypersensitive regions.<p>\
+        * Transcription Factor Binding Sites for a given Transcription Factor across multiple samples.<p>\
         The tool works with pre-determined tracks of TF binding sites, either from the hyperbrowser repository\
         or from History. If you have your own TF Track, you can upload it to History using "Get Data"\
         and then select TF Source = History Element.<p>\
         The tool offers a certain number of useful genomic tracks and multi-tracks to be compared to the TF track. If\
-        the genomic track you need is not there, you can upload it to History using "Get Data" and\
+        the genomic track you need is not here, you can upload it to History using "Get Data" and\
         then select Genomic Region = History Element.\
-        If you don\'t have a TF track but a specific binding motif, a consensus sequence or a PWM, you can\
-        also build a track with this information and upload it from TF Source = History Element.<p>\
+        If you don\'t have a TF track but a specific binding motif, consensus sequence or PWM, you must\
+        first build a track with this information and upload it from TF Source = History Element.<p>\
         <p>The following picture illustrates the goal/scope of this tool.<p>'
 
     @staticmethod
@@ -388,7 +399,7 @@ class AllTargetsOfTfs(GeneralGuiTool):
 
     @staticmethod
     def getFullExampleURL():
-        return 'https://hyperbrowser.uio.no/gsuite/u/hb-superuser/p/use-case---tfs-in-enhancers'
+        return 'https://hyperbrowser.uio.no/gsuite/u/hb-superuser/p/tfaw---the-transcription-factor-analysis-workbench'
 
     #@staticmethod
     #def getSubToolClasses():
@@ -407,3 +418,10 @@ class AllTargetsOfTfs(GeneralGuiTool):
         LocalOSConfig.py.
         '''
         return True
+
+    @staticmethod
+    def isDebugMode():
+        '''
+        Specifies whether the debug mode is turned on.
+        '''
+        return False

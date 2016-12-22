@@ -130,7 +130,7 @@ class ConcatenateHistoryItems(GeneralGuiTool):
         
         #temporarily turned off..
         #if chosenResDictKey=='P-value':
-        #    from gold.application.RSetup import r
+        #    from proto.RSetup import r
         #    origItems = matrix['Global result'].items()
         #    matrix['FDR'] = dict(zip([x[0] for x in origItems], r('p.adjust')([x[1] for x in origItems],'BH') ))
         

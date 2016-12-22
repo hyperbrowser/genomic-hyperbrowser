@@ -29,7 +29,7 @@ from quick.statistic.RatioOfIntersectionToGeometricMeanStat import RatioOfInters
 from quick.statistic.RatioOfOverlapToUnionStat import RatioOfOverlapToUnionStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.statistic.T1T2BinValuesCorrelationWithKendallCountStat import T1T2BinValuesCorrelationWithKendallCountStat
-
+from quick.statistic.TetrachoricCorrelationStat import TetrachoricCorrelationStat
 
 T1_RATIO_OF_SECOND_INSIDE_FIRST = 'Proportion of the query track base-pairs coinciding with base-pairs from the reference track'
 T2_RATIO_OF_SECOND_INSIDE_UNION = 'Proportion of the union of base-pairs of the two tracks that are covered by the reference track'
@@ -39,6 +39,7 @@ T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP = 'Forbes coefficient: ratio of observe
 T6_STANDARD_DEVIATIONS_OF_OBSERVED_MINUS_EXPECTED_OVERLAP = 'Ratio of observed to expected overlap difference relative to the variance'
 T7_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP = 'Normalized Forbes coefficient: ratio of observed to expected overlap normalized in relation to the reference GSuite'
 T8_CORRELATED_BIN_COVERAGE = 'Correlated bin coverage'
+T9_TETRA_CORRELATION = 'Tetrachoric correlation of query track base-pairs and base-pairs from the reference track'
 
 PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING = OrderedDict([
                         (T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, ObservedVsExpectedStat.__name__),
@@ -48,7 +49,8 @@ PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING = OrderedDict([
                         (T2_RATIO_OF_SECOND_INSIDE_UNION, PropOfReferenceTrackInsideUnionStat.__name__),
                         (T4_RATIO_OF_INTERSECTION_TO_GEOMETRIC_MEAN, RatioOfIntersectionToGeometricMeanStat.__name__),
                         # (T6_STANDARD_DEVIATIONS_OF_OBSERVED_MINUS_EXPECTED_OVERLAP, None),
-                        (T8_CORRELATED_BIN_COVERAGE, T1T2BinValuesCorrelationWithKendallCountStat.__name__)
+                        (T8_CORRELATED_BIN_COVERAGE, T1T2BinValuesCorrelationWithKendallCountStat.__name__),
+                        (T9_TETRA_CORRELATION, TetrachoricCorrelationStat.__name__)
                                               ])
                                         
 PAIRWISE_STAT_LABELS = PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING.keys()

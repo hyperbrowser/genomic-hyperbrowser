@@ -16,7 +16,7 @@
 
 import os
 import functools
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
 import config.Config

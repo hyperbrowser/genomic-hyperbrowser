@@ -76,6 +76,7 @@ class Motif():
 
 def computeProbsForPWMLine(line, fastaFileContainsCnts = True):
     probs = np.array([float(p) for p in line.split()])
+    #print probs
 
     pseudoWeight = 0.25 # Something that is added to avoid zero probs, see Matrix-based pattern matching by van Helden
 
@@ -343,11 +344,14 @@ class MutationAffectingGeneRegulation:
         self._addAllMotifsFromInternalPWMs()
 
         # Preprocess and store snp data file
-        trackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.snp)
-        snpsTrack = PlainTrack(trackName)
-        0# Do it the "old" way since I do not know how to get the 4th column from trackview
+        #trackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.snp)
+        #snpsTrack = PlainTrack(trackName)
+        #print snpsTrack
+        # Do it the "old" way since I do not know how to get the 4th column from trackview
         #print trackName
-        self._getSnpData(choices.snp.split(":")[2])
+        self._getSnpData(choices.snp) #.split(":")[2])
+
+
 
         #tv = snpsTrack.getTrackView(GenomeRegion(genome, "chr1", 0, 10000))
         #print tv.allExtrasAsDictOfNumpyArrays()
@@ -376,7 +380,7 @@ class MutationAffectingGeneRegulation:
             else:
                 for pwm in x.attributes["pwm"].split(","):
                     if pwm not in motifs:
-                        print "Error: pwm "  + x.attributes["pwm"] + " was not found in the list of supported pwms. The transcription factor " + str(x.trackName) + " will not be analysed with this pwm."
+                        print "<p>Warning: pwm "  + pwm + " was not found in the list of supported pwms. The transcription factor " + str(x.trackName) + " will not be analysed with this pwm.</p>"
                     else:
                         transcription_factors.append(TranscriptionFactor(x.trackName, pwm))
 
@@ -385,6 +389,7 @@ class MutationAffectingGeneRegulation:
 
 
         self.runAnalysis()
+
 
         # For every transcription factor (that have an associated motif), do the following:
         # Go through every peak in that transcription factor, compute maximum binding on its exact sequence
@@ -411,7 +416,7 @@ class MutationAffectingGeneRegulation:
         core.header("Results")
         core.divBegin(divClass='resultsExplanation')
         core.paragraph('''
-            Below are a table summarizing the results for each transcription factor and PWM that was analysed. Click on a row for details.
+            The table summarizes the results for each transcription factor and PWM that was analysed. Click on a row for details.
             ''')
         core.divEnd()
 
@@ -468,17 +473,23 @@ class MutationAffectingGeneRegulation:
                 </tr>
             """
 
+            rows_important = []
+            rows = []
+
             n_gain_loss = 0
             for peak in tf.peaks:
+
+                important = False
+
                 if len(peak.tf.motif) > len(peak.sequence):
                     continue # Ignore motifs longer than peak sequence (will only occur on test sets
-
-                subtable +=  "<tr>"
-                subtable +=  "<td>%s %d:%d</td>" % (peak.chr, peak.start, peak.end)
+                row = ""
+                row +=  "<tr>"
+                row +=  "<td>%s %d:%d</td>" % (peak.chr, peak.start, peak.end)
                 #print "<td>%s</td>" % (''.join(peak.sequence))
                 p = peak.bestBindingPositionBeforeMutation
                 #print "Sequence: " + str(peak.sequence[p - peak.start : p - peak.start + len(peak.tf.motif)])
-                subtable +=  "<td>On pos %d with score %.10f<br>%s</td>" % (p, peak.bestBindingScoreBeforeMutation, prettySequence(peak, peak.sequence[p - peak.start : p - peak.start + len(peak.tf.motif)], p))
+                row +=  "<td>On pos %d with score %.10f<br>%s</td>" % (p, peak.bestBindingScoreBeforeMutation, prettySequence(peak, peak.sequence[p - peak.start : p - peak.start + len(peak.tf.motif)], p))
 
                 # Only present binding after if there was a mutation either within the old binding or within a new binding
                 """
@@ -494,18 +505,30 @@ class MutationAffectingGeneRegulation:
                 if peak.hasSnpBetween(peak.start, peak.end):
                     if peak.bestBindingScoreAfterMutation != peak.bestBindingScoreBeforeMutation:
                         n_gain_loss += 1
-                        subtable += "<td><font color='darkgreen'>"
+                        row += "<td><font color='darkgreen'>"
                     else:
-                        subtable += "<td><font>"
+                        row += "<td><font>"
                         
-                    subtable +=  "On pos %d with score %.10f<br>%s<br>Binding sequence: %s</font></td>" % (peak.bestBindingPositionAfterMutation, peak.bestBindingScoreAfterMutation, \
+                    row +=  "On position %d with score %.10f<br>%s<br>Binding sequence: %s</font></td>" % (peak.bestBindingPositionAfterMutation, peak.bestBindingScoreAfterMutation, \
                                                                                prettySequence(peak, peak.bindingSequenceAfterMutations, peak.bestBindingPositionAfterMutation),\
-                                                                                ''.join(peak.bindingSequenceAfterMutations))
-
+                                                                                    ''.join(peak.bindingSequenceAfterMutations))
+                    important = True
                 else:
-                    subtable +=  "<td><font color='#666666'>No change (no mutations)</font></td>"
+                    row +=  "<td><font color='#666666'>No change (no point mutations)</font></td>"
 
-                subtable +=  "</tr>"
+                row +=  "</tr>"
+
+                if important:
+                    rows_important.append(row)
+                else:
+                    rows.append(row)
+
+
+
+            subtable += ''.join(rows_important)
+
+
+            #subtable += ''.join(rows)
 
             subtable +=  "</table><br><br>";
             subtable += "</td></tr>"
@@ -525,15 +548,27 @@ class MutationAffectingGeneRegulation:
     def _getSnpData(self, fileName):
         global snps
 
+        """
         f = open(fileName)
         for line in f.readlines():
             data = line.split()
-            chromosome = chrToNum(data[0])
-            position = int(data[1])
-            mutation = data[3].split(">")
+            if "#" not in data[0]:
+                chromosome = chrToNum(data[0])
+                position = int(data[1])
+                mutation = data[3].split(">")
 
-            snps[chromosome].append(SNP(chromosome, position, mutation[0], mutation[1]))
+                snps[chromosome].append(SNP(chromosome, position, mutation[0], mutation[1]))
+        """
 
+        fName = ExternalTrackManager.extractFnFromGalaxyTN(fileName)
+        suffix = ExternalTrackManager.extractFileSuffixFromGalaxyTN(fileName)
+        from gold.origdata.GenomeElementSource import GenomeElementSource
+        geSource = GenomeElementSource(fName, suffix=suffix)
+
+        for ge in geSource:
+            chromosome = chrToNum(ge.chr)
+            snps[chromosome].append(SNP(chromosome, int(ge.start), ge.mutated_from_allele, ge.mutated_to_allele))
+            #print ge.chr, ge.start, ge.end, ge.mutated_from_allele
 
 
     def _addAllMotifsFromInternalPWMs(self):

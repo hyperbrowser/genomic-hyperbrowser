@@ -51,7 +51,7 @@ class FunctionCorrelationPvalStatUnsplittable(Statistic):
             pval = None
             testStat = None
         else:
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             xAsR = r.unlist([float(num) for num in x])
             yAsR = r.unlist([float(num) for num in y])
             #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTail, method=self._method)

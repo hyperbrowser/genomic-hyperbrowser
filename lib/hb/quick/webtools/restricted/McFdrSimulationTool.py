@@ -103,7 +103,7 @@ class McFdrSimulationTool(GeneralGuiTool):
         print 'NumSamplesPerChunk: ',samplesPerChunk
         print 'NumSamplesInitially: ',samplesInitially
         
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         if estimatePi0 == 'By Convest':
             r.source("http://www.nr.no/~egil/convest.R")
         #elif estimatePi0 == 'By Histf1':

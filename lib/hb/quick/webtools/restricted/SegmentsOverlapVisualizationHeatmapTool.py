@@ -6,6 +6,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from collections import OrderedDict
 
 # Author: Diana Domanska
 
@@ -52,14 +53,14 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
 
     @staticmethod
     def getToolName():
-        return "Make heatmap of overlap between query segments and reference tracks"
+        return "Generate a heatmap based on overlap of segments from a query track with reference tracks in a GSuite"
 
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Basic user mode', 'isBasic'),
-                ('Select track','targetTrack'), \
-                ('Select GSuite file from history', 'gsuite')] +\
+        return [('Basic user mode', 'isBasic'), ('Select track','targetTrack'), \
+                ('Select GSuite file from history', 'gsuite'), \
+                ('Select metadata from GSuite', 'selectColumns')] +\
                 cls.getInputBoxNamesForGenomeSelection() +\
                 [
                 ('Select a color map:', 'colorMapSelectList')
@@ -75,11 +76,30 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
 
     @staticmethod
     def getOptionsBoxTargetTrack(prevChoices): # refTrack
-        return GeneralGuiTool.getHistorySelectionElement('bed')
+        return GeneralGuiTool.getHistorySelectionElement('bed', 'gtrack')
 
     @staticmethod 
     def getOptionsBoxGsuite(prevChoices):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+    @classmethod
+    def getOptionsBoxSelectColumns(cls, prevChoices):
+        from gold.gsuite.GSuiteConstants import TITLE_COL
+        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+
+        if prevChoices.gsuite == None:
+            return
+        try:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+        except:
+            return
+
+        cols = []
+        if gSuite.hasCustomTitles():
+            cols.append(TITLE_COL)
+        cols += gSuite.attributes
+
+        return cols
 
     @staticmethod
     def getOptionsBoxColorMapSelectList(prevChoices): # Alternatively: getOptionsBox1()
@@ -107,14 +127,17 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         #
         #binSpec = targetTrackTitle
         #Phenotype and disease associations:Assorted experiments:Virus integration, HPV specific, Kraus and Schmitz, including 50kb flanks
-        
+
+        from gold.gsuite.GSuiteConstants import TITLE_COL
+        from gold.gsuite.GSuite import GSuite
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+        from gold.gsuite.GSuiteEditor import selectColumnsFromGSuite
         staticFile=[]
         
         results = []
         for refTrack in refTrackNameList:
             analysisDef = '-> ProportionCountStat'
-            res = GalaxyInterface.runManual([refTrack], analysisDef, regSpec, binSpec, genome, username=username, galaxyFn=galaxyFn, printRunDescription=False, printResults=False)
+            res = GalaxyInterface.runManual([refTrack], analysisDef, regSpec, binSpec, genome, username=username, galaxyFn=galaxyFn, printRunDescription=False, printResults=False, printProgress=False)
             segCoverageProp = [res[seg]['Result'] for seg in res.getAllRegionKeys()]
             results.append(segCoverageProp)
             
@@ -122,7 +145,22 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
             staticFile.append([regFileNamer.getLink('Download bed-file'), regFileNamer.getLoadToHistoryLink('Download bed-file to History')])
 
         refGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        yAxisNameOverMouse = [x.replace('\'', '').replace('"','') for x in trackTitles]
+
+        if TITLE_COL == choices.selectColumns:
+            selected = trackTitles
+        else:
+            selected = refGSuite.getAttributeValueList(choices.selectColumns)
+
+        yAxisNameOverMouse=[]
+        for x in range(0, len(selected)):
+            if selected[x] == None:
+                yAxisNameOverMouse.append(str(trackTitles[x]) + ' --- ' + 'None')
+            else:
+                if TITLE_COL == choices.selectColumns:
+                    yAxisNameOverMouse.append(selected[x].replace('\'', '').replace('"', ''))
+                else:
+                    yAxisNameOverMouse.append(str(trackTitles[x]) + ' --- ' + '<b>' + str(selected[x].replace('\'', '').replace('"', '')))
+
 
         #startEnd - order in res
         startEndInterval = []
@@ -399,9 +437,9 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return None
 
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/visualize-overlap-between-query-segments-and-reference-tracks-by-heatmap'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/visualize-overlap-between-query-segments-and-reference-tracks-by-heatmap'
 
     #@classmethod
     #def isBatchTool(cls):

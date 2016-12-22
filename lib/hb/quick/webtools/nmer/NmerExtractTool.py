@@ -96,7 +96,7 @@ class NmerExtractTool(GeneralGuiTool):
         if not NmerTools.isNmerString(nmer):
             return NmerTools.getNotNmerErrorString(nmer)
 
-        from gold.util.CommonFunctions import parseRegSpec
+        from quick.application.UserBinSource import parseRegSpec
         try:
             parseRegSpec(choices[2], choices[0])
         except Exception, e:

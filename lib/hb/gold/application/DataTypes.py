@@ -26,7 +26,11 @@ def getSupportedFileSuffixesForPointsAndSegments():
 
 
 def getSupportedFileSuffixesForGSuite():
-    return getSupportedFileSuffixesForPointsAndSegments() + ['fasta', 'microarray']
+    return getSupportedFileSuffixesForPointsAndSegments() + \
+           ['fasta', 'microarray',
+            'tsv', 'vcf', 'maf']
+# Last three are temporarily added for supporting GSuite repositories via
+# manual manipulation
 
 
 def getSupportedFileSuffixesForFunction():
@@ -38,10 +42,11 @@ def getSupportedFileSuffixes():
            getSupportedFileSuffixesForFunction()
 
 
-# Defined to stop searching for GTrackGenome subtypes online.
+# Defined to stop searching for GTrackGenomeElementSource subtypes online.
 def getUnsupportedFileSuffixes():
     return ['bam', 'bai', 'tab', 'tbi', 'bigwig', 'bw', 'bigbed', 'bb', 'fastq', 'fq', \
             'csfasta', 'csqual', 'doc', 'docx', 'xls', 'xlsx', 'gp', 'gappedPeak', 'peaks', \
             'bedcluster', 'bedlogr', 'bedrnaelement', 'bedrrbs', 'cel', 'matrix', \
             'pdf', 'peptidemapping', 'shortfrags', 'spikeins', 'pair', 'txt', \
-            'xml', 'svs', 'maf', 'gz', 'tar', 'z', 'tgz', 'zip']
+            'xml', 'svs', 'gz', 'tar', 'z', 'tgz', 'zip']
+#            'xml', 'svs', 'maf', 'gz', 'tar', 'z', 'tgz', 'zip']

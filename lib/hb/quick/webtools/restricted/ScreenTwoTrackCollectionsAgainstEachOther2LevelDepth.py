@@ -3,8 +3,7 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\
     STAT_OVERLAP_RATIO, STAT_FACTOR_OBSERVED_VS_EXPECTED, processResult,\
-    STAT_COVERAGE_RATIO_VS_REF_TRACK, STAT_COVERAGE_RATIO_VS_QUERY_TRACK,\
-    STAT_LIST_INDEX
+    STAT_COVERAGE_RATIO_VS_REF_TRACK, STAT_COVERAGE_RATIO_VS_QUERY_TRACK, STAT_COVERAGE_REF_TRACK_BPS
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.restricted.ScreenTwoTrackCollectionsAgainstEachOther2LevelDepthCutCube import \
@@ -20,6 +19,14 @@ class ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth\
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
     
+    STAT_LIST_INDEX = [
+                        STAT_OVERLAP_COUNT_BPS,
+                        STAT_COVERAGE_REF_TRACK_BPS,
+                        STAT_OVERLAP_RATIO,
+                        STAT_FACTOR_OBSERVED_VS_EXPECTED,
+                        STAT_COVERAGE_RATIO_VS_QUERY_TRACK,
+                        STAT_COVERAGE_RATIO_VS_REF_TRACK
+                        ] 
     
     @staticmethod
     def getToolName():
@@ -117,12 +124,13 @@ class ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth\
     @staticmethod
     def getOptionsBoxStatistic(prevChoices):
         if prevChoices.type == 'basic':
-            return [STAT_OVERLAP_COUNT_BPS,
-                STAT_OVERLAP_RATIO,
-                STAT_FACTOR_OBSERVED_VS_EXPECTED,
-                STAT_COVERAGE_RATIO_VS_QUERY_TRACK,
-                STAT_COVERAGE_RATIO_VS_REF_TRACK
-                ]
+            return ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth.STAT_LIST_INDEX
+#             return [STAT_OVERLAP_COUNT_BPS,
+#                 STAT_OVERLAP_RATIO,
+#                 STAT_FACTOR_OBSERVED_VS_EXPECTED,
+#                 STAT_COVERAGE_RATIO_VS_QUERY_TRACK,
+#                 STAT_COVERAGE_RATIO_VS_REF_TRACK
+#                 ]
         else:
             return ['Number of touched segments']
     
@@ -301,13 +309,14 @@ class ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth\
                         results.append({'genome': targetTrackGenome, 'dataFolderValue0': resultPartList3})
         if choices.type == 'basic':        
             stat = choices.statistic
-            statIndex = STAT_LIST_INDEX[stat]
+            #statIndex = STAT_LIST_INDEX[stat]
+            statIndex = ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth.STAT_LIST_INDEX
+            statIndex = statIndex.index(stat)
         else:
             stat= '0'
             statIndex = 0
 
-        return results
-        exit()
+        
         
         htmlCore = HtmlCore()
         htmlCore.begin()

@@ -288,9 +288,9 @@ class GSuiteSelectColumns(GeneralGuiTool):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/select-subsets-of-metadata-columns-in-gsuite---user-guide'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/select-subsets-of-metadata-columns-in-gsuite---user-guide'
     #
     #@classmethod
     #def isBatchTool(cls):

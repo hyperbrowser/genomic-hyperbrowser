@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from gold.result.GraphicsPresenter import GraphicsPresenter, GlobalResultGraphicsData
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 import numpy
 
 class GlobalVectorPresenter(GlobalResultGraphicsData, GraphicsPresenter):
@@ -28,7 +28,7 @@ class GlobalVectorPresenter(GlobalResultGraphicsData, GraphicsPresenter):
     def _customRExecution(self, resDictKey, xlab, main):
         rCode = 'plotFunc <- function(ourList, xlab,ylab, main) {vec <- unlist(ourList); plot(vec, type="l", xlab=xlab, ylab=ylab,main=main)}'
         ylab = ''
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r(rCode)(self._getRawData(resDictKey), xlab, ylab,main)
 
 class GlobalMeanSdVectorPresenter(GlobalVectorPresenter):
@@ -47,5 +47,5 @@ class GlobalMeanSdVectorPresenter(GlobalVectorPresenter):
         ymax = numpy.concatenate((mean,plus,minus)).max()
         xlab = 'Relative bin-position'
         ylab = self._results.getLabelHelpPair(resDictKey)[0]
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r(rCode)(mean,plus,minus, xlab, ylab, main,ymin,ymax)

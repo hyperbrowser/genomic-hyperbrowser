@@ -16,7 +16,7 @@
 from gold.application.LogSetup import logMessage
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic, StatisticSplittable
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from quick.statistic.GenericPerTrackStat import GenericPerTrackStat
 from itertools import imap
 

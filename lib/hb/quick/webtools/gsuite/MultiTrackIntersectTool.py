@@ -411,9 +411,9 @@ class MultiTrackIntersectTool(GeneralGuiTool):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/compile-gsuite-from-hyperbrowser-repository--intersect-preprocessed-tracks-in-gsuite-with-a-single-track---example'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/compile-gsuite-from-hyperbrowser-repository--intersect-preprocessed-tracks-in-gsuite-with-a-single-track---example'
     #
     #@classmethod
     #def isBatchTool(cls):

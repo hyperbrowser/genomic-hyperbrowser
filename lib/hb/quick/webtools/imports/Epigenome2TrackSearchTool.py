@@ -20,14 +20,20 @@ class Epigenome2TrackSearchTool(TrackSearchTool):
     
     @classmethod
     def _getClassAttributes(cls, db):
-        attributes = []
-
-        colList = db._db.getTableCols(cls.TABLE_NAME)
-        for col in colList:
-            attributes.append(col)
-        attributes.remove('url')
-
-        return attributes
+        return ['hb_cell_tissue_type','hb_target','hb_genomebuild',\
+                'MARK','MARK CLASS','Standardised epigenome name','Epigenome Mnemonic~~',\
+                'Single Donor (SD) /Composite (C)~43~47','AGE (Post Birth in YEARS/ Fetal in GESTATIONAL WEEKS/CELL LINE CL) ~~',\
+                'Epigenome ID (EID)~~','GROUP~~','ANATOMY~~','TYPE~~','SOLID / LIQUID~64~23','Single Donor (SD) /Composite (C)~43~47',\
+                'SEX (Male_COMMA_ Female_COMMA_ Mixed_COMMA_ Unknown)~33~50','ETHNICITY~~']
+        # # attributes = []
+        # # 
+        # # colList = db._db.getTableCols(cls.TABLE_NAME)
+        # # for col in colList:
+        # #     attributes.append(col)
+        # # attributes.remove('url')
+        # # attributes.remove('hb_datatype')
+        # # 
+        # # return attributes
 
     @classmethod
     def getColListString(cls):
@@ -35,6 +41,8 @@ class Epigenome2TrackSearchTool(TrackSearchTool):
         (cls.DB._db.getTableCols(cls.TABLE_NAME))
         colListString = ''
         cols.insert(0, cols.pop(cols.index('"url"')))
+        cols.insert(1, cols.pop(cols.index('"hb_datatype"')))
+        cols.insert(2, cols.pop(cols.index('"hb_filesuffix"')))
         for col in cols:
             colListString += col+','
 

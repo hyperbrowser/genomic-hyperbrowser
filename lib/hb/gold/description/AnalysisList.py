@@ -24,7 +24,7 @@ REPLACE_TEMPLATES = {}
 REPLACE_TEMPLATES['$MCFDR$']=\
 '''
  [setup:_MCFDR sampling depth=quick:Quick and rough indication/mediumGlobal:Moderate resolution of global p-value/mediumLocal:Moderate resolution of global and local p-values/robust:Fixed 10 000 samples (slow)]
- [numResamplings:<setup--quick>=20:]
+ [numResamplings:<setup--quick>=50:]
  [numSamplesPerChunk:<setup--quick>=10:]
  [maxSamples:<setup--quick>=150:]
  [mThreshold:<setup--quick>=10:]
@@ -233,9 +233,9 @@ Located inside?:
         _PermutedSegsAndIntersegsTrack:Preserve points (T1), segment lengths and inter-segment gaps (T2); randomize positions (T2) (MC)/
         PermutedSegsAndSampledIntersegsTrack_:Preserve segments (T2) and number of points (T1); randomize positions (T1) (MC)/
         PermutedSegsAndIntersegsTrack_:Preserve segments (T2) and inter-point distances (T1); randomize positions (T1) (MC)/
-        SegsSampledByIntensityTrack_:Preserve segments (T2) and number of points (T1); randomize positions by intensity (T1) (MC)/
-        RandomGenomeLocationTrack_:Preserve segments (T2); randomize points (T1) by uniform selection of bin from genome (MC)/
-        _RandomGenomeLocationTrack:Preserve points (T1); randomize segments (T2) by uniform selection of bin from genome (MC)]
+        SegsSampledByIntensityTrack_:Preserve segments (T2) and number of points (T1); randomize positions by intensity (T1) (MC)]
+#        RandomGenomeLocationTrack_:Preserve segments (T2); randomize points (T1) by uniform selection of bin from genome (MC)/
+#        _RandomGenomeLocationTrack:Preserve points (T1); randomize segments (T2) by uniform selection of bin from genome (MC)]
 #    [onlyGlobalResults:=true:]
     $MCFDR$
     $RANDSEED$
@@ -329,7 +329,7 @@ Overlap?:
         PermutedSegsAndIntersegsTrack_:Preserve segments (T2), segment lengths and inter-segment gaps (T1); randomize positions (T1) (MC)/
         PermutedSegsAndSampledIntersegsTrack_PermutedSegsAndSampledIntersegsTrack:Preserve segment lengths; randomize positions (T1 & T2) (MC)/
         PermutedSegsAndIntersegsTrack_PermutedSegsAndIntersegsTrack:Preserve segment lengths and inter-segment gaps; randomize positions (T1 & T2) (MC)/
-        _RandomGenomeLocationTrack:Preserve segments (T1); randomize segments (T2) by uniform selection of bin from genome (MC)/
+#        _RandomGenomeLocationTrack:Preserve segments (T1); randomize segments (T2) by uniform selection of bin from genome (MC)/
         Tr1IndependentBps:Preserve segments (T2) and total base pair coverage (T1); randomize base pairs independently (T1)/
         bothIndependentBps:Preserve total base pair coverage; randomize base pairs independently (T1 & T2)]
     $MCFDR$
@@ -348,15 +348,15 @@ Overlap (experimental MC V2)?:
         PermutedSegsAndSampledIntersegsTrack_:Preserve segments (T2) and segment lengths (T1); randomize positions (T1) (MC)/
         PermutedSegsAndIntersegsTrack_:Preserve segments (T2), segment lengths and inter-segment gaps (T1); randomize positions (T1) (MC)/
         PermutedSegsAndSampledIntersegsTrack_PermutedSegsAndSampledIntersegsTrack:Preserve segment lengths; randomize positions (T1 & T2) (MC)/
-        PermutedSegsAndIntersegsTrack_PermutedSegsAndIntersegsTrack:Preserve segment lengths and inter-segment gaps; randomize positions (T1 & T2) (MC)/
-        _RandomGenomeLocationTrack:Preserve segments (T1); randomize segments (T2) by uniform selection of bin from genome (MC)]
+        PermutedSegsAndIntersegsTrack_PermutedSegsAndIntersegsTrack:Preserve segment lengths and inter-segment gaps; randomize positions (T1 & T2) (MC)]
+#        _RandomGenomeLocationTrack:Preserve segments (T1); randomize segments (T2) by uniform selection of bin from genome (MC)]
     $MCFDRv2$
     $RANDSEED$
     $EXPERIMENTAL$
     [illustrationFn:=S_S_Overlap.png:]
     [rawStatistic:=TpRawSegsOverlapStat:]
     -> RandomizationManagerV2Stat
-    
+
 Proportional overlap?:
     Are the segments of track 1 overlapping the segments of track 2, [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
     [H0:_=The segments of track 1 are located independently of the segments of track 2 with respect to overlap]
@@ -367,8 +367,8 @@ Proportional overlap?:
         PermutedSegsAndSampledIntersegsTrack_:Preserve segments (T2) and segment lengths (T1); randomize positions (T1) (MC)/
         PermutedSegsAndIntersegsTrack_:Preserve segments (T2), segment lengths and inter-segment gaps (T1); randomize positions (T1) (MC)/
         PermutedSegsAndSampledIntersegsTrack_PermutedSegsAndSampledIntersegsTrack:Preserve segment lengths; randomize positions (T1 & T2) (MC)/
-        PermutedSegsAndIntersegsTrack_PermutedSegsAndIntersegsTrack:Preserve segment lengths and inter-segment gaps; randomize positions (T1 & T2) (MC)/
-        RandomGenomeLocationTrack_RandomGenomeLocationTrack:Randomize segments (T1&T2) by uniform selection of bin from genome (MC)]
+        PermutedSegsAndIntersegsTrack_PermutedSegsAndIntersegsTrack:Preserve segment lengths and inter-segment gaps; randomize positions (T1 & T2) (MC)]
+#        RandomGenomeLocationTrack_RandomGenomeLocationTrack:Randomize segments (T1&T2) by uniform selection of bin from genome (MC)]
     $MCFDR$
     $RANDSEED$
     $EXPERIMENTAL$
@@ -705,7 +705,9 @@ Sum: The sum of values of track1 -> SumStat
 Mean inside and outside: The mean value of track2 inside track1 and outside track1
     [missingVals:Handle missing observations=treatAsZero:treat missing observations as zero/exclude:exclude missing observations]  -> MeanInsideOutsideStat
 Counts: The number of track1-points -> CountPointStat
-Counts in microBins: The number of track1-points in micro-bins  [microBin=1000/10000/100000/1000000] -> PointCountPerMicroBinStat
+Counts in microBins: The number of track1-points in micro-bins (allowing overlapping points) [microBin=1000/2000/10000/100000/1000000] -> PointCountPerMicroBinV4Stat
+#Sum per microBin: The sum of values for each micro-bin [microBin=1000/2000/10000/100000/1000000] -> SumPerMicroBinStat
+Quantile of microBins: A quantile in the distribution for the number of track1-points in micro-bins [microBin=1000/2000/10000/100000/1000000] [quantile=1/5/50/95/99/avg] -> PointCountPerMicroBinQuantileStat
 TestLocalCountsCollection: only a test $EXPERIMENTAL$ [rawStatistic:_=CountPointStat] -> LocalResultsCollectionStat
 Counts: The number of track1-points and the number of track2-points -> CountPointBothTracksStat
 Counts (allowing overlaps): The number of track1-points (allowing overlaps)-> CountPointAllowingOverlapStat
@@ -715,7 +717,7 @@ Frequency: The frequency of track1-points -> PointFreqStat
 Relative avg position: The relative average position of track1-points inside the bins -> AvgRelPosInBinStat
 Strands in bin: The strand type of track1 inside the bins $EXPERIMENTAL$ -> StrandsInsideBinStat
 #(per bp)?
-Coverage: Base pair and proportional coverage by track1, track2 and by both -> ProportionOverlapStat
+Overlap and coverage: Base pair and proportional coverage by track1, track2 and by both -> ProportionOverlapStat
 #Category bp coverage: Bp coverage by track1, track2 and both, for each category of track1 [rawStatistic:=ProportionOverlapStat:]-> GeneralOneCatTrackJoinWithDoubleDictSumStat
 Combined aggregates per bin: A custom operation on aggregate bin values on each track  $EXPERIMENTAL$ [rawStatisticTrack1=MaxOfMarksStat] [rawStatisticTrack2=MaxOfMarksStat] [combineOperation=product] -> ResultPerTrackCombinerStat
 Enrichment: The enrichment of track1 inside track2 and vice versa, at the bp level-> DerivedOverlapStat
@@ -844,6 +846,7 @@ RAW_ANALYSIS_SPECS['Descriptive statistics:Distributions'] = '''
 #Distributions as result
 Segment lengths: The distribution of lengths of each track1-segment [withOverlaps:_Overlap handling=no:Cluster overlaps/yes:Allow overlaps] -> SegmentLengthsStat
 Segment distances: The distribution of distances between segments of track1 [withOverlaps:_Overlap handling=no:Cluster overlaps/yes:Allow overlaps] -> SegmentDistancesStat
+Point gaps: The distribution of gaps between points of track1 [withOverlaps:_Overlap handling=no:Cluster overlaps/yes:Allow overlaps] -> PointGapsStat
 Segment distances: The distribution of distances from each track1-segment to the nearest track2-segment [withOverlaps:_Overlap handling=no:Cluster overlaps of track 1/yes:Allow overlaps of track 1] -> NearestSegmentDistsStat
 Point to segment distances: The distribution of distances from each track1-point to the nearest track2-segment -> NearestSegmentFromPointDistsStat
 Point distances: The distribution of distances from each track1-point to the nearest track2-point -> NearestPointDistsStat
@@ -866,7 +869,7 @@ Categorical coverage depth histogram: Histogram of the number of categories cove
 Count distance among points: some more description [maxNum:_Max value=5/15/20/30/50/100/200/500/1000/1500/2000] -> CountDistanceStat
 Count per bin: some more description  -> CountPerBinStat
 Rank of count per bin: some more description  -> RankOfCountPerBinStat
-Sum up tracks: some more description  -> SumTrackPointsStat
+#Sum up tracks: some more description  -> SumTrackPointsStat
 Hot spot regions: some more description [numberOfTopHotSpots:_Number of top hotspots=1/5/10/15/20/30/50/100/200/300/500/1000/1500/2000] -> HotSpotRegionsStat
 '''
 

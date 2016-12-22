@@ -27,7 +27,7 @@ class UploadGenomeTool(GeneralGuiTool):
                 'Species <i>(e.g. Homo Sapiens)</i>',\
                 'Species taxonomy URL <i>(e.g. http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=9606)</i>',\
                 'Assembly details <i>(description of the assembly, HTML code accepted)</i>',\
-                'Owners <i>(list of e-mail addresses)<\i>',\
+                'Owners <i>(list of e-mail addresses)</i>',\
                 'Access level for genome',\
                 'Availability <i>(the type of installations where the genome is available)</i>',\
                 'Mapping to UCSC table browser: Clade <i>(e.g. mammal)</i>',\

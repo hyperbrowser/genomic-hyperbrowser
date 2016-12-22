@@ -55,7 +55,7 @@ class RandomizedSegsTrack(RandomizedTrack):
     def _permuteSegs(self, starts, ends, vals, strands, ids, edges, weights, extras):
         segLens = ends-starts
         #permuting order (of length-elements) of both pools
-        if None == vals == strands:
+        if vals is None and strands is None:
             numpy.random.shuffle(segLens)
         else:
             permutIndexes = numpy.random.permutation( len(segLens) )

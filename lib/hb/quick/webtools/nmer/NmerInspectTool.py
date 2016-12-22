@@ -1,6 +1,5 @@
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.AutoBinner import AutoBinner
-from quick.application.UserBinSource import parseRegSpec
 from quick.util.CommonFunctions import createHyperBrowserURL
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
@@ -73,7 +72,9 @@ class NmerInspectTool(GeneralGuiTool):
         If needed, StaticFile can be used to get a path where additional files can be put (e.g. generated image files).
         choices is a list of selections made by web-user in each options box.
         '''
-        
+
+        from quick.application.UserBinSource import parseRegSpec
+
         genome = choices[0]
         nmer = choices[1].lower()
         regSpec = choices[2]
@@ -147,8 +148,8 @@ class NmerInspectTool(GeneralGuiTool):
         if not NmerTools.isNmerString(nmer):
             return NmerTools.getNotNmerErrorString(nmer)
             
-        from gold.util.CommonFunctions import parseRegSpec
         try:
+            from quick.application.UserBinSource import parseRegSpec
             regs = parseRegSpec(choices[2], choices[0])
         except Exception, e:
             return str(e)

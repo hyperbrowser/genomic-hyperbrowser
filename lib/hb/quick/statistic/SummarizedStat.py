@@ -15,15 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from quick.statistic.StatisticV2 import StatisticV2
-'''
-Created on Nov 3, 2015
-
-@author: boris
-'''
-
-
 from gold.util.CustomExceptions import ShouldNotOccurError
-from numpy import mean
 from gold.statistic.MagicStatFactory import MagicStatFactory
 
 

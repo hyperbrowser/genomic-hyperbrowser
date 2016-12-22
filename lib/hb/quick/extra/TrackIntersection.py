@@ -28,8 +28,10 @@ class BasicTrackIntersection(object):
             regSpec, binSpec = 'file', self._referenceTrackFn
         elif (type(self._referenceTrackFn)==list):
             regSpec, binSpec = 'track', ':'.join(self._referenceTrackFn)
+
         trackName1 = self._queryTrackName
         trackName2 = None
+
         from gold.description.TrackInfo import TrackInfo
 
         formatName = TrackInfo(self._genome, trackName1).trackFormatName
@@ -38,7 +40,21 @@ class BasicTrackIntersection(object):
 #            formatConv = '[tf1:=SegmentToStartPointFormatConverter:]'
 
 #        analysisDef = formatConv + '-> CountPointStat'
-        analysisDef = '-> CountSegmentStat' if 'segments' in formatName else '-> CountPointStat'
+
+        from gold.statistic.CountStat import CountStat
+        #analysisDef = '-> CountSegmentStat' if 'segments' in formatName else '-> CountPointStat'
+        analysisDef = CountStat
+
+        # print '_referenceTrackFn' + str(self._referenceTrackFn)
+        # print '_queryTrackName' + str(self._queryTrackName)
+        #
+        # print 'trackName1' + str(trackName1)
+        # print 'trackName2' + str(trackName2)
+
+
+
+
+        #analysisDef = CountStat
 
         #print '<div class="debug">'
         #trackName1, trackName2, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackName1, trackName2, analysisDef)
@@ -46,16 +62,32 @@ class BasicTrackIntersection(object):
         #
         #userBinSource, fullRunArgs = GalaxyInterface._prepareRun(trackName1, trackName2, analysisDef, regSpec, binSpec, self._genome)
         #res = AnalysisDefJob(analysisDef, trackName1, trackName2, userBinSource, **fullRunArgs).run()
-        res = GalaxyInterface.runManual([trackName1, trackName2], analysisDef, regSpec, binSpec, self._genome, printResults=False, printHtmlWarningMsgs=False)
-        #print res
-        #print '</div>'
+
+
+        #if it is not a gSuite
+        #res = GalaxyInterface.runManual([trackName1, trackName2], analysisDef, regSpec, binSpec, self._genome, printResults=False, printHtmlWarningMsgs=False)
+
+        #if gSuite
+        from gold.application.HBAPI import PlainTrack
+        from gold.application.HBAPI import doAnalysis
+        from gold.description.AnalysisDefHandler import AnalysisSpec
+
+        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, self._genome)
+        res = doAnalysis(AnalysisSpec(analysisDef), analysisBins, [PlainTrack(self._queryTrackName)])
+        #print 'ccc'
+        #resultDict = res.getGlobalResult()
+
 
         resDictKeys = res.getResDictKeys()
-        assert len(resDictKeys)==1, resDictKeys
-        resDictKey = resDictKeys[0]
-        targetBins = [bin for bin in res.keys() if res[bin][resDictKey]>0]
-        self._result = res
-        self._intersectedReferenceBins = targetBins
+
+
+
+        if len(resDictKeys) == 1:
+        #assert len(resDictKeys)==1, resDictKeys
+            resDictKey = resDictKeys[0]
+            targetBins = [bin for bin in res.keys() if res[bin][resDictKey]>0]
+            self._result = res
+            self._intersectedReferenceBins = targetBins
 
     def getIntersectedReferenceBins(self):
         if self._intersectedReferenceBins is None:
@@ -108,8 +140,10 @@ class TrackIntersection(BasicTrackIntersection):
         from quick.util.CommonFunctions import ensurePathExists
         ensurePathExists(fn)
         f = open(fn, 'w')
-        for reg in regList:
-            f.write( '\t'.join([reg.chr, str(reg.start), str(reg.end)]) + os.linesep )
+
+        if regList!=None:
+            for reg in regList:
+                f.write( '\t'.join([reg.chr, str(reg.start), str(reg.end)]) + os.linesep )
         f.close()
 
     @staticmethod

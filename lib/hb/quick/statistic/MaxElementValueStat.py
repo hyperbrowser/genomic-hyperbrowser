@@ -35,11 +35,8 @@ class MaxElementValueStatUnsplittable(Statistic):
 
         assert vals is not None
 
-        if len(vals) == 0:
-            return None
-
-        return vals.max()
+        if len(vals) > 0:
+            return vals.max()
 
     def _createChildren(self):
-        self._addChild( RawDataStat(self._region, self._track, TrackFormatReq(allowOverlaps=True)) )
-        #self._addChild( RawDataStat(self._region, self._track, TrackFormatReq(val='number', allowOverlaps=self._configuredToAllowOverlaps(strict=False))) )
+        self._addChild( RawDataStat(self._region, self._track, TrackFormatReq(val='number', allowOverlaps=self._configuredToAllowOverlaps(strict=False))) )

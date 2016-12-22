@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from gold.result.GraphicsPresenter import GraphicsPresenter#, LocalResultsGraphicsData, GlobalResultGraphicsData
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 #import os
 
 #class VisualizationPresenter(LocalResultsGraphicsData, GraphicsPresenter):
@@ -77,7 +77,7 @@ class VisualizationPlotPresenter(VisualizationPresenter):
         #print (self._results.getAllValuesForResDictKey(resDictKey), xlab, main)
         #rawData = [float(x) for x in self._getRawData(resDictKey)]
         ##numBins = max(10, self._getDataPointCount(resDictKey)/5)
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         #print 'TYPES: ',(str(type(xList)) + str(type(yLists[0]))).replace('<','')
         numericX = (type(xList[0]) in [int,float])
         self._plotResultObject = r(rCode)(xList, list(scaledYLists[0]), list(scaledYLists[1]), list(scaledYLists[2]), numericX)
@@ -117,7 +117,7 @@ class VisualizationScaledScatterPresenter(VisualizationPresenter):
         #print (self._results.getAllValuesForResDictKey(resDictKey), xlab, main)
         #rawData = [float(x) for x in self._getRawData(resDictKey)]
         ##numBins = max(10, self._getDataPointCount(resDictKey)/5)
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         #print 'TYPES: ',(str(type(xList)) + str(type(yLists[0]))).replace('<','')
         self._plotResultObject = r(rCode)(list(yLists[0]), list(yLists[1]), list(yLists[2]))
         
@@ -154,7 +154,7 @@ class VisualizationScatterPresenter(VisualizationPresenter):
         #rawData = [float(x) for x in self._getRawData(resDictKey)]
         ##numBins = max(10, self._getDataPointCount(resDictKey)/5)
         xlim = ylim = [ min(min(yLists[0]),min(yLists[1])), max(max(yLists[0]),max(yLists[1])) ]
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         #print 'TYPES: ',(str(type(xList)) + str(type(yLists[0]))).replace('<','')
         self._plotResultObject = r(rCode)(list(yLists[0]), list(yLists[1]), xlim, ylim)
         

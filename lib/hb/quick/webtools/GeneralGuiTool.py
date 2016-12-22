@@ -1,14 +1,11 @@
-from collections import namedtuple
+from proto.tools.GeneralGuiTool import GeneralGuiTool as ProtoGeneralGuiTool
+from proto.tools.GeneralGuiTool import MultiGeneralGuiTool as ProtoMultiGeneralGuiTool
+from proto.tools.GeneralGuiTool import HistElement
 
-from config.Config import DATA_FILES_PATH
-from gold.application.LogSetup import logMessage
+from gold.gsuite import GSuiteConstants
 from gold.util.CustomExceptions import Warning
 from quick.application.SignatureDevianceLogging import takes,returns
 from third_party.typecheck import list_of
-from gold.gsuite.GSuiteParser import GSuiteContents
-from gold.gsuite import GSuiteConstants
-from proto.tools.GeneralGuiTool import GeneralGuiTool as ProtoGeneralGuiTool
-from proto.tools.GeneralGuiTool import MultiGeneralGuiTool as ProtoMultiGeneralGuiTool, HistElement, BoxGroup
 
 
 class GeneralGuiToolMixin(object):

@@ -1,3 +1,4 @@
+import quick.gsuite.GSuiteHbIntegration
 from gold.gsuite import GSuiteConstants, GSuiteFunctions
 from gold.util.CommonFunctions import prettyPrintTrackName,\
     strWithNatLangFormatting
@@ -221,7 +222,8 @@ class TrackVsCollectionAnalysisTool(GeneralGuiTool, UserBinMixin,
         htmlCore.header(title)
         
         if choices.bmQid and choices.bmQid not in ['None']:
-            htmlCore.append(str(GSuiteFunctions.getAnalysisQuestionInfoHtml(choices.bmQid)))
+            htmlCore.append(str(
+                quick.gsuite.GSuiteHbIntegration.getAnalysisQuestionInfoHtml(choices.bmQid)))
         
         htmlCore.divBegin('resultsDiv')
         htmlCore.paragraph(
@@ -454,9 +456,9 @@ class TrackVsCollectionAnalysisTool(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return None
 
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/screen-track-against-a-track-collection'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/screen-track-against-a-track-collection'
 
     #@classmethod
     #def isBatchTool(cls):

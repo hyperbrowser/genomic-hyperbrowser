@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
-from gold.application.RSetup import r
+from proto.RSetup import r
 from config.Config import HB_SOURCE_CODE_BASE_DIR
 import os
 

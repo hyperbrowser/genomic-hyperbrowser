@@ -21,7 +21,7 @@
 from gold.result.ScatterPresenter import ScatterPresenter
 #from config.Config import brk
 
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 import numpy
 
 class BinHistPresenter(ScatterPresenter):
@@ -61,7 +61,7 @@ class BinHistPresenter(ScatterPresenter):
     def _customRExecution(self, resDictKey, xlab, main):
         rCode = 'plotFunc <- function(xs, ys, xlab,ylab, main) {xVec <- unlist(xs); yVec <- unlist(ys); plot(xVec, yVec, xlab=xlab,ylab=ylab, main=main, type="l")}'
         xs, ys = self._getRawData(resDictKey)
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r(rCode)(xs, ys, self.X_LAB, self.Y_LAB, main)
         
 class MeanLinePresenter(BinHistPresenter):

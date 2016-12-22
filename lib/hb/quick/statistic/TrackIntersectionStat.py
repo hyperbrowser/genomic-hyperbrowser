@@ -17,6 +17,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawOverlapStat import RawOverlapStatUnsplittable
 from gold.track.TrackView import TrackView
+import numpy
 
 class TrackIntersectionStat(MagicStatFactory):
     pass
@@ -39,7 +40,7 @@ class TrackIntersectionStatUnsplittable(RawOverlapStatUnsplittable):
         allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus = \
             self._findAllStartAndEndEvents(t1s, t1e, t2s, t2e)
 
-        allResultStarts = allSortedDecodedEvents[cumulativeCoverStatus[:-1] == 3]
+        allResultStarts = allSortedDecodedEvents[cumulativeCoverStatus == 3]
         allResultLengths = allEventLengths[cumulativeCoverStatus[:-1] == 3]
         allResultEnds = allResultStarts + allResultLengths
 

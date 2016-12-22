@@ -135,7 +135,7 @@ class ExtractSubtracksTool(GeneralGuiTool):
         web-user in each options box.
         '''
 
-        from gold.gsuite.GSuiteUtils import getSubtracksAsGSuite
+        from quick.gsuite.GSuiteHbIntegration import getSubtracksAsGSuite
         import gold.gsuite.GSuiteComposer as GSuiteComposer
 
         genome = choices.genome
@@ -258,9 +258,9 @@ class ExtractSubtracksTool(GeneralGuiTool):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/compile-gsuite-from-hyperbrowser-repository--intersect-preprocessed-tracks-in-gsuite-with-a-single-track---example'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/compile-gsuite-from-hyperbrowser-repository--intersect-preprocessed-tracks-in-gsuite-with-a-single-track---example'
     #
     #@classmethod
     #def isBatchTool(cls):

@@ -52,7 +52,7 @@ class BpOverlapPValStatUnsplittable(Statistic):
         if both == 0 and (only1 == 0 or only2 == 0):
             pval = None
         elif prob*size >= self.MIN_SUCCESSES_FOR_NORM_APPROXIMATION <= (1-prob)*size:
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             mean = size * prob
             sd = (size*prob*(1-prob))**0.5
             lessPval = r.pnorm(x,mean,sd)

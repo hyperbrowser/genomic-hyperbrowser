@@ -212,7 +212,7 @@ class BatchRunner(object):
     @staticmethod
     def _parseClassAndParams(spec):        
         if '(' in spec:
-            assert(spec.count('(') == spec.count(')') == 1)
+            assert(spec.count('(') == spec.count(')') == 1), spec
             paramSpec = spec[spec.find('(')+1: spec.find(')')]
             if paramSpec == '':
                 paramDict = {}

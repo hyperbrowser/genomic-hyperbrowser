@@ -4,10 +4,9 @@ from urllib import quote
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
-from gold.gsuite import GSuiteConstants, GSuiteStatUtils
+from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, \
     GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME
-from gold.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
@@ -17,6 +16,8 @@ from quick.util.CommonFunctions import prettyPrintTrackName, \
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GSuiteStatUtils
+from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
@@ -39,10 +40,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                                GenomeMixin, GSuiteResultsTableMixin,
                                                DebugMixin):
     Q1 = "Rank suite tracks by similarity to query track"
-    Q2 = """Calculate p-values per track in suite: Is a track in the suite more similar to
-    the query track than expected by chance? (MC)"""
-    Q3 = """Calculate p-value of suite: Are the tracks in the suite (as a whole) more similar to
-    the query track than expected by chance (MC)?"""
+    Q2 = "Calculate p-values per track in suite: Is a track in the suite " \
+         "more similar to the query track than expected by chance? (MC)"
+    Q3 = "Calculate p-value of suite: Are the tracks in the suite (as a " \
+         "whole) more similar to the query track than expected by chance (MC)?"
 
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
@@ -332,9 +333,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         queryTrack = Track(queryTrackNameAsList)
         tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
-        queryTrackTitle = prettyPrintTrackName(queryTrack.trackName)
+        queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
-            [queryTrackTitle] + [quote(x.title, safe='') for x in gsuite.allTracks()])
+            [quote(queryTrackTitle)] + [quote(x.title, safe='') for x in gsuite.allTracks()])
         additionalResultsDict = OrderedDict()
         additionalAttributesDict = OrderedDict()
         if analysisQuestion in [cls.Q1, cls.Q2]:
@@ -380,8 +381,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             #             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to query track'], sortable=True, tableId='resultsTable')
             core.tableFromDictionary(gsPerTrackResults[1], columnNames=gsPerTrackResults[0], sortable=True,
                                      tableId='resultsTable', addInstruction=True)
-            core.divEnd()
-            core.divEnd()
+            
 
             columnInd = 0
             if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
@@ -391,52 +391,18 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                                                     'Similarity to query track', columnInd=columnInd)
             core.line(res)
 
+            core.divEnd()
+            core.divEnd()
+            
             core.end()
             if choices.addResults == 'Yes':
                 GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'],
                                                         cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         elif analysisQuestion == cls.Q2:
-            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
-            analysisDefString = REPLACE_TEMPLATES[
-                                    '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
-            analysisSpec = AnalysisDefHandler(analysisDefString)
-            analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
-            analysisSpec.addParameter('rawStatistic',
-                                      GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
-            analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
-                similarityStatClassName])  # needed for call of non randomized stat for assertion
-            analysisSpec.addParameter('tail', 'more')
-            analysisSpec.addParameter('trackTitles', trackTitles)
-            analysisSpec.addParameter('queryTracksNum', str(1))
+            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles)
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
-
-            gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track', 'P-value'],
-                                                               additionalResultsDict=additionalResultsDict,
-                                                               additionalAttributesDict=additionalAttributesDict)
-            if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-                gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
-            else:
-                gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
-
-            core = HtmlCore()
-            core.begin()
-            core.divBegin(divId='results-page')
-            core.divBegin(divClass='results-section')
-            core.header(analysisQuestion)
-            topTrackTitle = results.keys()[0]
-            core.paragraph('''
-                The track "%s" has the lowest P-value of %s corresponding to %s  similarity to the query track "%s"
-                as measured by "%s" track similarity measure.
-            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
-                   strWithNatLangFormatting(results[topTrackTitle][0]), queryTrackTitle, similarityStatClassName))
-            #             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to query track', 'P-value'], sortable=False)
-            core.tableFromDictionary(gsPerTrackResults[1], columnNames=gsPerTrackResults[0], sortable=True,
-                                     tableId='resultsTable')
-            core.divEnd()
-            core.divEnd()
-            core.end()
+            core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
+                                        queryTrackTitle, results, similarityStatClassName)
             if choices.addResults == 'Yes':
                 GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score', 'P_Value'],
                                                         cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
@@ -473,6 +439,53 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core.end()
 
         print str(core)
+
+    @classmethod
+    def generateQ2Output(cls, additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
+                         queryTrackTitle, results, similarityStatClassName):
+        gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track', 'P-value'],
+                                                           additionalResultsDict=additionalResultsDict,
+                                                           additionalAttributesDict=additionalAttributesDict)
+        if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
+            gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
+        else:
+            gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId='results-page')
+        core.divBegin(divClass='results-section')
+        core.header(analysisQuestion)
+        topTrackTitle = results.keys()[0]
+        core.paragraph('''
+                The track "%s" has the lowest P-value of %s corresponding to %s  similarity to the query track "%s"
+                as measured by "%s" track similarity measure.
+            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
+                   strWithNatLangFormatting(results[topTrackTitle][0]), queryTrackTitle, similarityStatClassName))
+        #             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to query track', 'P-value'], sortable=False)
+        core.tableFromDictionary(gsPerTrackResults[1], columnNames=gsPerTrackResults[0], sortable=True,
+                                 tableId='resultsTable')
+        core.divEnd()
+        core.divEnd()
+        core.end()
+        return core
+
+    @classmethod
+    def prepareQ2(cls, choices, similarityStatClassName, trackTitles):
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES[
+                                '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('rawStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
+        analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+            similarityStatClassName])  # needed for call of non randomized stat for assertion
+        analysisSpec.addParameter('tail', 'more')
+        analysisSpec.addParameter('trackTitles', trackTitles)
+        analysisSpec.addParameter('queryTracksNum', str(1))
+        return analysisSpec
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -635,7 +648,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         """
         Specifies whether debug messages are printed.
         """
-        return True
+        return False
 
     @staticmethod
     def getOutputFormat(choices):

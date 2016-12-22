@@ -14,6 +14,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from numpy import concatenate, add
+
+from quick.statistic.RawOverlapSortedStartEndCodedEventsStat import RawOverlapSortedStartEndCodedEventsStat
+
 '''
 Created on Jul 1, 2015
 
@@ -23,7 +26,7 @@ Created on Jul 1, 2015
 
 from gold.track.TrackFormat import TrackFormatReq
 from gold.statistic.MagicStatFactory import MagicStatFactory
-from gold.statistic.Statistic import MultipleRawDataStatistic
+from gold.statistic.Statistic import MultipleRawDataStatistic, MultipleTrackStatistic
 
 
 class RawOverlapEventsStat(MagicStatFactory):
@@ -36,21 +39,23 @@ class RawOverlapEventsStat(MagicStatFactory):
 #class RawOverlapEventsStatSplittable(StatisticSumResSplittable):
 #    pass
             
-class RawOverlapEventsStatUnsplittable(MultipleRawDataStatistic):    
+class RawOverlapEventsStatUnsplittable(MultipleTrackStatistic):
     def _compute(self):
-        tvs = [x.getResult() for x in self._children]
-        tvStarts = [x.startsAsNumpyArray()for x in tvs]
-        tvEnds = [x.endsAsNumpyArray() for x in tvs]
-        numTracks = len(tvStarts)
-        
-        tvCodedStarts = []
-        tvCodedEnds = []
-        for i in xrange(numTracks):
-            tvCodedStarts.append(tvStarts[i] * 4 + 3)
-            tvCodedEnds.append(tvEnds[i] * 4 + 1)
-            
-        allSortedCodedEvents = concatenate((concatenate(tvCodedStarts), concatenate(tvCodedEnds) ))
-        allSortedCodedEvents.sort()
+        # tvs = [x.getResult() for x in self._children]
+        # tvStarts = [x.startsAsNumpyArray()for x in tvs]
+        # tvEnds = [x.endsAsNumpyArray() for x in tvs]
+        # numTracks = len(tvStarts)
+        #
+        # tvCodedStarts = []
+        # tvCodedEnds = []
+        # for i in xrange(numTracks):
+        #     tvCodedStarts.append(tvStarts[i] * 4 + 3)
+        #     tvCodedEnds.append(tvEnds[i] * 4 + 1)
+        #
+        # allSortedCodedEvents = concatenate((concatenate(tvCodedStarts), concatenate(tvCodedEnds) ))
+        # allSortedCodedEvents.sort()
+
+        allSortedCodedEvents = self._children[0].getResult()
 
         allEventCodes = (allSortedCodedEvents % 4) - 2
 
@@ -61,6 +66,5 @@ class RawOverlapEventsStatUnsplittable(MultipleRawDataStatistic):
 
         return allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus
 
-    
-    def _getTrackFormatReq(self):
-        return TrackFormatReq(dense=False) 
+    def _createChildren(self):
+        self._addChild(RawOverlapSortedStartEndCodedEventsStat(self._region, self._track, self._track2, **self._kwArgs))

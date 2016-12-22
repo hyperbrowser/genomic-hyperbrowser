@@ -168,7 +168,7 @@ class Tool8(GeneralGuiTool):
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         plot = GalaxyRunSpecificFile(['average.png'], galaxyFn)
         plot.openRFigure()
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r.plot(range(1,len(averages)+1), averages, xlab='Rows', ylab='Average value')
         plot.closeRFigure()
         #print plot.getURL() + '<br>'

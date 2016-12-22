@@ -3,19 +3,22 @@ import ast
 import os
 import sys
 import shutil
+import string
 import urllib2
 import re
-#Not needed anymore:
-sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
 from urlparse import urlparse
 from ftputil import FTPHost
+
+from config.Config import HB_SOURCE_CODE_BASE_DIR
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.trackaccess.EncodeDatabase import EncodeDatabase
 from quick.trackaccess.CommonVocabularyParser import CommonVocabularyParser
 
 #from gold.gsuite.GSuite import GSuite
-#from gold.gsuite.GSuiteTrack import GSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack
+import gold.gsuite.GSuiteFunctions
+
 
 
 
@@ -37,6 +40,31 @@ import quick.trackaccess.TrackAccessModuleRegistry as TrackAccessModuleRegistry
 
 def _onError(e):
     raise e
+
+def getFileSuffixFromRow(row):
+    url = None
+    if 'url' in row:
+        url = row['url']
+    elif 'uri' in row:
+        url = row['uri']
+    elif '_url' in row:
+        url = row['_url']
+
+    attr_val_list = []
+
+    for k in row.keys():
+        if row[k] in ['None','']:
+            continue
+        ## some datatypes are not string, e.g. datetime, and some others contain non-printable characters, e.g. \x00
+        value = filter(lambda x: x in string.printable, unicode(str(row[k]).decode('utf-8').strip()))
+        if value.strip() == '':
+            value = '.'
+        attr_val_list.append((k,value))
+    #print attr_val_list
+    track = GSuiteTrack(url, doUnquote = True, genome='hg19', attributes=OrderedDict(attr_val_list))
+    suffix = gold.gsuite.GSuiteFunctions.getSuffixWithCompressionSuffixesRemoved(track).lower()
+    #print 'suffix: '+ suffix
+    return suffix
 
 #class RemoteAccessSite(object):
 #    def __new__(cls, url, *args, **kwArgs):
@@ -228,6 +256,7 @@ class FtpRemoteAccessSite(object):
                    dataType = self.DB.getDataType(rowDict['url'].split('/')[-1], 'Epigenome')
                    rowDict = {'study':metadata[0],'sample':metadata[1],\
                    'experiment':metadata[2],'hb_datatype':dataType,'URL':fileURL}
+                   rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
                    fileList.append(rowDict)
         finally:
             self._disconnectFromHost()
@@ -255,7 +284,7 @@ class TCGATrackAccessModule(object):
         #gpathList = []
         
         #cols = ['cancertype','centertype','centerName','datatype','platformname','url']
-        cols = ['cancertype','centertype','centerName','platformname','datatype','hb_datatype',\
+        cols = ['cancertype','centertype','centerName','platformname','datatype','hb_datatype','hb_filesuffix',\
                 'curation','level','url']
         self.DB._db.dropTable(self._fileIndexTable)
         self.DB._db.createTableFromList(self._fileIndexTable,cols, pk = 'url')
@@ -320,8 +349,8 @@ class TCGATrackAccessModule(object):
                                 ##urlList.append(url)
                                 #globalURLList.append(url)
                                 if not name.endswith('/') and name.find('.')>-1 and name.endswith('.maf'):
-                                    url = self._site._URL+cancertype+centertype+centerName+datatype+platformname+name        
-                                    dataFileList.append({'cancertype':cancertype.strip('/'),
+                                    url = self._site._URL+cancertype+centertype+centerName+datatype+platformname+name
+                                    rowDict = {'cancertype':cancertype.strip('/'),
                                               'centertype':centertype.strip('/'),
                                               'centername':centerName.strip('/'),
                                               'datatype':platformname.strip('/'),#platformname and datatype are exchanged (bug in the web-site)
@@ -330,7 +359,9 @@ class TCGATrackAccessModule(object):
                                               'curation':curation,
                                               'level':None,
                                               #'url':self._site._URL+cancertype+centertype+centerName+datatype+platformname+x} for x in List if not x.endswith('/') and x.find('.')>-1]
-                                              'url':url})
+                                              'url':url}
+                                    rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
+                                    dataFileList.append(rowDict)
                                 elif name.endswith('/'):
                                     print '>>'+cancertype+centertype+centerName+datatype+platformname+name
                                     subList = self._site.getFileNames(cancertype+centertype+centerName+datatype+platformname+name)
@@ -339,7 +370,7 @@ class TCGATrackAccessModule(object):
                                         if not url.endswith('.maf'):#Requested by Daniel Vordak
                                             continue
                                         print '--' + url
-                                        dataFileList.append({'cancertype':cancertype.strip('/'),
+                                        rowDict = {'cancertype':cancertype.strip('/'),
                                               'centertype':centertype.strip('/'),
                                               'centername':centerName.strip('/'),
                                               'datatype':platformname.strip('/'),#platformname and datatype are exchanged (bug in the web-site)
@@ -348,7 +379,9 @@ class TCGATrackAccessModule(object):
                                               'curation':curation,
                                               'level':name.split('_')[-1].strip('/'),
                                               #'url':self._site._URL+cancertype+centertype+centerName+datatype+platformname+x} for x in List if not x.endswith('/') and x.find('.')>-1]
-                                              'url':url})
+                                              'url':url}
+                                        rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
+                                        dataFileList.append(rowDict)
                                         break#There is only one .maf file per dir
                                     #platformNameSubList = [(cancertype,centertype,centerName,datatype,platformname,name,x) for x in subList]
                                     #for (cancertype,centertype,centerName,datatype,platformname,name,x) in platformNameSubList:
@@ -367,7 +400,9 @@ class TCGATrackAccessModule(object):
         for col in cols:
             row = {'table_name':self._fileIndexTable,'col_val':'.'}
             if col == 'hb_datatype':
-                rName = 'HB Data Type'
+                rName = 'Type of data'
+            if col == 'hb_filesuffix':
+                rName = 'File Suffix'
             elif col.find('type') > -1:
                 rName =  col.split('type')[0].title()+' Type'
             elif col.find('name') > -1:
@@ -419,7 +454,8 @@ class TCGATrackAccessModule(object):
         self.DB._db.insertRows(METADATA_TABLE,rowList)
 ##############################################################################
 class ICGCTrackAccessModule(object):
-    ICGC_URL = 'https://dcc.icgc.org/api/v1/download/info/current/Projects/'
+    #ICGC_URL = 'https://dcc.icgc.org/api/v1/download/info/current/Projects/'
+    ICGC_URL = 'https://dcc.icgc.org/api/v1/download/info'
     ICGC_URL_download = 'https://dcc.icgc.org/api/v1/download'
 
     def __init__(self, fileIndexTable,isSqlite = False):
@@ -429,30 +465,52 @@ class ICGCTrackAccessModule(object):
         self.DB._db.connect()
 
     def makeFileIndexTable(self):
-        cols = ['project','file_name','hb_datatype','url']
-        json_main = self._site.retrieveJSON('')
-        projects = [x['name'].split('/')[-1] for x in json_main]
         self.DB._db.dropTable(self._fileIndexTable)
+        cols = ['project','release','file_name','hb_datatype','hb_filesuffix','hb_target',\
+                'hb_genomebuild','url']
         self.DB._db.createTableFromList(self._fileIndexTable,cols, pk = 'url')
-        #print projects
-        for project in projects:
-            if project.upper().find('README') > -1:
+
+        json_main = self._site.retrieveJSON('')
+        releases = [x['name'].split('/')[-1] for x in json_main if not 'README' in x['name']]
+        for release in releases:
+            print 'Release: ' + release
+            json_release = self._site.retrieveJSON('/'+release+'/Projects')
+            if not isinstance(json_release,list) or release == 'current':
+                #No available projects data for this release
+                #Or it is 'current' (because the current release with it's own release number will be there)
                 continue
-            json_project = self._site.retrieveJSON(project+'/')
-            files = [{'project':project, 'file_name':x['name'].split('/')[-1].split('.')[0],'hb_datatype':self.DB.getDataType(self.ICGC_URL_download+'?fn='+x['name'].split('/')[-1], 'ICGC'),'url': self.ICGC_URL_download+'?fn='+x['name']} for x in json_project]
-            #print files[0]
-            self.DB._db.insertRows(self._fileIndexTable,files)
+            projects = [x['name'] for x in json_release]
+            #print json_release
+            #print projects
+            for project in projects:
+                print 'Project: '+project
+                if project.upper().find('README') > -1:
+                    continue
+                json_project = self._site.retrieveJSON(project+'/')#The project path includes the release as well
+                #print json_project
+                tracks = []
+                for x in json_project:
+                    rowDict = {'release': release,'project':project.split('/')[-1], 'file_name':x['name'].split('/')[-1].split('.')[0],
+                           'hb_datatype':self.DB.getDataType(self.ICGC_URL_download+'?fn='+x['name'].split('/')[-1], 'ICGC'),
+                           'url': self.ICGC_URL_download+'?fn='+x['name']}
+                    rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
+                    if 'project' in rowDict:
+                        rowDict['hb_target'] = rowDict['project']
+                    rowDict['hb_genomebuild'] = 'hg19'
+                    tracks.append(rowDict)
+                #print tracks[0]
+                self.DB._db.insertRows(self._fileIndexTable,tracks)
         
     def setMetadata(self):
         METADATA_TABLE = 'file_col_metadata'
         rowList = []
         cols = self.DB._db.getTableCols(self._fileIndexTable)
-        keywords = {'url':'URL','project':'Project','file_name':'File Name'}
+        keywords = {'url':'URL','project':'Project','file_name':'File Name','hb_datatype':'Type of Data',\
+                    'hb_filesuffix':'File Suffix','hb_target':'* Target',\
+                    'hb_genomebuild':'* Genome Build','file_name':'File Type'}
         for col in cols:
             row = {'table_name':self._fileIndexTable}
-            if col == 'hb_datatype':
-                rName = 'HB Data Type'
-            elif col in keywords.keys():
+            if col in keywords.keys():
                 rName = keywords[col]
             else:
                 rName = col.title()
@@ -479,8 +537,8 @@ class Epigenome2TrackAccessModule(object):
                       'http://egg2.wustl.edu/roadmap/data/byFileType/peaks/consolidatedImputed/']
     #Metadata files, retrieved from the Google spreadsheet at 'http://egg2.wustl.edu/roadmap/web_portal/meta.html'
     #Open the sheet, then download the first and the second tabs as tsv files
-    SUMMARY_TABLE = '/hyperbrowser/src/hb_core_developer/trunk/quick/trackaccess/roadmap-epigenomics/jul2013.roadmapData.qc-Consolidated_EpigenomeIDs_summary_Table.tsv'
-    QUALITY_CONTROL = '/hyperbrowser/src/hb_core_developer/trunk/quick/trackaccess/roadmap-epigenomics/jul2013.roadmapData.qc-Consolidated_EpigenomeIDs_QC.tsv'
+    SUMMARY_TABLE = HB_SOURCE_CODE_BASE_DIR + '/quick/trackaccess/roadmap-epigenomics/jul2013.roadmapData.qc-Consolidated_EpigenomeIDs_summary_Table.tsv'
+    QUALITY_CONTROL = HB_SOURCE_CODE_BASE_DIR + '/quick/trackaccess/roadmap-epigenomics/jul2013.roadmapData.qc-Consolidated_EpigenomeIDs_QC.tsv'
     
     def __init__(self, fileIndexTable,isSqlite = False):
         self._fileIndexTable = fileIndexTable
@@ -495,7 +553,8 @@ class Epigenome2TrackAccessModule(object):
         lines_fs = [l.strip('\n').split('\t') for l in fs.readlines()]
         lines_fq = [l.strip('\n').split('\t') for l in fq.readlines()]
         trackIDs = [line[1] for line in lines_fs[3:]]
-        self.cols = ['url','hb_datatype'] + [col_name for col_name in lines_fq[0]]
+        self.cols = ['url','hb_datatype','hb_filesuffix','hb_cell_tissue_type','hb_target','hb_genomebuild'] +\
+            [col_name.replace('\r','').replace(',','_COMMA_') for col_name in lines_fq[0]]
         
         i=0
         for i in range(len(lines_fs[0])):
@@ -508,15 +567,18 @@ class Epigenome2TrackAccessModule(object):
             if lines_fs[0][i].strip() == '':
                 continue
             colname = lines_fs[0][i]+'~'+lines_fs[1][i]+'~'+lines_fs[2][i]
+            colname = colname.replace('\r','').replace(',','_COMMA_')
+            #print colname
             # To avoid error in the search tool since colListString splits colum names by commas
-            self.cols.append(colname.replace(',','_COMMA_'))
-        
+            self.cols.append(colname)
+        #print self.cols
         for line_q in lines_fq[1:]:
             row = {}
             i = 0
             #Add fields from QUALITY_CONTROL 
             for i in range(len(line_q)):
-                row[lines_fq[0][i]] = line_q[i]
+                col = lines_fq[0][i].replace('\r','').replace(',','_COMMA_')
+                row[col] = line_q[i]
             
             #Find the associated line in SUMMARY_TABLE
             summary_line = None
@@ -529,9 +591,13 @@ class Epigenome2TrackAccessModule(object):
             i = 0
             for i in range(len(summary_line)):
                     col_name = lines_fs[0][i]+'~'+lines_fs[1][i]+'~'+lines_fs[2][i]
+                    col_name = col_name.replace('\r','').replace(',','_COMMA_')
                     if col_name in self.cols:
                         row[col_name] = summary_line[i]
-            
+            for k in row.keys():
+                row[k] = row[k].replace('\r','').replace(',','_COMMA_')
+                if k == 'MARK CLASS':
+                    row[k] = row[k].replace(' ','')
             self.trackMetadata.append(row)    
     
     def makeFileIndexTable(self):
@@ -557,6 +623,12 @@ class Epigenome2TrackAccessModule(object):
                             row = r.copy() #Must use .copy() since the dict is a reference type
                             row['url'] = URL+path+filename
                             row['hb_datatype'] = self.DB.getDataType(filename, 'Epigenome2')
+                            row['hb_filesuffix'] = getFileSuffixFromRow(row)
+                            if 'Standardized Epigenome name~~' in row:
+                                row['hb_cell_tissue_type'] = row['Standardized Epigenome name~~']
+                            if 'MARK' in row:
+                                row['hb_target'] = row['MARK']
+                            row['hb_genomebuild'] = 'hg19'
                             rows.append(row)
                             break
                 self.DB._db.insertRows(self._fileIndexTable,rows)    
@@ -568,12 +640,15 @@ class Epigenome2TrackAccessModule(object):
         METADATA_TABLE = 'file_col_metadata'
         rowList = []
         cols = self.DB._db.getTableCols(self._fileIndexTable)
+        keywords = {'url':'URL','hb_datatype':'Type of Data','hb_filesuffix':'File Suffix',\
+                    'hb_target':'* Target','hb_cell_tissue_type':'* Cell/Tissue Type','hb_genomebuild':'* Genome Build',\
+                    'SEX (Male_COMMA_ Female_COMMA_ Mixed_COMMA_ Unknown)~33~50':'SEX',\
+                    'Single Donor (SD) /Composite (C)~43~47':'Single Donor (SD) /Composite (C)',\
+                    'AGE (Post Birth in YEARS/ Fetal in GESTATIONAL WEEKS/CELL LINE CL) ~~':'Age'}
         for col in cols:
             row = {'table_name':self._fileIndexTable,'col_val':'.'}
-            if col == 'url':
-                rName = col
-            elif col == 'hb_datatype':
-                rName = 'Data Type'
+            if col in keywords.keys():
+                rName = keywords[col]
             else:
                 rName = col.replace('~',' ').replace('_COMMA_',',').strip()
             row.update({'col_name':col, 'col_readable_name':rName})
@@ -593,7 +668,7 @@ class EpigenomeTrackAccessModule(object):
         self.DB._db.connect()
 
     def makeFileIndexTable(self):
-        cols = ['study','sample','experiment', 'hb_datatype','url']
+        cols = ['study','sample','experiment', 'hb_datatype','hb_filesuffix','url']
         files = self._site.getEpigenomeFiles()
         self.DB._db.dropTable(self._fileIndexTable)
         self.DB._db.createTableFromList(self._fileIndexTable,cols, pk = 'url')
@@ -609,6 +684,8 @@ class EpigenomeTrackAccessModule(object):
                 rName = 'URL'
             elif col == 'hb_datatype':
                 rName = 'HB Data Type'
+            elif col == 'hb_filesuffix':
+                rName = 'HB File Suffix'
             else:
                 rName = col.title()
             row.update({'col_name':col, 'col_readable_name':rName})
@@ -663,7 +740,7 @@ class FANTOM5TrackAccessModule(object):
             else:
                 self._attributes.append(attr)
             i+=1
-        self._attributes.extend(['url','hb_datatype'])
+        self._attributes.extend(['url','hb_datatype','hb_filesuffix'])
     
     def getAttributes(self):
         return self._attributes
@@ -694,7 +771,7 @@ class FANTOM5TrackAccessModule(object):
             error = None
             for attr in self._attributes:
                 try:
-                    if not attr in ['url','hb_datatype']:
+                    if not attr in ['url','hb_datatype','hb_filesuffix']:
                         rowDict.update({attr:lineList[i].strip()})
                     else:
                         fileTag = rowDict['File Name__2__'].strip()
@@ -703,7 +780,8 @@ class FANTOM5TrackAccessModule(object):
                         fileName = fileNamesTagsDict[fileTag]
                         url = dirURL+fileName
                         rowDict.update({'url':url})
-                        rowDict['hb_datatype'] = self.DB.getDataType(rowDict['url'].split('/')[-1], 'FANTOM5')    
+                        rowDict['hb_datatype'] = self.DB.getDataType(rowDict['url'].split('/')[-1], 'FANTOM5')
+                        rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
                 except Exception as e:
                     error = {}
                     error ['FileName'] = fileTag
@@ -733,6 +811,8 @@ class FANTOM5TrackAccessModule(object):
             row = {'table_name':self._fileIndexTable}
             if col == 'hb_datatype':
                 rName = 'HB Data Type'
+            if col == 'hb_filesuffix':
+                rName = 'HB File Suffix'
             elif col.startswith('Comment') or col.startswith('Parameter'):
                 rName = col.split('[')[1].strip(']')
             elif col.endswith('__'):
@@ -767,15 +847,28 @@ class GWASTrackAccessModule(object):
             rowDict = {}
             row = line.split('\t')
             #cols = self._cols.keys()
-            for i in range(len(cols)):
-                rowDict[cols[i]] = row[i]
-            if str(rowDict['CHR_ID'].strip()) == '' or str(rowDict['CHR_POS'].strip()) == '':
-                continue
+            try:
+                for i in range(len(cols)):
+                    rowDict[cols[i]] = row[i].strip('\r')
+
+                if str(rowDict['CHR_ID'].strip()) == '' or str(rowDict['CHR_POS'].strip()) == '':
+                    continue
+            except Exception as e:
+                    print 'Error in track: '
+                    print row
+                    print 'Error message:'
+                    print str(e)
+                    continue
             self._rowList.append(rowDict)
         
         self._cols['uri'] = None
+        self._cols['hb_genomebuild'] = None
         self._cols['hb_datatype'] = None
-        
+        self._cols['hb_filesuffix'] = None
+        self._cols['hb_target'] = None
+        self._cols['hb_experiment_type'] = None
+
+
         index = {}
         for row in self._rowList:
             #Append to the list of SNPS:
@@ -786,22 +879,34 @@ class GWASTrackAccessModule(object):
             else:
                 index[key] = 0
             row['uri'] = 'gwas://'+key+'-'+str(index[key])+'.gtrack'
-            row['hb_datatype'] = self.DB.getDataType(row['uri'].split('/')[-1], 'GWAS')    
+            row['hb_datatype'] = self.DB.getDataType(row['uri'].split('/')[-1], 'GWAS')
+            if 'DISEASE/TRAIT' in row:
+               row['hb_target'] = row['DISEASE/TRAIT']
+            row['hb_filesuffix'] = 'gtrack'#getFileSuffixFromRow(row)
+            row['hb_experiment_type'] = 'GWAS'
+            row['hb_genomebuild'] = 'hg19'
         ##print self._rowList[0]
         self.DB._db.dropTable(self._fileIndexTable)
         self.DB._db.createTableFromDict(self._fileIndexTable,self._cols, pk = 'uri')
         self.DB._db.insertRows(self._fileIndexTable,self._rowList)
         #To avoid problems caused by non-ascii characters for this particular case:
-        query = 'update file_gwas set "DISEASE/TRAIT" = "BETA2-Glycoprotein I (BETA2-GPI) plasma levels" where  "DISEASE/TRAIT" like "&beta;2-Glycoprotein I (&beta;2-GPI) plasma levels";'
+        #query = 'update file_gwas set "DISEASE/TRAIT" = "BETA2-Glycoprotein I (BETA2-GPI) plasma levels", hb_target = "BETA2-Glycoprotein I (BETA2-GPI) plasma levels" where  "DISEASE/TRAIT" like "&beta;2-Glycoprotein I (&beta;2-GPI) plasma levels";'
+        query = 'update file_gwas set "DISEASE/TRAIT" = replace("DISEASE/TRAIT", "&beta;","BETA") where "DISEASE/TRAIT" like "%&beta;%"'
         output = self.DB._db.runQuery(query)
         
     def setMetadata(self):
         METADATA_TABLE = 'file_col_metadata'
         rowList = []
         cols = self.DB._db.getTableCols(self._fileIndexTable)
+        keywords = {'hb_datatype':'Type of Data','hb_filesuffix':'File Suffix',\
+                    'hb_target':'* Target','hb_experiment_type':'* Experiment type',\
+                    'hb_genomebuild':'* Genome Build'}
         for col in cols:
             row = {'table_name':self._fileIndexTable}
-            rName = col#.replace('_',' ').title()
+            if col in keywords.keys():
+                rName = keywords[col]
+            else:
+                rName = col#.replace('_',' ').title()
             row.update({'col_name':col, 'col_readable_name':rName, 'col_val':'.'})
             rowList.append(row)
         self.DB._db.deleteRows(METADATA_TABLE, "table_name LIKE '"+self._fileIndexTable+"'")
@@ -821,7 +926,7 @@ class EBIHubTrackAccessModule(object):
         self.DB._db.connect()
         
         self._trackCollection = []
-        self._cols = {'name':None,'url':None, 'hb_datatype':None}
+        self._cols = {'name':None,'url':None, 'hb_datatype':None, 'hb_filesuffix': None}
         self._rowList = []
         
     def makeTrackIndexList(self):
@@ -848,7 +953,8 @@ class EBIHubTrackAccessModule(object):
             #Empty line --> End of track
             elif readingTrack and line.strip() == '':
                 self._trackCollection.append(track)
-                self._rowList.append(rowDict)
+                if 'url' in rowDict:
+                    self._rowList.append(rowDict)
                 readingTrack = False
                 track = {}
                 rowDict = {}
@@ -861,6 +967,7 @@ class EBIHubTrackAccessModule(object):
                 else:
                     rowDict['url'] = line.strip().split(' ')[1]
                     rowDict['hb_datatype'] = self.DB.getDataType(rowDict['url'].split('/')[-1], 'EBIHub')
+                    rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
                 track[title] = ' '.join(line.strip().split(' ')[1:])
                 
     def makeFileIndexTable(self):
@@ -877,7 +984,9 @@ class EBIHubTrackAccessModule(object):
             row = {'table_name':self._fileIndexTable}
             if col == 'hb_datatype':
                 rName = 'HB Data Type'
-            else:    
+            if col == 'hb_filesuffix':
+                rName = 'HB File Suffix'
+            else:
                 rName = col.replace('_',' ').title()
             row.update({'col_name':col, 'col_readable_name':rName, 'col_val':'.'})
             rowList.append(row)
@@ -939,7 +1048,11 @@ class EncodeTrackAccessModule(object):
         self._cols.update({'_source':None})
         self._cols.update({'_url':None})
         self._cols.update({'hb_datatype':None})
-        
+        self._cols.update({'hb_filesuffix':None})
+        self._cols.update({'hb_cell_tissue_type':None})
+        self._cols.update({'hb_target':None})
+        self._cols.update({'hb_genomebuild':None})
+
         with open(indexFile,'r') as f:
              lines = f.readlines()
         
@@ -956,6 +1069,7 @@ class EncodeTrackAccessModule(object):
                     url = urlParent + l.split('#')[0].strip()
                     rowDict.update({'_url':url})
                     datatype = self.DB.getDataType(url.split('/')[-1],'Encode')
+
                     rowDict.update({'hb_datatype':datatype})
                     #rowDict.update({'filename':url})
                     self._rowList.append(rowDict)
@@ -963,8 +1077,6 @@ class EncodeTrackAccessModule(object):
                     continue
                 url = urlParent + l.split('\t')[0]
                 rowDict.update({'_url':url})
-                datatype = self.DB.getDataType(url.split('/')[-1],'Encode')
-                rowDict.update({'hb_datatype':datatype})
                 row = l.split('\t')[1].split(';')
                 
                 for element in row:
@@ -985,8 +1097,16 @@ class EncodeTrackAccessModule(object):
                     else:      
                        rowDict.update({el_name:el[1]})
                        self._cols.update({el_name:None})
-    
+                datatype = self.DB.getDataType(url.split('/')[-1],'Encode')
+                rowDict['hb_datatype'] = datatype
+                rowDict['hb_filesuffix'] = getFileSuffixFromRow(rowDict)
+                if 'cell' in rowDict:
+                    rowDict['hb_cell_tissue_type'] = rowDict['cell']
+                if 'antibody' in rowDict:
+                    rowDict['hb_target'] = rowDict['antibody']
+                rowDict['hb_genomebuild'] = 'hg19'
                 self._rowList.append(rowDict)
+
                 #print i
                 i +=1
             except IndexError as e:
@@ -1006,16 +1126,23 @@ class EncodeTrackAccessModule(object):
         METADATA_TABLE = 'file_col_metadata'
         rowList = []
         cols = self.DB._db.getTableCols(self._fileIndexTable)
-        keywords = {'_url':'URL','hb_datatype':'HB Data Type','datatype':'Encode Data Type','labprotocolid':'Lab Protocol ID',\
+        keywords = {'_url':'URL','hb_datatype':'Type of Data','hb_filesuffix':'File Suffix',\
+                        'hb_genomebuild':'* Genome Build','hb_cell_tissue_type':'* Cell/Tissue Type','hb_target':'* Target',\
+                        'datatype':'* Experiment (Assay) Type','labprotocolid':'Lab Protocol ID',\
                         'dateresubmitted':'Date Resubmitted','objstatus':'Obj Status',\
                         'fragsize':'Fragment Size','expid':'Experiment ID','sourceobj':'Source Object','submitteddataversion':'Submitted Data Version',\
                         'insertlength':'Insert Length','subid':'Sub ID','labversion':'Lab Version','tablename':'Table Name',\
                         'dccaccession':'DCC Accession','origassembly':'Original Assembly','datesubmitted':'Date Submitted',\
                         'labexpid':'Lab Experiment ID','donorid':'Donor ID','dccrep':'DCC Rep','spikeinpool':'spike in Pool',\
-                        'settype':'Set Type','softwareversion':'Software Version','controlid':'Control ID',\
-                        'dateunrestricted':'Date Unrestricted','geosampleaccession':'Geo-sample Sccession',\
+                        'settype':'Experiment or Input','softwareversion':'Software Version','controlid':'Control ID',\
+                        'dateunrestricted':'Date Unrestricted','geosampleaccession':'GEO sample accession',\
                         'dataversion':'Data Version','readtype':'Read Type','mapalgorithm':'Map Algorithm','rnaextract':'RNA Extract','seqplatform':'Seq-Platform',\
-                        'obtainedby':'Obtained By', 'type':'File Type'}
+                        'obtainedby':'Obtained By', 'type':'File Type','antibody':'Antibody or target protein',\
+                        'cell':'Cell, tissue or DNA sample','localization':'Cellular compartment','phase':'Cell Phase',\
+                        'control':'Control or Input for ChIP-seq','view':'View - Peaks or Signals','quality':'Integrated quality flag',\
+                        'biorep':'Cross Lab Bio-Replicate ID','sex':'Sex of donor organism','replicate':'Replicate number',\
+                        'lab':'Lab producing data','softwareversion':'Lab specific informatics','seqplatform':'Sequencing Platform',\
+                        'protocol':'Library protocol','dataversion':'ENCODE Data Freeze'}
         for col in cols:
             row = {'table_name':self._fileIndexTable}
             if col in keywords.keys():
@@ -1106,6 +1233,7 @@ def main(argv):
         DB.updateLastUpdateTable('file_encode')
     elif arg.upper().strip() == 'EPIGENOME2':
         epi2 = Epigenome2TrackAccessModule('file_epigenome2',isSqlite = True)
+        epi2.makeTrackMetadata()
         epi2.makeFileIndexTable()
         epi2.setMetadata()
         DB.updateLastUpdateTable('file_epigenome2')
@@ -1116,7 +1244,7 @@ def main(argv):
         DB.updateLastUpdateTable('file_epigenome')
     elif arg.upper().strip() == 'TCGA':
         tcga = TCGATrackAccessModule('file_cgatlas',isSqlite = True)
-        tcga.makeFileIndexTable()
+        #tcga.makeFileIndexTable()
         tcga.setMetadata()
         DB.updateLastUpdateTable('file_cgatlas')
     elif arg.upper().strip() == 'ICGC':
@@ -1185,4 +1313,9 @@ def main(argv):
         
 
 if __name__ == "__main__":
+    # # from gold.application.DataTypes import getSupportedFileSuffixesForGSuite
+    # # print getSupportedFileSuffixesForGSuite()
+    if len(sys.argv) < 2:
+        print 'Too few attributes!'
+        sys.exit()
     main(sys.argv[1:])

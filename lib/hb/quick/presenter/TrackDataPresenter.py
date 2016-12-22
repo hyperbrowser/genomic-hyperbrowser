@@ -35,7 +35,7 @@ class TrackDataPresenter(HistoryPresenter):
         assert isinstance(arbitraryTV, TrackView)
         #assert arbitraryTV.trackFormat.getFormatName() in [ 'Valued segments', 'Segments'], arbitraryTV.trackFormat.getFormatName()
         genome = arbitraryTV.genomeAnchor.genome
-        print 'GENOME: ',genome
+        #print 'GENOME: ',genome
         from gold.util.CommonFunctions import getClassName
         print type([self._results[key]['Result'] for key in sorted(self._results.keys())][0]), getClassName([self._results[key]['Result'] for key in sorted(self._results.keys())][0])
         tvGeSource = TrackViewListGenomeElementSource(genome, [self._results[key]['Result'] for key in sorted(self._results.keys())], 'Private:GK:test1:wgEncodeUchicagoTfbsK562EfosControlPk'.split(':') ) 

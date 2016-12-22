@@ -75,10 +75,10 @@ class MyElementModifier(ElementModifierGESourceWrapper):
         listGe = []
         
         #FIXME: sum is a built-in function in Python, it is not advisable to be used as a variable name
-        sum=0.00000000001 #FIXME: Why initialized to this value?
+        sumVal=0.00000000001 #FIXME: Why initialized to this value?
 
         for j in range(0, len(self._segCoverageProp)):
-            sum += float(self._segCoverageProp[j][i])
+            sumVal += float(self._segCoverageProp[j][i])
 
         startNew = 0
         endNew = ge.start
@@ -88,7 +88,7 @@ class MyElementModifier(ElementModifierGESourceWrapper):
         for j in range(0, len(self._segCoverageProp)):
 
             if self._segCoverageProp[j][i] > 0:
-                self._segCoverageProp[j][i] = self._segCoverageProp[j][i] / sum
+                self._segCoverageProp[j][i] = self._segCoverageProp[j][i] / sumVal
                 ge2 = ge.getCopy()
 
                 if j==0:

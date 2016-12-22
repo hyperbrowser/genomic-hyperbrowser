@@ -323,9 +323,9 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/compile-gsuite-from-history-elements--preprocess-tracks-in-gsuite-for-analysis---example'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/compile-gsuite-from-history-elements--preprocess-tracks-in-gsuite-for-analysis---example'
     #
     #@classmethod
     #def isBatchTool(cls):

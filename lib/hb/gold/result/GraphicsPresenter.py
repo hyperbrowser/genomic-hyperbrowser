@@ -30,7 +30,7 @@ from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
 
 
 #from rpy import r, RException
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 #from rpy import RException
 
 
@@ -121,7 +121,7 @@ class GraphicsPresenter(Presenter):
         return (600, 800)
 
     def _setOutputDevice(self, fn, height, width):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         if fn.endswith('.pdf'):
             # self.LINE_HEIGHT = self.POINT_SIZE
             r.pdf(fn, height=height*1.0/72, width=width*1.0/72, pointsize=self.POINT_SIZE)
@@ -142,7 +142,7 @@ class GraphicsPresenter(Presenter):
             raise ShouldNotOccurError
         
     def _writeContent(self, resDictKey, fn):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         ensurePathExists(fn)
         silenceRWarnings()
 
@@ -164,7 +164,7 @@ class GraphicsPresenter(Presenter):
     def _writeResultObject(self, resDictKey, fn):
         if self._plotResultObject is not None:
             ensurePathExists(fn)
-            from gold.application.RSetup import r
+            from proto.RSetup import r
             r('function(x, fn) {dput(x, fn)}')(self._plotResultObject, fn)
             #outF = open(fn,'w')
             #outF.write(str(self._plotResultObject) + os.linesep)

@@ -1,7 +1,5 @@
 import os
-
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-
 
 class ChromPosition(object):
     def __init__(self, genome):
@@ -13,13 +11,13 @@ class ChromPosition(object):
         #   self._outFile = outFile
         self._BED = None
     
-    def readBED(self,text):
-        lines = text.split('\n')
-        BED = []
-        for l in lines:
-           BED.append((l.split('\t')[0],[int(l.split('\t')[1]),int(l.split('\t')[2])]))
-           #BED[l.split('\t')[0]] = [int(l.split('\t')[1]),int(l.split('\t')[2])]    
-        self._BED = BED
+    # # def readBED(self,text):
+    # #     lines = text.split('\n')
+    # #     BED = []
+    # #     for l in lines:
+    # #        BED.append((l.split('\t')[0],[int(l.split('\t')[1]),int(l.split('\t')[2])]))
+    # #        #BED[l.split('\t')[0]] = [int(l.split('\t')[1]),int(l.split('\t')[2])]
+    # #     self._BED = BED
                 
     def readBEDFile(self, bedFile):
         with open(bedFile,'r') as f:
@@ -34,8 +32,8 @@ class ChromPosition(object):
               
     def getChromPos(self):
         try:
-            gg = os.system(' '.join(['sh /hyperbrowser/src/hb_core_developer/'\
-                        'trunk/quick/webtools/restricted/bin/fetchChromSizes.sh',\
+            scriptPath = os.path.abspath(os.path.dirname(__file__)) + '/bin/fetchChromSizes.sh'
+            os.system(' '.join(['sh %s' % scriptPath,\
                          self._genome, '>',\
                          self._chrSizesFile]))
         except Exception as e:
@@ -168,7 +166,7 @@ class ChromCoord(GeneralGuiTool):
         Check box list:         OrderedDict([('key1', True), ('key2', False), ('key3', False)])
         - Returns: OrderedDict from key to selection status (bool).
         '''
-        return 'hg18'
+        return '__genome__'
         
 
     @staticmethod
@@ -186,16 +184,16 @@ class ChromCoord(GeneralGuiTool):
         #return ('', 4, False)
         return ('__history__','bed','point.bed')
 
-    @staticmethod
-    #def getOptionsBox3(prevChoices): # Syntax 1 (old version)
-    def getOptionsBoxPrev(prevChoices):
-        #return repr(prevChoices),3,True
-        from proto.hyperbrowser.HtmlCore import HtmlCore
-
-        core = HtmlCore()
-        core.link('Download', 'ftp://something.com/')
-
-        return [['a','b','c'], [str(core),'2','3'], ['4','5','6']]
+    # # @staticmethod
+    # # #def getOptionsBox3(prevChoices): # Syntax 1 (old version)
+    # # def getOptionsBoxPrev(prevChoices):
+    # #     #return repr(prevChoices),3,True
+    # #     from gold.result.HtmlCore import HtmlCore
+    # #
+    # #     core = HtmlCore()
+    # #     core.link('Download', 'ftp://something.com/')
+    # #
+    # #     return [['a','b','c'], [str(core),'2','3'], ['4','5','6']]
 
     #@staticmethod
     #def getOptionsBox4(prevChoices):
@@ -231,7 +229,7 @@ class ChromCoord(GeneralGuiTool):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        if len(choices.genome) == 0:
+        if not choices.genome:
            return 'You must provide a genome'
         
         #try:

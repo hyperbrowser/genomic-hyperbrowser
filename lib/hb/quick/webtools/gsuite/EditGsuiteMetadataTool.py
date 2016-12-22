@@ -239,15 +239,15 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
             return errorString
           
         if not choices.gsuite:
-            return
-           
-        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        
-        if not gSuite.attributes:
-            errorString = "Please choose a GSuite file that contains attributes"
-        
-        if errorString:
-            return errorString
+            return "Please select a Gsuite"
+        #TODO: do a check on attributes and title, not just attributes
+        # gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        #
+        # if not gSuite.attributes:
+        #     errorString = "Please choose a GSuite file that contains attributes"
+        #
+        # if errorString:
+        #     return errorString
 
 
     #@staticmethod

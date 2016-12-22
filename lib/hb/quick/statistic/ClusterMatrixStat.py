@@ -143,7 +143,7 @@ class ClusterMatrixStatUnsplittable(Statistic):
     def _getGroups(self, clust, numParts):
         # return numpy.array(rpy.r('function(clust, k){library(maptree);
         #   clip.clust(clust, k=k)}')(clust, numParts)) - 1
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         return numpy.array(r('function(clust, k){cutree(clust, k=k)}')(clust, numParts)) - 1
 
     def _filterMatrix(self, matrix, minVal):
@@ -206,11 +206,11 @@ function(matrix, distMethod, clustMethod, distMatrix){
         else:
             distMatrix = None
             
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         return r(rFunc)(matrix, distMethod, self._clustMethod, distMatrix)
     
     def _getClustFromPickledResult(self, id, clustKey, assertLen):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         from proto.hyperbrowser.StaticFile import RunSpecificPickleFile
         from quick.util.CommonFunctions import createFullGalaxyIdFromNumber
         

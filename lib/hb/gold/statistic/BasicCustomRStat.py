@@ -19,7 +19,7 @@ from gold.statistic.Statistic import Statistic
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import TrackFormatReq
 from numpy import nan
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 class BasicCustomRStat(MagicStatFactory):
     pass
@@ -80,7 +80,7 @@ class BasicCustomRStatUnsplittable(Statistic):
         footer = ['return(result)','}']
         allLines = header + self._codeLines + footer 
         
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         
         track[0] = robjects.FloatVector(track[0])
         #print "track 0 after unlist: ", track[0]

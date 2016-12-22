@@ -535,6 +535,6 @@ class CreateBpsVennDIagram(GeneralGuiTool):
 
         return str(core)
 
-    @staticmethod
-    def getFullExampleURL():
-        return 'u/hb-superuser/p/use-case---overlap-of-snp-platforms'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'u/hb-superuser/p/use-case---overlap-of-snp-platforms'

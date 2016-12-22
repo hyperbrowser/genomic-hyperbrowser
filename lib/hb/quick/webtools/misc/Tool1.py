@@ -1,13 +1,9 @@
 from gold.application.LogSetup import setupDebugModeAndLogging
-from gold.util.CommonFunctions import mean
-from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from gold.util.CommonFunctions import mean, prettyPrintTrackName
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.extra.tfbs.createTfbsMappings import pwm2TFids, pwm2TFnamesNew
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
-from quick.webtools.misc.Tool3 import CreateGCFunction
 
-
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
 
 #Geirs tool:
 class Tool1(MultiGeneralGuiTool):
@@ -17,12 +13,10 @@ class Tool1(MultiGeneralGuiTool):
 
     @staticmethod
     def getSubToolClasses():
-        return [CreateBpLevelTrackTool, ChrNamesTool, MapTfTool, ScanFastaByPwmTool, PlotFigure1Tool, PlotFigure2Tool, ExtractLocalFdrsBelowThresholdTool, CreateGCFunction, PrunePubmedPaperSummaries, ComputeFdrValues, AliaksanderDemo, NewRunApiDemo, CubeDemo, HotSpotDemo, MultiplyTool, CheckProfileAndDebugStatus, SetGTrackValueColumn, TestRTool, TestGEWriterTool, PlainScatterPlot]
+        return [CreateBpLevelTrackTool, ChrNamesTool, MapTfTool, ScanFastaByPwmTool, PlotFigure1Tool, PlotFigure2Tool, ExtractLocalFdrsBelowThresholdTool, CreateGCFunction, PrunePubmedPaperSummaries, ComputeFdrValues, AliaksanderDemo, NewRunApiDemo, CubeDemo, HotSpotDemo, MultiplyTool, CheckProfileAndDebugStatus, SetGTrackValueColumn, TestRTool, TestGEWriterTool, PlainScatterPlot, RevCompMergeTool, CheckPoissonDistributionTool,MultiplyTool,DemoCatGSuiteTool, AssignGradesTool, AdhocReceptorRepertoirTool]
 
 
 class CreateBpLevelTrackTool(GeneralGuiTool):
-
-
     @staticmethod
     def getToolName():
         '''
@@ -532,6 +526,7 @@ class ScanFastaByPwmTool(GeneralGuiTool):
     #def getDemoSelections():
     #    return ['testChoice1','..']
 
+    @staticmethod
     def getToolDescription():
         '''
         Specifies a help text in HTML that is displayed below the tool.
@@ -607,7 +602,7 @@ class PlotFigure1Tool(GeneralGuiTool):
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
@@ -696,7 +691,7 @@ class PlotFigure2Tool(GeneralGuiTool):
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from proto.hyperbrowser.HtmlCore import HtmlCore
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
@@ -848,7 +843,7 @@ convest <- function(p,niter=100,plot=FALSE,report=FALSE,file="",tol=1e-06)
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('library(pi0)')
 
         dataFn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
@@ -1058,7 +1053,7 @@ class ComputeFdrValues(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         pvals = [float(x) for x in choices[0].split('\n')]
         assert len(pvals)>1, "Must have more than one p-value to do adjustment."
         if choices[1]== 'Benjamini & Hochberg (FDR)':
@@ -1103,7 +1098,7 @@ class AliaksanderDemo(GeneralGuiTool):
     def execute(self, choices, galaxyFn, username=''):
         low = int(choices[0])
         high = int(choices[1])
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         rCode='''
 
         '''
@@ -1113,8 +1108,11 @@ class AliaksanderDemo(GeneralGuiTool):
         print open(fn).readlines()
         #print choices[2], repr(choices[2])
 
-from gold.application.HBAPI import doAnalysis, GlobalBinSource, AnalysisSpec, \
-    PlainTrack
+
+from gold.application.HBAPI import doAnalysis, GlobalBinSource, \
+    AnalysisSpec, PlainTrack
+
+
 class NewRunApiDemo(GeneralGuiTool):
     @staticmethod
     def getToolName():
@@ -1299,7 +1297,7 @@ class TestRTool(GeneralGuiTool):
     
     @staticmethod
     def execute(choices, galaxyFn, username):
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         from numpy import arange
         nums = arange(10)
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
@@ -1321,7 +1319,7 @@ class TestGEWriterTool(GeneralGuiTool):
     
     @staticmethod
     def execute(choices, galaxyFn, username):
-        
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
         sf = GalaxyRunSpecificFile(['test'],galaxyFn)
         
         from gold.application.HBAPI import doAnalysis
@@ -1358,7 +1356,7 @@ class PlainScatterPlot(GeneralGuiTool):
         from quick.application.ExternalTrackManager import ExternalTrackManager
         fn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0])
         col1, col2 = zip(*[ [float(x) for x in line.strip().split('\t')] for line in open(fn)])
-        from gold.application.RSetup import r, robjects
+        from proto.RSetup import r, robjects
         from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
         sf = GalaxyRunSpecificFile(['plot.png'], galaxyFn)
@@ -1369,3 +1367,343 @@ class PlainScatterPlot(GeneralGuiTool):
         r.lines(r.lowess(rCol1, rCol2),col="red")
         sf.closeRFigure()
         print sf.getLink('See scatterplot')
+
+class RevCompMergeTool(GeneralGuiTool):
+    @staticmethod
+    def getToolName():
+        return 'Add counts for reverse complement mutations'
+
+    @staticmethod
+    def getInputBoxNames():
+        return ['Hierarchical GSuite']
+
+    @staticmethod
+    def getOptionsBox1():
+        return ('__history__',)
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        from quick.application.ExternalTrackManager import ExternalTrackManager
+        fn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0].split(':'))
+        revcomp = dict(zip('ACGT','TGCA'))
+        from collections import defaultdict
+        mergedCounts = defaultdict(int)
+        for line in open(fn):
+            parts = line.strip().split()
+            if parts[3] in 'GT':
+                keyParts = [revcomp[parts[i]] for i in [2,1,0,3,4]]
+            else:
+                keyParts = parts[:-1]
+            mergedCounts[tuple(keyParts)] += int(parts[-1])
+        outF = open(galaxyFn,'w')
+        for key in sorted(mergedCounts.keys()):
+            outF.write( '\t'.join( key[0:3]+ (key[3]+'->'+key[4], str(mergedCounts[key]))) +'\n')
+
+    @staticmethod
+    def getOutputFormat(choices):
+        return 'gsuite'
+
+class MultiplyTool(GeneralGuiTool):
+    @staticmethod
+    def getToolName():
+        return 'multiply'
+
+    @staticmethod
+    def getInputBoxNames():
+        return ['Number1', 'Number2']
+
+    @staticmethod
+    def getOptionsBox1():
+        return ['1','5']
+
+    @staticmethod
+    def getOptionsBox2(prevChoices):
+        return ''
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        print 'Result is: ', int(choices[0]) * int(choices[1])
+
+class DemoCatGSuiteTool(GeneralGuiTool):
+    @staticmethod
+    def getToolName():
+        return 'Demo cat gsuite'
+
+
+    @staticmethod
+    def getInputBoxNames():
+        return [('Input GSuite', 'gsuite'), ("Input query track", 'queryTrack')]
+
+    @staticmethod
+    def getOptionsBoxGsuite():
+        return ('__history__',)
+
+    @staticmethod
+    def getOptionsBoxQueryTrack(prevChoices):
+        return ('__history__',)
+
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        genome = 'hg19'
+        from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
+            GSuiteSimilarityToQueryTrackRankingsWrapperStat
+        analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsWrapperStat)
+        from quick.gsuite import GSuiteStatUtils
+        from quick.statistic.StatFacades import ObservedVsExpectedStat
+        analysisSpec.addParameter('pairwiseStatistic',ObservedVsExpectedStat.__name__)
+        #             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
+        queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack)
+        from gold.track.Track import Track
+        queryTrack = Track(queryTrackNameAsList)
+        queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
+
+        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
+
+        from gold.util import CommonConstants
+        from urllib import quote
+        trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
+            [quote(queryTrackTitle)] + [quote(x.title, safe='') for x in gsuite.allTracks()])
+
+        analysisSpec.addParameter('trackTitles', trackTitles)
+        analysisSpec.addParameter('queryTracksNum', str(1))
+
+        from quick.application.GalaxyInterface import GalaxyInterface
+        analysisBins = GalaxyInterface._getUserBinSource('chr1:1-10m', '*', genome=genome)
+
+        resultsObj = doAnalysis(analysisSpec, analysisBins, tracks)
+        results = resultsObj.getGlobalResult()
+        allTracks = list(gsuite.allTracks())
+        categoryPerTrack = [t.getAttribute('antibody') for t in allTracks]
+        print 'Output:'
+        print categoryPerTrack
+        categorySet = set(categoryPerTrack)
+        for cat in categorySet:
+            catResults = [list(results.values())[i] for i in range(len(results)) if allTracks[i].getAttribute('antibody')==cat]
+            print cat, ': ', min(catResults), '-', max(catResults)
+
+
+
+class AssignGradesTool(GeneralGuiTool):
+    @staticmethod
+    def getToolName():
+        return 'Ad hoc tool for assigning grades to exam evaluation sheets'
+
+
+    @staticmethod
+    def getInputBoxNames():
+        return ['Input file (csv)', 'Grade thresholds (five values, comma-separated)']
+
+    @staticmethod
+    def getOptionsBox1():
+        return ('__history__',)
+
+    @staticmethod
+    def getOptionsBox2(prevChoices):
+        return ''
+
+    @staticmethod
+    def getOutputFormat(choices):
+        return 'txt'
+
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        fn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0].split(':'))
+        allLines = open(fn).readlines()
+        header = allLines[0].strip().split(',')
+        assert header[0]=='Student nr'
+        if not 'Grade' in header:
+            header.append('Grade')
+            appendGrade = True
+        else:
+            appendGrade = False
+        gradeIndex = header.index('Grade')
+
+        thresholds = [int(x) for x in choices[1].strip().split(',')]
+        assert thresholds == sorted(thresholds)
+
+        maxLine = allLines[1].strip().split(',')
+        assert maxLine[0] == 'Max'
+        if appendGrade:
+            maxLine.append('A-F')
+        stopTaskColIndex = None if appendGrade else -1
+        lineSums = dict([ [line.split(',')[0], sum([float(x) for x in line.split(',')[1:stopTaskColIndex]])] for line in allLines[1:]])
+        assert lineSums['Max']==100
+
+        outF = open(galaxyFn,'w')
+        for line in [header,maxLine]:
+            outF.write(','.join([str(x) for x in line]) + '\n')
+        for line in allLines[2:]:
+            cols = line.strip().split(',')
+            studNr = cols[0]
+            scoreSum = lineSums[studNr]
+            gradeNum = sum(scoreSum>=x for x in thresholds)
+            grade = 'FEDCBA'[gradeNum]
+            if appendGrade:
+                cols.append(grade)
+            else:
+                cols[gradeIndex]=grade
+            outF.write(','.join(cols)+'\n')
+        outF.close()
+
+class CheckPoissonDistributionTool(GeneralGuiTool):
+    @staticmethod
+    def getToolName():
+        return 'Ad hoc tool for checking poisson distribution of bin counts'
+
+
+    @staticmethod
+    def getInputBoxNames():
+        return ['Input file (ad hoc format)', 'saturation value (truncate/remove higher bin counts)']
+
+    @staticmethod
+    def getOptionsBox1():
+        return ('__history__',)
+
+    @staticmethod
+    def getOptionsBox2(prevChoices):
+        return ''
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        from proto.RSetup import robjects, r
+        from quick.application.ExternalTrackManager import ExternalTrackManager
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+        fn = ExternalTrackManager.extractFnFromGalaxyTN(choices[0].split(':'))
+        maxVal = int(choices[1]) if choices[1]!='' else None
+        # for i,line in enumerate(open(fn)):
+        #     if '.' in line.strip().split()[2]:
+        #         print i, line
+        counts = [int(line.strip().split()[2]) for line in open(fn) if not line.startswith('#')]
+        if maxVal != None:
+            #counts = [min(x,maxVal) for x in counts]
+            counts = [x for x in counts if x<=maxVal]
+
+        avg = 1.0*sum(counts)/len(counts)
+        print 'min, avg, max: ', min(counts), avg, max(counts)
+        print 'plots: '
+
+        rCounts = robjects.IntVector(counts)
+        sf = GalaxyRunSpecificFile(['hist.png'],galaxyFn)
+        sf.openRFigure()
+        r.hist(rCounts,main='Hist all',xlab='Count per bin',ylab='Freq')
+        sf.closeRFigure()
+        print sf.getLink('Hist')
+
+        subCounts = [x for x in counts if x<=10]
+        rSubCounts = robjects.IntVector(subCounts)
+        sf2 = GalaxyRunSpecificFile(['hist2.png'],galaxyFn)
+        sf2.openRFigure()
+        r.hist(rSubCounts,main='Hist 0-10',xlab='Count per bin',ylab='Freq')
+        sf2.closeRFigure()
+        print sf2.getLink('Histogram between 0 and 10..')
+
+        rCounts = r.rpois(len(rCounts), avg)
+        sf3 = GalaxyRunSpecificFile(['hist3.png'],galaxyFn)
+        sf3.openRFigure()
+        r.hist(rCounts,main='Hist poisson',xlab='Count per bin',ylab='Freq')
+        sf3.closeRFigure()
+        print sf3.getLink('Histogram for poisson simulated values')
+
+
+class AdhocReceptorRepertoirTool(GeneralGuiTool):
+    MODELS_DICT = {'S: Same frequencies':1,'O: Same order of frequency':2, 'C: Correlation of the order of frequency':3}
+    CURVE_FIT_DICT = {'Fractional': 1, 'Exponential':2}
+    @staticmethod
+    def getToolName():
+        return 'Ad hoc tool for assessing receptor repertoirs'
+
+
+    @staticmethod
+    def getInputBoxNames():
+        return ['GSuite of receptor repertoires (ad hoc format)', 'Num MC samples', 'Model type', 'Curve fitting function', 'Random seed (empty for no seed)']
+
+
+    @staticmethod
+    def getOptionsBox1():
+        return ('__history__',)
+
+    @staticmethod
+    def getOptionsBox2(prevChoices):
+        return ''
+
+    @staticmethod
+    def getOptionsBox3(prevChoices):
+        return AdhocReceptorRepertoirTool.MODELS_DICT.keys()
+
+    @staticmethod
+    def getOptionsBox4(prevChoices):
+        return AdhocReceptorRepertoirTool.CURVE_FIT_DICT.keys()
+
+    @staticmethod
+    def getOptionsBox5(prevChoices):
+        return ""
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        ModelText = choices[2]
+        clonoFunc = AdhocReceptorRepertoirTool.CURVE_FIT_DICT[choices[3]]
+        #Set random seed if needed
+        randomSeed = choices[4]
+        from gold.util.RandomUtil import getManualSeed, setManualSeed
+        if randomSeed and randomSeed != 'Random' and getManualSeed() is None:
+            setManualSeed(int(randomSeed))
+
+        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+        #print choices[0]
+        gsuite = getGSuiteFromGalaxyTN(choices[0])
+        from gold.gsuite.GSuiteTrack import GSuiteTrack
+        fns = [GSuiteTrack(x.uri).path for x in gsuite.allTracks()]
+        titles = [x.title for x in gsuite.allTracks()]
+        numGSuiteTracks = len(titles)
+        numMcSamples = int(choices[1])
+        Model = AdhocReceptorRepertoirTool.MODELS_DICT[ModelText ]
+        from proto.RSetup import r
+        #print r.getwd()
+        #r.setwd("/hyperbrowser/src/hb_core_dev3/quick/extra/receptors")
+        #print r.getwd()
+        #r.source("coeliaki-to-HB.R")
+        r.source("/hyperbrowser/src/hb_core_dev3/quick/extra/receptors/coeliaki-to-HB.R")
+        #table = r('read.table')(fns[0], header=True, sep="\t")
+        param = [0]*7
+        header = ['Patient ID', 'Model type', 'Test statistic', 'P-value (mc)', 'N', 'a']
+        if Model == 3:
+            header.append('c')
+
+        from proto.hyperbrowser.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.tableHeader(header)
+        for gSuiteIndex in range(numGSuiteTracks):
+            fn = fns[gSuiteIndex]
+            numPatientSamples = len(open(fn).readline().split('\t'))-1
+
+            LL = r.list(sim=numMcSamples)
+            #print [str(x) for x in [fn,numMcSamples,param,Model,clonoFunc,LL]]
+            print r.list(fn,numMcSamples,param,Model,clonoFunc,LL)
+            res = r.EstimateClonotypesParameters(fn,numMcSamples,param,Model,clonoFunc,LL)
+            #print res
+            #res = dict(rawRes.items())
+            result = {}
+            result['Patient ID'] = titles[gSuiteIndex]
+            result['Model type'] = ModelText
+            result['P-value (mc)'] = res.rx2('pvalH')#res['pvalH']
+            result['Test statistic'] = res.rx2('pvalH')#res['value']
+            result['N'] = res.rx2('par')[0] # res['par'][0]
+
+            numParamsForModel = {1:2, 2:1+numPatientSamples, 3:1+2*numPatientSamples}
+            assert len(res.rx2('par')) == numParamsForModel[Model]
+            if Model == 1:
+                result['a'] = res.rx2('pvalH')#res['par'][1]
+            if Model >= 2:
+                result['a'] = ','.join([str(x) for x in res.rx2('par')[2:2+numPatientSamples]])
+            if Model == 3:
+                result['c'] = ','.join([str(x) for x in res.rx2('par')[2+numPatientSamples:2+2*numPatientSamples]])
+            assert set(header) == set(result.keys()), [set(header), set(result.keys())]
+            core.tableLine([str(result[x]) for x in header])
+
+        core.tableFooter()
+        print core

@@ -30,15 +30,18 @@ class GWASTrackSearchTool(TrackSearchTool):
     
     @classmethod
     def _getClassAttributes(cls, db):
-        attributes = []
-
-        colList = db._db.getTableCols(cls.TABLE_NAME)
-        for col in colList:
-            attributes.append(col)
-        attributes.remove('uri')
-        attributes.remove('hb_datatype')
-
-        return attributes
+        return ['hb_experiment_type','hb_genome_build','hb_target','CHR_ID','CONTEXT','DISEASE/TRAIT',\
+                'MAPPED_GENE','INTERGENIC',\
+                'PLATFORM [SNPS PASSING QC]','PUBMEDID','REGION','REPORTED GENE(S)','SNPS','STUDY']
+        # # attributes = []
+        # # 
+        # # colList = db._db.getTableCols(cls.TABLE_NAME)
+        # # for col in colList:
+        # #     attributes.append(col)
+        # # attributes.remove('uri')
+        # # attributes.remove('hb_datatype')
+        # # 
+        # # return attributes
     
     @classmethod
     def getColListString(cls):
@@ -67,10 +70,11 @@ class GWASTrackSearchTool(TrackSearchTool):
 
     @staticmethod
     def _fixColNameForGTrack(col):
-        return col.strip('"').lower().replace(' ','_').replace('-','_')
+        return col.strip('"').strip().lower().replace(' ','_').replace('-','_')
 
     @classmethod
     def printGSuite(cls, choices, cols, rows, colListString, outFile):
+        #print cols
         from quick.extra.ProgressViewer import ProgressViewer
 
         from gold.gsuite.GSuite import GSuite
@@ -129,7 +133,7 @@ class GWASTrackSearchTool(TrackSearchTool):
             for row in diseaseToRowsDict[disease]:
                 extra = {}
                 for col, index in zip(orderedExtraKeys, extraIndexes):
-                    cell = row[index]
+                    cell = row[index].strip()
                     if isinstance(cell, unicode):
                         cell = unidecode(cell)
 
@@ -153,7 +157,7 @@ class GWASTrackSearchTool(TrackSearchTool):
                               (cls.DATABASE_GENOME, cls.OUTPUT_GENOME, disease)
                     else:
                         chrom, start = newPosList[0][0:2]
-
+                #print extra
                 geList.append(GenomeElement(chr=chrom, start=start,
                                             val=row[valColIndex], orderedExtraKeys=orderedExtraKeys,
                                             extra=extra))

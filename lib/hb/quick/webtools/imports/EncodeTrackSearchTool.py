@@ -20,17 +20,21 @@ class EncodeTrackSearchTool(TrackSearchTool):
     
     @classmethod
     def _getClassAttributes(cls, db):
-        attributes = []
-        nonSearchable = ['md5sum','size','dateresubmitted','datesubmitted','dateunrestricted']
-        colList = db._db.getTableCols(cls.TABLE_NAME, ordered = True)
-        for col in colList:
-            #searchable = db._db.runQuery\
-            #    ("SELECT _searchable FROM field WHERE term = '"+col+"';")
-            #print searchable
-            if not col in nonSearchable and col.find('_') == -1:
-                attributes.append(col)
-        #attributes.append('hb_datatype')        
-        return attributes
+        return ['datatype','hb_cell_tissue_type','hb_target','hb_genomebuild','antibody','rnaextract','cell',\
+                      'localization','phase','settype','control','view','quality','obtainedby','biorep','sex',\
+                      'replicate','lab','softwareversion','seqplatform','protocol','treatment','dataversion','geosampleaccession',
+                        'tablename']
+        # # attributes = []
+        # # nonSearchable = ['md5sum','size','dateresubmitted','datesubmitted','dateunrestricted','hb_datatype','_source','_url']
+        # # colList = db._db.getTableCols(cls.TABLE_NAME, ordered = True)
+        # # for col in colList:
+        # #     #searchable = db._db.runQuery\
+        # #     #    ("SELECT _searchable FROM field WHERE term = '"+col+"';")
+        # #     #print searchable
+        # #     if not col in nonSearchable: 
+        # #         attributes.append(col)
+        # # #attributes.append('hb_datatype')        
+        # # return attributes
     
     @classmethod
     def getColListString(cls):
@@ -39,10 +43,11 @@ class EncodeTrackSearchTool(TrackSearchTool):
         colListString = ''
         cols.insert(0, cols.pop(cols.index('"_url"')))
         cols.insert(1, cols.pop(cols.index('"hb_datatype"')))
-        cols.insert(2, cols.pop(cols.index('"datatype"')))
-        cols.insert(3, cols.pop(cols.index('"cell"')))
-        cols.insert(4, cols.pop(cols.index('"antibody"')))
-        cols.insert(5, cols.pop(cols.index('"_source"')))
+        cols.insert(2, cols.pop(cols.index('"hb_filesuffix"')))
+        cols.insert(3, cols.pop(cols.index('"datatype"')))
+        cols.insert(4, cols.pop(cols.index('"cell"')))
+        cols.insert(5, cols.pop(cols.index('"antibody"')))
+        cols.insert(6, cols.pop(cols.index('"_source"')))
         for col in cols:
             colListString += col+','
         return cols,colListString.strip(',')

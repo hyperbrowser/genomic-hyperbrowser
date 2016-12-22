@@ -16,7 +16,7 @@
 #
 #from gold.statistic.MagicStatFactory import MagicStatFactory
 #from gold.statistic.Statistic import Statistic
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 #from gold.statistic.CategoryPointCountInSegsMatrixStat import CategoryPointCountInSegsMatrixStat
 #from quick.statistic.CategoryPointCountNoOverlapsStat import CategoryPointCountNoOverlapsStat
 #

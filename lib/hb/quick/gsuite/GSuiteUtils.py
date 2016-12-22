@@ -3,37 +3,82 @@ from collections import namedtuple, OrderedDict
 from threading import Thread, RLock, Condition, current_thread, Lock
 
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack, GalaxyGSuiteTrack
-from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
 from gold.origdata.GESourceWrapper import GESourceWrapper
 from gold.origdata.GenomeElementSource import GenomeElementSource
-from quick.util.CommonFunctions import prettyPrintTrackName, cleanUpTrackType
+
 
 printLock = Lock()
 
-def getSubtracksAsGSuite(genome, parentTrack, username=''):
-    from gold.description.TrackInfo import TrackInfo
-    from quick.application.GalaxyInterface import GalaxyInterface
-    from quick.application.ProcTrackNameSource import ProcTrackNameSource
-
-    fullAccess = GalaxyInterface.userHasFullAccess(username)
-    procTrackNameSource = ProcTrackNameSource(genome, fullAccess=fullAccess,
-                                              includeParentTrack=False)
-
-    gSuite = GSuite()
-    for trackName in procTrackNameSource.yielder(parentTrack):
-        trackType = TrackInfo(genome, trackName).trackFormatName.lower()
-        trackType = cleanUpTrackType(trackType)
-        uri = HbGSuiteTrack.generateURI(trackName=trackName)
-        title = prettyPrintTrackName(trackName)
-        if title.startswith("'") and title.endswith("'") and len(title) > 1:
-            title = title[1:-1]
-        gSuite.addTrack(GSuiteTrack(uri, title=title, trackType=trackType, genome=genome))
-
-    return gSuite
-
 
 ThreadInfo = namedtuple('ThreadInfo', ('thread', 'condition'))
+
+
+def getRandomTracks(gSuite, number, seed=9001):
+    from gold.util.RandomUtil import random
+    randomTrackList = []
+    trackList = [t for t in gSuite.allTracks()]
+    trackIndexList = [i for i in range(len(trackList))]
+
+    random.seed(seed)
+    for i in range(number):
+        if len(trackIndexList) == 0:
+            break
+        index = random.randint(0, len(trackIndexList)-1)
+        randomTrackList.append(trackList[trackIndexList[index]])
+        trackIndexList.pop(index)
+
+    return randomTrackList
+
+
+def getRandomGSuite(gSuite, number, seed=9001):
+    rGSuite = GSuite()
+    randomTrackList = getRandomTracks(gSuite, number, seed)
+    for track in randomTrackList:
+        rGSuite.addTrack(track)
+
+    return rGSuite
+
+
+def attributesType(gSuite):
+    allAttributes = OrderedDict()
+
+    for track in gSuite.allTracks():
+        for attribute in track.attributes:
+            allAttributes[attribute] = ''
+
+    i = 0
+    for x in gSuite.allTracks():
+        if i == 0:
+            for attribute in allAttributes.keys():
+                t = x.getAttribute(attribute)
+                if t == None:
+                    allAttributes[attribute] = False
+                else:
+                    try:
+                        t = float(t)
+                        allAttributes[attribute] = True
+                    except:
+                        allAttributes[attribute] = False
+
+        i += 1
+
+    return allAttributes
+
+
+def getAllTracksWithAttributes(gSuite):
+    allAttributes = gSuite.attributes
+    allTracksWithAttributes = []
+
+    for x in gSuite.allTracks():
+        part = []
+        part.append(x.trackName)
+        for attribute in allAttributes:
+            t = x.getAttribute(attribute)
+            part.append(t)
+        allTracksWithAttributes.append(part)
+
+    return allTracksWithAttributes
 
 
 class ValueDependentThreadedGESource(GESourceWrapper, GenomeElementSource):

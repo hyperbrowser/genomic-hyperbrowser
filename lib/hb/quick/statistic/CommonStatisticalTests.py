@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from math import sqrt
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 
 class BinomialTools:
     MIN_SUCCESSES_FOR_NORM_APPROXIMATION = 5
@@ -23,7 +23,7 @@ class BinomialTools:
     
     @classmethod
     def _computeBinomialTail(cls, x, size, prob, tail):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         x, size, prob = int(x), int(size), float(prob)
         if prob*size >= cls.MIN_SUCCESSES_FOR_NORM_APPROXIMATION <= (1-prob)*size:
             mean = size * prob

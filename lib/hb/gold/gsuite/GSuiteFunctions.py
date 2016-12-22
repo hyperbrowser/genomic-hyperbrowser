@@ -20,21 +20,6 @@ from gold.gsuite.GSuiteTrack import GSuiteTrack, SearchQueryForSuffixGSuiteTrack
 from gold.util.CommonFunctions import getFileSuffix, stripFileSuffix
 
 
-def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
-    from proto.hyperbrowser.HtmlCore import HtmlCore
-    from quick.application.GalaxyInterface import GalaxyInterface
-
-    core = HtmlCore()
-    core.append(GalaxyInterface.getHtmlBeginForRuns(galaxyFn))
-    core.paragraph('This history element contains GSuite track data, and is hidden by default.')
-    core.paragraph('If you want to access the contents of this GSuite, please use the tool: DOES_NOT_EXIST_YET')
-    core.end()
-    core.append(GalaxyInterface.getHtmlEndForRuns())
-
-    with open(galaxyFn, 'w') as outputFile:
-        outputFile.write(str(core))
-
-
 def splitTitleIfDuplicate(title):
     import re
     duplicateMatch = re.match('.*( \([0-9]+\))$', title)
@@ -50,7 +35,7 @@ def getDuplicateIdx(title):
     duplicateStr = splitTitleIfDuplicate(title)[1]
     if duplicateStr:
         import re
-        countMatch = re.match(' \(([0-9])+\$', duplicateStr)
+        countMatch = re.match(' \(([0-9])+\)$', duplicateStr)
         return int(countMatch.groups()[0])
     else:
         return 1
@@ -125,21 +110,4 @@ def getTitleWithCompressionSuffixesRemoved(gSuiteTrack):
 def getSuffixWithCompressionSuffixesRemoved(gSuiteTrack):
     return getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack)[1]
 
-
-def getAnalysisQuestionInfoHtml(bmQid):
-    '''
-    Builds the div element that contains the appropriate basic mode analysis question.
-    '''
-    from quick.toolguide import BasicModeQuestionCatalog
-    from proto.hyperbrowser.HtmlCore import HtmlCore
-
-    if bmQid:
-        htmlCore = HtmlCore()
-        htmlCore.divBegin(divClass='analysis-info')
-        prgrph = '''
-    <b>Your question of interest was: %s<b>
-    ''' % BasicModeQuestionCatalog.Catalog[bmQid]
-        htmlCore.paragraph(prgrph)
-        htmlCore.divEnd()
-        return htmlCore
 

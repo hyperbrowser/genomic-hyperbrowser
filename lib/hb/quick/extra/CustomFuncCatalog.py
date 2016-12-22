@@ -671,7 +671,7 @@ def gwPlotting(inFn, outFn):
     PLOT_CHR_FN = os.sep.join([HB_SOURCE_CODE_BASE_DIR, 'rCode', 'ChromosomePlot.r'])
     PLOT_GW_FN = os.sep.join([HB_SOURCE_CODE_BASE_DIR, 'rCode', 'GenomePlot.r'])
     CYTOBANDS_FN = os.sep.join([HB_SOURCE_CODE_BASE_DIR, 'data', 'cytoband_mm8.txt'])
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     r('source("%s")' % PLOT_BED_FN)
     #r('source("%s")' % PLOT_CHR_FN)
     r('source("%s")' % PLOT_GW_FN)

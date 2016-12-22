@@ -23,7 +23,7 @@ from gold.statistic.Statistic import Statistic
 from gold.statistic.FormatSpecStat import FormatSpecStat
 from gold.statistic.GraphStat import GraphStat
 from gold.track.TrackFormat import TrackFormatReq
-#from gold.application.RSetup import robjects, r
+#from proto.RSetup import robjects, r
 
 class GraphAsMatrixStat(MagicStatFactory):
     pass
@@ -48,7 +48,7 @@ class GraphAsMatrixStatUnsplittable(Statistic):
         return a
         
     def _compute(self):
-        from gold.application.RSetup import robjects, r
+        from proto.RSetup import robjects, r
         #if self._minimal:
         #    return {'Result': OrderedDict([('Matrix', np.array([], dtype='float64')), \
         #                                   ('Rows', np.array([], dtype='S1')), \

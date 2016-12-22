@@ -7,13 +7,13 @@ class McFdr:
     
     @staticmethod
     def _initMcFdr():
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('library(pi0)') 
         r('histf1SeqPerm <- function(p) {histf1(p,seq.perm=TRUE)}')
 
     #@staticmethod
     #def adjustPvalues(pvals, estimationMethod='Pounds&Cheng'):
-    #    from gold.application.RSetup import r
+    #    from proto.RSetup import r
     #    allPvals = numpy.array([x if x is not None else numpy.nan for x in pvals])
     #    notNoneIndicator = numpy.isnan(allPvals)==False
     #    if not notNoneIndicator.any():
@@ -49,7 +49,7 @@ class McFdr:
     def adjustPvalues(cls, pvals, estimationMethod='Pounds&Cheng', verbose=True):
         #from sys import stderr
         #stderr.write('McFdr.adjustPvalues starting')
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         
         pvals = [x if x is not None else numpy.nan for x in pvals]
         

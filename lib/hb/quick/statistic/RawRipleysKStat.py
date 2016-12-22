@@ -70,7 +70,7 @@ k<-function(x,r,a,b,n) {
             #return numpy.nan
             return None
         else:
-            from gold.application.RSetup import r, robjects
+            from proto.RSetup import r, robjects
             return r(rCode)(robjects.FloatVector(points), self._bpWindow, 0, binSize, globalPointCount )
                     
     def _createChildren(self):

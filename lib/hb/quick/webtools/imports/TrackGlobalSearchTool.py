@@ -1,8 +1,13 @@
 from collections import OrderedDict, namedtuple
 
 import gold.gsuite.GSuiteComposer as GSuiteComposer
-import gold.gsuite.GSuiteUtils as GSuiteUtils
+import quick.gsuite.GSuiteHbIntegration
+import quick.gsuite.GSuiteUtils as GSuiteUtils
 from gold.gsuite.GSuitePreprocessor import GSuitePreprocessor
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 from quick.extra.ProgressViewer import ProgressViewer
 from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -16,6 +21,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     HISTORY_HIDDEN_TRACK_STORAGE = 'GSuite track storage'
     PRIMARY_GSUITE_TITLE = 'GSuite - downloaded files'
     REMOTE_GSUITE_TITLE = 'GSuite - remote files'
+    RESULT_COLS = ['hb_datatype','hb_cell_tissue_type','hb_target','hb_genomebuild','hb_filesuffix']
+    RESULT_COLS_HEADER = ['Type of data','Cell/Tissue type','Target','Genome build','File suffix']
 
     def __new__(cls, *args, **kwArgs):
         cls.exception = None
@@ -35,16 +42,20 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 ('', 'basicQuestionId'),\
                 ('Select track category','search'),\
                 ('Select track sub-category','subCategory'),\
-                ('Select database:','source'),\
+                ('Select database','source'),\
                 ('<b>Transfer selection to advanced mode for further fine-tuning?</b>', 'transfer'),\
+                ('Transfer URL','testURL'),\
                 ('Select File Type:','filetype'),\
-                ('<h3>Select Data Type</h3>', 'dataType'),\
-                ('<b>What to do?</b>','outputType'),\
+                ('<h3>Select type of data</h3>', 'dataType'),\
+                ('','dataInfo'),\
+                ('<b>Limit selection of tracks?</b>','outputType'),\
                 ('Download and preprocess? (temporary)', 'downloadAndPreprocess'),\
                 ('Select genome (temporary):', 'genome'),\
                 #('<b>Redirect URL</b>', 'url'),\
                 #('<h3>Manually Select Among Matching Tracks</h3>','showResults'),\
-                ('<h3>Matching Tracks</h3>','results')]
+                ('<h3>Matching Tracks</h3>','results'),\
+                ('<h3>Results</h3>','resultsTable'),\
+                ('','historyElementsInfo')]
 
     #@classmethod
     #def getOptionsBoxSearchType(cls):
@@ -89,30 +100,46 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         
         sourceTupleList = gsm.getDataSources(items)
         sourceList = []
+        countAll = 0
         for src,count in sourceTupleList:
-            sourceList.append(src+'['+str(count)+']')
+            sourceList.append(src+' [hits:'+str(count)+']')
+            countAll += count
         
-        sourceList.insert(0,'All Original Tracks')
+        if len(sourceList) > 1:
+            sourceList.insert(0,'All databases [hits:'+str(countAll)+']')
         
-        HBGsuite = GSuiteUtils.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', prevChoices.search, prevChoices.subCategory])
-        if HBGsuite.numTracks() > 0:
-            sourceList.append('HyperBrowser['+str(HBGsuite.numTracks())+']')
+        ##Asked to be removed by Sveinung. Commenting it out (maybe it will be reused later)
+        # HBGsuite = quick.gsuite.GSuiteHbIntegration.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', prevChoices.search, prevChoices.subCategory])
+        # if HBGsuite.numTracks() > 0:
+        #     sourceList.append('HyperBrowser['+str(HBGsuite.numTracks())+']')
         
         return sourceList
 
-    @classmethod
-    def getInfoForOptionsBoxSource(cls, prevChoices):
-        return "The provided file types are: 'tsv','broadPeak','narrowPeak', and 'bed'."\
-            " So any difference in the number of tracks between this source list and"\
-            " the 'what to do?' list below, is due to the fact that some track"\
-            " file types are not currently supported"
+    # @classmethod
+    # def getInfoForOptionsBoxSource(cls, prevChoices):
+    #     return "The provided file types are: 'tsv','broadPeak','narrowPeak', and 'bed'."\
+    #         " So any difference in the number of tracks between this source list and"\
+    #         " the 'what to do?' list below, is due to the fact that some track"\
+    #         " file types are not currently supported"
         
     @classmethod
     def getOptionsBoxTransfer(cls, prevChoices):
-        if prevChoices.source in [None,'All Original Tracks'] or 'HyperBrowser' in prevChoices.source:
+        if not prevChoices.source or 'All' in prevChoices.source or 'HyperBrowser' in prevChoices.source:
             return
         return ['No','Yes']
     
+    @classmethod
+    def getOptionsBoxTestURL(cls, prevChoices):
+        ##important for testing (DON'T REMOVE):
+        if prevChoices.transfer == 'Yes':
+             gsm = TrackGlobalSearchModule(cls.useSqlite)
+             sourceTool,attr_val_dict = gsm.getSourceToolURLParams(prevChoices.search,\
+                                                         prevChoices.subCategory,\
+                                                         prevChoices.source.split('[')[0].strip())
+
+             return '__rawstr__','Source tool: '+str(sourceTool)+'<br> Attribute-value Dict: '+str(attr_val_dict)+\
+             '<br>URL: ' + str(cls.createGenericGuiToolURL('hb_track_source_test_tool', sourceTool,attr_val_dict))
+
     @classmethod
     def getOptionsBoxDataType(cls, prevChoices):
         
@@ -120,28 +147,51 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             return
         gsm = TrackGlobalSearchModule(cls.useSqlite)
         items = gsm.getItems(prevChoices.search, prevChoices.subCategory)
-        source = prevChoices.source.split('[')[0]
+        source = prevChoices.source.split('[')[0].strip()
         datatypes = gsm.getDataTypes(items,source)
-        
-        return OrderedDict([(dataType + ' ['+str(count)+']',True) for dataType,count in datatypes.iteritems()])
+        countAll = 0
+        for dt,count in datatypes.iteritems():
+            countAll += count
+        ##Change requested by Sveinung for simplicity
+        #return OrderedDict([(dataType + ' ['+str(count)+']',True) for dataType,count in datatypes.iteritems()])
+
+        #return ['All data types [hits:'+str(countAll)+']'] + \
+        return [dataType + ' [hits:'+str(count)+']' for dataType,count in datatypes.iteritems()]
+
+    @classmethod
+    def getOptionsBoxDataInfo(cls,prevChoices):
+        if not prevChoices.dataType:
+            return
+        string = '<div style="border:1px dashed black; border-radius: 10px;'+\
+        ' background-color: #E5E4E2; margin-left: 20px;'+\
+        ' margin-right: 20px; padding-bottom: 8px; padding-left: 8px;'+\
+        ' padding-right: 8px; padding-top: 8px;">'+\
+        'To be edited by Sveinung'
+        return '__rawstr__', string
+
+
     
     @classmethod
     def getOptionsBoxFiletype(cls, prevChoices):
-        #if prevChoices.searchType != 'Categorized Search for Tracks':
-        #    return
-        if not prevChoices.source or prevChoices.source.find('HyperBrowser') > -1 or prevChoices.transfer == 'Yes':
-            return
-        gsm = TrackGlobalSearchModule(cls.useSqlite)
-        items = gsm.getItems(prevChoices.search, prevChoices.subCategory)
-        source = prevChoices.source.split('[')[0]
-        result = gsm.getFileTypes(items,source)
+
+        return
+        # if not prevChoices.source or prevChoices.source.find('HyperBrowser') > -1 or prevChoices.transfer == 'Yes':
+        #     return
+        # gsm = TrackGlobalSearchModule(cls.useSqlite)
+        # items = gsm.getItems(prevChoices.search, prevChoices.subCategory)
+        # source = prevChoices.source.split('[')[0].strip()
+        # result = gsm.getFileTypes(items,source)
+        #
+        # filteredResult = result
+        # return OrderedDict([(el.split('[')[0],True) for el in filteredResult])
         
-        filteredResult = []
-        for el in result:
-            if el.split('[')[0] in ['tsv','broadPeak','narrowPeak','bed']:
-                filteredResult.append(el)    
-        
-        return OrderedDict([(el.split('[')[0],True) for el in filteredResult])
+        #Hard-coded way for filtering with specific filetypes#
+        # filteredResult = []
+        # for el in result:
+        #     if el.split('[')[0] in ['tsv','broadPeak','narrowPeak','bed']:
+        #         filteredResult.append(el)
+
+
         #Skip showing the filetype count for now (problems, e.g. 'bam' and 'bai')
         #return OrderedDict([(el,True) for el in filteredResult])
         
@@ -151,20 +201,29 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     def getOptionsBoxOutputType(cls, prevChoices):
         #if prevChoices.source.find('HyperBrowser') > -1:
         #    return
-        if not prevChoices.source or prevChoices.transfer == 'Yes' or prevChoices.source.find('HyperBrowser') == -1 and len([x for x,selected in prevChoices.filetype.iteritems() if selected]) == 0:
+        if not prevChoices.source or prevChoices.transfer == 'Yes' or prevChoices.source.find('HyperBrowser') == -1 \
+        and not prevChoices.dataType:
+        #and len([x for x,selected in prevChoices.dataType.iteritems() if selected]) == 0:
            return
         
         gsm = TrackGlobalSearchModule(cls.useSqlite)
-        source = prevChoices.source.split('[')[0]
+        source = prevChoices.source.split('[')[0].strip()
         if prevChoices.source.find('HyperBrowser') > -1:
-            fileTypes = []
+            #fileTypes = []
+            dataTypes = []
         else:
-            fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]    
-        count = gsm.getGSuite(prevChoices.search,prevChoices.subCategory,source,fileTypes).numTracks()
+            #fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]
+            #dataTypes = [x.split('[')[0].strip() for x,selected in prevChoices.dataType.iteritems() if selected]
+            dataTypes = [prevChoices.dataType.split('[')[0].strip()]
+
+        count = gsm.getGSuite(prevChoices.search,prevChoices.subCategory,source,dataTypes,filterFileSuffix = True).numTracks()
                 
-        choicesList =  ['Select all tracks['+str(count)+']','Select tracks manually']
+        choicesList =  ['Keep all tracks as selected above ['+str(count)+']','Select tracks manually']
         ##if prevChoices.source.find('HyperBrowser') == -1:
         choicesList.extend(['Select 10 random tracks','Select 50 random tracks'])
+        # # if gsm.dataSourceExists(source):
+        # #     choicesList.append('Transfer selection to advanced mode for further fine-tuning')
+
         return choicesList
 
     @classmethod
@@ -174,6 +233,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         #return '__hidden__','Yes'
         if not prevChoices.source or prevChoices.transfer == 'Yes':
             return
+        #return '__hidden__','Yes'
         return ['Yes','No']
 
     @classmethod
@@ -206,9 +266,12 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         if prevChoices.source.find('HyperBrowser') > -1:
             return gsm.getTrackFileList(prevChoices.search, prevChoices.subCategory, 'HyperBrowser')
         else:
-            source = prevChoices.source.split('[')[0]
-            allFileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems()]
-            fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]
+            source = prevChoices.source.split('[')[0].strip()
+            # # allFileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems()]
+            # # fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]
+            ##allDataTypes = [x.split('[')[0].strip() for x,selected in prevChoices.dataType.iteritems()]
+            #dataTypes = [x.split('[')[0].strip() for x,selected in prevChoices.dataType.iteritems() if selected]
+            dataTypes = [prevChoices.dataType.split('[')[0].strip()]
             
             ##Was made to speadup so that there will be no filetype comparisons,
             ##but deactivated for now since there is hardcoded filtering in
@@ -216,7 +279,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             #if len(allFileTypes) == len(fileTypes):
             #    fileTypes = []
             
-            return gsm.getTrackFileList(prevChoices.search, prevChoices.subCategory,source,fileTypes)
+            #return '__rawStr__',gsm.getTrackFileList(prevChoices.search, prevChoices.subCategory,source,dataTypes)
+            return gsm.getTrackFileList(prevChoices.search, prevChoices.subCategory,source,dataTypes)
             
         #items = gsm.getItems(prevChoices.search, prevChoices.subCategory)
     
@@ -225,7 +289,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     #    gsm = TrackGlobalSearchModule(cls.useSqlite)
     #    sourceTool,attr_val_dict = gsm.getSourceToolURLParams(prevChoices.search,\
     #                                                    prevChoices.subCategory,\
-    #                                                    prevChoices.source.split('[')[0])
+    #                                                    prevChoices.source.split('[')[0].strip())
     #    #attr_val_dict = {}
     #    #i = 0
     #    #attr_val_dict['attributeList'+str(i)] = 'Table Name'
@@ -236,13 +300,78 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     #                                           sourceTool,attr_val_dict)
 
     @classmethod
+    def getOptionsBoxResultsTable(cls, prevChoices):#To display results in HTML table
+
+        if not prevChoices.source or prevChoices.transfer == 'Yes' or prevChoices.source.find('HyperBrowser') == -1 \
+        and not prevChoices.dataType:
+        #and len([x for x,selected in prevChoices.dataType.iteritems() if selected]) == 0:
+           return
+
+        gsm = TrackGlobalSearchModule(cls.useSqlite)
+        source = prevChoices.source.split('[')[0].strip()
+        #dataTypes = [x.split('[')[0].strip() for x,selected in prevChoices.dataType.iteritems() if selected]
+        dataTypes = [prevChoices.dataType.split('[')[0].strip()]
+        rowDicts = None
+        if prevChoices.outputType in [None,'select 10 random tracks','select 50 random tracks']:
+            return
+        elif 'all tracks' in prevChoices.outputType:
+                rowDicts = gsm.getRowsDicts(prevChoices.search,prevChoices.subCategory,source,dataTypes,\
+                                            filterFileSuffix = True)
+        elif prevChoices.outputType == 'Select tracks manually':
+                rowDicts = gsm.getRowsDicts(prevChoices.search,prevChoices.subCategory,source,dataTypes,\
+                                            selectedFileIDs = prevChoices.results, filterFileSuffix = True)
+
+        htmlTableDict = {}
+        if rowDicts:
+            for row in rowDicts:
+                if 'url' in row:
+                    filename = row['url'].split('/')[-1]
+                elif 'uri' in row:
+                    filename = row['uri'].split('/')[-1]
+                elif '_url' in row:
+                    filename = row['_url'].split('/')[-1]
+                else:
+                    filename = '<No filename>'
+                rowList = []
+                for attr in cls.RESULT_COLS:
+                    if attr in row:
+                        rowList.append(str(row[attr]).encode("utf-8"))
+
+                htmlTableDict[filename] = rowList
+
+        if len(htmlTableDict) == 0:
+            return
+        html = HtmlCore()
+        html.tableFromDictionary(htmlTableDict, columnNames = ['File name'] + cls.RESULT_COLS_HEADER,\
+                                 tableId='t1', expandable=True)
+        return '__rawstr__',str(html)
+
+    @classmethod
+    def getOptionsBoxHistoryElementsInfo(cls,prevChoices):
+        if not prevChoices.dataType:
+            return
+        string = """<div style="border:1px solid black;background-color: #FFEC33; margin-left: 20px;
+        margin-right: 20px; padding-bottom: 8px; padding-left: 8px;padding-right: 8px; padding-top: 8px;">
+        This tool will create six history elements (one of which is hidden):
+          <ul>
+            <li>Progress: click the eye icon of this element to show theprogress of the import</li>
+            <li>GSuite ("""+prevChoices.subCategory+""") - ready for analysis: use this in the analysis tool of choice</li>
+            <li>GSuite ("""+prevChoices.subCategory+""") - ready for manipulation: use this if you need to manipulate the raw track data using a manipulation tool. The GSuite resulting from manipulation needs to be preprocessed before analysis</li>
+            <li>GSuite ("""+prevChoices.subCategory+""") - files that failed to download (select in "Fetch remote GSuite datasets" to retry): in some cases the downloading of tracks fails, but might work if one tries again</li>
+            <li>GSuite ("""+prevChoices.subCategory+""") - files that failed preprocessing (select in "Preprocess tracks in GSuite" to retry): preprocessing fails due to some issues with the track data. Some manipulation is probably needed before one tries preprocessing again</li>
+            <li>GSuite ("""+prevChoices.subCategory+""") - track storage: hidden history elements containing the actual track data. Should in most cases be ignored</li>
+        </ul>
+        """
+        return '__rawstr__', string
+
+    @classmethod
     def getExtraHistElements(cls, choices):
         from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, GSUITE_STORAGE_SUFFIX
         fileList = []
 
         if choices.outputType and choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1 and choices.transfer != 'Yes':
             from quick.webtools.GeneralGuiTool import HistElement
-            fileList.append(HistElement(cls.REMOTE_GSUITE_TITLE, GSUITE_SUFFIX))
+            fileList.append(HistElement(cls.REMOTE_GSUITE_TITLE, GSUITE_SUFFIX, 'Testing label'))
             fileList += [HistElement(cls.ERROR_HISTORY_TITLE_DOWNLOAD, GSUITE_SUFFIX)]
             fileList.append(HistElement(cls.PRIMARY_GSUITE_TITLE, GSUITE_SUFFIX))
             fileList += [HistElement(cls.ERROR_HISTORY_TITLE_PREPROCESS, GSUITE_SUFFIX)]
@@ -261,9 +390,12 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             #try:
             gsm = TrackGlobalSearchModule(cls.useSqlite)
             #items = gsm.getItems(choices.search,choices.subCategory)
-            source = choices.source.split('[')[0]
-            allFileTypes = [x.split('[')[0] for x,selected in choices.filetype.iteritems()]
-            fileTypes = [x.split('[')[0] for x,selected in choices.filetype.iteritems() if selected]
+            source = choices.source.split('[')[0].strip()
+            # # allFileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems()]
+            # # fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]
+            ##allDataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems()]
+            #dataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems() if selected]
+            dataTypes = [choices.dataType.split('[')[0].strip()]
 
             ##Was made to speadup so that there will be no filetype comparisons,
             ##but deactivated for now since there is hardcoded filtering in
@@ -271,14 +403,17 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             #if len(allFileTypes) == len(fileTypes):
             #    fileTypes = []
 
-            if choices.outputType.split('[')[0] == 'Select all tracks':
-                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,fileTypes)
+            if 'all tracks' in choices.outputType:
+                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,dataTypes,filterFileSuffix = True)
             elif choices.outputType == 'Select tracks manually':
-                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,fileTypes,choices.results)
+                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,dataTypes,\
+                                             filterFileSuffix = True,selectedFileIDs = choices.results)
             elif choices.outputType == 'Select 10 random tracks':
-                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,fileTypes,10)
+                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,dataTypes,\
+                                                   filterFileSuffix = True,count = 10)
             elif choices.outputType == 'Select 50 random tracks':
-                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,fileTypes,50)
+                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,dataTypes,\
+                                                   filterFileSuffix = True,count = 50)
             else:
                 return []
 
@@ -300,14 +435,17 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         if not choices.source:
             return
-        source = choices.source.split('[')[0]
+        source = choices.source.split('[')[0].strip()
         fileTypes = []
         gsm = TrackGlobalSearchModule(cls.useSqlite)
         
         if choices.source.find('HyperBrowser') == -1:
             #items = gsm.getItems(choices.search,choices.subCategory)
-            allFileTypes = [x.split('[')[0] for x,selected in choices.filetype.iteritems()]
-            fileTypes = [x.split('[')[0] for x,selected in choices.filetype.iteritems() if selected]
+            # # allFileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems()]
+            # # fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]
+            ##allDataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems()]
+            #dataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems() if selected]
+            dataTypes = [choices.dataType.split('[')[0].strip()]
 
             ##Was made to speadup so that there will be no filetype comparisons,
             ##but deactivated for now since there is hardcoded filtering in
@@ -315,16 +453,17 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             #if len(allFileTypes) == len(fileTypes):
             #    fileTypes = []
 
-        if choices.outputType.split('[')[0] == 'Select all tracks':
-            remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,fileTypes)
+        if 'all tracks' in choices.outputType:
+                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,dataTypes,filterFileSuffix = True)
         elif choices.outputType == 'Select tracks manually':
-            remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,fileTypes,choices.results)
-        elif choices.outputType == 'Select 10 random tracks':#Not enabled for HB tracks
-            remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,fileTypes,10)
-        elif choices.outputType == 'Select 50 random tracks':#Not enabled for HB tracks
-            remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,fileTypes,50)
-
-
+                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,dataTypes,\
+                                             filterFileSuffix = True,selectedFileIDs = choices.results)
+        elif choices.outputType == 'Select 10 random tracks':
+                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,dataTypes,\
+                                                   filterFileSuffix = True,count = 10)
+        elif choices.outputType == 'Select 50 random tracks':
+                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,dataTypes,\
+                                                   filterFileSuffix = True,count = 50)
 
         if choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1:
             trackCount = remoteGSuite.numTracks()
@@ -338,7 +477,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             #    gSuiteDownloader.visitAllGSuiteTracksAndReturnOutputAndErrorGSuites\
             #        (remoteGSuite, progressViewer, cls.extraGalaxyFn)
             from gold.gsuite.GSuiteDownloader import GSuiteSingleGalaxyFnDownloader
-            from gold.gsuite.GSuiteFunctions import writeGSuiteHiddenTrackStorageHtml
+            from quick.gsuite.GSuiteHbIntegration import \
+                writeGSuiteHiddenTrackStorageHtml
             gSuiteDownloader = GSuiteSingleGalaxyFnDownloader()
             hiddenStorageFn = cls.extraGalaxyFn[cls.HISTORY_HIDDEN_TRACK_STORAGE]
             localGSuite, errorLocalGSuite = \
@@ -368,7 +508,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         if cls.exception:
             return cls.exception
 
-
+        if choices.search in [None,'--Select--'] or choices.subCategory in [None,'--Select--']:
+            return ''
         #if choices.outputType == 'Categorized Search for Tracks':
         if not choices.filetype in [None,'',[]] and len([x for x,selected in choices.filetype.iteritems() if selected]) == 0:
             return 'You have to select at least one file type'
@@ -387,16 +528,16 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     def isRedirectTool(cls,choices):
         if choices.transfer == 'Yes':
             return True
-    
+        return False
+
     @classmethod
     def getRedirectURL(cls, choices):
         gsm = TrackGlobalSearchModule(cls.useSqlite)
         sourceTool,attr_val_dict = gsm.getSourceToolURLParams(choices.search,\
                                                         choices.subCategory,\
-                                                        choices.source.split('[')[0])
+                                                        choices.source.split('[')[0].strip())
         
-        return cls.createGenericGuiToolURL('hb_track_source_test_tool',\
-                                               sourceTool,attr_val_dict)
+        return cls.createGenericGuiToolURL('hb_track_source_test_tool', sourceTool,attr_val_dict)
         #return choices.url
     
     @staticmethod
@@ -416,9 +557,9 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
-        desc = 'This tool provides a categorized search functionality for '\
-                'histone modifications and open chromatin in different external '\
-                'repositories using the "Compile GSuite from external database" tool.'
+        desc = 'This tool provides a categorized search functionality for histone modifications, transcriptional factors' \
+               ' and methods to identify open chromatin in different external repositories using the "Compile GSuite ' \
+               'from external database" tool.'
         core.paragraph(desc)
 
         return str(core)# + cls.getPlot()
@@ -463,6 +604,6 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         except Exception as e:
             return str(e)+'\n'+str(cls.Rpositories)
 
-    @staticmethod
-    def getFullExampleURL():
-        return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/browse-catalog-of-chromatin-tracks'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/browse-catalog-of-chromatin-tracks'

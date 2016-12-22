@@ -1,5 +1,32 @@
-	    	
-	    </div>
+		<div class="answer"  style="display:block">
+<!--						The GSuite HyperBrowser is a generic system for analyzing suites of tracks, that is not in any way restricted to the specific example scenarios described above.
+			<br>
+			<br>If you are interested in a question that does not directly match any of the examples above, you might still get an idea of how to perform your analysis of interest by reading through the examples above and look for parallels to your question.
+			<br>
+			<br>Alternatively, you can switch to <a href="javascript:;"  onclick="showDiv('tab1', 'tab3â€™);â€�>advanced mode</a>, and look at the general descriptions of the analytical options provided by the GSuite HyperBrowser.
+			<br>
+			<br>You are also more than welcome to contact us in the HyperBrowser team at <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@sgub-resworbrepyh</a>. We have provided help to a broad range of investigations before, and are happy to provide noncommittal advice or also to take part in collaborations.
+			<br>If not, these are the generic options, could any of them match?
+			<br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_representative_and_untypical_track_tool&isBasic=1&isBasic=True&bmQid=3_9">Determine representative and atypical tracks in a GSuite </a> - use it when you need to analyze a single collection
+			<br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=3_9">Determine GSuite tracks coinciding with a separate track</a> - use it when you have a single track of interest that needs to be analyzed against a collection of tracks
+			<br><a href="../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True&bmQid=3_9">Determine coinciding track combinations from two GSuites</a> - use it when you have two collections of tracks which you want to analyze against each other
+			<br>-->
+		            <br>	The GSuite HyperBrowser is a generic system for analyzing suites of tracks, and as such is not in any way restricted to the specific example scenarios described above.
+                <br>
+                <br>If you are interested in a question that does not directly match any of the examples above, you might still get an idea of how to perform your analysis of interest by reading through the examples above and looking for parallels to your question.
+                <br>
+                <br>Alternatively, you can switch to <a href="javascript:;"  onclick="showDiv('tab1', 'tab3â€™);">advanced mode</a>, and look at the general descriptions of the analytical options provided by the GSuite HyperBrowser.
+                <br>
+                <br>Does any of the following generic tools seem suitable for the problem at hand?
+                <br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_representative_and_untypical_track_tool&isBasic=1&isBasic=True&bmQid=4_0">Determine representative and atypical tracks in a GSuite </a> - intended for analyzing single collections.
+                <br><a href="../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True&bmQid=4_0">Determine GSuite tracks coinciding with a separate track</a> - intended for analysis of a single track of interest against a collection of tracks.
+                <br><a href="../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True&bmQid=4_0">Determine coinciding track combinations from two GSuites</a> - intended for analyzing two collections of tracks against each other.
+                <br>
+                <br>You are also more than welcome to contact us at <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@sgub-resworbrepyh</a>. We have provided help for a broad range of investigations before, and are happy to provide noncommittal advice as well as take part in collaborations.
+                <br>
+		</div>
+
+		</div>
 		</div>
 	</div>
 
@@ -9,131 +36,51 @@
 	    <div class="document">
 		<div class="main">
 		<div class="gsuitebox">
-		    <h2 class="topheader">GSuite tools</h2>
+		    <h2 class="topheader">The GSuite HyperBrowser - Advanced User Mode</h2>
 		    <p>
-		    <b>GSuite tools</b> offer an easy and straightforward way to manage and analyze collections of
+		    <b>The GSuite HyperBrowser</b> offers an easy and straightforward way to manage and analyze collections of
 		    <a href="welcome_gentrack.html">genomic tracks</a>
-		    (datasets of coordinates in a reference genome). At the core of the system is a simple tabular format
-		    called GSuite, which represents a collection of genomic tracks (one genomic track per line),
-		    along with some basic metadata. A total of 18 tools supports working with such track collections through three stages:
+		    (datasets of coordinates in a reference genome). At the core of the system is GSuite, a simple tabular format
+		    for representing genomic track collections (one genomic track per line) along with related metadata.
+		    Work with track collections typically requires three stages:
 		    </p>
 		    <ol type="1">
 			    <li>
-			    Compiling a track collection (GSuite) from local files or external databases
+			    Compiling track collections (GSuites) from local files or external repositories.
 			    </li>
 			    <li>
-			    Customizing the track collection (GSuite) for analysis through textual manipulation and/or preprocessing.
+			    Customizing track collections (GSuites) for analysis through textual manipulation and/or preprocessing.
 			    </li>
 			    <li>
-			    Analyzing the track collection (GSuite), investigating relations between tracks within a collection or between collections
+			    Analyzing track collections (GSuites) - investigating the relations between tracks of a single collection or between collections.
 			    </li>
 		    </ol>
 
 		    <p>
-			    The 18 GSuite tools are available on the left hand menu, as well as from the
-			    diagram below, which shows (as hyperlinks) the various tools available along the
-			    stages of a typical workflow.
+			    All GSuite tools are accessible from the left-hand "Tools" menu and via hyperlinks from the diagram displayed below. The diagram shows the individual tools grouped according to the workflow stages.
 		    </p>
 
 		    <h3 class="overview" align="center">GSuite Analysis Workflow Diagram</h3>
 		    <h4 class="overview_subtitle" align="center">(follow the links in the diagram to access the tools directly)</h4>
 
-		    <pre class="arrows-and-boxes">
-		    ({compile_node_remote}:Stage 1: Compile from remote source |
-		    {{- <a href="../tool_runner?tool_id=hb_track_source_test_tool">
-			    Compile GSuite from external database
-			    </a>}}
-			    ) >
-		    (a{compile_node_fetch}:Stage 1: Fetch remote datasets |
-		    {{- <a href="../tool_runner?tool_id=hb_g_suite_download_files">
-			    Fetch remote GSuite datasets
-			    </a>}}
-		     ) >
-		    ((b{customize_node}:Stage 2: Customize dataset collection |
-				    {{<p class="inner_title">Modify GSuite</p>}}
-				    {{- <a href="../tool_runner?tool_id=hb_g_suite_select_rows">Select subset of tracks (in GSuite)</a>}}
-				    {{<br>}}
-				    {{- <a href="../tool_runner?tool_id=hb_g_suite_select_columns">Select subsets of metadata columns (in GSuite)</a>}}
-				    {{<br>}}
-				    {{<p class="inner_title">Modify datasets referred in GSuite</p>}}
-				    {{- <a href="../tool_runner?tool_id=hb_g_suite_manipulate_text_files">Manipulate textual track files referred in GSuite</a>}}
-				    {{<br>}}
-		     > [c])))
-		    (d{analyse_node}:Stage 3: Analyse |
-			    Analyse higher order relations
-			    {{<br>}}
-			    {{- <a href="../tool_runner?tool_id=hb_multi_track_analysis_tool">
-			    Analyse relations of tracks in GSuite</a>}}
-			    {{<br>}}
-			    {{<p class="inner_title">Analyse multiple pairwise relations</p>}}
-			    {{- <a href="../tool_runner?tool_id=hb_track_vs_collection_analysis">
-			    Screen track against a track collection</a>}}
-			    {{<br>}}
-			    {{- <a href="../tool_runner?tool_id=hb_track_collections_analysis">
-			    Screen two track collections against each other</a>}}
-			    {{<br>}}
-			    {{<p class="inner_title">Visualization</p>}}
-			    {{- <a href="../tool_runner?tool_id=hb_segments_overlap_visualization_tool">
-			    Color-code query segments based on overlap against reference tracks</a>}}
-			    {{<br>}}
-			    {{- <a href="../tool_runner?tool_id=hb_segments_overlap_visualization_heatmap_tool">
-			    Make heatmap of overlap between query segments and reference tracks</a>}}
-			    {{<br>}}
-			    {{- <a href="../tool_runner?tool_id=hb_create_bps_venn_d_iagram">
-			    Venn diagram for track collection</a>}}
-			    {{<br>}}
-			    {{<p class="inner_title">Domain specific analysis</p>}}
-			    {{- <a href="../tool_runner?tool_id=hb_all_targets_of_tfs">
-			    Scan targets of a transcription factor</a>}}
-			    {{<br>}}
-			    {{- <a href="../tool_runner?tool_id=hb_all_tfs_of_regions">
-			    Scan transcription factors of a genomic region</a>}}
-			    {{<br>}}
-			    )
-		    || () ||
-		    ({compile_node_history}:Stage 1: Compile from history |
-		    {{- <a href="../tool_runner?tool_id=hb_create_g_suite_file_from_history_elements_tool">
-			    Compile GSuite from history elements
-			    </a>}}
-		     ) > (>[b])
-
-		     || () ()
-
-		    ((c{prepare_node}:Stage 2: Prepare for analysis |
-				    Prepare GSuite
-				    {{<br>}}
-				    {{- <a href="../tool_runner?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess tracks in GSuite for analysis</a>}}
-				    {{<br>}}
-		    )) > ()
-		    ||
-		    ({compile_node_hb}:Stage 1: Compile from HyperBrowser |
-		    {{- <a href="../tool_runner?tool_id=hb_extract_subtracks_tool">
-			    Compile GSuite from HyperBrowser repository
-			    </a>}}
-		     ) - () > () > (f:)
-		    </pre>
+		    <div style="width:900px; height:750px; margin: 0 auto; padding: 5px;">
+			<canvas id="myCanvas" width="770" height="750">
+			Your browser does not support the HTML5 canvas tag.
+			</canvas>
+			</div>
 
 		    <p>
-		    The power of GSuite Tools is best seen when the tools are combined in a full investigation scenario.
-		    We provide several <a href="welcome_usecases.html">use-cases</a>,
-		    including a <a href="../u/hb-superuser/p/use-case---icgc-somatic-mutations" target="_blank">main case</a>
-		    on analyzing mutation data across cancer types from
-		    ICGC against DNase1 hypersensitive sites across cells from ENCODE, which
-		    shows a typical workflow involving several tools, executing the three main
-		    stages for each analysis, listed above.
-		    The use-cases, as well as demonstrations of how to use each
-		    individual tool, are available in the catalog of
-		    <a target="_blank" href="../page/list_published"><b>Published Pages</b></a>.
+		    The power of the GSuite HyperBrowser is best seen when its tools are combined in a full investigation scenario. We provide several <a href="welcome.html?tabOn=tab4">examples</a>,
+		    which illustrate the standard workflow structure, involving tools from the three main stages of a typical analysis. With annotated step-by-step analysis histories that include everything from the dataset acquisition to final results, these examples demonstrate solutions to a selection of complex research questions.
 		    </p>
 		    <p>
-		    Note that GSuite files come in three variants, referring to either
-		    <a href="welcome_note.html">external datasets, local textual datasets or local binary datasets.</a>
-		    Remote datasets need to be downloaded using the
+		    Please note that GSuite files come in three variants, referring to either
+		    <a href="welcome_note.html">external (remote) datasets, local textual datasets or local binary datasets</a>.
+		    Remote datasets need to be downloaded with the
 		    <a href="../tool_runner?tool_id=hb_g_suite_download_files">Fetch tool</a>
-		     on the GSuite before they can be used further, and textual datasets
-		     must be converted to binary format using the
+		    before they can be further customized or analyzed, and textual datasets must be converted to binary format with the
 		    <a href="../tool_runner?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocessing tool</a>
-		    on the GSuite before they can be analyzed.
+		    before they can be used in an analysis.
 		    </p>
 		</div>
 		</div>
@@ -145,341 +92,684 @@
 	    <div class="document">
 			<div class="main">
 				<h2>
-				Examples of analyses using GSuite
+					Examples of analyses using GSuite
 				</h2>
-				
+
 				<p>
-				Thanks to recent advances in genome­-wide profiling techniques, genomic investigations can be routinely performed for a range of query features, for instance chromatin accessibility, binding of transcription factors or DNA variation (genetic differences from the reference genome). However, in order to meaningfully interpret such datasets in the context of a particular experiment, it is very useful to know the typical range of variation of a given feature's important properties (e.g. how large a variation can we expect when comparing feature data collected across different cell types or epigenetic factors). In addition, in genomic investigations one will usually work with experimental data from ChIP-seq, DNase-seq etc. - methods which do not directly handle the features of interest, but rather sheared DNA sequences coupled with the feature of interest. Such experimental data may have somewhat different properties from the features they represent, and having an overview of these characteristics may be crucial in order to make meaningful interpretations. Here we provide a resource of basic facts and numbers regarding collections of genomic tracks for features typically explored in genomic investigations, with a particular emphasis on the variation of such signals within sets of cell types and epigenetic factors. We have explored track collections for:
-				<ol>
-  					<li>GWAS SNPs for all NHGRI diseases/traits (In progress - waiting for tools that allow analysis on GSuit instances with points)</li>
-				    <li>Mutations in various cancer types (ICGC) (In progress)</li>
-				    <li>Mutations of different patients for a particular cancer type (ICGC) (In progress -  - need a way to overlap a patient's GSuite with dbSNP)</li>
-				    <li>Chromatin accessibility (DHS) across cell types</li>
-				    <li>cMyc bindings regions across cell types (In progress - waiting for Antonio's tools)</li>
-				    <li>Binding for different TFs (chip-seq) for one cell type (gm12878) (Initiating analysis)</li>
-				    <li>Different histone modifications for one cell type (gm12878) (Mads has a similar example)</li>
-				</ol>
+					To demonstrate the purpose and capabilities of the GSuite HyperBrowser, we assembled a collection of complex example investigations. Our use-cases include three categories: exploration of genomic track characteristics, reproduction of a previously published study and answering of a novel research question. Each example is provided with an annotated analysis history, which documents the step-by-step process leading from initial dataset acquisition to final results while retaining all intermediate data files and parameter choices. Although each of the cases presents an objectively non-trivial task, both regarding data management and analysis methodology, the following self-contained GSuite-enabled solutions are very simple in terms of work required by the user.
+				</p>
+				<p>
+					(The individual cases can be expanded/hid by a simple click.)
 				</p>
 			</div>
-				
-				<div class="tab4collectionTitle" id="T0">
-				  <div class="imgBackground"> <img src="hyperbrowser/images/div/DNAlying.png" id="B0" height="20" width="20" class='-off' /></div>
-				 - GWAS SNPs for all NHGRI diseases/traits
+
+
+
+			<div class="tab4collectionTitle" id="T3">
+				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B3" class='-off' /></div>
+					- Chromatin accessibility (DHSs) across cell types
+			</div>
+			<div class="tab4collectionDesc" id="D3">
+
+				<div class="show_hide" id="T31"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B31" height="20" width="20"  class='-off' /></div> - Background</div>
+				<div class="sliding" id="D31">
+
+				<div class="tab4collectionDescDetails">Regulation of gene expression is governed by a range of proteins, which, in order to operate, require access to their respective target binding sites within the genome. Accessibility of a genomic location is determined by the local chromatin conformation, which can vary depending on cell type and conditions. Accessible sites allow not only potential interaction with sequence-specific DNA-binding proteins, but also with enzymes that can operate on any exposed DNA sequence, such as Deoxyribonuclease I (DNase I). A DNase I hypersensitive site (DHS) is an experimentally determined genomic location, where DNase I showed cleaving activity and thus demonstrated accessibility (indicating a potential for regulatory function). DHS profiles can therefore be used as non-specific proxies for mapping plausible regulatory activity across different cell types or conditions [1].</div>
+
+				<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [2].</div>
+
+				<div class="tab4collectionDescDetails">[1] Cockerill, P. N. Structure and function of active chromatin and DNase I hypersensitive sites. FEBS J. 278, 2182â€“2210 (2011).</div>
+
+				<div class="tab4collectionDescDetails">[2] ENCODE: Encyclopedia of DNA Elements (2015). https://www.encodeproject.org</div>
+
+				<!-- <iframe src="https://hyperbrowser.uio.no/gsuite/datasets/3d820423f7c1d436/display/?preview=True" scrolling="no" width="900" height="2300"></iframe> -->
 				</div>
-				
-					<div class="tab4collectionDesc" id="D0">
-					
-						<div class="show_hide" id="T01"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B01" height="20" width="20"  class='-off' /></div> - Background</div>
-						<div class="sliding" id="D01">
-						
-							<div class="tab4collectionDescDetails">Genome-wide association study (GWAS) is a method of searching the genome for small variations, called single nucleotide polymorphisms or SNPs (pronounced “snips”), that occur more frequently in people with a particular disease than in people without the disease. A single GWAS study can look at hundreds of thousands of SNPs in order to pinpoint genes or non-coding regulatory regions associated with complex clinical conditions and phenotypic traits. Unlike single gene disorders, such as Huntington’s disease, complex diseases are usually the result of a combination of genetic and environmental factors, each of which increases susceptibility to the condition. This approach has already identified SNPs related to several complex conditions including diabetes, heart abnormalities, Parkinson disease, and Crohn disease. Researchers hope that future genome-wide association studies will identify more SNPs associated with chronic diseases, as well as variations that affect a person’s response to certain drugs and influence interactions between a person’s genes and the environment. [1, 2]</div>
 
-							<div class="tab4collectionDescDetails">The National Human Genome Research Institute's (NHGRI) Catalog of Published GWAS provides a publicly available manually curated collection of all published GWAS conforming to the selected eligibility criteria (e.g. a minimum number of SNPs assayed and non-targeted study design; the full eligibility criteria list is available at http://www.genome.gov/27529028). The GWAS Catalog data are extracted from the literature and subsequently curated (a detailed overview of the curation process can be found on the GWAS diagram website: www.ebi.ac.uk/fgpt/gwas/#curationtab) [2]. Additional resources related to the GWAS Catalog (e.g. trait annotation ontology and trait karyotype visualization) can be found on the NHGRI webpages [3].</div>
+				<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
 
-							<div class="tab4collectionDescDetails">[1] <a href= 'http://ghr.nlm.nih.gov/handbook/genomicresearch/gwastudies' > Genetics Home Reference. What are genome-wide association studies? (2015). </a> </div>
 
-							<div class="tab4collectionDescDetails">[2] Welter, D. et al. The NHGRI GWAS Catalog, a curated resource of SNP-trait associations. Nucleic Acids Res. 42, D1001–D1006 (2014)</div>
 
-							<div class="tab4collectionDescDetails">[3] <a href='http://www.genome.gov/gwastudies/'> National Human Genome Research Institute. Catalog of Published Genome-Wide Association Studies (2015).   </a> </div>
+				<div class="tab4collectionDescDetails">This example examines the characteristics of ENCODE-generated DHS
+					tracks accessible via HyperBrowser tool ''Create a remote GSuite from a public repository''. About
+					450 tracks, encompassing over 150 different cell types and multiple methods of generating DHS
+					profiles, are included in the initial track overview (each individual track corresponds to DNase I
+					hypersensitive sites of a specific cell-type, treatment, method ... combination). In addition, a
+					closer look is taken at a selected subset of cell-types and methods, exploring their effect on DHS
+					profiling results.</div>
 
-							<div class="tab4collectionDescDetails">Tracks explored in this case correspond to the different human diseases/traits from NHGRI's GWAS Catalog. Each disease/trait is represented by a curated set of associated GWAS SNP variants.</div>
+				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+				<div class="tab4collectionDescDetails_history">
+					Annotated analysis history (including all the utilized data and operations) is available on a
+					separate page:
+					<a href="../u/hb-superuser/h/chromatin-accessibility-dnase-across-cell-types" target="_blank">
+						Analysis history: Chromatin accessibility (DHS) across cell types</a>.
+					(All results mentioned below refer to elements from this history page.)
+				</div>
+
+
+
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks: </div>
+				<div class="tab4collectionDescDetailsV2">
+					<div class="tab4collectionDescDetails_historyV2">
+						<div class="tab4collectionDescDetails">For the initial overview creation, all the tracks
+							available via HyperBrowser tool "Create a remote GSuite from a public repository" and
+							satisfying the following criteria were selected:</div>
+						<div class="tab4collectionDescDetails">repository: ENCODE (UCSC and Ensembl)</div>
+						<div class="tab4collectionDescDetails">Experiment (Assay) Type: DnaseSeq</div>
+						<div class="tab4collectionDescDetails">File Type: narrowPeak</div>
+
+
+						<div class="tab4collectionDescDetails_historyV3">
+							<a a href="../u/hb-superuser/d/166ce9263f646cca/" target="_blank">Overview page for the 452-track GSuite for
+								ENCODE DHS data </a> shows differences and similarities between tracks (e.g. with
+							respect to genome/exone/repeat coverage or mutual overlap). It documents a considerable
+							variability in peak count (77 458	- 405 844 peaks, median of 154 233.5 peaks) and average
+							peak width (150 - 826 bp, median of 150 bp), which together determine the total base-pair
+							coverage of the individual tracks (11 670 340	- 109 437 893 bp, median of 26 853 060 bp).
+							To what degree should these differences be attributed to technical reasons?
 						</div>
-						
-						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
-					
-					
 					</div>
-					
-				
-				
-				<div class="tab4collectionTitle" id="T1">
-					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B1" class='-off' /></div>
-					- Mutations in various cancer types (ICGC)
 				</div>
-						
-					<div class="tab4collectionDesc" id="D1">
-				
-						<div class="show_hide" id="T11"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B11" height="20" width="20"  class='-off' /></div> - Background</div>
-						<div class="sliding" id="D11">
-						
-						<div class="tab4collectionDescDetails">DNA mutations are a typical accompanying phenomenon of cancer. They can be both, triggers leading to the transformation of healthy cells into abnormal cells with cancerous properties, and consequences of the detrimental changes that evolving cancer inflict on the genome. Depending on the associated tissue, each cancer type might have its characteristic properties regarding the average number and typical type of mutations, reflecting the differences in development and varying primary mutagens [1].</div>
-	
-						<div class="tab4collectionDescDetails">The International Cancer Genome Consortium (ICGC) acts as a coordinator of numerous research projects that aim to comprehensively map the genomic changes (somatic mutations, abnormal expression of genes, epigenetic modifications) present in tumors from about 50 different cancer types, which are of clinical and societal importance across the globe. The data it produces are made available to the entire research community [2].</div>
-						
-						<div class="tab4collectionDescDetails">[1] Alexandrov LB, Nik-Zainal S, Wedge DC, Aparicio S a JR, Behjati S, Biankin A V, et al. Signatures of mutational processes in human cancer. Nature. 2013;500: 415–21. doi: 10.1038/nature12477 </div>
-						
-						<div class="tab4collectionDescDetails"> [2] <a href='https://icgc.org ' > International Cancer Genome Consortium (2015). </a> </div>
-						
-						<div class="tab4collectionDescDetails">Tracks explored in this case correspond to the different cancer types included in the ICGC project. Each cancer type is represented by a set of patients with identified somatic mutations (i.e. variants found in a given patient's tumor cells, but not in his/her normal cells). Only SNVs (Single Nucleotide Variants - simple substitutions) and InDels (Insertions and Deletions) are taken into account in the analysis. </div>
-					
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - Comparison of the effect of cell types and data processing
+					methods on DHS profiles: </div>
+
+					<div class="tab4collectionDescDetailsV2">
+
+						<div class="tab4collectionDescDetails_historyV2">
+							<div class="tab4collectionDescDetails">A subset of 3 cell-types (cell-lines representing
+								different lineages), each with a triplet of alternative DHSs tracks (representatives of
+								ENCODE's methods of DHSs determination), was created for a closer inspection.</div>
+
+							<div class="tab4collectionDescDetails">The selected cell types and their
+								characteristics:</div>
+
+
+							<table class="tableEx">
+							<tr><th>Cell</th><th> Lineage</th><th> Tissue</th><th> Karyotype</th></tr>
+
+							<tr><td>H1-hESC</td><td> inner cell mass </td><td>embryonic stem cell</td><td> normal</td>
+							</tr>
+
+							<tr><td>GM12878 </td><td> mesoderm</td><td> blood </td><td>normal</td></tr>
+
+							<tr><td>HeLa-S3 </td><td>ectoderm</td><td> cervix</td><td> cancer</td></tr>
+							</table>
+
+							<div class="tab4collectionDescDetails">
+								(<a href="http://www.neuroepigenomics.org/encode/cellTypes.html" target="_blank">
+								Read more about cell types used in the ENCODE project.</a>)</div>
+
+
+
+								<div class="tab4collectionDescDetails">Multiple methods for determining DHS sites were
+									used with each of the selected cell types:</div>
+
+								<table class="tableEx">
+								<tr><th>Method</th><th> Short description</th><th> Reference build/Analysis source</th>
+									<th> Track name indicator</th></tr>
+
+								<tr><td>a) "Uniform DNaseI HS"</td><td> DNaseI Hypersensitivity Uniform Peaks from
+									ENCODE/Analysis, Integrated Regulation from UCSC </td><td>Human Genome Build 37
+									(hg19): ENCODE Analysis Data at UCSC</td><td> "AwgDnaseUwduke"</td></tr>
+
+								<tr><td>b) "Duke DNaseI HS" </td><td> Open Chromatin by DNaseI HS from
+									ENCODE/OpenChrom(Duke University)</td><td> Human Genome Build 37 (hg19):
+									ENCODE Production Data </td><td>"OpenChromDnase"</td></tr>
+
+								<tr><td>c) "UW DNaseI HS" </td><td>DNaseI Hypersensitivity by Digital DNaseI from
+									ENCODE/University of Washington</td><td> Human Genome Build 37 (hg19): ENCODE
+									Production Data</td><td> "UwDnase"</td></tr>
+								</table>
+
+								<div class="tab4collectionDescDetails">
+									(<a href="http://genome.ucsc.edu/ENCODE/downloads.html" target="_blank">Read more
+									about data (types) produced by the ENCODE consortium.</a>)</div>
+
+								<div class="tab4collectionDescDetailsDesc"> - 11-track subset overview</div>
+							<div class="tab4collectionDescDetailsV3">
+								<div class="tab4collectionDescDetails">11 of the original 452 tracks were included in
+									a new GSuite collection based on their cell-type+method combination (9 tracks for
+									all possible combinations plus two duplicate tracks; tracks from experiments
+									involving additional cell culture treatments were not included).
+									<a href="../u/hb-superuser/d/c86a1d755b1bb24d/" target="_blank">Overview statistics for the
+										reduced GSuite</a> show that:</div>
+
+								<div class="tab4collectionDescDetails">1. After ordering the tracks by base-pair
+									coverage, it is apparent that the method of determining DHS sites (and not the
+									cell type) is the primary cause of differences. Without any exception, tracks
+									produced by method b) cover a higher proportion of the reference genome than tracks
+									produced by method a), while the output tracks of method c) are grouped at the
+									bottom of the ordering. The cell types are, however, consistently ranked within
+									each group (even though the differences deciding about this ranking are sometimes
+									small): H1-hESC covers more unique base-pairs than HeLa-S3, which in turn covers
+									more unique base-pairs than GM12878. (statistic "Base-pair coverage")</div>
+
+								<div class="tab4collectionDescDetails">2. The average peak width is strictly
+									method-dependent, with method b) being markedly different compared to methods
+									a) and c), which are practically identical regarding this measure. (statistic
+									"Segment length average")</div>
+
+								<div class="tab4collectionDescDetails">3. Method a) generates more peaks than the other
+									methods. The GM12878 cell-line produces fewer peaks when compared to other cell
+									types (when processed by the same method). (statistic "Segment count")</div>
+							</div>
+								<div class="tab4collectionDescDetailsDesc"> - Clustering of tracks</div>
+							<div class="tab4collectionDescDetailsV3">
+								<div class="tab4collectionDescDetails">How would the 11 tracks cluster considering the
+									apparent dependency of DHS profiles on the method of their creation?</div>
+
+								<div class="tab4collectionDescDetails">When clustered with a method based on
+									"similarity of positional distribution along the genome" (using the default binning
+									settings),
+									<a href="../u/hb-superuser/d/56d124232a71c09f/cluster_tracks_result_figure.pdf"
+									   target="_blank"> the tracks cluster primarily by analysis method</a>.
+									When clustered with a method based on "direct sequence similarity" (using pairwise
+									overlap enrichment),
+									<a href="../u/hb-superuser/d/066d0b070a1991a8/cluster_tracks_result_figure.pdf"
+									   target="_blank">the tracks cluster primarily by cell type</a>.
+									These results suggest that while the examined DHS determination methods suffer from
+									biases with respect to peak density, true biological signal comes
+									through on base-pair level.</div>
+							</div>
+								<div class="tab4collectionDescDetailsDesc"> - Conclusions</div>
+							<div class="tab4collectionDescDetailsV3">
+								<div class="tab4collectionDescDetails">When working with ENCODE, attention to tracks'
+									origin should be paid and special care should be taken when drawing conclusions
+									from comparisons of tracks which do not come from the same production source.
+									Initial exploration of tracks' properties is highly recommended.</div>
+
+								<div class="tab4collectionDescDetails">Choice of track comparison methods can have a
+									prominent influence on the results - an appropriate analysis approach needs to be
+									selected on case-by-case basis.</div>
+
+
+
+							</div>
+
 						</div>
-					
-
-						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
-
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
-					
-					
 					</div>
-						
-				
-				<div class="tab4collectionTitle" id="T2">
-					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B2" class='-off' /></div>
-						- Mutations of different patients for a particular cancer type (ICGC)
+			</div>
+
+
+
+
+			<div class="tab4collectionTitle" id="T7">
+				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B7" class='-off' /></div>
+						- Disease-associated SNPs in miRNAs
+			</div>
+			<div class="tab4collectionDesc" id="D7">
+				<div class="show_hide" id="T71">
+					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B71" height="20" width="20"  class='-off' /></div>
+					- Background
 				</div>
-				
-					<div class="tab4collectionDesc" id="D2">
-				
-						<div class="show_hide" id="T21"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B21" height="20" width="20"  class='-off' /></div> - Background</div>
-						<div class="sliding" id="D21">
-					
-						<div class="tab4collectionDescDetails">DNA mutations are a typical accompanying phenomenon of cancer. They can be both, triggers leading to the transformation of healthy cells into abnormal cells with cancerous properties, and consequences of the detrimental changes that evolving cancer inflict on the genome. Depending on the associated tissue, each cancer type might have its characteristic properties regarding the average number and typical type of mutations, reflecting the differences in development and varying primary mutagens [1].</div>
-		
-						<div class="tab4collectionDescDetails">The International Cancer Genome Consortium (ICGC) acts as a coordinator of numerous research projects that aim to comprehensively map the genomic changes (somatic mutations, abnormal expression of genes, epigenetic modifications) present in tumors from about 50 different cancer types, which are of clinical and societal importance across the globe. The data it produces are made available to the entire research community [2].</div>
-						
-						<div class="tab4collectionDescDetails">[1] Alexandrov LB, Nik-Zainal S, Wedge DC, Aparicio S a JR, Behjati S, Biankin A V, et al. Signatures of mutational processes in human cancer. Nature. 2013;500: 415–21. doi: 10.1038/nature12477</div>
-						
-						<div class="tab4collectionDescDetails">[2] <a href='https://icgc.org'> International Cancer Genome Consortium (2015). </a> </div>
-						
-						<div class="tab4collectionDescDetails">Tracks explored in this case correspond to different patients with the same cancer types diagnosis. Cancer types/datasets from the ICGC project are used as examples. Each track is composed of given patient's somatic mutations (i.e. variants found in his/her tumor cells, but not in his/her normal cells). Only SNVs (Single Nucleotide Variants - simple substitutions) and InDels (Insertions and Deletions) are taken into account in the analysis.</div>
-						
-						</div>
-					
-						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
-
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
-					
-					
+				<div class="sliding" id="D71">
+					<div class="tab4collectionDescDetails">MicroRNAs (miRNAs) are key regulators of biological processes and are heavily
+						involved in human diseases such as cancers (Alvarez-Garcia and Miska 2005).  The deregulation of miRNA genes
+						is thought to be the major source of this pathogenic development but mechanisms of how this deregulation is
+						facilitated in the cells, remains largely unknown.
 					</div>
-				
-				<div class="tab4collectionTitle" id="T3">
-					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B3" class='-off' /></div>
-						- Chromatin accessibility (DHSs) across cell types
+					<div class="tab4collectionDescDetails">Looking at overlapping regions of miRNAs and disease related SNPs using
+						GSuite tools could help discover mutations in miRNA genes that have effects on their target-range, or
+						mutations in miRNA regulatory motifs that can have effects on processing efficiency (Auyeung, et al. 2013)
+						and might be connected to the pathology of the disease.
+					</div>
+					<div class="tab4collectionDescDetails">In order to achieve an understanding of how variable miRNA parts are in
+						general, we did the same analysis with all common SNPs.
+					</div>
+					<div class="tab4collectionDescDetails">[1] Alvarez-Garcia, I., and E. A. Miska, MicroRNA functions in animal
+						development and human disease. Development 132(21):4653-62, 2005.
+					</div>
+					<div class="tab4collectionDescDetails">[2] Auyeung, V. C., et al., Beyond secondary structure: primary-sequence
+						determinants license pri-miRNA hairpins for processing. Cell 152(4):844-58, 2013.
+					</div>
 				</div>
-					<div class="tab4collectionDesc" id="D3">
-						
-						<div class="show_hide" id="T31"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B31" height="20" width="20"  class='-off' /></div> - Background</div>
-						<div class="sliding" id="D31">
-						
-						<div class="tab4collectionDescDetails">Regulation of gene expression is governed by a range of proteins, which, in order to operate, require access to their respective target binding sites within the genome. Accessibility of a genomic location is determined by the local chromatin conformation, which can vary depending on cell type and conditions. Accessible sites allow not only potential interaction with sequence-specific DNA-binding proteins, but also with enzymes that can operate on any exposed DNA sequence, such as Deoxyribonuclease I (DNase I). A DNase I hypersensitive site (DHS) is an experimentally determined genomic location, where DNase I showed cleaving activity and thus demonstrated accessibility (indicating a potential for regulatory function). DHS profiles can therefore be used as non-specific proxies for mapping plausible regulatory activity across different cell types or conditions [1].</div>
 
-						<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [2].</div>
-						
-						<div class="tab4collectionDescDetails">[1] Cockerill, P. N. Structure and function of active chromatin and DNase I hypersensitive sites. FEBS J. 278, 2182–2210 (2011).</div>
-						
-						<div class="tab4collectionDescDetails">[2] ENCODE: Encyclopedia of DNA Elements (2015). https://www.encodeproject.org</div>
-							
-						<!-- <iframe src="https://hyperbrowser.uio.no/dev2/datasets/3d820423f7c1d436/display/?preview=True" scrolling="no" width="900" height="2300"></iframe> -->
+				<div class = "welcomeAnalysisDetailsV2" > Datasets used in the analysis </div>
+				<div class = "welcomeAnalysisDetailsV2V2" > - Common SNPs </div>
+				<div class="tab4collectionDescDetails_history">
+					Common SNPs refers to variants that appear to be reasonably common in the general population, and are less likely associated with severe genetic diseases due to effects of natural selection. The dataset of common SNPs (SNP142common) used in this analysis is downloaded from UCSC, and contains information of a subset of single nucleotide polymorphisms that have a minor allele frequency of at least 1 % and are mapped to a single base pair in the reference genome assembly (http://genome.ucsc.edu/). Small insertions and deletions (indels) are also included in the original dataset, but are filtered out in our analysis.
+				</div>
+				<div class = "welcomeAnalysisDetailsV2V2" > - Disease related SNPs </div>
+				<div class="tab4collectionDescDetails_history">A suite of tracks of Tag SNPs associated with 1362 different traits
+					were downloaded from the GWAS (Genome-Wide
+					Association Studies) catalogue. As SNPs are not independent, but tend to be coinherited in groups,
+					only a representative proportion of the disease associated SNPs (Tag/lead/index SNPs) are covered in
+					this data set. To include all the SNPs located nearby the Tag SNPs, we extended each GWAS track of disease
+					associated SNPs to incorporate all common SNPs (SNP142common, described above) within 25kb from annotated Tag
+					SNPs. In the final analysis result we excluded trait tracks having no overlap with miRNAs, ending up with a
+					subset of 78 traits reported in the result tables.
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - miRNA data </div>
+				<div class="tab4collectionDescDetails_history">
+					<div class="tab4collectionDescDetails">By manually curating all 1'881 putative miRNA entries currently
+						deposited for human in the online repository miRBase (v21) [1], a subset of 521
+						manually curated miRNA genes that fulfill structural criteria for the annotation of
+						miRNA genes was derived (MirGeneDB.org) [2].
+
+						Here, we use this refined human miRNA complement that is annotated in all parts
+						(primary miRNA, precursor-miRNA, mature miRNA including seed, loop sequence, star sequence including
+						seed and its flanking regions (30nts) on both ends), with tracks for each miRNA part constituting
+						a miRNA suite.
+					</div>
+
+					<img src="../static/hyperbrowser/images/div/mirna_illustration.png" title="Figure 1: Illustration of the different parts of a miRNA" style="width: auto; height: 400px;"></img>
+					<div class="tab4collectionDescDetails">Figure 1: Illustration of the different parts of a miRNA</div>
+
+					<div class="tab4collectionDescDetails">[1] Kozomara, A., and S. Griffiths-Jones, miRBase: annotating high
+						confidence microRNAs using deep sequencing data. Nucleic Acids Res 42(1):D68-73, 2014.
+					</div>
+					<div class="tab4collectionDescDetails">[2] Fromm, B., et al., A Uniform System for the Annotation of
+						Vertebrate microRNA Genes and the Evolution of the Human microRNAome. Annu Rev Genet 49:213-42., 2015.
+					</div>
+
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2" > Analysis using GSuite Tools </div>
+				<div class="tab4collectionDescDetailsV2">
+					<div class="tab4collectionDescDetails_historyV2">
+						<div class="tab4collectionDescDetails">Using GSuite Tools we examined whether the genomic regions of the
+							different microRNA parts, as well as whole miRNAs, overlap with commonly occurring SNPs (from UCSC)
+							and SNPs that are associated with different traits (from GWAS catalogue). We compiled the data sets
+							described above and analyzed:
 						</div>
-						
-						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
-
-
-						
-						<div class="tab4collectionDescDetails">This example examines the characteristics of ENCODE-generated DHS tracks accessible via HyperBrowser tool ''Create a remote GSuite from an external database''. About 450 tracks, encompassing over 150 different cell types and multiple methods of generating DHS profiles, are included in the initial track overview (each individual track corresponds to DNase I hypersensitive sites of a specific cell-type, treatment, method ... combination). In addition, a closer look is taken at a selected subset of cell-types and methods, exploring their effect on DHS profiling results.</div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
-						<div class="tab4collectionDescDetails_history">
-							Annotated analysis history (including all the utilized data and operations) is available on a separate page:
-							<a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/h/chromatin-accessibility-dnase-across-cell-types">Analysis history: Chromatin accessibility (DHS) across cell types</a>.
-							(All results mentioned below refer to elements from this history page.)
+						<div class="tab4collectionDescDetails">1. The intersection between each GWAS extended SNP dataset (GSuite)
+							against each data set of a particular miRNA part or whole miRNA (GSuite). Annotated analysis history is
+							available on a separate page:
+							<a href="../u/hb-superuser/h/disease-associated-snps-in-mirnas" target="_blank">Disease-associated SNPs in miRNAs</a>
 						</div>
-		
 
+						<div class="tab4collectionDescDetails">2. The intersection between the common SNP dataset (track) against each
+							dataset of a particular miRNA part or whole miRNA (GSuite). Annotated analysis history is available on a
+							separate page:
+							<a href="../u/hb-superuser/h/mirna-vs-expanded-snps-v3" target="_blank">Common SNPs in miRNAs</a>
+						</div>
+					</div>
+				</div>
+				<div class = "welcomeAnalysisDetailsV2V2" > - Results: </div>
+				<div class="tab4collectionDescDetailsV2">
+					<div class="tab4collectionDescDetails_historyV2">
+						<div class="tab4collectionDescDetailsDesc"> - Common SNPs</div>
+						<div class="tab4collectionDescDetailsV3">
+							<div class="tab4collectionDescDetails">Of the 12'969'631 common SNPs for human, 217 SNPs were
+								observed in 166 of the 521 miRNAs. This corresponds to a SNP density of 2,6 SNPs/10 KB
+								within pri-miRNA. When compared to other parts of the human genome such as the full genome
+								(4,6 SNPs/10 KB), introns (4,4 SNPs / 10 KB) and exons (3,9 SNPs / 10KB) this value is
+								significantly lower underlining the strong selective pressure against changes of miRNAs in
+								general. More specifically we observe a gradual depletion of SNPs for parts of the miRNA
+								precursor depending on their importance for miRNA function (figure 1).
+							</div>
 
+							<img src="../static/hyperbrowser/images/div/mirna/Figure_1.png" style="width: 100%; height: auto;"></img>
+							<div class="tab4collectionDescDetails">Figure 1: distribution of common SNPs across different
+								parts of the human genome. MiRNA loci show significantly lower SNPs/10 Kbps than the rest
+								of the genome.
+							</div>
+						</div>
 
-						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks: </div>
-						<div class="tab4collectionDescDetailsV2">
-							<div class="tab4collectionDescDetails_historyV2">
-								<div class="tab4collectionDescDetails">For the initial overview creation, all the tracks available via HyperBrowser tool "Create a remote GSuite from an external database" and satisfying the following criteria were selected:</div>
-								<div class="tab4collectionDescDetails">extrenal database: ENCODE (UCSC and Ensembl)</div>
-								<div class="tab4collectionDescDetails">ENCODE data type: DnaseSeq</div>
-								<div class="tab4collectionDescDetails">File type: narrowPeak</div>
-
-
+						<div class="tab4collectionDescDetailsDesc"> - Disease related SNPs</div>
+						<div class="tab4collectionDescDetailsV3">
+							<div class="tab4collectionDescDetails">
 								<div class="tab4collectionDescDetails_historyV3">
-									<a a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/9a9cc6fb2d6935e0/">Overview page for the 452-track GSuite for ENCODE DHS data </a> shows differences and similarities between tracks (e.g. with respect to genome/exone/repeat coverage or mutual overlap). It documents a considerable variability in peak count (77 458	- 405 844 peaks, median of 154 233.5 peaks) and average peak width (150 - 826 bp, median of 150 bp), which together determine the total base-pair coverage of the individual tracks (11 670 340	- 109 437 893 bp, median of 26 853 060 bp). To what degree should these differences be attributed to technical reasons?
+									<a href="../u/hb-superuser/d/3660b276e57b0ab8" target="_blank">Of
+										the 3'266'867 disease related (unique) SNPs in 78 GWAS datasets, 62 were
+										observed in 50 of the 521 miRNAs.</a>
 								</div>
+								Of these 50 miRNAs, 10 were co-matures, 19 5' matures and 21 were 3' matures respectively.
+							</div>
+							<div class="tab4collectionDescDetails">The SNPs were distributed in all parts of miRNAs
+								but showed the highest prevalence in the 5' and 3' flanking regions of the miRNAs
+								(30 and 19 reported SNPs respectively); possibly within regulatory motifs (UG; CNNC).
+								In line with the observation from the common SNPs the star-sequences showed the
+								next-highest prevalence (5) followed by identical numbers (4) for loop and matures.
+							</div>
+
+							<img src="../static/hyperbrowser/images/div/mirna/Figure_2.png" style="width: 100%; height: auto;"></img>
+							<div class="tab4collectionDescDetails"> Figure 2: distribution of common and disease-related
+								SNPs across different parts of the human genome.
 							</div>
 						</div>
 
-						<div class = "welcomeAnalysisDetailsV2V2" > - Comparison of the effect of cell types and data processing methods on DHS profiles: </div>
-							
-							<div class="tab4collectionDescDetailsV2">
-
-								<div class="tab4collectionDescDetails_historyV2">
-									<div class="tab4collectionDescDetails">A subset of 3 cell-types (cell-lines representing different lineages), each with a triplet of alternative DHSs tracks (representatives of ENCODE's methods of DHSs determination), was created for a closer inspection.</div>
-
-									<div class="tab4collectionDescDetails">The selected cell types and their characteristics:</div>
-
-
-									<table class="tableEx">
-									<tr><th>Cell</th><th> Lineage</th><th> Tissue</th><th> Karyotype</th></tr>
-
-									<tr><td>H1-hESC</td><td> inner cell mass </td><td>embryonic stem cell</td><td> normal</td></tr>
-
-									<tr><td>GM12878 </td><td> mesoderm</td><td> blood </td><td>normal</td></tr>
-
-									<tr><td>HeLa-S3 </td><td>ectoderm</td><td> cervix</td><td> cancer</td></tr>
-									</table>
-
-									<div class="tab4collectionDescDetails">(<a href="http://www.neuroepigenomics.org/encode/cellTypes.html">Read more about cell types used in the ENCODE project.</a>)</div>
-
-
-
-										<div class="tab4collectionDescDetails">Multiple methods for determining DHS sites were used with each of the selected cell types:</div>
-
-										<table class="tableEx">
-										<tr><th>Method</th><th> Short description</th><th> Reference build/Analysis source</th><th> Track name indicator</th></tr>
-
-										<tr><td>a) "Uniform DNaseI HS"</td><td> DNaseI Hypersensitivity Uniform Peaks from ENCODE/Analysis, Integrated Regulation from UCSC </td><td>Human Genome Build 37 (hg19): ENCODE Analysis Data at UCSC</td><td> "AwgDnaseUwduke"</td></tr>
-
-										<tr><td>b) "Duke DNaseI HS" </td><td> Open Chromatin by DNaseI HS from ENCODE/OpenChrom(Duke University)</td><td> Human Genome Build 37 (hg19): ENCODE Production Data </td><td>"OpenChromDnase"</td></tr>
-
-										<tr><td>c) "UW DNaseI HS" </td><td>DNaseI Hypersensitivity by Digital DNaseI from ENCODE/University of Washington</td><td> Human Genome Build 37 (hg19): ENCODE Production Data</td><td> "UwDnase"</td></tr>
-										</table>
-
-										<div class="tab4collectionDescDetails">(<a href "http://genome.ucsc.edu/ENCODE/downloads.html">Read more about data (types) produced by the ENCODE consortium.</a>)</div>
-
-										<div class="tab4collectionDescDetailsDesc"> - 11-track subset overview</div>
-									<div class="tab4collectionDescDetailsV3">
-										<div class="tab4collectionDescDetails">11 of the original 452 tracks were included in a new GSuite collection based on their cell-type+method combination (9 tracks for all possible combinations plus two duplicate tracks; tracks from experiments involving additional cell culture treatments were not included). <a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/36a5e6818497890e/">Overview statistics for the reduced GSuite>.</a> show that:</div>
-
-										<div class="tab4collectionDescDetails">1. After ordering the tracks by base-pair coverage, it is apparent that the method of determining DHS sites (and not the cell type) is the primary cause of differences. Without any exception, tracks produced by method b) cover a higher proportion of the reference genome than tracks produced by method a), while the output tracks of method c) are grouped at the bottom of the ordering. The cell types are, however, consistently ranked within each group (even though the differences deciding about this ranking are sometimes small): H1-hESC covers more unique base-pairs than HeLa-S3, which in turn covers more unique base-pairs than GM12878. (statistic "Base-pair coverage")</div>
-
-										<div class="tab4collectionDescDetails">2. The average peak width is strictly method-dependent, with method b) being markedly different compared to methods a) and c), which are practically identical regarding this measure. (statistic "Segment length average")</div>
-
-										<div class="tab4collectionDescDetails">3. Method a) generates more peaks than the other methods. The GM12878 cell-line produces fewer peaks when compared to other cell types (when processed by the same method). (statistic "Segment count")</div>
-									</div>
-										<div class="tab4collectionDescDetailsDesc"> - Clustering of tracks</div>
-									<div class="tab4collectionDescDetailsV3">
-										<div class="tab4collectionDescDetails">How would the 11 tracks cluster considering the apparent dependency of DHS profiles on the method of their creation?</div>
-
-										<div class="tab4collectionDescDetails">When clustered with a method based on "similarity of positional distribution along the genome" (using the default binning settings), <a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/b01a66ce370636d4/cluster_tracks_result_figure.pdf">the tracks cluster primarily by analysis method</a>. When clustered with a method based on "direct sequence similarity" (using pairwise overlap enrichment), <a href="https://hyperbrowser.uio.no/dev2/u/hb-superuser/d/57d86cf71653dd9e/cluster_tracks_result_figure.pdf">the tracks cluster primarily by cell type</a>. These results suggest that while the examined DHS determination methods suffer from biases with respect to peak density, true biological signal comes through on base-pair level.</div>
-									</div>
-										<div class="tab4collectionDescDetailsDesc"> - Conclusions</div>
-									<div class="tab4collectionDescDetailsV3">
-										<div class="tab4collectionDescDetails">When working with ENCODE, attention to tracks' origin should be paid and special care should be taken when drawing conclusions from comparisons of tracks which do not come from the same production source. Initial exploration of tracks properties is highly recommended.</div>
-
-										<div class="tab4collectionDescDetails">Choice of track comparison methods can have a prominent influence on the results - an appropriate analysis approach needs to be selected on case-by-case basis.</div>
-
-
-
-									</div>
-
-								</div>
+						<div class="tab4collectionDescDetailsDesc"> - Relative SNP density</div>
+						<div class="tab4collectionDescDetailsV3">
+							<div class="tab4collectionDescDetails">That the total number of disease related SNPs is
+								significantly smaller than common SNPs is known. It was however interesting to see
+								that the abundance of SNPs between the different parts of the genome seemed so similar.
+								A more detailed comparison of the relative density of SNPs (normalized for the ratio of
+								total SNPs to the respective genomic parts in the common SNP dataset) in the
+								disease-related SNPs shows an enrichment of SNPs in exons and 5' flanking regions
+								of miRNAs.
 							</div>
-					</div>
-
-					
-				<div class="tab4collectionTitle" id="T4">
-					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B4" height="20" width="20"  class='-off' /></div>
-						- cMyc bindings regions across cell types
-				</div>
-				
-					<div class="tab4collectionDesc" id="D4">
-					
-						<div class="show_hide" id="T41"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B41" height="20" width="20"  class='-off' /></div> - Background</div>
-						<div class="sliding" id="D41">
-						
-							<div class="tab4collectionDescDetails">Transcription factors (TFs) are proteins enabling transcription of DNA into RNA. They bind to DNA at specific sites by recognizing particular sequence motifs (and thus allowing expression of associated genes). Accordingly, binding sites can be predicted in-silico by scanning the genome for relevant motifs, but in order to confidently determine the binding sites of a given cell type at specific conditions, experimental methods (such as chromatin immunoprecipitation followed by sequencing, or ChIP-Seq for short) are being used.</div>
-	
-							<div class="tab4collectionDescDetails">cMyc is a transcription factor contributing to regulation of key cellular processes, including growth, differentiation and apoptosis. Its function and targets make it a proto-oncogene: with elevated expression levels or decreased degradation speed, cMyc can drive metabolic changes necessary for cancer cell proliferation. It is also one of the four transcription factors which create an environment sufficient for reprograming differentiated cells to an embryonic-like state iPS cells (induced pluripotent stem cells). [1, 2, 3]</div>
-							
-							<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [4].</div>
-							
-							<div class="tab4collectionDescDetails">[1] The UniProt Consortium. Myc Proto-oncogene Protein (2016). Accessed February 24, 2016. http://www.uniprot.org/uniprot/P01106.</div>
-							
-							<div class="tab4collectionDescDetails">[2] Miller, D. M., Thomas, S. D., Islam, A., Muench, D., & Sedoris, K. (2012). C-Myc and Cancer Metabolism. Clinical Cancer Research, 18(20), 5546-5553.</div>
-							
-							<div class="tab4collectionDescDetails">[3] Hoffman, B., & Liebermann, D. A. (2008). Apoptotic signaling by c-MYC. Oncogene, 27(50), 6462-6472.</div>
-							
-							<div class="tab4collectionDescDetails">[4] ENCODE: Encyclopedia of DNA Elements (2015). Accessed February 24, 2016. https://www.encodeproject.org</div>
-							
-							<div class="tab4collectionDescDetails">Tracks explored in this case correspond to the different cell types mapped by members of the ENCODE Consortium. The individual cell types are represented by sets of cMyc binding sites.</div>
-							
-							
+							<img src="../static/hyperbrowser/images/div/mirna/Figure_3.png" style="width: 100%; height: auto;"></img>
+							<div class="tab4collectionDescDetails">Figure 3: Normalized distribution of common and
+								disease-related SNPs across different parts of the human genome show deviations.
+							</div>
 						</div>
-						
-						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
-
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
-					
-					
 					</div>
-				
-				
-				
-				
-				
-				<div class="tab4collectionTitle" id="T5">
-					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B5" height="20" width="20"  class='-off' /></div>
-						- Binding of different TFs for one cell type (gm12878)
 				</div>
-				
-				
-					<div class="tab4collectionDesc" id="D5">
-					
-						<div class="show_hide" id="T51"><div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B51" height="20" width="20"  class='-off' /></div> - Background</div>
-						<div class="sliding" id="D51">
-						
-							<div class="tab4collectionDescDetails">Transcription factors (TFs) are proteins enabling transcription of DNA into RNA. They bind to DNA at specific sites by recognizing particular sequence motifs (and thus allowing expression of associated genes). Accordingly, binding sites can be predicted in-silico by scanning the genome for relevant motifs, but in order to confidently determine the binding sites of a given cell type at specific conditions, experimental methods (such as chromatin immunoprecipitation followed by sequencing, or ChIP-Seq for short) are being used.</div>
-							
-							<div class="tab4collectionDescDetails">GM12878 is a lymphoblastoid cell line, which served as a representative of the mesoderm cell lineage within the ENCODE project [1].</div>
-							
-							<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [2].</div>
-							
-							<div class="tab4collectionDescDetails">[1] National Human Genome Research Institute. ENCODE Project Common Cell Types. (2012). Retrieved March 02, 2016, from http://www.genome.gov/26524238</div>
-							
-							<div class="tab4collectionDescDetails">[2] ENCODE: Encyclopedia of DNA Elements (2015). Accessed February 24, 2016. https://www.encodeproject.org</div>
-							
+			</div>
+
+			<div class="tab4collectionTitle" id="T8">
+				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B8" class='-off' /></div>
+						- Chromatin accessibility and mutational profiles of tumors
+			</div>
+
+			<div class="tab4collectionDesc" id="D8">
+
+				<div class="show_hide" id="T81">
+					<div class="imgBackground">
+						<img src="hyperbrowser/images/div/DNAlying.png" id="B81" height="20" width="20"  class='-off' />
+					</div>
+					- Background
+				</div>
+
+				<div class="sliding" id="D81">
+					<div class="tab4collectionDescDetails">Tumor genomes are highly heterogeneous with respect to
+						their mutational burden. This heterogeneity can arise from multiple sources. A common
+						source is exposure to mutagens, such as ultraviolet radiation in malignant melanoma and
+						tobacco in lung cancer [1]. In addition, it has recently been shown that the epigenomic
+						profile (chromatin accessibility, histone modifications etc.) of a tumor's cell-of-origin is
+						highly associated with its somatic mutational landscape [2]. Importantly, such findings may
+						ultimately allow for accurate prediction of cell-of-origin of a cancer based on the somatic
+						mutation profile. In this example usage of GSuite, we will investigate the strong statistical
+						association that was found for chromatin accessibility in melanocytes and the somatic mutation
+						density in malignant melanoma [2]
+						(see <a href="http://www.nature.com/nature/journal/v518/n7539/fig_tab/nature14221_F1.html" target="_blank">
+							wym-1462355009093 </a>). We will demonstrate through a fully reproducible
+						workflow how this question may be approached within the GSuite framework.
+					</div>
+					<div class="tab4collectionDescDetails">[1] Lawrence M. et al. Mutational heterogeneity in cancer and the
+						search for new cancer-associated genes. Nature 499, 214-218 (2013)
+					</div>
+					<div class="tab4collectionDescDetails">[2] Polak, P. et al. Cell-of-origin chromatin organization shapes
+						the mutational landscape of cancer. Nature 518, 360-364 (2015).
+					</div>
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2" > - Datasets used in the analysis: </div>
+
+				<div class="tab4collectionDescDetails_history">
+					<div class="tab4collectionDescDetails">In order to address the question we utilised the following datasets: </div>
+					<div class="tab4collectionDescDetails">- Whole-genome somatic mutational profiles in melanoma (simple somatic
+						mutations, ICGC)
+					</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">* SKCA-BR (Skin adenocarcinoma, Brasil) </div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">* MELA-AU (Skin cancer, Australia) </div>
+					<div class="tab4collectionDescDetails">- Chromatin accessibility tracks across cell types (DnaseSeq from ENCODE) </div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">* A549, HepG2, MCF-7, Adult_CD4+, Caco-2,
+						COLO829, Cerebellum, Fibrobl, H1-hESC, HepG2, Hepatocytes, LNCaP, Medullo, Melano (epidermal
+						melanocytes), Mel-2183 (melanoma cell line), Naive_Bcell, Osteobl, PANC-1, PanIslets, SKMC, T47-D
+					</div>
+					<div class="tab4collectionDescDetails">In order to investigate the reported relationship in an unbiased
+						manner, we included a rich set of cell types/cell lines for the chromatin accessibility data.
+					</div>
+
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis/comments: </div>
+
+				<div class="tab4collectionDescDetailsV2">
+					<div class="tab4collectionDescDetails_historyV2">
+						<div class="tab4collectionDescDetailsV3">
+							<div class="tab4collectionDescDetails">The <a href="../u/hb-superuser/h/gsbe---chromatin-accessibility-and-mutational-profiles-of-tumors" target="_blank"> analysis </a>
+								was roughly divided in three parts:</div>
+							<div class="tab4collectionDescDetails">1) Creation of two mutation datasets, each containing
+								somatic variants in skin cancer donors (from the International Cancer Genome Consortium, ICGC)
+							</div>
+							<div class="tab4collectionDescDetails">2) Creation of a GSuite of chromatin accessibility datasets
+								for a diversity of cell lines/ cell types(from ENCODE)
+							</div>
+							<div class="tab4collectionDescDetails">3) Determine the GSuite tracks in 2) that most strongly
+								coincide with the two mutation datasets in 1), i.e. which cell-type specific chromatin
+								accessibility profile is most strongly correlated to the mutation profile of skin cancer?
+							</div>
+							<div class="tab4collectionDescDetails">Steps 2) and 3) were readily accessible within the main
+								functionality of the GSuite framework. The establishment of somatic datasets from ICGC (step 1))
+								required some additional Galaxy steps (manipulation/filtering) because the raw data contained
+								duplicate entries (due to variant overlap in different transcript isoforms).
+
+								With respect to the key step in our workflow (3)), we used the analysis available through
+								Statistical analysis of GSuites - Determine GSuite tracks coinciding with a target track.
+								As the track-to-track similarity measure, we chose the Correlated bin coverage, using 1Mb as
+								our bin size (this to resemble the analysis [1]). Here, the chromatin datasets acted as a
+								GSuite, while the mutation datasets were each represented as GTracks. Using this approach, we
+								obtained a similarity score (Correlated bin coverage?) for each of the cell-specific chromatin
+								accessibility tracks in relation to the mutation datasets. Overall, we found that for both the
+								SKCA-BR and MELA-AU datasets, chromatin accessibility tracks for epidermal melanocytes and the
+								Mel-2183 melanoma cell line were ranked as the most dissimilar ones. This finding supports the
+								strong negative correlation that was reported by Polak et al. In conclusion, this example of the
+								GSuite framework demonstrates how a track-based similarity of chromatin accessibility tracks and
+								cancer mutation datasets can highlight the most likely cell-of-origin of a cancer genome.
+							</div>
+							<div class="tab4collectionDescDetails">[1] Polak, P. et al. Cell-of-origin chromatin organization
+								shapes the mutational landscape of cancer. Nature 518, 360-364 (2015).
+							</div>
 						</div>
-						
-						<div class = "welcomeAnalysisDetailsV2" > Analysis </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
-
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks </div>
-
-						<div class = "welcomeAnalysisDetailsV2V2" > - Cell types </div>
-					
-					
 					</div>
-				
-				
-				
-				<div class="tab4collectionTitle" id="T6">
-					<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" id="B6" height="20" width="20"  class='-off' /></div>
-						-  Different histone modifications for one cell type (gm12878)
 				</div>
-				
-				
-					
+			</div>
+
+			<div class="tab4collectionTitle" id="T2">
+				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B2" class='-off' /></div>
+						- Investigating the co-localisation between  transcription factors and histone marks
+			</div>
+
+			<div class="tab4collectionDesc" id="D2">
+
+				<div class="show_hide" id="T21">
+					<div class="imgBackground">
+						<img src="hyperbrowser/images/div/DNAlying.png" id="B21" height="20" width="20"  class='-off' />
+					</div>
+					- Background
+				</div>
+
+				<div class="sliding" id="D21">
+					<div class="tab4collectionDescDetails">Expression of genes is a highly complex process where transcription
+						factors and epigenetic modifications play important roles. Transcription factors are able to alter
+						the epigenetic environment of target genes, however, their binding is also influenced by already
+						existing marks. Hence, by investigating which epigenetic marks transcription factors co-localise with
+						it is possible to obtain preliminary information about their regulatory properties.
+					</div>
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2" > - Preface: </div>
+				<div class="tab4collectionDescDetails_history">
+					<div class="tab4collectionDescDetails">In this example we are going to investigate the genomic co-localisation
+						between a subset of transcription factors and epigenetic marks known as histone modifications
+						from the K562 leukemia cell line generated by the ENCODE consortium [1]. The epigenetic mark
+						tri-methylation of histone 3 lysine 4 (H3K4me3) and acetylation of the same histone at lysine
+						9 and 27 (H3K9ac and H3K27ac) are found to correlate with active transcription while the tri-methylation
+						of lysine 9 and 27 (H3K9me3 and H3K27me3) with repression [2-4]. The workflow outlined can be used
+						to investigate the relationship between additional genomic interacting proteins and features,
+						such as DNA methylation and genomic mutations. The data used in the example are genomic areas
+						enriched for the transcription factor or histone modification in question, known as peaks, generated
+						by the technique Chromatin Immunoprecipitation coupled with next generation sequencing (ChIP-Seq).
+					</div>
+					<div class="tab4collectionDescDetails">[1] ENCODE Project Consortium, Bernstein BE, Birney E, Dunham I,
+						Green ED, Gunter C, et al. (2012) An integrated encyclopedia of DNA elements in the human genome.
+						Nature 489: 57â€“74
+					</div>
+					<div class="tab4collectionDescDetails">[2] Barski A, Cuddapah S, Cui K, Roh T-Y, Schones DE, Wang Z,
+						et al. (2007) High-resolution profiling of histone methylations in the human genome. Cell
+						129: 823â€“837.
+					</div>
+					<div class="tab4collectionDescDetails">[3] Mikkelsen TS, Xu Z, Zhang X, Wang L, Gimble JM, Lander ES,
+						et al. (2010) Comparative epigenomic analysis of murine and human adipogenesis.
+						Cell 143: 156â€“169.
+					</div>
+					<div class="tab4collectionDescDetails">[4] Barth T and Imhof A (2010) Fast signals and slow marks:
+						the dynamics of histone modifications., 35(11), 618â€“626.
+					</div>
+
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2" > - Datasets used in the analysis: </div>
+				<div class="tab4collectionDescDetails_history">
+					<div class="tab4collectionDescDetails">Annotated analysis history (including all the utilized data and
+						operations) is available on a <a href="../u/hb-superuser/h/imported-imported-transcription-factors-mads2" target="_blank"> separate page </a>. (All results mentioned below refer
+						to elements from this history page.)
+					</div>
+					<div class="tab4collectionDescDetails">Initial two GSuites for the subset of
+						histone modifications and transcription factors, respectively, were created using
+						"Create a GSuite from an integrated catalog of genomic datasets" satisfying
+						the following criteria were selected:
+					</div>
+
+					<div class="tab4collectionDescDetails"><b>Histones:</b></div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Track category: Histone variants and
+						modifications (search by cell/tissue type)
+					</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Sub-category: K562 Leukemia cell line</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Database:  All original tracks</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">File type: narrowPeak</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Datatype: Others</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Selected subset of tracks manually</div>
+
+					<div class="tab4collectionDescDetails"><b>Transcription factors:</b></div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Track category: Transcription factor
+						binding sites (search by cell/tissue type)
+					</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Sub-category: K562 Leukemia cell line</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Database:  All original tracks</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">File type: narrowPeak</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Data type: narrowPeak</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;">Selected subset of tracks manually</div>
+
+					<div class="tab4collectionDescDetails">For downstream analysis the downloaded files were used.</div>
+					<div class="tab4collectionDescDetails">In order to count the number of times each transcription factor
+						overlap with a histone modifications the GSuite containg the peaks for the transcription factors
+						was modified to contain only the middle point of each peak using "Modify primary tracks referred
+						to in a GSuite":
+					</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Operation:</b> Expand all points and segments equally </div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Parameter:</b> typed: "middle"</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Change file suffix:</b> "Yes" and changed suffix to "bed"</div>
+
+					<div class="tab4collectionDescDetails">To investigate how the transcription factors colocalizes with the
+						different histone modifications, the two GSuites were preprocessed for analysis using
+						"Preprocess a GSuite for analysis" and secondly a co-localization analysis were setup using
+						"Determine coinciding track combinations from two suites" selecting the following parameters:
+					</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Query track:</b> GSuite with transcription factors containing the middle point of each peak.</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Reference track:</b> GSuite with Histone modifications</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Genome:</b> hg19</div>
+					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Similarity measure:</b> Forbes coefficient: ratio of observed to expected overlap.</div>
+
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - Conclusion: </div>
+
+				<div class="tab4collectionDescDetailsV2">
+					<div class="tab4collectionDescDetails_historyV2">
+						<div class="tab4collectionDescDetailsV3">
+							<div class="tab4collectionDescDetails">The colocalization shows that the transcription factors
+								overlaps with various degree with the histone marks associated with active transcription
+								(H3K4me3, H3K9ac and H3K27ac) while only a small fraction is overlapping with the histone
+								marks linked to repression (H3K9me3 and H3K27me3).
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+			<div class="tab4collectionTitle" id="T4">
+				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B4" class='-off' /></div>
+						- Exploring transcription factor co-occurrence using two alternative measures of similarity
+			</div>
+
+			<div class="tab4collectionDesc" id="D4">
+
+				<div class="show_hide" id="T41">
+					<div class="imgBackground">
+						<img src="hyperbrowser/images/div/DNAlying.png" id="B41" height="20" width="20"  class='-off' />
+					</div>
+					- Background
+				</div>
+
+				<div class="sliding" id="D41">
+					<div class="tab4collectionDescDetails">GATA1 is a zinc-finger type transcription factor (TF) with a key
+						role in regulating gene programs during hematopoiesis, where it induces megakaryocytic and
+						erythroid commitment and simultaneously prevents granulocyte-monocyte and lymphoid development
+						(Kitajima et al. PMID: 16543218, Welch et al. PMID: 15297311; Ferreira et al. PMID: 15684376).
+						GATA1 is sequence-specific DNA-binding protein recognizing the GATA box motif (WGATAR) found in
+						regulatory sites controlling its target genes (Trainor 1996, PMID: 8628290).
+					</div>
+					<div class="tab4collectionDescDetails">Approximately 20,000 sites with GATA1 bound are found in the genome of
+						erythroid cells (Ulirsch JC, et al., PMID: 25521328). A recent study which used high-resolution
+						ChIP-exo to map GATA1 and TAL1 across the mouse genome, identified âˆ¼10,000 GATA1 and âˆ¼15,000 TAL1,
+						of which âˆ¼4,000 locations were bound by both GATA1 and TAL1 (PMID: 26503782). The current understanding
+						is that key complexes are formed by combinatorial occupancy patterns of erythroid TFs leading to the
+						induction of key erythroid genes.
+					</div>
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2" > - Datasets used in the analysis: </div>
+				<div class="tab4collectionDescDetails_history">
+					<div class="tab4collectionDescDetails">
+						To perform a similarity measure of GATA1 in K562 cells, we collected 318 ChIP-seq datasets
+						from ENCODE (PMID 22955616) and downloaded to history. We then performed similarity testing
+						of GATA1 ChIP-seq track (Snyder lab, Stanford) against the 317 experimental datasets
+						using the Forbes and Jaccard similarity measures.
+					</div>
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
+				<div class="tab4collectionDescDetails_history">
+					Annotated analysis histories (including all the utilized data and operations) are available on
+					separate pages for the <a href="../u/hb-superuser/h/gata1-example---the-effect-of-similarity-measure" target="_blank"> analysis leading to ranking of tracks </a>
+					and the <a href="../u/hb-superuser/h/gata1-example---subsampling-tracks" target="_blank">quantitative analysis of
+					correlation between similarity measures and track sizes </a>. For both histories, the history elements
+					are annotated with details of the performed analysis and their main interpretation.
+
+				</div>
+
+				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis and conclusions: </div>
+				<div class="tab4collectionDescDetailsV2">
+					<div class="tab4collectionDescDetails_historyV2">
+						<div class="tab4collectionDescDetailsV3">
+							<div class="tab4collectionDescDetails">We generated two separate rankings of the 317 chip-seq tracks,
+								based on their similarity against the GATA1 track according to the Forbes and Jaccard similarity
+								measures, respectively. In addition to exploring the biological interpretations of the two different
+								rankings, we performed a quantitative analysis of how similarity values correlated with the size of
+								tracks and how the (Forbes versus Jaccard) similarity values changed through subsampling of elements
+								from the tracks.
+							</div>
+							<div class="tab4collectionDescDetails">The two alternative measures (Forbes and Jaccard) resulted in
+								very different rankings of similarity to GATA1. With the Forbes measure, another replicate of
+								GATA1 was ranked first, along with several other potentially interesting TFs at the top, but
+								without expected co-binding TFs like TAL1 being among the most highly ranked TF. The ranking
+								according to the Jaccard measure were clearly influenced by size of tracks, with other
+								replicates for GATA1 not being among the highest ranked TF. At the same time, the expected
+								co-binding TF TAL1 was ranked among the top tracks, along with several tracks for GATA2.
+							</div>
+							<div class="tab4collectionDescDetails">To further explore the influence of track size on the
+								measures, we performed a quantitative analysis of the Forbes and Jaccard similarity values.
+								We selected 291 ChIP-seq tracks that had at least 1000 peaks, and made separate Scatterplots
+								of Forbes similarity versus track size and Jaccard similarity versus track size.
+								The Jaccard similarity values was seen to be strongly correlated with track size.
+								To further determine whether this was directly connected to track size, we randomly
+								subsampled a set of 1000 peaks for each track. The Forbes values were essentially unchanged
+								by this subsampling, while the Jaccard values changed substantially. This shows that the
+								Jaccard measure is very sensitive to the number of elements in tracks, and that care must be
+								taken to ensure that biological interpretations are not dominated by technicalities related to
+								the number of discovered peaks.
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+
+
 		</div>
-
 	</div>
+
 	<div id="tab5" class="tab">
 
 	    <div class="document">
@@ -491,14 +781,14 @@
 				    <p>
 				    This is a specialized version of The Genomic Hyperbrowser,
 				    focusing on new functionality for analyzing collections of genomic track.
-				    More information on the general HyperBrowser functionality and project can be
-				    found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main version</a> of the HyperBrowser.
+				    More information on the general HyperBrowser functionality can be
+				    found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
 				    </p>
 				    <b>Contact information</b>
 				    <p>
-				    If you have any questions, requests or comments of any kind, please use our discussion forum, available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu, or send an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@stseuqer-resworbrepyh</a>&#x200E;. We are happy to respond. We especially encourage collaborative projects for further development. If you find any bugs, please send an email to
+				    If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@stseuqer-resworbrepyh</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
 				  <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@sgub-resworbrepyh</a>.</p>
-				    <p>If you register as a user, you will get the option to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@ofni-resworbrepyh</a> mailing list. Here, we will send announcements and administrative messages for users of the system. A backlog of announcements is available from the Help menu. Citation info is also available from the Help menu.</p>
+				    <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">on.oiu.tisu@ofni-resworbrepyh</a> mailing list, which serves for distribution of system-related announcements and administrative messages. A backlog of announcements is available from the Help menu. The Help menu also contains citation information.</p>
 
 				</div>
 			</div>
@@ -508,7 +798,7 @@
 		supported by various national and local bodies.
 		</p>
 		<p class="blocktext">
-		  For further info on Norwegian bioinformatics, see <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+		  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
 		</p>
 
 		<div class="section">

@@ -18,7 +18,7 @@ from quick.extra.CustomTrackCreator import CustomTrackCreator
 #from rpy import r
 from gold.description.TrackInfo import TrackInfo
 from copy import copy
-#from gold.application.RSetup import r
+#from proto.RSetup import r
 from gold.origdata.GenomeElement import GenomeElement
 from quick.util.Wrappers import GenomeElementTvWrapper
 
@@ -43,7 +43,7 @@ from quick.util.Wrappers import GenomeElementTvWrapper
 #CustomTrackCreator.createTrackChr('sacCer1', ['Genes and Gene Prediction Tracks','Exons'],['Test','TestCreation6'],101,func,'chr1')
 
 def weightedValForWindowsYielder(slidingWindows,windowSize):
-    from gold.application.RSetup import r
+    from proto.RSetup import r
     for window in slidingWindows:
         midPos = len(window)/2
         midEl = window[midPos]

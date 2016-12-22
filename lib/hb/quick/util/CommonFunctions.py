@@ -421,15 +421,6 @@ def listStartsWith(a, b):
     return len(a) > len(b) and a[:len(b)] == b
 
 
-def isNan(a):
-    import numpy
-
-    try:
-        return numpy.isnan(a)
-    except (TypeError, NotImplementedError):
-        return False
-
-
 def isListType(x):
     import numpy
     return type(x) == list or type(x) == tuple or isinstance(x, numpy.ndarray) or isinstance(x, dict)
@@ -518,7 +509,7 @@ R_ALREADY_SILENCED = False
 def silenceRWarnings():
     global R_ALREADY_SILENCED
     if not R_ALREADY_SILENCED:
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('sink(file("/dev/null", open="wt"), type="message")')
         R_ALREADY_SILENCED = True
 
@@ -529,7 +520,7 @@ R_ALREADY_SILENCED_OUTPUT = False
 def silenceROutput():
     global R_ALREADY_SILENCED_OUTPUT
     if not R_ALREADY_SILENCED_OUTPUT:
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         r('sink(file("/dev/null", open="wt"), type="output")')
         R_ALREADY_SILENCED_OUTPUT = True
 

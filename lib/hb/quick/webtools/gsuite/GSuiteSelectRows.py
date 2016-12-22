@@ -10,6 +10,8 @@ from quick.webtools.util import CommonFunctionsForTools
 class GSuiteSelectRows(GeneralGuiTool):
     exception = None
 
+    INDEX_TITLE_DELIMITER = '_'
+
     @staticmethod
     def getToolName():
         '''
@@ -37,8 +39,8 @@ class GSuiteSelectRows(GeneralGuiTool):
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [('Select GSuite file from history', 'history'), \
-                ('Row indices (e.g. 1-20 or 0,3,5,19-29. NB: Intervals are end exclusive; Delete input to choose tracks manually.)', 'rowIndices'), \
+        return [('Select a GSuite file from history', 'history'), \
+                ('Row indices (e.g. 1-20 or 1,3,5,19-29. NB: Intervals are end exclusive.)', 'rowIndices'), \
                 ('Select rows','selectRows'), \
                 ('', 'showVisualization')]
 
@@ -103,7 +105,7 @@ class GSuiteSelectRows(GeneralGuiTool):
         
         gSuite = getGSuiteFromGalaxyTN(prevChoices.history)
         
-        return '0-%i' % gSuite.numTracks()
+        return '1-%i' % (gSuite.numTracks() + 1)
         
         
     
@@ -119,14 +121,14 @@ class GSuiteSelectRows(GeneralGuiTool):
                 selectedIndices = CommonFunctionsForTools.processIndicesString(rowIndicesStr)
                 resDict = OrderedDict()
                 for i, trackTitle in enumerate(gSuite.allTrackTitles()):
-                    if i in selectedIndices:
-                        resDict[trackTitle] = True
+                    if (i + 1) in selectedIndices:
+                        resDict[cls.addIndexToTitle((i+1), trackTitle)] = True
                     else:
-                        resDict[trackTitle] = False
+                        resDict[cls.addIndexToTitle((i+1), trackTitle)] = False
                 return resDict
 #                 if selectedIndices:
 #                     return
-            return OrderedDict([(x,True) for x in gSuite.allTrackTitles()])
+            return OrderedDict([(cls.addIndexToTitle((i+1), x), True) for i, x in enumerate(gSuite.allTrackTitles())])
         except:
             pass
     
@@ -171,7 +173,7 @@ class GSuiteSelectRows(GeneralGuiTool):
 
 
     @classmethod
-    def execute(cls,choices, galaxyFn=None, username=''):
+    def execute(cls, choices, galaxyFn=None, username=''):
         '''
         Is called when execute-button is pushed by web-user. Should print
         output as HTML to standard out, which will be directed to a results page
@@ -182,8 +184,6 @@ class GSuiteSelectRows(GeneralGuiTool):
         web-user in each options box.
         '''
 
-
-
         gSuite = getGSuiteFromGalaxyTN(choices.history)
         
 #         titleList = []
@@ -191,7 +191,7 @@ class GSuiteSelectRows(GeneralGuiTool):
 #             selectedIndices = CommonFunctionsForTools.processIndicesString(choices.rowIndices)
 #             titleList = [tt for i, tt in enumerate(gSuite.allTrackTitles()) if i in selectedIndices]
 #         else:
-        titleList = [title for title,selected in choices.selectRows.iteritems() if selected]
+        titleList = [cls.removeIndexFromTitleName(title) for title, selected in choices.selectRows.iteritems() if selected]
         filteredGSuite = selectRowsFromGSuiteByTitle(gSuite, titleList)
 
         composeToFile(filteredGSuite, galaxyFn)
@@ -215,7 +215,7 @@ class GSuiteSelectRows(GeneralGuiTool):
             try:
                 selectedIndices = CommonFunctionsForTools.processIndicesString(choices.rowIndices)
                 maxIndex = max(selectedIndices)
-                if maxIndex > (gSuite.numTracks()-1):
+                if maxIndex > (gSuite.numTracks()):
                     return 'Selected row index %i is too high. GSuite contains %i tracks.' % (maxIndex, gSuite.numTracks())
             except:
                 return 'Please enter valid indices string (e.g. 1-10, 12, 14)'
@@ -224,7 +224,18 @@ class GSuiteSelectRows(GeneralGuiTool):
         if gSuite.numTracks() == 0:
             return 'GSuite file contains no tracks'
 
-        
+
+    @classmethod
+    def addIndexToTitle(cls, indx, title):
+        return cls.INDEX_TITLE_DELIMITER.join([str(indx), title])
+
+    @classmethod
+    def removeIndexFromTitleName(cls, titleWithIndex):
+        delimiterIndex = titleWithIndex.find(cls.INDEX_TITLE_DELIMITER)
+        if delimiterIndex > -1:
+            return titleWithIndex[(delimiterIndex+1):]
+        else:
+            return titleWithIndex
 
 
     #@staticmethod
@@ -284,7 +295,7 @@ class GSuiteSelectRows(GeneralGuiTool):
         choices previously made. The input boxes are specified by index
         (starting with 1) or by key.
         '''
-        return ['rowIndices']
+        return ['history', 'rowIndices']
     
     @classmethod
     def getToolDescription(cls):
@@ -320,9 +331,9 @@ class GSuiteSelectRows(GeneralGuiTool):
     #    '''
     #    return None
     #
-    @staticmethod
-    def getFullExampleURL():
-        return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/select-subset-of-tracks-in-gsuite---user-guide'
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return 'https://hyperbrowser.uio.no/nar/u/hb-superuser/p/select-subset-of-tracks-in-gsuite---user-guide'
     #
     #@classmethod
     #def isBatchTool(cls):

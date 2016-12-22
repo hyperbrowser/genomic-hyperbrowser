@@ -11,6 +11,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
+#Unused
 class PilotPageOverlapBetweenTracksTool(GeneralGuiTool, UserBinMixin,
                                         BasicModeAnalysisInfoMixin, GenomeMixin):
     '''

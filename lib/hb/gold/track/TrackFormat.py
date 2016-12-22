@@ -241,7 +241,8 @@ class TrackFormat(object):
             return []
 
     def getAllOverlapRules(self):
-        return [False] + ([True] if not self.isDense() else [])
+        # return [False] + ([True] if not self.isDense() else [])
+        return [False, True]
 
     def getFormatName(self):
         for formatName, format in TrackFormat.FORMAT_DICT.iteritems():

@@ -2,7 +2,7 @@ from urllib import quote
 
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
-from gold.gsuite import GSuiteStatUtils, GSuiteConstants
+from gold.gsuite import GSuiteConstants
 from gold.result.HeatmapPresenter import HeatmapFromTableDataPresenter
 from gold.result.MatrixGlobalValuePresenter import \
     MatrixGlobalValueFromTableDataPresenter
@@ -11,6 +11,7 @@ from gold.util import CommonConstants
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GSuiteStatUtils
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteFullAnalysisV2Stat import RAW_OVERLAP_TABLE_RESULT_KEY, \
     SIMILARITY_SCORE_TABLE_RESULT_KEY
@@ -539,7 +540,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         '''
         Specifies whether debug messages are printed.
         '''
-        return True
+        return False
 
     @staticmethod
     def getOutputFormat(choices):

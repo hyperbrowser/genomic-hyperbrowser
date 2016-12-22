@@ -1,19 +1,30 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
-class TfBindingDisruption(GeneralGuiTool):
+snps = [[] for chromosome in range(0,25)]
+peaks = [[] for chromosome in range(0,25)]
+motif = None
+
+BINDING_PROB_TRESHOLD = 0.5
+BINDING_A_PRIORI_PROB = 0.01
+
+
+class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
+
     @staticmethod
     def getToolName():
         '''
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Tool not yet in use"
+        return "Loss or gain of function due to point mutations"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -28,9 +39,12 @@ class TfBindingDisruption(GeneralGuiTool):
         getOptionsBoxK, where K is either a number in the range of 1 to the
         number of boxes (case 1), or the specified key (case 2).
 
-        Note: the key has to be camelCase and start with a non-capital letter (e.g. "firstKey")
+        Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return [('First header','firstKey'),('Second Header', 'secondKey')]
+
+        return [('Genome', 'genome'), ('Point mutation data set','snp'),('Transcription factors (GSuite file from history)', 'gsuite')] #+\
+                #cls.getInputBoxNamesForGenomeSelection() +\
+                #UserBinSelector.getUserBinInputBoxNames()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -58,60 +72,19 @@ class TfBindingDisruption(GeneralGuiTool):
 
 
     @staticmethod
-    def getOptionsBoxFirstKey(): # Alternatively: getOptionsBox1()
-        '''
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to other
-        methods. These are lists of results, one for each input box (in the
-        order specified by getInputBoxOrder()).
-
-        The input box is defined according to the following syntax:
-
-        Selection box:          ['choice1','choice2']
-        - Returns: string
-
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - The contents is the default value shown inside the text area
-        - Returns: string
-
-        Raw HTML code:          '__rawstr__', 'HTML code'
-        - This is mainly intended for read only usage. Even though more advanced
-          hacks are possible, it is discouraged.
-
-        Password field:         '__password__'
-        - Returns: string
-
-        Genome selection box:   '__genome__'
-        - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
-
-        History selection box:  ('__history__',) | ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting galaxy track name, as
-                   specified in ExternalTrackManager.py.
-
-        History check box list: ('__multihistory__', ) | ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with galaxy id as key and galaxy track name
-                   as value if checked, else None.
-
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
-
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'], ['cell2_1','cell2_2']]
-        - Returns: None
-
-        Check box list:         OrderedDict([('key1', True), ('key2', False), ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
-        '''
-        return ['testChoice1', 'testChoice2', '...']
+    def getOptionsBoxGenome(): # Alternatively: getOptionsBox1()
+        return '__genome__'
 
     @staticmethod
-    def getOptionsBoxSecondKey(prevChoices): # Alternatively: getOptionsBox2()
+    def getOptionsBoxSnp(prevChoices): # Alternatively: getOptionsBox1()
+         if prevChoices.genome or True:
+            #return ('__history__', 'category.bed', 'bed')
+            from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments #for example
+            return ('__history__',) + tuple(getSupportedFileSuffixesForPointsAndSegments())
+            #return '__history__', getSupportedFileSuffixesForPointsAndSegments()
+
+    @staticmethod
+    def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox2()
         '''
         See getOptionsBoxFirstKey().
 
@@ -121,31 +94,20 @@ class TfBindingDisruption(GeneralGuiTool):
         prevChoices[0] for the result of input box 1, or by key, e.g.
         prevChoices.key (case 2).
         '''
-        return ''
+        return ('__history__',)
 
-    #@staticmethod
-    #def getOptionsBox3(prevChoices):
-    #    return ['']
+    @staticmethod
+    def getOptionsBoxMotif(prevChoices): # Alternatively: getOptionsBox2()
+        '''
+        See getOptionsBoxFirstKey().
 
-    #@staticmethod
-    #def getOptionsBox4(prevChoices):
-    #    return ['']
-
-    #@staticmethod
-    #def getInfoForOptionsBoxKey(prevChoices):
-    #    '''
-    #    If not None, defines the string content of an clickable info box beside
-    #    the corresponding input box. HTML is allowed.
-    #    '''
-    #    return None
-    #
-    #@staticmethod
-    #def getDemoSelections():
-    #    return ['testChoice1','..']
-    #
-    #@classmethod
-    #def getExtraHistElements(cls, choices):
-    #    return None
+        prevChoices is a namedtuple of selections made by the user in the
+        previous input boxes (that is, a namedtuple containing only one element
+        in this case). The elements can accessed either by index, e.g.
+        prevChoices[0] for the result of input box 1, or by key, e.g.
+        prevChoices.key (case 2).
+        '''
+        return ('__history__',)
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
@@ -158,7 +120,18 @@ class TfBindingDisruption(GeneralGuiTool):
         (e.g. generated image files). choices is a list of selections made by
         web-user in each options box.
         '''
-        print 'Executing...'
+        """
+        print 'Some debug:'
+        initAnalysis(choices)
+        findMotifBindings()
+        output()
+        """
+        import quick.webtools.article.MutationAffectingGeneRegulation as m
+        analysis = m.MutationAffectingGeneRegulation(choices)
+        html = analysis.presentResults()
+
+        print str(html)
+        #m.run()
 
     @staticmethod
     def validateAndReturnErrors(choices):
@@ -266,14 +239,14 @@ class TfBindingDisruption(GeneralGuiTool):
     #    Specifies whether the debug mode is turned on.
     #    '''
     #    return False
-    #
-    #@staticmethod
-    #def getOutputFormat(choices):
-    #    '''
-    #    The format of the history element with the output of the tool. Note
-    #    that html output shows print statements, but that text-based output
-    #    (e.g. bed) only shows text written to the galaxyFn file.In the latter
-    #    case, all all print statements are redirected to the info field of the
-    #    history item box.
-    #    '''
-    #    return 'html'
+
+    @staticmethod
+    def getOutputFormat(choices):
+        '''
+        The format of the history element with the output of the tool. Note
+        that html output shows print statements, but that text-based output
+        (e.g. bed) only shows text written to the galaxyFn file.In the latter
+        case, all all print statements are redirected to the info field of the
+        history item box.
+        '''
+        return 'customhtml'

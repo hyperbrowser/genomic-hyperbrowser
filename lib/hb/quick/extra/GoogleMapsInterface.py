@@ -652,7 +652,7 @@ return(syms) }'''
         #    f.write('\n'.join(geneUniverse))
         #    f.close()
 
-        from gold.application.RSetup import robjects
+        from proto.RSetup import robjects
 
         html = ''
         for rowOrCol, probes in zip(['cols' if len(colNames) > 1 else 'col', 'rows' if len(rowNames) > 1 else 'row'], \

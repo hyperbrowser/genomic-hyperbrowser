@@ -22,6 +22,7 @@ from gold.track.GenomeRegion import GenomeRegion
 from gold.origdata.GenomeElement import GenomeElement
 from gold.util.CustomExceptions import InvalidFormatError
 
+
 class FastaGenomeElementSource(GenomeElementSource):
     _VERSION = '1.1'
     FILE_SUFFIXES = ['fasta', 'fas', 'fa']

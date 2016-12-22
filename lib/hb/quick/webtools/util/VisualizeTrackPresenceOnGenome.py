@@ -294,7 +294,7 @@ class VisualizeTrackPresenceOnGenome(GeneralGuiTool):
 
     @classmethod
     def customRExecution(cls, res, fn, main):
-        from gold.application.RSetup import r
+        from proto.RSetup import r
         resDictKey = 'Result'
         POINT_SIZE = 12
         LINE_HEIGHT = POINT_SIZE * 1.38

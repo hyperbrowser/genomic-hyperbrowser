@@ -5,18 +5,16 @@ __date__ ="$March 30, 2015$"
 __PythonVersion__= "2.7 [MSC v.1500 32 bit (Intel)]"
 
 import os
-import random
 import sys
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
-sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
 from collections import OrderedDict, namedtuple
+from quick.gsuite.GSuiteHbIntegration import getSubtracksAsGSuite
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-##Search Tools:
 from quick.webtools.imports.EncodeTrackSearchTool import EncodeTrackSearchTool
 from quick.webtools.imports.CGAtlasTrackSearchTool import CGAtlasTrackSearchTool
 from quick.webtools.imports.FANTOM5TrackSearchTool import FANTOM5TrackSearchTool
@@ -26,9 +24,12 @@ from quick.webtools.imports.Epigenome2TrackSearchTool import Epigenome2TrackSear
 from quick.webtools.imports.Epigenome2ImputedTrackSearchTool import Epigenome2ImputedTrackSearchTool
 from quick.webtools.imports.GWASTrackSearchTool import GWASTrackSearchTool
 
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack
-import gold.gsuite.GSuiteUtils as GSuiteUtils
+from gold.application.DataTypes import getSupportedFileSuffixesForGSuite
+from gold.util.RandomUtil import random
+import quick.gsuite.GSuiteUtils as GSuiteUtils
 #import gold.gsuite.GSuiteComposer as GSuiteComposer
 #import gold.gsuite.GSuiteParser as GSuiteParser
 
@@ -123,14 +124,15 @@ class TrackGlobalSearchModule(object):
         return items
 
     def getSourceToolURLParams(self, category, subCategory, source):
-        items = self.getItems(category, subCategory)
+        allItems = self.getItems(category, subCategory)
         sourceTool = None
+        compare = {}
+
         for k,v in self.SOURCE.items():
             if source == v:
                 sourceTool = k
                 break
-        
-        items = [x for x in items if x.sourceTool == sourceTool]
+        items = [x for x in allItems if x.sourceTool == sourceTool]
         
         attr_val_dict = {}
         i = 0
@@ -143,6 +145,13 @@ class TrackGlobalSearchModule(object):
         
         return sourceTool, attr_val_dict
         
+
+    def dataSourceExists(self,source):
+        for key, value in self.SOURCE.items():
+            if source == value:
+                return True
+        return False
+
     def getDataSources(self,items):
         #self.items = []
         #if category != None and subCategory != None:
@@ -156,7 +165,7 @@ class TrackGlobalSearchModule(object):
         for item in items:
             src = item.sourceTool
             #if item.sourceTool in cls.SOURCE.keys():
-            self.sourceCounts[item.sourceTool] = len(self.getRows(item))
+            self.sourceCounts[item.sourceTool] = len(self.getRows(item,filterFileSuffix = True))
 
         self.Rpositories = [self.SOURCE[src]+ ' ['+str(self.sourceCounts[src])+']' for src in self.sourceCounts.keys() if self.sourceCounts[src] > 0]
 
@@ -168,7 +177,7 @@ class TrackGlobalSearchModule(object):
         fileTypesDict = self.DB.getAllFileTypes()
         return [x for x in fileTypesDict.keys()]
 
-    def getDataTypes(self,items,source = 'All Original Tracks'):
+    def getDataTypes(self,items,source = 'All'):
         rows = []
         source = source.strip()
         sourceTool = 'None'
@@ -176,10 +185,10 @@ class TrackGlobalSearchModule(object):
             if source == value:
                 sourceTool = key
         for item in items:
-            if source != 'All Original Tracks' and item.sourceTool != sourceTool:
+            if not 'All' in source and item.sourceTool != sourceTool:
                 continue
             rows.extend(self.getItemDataTypes(item))
-            
+        #print rows
         datatypes = {}
         for row in rows:
             
@@ -189,11 +198,22 @@ class TrackGlobalSearchModule(object):
                 else:
                     datatypes[row[0]] = int(row[1])
             except Exception as ex:
+
                 raise Exception(str(ex)+'----'+str(row))
                 
         return datatypes    
     
-    def getFileTypes(self,items,source = 'All Original Tracks'):
+    def filterRowsByDataTypes(self, rows, dataTypes = []):
+        if len(dataTypes)== 0 or len(dataTypes) == 1 and 'All' in dataTypes[0]:
+            return rows
+        else:
+            fRows = []
+            for row in rows:
+                if self._isValidRowOfDataType(row,dataTypes):
+                    fRows.append(row)
+            return fRows
+
+    def getFileTypes(self,items,source = 'All'):
         rows = []
         source = source.strip()
         sourceTool = 'None'
@@ -205,7 +225,7 @@ class TrackGlobalSearchModule(object):
         #print fileExtList
         fileTypes = []
         for item in items:
-            if source != 'All Original Tracks' and item.sourceTool != sourceTool:
+            if not 'All' in source and item.sourceTool != sourceTool:
                 continue
             #cols, colListString = self.getColListString(item.sourceTable)
             #attribute_col_name = self.DB.getAttributeNameFromReadableName(item.sourceTable,item.toolAttr)
@@ -239,11 +259,12 @@ class TrackGlobalSearchModule(object):
                     fRows.append(row)
             return fRows
 
-    def getTrackFileList(self, category, subCategory, source = 'All Original Tracks', fileTypes = []):
+    #old#def getTrackFileList(self, category, subCategory, source = 'All', fileTypes = []):
+    def getTrackFileList(self, category, subCategory, source = 'All', dataTypes = []):
         fileList = []
 
         if source.find('HyperBrowser') > -1:
-            HBGsuite = GSuiteUtils.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', category, subCategory])
+            HBGsuite = getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', category, subCategory])
             for track in HBGsuite.allTracks():
                 fileList.append((track.title,True))
             return OrderedDict(fileList)
@@ -258,8 +279,9 @@ class TrackGlobalSearchModule(object):
 
         allRows = []
         i = 0
+        htmlDict = {}
         for item in items:
-            if source != 'All Original Tracks' and item.sourceTool != sourceTool:
+            if not 'All' in source and item.sourceTool != sourceTool:
                 continue
 
             try:
@@ -268,11 +290,14 @@ class TrackGlobalSearchModule(object):
                 print item
                 raise e
 
-            selectedRows = self.filterRowsByFileTypes(rows,fileTypes)
+            ##selectedRows = self.filterRowsByFileTypes(rows,fileTypes)
+            selectedRows = self.filterRowsByDataTypes(rows,dataTypes)
             #allRows.extend(selectedRows)
             for row in selectedRows:
                 filename = row[0].split('/')[-1]
                 fileList.append((str(i) + ' - ' + filename,True))
+                htmlDict[filename] = str(HtmlCore().link(filename, row[0]))
+                #fileList.append((str(i) + ' - ' + str(HtmlCore().link(filename, row[0])),True))
                 #fileList.append((str(i) + ' - ' +self.SOURCE[item.sourceTool]+' - '+ filename,True))
                 #fileList.append(('< a href = "'+row[0]+'">' +filename+'</a>',True))
                 i+=1
@@ -281,12 +306,14 @@ class TrackGlobalSearchModule(object):
         #    filename = row[0].split('/')[-1]
         #    fileList.append((str(i) + ' - ' + filename+'\t'+,True))
         #    i+=1
-
+        html = HtmlCore()
+        #return html.tableFromDictionary(htmlDict)
         return OrderedDict(fileList)
     
-    def getGSuite(self, category, subCategory, source = 'All Original Tracks', fileTypes = [], selectedFileIDs = None):
+    #Old#def getGSuite(self, category, subCategory, source = 'All', fileTypes = [], selectedFileIDs = None):
+    def getGSuite(self, category, subCategory, source = 'All', dataTypes = [], filterFileSuffix=False, selectedFileIDs = None):
         if source.find('HyperBrowser') > -1:
-            HBGSuite = GSuiteUtils.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', category, subCategory])
+            HBGSuite = getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', category, subCategory])
             if selectedFileIDs is not None:
                 gSuite = GSuite()
                 for trackTitle,selected in selectedFileIDs.iteritems():
@@ -300,11 +327,44 @@ class TrackGlobalSearchModule(object):
                return HBGSuite
         else:
             items = self.getItems(category,subCategory)
-            gSuite = self.getGSuiteFromItems(items,source,fileTypes,selectedFileIDs)
+            #Old#gSuite = self.getGSuiteFromItems(items,source,fileTypes,selectedFileIDs)
+            gSuite = self.getGSuiteFromItems(items,source,dataTypes,filterFileSuffix,selectedFileIDs)
             return gSuite
 
-    def getGSuiteFromItems(self, items, source = 'All Original Tracks', fileTypes = [], selectedFileIDs = None):
 
+    def getRowsDicts(self, category, subCategory, source = 'All', dataTypes = [], selectedFileIDs = None, filterFileSuffix = False):
+        if source.find('HyperBrowser') > -1:
+            return
+        else:
+            items = self.getItems(category,subCategory)
+            return self.getRowsDictsFromItems(items,source,dataTypes,selectedFileIDs,filterFileSuffix)
+
+    def getRowsDictsFromItems(self, items, source = 'All', dataTypes = [], selectedFileIDs = None, filterFileSuffix = False):
+        source = source.strip()
+        sourceTool = 'None'
+
+        for key, value in self.SOURCE.items():
+            if source == value:
+                sourceTool = key
+        ##return source+'--'+sourceTool
+
+        Rows = []
+        for item in items:
+            if not 'All' in source and item.sourceTool != sourceTool:
+                continue
+
+            cols, colListString = self.getColListString(item.sourceTable)
+            try:
+                rows = self.getRows(item,filterFileSuffix)
+            except Exception as e:
+                print item
+                raise e
+            Rows.extend(self.convertRowsToDicts(cols,self.filterRowsByDataTypes(rows,dataTypes)))
+
+        return Rows
+
+    #Old#def getGSuiteFromItems(self, items, source = 'All', fileTypes = [], selectedFileIDs = None):
+    def getGSuiteFromItems(self, items, source = 'All', dataTypes = [], filterFileSuffix = False, selectedFileIDs = None):
         source = source.strip()
         sourceTool = 'None'
 
@@ -316,18 +376,19 @@ class TrackGlobalSearchModule(object):
         ##return source+'--'+sourceTool
         
         for item in items:
-            if source != 'All Original Tracks' and item.sourceTool != sourceTool:
+            if not 'All' in source and item.sourceTool != sourceTool:
                 continue
 
             #attribute_col_name = self.DB.getAttributeNameFromReadableName(item.sourceTable,item.toolAttr)
             try:
-                Rows = self.getRows(item)
+                Rows = self.getRows(item,filterFileSuffix,False)
             except Exception as e:
                 print item
                 raise e
 
 
-            rows = self.filterRowsByFileTypes(Rows,fileTypes)
+            #Old#rows = self.filterRowsByFileTypes(Rows,fileTypes)
+            rows = self.filterRowsByDataTypes(Rows,dataTypes)
             ##rows = []
             ##if len(fileTypes)== 0:
             ##    rows = allRows
@@ -342,11 +403,12 @@ class TrackGlobalSearchModule(object):
 
         return gSuite
 
-    def getRandomGSuite(self, category, subCategory, source = 'All Original Tracks', fileTypes = [], count = 10, seed = 9001):
-
-        gSuite = self.getGSuite(category,subCategory,source,fileTypes)
+    #old#def getRandomGSuite(self, category, subCategory, source = 'All', fileTypes = [], count = 10, seed = 9001):
+    def getRandomGSuite(self, category, subCategory, source = 'All', dataTypes = [], filterFileSuffix = False, count = 10, seed = 9001):
+        #old#gSuite = self.getGSuite(category,subCategory,source,fileTypes)
+        gSuite = self.getGSuite(category,subCategory,source,dataTypes,filterFileSuffix)
         
-        return gSuite.getRandomGSuite(count)
+        return GSuiteUtils.getRandomGSuite(gSuite, count)
     
         #if source.find('HyperBrowser') > -1:
         #    HBGSuite = GSuiteUtils.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', category, subCategory])
@@ -373,7 +435,7 @@ class TrackGlobalSearchModule(object):
         #
         #for i in range(len(items)):
         #    item = items[i]
-        #    if source != 'All Original Tracks' and item.sourceTool != sourceTool:
+        #    if not 'All' in source and item.sourceTool != sourceTool:
         #        continue
         #    ##if remainingRowsCount < countPerItem:
         #    ##    countPerItem = remainingRowsCount
@@ -440,25 +502,26 @@ class TrackGlobalSearchModule(object):
                 protocol = url.split(':')[0]
                 url = url.replace(protocol+':',self.DOWNLOAD_PROTOCOL+':')
 
-            from gold.gsuite.GSuiteTrack import urlparse
-            parsedUrl = urlparse.urlparse(url)
-
-            sitename = parsedUrl.netloc
-            filepath = parsedUrl.path
-            query = parsedUrl.query
-            #sitename = url.split(':')[1].strip('/').split('/')[0]
-            ###filename = url.split('/')[-1]
-            #filepath = url.split(sitename)[1]
-            suffix = self._getGSuiteTrackSuffix(url)
-            uri = None
-            if url.startswith('ftp:'):
-                uri = FtpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
-            elif url.startswith('http:'):
-                uri = HttpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
-            elif url.startswith('https:'):
-                uri = HttpsGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
-            elif url.startswith('rsync:'):
-                uri = RsyncGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            uri = url
+            # from gold.gsuite.GSuiteTrack import urlparse
+            # parsedUrl = urlparse.urlparse(url)
+            #
+            # sitename = parsedUrl.netloc
+            # filepath = parsedUrl.path
+            # query = parsedUrl.query
+            # #sitename = url.split(':')[1].strip('/').split('/')[0]
+            # ###filename = url.split('/')[-1]
+            # #filepath = url.split(sitename)[1]
+            # suffix = self._getGSuiteTrackSuffix(url)
+            # uri = None
+            # if url.startswith('ftp:'):
+            #     uri = FtpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # elif url.startswith('http:'):
+            #     uri = HttpGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # elif url.startswith('https:'):
+            #     uri = HttpsGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
+            # elif url.startswith('rsync:'):
+            #     uri = RsyncGSuiteTrack.generateURI(netloc=sitename, path=filepath, suffix = suffix, query=query)
 
             attr_val_list = []
             
@@ -486,6 +549,11 @@ class TrackGlobalSearchModule(object):
 
     def _getGSuiteTrackSuffix(self,url):
         return None
+
+    def _isValidRowOfDataType(self,row,dataTypes):
+        datatype = row[1].strip()
+        if datatype in dataTypes:
+            return True
 
     def _isValidRow(self,row,fileTypes):
         url = row[0].strip()
@@ -530,9 +598,15 @@ class TrackGlobalSearchModule(object):
     def getItemDataTypes(self,item):
         cols, colListString = self.getColListString(item.sourceTable)
 
-        WHERE = ''
+        suffixes = getSupportedFileSuffixesForGSuite()
+        WHERE = 'hb_filesuffix in ('
+        for s in suffixes:
+            WHERE += '"'+s+'",'
+        WHERE = WHERE.rstrip(',')+')'
         if item.sourceTableFilter:
-            WHERE = item.sourceTableFilter + ' AND '
+            WHERE += ' AND ' + item.sourceTableFilter + ' AND '
+        else:
+            WHERE += ' AND '
         
         attribute_col_name = self.DB.getAttributeNameFromReadableName(item.sourceTable,item.toolAttr)
         multi_val_rec = item.toolVal
@@ -568,15 +642,36 @@ class TrackGlobalSearchModule(object):
         
         return rows
         
-    def getRows(self, item):
+    def convertRowsToDicts(self,cols,rows):
+        result = []
+        for row in rows:
+            if row == None or len(row)<len(cols):
+               continue
+            rowDict = {}
+            i = 0
+            for col in cols:
+                rowDict[col.strip('"')] = row[i]
+                i+=1
+            result.append(rowDict)
+        return result
+
+    def getRows(self, item, filterFileSuffix = False, asDicts = False):
 
         cols, colListString = self.getColListString(item.sourceTable)
 
         WHERE = ''
+        if filterFileSuffix:
+            suffixes = getSupportedFileSuffixesForGSuite()
+            WHERE = 'hb_filesuffix in ('
+            for s in suffixes:
+                WHERE += '"'+s+'",'
+            WHERE = WHERE.rstrip(',')+') AND '
         if item.sourceTableFilter:
-            WHERE = item.sourceTableFilter + ' AND '
+            WHERE += item.sourceTableFilter + ' AND '
+
         
         attribute_col_name = self.DB.getAttributeNameFromReadableName(item.sourceTable,item.toolAttr)
+
         multi_val_rec = item.toolVal
         multi_val_list = self.DB._db.getWildCardsMatchingValues(item.sourceTable,self.DB._db.correctColumNames([attribute_col_name])[0],multi_val_rec)
         ##This commented-out section if for using regex instead of wild-cards
@@ -597,7 +692,10 @@ class TrackGlobalSearchModule(object):
         query += "WHERE " + WHERE + "ORDER BY "+colListString+";"
 
         try:
-            rows = self.DB._db.runQuery(query)
+            if asDicts:
+                rows = self.DB._db.getRowsDicts(cols,query)
+            else:
+                rows = self.DB._db.runQuery(query)
         except Exception as e:
             print multi_val_list
             print item.sourceTable
@@ -606,7 +704,7 @@ class TrackGlobalSearchModule(object):
             raise e
 
         if len(rows) == 0 or rows == None:
-           return [('EMPTY Result for Query:\n' + query,)]
+            return [('EMPTY Result for Query:\n' + query,)]
 
         return rows
 
@@ -656,6 +754,7 @@ class TrackGlobalSearchModule(object):
         except:
             cols.insert(0, cols.pop(cols.index('"_url"')))
 
+        cols.insert(1,cols.pop(cols.index('"hb_datatype"')))
         for col in cols:
             colListString += col + ','
 

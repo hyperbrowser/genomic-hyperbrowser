@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.3.9: http://docutils.sourceforge.net/" />
+<meta http-equiv="expires" content="Wed, 19 Feb 2003 08:00:00 GMT">
+<title></title>
+<link rel="stylesheet" href="style/welcome.css" type="text/css" />
+
+        <script type="text/javascript" src="scripts/jquery.js"></script>
+
+        <script type="text/javascript">
+            var q = jQuery.noConflict();
+            q(document).ready(function() { 
+                q( "a[minsizehint]" ).click( function() {
+                    if ( parent.handle_minwidth_hint ) {
+                        parent.handle_minwidth_hint( q(this).attr( "minsizehint" ) );
+                    }
+                });
+            });
+        </script>
+        
+</head>
+<body>
+
+
+<div class="section" align="center">
+  <img src="$STATIC_REL_PATH/images/logo/$WELCOME_LOGO_IMAGE" class="center"><br>
+  <img src="$STATIC_REL_PATH/images/logo/$WELCOME_TITLE_IMAGE" class="center"><br>
+</div>
+
+<div class="document">
+
+<div class="noticebox">
+  <h4>Download Source Code</h4>
+  <p>
+  The source code to the Genomic HyperBrowser is available through an online SVN repository.
+  To obtain the latest version, you need to make sure that SVN is installed on your computer.
+  Then, please type the following:
+  </p>
+  
+  <pre>svn co svn://invitro.titan.uio.no/projects/bioinfoprojects/hyperbrowser_dist/trunk hyperbrowser_dist</pre>
+  
+  <p>
+    The Genomic HyperBrowser needs an installation of Galaxy to install on top of. If you do not have an installation,
+  please download one from the <a href='http://usegalaxy.org'>Galaxy web site</a> in a different directory.
+  </p>
+  
+  <p>
+  Follow the installation instructions included with the Genomic HyperBrowser distribution. Please note that
+  the current version ($HB_VERSION) is synchronized against Galaxy version $GALAXY_VERSION, and needs this exact
+  version in order to install.
+  </p>
+  
+  <p>
+  <b>Notice:</b> Currently, the HyperBrowser is synced against a rather old version of Galaxy, with some security patches
+  added. In order to install the correct version of Galaxy, please do the following:
+  <pre>
+  hg clone https://bitbucket.org/galaxy/galaxy-dist/ -u 26920e20157f galaxy-dist-hb
+  cd galaxy-dist-hb
+  hg transplant -b default 115068e
+  wget https://bitbucket.org/galaxy/galaxy-dist/changeset/b5bda7a5c34535ada63722941f2a2d62524b1faa/raw/ -O /tmp/galaxy_patch
+  hg import /tmp/galaxy_patch
+  hg summary
+  </pre>
+  The Galaxy version should now be fa0b5c68d097 as required by HyperBrowser. In the next release of HyperBrowser, the
+  Galaxy integration will be updated to a recent version.
+  </p>
+</div>
+</div>
+</body>
+</html>
