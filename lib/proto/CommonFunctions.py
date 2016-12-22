@@ -237,7 +237,8 @@ def createGalaxyToolURL(toolId, **kwArgs):
             ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
 
 
-def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=None):
+def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=None,
+                              histElementName=None):
     if urlPrefix is None:
         from proto.config.Config import URL_PREFIX
         urlPrefix = URL_PREFIX
@@ -248,7 +249,8 @@ def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=Non
     return urlPrefix + '/tool_runner?tool_id=file_import' + \
                        ('&dbkey=' + genome if genome else '') + \
                        '&runtool_btn=yes&input=' + base64.urlsafe_b64encode(fn) + \
-                       ('&format=' + galaxyDataType if galaxyDataType is not None else '')
+                       ('&format=' + galaxyDataType if galaxyDataType is not None else '') + \
+                       ('&job_name=' + histElementName if histElementName is not None else '')
 
 
 def strWithStdFormatting(val, separateThousands=True, floatFormatFlag='g'):
@@ -294,9 +296,20 @@ def _strIsFloat(s):
         return False
 
 
+def isNan(a):
+    import numpy
+
+    try:
+        return numpy.isnan(a)
+    except (TypeError, NotImplementedError):
+        return False
+
+
 def forceNumericSortingKey(key):
     sortKey1 = 0
     sortKey2 = key
+    if isNan(key):
+        return [sortKey1, sortKey2]
     if _strIsFloat(str(key).replace(THOUSANDS_SEPARATOR, '')):
         sortKey1 = 1
         sortKey2 = float(str(key).replace(THOUSANDS_SEPARATOR, ''))
