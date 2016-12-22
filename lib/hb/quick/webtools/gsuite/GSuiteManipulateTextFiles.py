@@ -27,17 +27,11 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
                                   ('Expand all points and segments equally', 'ExpandBedSegments')
                                   ])
 
-    ALL_PRIVATE_OPERATIONS = dict([('Subsample elements of each track', 'SubsampleTracks'),
+    ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns'),
+                                   ('Subsample elements of each track', 'SubsampleTracks'),
                                    ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),
                                    ('Convert maf to 3-column bed', 'ConvertMafTo3ColBed')
                                   ])
-
-    # ShuffleAndAddColumns has been temporarily removed due to a security hole
-    # ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns'),
-    #                                ('Subsample elements of each track', 'SubsampleTracks'),
-    #                                ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),
-    #                                ('Convert maf to 3-column bed', 'ConvertMafTo3ColBed')
-    #                               ])
 
     ALL_OPERATIONS = OrderedDict(sorted(dict(ALL_PUBLIC_OPERATIONS, **ALL_PRIVATE_OPERATIONS).iteritems())) \
         if IS_EXPERIMENTAL_INSTALLATION else \
