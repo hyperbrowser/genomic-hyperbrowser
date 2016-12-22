@@ -1,6 +1,9 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.gsuite import GSuiteConstants
+from quick.toolguide import ToolGuideConfig
+from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -17,10 +20,9 @@ from quick.webtools.restricted.visualization.visualizationGraphs import visualiz
 from quick.statistic.RawOverlapToSelfStat import RawOverlapToSelfStat
 from gold.track.Track import Track
 
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
 
-class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, UserBinMixin, DebugMixin):
+class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
 
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
@@ -43,23 +45,28 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, UserBinMixi
         '''
         return "Are (points/segments of) certain tracks of one suite coinciding particularly strongly with (all tracks of) another suite?"
 
-
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
+                   ('Basic user mode', 'isBasic'),
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite [rows]', 'gSuiteSecond'),
                ] + \
-               UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     @staticmethod
-    def getOptionsBoxGSuiteFirst():
-        return GeneralGuiTool.getHistorySelectionElement('gsuite', 'txt', 'tabular')
+    def getOptionsBoxIsBasic():
+        return False
+
+    @staticmethod
+    def getOptionsBoxGSuiteFirst(prevChoices):
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @staticmethod
     def getOptionsBoxGSuiteSecond(prevChoices):  # Alternatively: getOptionsBox2()
-        return GeneralGuiTool.getHistorySelectionElement('gsuite', 'txt', 'tabular')
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -247,19 +254,74 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, UserBinMixi
 
         print htmlCore
 
+    def validateAndReturnErrors(cls, choices):
+        '''
+        Should validate the selected input parameters. If the parameters are not
+        valid, an error text explaining the problem should be returned. The GUI
+        then shows this text to the user (if not empty) and greys out the
+        execute button (even if the text is empty). If all parameters are valid,
+        the method should return None, which enables the execute button.
+        '''
+        if not (choices.gSuiteFirst and choices.gSuiteSecond):
+            return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
+
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gSuiteFirst)
+        if errorString:
+            return errorString
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gSuiteSecond)
+        if errorString:
+            return errorString
+
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gSuiteFirst,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuiteFirst)
+        if errorString:
+            return errorString
+
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gSuiteSecond,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuiteSecond)
+        if errorString:
+            return errorString
+
+        errorString = cls._validateGenome(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
+
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+        return [track.trackName for track in gSuiteFirst.allTracks()] + \
+               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):

@@ -1,4 +1,4 @@
-<tool id="ProTo_DetermineSuiteTracksCoincidingWithAnotherSuite" name="Are (points/segments of) certain tracks of one suite coinciding particularly strongly with (all tracks of) another suite?" version="1.0.0"
-  tool_type="proto_generic" proto_tool_module="proto.tools.hyperbrowser.gsuite.DetermineSuiteTracksCoincidingWithAnotherSuite" proto_tool_class="DetermineSuiteTracksCoincidingWithAnotherSuite">
+<tool id="ProTo_DetermineSuiteTracksCoincidingWithAnotherSuite" name="Determine suite tracks coinciding with another suite" version="1.0.0"
+  tool_type="hyperbrowser_generic" proto_tool_module="proto.tools.hyperbrowser.gsuite.DetermineSuiteTracksCoincidingWithAnotherSuite" proto_tool_class="DetermineSuiteTracksCoincidingWithAnotherSuite">
   <description></description>
 </tool>

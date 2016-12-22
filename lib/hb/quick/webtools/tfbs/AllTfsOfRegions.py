@@ -45,15 +45,15 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
     def getToolName():
         return 'Scan transcription factors of a genomic region'
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [('Genome', 'genome'),\
                 ('Genomic Regions Source', 'genomicRegions'),\
                 ('Genomic Regions Tracks', 'genomicRegionsTracks'),\
                 ('TF Source', 'sourceTfs'),\
                 ('TF Source Details', 'sourceTfsDetails'),\
                 ('TF Tracks', 'tfTracks')\
-                ] + UserBinMixin.getUserBinInputBoxNames() + DebugMixin.getInputBoxNamesForDebug()
+                ] + cls.getInputBoxNamesForUserBinSelection() + DebugMixin.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxGenome():

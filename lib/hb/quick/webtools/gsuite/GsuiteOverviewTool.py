@@ -19,8 +19,8 @@ class GsuiteOverviewTool(GeneralGuiTool, UserBinMixin):
         '''
         return "Overview of tracks in GSuite"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -37,7 +37,7 @@ class GsuiteOverviewTool(GeneralGuiTool, UserBinMixin):
 
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return [('Select GSuite','gSuite')] + UserBinMixin.getUserBinInputBoxNames()
+        return [('Select GSuite','gSuite')] + cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -280,14 +280,10 @@ class GsuiteOverviewTool(GeneralGuiTool, UserBinMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return refGSuite.genome
+        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        return gSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        return [track.trackName for track in gSuite.allTracks()]

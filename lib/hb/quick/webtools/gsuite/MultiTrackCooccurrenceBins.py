@@ -13,11 +13,11 @@ from quick.statistic.MultitrackSummarizedInteractionWrapperStat import Multitrac
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
-from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixinForSmallBins
 
 
 class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
-                                 UserBinMixin, DebugMixin):
+                                 UserBinMixinForSmallBins, DebugMixin):
     '''
     This is a template prototyping GUI that comes together with a corresponding
     web page.
@@ -31,10 +31,6 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
 
     Q1 = "Show me a list of all bins and the co-occurence within each bin"
     Q2 = "Show me a list of all bins and the co-occurence within each bin, and also compute a p-value for the highest ranked bin"
-
-    # Override UserbinMixin bin selector to only allow certain choices
-    UserBinMixin.getOptionsBoxCompareIn = lambda self, prevChoises: ['Custom specification', 'Genes(Ensembl)', 'Bins from history'] if prevChoises.genome == "hg19" else ['Custom specification', 'Bins from history']
-    UserBinMixin.getOptionsBoxBinSize = lambda self, prevChoises: "250k" if prevChoises.CompareIn == 'Custom specification' else None
 
 
     @staticmethod
@@ -89,9 +85,8 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
                     [('Select track to track similarity/distance measure', 'similarityFunc'),
                      ('Select how to concatenate the computed statistic over tracks inside a bin: ', 'summaryFunc')] +\
                     [('Select MCFDR sampling depth', 'mcfdrDepth')] +\
-                    [('Choose how to select regions/bins to rank: ','CompareIn'),('Which regions/bins: (comma separated list, * means all)', 'Bins'), ('Genome region: (Example: chr1:1-20m, chr2:10m-) ','CustomRegion'),\
-                            ('Bin size: (* means whole region k=Thousand and m=Million E.g. 100k)', 'BinSize'), ('Bins from history', 'HistoryBins')] +\
-                    DebugMixin.getInputBoxNamesForDebug()
+                    cls.getInputBoxNamesForUserBinSelection() +\
+                    cls.getInputBoxNamesForDebug()
 
 
     @staticmethod
@@ -285,7 +280,7 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
 
 
 
-            regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+            regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
 
             analysisBins = GalaxyInterface._getUserBinSource(regSpec,
                                                              binSpec,
@@ -308,7 +303,7 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         tracks = [Track(x.trackName) for x in gsuite.allTracks()]
 
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
                                                          binSpec,

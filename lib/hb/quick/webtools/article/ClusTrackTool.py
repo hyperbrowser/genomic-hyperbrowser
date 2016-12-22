@@ -66,8 +66,8 @@ class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         return "ClusTrack: Cluster tracks in GSuite based on genome level similarity"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -91,12 +91,11 @@ class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
                 ('Select feature selection option', 'featureSelection'),
                 ('Select pair distance option', 'pairDistOption'),
                 ('Select GSuite (reference tracks)', 'gSuiteRef')
-                ] + UserBinMixin.getUserBinInputBoxNames() + [
+                ] + cls.getInputBoxNamesForUserBinSelection() + [
                 ('Select clustering method', 'clusteringMethod'),
                 ('Select clustering algorithm', 'clusteringAlgorithm'),
                 ('Select clustering option', 'clusteringOption')
-                ]+\
-                DebugMixin.getInputBoxNamesForDebug()
+                ]+cls.getInputBoxNamesForDebug()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -444,22 +443,17 @@ class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
-    
-    
+
+
     @staticmethod
     def _getGenome(choices):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
         return gSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return gSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
-    
+        return [track.trackName for track in gSuite.allTracks()]
     
     @staticmethod
     def getOutputFormat(choices):

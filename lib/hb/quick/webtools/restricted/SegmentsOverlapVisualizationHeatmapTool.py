@@ -64,7 +64,7 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
                 cls.getInputBoxNamesForGenomeSelection() +\
                 [
                 ('Select a color map:', 'colorMapSelectList')
-                ] + UserBinMixin.getUserBinInputBoxNames()
+                ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxIsBasic(): # Alternatively: getOptionsBox1()

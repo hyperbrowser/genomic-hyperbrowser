@@ -70,14 +70,14 @@ class TrackCollectionsAnalysis(GeneralGuiTool, UserBinMixin,
 
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return BasicModeAnalysisInfoMixin.getInputBoxNamesForAnalysisInfo() + \
+        return cls.getInputBoxNamesForAnalysisInfo() + \
                [('Basic user mode', 'isBasic')] + \
                [('Select query GSuite', 'gSuiteFirst'),
                 ('Select reference GSuite', 'gSuiteSecond')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [('Select statistic', 'statistic'),
                 ('Select overlap handling', 'intraOverlap')] + \
-               cls.getUserBinInputBoxNames()
+               cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -372,13 +372,11 @@ class TrackCollectionsAnalysis(GeneralGuiTool, UserBinMixin,
         return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+        return [track.trackName for track in gSuiteFirst.allTracks()] + \
+               [track.trackName for track in gSuiteSecond.allTracks()]
 
     #@staticmethod
     #def getSubToolClasses():

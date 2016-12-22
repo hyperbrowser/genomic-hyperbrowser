@@ -66,12 +66,12 @@ class TrackVsCollectionAnalysisTool(GeneralGuiTool, UserBinMixin,
 #                 BasicModeAnalysisInfo.getInputBoxNamesForAnalysisInfo() +\
 #                 [('Basic mode question id', 'bmQid'),
 #                  ('Analysis info:', 'analysisInfo')] +\
-        return BasicModeAnalysisInfoMixin.getInputBoxNamesForAnalysisInfo() + \
+        return cls.getInputBoxNamesForAnalysisInfo() + \
                [('Basic user mode', 'isBasic')] + \
                [('Select query track from history','targetTrack'),
                 ('Select reference GSuite', 'refTrackCollection')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
-               UserBinMixin.getUserBinInputBoxNames()
+               cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -381,14 +381,10 @@ class TrackVsCollectionAnalysisTool(GeneralGuiTool, UserBinMixin,
         return refGSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         refGSuite = getGSuiteFromGalaxyTN(choices.refTrackCollection)
-        return refGSuite.allTracks().next().trackName
+        return [track.trackName for track in refGSuite.allTracks()]
 
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
-    
     #@staticmethod
     #def getSubToolClasses():
     #    '''

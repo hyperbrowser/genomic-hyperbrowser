@@ -44,8 +44,8 @@ class PilotPageCombinedOverviewOfTracksTool(GeneralGuiTool, UserBinMixin,
         '''
         return "Combined overview of track in GSuite"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -63,8 +63,8 @@ class PilotPageCombinedOverviewOfTracksTool(GeneralGuiTool, UserBinMixin,
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
         return [('Select GSuite', 'gsuite')] + \
-               GenomeMixin.getInputBoxNamesForGenomeSelection() + \
-               UserBinMixin.getUserBinInputBoxNames()
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection()
     
     
     @staticmethod
@@ -144,10 +144,6 @@ class PilotPageCombinedOverviewOfTracksTool(GeneralGuiTool, UserBinMixin,
         return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        return [track.trackName for track in gsuite.allTracks()]

@@ -57,8 +57,8 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         return "Create heatmap over all combinations of tracks from two GSuites"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -85,8 +85,8 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
                 ('Number of sub-clusters for row tracks', 'numClustersRows'),
                 ('Divide column tracks into sub-clusters (separate heatmaps)?', 'divideCols'),
                 ('Number of sub-clusters for column tracks', 'numClustersCols')] + \
-               UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
         
     #@staticmethod
     #def getInputBoxOrder():
@@ -459,15 +459,10 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         return 'customhtml'
 
-    @staticmethod
-    def _getGenome(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.histElement1)
-        return gSuite.genome
+    @classmethod
+    def _getGenome(cls, choices):
+        return cls._getTrackData(choices)[2]
 
-    @staticmethod
-    def _getTrackName1(choices):
-        return None
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    @classmethod
+    def _getTrackNameList(cls, choices):
+        return cls._getTrackData(choices)[1]

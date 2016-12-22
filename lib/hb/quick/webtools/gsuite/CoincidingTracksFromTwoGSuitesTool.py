@@ -78,8 +78,8 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
                 ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
                 ('Remove zero rows from results table', 'removeZeroRow'),
                 ('Remove zero columns from results table', 'removeZeroCol')
-                ] + UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+                ] + cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     # @staticmethod
     # def getInputBoxOrder():
@@ -438,13 +438,11 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.queryGSuite)
-        return gsuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        queryGSuite = getGSuiteFromGalaxyTN(choices.queryGSuite)
+        refGSuite = getGSuiteFromGalaxyTN(choices.refGSuite)
+        return [track.trackName for track in queryGSuite.allTracks()] + \
+               [track.trackName for track in refGSuite.allTracks()]
 
     # @staticmethod
     # def getSubToolClasses():

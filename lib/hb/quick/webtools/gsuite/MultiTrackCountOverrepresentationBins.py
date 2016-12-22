@@ -9,13 +9,13 @@ from quick.statistic.SummarizedWrapperStat import SummarizedWrapperStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
-from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixinForSmallBins
 from quick.statistic.GSuiteBinEnrichmentPValWrapperStat import GSuiteBinEnrichmentPValWrapperStat
 from quick.application.UserBinSource import GlobalBinSource
 
 
 class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
-                                            UserBinMixin, DebugMixin):
+                                            UserBinMixinForSmallBins, DebugMixin):
     '''
     This is a template prototyping GUI that comes together with a corresponding
     web page.
@@ -26,10 +26,6 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
                                   GSuiteConstants.VALUED_SEGMENTS]
     SUMMARY_FUNC_DEFAULT = 'avg'
-
-    # Override UserbinMixin bin selector to only allow certain choices
-    UserBinMixin.getOptionsBoxCompareIn = lambda self, prevChoises: ['Custom specification', 'Genes(Ensembl)', 'Bins from history'] if prevChoises.genome == "hg19" else ['Custom specification', 'Bins from history']
-    UserBinMixin.getOptionsBoxBinSize = lambda self, prevChoises: "250k" if prevChoises.CompareIn == 'Custom specification' else None
 
     Q1 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments"
     Q2 = "Show me a list of all bins and the enrichment within each bin, based on the number of base pairs covered by segments"
@@ -72,9 +68,8 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
                 [('<br><p>Select a GSuite file containing the tracks you want to analyse:</p>', 'gsuite')] +\
                 cls.getInputBoxNamesForGenomeSelection() +\
                 [('', 'summaryFunc')] +\
-                [('<br><p>Choose how to select regions/bins to rank:</p>','CompareIn'),('Which regions/bins: (comma separated list, * means all)', 'Bins'), ('Genome region: (Example: chr1:1-20m, chr2:10m-) ','CustomRegion'),\
-                        ('Bin size: (* means whole region k=Thousand and m=Million E.g. 100k)', 'BinSize'), ('Bins from history', 'HistoryBins')] +\
-                DebugMixin.getInputBoxNamesForDebug()
+                cls.getInputBoxNamesForUserBinSelection() +\
+                cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsBasic():
@@ -225,7 +220,7 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         tracks = [Track(x.trackName) for x in gsuite.allTracks()]
 
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
                                                          binSpec,
@@ -264,7 +259,7 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
             #analysisSpec.addParameter('summaryFunc', summaryFunc)
             gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
             tracks = [Track(x.trackName) for x in gsuite.allTracks()]
-            regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+            regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
             from quick.statistic.GenericRelativeToGlobalStat import GenericRelativeToGlobalStatUnsplittable
             #analysisSpec.addParameter("globalSource", GenericRelativeToGlobalStatUnsplittable.getGlobalSource('test', choices.genome, False))
             analysisSpec.addParameter("globalSource", 'userbins')
@@ -288,8 +283,9 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         tracks = [Track(x.trackName) for x in gsuite.allTracks()]
 
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
+                                                         binSpec,
                                                          choices.genome)
         results = doAnalysis(analysisSpec, analysisBins, tracks)
 

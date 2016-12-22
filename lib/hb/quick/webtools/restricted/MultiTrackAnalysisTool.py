@@ -82,8 +82,8 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
         '''
         return "Analyse relations of tracks in GSuite"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -107,7 +107,7 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
             ('Lower-order relations to preserve in null model','PreserveRelations'),
             ('Track properties to preserve in null model','PreserveProperties'),
             ('Number of MC samples','NumResamplings')
-            ] + UserBinMixin.getUserBinInputBoxNames()
+            ] + cls.getInputBoxNamesForUserBinSelection()
             
             
     @staticmethod
@@ -493,9 +493,6 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
         return gSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        return None
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuite = getGSuiteFromGalaxyTN(choices.histElement)
+        return [track.trackName for track in gSuite.allTracks()]

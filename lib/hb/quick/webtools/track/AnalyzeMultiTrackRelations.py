@@ -16,8 +16,8 @@ class AnalyzeMultiTrackRelations(GeneralGuiTool, MultiTrackMixin, UserBinMixin):
         '''
         return "Analyze relations between multiple tracks"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -32,12 +32,12 @@ class AnalyzeMultiTrackRelations(GeneralGuiTool, MultiTrackMixin, UserBinMixin):
         getOptionsBoxK, where K is either a number in the range of 1 to the
         number of boxes (case 1), or the specified key (case 2).
         '''
-        return MultiTrackMixin.getMultiTrackInputBoxNames() + \
+        return cls.getMultiTrackInputBoxNames() + \
                [('Select analysis', 'Analysis'),
                 ('Lower-order relations to preserve in null model', 'preserveRelations'),
                 ('Track properties to preserve in null model', 'preserveProperties'),
                 ('Number of MC samples', 'numResamplings')] + \
-               UserBinMixin.getUserBinInputBoxNames()
+               cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():

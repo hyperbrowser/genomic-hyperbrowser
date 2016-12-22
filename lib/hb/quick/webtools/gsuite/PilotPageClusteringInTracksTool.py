@@ -136,10 +136,7 @@ class PilotPageClusteringInTracksTool(GeneralGuiTool, GenomeMixin):#(UserBinSele
 #         return refGSuite.genome
 # 
 #     @staticmethod
-#     def _getTrackName1(choices):
+#     def _getTrackNameList(choices):
 #         refGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-#         return refGSuite.allTracks().next().trackName
-# 
-#     @staticmethod
-#     def _getTrackName2(choices):
-#         return None
+#         return [track.trackName for track in refGSuite.allTracks()]
+#

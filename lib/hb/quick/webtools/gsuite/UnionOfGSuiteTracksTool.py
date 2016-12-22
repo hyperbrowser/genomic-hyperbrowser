@@ -264,23 +264,20 @@ class UnionOfGSuiteTracksTool(GeneralGuiTool, GenomeMixin, DebugMixin):
         return choices.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return gsuite.allTracks().next().trackName
+        return [track.trackName for track in gsuite.allTracks()]
 
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    # @staticmethod
+    # def getSubToolClasses():
+    #    '''
+    #    Specifies a list of classes for subtools of the main tool. These
+    #    subtools will be selectable from a selection box at the top of the page.
+    #    The input boxes will change according to which subtool is selected.
+    #    '''
+    #    return None
+    #
 
-        # @staticmethod
-        # def getSubToolClasses():
-        #    '''
-        #    Specifies a list of classes for subtools of the main tool. These
-        #    subtools will be selectable from a selection box at the top of the page.
-        #    The input boxes will change according to which subtool is selected.
-        #    '''
-        #    return None
-        #
     @staticmethod
     def isPublic():
        '''

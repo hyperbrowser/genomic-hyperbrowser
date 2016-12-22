@@ -46,8 +46,8 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         '''
         return "Compute a basic measure for each track in a GSuite"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -66,14 +66,14 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         '''
         return [('Basic user mode', 'isBasic'),
                 ('Select a GSuite:', 'gsuite'),
-                ] + GenomeMixin.getInputBoxNamesForGenomeSelection() + [
+                ] + cls.getInputBoxNamesForGenomeSelection() + [
                    ('Select a measure (descriptive statistic)', 'analysis'),
                    # ('Select parameter', 'paramOne'),
                    ('', 'explainOutput'),
                    ('Select output', 'outputType'),
                    # ('Concatenate the main results as columns to the input GSuite', 'addResults')
-               ] + UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+               ] + cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     # @staticmethod
     # def getInputBoxOrder():

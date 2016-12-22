@@ -16,7 +16,7 @@ class UserBinMixin(object):
     @classmethod
     def _getUserBinRegistrySubCls(cls, prevChoices):
         """
-        Must be overridden by the subclass. A tool should either:
+        May be overridden by the subclass. A tool should then either:
           - subclass one of the existing UserBinMixin variants:
 
               UserBinMixinForDescriptiveStats
@@ -37,7 +37,10 @@ class UserBinMixin(object):
 
             In both cases, one can make use of prevChoices, if needed.
         """
-        raise AbstractClassError()
+        # Default user bin choice selection is for descriptive and
+        # other analyses without position randomization
+        from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
+        return UserBinSourceRegistryForDescriptiveStats
 
     @classmethod
     def getInputBoxNamesForUserBinSelection(cls):
@@ -48,7 +51,7 @@ class UserBinMixin(object):
         @classmethod
         def getUserBinInputBoxNames(cls):
             return [('First choice', 'first') + \
-                    ('Secont choice', 'second')] + \
+                    ('Second choice', 'second')] + \
                     cls.getInputBoxNamesForUserBinSelection()
         """
         cls.setupExtraBoxMethods()
@@ -248,13 +251,15 @@ class UserBinMixin(object):
 
 
 class UserBinMixinForDescriptiveStats(UserBinMixin):
-    @classmethod
-    def _getUserBinRegistrySubCls(cls, prevChoices):
-        from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
-        return UserBinSourceRegistryForDescriptiveStats
+    """
+    To be used for descriptive and other analyses without position randomization
+    """
 
 
 class UserBinMixinForHypothesisTests(UserBinMixin):
+    """
+    To be used for hypothesis tests where positions are randomized on the genome line.
+    """
     @classmethod
     def _getUserBinRegistrySubCls(cls, prevChoices):
         from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
@@ -262,7 +267,35 @@ class UserBinMixinForHypothesisTests(UserBinMixin):
 
 
 class UserBinMixinForExtraction(UserBinMixin):
+    """
+    To be used for track extraction and other manipulation
+    """
     @classmethod
     def _getUserBinRegistrySubCls(cls, prevChoices):
         from quick.application.UserBinManager import UserBinSourceRegistryForExtraction
         return UserBinSourceRegistryForExtraction
+
+
+class UserBinMixinForSmallBins(UserBinMixin):
+    """
+    To be used for analyses that requires small bins
+    """
+    @classmethod
+    def _getUserBinRegistrySubCls(cls, prevChoices):
+        from quick.application.UserBinManager import UserBinSourceRegistry
+
+        class UserBinSourceRegistryForSmallBins(UserBinSourceRegistry):
+            def _getOrderOfUserBinKeysForSelection(self):
+                return ['__custom__', '__genes__', '__history__']
+
+        return UserBinSourceRegistryForSmallBins
+
+    @classmethod
+    def _getOptionBoxBinSpec(cls, prevChoices, index):
+        if index < len(cls.BIN_SPEC_LABELS):
+            if prevChoices.compareIn == cls.BIN_SPEC_NAMES[index]:
+                if prevChoices.compareIn == 'Custom specification':
+                    return '250k'
+                else:
+                    return UserBinMixin._getOptionBoxBinSpec(prevChoices, index)
+

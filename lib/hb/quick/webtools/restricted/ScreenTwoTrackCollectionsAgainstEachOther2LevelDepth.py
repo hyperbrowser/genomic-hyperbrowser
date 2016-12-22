@@ -36,14 +36,14 @@ class ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth\
         '''
         return "Screen Two Track Collections Against Each Other 2 Level Depth"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [('Select track collection GSuite (2 level depth)','gSuiteFirst'),
                 ('Select fetaures track collection GSuite', 'gSuiteSecond'),
                 ('Select statistic type', 'type'),
                 ('Select statistic', 'statistic'),
                 ('Select overlap handling', 'intraOverlap')
-                ] + UserBinMixin.getUserBinInputBoxNames()
+                ] + cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():

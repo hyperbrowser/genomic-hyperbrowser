@@ -579,8 +579,8 @@ class Tool4(GeneralGuiTool, UserBinMixin):
         '''
         return "Track collection vs track collection analysis"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -600,7 +600,7 @@ class Tool4(GeneralGuiTool, UserBinMixin):
         return [('Select first GSuite','gSuiteFirst'),
                 ('Select second GSuite', 'gSuiteSecond'),
                 ('Select statistic', 'statistic')
-                ] + UserBinMixin.getUserBinInputBoxNames()
+                ] + cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():

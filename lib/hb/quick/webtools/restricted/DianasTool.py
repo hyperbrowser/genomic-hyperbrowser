@@ -2708,8 +2708,8 @@ class statGSuite(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
                [
                    ('Select statistic', 'stat')
                ] + \
-               UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxGSuite1():  # refTrack
@@ -2895,8 +2895,8 @@ class analyseDeepGsuiteV2(GeneralGuiTool, UserBinMixin):
         '''
         return "Analyse between two gSuites with any level (js)"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select first GSuite', 'firstGSuite'),
                    ('Test', 'test'),
@@ -2907,7 +2907,7 @@ class analyseDeepGsuiteV2(GeneralGuiTool, UserBinMixin):
                    ('Select statistic type', 'type'),
                    ('Select statistic', 'statistic'),
                    ('Select overlap handling', 'intraOverlap')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxFirstGSuite():
@@ -4366,17 +4366,15 @@ class analyseDeepGsuiteV2(GeneralGuiTool, UserBinMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
+        return firstGSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
+        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
+        return [track.trackName for track in firstGSuite.allTracks()] + \
+               [track.trackName for track in secondGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -4420,8 +4418,8 @@ class analyseDeepGsuite(GeneralGuiTool, UserBinMixin):
         '''
         return "Analyse between two gSuites with any level"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select first GSuite', 'firstGSuite'),
                    #                 ('Test', 'test'),
@@ -4432,7 +4430,7 @@ class analyseDeepGsuite(GeneralGuiTool, UserBinMixin):
                    ('Select statistic type', 'type'),
                    ('Select statistic', 'statistic'),
                    ('Select overlap handling', 'intraOverlap')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxFirstGSuite():
@@ -5280,17 +5278,15 @@ class analyseDeepGsuite(GeneralGuiTool, UserBinMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
+        return firstGSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
+        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
+        return [track.trackName for track in firstGSuite.allTracks()] + \
+               [track.trackName for track in secondGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -5317,11 +5313,11 @@ class geneExpressionMaxValue(GeneralGuiTool, UserBinMixin):
         '''
         return "Gene expression heatmap with option"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -5416,13 +5412,9 @@ class geneExpressionMaxValue(GeneralGuiTool, UserBinMixin):
         return refGSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+        return [track.trackName for track in refGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8186,11 +8178,11 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
         '''
         return "Make ranking for TFs using permutation test"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -8220,13 +8212,9 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
         return refGSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+        return [track.trackName for track in refGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8318,11 +8306,11 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
         '''
         return "Make ranking for TFs using permutation test"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -8352,13 +8340,9 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
         return refGSuite.genome
 
     @staticmethod
-    def _getTrackName1(choices):
+    def _getTrackNameList(choices):
         refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+        return [track.trackName for track in refGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8397,14 +8381,14 @@ class rankingTFtracks(GeneralGuiTool, UserBinMixin):
         '''
         return "Make ranking for all possibilities"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite', 'gSuiteSecond'),
                    ('Select statistic', 'statistic'),
                    ('Select overlap handling', 'intraOverlap')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -8568,17 +8552,15 @@ class rankingTFtracks(GeneralGuiTool, UserBinMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        return gSuiteFirst.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+        return [track.trackName for track in gSuiteFirst.allTracks()] + \
+               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8625,14 +8607,14 @@ class rankingTFtracks3(GeneralGuiTool, UserBinMixin):
         '''
         return "Make TF bp overlapping"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite', 'gSuiteSecond'),
                    ('Select statistic', 'statistic'),
                    ('Select overlap handling', 'intraOverlap')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -8796,17 +8778,15 @@ class rankingTFtracks3(GeneralGuiTool, UserBinMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        return gSuiteFirst.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+        return [track.trackName for track in gSuiteFirst.allTracks()] + \
+               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8853,14 +8833,14 @@ class miRNAPrecursors(GeneralGuiTool, UserBinMixin):
         '''
         return "Screen two track collections (precursors)"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite', 'gSuiteSecond'),
                    ('Select statistic', 'statistic'),
                    ('Select overlap handling', 'intraOverlap')
-               ] + UserBinMixin.getUserBinInputBoxNames()
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -8979,17 +8959,15 @@ class miRNAPrecursors(GeneralGuiTool, UserBinMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        return gSuiteFirst.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+        return [track.trackName for track in gSuiteFirst.allTracks()] + \
+               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -16416,14 +16394,14 @@ class driverGeneIdentification(GeneralGuiTool, UserBinMixin, DebugMixin):
         '''
         return "Identification of genomic elements with high event recurrence "
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         return [
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite [rows]', 'gSuiteSecond'),
                ] + \
-               UserBinMixin.getUserBinInputBoxNames() + \
-               DebugMixin.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxGSuiteFirst():
@@ -16644,17 +16622,15 @@ class driverGeneIdentification(GeneralGuiTool, UserBinMixin, DebugMixin):
 
     @staticmethod
     def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        return gSuiteFirst.genome
 
     @staticmethod
-    def _getTrackName1(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.allTracks().next().trackName
-
-    @staticmethod
-    def _getTrackName2(choices):
-        return None
+    def _getTrackNameList(choices):
+        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
+        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
+        return [track.trackName for track in gSuiteFirst.allTracks()] + \
+               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
