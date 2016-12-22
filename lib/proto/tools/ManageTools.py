@@ -79,7 +79,7 @@ def getProtoToolList(except_class_names=[]):
     for fn in pys:
         with open(fn) as f:
             for line in f:
-                m = re.match(r'class +(\w+) *\((\w+)\)', line)
+                m = re.match(r'class +(\w+) *\(([\w ,]+)\)', line)
                 if m:
                     class_name = m.group(1)
                     module_name = os.path.splitext(os.path.relpath(os.path.abspath(fn), SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
@@ -314,23 +314,30 @@ class InstallToolsTool(GeneralGuiTool):
         
         toolConf.write()
 
-        print '''
-        <script type="text/javascript">
-            $().ready(function() {
-                $("#reload_toolbox").click(function(){
-                    $.ajax({
-                    url: "/api/configuration/toolbox",
-                    type: 'PUT'
-                    }).done(function() {
-                            top.location.reload();
-                        }
-                    );
-                });
-            });
-        </script>
-        '''
-        print '<a id="reload_toolbox" href="#">Reload toolbox/menu</a>'
-        print '<pre>' + escape(xml) + '</pre>' + '<pre>' + escape(tool_xml) + '</pre>'
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+
+        extraJavaScriptCode = '''
+                <script type="text/javascript">
+                    $().ready(function() {
+                        $("#reload_toolbox").click(function(){
+                            $.ajax({
+                            url: "/api/configuration/toolbox",
+                            type: 'PUT'
+                            }).done(function() {
+                                    top.location.reload();
+                                }
+                            );
+                        });
+                    });
+                </script>
+                '''
+        core.begin(extraJavaScriptCode=extraJavaScriptCode)
+        core.link('Reload toolbox/menu', url='#', args='id="reload_toolbox"')
+        core.preformatted(escape(xml))
+        core.preformatted(escape(tool_xml))
+        core.end()
+        print>>open(galaxyFn, 'w'), core
 
     @staticmethod
     def getToolDescription():
@@ -388,6 +395,10 @@ class InstallToolsTool(GeneralGuiTool):
                              "This corresponds to the first level in the"
                              "tool hierarchy.", emphasize=True)
         return str(core)
+
+    @staticmethod
+    def getOutputFormat(choices):
+        return 'customhtml'
 
 
 class GenerateToolsTool(GeneralGuiTool):

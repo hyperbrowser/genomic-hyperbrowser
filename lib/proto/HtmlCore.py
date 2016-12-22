@@ -124,6 +124,10 @@ class HtmlCore(TableCoreMixin):
         self._str += '<i>' + text + '</i>'
         return self
 
+    def preformatted(self, text):
+        self._str += '<pre>' + text + '</pre>'
+        return self
+
     def tableHeader(self, headerRow, tagRow=None, firstRow=True, sortable=False,
                     tableId=None, tableClass='colored bordered', headerClass='header',
                     style='table-layout:auto;word-wrap:break-word;', **kwargs):
