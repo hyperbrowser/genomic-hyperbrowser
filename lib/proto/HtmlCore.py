@@ -237,7 +237,7 @@ class HtmlCore(TableCoreMixin):
     def unorderedList(self, strList):
         self._str += '<ul>'
         for s in strList:
-            self._str += '<li> %s' % s
+            self._str += '<li> %s </li>' % s
         self._str += '</ul>'
         return self
 
