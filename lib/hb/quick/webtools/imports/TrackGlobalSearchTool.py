@@ -499,7 +499,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
 
     @classmethod
     def getOutputName(cls, choices):
-        if choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1:
+        if choices.downloadAndPreprocess == 'Yes':  # and choices.source.find('HyperBrowser') == -1:
             return getGSuiteHistoryOutputName('progress', choices.subCategory)
         else:
             return getGSuiteHistoryOutputName('primary', choices.subCategory)
@@ -547,7 +547,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
 
     @staticmethod
     def getOutputFormat(choices):
-        if choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1:
+        if choices.downloadAndPreprocess == 'Yes':  # and choices.source.find('HyperBrowser') == -1:
             return 'customhtml'
         else:
             return 'gsuite'
