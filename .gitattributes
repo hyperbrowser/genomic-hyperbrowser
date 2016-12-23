@@ -1,2 +1,0 @@
-lib/hb/data/TestGenome.tar.gz filter=lfs diff=lfs merge=lfs -text
-lib/hb/data/trackaccess/imports.db filter=lfs diff=lfs merge=lfs -text
