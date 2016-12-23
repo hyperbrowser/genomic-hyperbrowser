@@ -88,8 +88,8 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
             for refTrack in refGSuite.allTracks():
                 refTrackName = refTrack.title
                 if targetTrack.trackName == refTrack.trackName:
-                    print targetTrack.title
-                    print targetTrack.trackName
+                    # print targetTrack.title
+                    # print targetTrack.trackName
                     result = DetermineSuiteTracksCoincidingWithAnotherSuite.handleSameTrack(targetTrack.trackName, regSpec, binSpec,
                                                                       targetGSuite.genome, galaxyFn)
                 else:

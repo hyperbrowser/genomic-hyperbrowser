@@ -12,7 +12,7 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Concatenate two GSuites"
+        return "Concatenate two or more GSuites"
 
     @classmethod
     def getInputBoxNames(cls):
