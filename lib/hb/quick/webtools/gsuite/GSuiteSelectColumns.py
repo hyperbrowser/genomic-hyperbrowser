@@ -184,6 +184,12 @@ class GSuiteSelectColumns(GeneralGuiTool):
         if not choices.selectColumns is None and len(choices.selectColumns) == 0:
             return 'GSuite file contains only standard columns'
 
+    @classmethod
+    def getOutputName(cls, choices):
+        if choices.history:
+            from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+            return getGSuiteHistoryOutputName('same', ', subset of columns', choices.history)
+
     #@staticmethod
     #def getSubToolClasses():
     #    '''

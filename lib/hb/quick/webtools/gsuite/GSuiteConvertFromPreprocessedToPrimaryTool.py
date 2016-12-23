@@ -5,6 +5,7 @@ from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteConstants
 from gold.origdata.FileFormatComposer import getComposerClsFromFileSuffix
 from quick.extra.TrackExtractor import TrackExtractor
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -256,10 +257,11 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
         from quick.webtools.GeneralGuiTool import HistElement
         histList = []
         histList.append(
-            HistElement(cls.HISTORY_PROGRESS_TITLE, cls.HISTORY_PROGRESS_SUFFIX))
+            HistElement(getGSuiteHistoryOutputName('primary', datasetInfo=choices.gsuite),
+                                                   GSuiteConstants.GSUITE_SUFFIX))
         histList.append(
-            HistElement(cls.HISTORY_HIDDEN_TRACK_STORAGE,
-                        GSuiteConstants.GSUITE_STORAGE_SUFFIX, hidden=True))
+            HistElement(getGSuiteHistoryOutputName('storage', datasetInfo=choices.gsuite),
+                                                   GSuiteConstants.GSUITE_SUFFIX, hidden=True))
         return histList
 
     @classmethod
@@ -285,11 +287,12 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
         fullGenomeBins = GlobalBinSource(genome)
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        progressViewer = ProgressViewer([(cls.PROGRESS_PROCESS_DESCRIPTION, len(gSuite))],
-                                        cls.extraGalaxyFn[cls.HISTORY_PROGRESS_TITLE])
+        progressViewer = ProgressViewer(
+            [(cls.PROGRESS_PROCESS_DESCRIPTION, len(gSuite))], galaxyFn)
 
         outGSuite = GSuite()
-        hiddenStorageFn = cls.extraGalaxyFn[cls.HISTORY_HIDDEN_TRACK_STORAGE]
+        hiddenStorageFn = cls.extraGalaxyFn[
+            getGSuiteHistoryOutputName('storage', datasetInfo=choices.gsuite)]
 
         fileNameSet = set()
         for track in gSuite.allTracks():
@@ -316,7 +319,9 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
             outGSuite.addTrack(gSuiteTrack)
             progressViewer.update()
 
-        GSuiteComposer.composeToFile(outGSuite, galaxyFn)
+        primaryFn = cls.extraGalaxyFn[
+            getGSuiteHistoryOutputName('primary', datasetInfo=choices.gsuite)]
+        GSuiteComposer.composeToFile(outGSuite, primaryFn)
 
     @staticmethod
     def _getUniqueFileName(fileNameSet, trackName):
@@ -382,6 +387,10 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
             gSuite, minSize=cls.GSUITE_MIN_TRACK_COUNT)
         if errorString:
             return errorString
+
+    @classmethod
+    def getOutputName(cls, choices):
+        return getGSuiteHistoryOutputName('progress', datasetInfo=choices.gsuite)
 
     #@staticmethod
     #def getSubToolClasses():
@@ -495,8 +504,8 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
     #    '''
     #    return False
 
-    @staticmethod
-    def getOutputFormat(choices):
+    @classmethod
+    def getOutputFormat(cls, choices):
        '''
        The format of the history element with the output of the tool. Note
        that html output shows print statements, but that text-based output
@@ -504,4 +513,4 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
        case, all all print statements are redirected to the info field of the
        history item box.
        '''
-       return GSuiteConstants.GSUITE_SUFFIX
+       return cls.HISTORY_PROGRESS_SUFFIX

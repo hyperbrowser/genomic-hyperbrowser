@@ -1,13 +1,12 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.util.CustomExceptions import ShouldNotOccurError
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
 class CompileGSuiteFromArchiveTool(GeneralGuiTool):
-    HISTORY_PROGRESS_TITLE = 'Progress'
-    HISTORY_HIDDEN_TRACK_STORAGE = 'GSuite track storage'
-
     @staticmethod
     def getToolName():
         '''
@@ -153,14 +152,16 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
     @classmethod
     def getExtraHistElements(cls, choices):
         from quick.webtools.GeneralGuiTool import HistElement
-        from gold.gsuite.GSuiteConstants import GSUITE_STORAGE_SUFFIX
-        
-        fileList = [HistElement(cls.HISTORY_PROGRESS_TITLE, 'customhtml')]
+        from gold.gsuite.GSuiteConstants import GSUITE_STORAGE_SUFFIX, GSUITE_SUFFIX
 
-        if choices.archive:
+        desc = cls._getOutputHistoryDescription(choices)
+        fileList = [HistElement(getGSuiteHistoryOutputName('primary', desc), GSUITE_SUFFIX),
+                    HistElement(getGSuiteHistoryOutputName('storage', desc),
+                                    GSUITE_STORAGE_SUFFIX, hidden=True)]
+
+        # if choices.archive:
             #for archivedFile in cls._getArchiveReader(choices):
             #    fileList.append( HistElement(archivedFile.title, archivedFile.suffix, hidden=True) )
-            fileList.append( HistElement(cls.HISTORY_HIDDEN_TRACK_STORAGE, GSUITE_STORAGE_SUFFIX, hidden=True))
 
         return fileList
 
@@ -189,18 +190,19 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
         archive = cls._getArchiveReader(choices)
         trackCount = sum(1 for file in archive)
 
-        progressViewer = ProgressViewer([('Extract tracks', trackCount)],
-                                         cls.extraGalaxyFn[cls.HISTORY_PROGRESS_TITLE] )
+        desc = cls._getOutputHistoryDescription(choices)
+        progressViewer = ProgressViewer([('Extract tracks', trackCount)], galaxyFn)
 
         storeHierarchy = choices.storeHierarchy == 'Yes'
-        hiddenStorageFn = cls.extraGalaxyFn[cls.HISTORY_HIDDEN_TRACK_STORAGE]
+        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', desc)]
         archiveToGSuiteTrackIter = \
             ArchiveToGalaxyGSuiteTrackIterator(archive, hiddenStorageFn, storeHierarchy)
         writeGSuiteHiddenTrackStorageHtml(hiddenStorageFn)
 
         gSuite = convertArchiveToGSuite(archiveToGSuiteTrackIter, progressViewer)
 
-        GSuiteComposer.composeToFile(gSuite, galaxyFn)
+        GSuiteComposer.composeToFile(gSuite,
+            cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', desc)])
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -214,6 +216,17 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
 
         if not choices.archive:
             return 'Please select an archive file in your history with file type "gsuite.tar" or "gsuite.zip"'
+
+    @classmethod
+    def _getOutputHistoryDescription(cls, choices):
+        from proto.CommonFunctions import extractNameFromDatasetInfo
+        return 'extracted from archive: ' + extractNameFromDatasetInfo(choices.archive)
+
+    @classmethod
+    def getOutputName(cls, choices):
+        if choices.archive:
+            description = cls._getOutputHistoryDescription(choices)
+            return getGSuiteHistoryOutputName('progress', description)
 
     #@staticmethod
     #def getSubToolClasses():
@@ -320,4 +333,4 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
         case, all all print statements are redirected to the info field of the
         history item box.
         '''
-        return 'gsuite'
+        return 'customhtml'

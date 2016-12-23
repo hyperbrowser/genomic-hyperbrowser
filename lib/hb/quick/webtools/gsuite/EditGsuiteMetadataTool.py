@@ -249,6 +249,12 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         # if errorString:
         #     return errorString
 
+    @classmethod
+    def getOutputName(cls, choices):
+        if choices.gsuite:
+            from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+            return getGSuiteHistoryOutputName('same', ', metadata edited', choices.gsuite)
+
 
     #@staticmethod
     #def getSubToolClasses():

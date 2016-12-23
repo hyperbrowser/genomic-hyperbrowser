@@ -1186,7 +1186,36 @@ class TrackSearchTool(GeneralGuiTool):
         except Exception as e:
             return str(e) + 'You need to select at least one attribute'
 
+    @classmethod
+    def _getAttrSelectionDescription(cls, choices):
+        # Note: Copy-paste of code here is due to previous lack of refactoring from
+        # the tool author. It does not look pretty.
+        vals = []
+        for i in xrange(len(cls.ATTRIBUTES)):
+            rep_val = getattr(choices, 'valueList%s' % i)
+            if rep_val is None:
+                continue
 
+            if getattr(choices, 'multiSelect%s' % i) in ['Multiple Selection',
+                                                         'Text Search']:  # type(rep_val) is OrderedDict:
+                selected_vals = [x for x, selected in rep_val.iteritems() if selected]
+                if len(selected_vals) == 0:
+                    continue
+                vals.append(cls._getAttributeValueNameFromReadableName(selected_vals[0])[1] +
+                            ' + %s more' % (len(selected_vals) - 1) if len(
+                    selected_vals) > 1 else '')
+            elif getattr(choices, 'multiSelect%s' % i) == 'Single Selection':
+                if rep_val in [cls.SELECT_CHOICE, cls.RANGE_CHOICE, None, '']:
+                    continue
+                vals.append(cls._getAttributeValueNameFromReadableName(rep_val)[1])
+        return ', '.join(vals)
+
+    @classmethod
+    def getOutputName(cls, choices):
+        from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+
+        description = cls._getAttrSelectionDescription(choices)
+        return getGSuiteHistoryOutputName('remote', description)
 
     #@staticmethod
     #def getSubToolClasses():

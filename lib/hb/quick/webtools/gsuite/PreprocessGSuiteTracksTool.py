@@ -1,4 +1,5 @@
 import gold.gsuite.GSuiteConstants as GSuiteConstants
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
@@ -12,9 +13,6 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
     ALLOW_GENOME_OVERRIDE = True
     ALLOW_MULTIPLE_GENOMES = True
     WHAT_GENOME_IS_USED_FOR = 'preprocessing'
-
-    ERROR_HISTORY_TITLE = 'GSuite - files that failed preprocessing (select in "Preprocess tracks in GSuite" to retry)'
-    HISTORY_PROGRESS_TITLE = 'Progress'
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PRIMARY]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
@@ -149,8 +147,10 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
     @classmethod
     def getExtraHistElements(cls, choices):
         from quick.webtools.GeneralGuiTool import HistElement
-        return [HistElement(cls.ERROR_HISTORY_TITLE, 'gsuite'),
-                HistElement(cls.HISTORY_PROGRESS_TITLE, 'customhtml')]
+        return [HistElement(getGSuiteHistoryOutputName(
+                    'nopreprocessed', datasetInfo=choices.history), 'gsuite'),
+                HistElement(getGSuiteHistoryOutputName(
+                    'preprocessed', datasetInfo=choices.history), 'gsuite')]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -173,8 +173,8 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
         if choices.genome != inGSuite.genome:
             inGSuite.setGenomeOfAllTracks(choices.genome)
 
-        progressViewer = ProgressViewer([('Preprocess tracks', inGSuite.numTracks())],
-                                         cls.extraGalaxyFn[cls.HISTORY_PROGRESS_TITLE] )
+        progressViewer = ProgressViewer(
+            [('Preprocess tracks', inGSuite.numTracks())], galaxyFn)
 
         gSuitePreprocessor = GSuitePreprocessor()
         outGSuite, errorGSuite = gSuitePreprocessor.visitAllGSuiteTracksAndReturnOutputAndErrorGSuites\
@@ -182,8 +182,13 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
 
         #outGSuite, errorGSuite = inGSuite.preProcessAllLocalTracksAndReturnOutputAndErrorGSuites()
 
-        GSuiteComposer.composeToFile(outGSuite, galaxyFn)
-        GSuiteComposer.composeToFile(errorGSuite, cls.extraGalaxyFn[cls.ERROR_HISTORY_TITLE])
+        nopreprocFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName(
+            'nopreprocessed', datasetInfo=choices.history)]
+        GSuiteComposer.composeToFile(errorGSuite, nopreprocFn)
+
+        preprocFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName(
+            'preprocessed', datasetInfo=choices.history)]
+        GSuiteComposer.composeToFile(outGSuite, preprocFn)
 
 
     @classmethod
@@ -218,6 +223,10 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
         
         if errorStr:
             return errorStr
+
+    @classmethod
+    def getOutputName(cls, choices):
+        return getGSuiteHistoryOutputName('progress', datasetInfo=choices.history)
 
     #@staticmethod
     #def getSubToolClasses():
@@ -352,4 +361,4 @@ class PreprocessGSuiteTracksTool(GeneralGuiTool, GenomeMixin):
         case, all all print statements are redirected to the info field of the
         history item box.
         '''
-        return 'gsuite'
+        return 'customhtml'

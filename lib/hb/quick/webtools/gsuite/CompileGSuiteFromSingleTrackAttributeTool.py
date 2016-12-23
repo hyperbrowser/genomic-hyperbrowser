@@ -17,8 +17,6 @@ class CompileGSuiteFromSingleTrackAttributeTool(GeneralGuiTool):
     GSUITE_OUTPUT_FILE_FORMAT = GSuiteConstants.PRIMARY
     GSUITE_OUTPUT_TRACK_TYPE = GSuiteConstants.SEGMENTS
 
-    HISTORY_HIDDEN_TRACK_STORAGE = 'GSuite track storage'
-
     UNSUPPORTED_ATTRS = ['start', 'end', 'edges', 'weights']
     
     SHOW_STATISTICS_CHOICE_NO = 'No'
@@ -265,6 +263,15 @@ class CompileGSuiteFromSingleTrackAttributeTool(GeneralGuiTool):
         if trackFormat.isDense():
             return 'The track format of the selected track file is: %s' % trackFormat.getFormatName() +\
                    ' This tool only supports track types Points, Segments, or variations of these.'
+
+    @classmethod
+    def getOutputName(cls, choices):
+        if choices.track:
+            from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+
+            description = ', splitted on column: %s' % choices.attr
+
+            return getGSuiteHistoryOutputName('primary', description, choices.track)
 
     #@staticmethod
     #def getSubToolClasses():

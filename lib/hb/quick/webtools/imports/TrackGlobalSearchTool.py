@@ -11,16 +11,11 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.extra.ProgressViewer import ProgressViewer
 from quick.trackaccess.TrackGlobalSearchModule import TrackGlobalSearchModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 
 VocabularyElement = namedtuple('VocabularyElement', ('category', 'subCategory','sourceTool','sourceTable','toolAttr','toolVal'))
 
 class TrackGlobalSearchTool(GeneralGuiTool):
-    ERROR_HISTORY_TITLE_DOWNLOAD = 'GSuite - files that failed to download (select in "Fetch remote GSuite datasets" to retry)'
-    ERROR_HISTORY_TITLE_PREPROCESS = 'GSuite - files that failed preprocessing (select in "Preprocess tracks in GSuite" to retry)'
-    HISTORY_PROGRESS_TITLE = 'Progress'
-    HISTORY_HIDDEN_TRACK_STORAGE = 'GSuite track storage'
-    PRIMARY_GSUITE_TITLE = 'GSuite - downloaded files'
-    REMOTE_GSUITE_TITLE = 'GSuite - remote files'
     RESULT_COLS = ['hb_datatype','hb_cell_tissue_type','hb_target','hb_genomebuild','hb_filesuffix']
     RESULT_COLS_HEADER = ['Type of data','Cell/Tissue type','Target','Genome build','File suffix']
 
@@ -349,84 +344,57 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     def getOptionsBoxHistoryElementsInfo(cls,prevChoices):
         if not prevChoices.dataType:
             return
-        string = """<div style="border:1px solid black;background-color: #FFEC33; margin-left: 20px;
-        margin-right: 20px; padding-bottom: 8px; padding-left: 8px;padding-right: 8px; padding-top: 8px;">
-        This tool will create six history elements (one of which is hidden):
-          <ul>
-            <li>Progress: click the eye icon of this element to show theprogress of the import</li>
-            <li>GSuite ("""+prevChoices.subCategory+""") - ready for analysis: use this in the analysis tool of choice</li>
-            <li>GSuite ("""+prevChoices.subCategory+""") - ready for manipulation: use this if you need to manipulate the raw track data using a manipulation tool. The GSuite resulting from manipulation needs to be preprocessed before analysis</li>
-            <li>GSuite ("""+prevChoices.subCategory+""") - files that failed to download (select in "Fetch remote GSuite datasets" to retry): in some cases the downloading of tracks fails, but might work if one tries again</li>
-            <li>GSuite ("""+prevChoices.subCategory+""") - files that failed preprocessing (select in "Preprocess tracks in GSuite" to retry): preprocessing fails due to some issues with the track data. Some manipulation is probably needed before one tries preprocessing again</li>
-            <li>GSuite ("""+prevChoices.subCategory+""") - track storage: hidden history elements containing the actual track data. Should in most cases be ignored</li>
-        </ul>
-        """
-        return '__rawstr__', string
+
+        desc = prevChoices.subCategory
+
+        core = HtmlCore()
+        core.styleInfoBegin(styleClass='infomessagesmall')
+        core.paragraph('This tool will create seven history elements (one of which is hidden):')
+        descriptionList = \
+            [('%s' % getGSuiteHistoryOutputName('storage', desc),
+              'hidden history element containing the actual downloaded track data. Should '
+              'in most cases be ignored'),
+             ('%s' % getGSuiteHistoryOutputName('preprocessed', desc),
+              'use this in the analysis tool of choice'),
+             ('%s' % getGSuiteHistoryOutputName('nopreprocessed', desc),
+              'preprocessing fails due to some issues with the track data. Some '
+              'manipulation is probably needed before one tries preprocessing again'),
+             ('%s' % getGSuiteHistoryOutputName('primary', desc),
+              'use this if you need to manipulate the raw track data using a manipulation '
+              'tool. The GSuite resulting from manipulation needs to be preprocessed '
+              'before analysis'),
+             ('%s' % getGSuiteHistoryOutputName('nodownload', desc),
+              'in some cases the downloading of tracks fails, but might work if one tries again'),
+             ('%s' % getGSuiteHistoryOutputName('remote', desc),
+              'this refers to the original files available at a remote server. Use this '
+              'if one for some reason needs to re-download all the tracks'),
+             ('%s' % getGSuiteHistoryOutputName('progress', desc),
+              'click the eye icon of this element to show the progress of the import')]
+        for label, description in descriptionList:
+            core.descriptionLine(label, description)
+        core.styleInfoEnd()
+
+        return '__rawstr__', str(core)
 
     @classmethod
     def getExtraHistElements(cls, choices):
         from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, GSUITE_STORAGE_SUFFIX
         fileList = []
 
-        if choices.outputType and choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1 and choices.transfer != 'Yes':
+        if choices.outputType and choices.downloadAndPreprocess == 'Yes' and \
+                choices.source.find('HyperBrowser') == -1 and \
+                choices.transfer != 'Yes':
             from quick.webtools.GeneralGuiTool import HistElement
-            fileList.append(HistElement(cls.REMOTE_GSUITE_TITLE, GSUITE_SUFFIX, 'Testing label'))
-            fileList += [HistElement(cls.ERROR_HISTORY_TITLE_DOWNLOAD, GSUITE_SUFFIX)]
-            fileList.append(HistElement(cls.PRIMARY_GSUITE_TITLE, GSUITE_SUFFIX))
-            fileList += [HistElement(cls.ERROR_HISTORY_TITLE_PREPROCESS, GSUITE_SUFFIX)]
-            fileList += [HistElement(cls.HISTORY_PROGRESS_TITLE, 'customhtml')]
+            desc = choices.subCategory
 
-
-            #if choices.source.find('HyperBrowser') > -1:
-            #    gSuite = GSuiteUtils.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', choices.search, choices.subCategory])
-            #    for track in gSuite.allTracks():
-            #        #from gold.gsuite.GSuiteDownloader import getTitleAndSuffixWithCompressionSuffixesRemoved
-            #        #title, suffix = getTitleAndSuffixWithCompressionSuffixesRemoved(track)
-            #
-            #        fileList.append( HistElement(track.title, 'HB', hidden=True) )
-            #else:
-            remoteGSuite = None
-            #try:
-            gsm = TrackGlobalSearchModule(cls.useSqlite)
-            #items = gsm.getItems(choices.search,choices.subCategory)
-            source = choices.source.split('[')[0].strip()
-            # # allFileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems()]
-            # # fileTypes = [x.split('[')[0] for x,selected in prevChoices.filetype.iteritems() if selected]
-            ##allDataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems()]
-            #dataTypes = [x.split('[')[0].strip() for x,selected in choices.dataType.iteritems() if selected]
-            dataTypes = [choices.dataType.split('[')[0].strip()]
-
-            ##Was made to speadup so that there will be no filetype comparisons,
-            ##but deactivated for now since there is hardcoded filtering in
-            ##prevChoices.fileType
-            #if len(allFileTypes) == len(fileTypes):
-            #    fileTypes = []
-
-            if 'all tracks' in choices.outputType:
-                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,dataTypes,filterFileSuffix = True)
-            elif choices.outputType == 'Select tracks manually':
-                remoteGSuite = gsm.getGSuite(choices.search,choices.subCategory,source,dataTypes,\
-                                             filterFileSuffix = True,selectedFileIDs = choices.results)
-            elif choices.outputType == 'Select 10 random tracks':
-                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,dataTypes,\
-                                                   filterFileSuffix = True,count = 10)
-            elif choices.outputType == 'Select 50 random tracks':
-                remoteGSuite = gsm.getRandomGSuite(choices.search,choices.subCategory,source,dataTypes,\
-                                                   filterFileSuffix = True,count = 50)
-            else:
-                return []
-
-            #for track in remoteGSuite.allTracks():
-            #    from gold.gsuite.GSuiteDownloader import getTitleAndSuffixWithCompressionSuffixesRemoved
-            #    title, suffix = getTitleAndSuffixWithCompressionSuffixesRemoved(track)
-            #
-            #    fileList.append( HistElement(title, suffix, hidden=True) )
-
-            fileList.append( HistElement(cls.HISTORY_HIDDEN_TRACK_STORAGE, GSUITE_STORAGE_SUFFIX, hidden=True))
-
-            #
-            #except:
-            #    pass
+            fileList += \
+                [HistElement(getGSuiteHistoryOutputName('remote', desc), GSUITE_SUFFIX),
+                 HistElement(getGSuiteHistoryOutputName('nodownload', desc), GSUITE_SUFFIX),
+                 HistElement(getGSuiteHistoryOutputName('primary', desc), GSUITE_SUFFIX),
+                 HistElement(getGSuiteHistoryOutputName('nopreprocessed', desc), GSUITE_SUFFIX),
+                 HistElement(getGSuiteHistoryOutputName('preprocessed', desc), GSUITE_SUFFIX),
+                 HistElement(getGSuiteHistoryOutputName('storage', desc), GSUITE_STORAGE_SUFFIX,
+                                                        hidden=True)]
 
         return fileList
 
@@ -437,6 +405,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         source = choices.source.split('[')[0].strip()
         fileTypes = []
         gsm = TrackGlobalSearchModule(cls.useSqlite)
+        desc = choices.subCategory
         
         if choices.source.find('HyperBrowser') == -1:
             #items = gsm.getItems(choices.search,choices.subCategory)
@@ -466,9 +435,9 @@ class TrackGlobalSearchTool(GeneralGuiTool):
 
         if choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1:
             trackCount = remoteGSuite.numTracks()
-            progressViewer = ProgressViewer([('Download tracks', trackCount),
-                                             ('Preprocess tracks', trackCount)],
-                                            cls.extraGalaxyFn[cls.HISTORY_PROGRESS_TITLE] )
+            progressViewer = \
+                ProgressViewer([('Download tracks', trackCount),
+                                ('Preprocess tracks', trackCount)], galaxyFn)
 
             #from gold.gsuite.GSuiteDownloader import GSuiteMultipleGalaxyFnDownloader
             #gSuiteDownloader = GSuiteMultipleGalaxyFnDownloader()
@@ -478,8 +447,9 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             from gold.gsuite.GSuiteDownloader import GSuiteSingleGalaxyFnDownloader
             from quick.gsuite.GSuiteHbIntegration import \
                 writeGSuiteHiddenTrackStorageHtml
+
             gSuiteDownloader = GSuiteSingleGalaxyFnDownloader()
-            hiddenStorageFn = cls.extraGalaxyFn[cls.HISTORY_HIDDEN_TRACK_STORAGE]
+            hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', desc)]
             localGSuite, errorLocalGSuite = \
                 gSuiteDownloader.visitAllGSuiteTracksAndReturnOutputAndErrorGSuites \
                     (remoteGSuite, progressViewer, hiddenStorageFn, [])
@@ -491,14 +461,20 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 gSuitePreprocessor.visitAllGSuiteTracksAndReturnOutputAndErrorGSuites\
                     (localGSuite, progressViewer)
             #preProcessedGSuite, errorPreProcessGSuite = localGSuite.preProcessAllLocalTracksAndReturnOutputAndErrorGSuites(progressViewer)
-            GSuiteComposer.composeToFile(remoteGSuite, cls.extraGalaxyFn[cls.REMOTE_GSUITE_TITLE])
-            GSuiteComposer.composeToFile(localGSuite, cls.extraGalaxyFn[cls.PRIMARY_GSUITE_TITLE])
-            GSuiteComposer.composeToFile(errorLocalGSuite, cls.extraGalaxyFn[cls.ERROR_HISTORY_TITLE_DOWNLOAD])
-            GSuiteComposer.composeToFile(preProcessedGSuite, galaxyFn)
-            GSuiteComposer.composeToFile(errorPreProcessGSuite, cls.extraGalaxyFn[cls.ERROR_HISTORY_TITLE_PREPROCESS])
+            GSuiteComposer.composeToFile(remoteGSuite,
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', desc)])
+            GSuiteComposer.composeToFile(errorLocalGSuite,
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('nodownload', desc)])
+            GSuiteComposer.composeToFile(localGSuite,
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', desc)])
+            GSuiteComposer.composeToFile(errorPreProcessGSuite,
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('nopreprocessed', desc)])
+            GSuiteComposer.composeToFile(preProcessedGSuite,
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('preprocessed', desc)])
 
         else:
             GSuiteComposer.composeToFile(remoteGSuite, galaxyFn)
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -521,7 +497,12 @@ class TrackGlobalSearchTool(GeneralGuiTool):
 
         return GeneralGuiTool._checkGenome(choices.genome)
 
-
+    @classmethod
+    def getOutputName(cls, choices):
+        if choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1:
+            return getGSuiteHistoryOutputName('progress', choices.subCategory)
+        else:
+            return getGSuiteHistoryOutputName('primary', choices.subCategory)
 
     @classmethod
     def isRedirectTool(cls,choices):
@@ -566,7 +547,10 @@ class TrackGlobalSearchTool(GeneralGuiTool):
 
     @staticmethod
     def getOutputFormat(choices):
-        return 'gsuite'
+        if choices.downloadAndPreprocess == 'Yes' and choices.source.find('HyperBrowser') == -1:
+            return 'customhtml'
+        else:
+            return 'gsuite'
 
     @classmethod
     def getPlot(cls):

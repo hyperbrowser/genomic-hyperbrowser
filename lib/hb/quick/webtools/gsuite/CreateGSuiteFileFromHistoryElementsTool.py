@@ -182,6 +182,19 @@ class CreateGSuiteFileFromHistoryElementsTool(GeneralGuiTool):
         if not any(val is not None for val in choices.history.values()):
             return 'Please select at least one history element'
 
+    @classmethod
+    def getOutputName(cls, choices):
+        from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+        from proto.CommonFunctions import extractNameFromDatasetInfo
+
+        selected = [extractNameFromDatasetInfo(val)
+                    for val in choices.history.values() if val is not None]
+        assert len(selected) > 0
+        description = selected[0] + \
+                      ' + %s more' % (len(selected)-1) if len(selected) > 1 else ''
+
+        return getGSuiteHistoryOutputName('primary', description)
+
     #@staticmethod
     #def getSubToolClasses():
     #    '''

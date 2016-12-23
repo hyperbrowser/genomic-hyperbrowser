@@ -1,5 +1,6 @@
 from gold.gsuite.GSuiteConstants import REMOTE, LOCAL, UNKNOWN, PRIMARY, PREPROCESSED, \
                                         GSUITE_SUFFIX, GSUITE_STORAGE_SUFFIX
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
@@ -13,11 +14,6 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
     GSUITE_OUTPUT_LOCATION = LOCAL
     GSUITE_OUTPUT_FILE_FORMAT = ', '.join([UNKNOWN, PRIMARY, PREPROCESSED])
     GSUITE_OUTPUT_TRACK_TYPE = 'any, dependent on file format'
-
-    ERROR_HISTORY_TITLE_DOWNLOAD = 'GSuite - files that failed to download (select in "Fetch remote GSuite datasets" to retry)'
-    ERROR_HISTORY_TITLE_PREPROCESS = 'GSuite - files that failed preprocessing (select in "Preprocess tracks in GSuite" to retry)'
-    HISTORY_PROGRESS_TITLE = 'Progress'
-    HISTORY_HIDDEN_TRACK_STORAGE = 'GSuite track storage'
 
     @staticmethod
     def getToolName():
@@ -155,12 +151,19 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
     @classmethod
     def getExtraHistElements(cls, choices):
         from quick.webtools.GeneralGuiTool import HistElement
-        fileList = [HistElement(cls.ERROR_HISTORY_TITLE_DOWNLOAD, GSUITE_SUFFIX)]
+        fileList = [HistElement(getGSuiteHistoryOutputName('nodownload', datasetInfo=choices.history),
+                                GSUITE_SUFFIX)]
+        fileList += [HistElement(getGSuiteHistoryOutputName('primary', datasetInfo=choices.history),
+                                GSUITE_SUFFIX)]
         if choices.preProcess == 'Yes':
-            fileList += [HistElement(cls.ERROR_HISTORY_TITLE_PREPROCESS, GSUITE_SUFFIX)]
-        fileList += [HistElement(cls.HISTORY_PROGRESS_TITLE, 'customhtml')]
+            fileList += [HistElement(getGSuiteHistoryOutputName('nopreprocessed', datasetInfo=choices.history),
+                                     GSUITE_SUFFIX)]
+            fileList += [HistElement(getGSuiteHistoryOutputName('preprocessed', datasetInfo=choices.history),
+                                     GSUITE_SUFFIX)]
+        fileList += [HistElement(getGSuiteHistoryOutputName('storage', datasetInfo=choices.history),
+                                 GSUITE_STORAGE_SUFFIX, hidden=True)]
 
-        if choices.history:
+        # if choices.history:
             #from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
             #gSuite = getGSuiteFromGalaxyTN(choices.history)
             #
@@ -169,7 +172,6 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
             #    title, suffix = getTitleAndSuffixWithCompressionSuffixesRemoved(track)
             #    fileList.append( HistElement(title, suffix, hidden=True) )
 
-            fileList.append( HistElement(cls.HISTORY_HIDDEN_TRACK_STORAGE, GSUITE_STORAGE_SUFFIX, hidden=True))
 
         return fileList
 
@@ -194,9 +196,10 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
         inGSuite = getGSuiteFromGalaxyTN(choices.history)
         trackCount = inGSuite.numTracks()
 
-        progressViewer = ProgressViewer([('Download tracks', trackCount)] +
-                                         ([('Preprocess tracks', trackCount)] if choices.preProcess == 'Yes' else []),
-                                         cls.extraGalaxyFn[cls.HISTORY_PROGRESS_TITLE] )
+        progressViewer = ProgressViewer(
+             [('Download tracks', trackCount)] +
+             ([('Preprocess tracks', trackCount)] if choices.preProcess == 'Yes' else []),
+             galaxyFn)
 
         #from gold.gsuite.GSuiteDownloader import GSuiteMultipleGalaxyFnDownloader
         #gSuiteDownloader = GSuiteMultipleGalaxyFnDownloader()
@@ -205,7 +208,8 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
 
         from gold.gsuite.GSuiteDownloader import GSuiteSingleGalaxyFnDownloader
         gSuiteDownloader = GSuiteSingleGalaxyFnDownloader()
-        hiddenStorageFn = cls.extraGalaxyFn[cls.HISTORY_HIDDEN_TRACK_STORAGE]
+        hiddenStorageFn = cls.extraGalaxyFn\
+            [getGSuiteHistoryOutputName('storage', datasetInfo=choices.history)]
         outGSuite, errorGSuite = \
             gSuiteDownloader.visitAllGSuiteTracksAndReturnOutputAndErrorGSuites \
                 (inGSuite, progressViewer, hiddenStorageFn, [])
@@ -217,9 +221,15 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
         #outGSuite, errorGSuite = \
         #    inGSuite.downloadAllRemoteTracksAsSingleDatasetAndReturnOutputAndErrorGSuites(galaxyFn, ['cell', 'title'], progressViewer=progressViewer)
 
-        GSuiteComposer.composeToFile(errorGSuite, cls.extraGalaxyFn[cls.ERROR_HISTORY_TITLE_DOWNLOAD])
+        errorFn = cls.extraGalaxyFn\
+            [getGSuiteHistoryOutputName('nodownload', datasetInfo=choices.history)]
+        GSuiteComposer.composeToFile(errorGSuite, errorFn)
 
         outGSuite.setGenomeOfAllTracks(choices.genome)
+        downloadFn = cls.extraGalaxyFn\
+            [getGSuiteHistoryOutputName('primary', datasetInfo=choices.history)]
+        GSuiteComposer.composeToFile(outGSuite, downloadFn)
+
 
         if choices.preProcess == 'Yes':
             progressViewer.updateProgressObjectElementCount('Preprocess tracks', outGSuite.numTracks())
@@ -230,9 +240,13 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
 
             #outGSuite, errorGSuite = outGSuite.preProcessAllLocalTracksAndReturnOutputAndErrorGSuites(progressViewer)
 
-            GSuiteComposer.composeToFile(errorGSuite, cls.extraGalaxyFn[cls.ERROR_HISTORY_TITLE_PREPROCESS])
+            noPreprocessedFn = cls.extraGalaxyFn\
+                [getGSuiteHistoryOutputName('nopreprocessed', datasetInfo=choices.history)]
+            GSuiteComposer.composeToFile(errorGSuite, noPreprocessedFn)
 
-        GSuiteComposer.composeToFile(outGSuite, galaxyFn)
+            preprocessedFn = cls.extraGalaxyFn\
+                [getGSuiteHistoryOutputName('preprocessed', datasetInfo=choices.history)]
+            GSuiteComposer.composeToFile(outGSuite, preprocessedFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -264,6 +278,10 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
         errorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuite, minSize=1)
         if errorString:
             return errorString
+
+    @classmethod
+    def getOutputName(cls, choices):
+        return getGSuiteHistoryOutputName('progress', datasetInfo=choices.history)
 
     #@staticmethod
     #def getSubToolClasses():
@@ -382,4 +400,4 @@ class GSuiteDownloadFiles(GeneralGuiTool, GenomeMixin):
     #
     @classmethod
     def getOutputFormat(cls,choices):
-        return GSUITE_SUFFIX
+        return 'customhtml'

@@ -142,6 +142,8 @@ class GSuiteExportToHistoryTool(GeneralGuiTool):
         if prevChoices.showPreview == cls.PREVIEW_YES:
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             gSuiteTrack = gSuite.getTrackFromTitle(prevChoices.previewSelect)
+            if not gSuiteTrack.path:
+                return
             
             output = ''
             with open(gSuiteTrack.path) as f:
@@ -311,6 +313,11 @@ class GSuiteExportToHistoryTool(GeneralGuiTool):
 
         if choices.changeFormat == cls.OUTPUT_FORMAT_CONVERT and choices.outputFormat is None:
             return 'There are no common supported file formats that all selected tracks can be converted to.'
+
+    @classmethod
+    def getOutputName(cls, choices):
+        from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+        return getGSuiteHistoryOutputName('primary', ', tracks exported', choices.gsuite)
 
     #@staticmethod
     #def getSubToolClasses():

@@ -224,6 +224,11 @@ class GSuiteSelectRows(GeneralGuiTool):
         if gSuite.numTracks() == 0:
             return 'GSuite file contains no tracks'
 
+    @classmethod
+    def getOutputName(cls, choices):
+        if choices.history:
+            from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+            return getGSuiteHistoryOutputName('same', ', subset of tracks', choices.history)
 
     @classmethod
     def addIndexToTitle(cls, indx, title):

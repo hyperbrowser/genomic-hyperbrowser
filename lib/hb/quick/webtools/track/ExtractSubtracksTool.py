@@ -161,6 +161,20 @@ class ExtractSubtracksTool(GeneralGuiTool):
         if errorStr:
             return errorStr
 
+    @classmethod
+    def getOutputName(cls, choices):
+        from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+        from quick.util.CommonFunctions import prettyPrintTrackName
+
+        if choices.genome:
+            parentTrack = choices.parentTrack.split(':')
+            if parentTrack == ['']:
+                description = 'All tracks'
+            else:
+                description = prettyPrintTrackName(parentTrack)
+
+            return getGSuiteHistoryOutputName('preprocessed', description)
+
     #@staticmethod
     #def getSubToolClasses():
     #    '''

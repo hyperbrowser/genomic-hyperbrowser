@@ -4,6 +4,7 @@ from itertools import chain
 
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
 from gold.gsuite import GSuiteConstants
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
@@ -47,9 +48,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
     GSUITE_OUTPUT_FILE_FORMAT = 'as input, but may be changed if a new file suffix is selected'
     GSUITE_OUTPUT_TRACK_TYPE = 'as input, but may be changed according to the selected operation'
 
-    HISTORY_ERROR_TITLE = 'GSuite - files that failed manipulation (select in "Manipulate textual tracks referred in GSuite" to retry)'
-    HISTORY_PROGRESS_TITLE = 'Progress'
-    HISTORY_HIDDEN_TRACK_STORAGE = 'GSuite track storage'
+    OUTPUT_DESCRIPTION = ', tracks manipulated'
 
     # Methods
 
@@ -346,23 +345,29 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         from quick.webtools.GeneralGuiTool import HistElement
         from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, GSUITE_STORAGE_SUFFIX
         
-        fileList = [HistElement(cls.HISTORY_ERROR_TITLE, GSUITE_SUFFIX)]
-        fileList += [HistElement(cls.HISTORY_PROGRESS_TITLE, 'customhtml')]
+        fileList = [HistElement(getGSuiteHistoryOutputName(
+                        'nomanipulate', datasetInfo=choices.history), GSUITE_SUFFIX)]
+        fileList += [HistElement(getGSuiteHistoryOutputName(
+                         'primary', cls.OUTPUT_DESCRIPTION, choices.history), GSUITE_SUFFIX)]
+        fileList += [HistElement(getGSuiteHistoryOutputName(
+                         'storage', cls.OUTPUT_DESCRIPTION, choices.history), GSUITE_SUFFIX, hidden=True)]
 
-        if choices.history:
-            try:
-                #gSuite = getGSuiteFromGalaxyTN(choices.history)
+        return fileList
 
-                #for track in gSuite.allTracks():
-                #    suffix = cls._getSuffix(choices, track)
-                #    title, titleSuffix = os.path.splitext(track.title)
-                #    title += '.' + suffix
-                #    histElementsDef += [HistElement(title, suffix, hidden=True)]
-
-                fileList.append( HistElement(cls.HISTORY_HIDDEN_TRACK_STORAGE, GSUITE_STORAGE_SUFFIX, hidden=True))
-                return fileList
-            except:
-                pass
+        # if choices.history:
+        #     try:
+        #         #gSuite = getGSuiteFromGalaxyTN(choices.history)
+        #
+        #         #for track in gSuite.allTracks():
+        #         #    suffix = cls._getSuffix(choices, track)
+        #         #    title, titleSuffix = os.path.splitext(track.title)
+        #         #    title += '.' + suffix
+        #         #    histElementsDef += [HistElement(title, suffix, hidden=True)]
+        #
+        #         fileList.append( HistElement(cls.HISTORY_HIDDEN_TRACK_STORAGE, GSUITE_STORAGE_SUFFIX, hidden=True))
+        #         return fileList
+        #     except:
+        #         pass
 
     @staticmethod
     def _changeSuffixIfPresent(text, oldSuffix, newSuffix):
@@ -398,10 +403,10 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         outGSuite = GSuite()
         errorGSuite = GSuite()
 
-        progressViewer = ProgressViewer([('Manipulate tracks', gSuite.numTracks())],
-                                         cls.extraGalaxyFn[cls.HISTORY_PROGRESS_TITLE] )
+        progressViewer = ProgressViewer([('Manipulate tracks', gSuite.numTracks())], galaxyFn)
 
-        hiddenStorageFn = cls.extraGalaxyFn[cls.HISTORY_HIDDEN_TRACK_STORAGE]
+        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName(
+                                             'storage', cls.OUTPUT_DESCRIPTION, choices.history)]
 
         for track in gSuite.allTracks():
             newSuffix = cls._getSuffix(choices, track)
@@ -434,8 +439,15 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
 
             progressViewer.update()
 
-        composeToFile(outGSuite, galaxyFn)
-        composeToFile(errorGSuite, cls.extraGalaxyFn[cls.HISTORY_ERROR_TITLE])
+        primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName(
+                                       'primary', cls.OUTPUT_DESCRIPTION, choices.history)]
+
+        composeToFile(outGSuite, primaryFn)
+
+        errorFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName(
+                                     'nomanipulate', datasetInfo=choices.history)]
+        composeToFile(errorGSuite, errorFn)
+
         writeGSuiteHiddenTrackStorageHtml(hiddenStorageFn)
 
 
@@ -475,6 +487,10 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
 
             if choices.changeSuffix == 'Yes' and choices.suffix.strip() == '':
                 return 'Please select a file suffix'
+
+    @classmethod
+    def getOutputName(cls, choices):
+        return getGSuiteHistoryOutputName('progress', cls.OUTPUT_DESCRIPTION, choices.history)
 
     #@staticmethod
     #def getSubToolClasses():
@@ -619,6 +635,6 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         case, all all print statements are redirected to the info field of the
         history item box.
         '''
-        return 'gsuite'
+        return 'customhtml'
 
 GSuiteManipulateTextFiles.setupParameterOptionBoxes()
