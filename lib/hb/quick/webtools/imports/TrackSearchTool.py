@@ -596,7 +596,7 @@ class TrackSearchTool(GeneralGuiTool):
         datatypes = cls.DB.getTableDataTypes(cls.TABLE_NAME,WHERE)
 
 
-        return OrderedDict([(el[0] + ' [hits:'+str(el[1])+']',True) for el in datatypes])
+        return OrderedDict([(el[0] + ' ['+str(el[1])+' files found]',True) for el in datatypes])
         
 
     @classmethod
@@ -613,7 +613,7 @@ class TrackSearchTool(GeneralGuiTool):
         else:
             cols, colListString = cls.getColListString()
             count = len(cls._getValidRows(prevChoices, cls.getFilteredRows(prevChoices, colListString)))
-            return ['Keep all tracks as selected above [hits:' + str(count) + ']',
+            return ['Keep all tracks as selected above [' + str(count) + ' files found]',
                     'Select tracks manually','select 10 random tracks','select 50 random tracks']
             # 'List search results','Download results as history elements']#,'Download and convert to GTrack']
 

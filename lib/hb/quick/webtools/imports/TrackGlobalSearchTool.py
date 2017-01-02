@@ -97,11 +97,11 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         sourceList = []
         countAll = 0
         for src,count in sourceTupleList:
-            sourceList.append(src+' [hits:'+str(count)+']')
+            sourceList.append(src+' ['+str(count)+' files found]')
             countAll += count
         
         if len(sourceList) > 1:
-            sourceList.insert(0,'All databases [hits:'+str(countAll)+']')
+            sourceList.insert(0, 'All databases ['+str(countAll)+' files found]')
         
         ##Asked to be removed by Sveinung. Commenting it out (maybe it will be reused later)
         # HBGsuite = quick.gsuite.GSuiteHbIntegration.getSubtracksAsGSuite('hg19', ['Sample data', 'Chromatin catalog', prevChoices.search, prevChoices.subCategory])
@@ -125,15 +125,16 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     
     @classmethod
     def getOptionsBoxTestURL(cls, prevChoices):
+        pass
         ##important for testing (DON'T REMOVE):
-        if prevChoices.transfer == 'Yes':
-             gsm = TrackGlobalSearchModule(cls.useSqlite)
-             sourceTool,attr_val_dict = gsm.getSourceToolURLParams(prevChoices.search,\
-                                                         prevChoices.subCategory,\
-                                                         prevChoices.source.split('[')[0].strip())
-
-             return '__rawstr__','Source tool: '+str(sourceTool)+'<br> Attribute-value Dict: '+str(attr_val_dict)+\
-             '<br>URL: ' + str(cls.createGenericGuiToolURL('hb_track_source_test_tool', sourceTool,attr_val_dict))
+        # if prevChoices.transfer == 'Yes':
+        #      gsm = TrackGlobalSearchModule(cls.useSqlite)
+        #      sourceTool,attr_val_dict = gsm.getSourceToolURLParams(prevChoices.search,\
+        #                                                  prevChoices.subCategory,\
+        #                                                  prevChoices.source.split('[')[0].strip())
+        #
+        #      return '__rawstr__','Source tool: '+str(sourceTool)+'<br> Attribute-value Dict: '+str(attr_val_dict)+\
+        #      '<br>URL: ' + str(cls.createGenericGuiToolURL('hb_track_source_test_tool', sourceTool,attr_val_dict))
 
     @classmethod
     def getOptionsBoxDataType(cls, prevChoices):
@@ -150,8 +151,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         ##Change requested by Sveinung for simplicity
         #return OrderedDict([(dataType + ' ['+str(count)+']',True) for dataType,count in datatypes.iteritems()])
 
-        #return ['All data types [hits:'+str(countAll)+']'] + \
-        return [dataType + ' [hits:'+str(count)+']' for dataType,count in datatypes.iteritems()]
+        #return ['All data types ['+str(countAll)+' files found]'] + \
+        return [dataType + ' ['+str(count)+' files found]' for dataType,count in datatypes.iteritems()]
 
     @classmethod
     def getOptionsBoxDataInfo(cls,prevChoices):
