@@ -13103,7 +13103,7 @@ module.exports = Controller;
 
         return {
             start: function (modeModel) {
-                toolCTRL = Object.create(Controller);
+                // toolCTRL = Object.create(Controller);
                 toolModel = Object.create(ToolModel);
                 toolView = Object.create(ToolView);
 
@@ -13111,7 +13111,7 @@ module.exports = Controller;
                 toolsFrame = $(config.toolFrame);
                 mainFrame = $(config.mainFrame);
 
-                toolCTRL.init({model: toolModel});
+                // toolCTRL.init({model: toolModel});
                 toolModel.initialize();
                 toolView.init({
                     model: toolModel,
