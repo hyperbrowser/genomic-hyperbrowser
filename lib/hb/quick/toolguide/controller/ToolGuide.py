@@ -66,7 +66,9 @@ class ToolGuideDataGenerator(object):
                 assert description, 'The description for tool with id=%s is not defined in the configuration' % toolId
                 imgUrl = TOOL_ID_TO_IMG_URL.get(toolId)
                 helpPageUrl = TOOL_ID_TO_HELP_PAGE_URL.get(toolId)
-                guideData = ToolGuideData(toolUrl, toolDisplayName, description, imgUrl=imgUrl, helpPageUrl=helpPageUrl)
+                onclick = TOOL_ID_TO_ONCLICK.get(toolId)
+                guideData = ToolGuideData(toolUrl, toolDisplayName, description,
+                                          imgUrl=imgUrl, helpPageUrl=helpPageUrl, onclick=onclick)
                 self._addGuideData(inputType, guideData)
 
     def _generateGuideDataForBasicMode(self, inputTypeMapper):
@@ -103,12 +105,14 @@ class ToolGuideData(object):
     Model for the data displayed by the guide in each tool.
     '''
     
-    def __init__(self, toolUrl, toolDisplayName, description, imgUrl=None, helpPageUrl = None ):
+    def __init__(self, toolUrl, toolDisplayName, description, imgUrl=None,
+                 helpPageUrl=None, onclick=None):
         self._toolUrl = toolUrl
         self._toolDisplayName = toolDisplayName
         self._description = description
         self._imgUrl = imgUrl
         self._helpPageUrl = helpPageUrl
+        self._onclick = onclick
         
     @property
     def toolUrl(self):
@@ -130,4 +134,7 @@ class ToolGuideData(object):
     def helpPageUrl(self):
         return self._helpPageUrl
 
-    
+    @property
+    def onclick(self):
+        return self._onclick
+
