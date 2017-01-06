@@ -233,8 +233,15 @@ def createToolURL(toolId, **kwArgs):
 
 def createGalaxyToolURL(toolId, **kwArgs):
     from proto.config.Config import URL_PREFIX
+    if toolId == 'upload1':
+        return "javascript:void(0)"
     return URL_PREFIX + '/tool_runner?tool_id=' + toolId + \
             ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
+
+
+def getGalaxyUploadLinkOnclick():
+    return "event.preventDefault(); jQuery('#tool-panel-upload-button', " \
+           "window.parent.jQuery(window.parent.document)).trigger('click');"
 
 
 def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=None,
