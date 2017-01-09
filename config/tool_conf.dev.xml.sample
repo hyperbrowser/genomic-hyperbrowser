@@ -263,7 +263,11 @@
     <tool file="proto/hyperbrowser/util/TouchStandardizedTrack.xml" />
     <tool file="proto/hyperbrowser/util/StandardizeTrackFilesTool.xml" />
     <tool file="proto/hyperbrowser/InstallUcscTool.xml" />
-      <tool file="proto/hyperbrowser/track/IntegrateCategoricalTrackFromHistory.xml" />
+    <tool file="proto/hyperbrowser/track/IntegrateCategoricalTrackFromHistory.xml" />
+
+    <!-- hidden tools -->
+    <tool file="proto/hyperbrowser/file_import/FileImport.xml" />
+    <!-- end hidden tools -->
   </section>
 
   <section name="Development tools" id="debug_tools">
@@ -305,14 +309,6 @@
     <tool file="proto/hyperbrowser/misc/Tool9.xml" />
     <tool file="proto/hyperbrowser/misc/Tool10.xml" />
     <tool file="proto/hyperbrowser/restricted/ReportTrackProperties.xml" />
-
-    <!-- hidden tools -->
-    <tool file="proto/hyperbrowser/file_import/FileImport.xml" />
-    <tool file="proto/hyperbrowser/file_import/FileImportBed.xml" />
-    <tool file="proto/hyperbrowser/file_import/FileImportBedGraph.xml" />
-    <tool file="proto/hyperbrowser/file_import/FileImportGSuite.xml" />
-    <tool file="proto/hyperbrowser/file_import/FileImportGTrack.xml" />
-    <!-- end hidden tools -->
 
     <tool file="hyperbrowser/extractTrack.xml" />
     <tool file="hyperbrowser/importGenelist.xml" />
