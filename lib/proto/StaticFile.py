@@ -1,22 +1,25 @@
-from config.Config import STATIC_PATH, STATIC_REL_PATH
+from proto.config.Config import STATIC_PATH, STATIC_REL_PATH
 from proto.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL, \
-    extractNameFromDatasetInfo
+    extractNameFromDatasetInfo, extractIdFromGalaxyFn, getGalaxyFilesFilename
 from proto.HtmlCore import HtmlCore
 import os
 
 class StaticFile(object):
+    STATIC_PATH = STATIC_PATH
+    STATIC_REL_PATH = STATIC_REL_PATH
+
     def __init__(self, id):
         #assert id[0] in ['files','images','run_specific'], 'Only a restricted set of first elements of id is supported, in order to have control of phyical storage locations. ID: '+str(id)
         assert id[0] in ['files','images'], 'Only a restricted set of first elements of id is supported, in order to have control of phyical storage locations. ID: '+str(id)
         self._id = id
 
     def getDiskPath(self, ensurePath=False):
-        fn = os.sep.join([STATIC_PATH] + self._id)
+        fn = os.sep.join([self.STATIC_PATH] + self._id)
         if ensurePath:
             ensurePathExists(fn)
         return fn
 
-    def getFile(self,mode='w'):
+    def getFile(self, mode='w'):
         fn = self.getDiskPath(True)
         return open(fn,mode)
 
@@ -29,7 +32,7 @@ class StaticFile(object):
         f.close()
 
     def getURL(self):
-        return os.sep.join([STATIC_REL_PATH] + self._id)
+        return os.sep.join([self.STATIC_REL_PATH] + self._id)
 
     def getLink(self, linkText):
         return str(HtmlCore().link(linkText, self.getURL()))
@@ -41,7 +44,7 @@ class StaticFile(object):
     def getLoadToHistoryLink(self, linkText, galaxyDataType='bed'):
         return str(HtmlCore().link(linkText,
                                    getLoadToGalaxyHistoryURL
-                                   (self.getDiskPath(), galaxyDataType)))
+                                   (self.getDiskPath(), galaxyDataType=galaxyDataType)))
 
     def openRFigure(self, h=600, w=800):
         from proto.RSetup import r
@@ -132,7 +135,6 @@ class StaticImage(StaticFile):
         StaticFile.__init__(self, ['images']+id)
 
 
-from proto.CommonFunctions import extractIdFromGalaxyFn, getGalaxyFilesFilename
 class GalaxyRunSpecificFile(StaticFile):
     '''
     Handles file path and URL of static (web-accessible) files which are specific
@@ -161,10 +163,6 @@ class GalaxyRunSpecificFile(StaticFile):
 
     def getId(self):
         return extractIdFromGalaxyFn(self._galaxyFn) + self._relativeId
-
-    def getExternalTrackName(self):
-        name = extractNameFromDatasetInfo(self._galaxyFn)
-        return createStdTrackName(self.getId(), name)
 
 
 class PickleStaticFile(StaticFile):

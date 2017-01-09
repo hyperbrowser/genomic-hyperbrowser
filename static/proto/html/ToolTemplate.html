@@ -1,0 +1,316 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module ToolTemplate</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>ToolTemplate</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/sveinugu/PycharmProjects/proto/lib/proto/tools/ToolTemplate.py">/Users/sveinugu/PycharmProjects/proto/lib/proto/tools/ToolTemplate.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">proto.tools.GeneralGuiTool.GeneralGuiTool</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="ToolTemplate.html#ToolTemplate">ToolTemplate</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ToolTemplate">class <strong>ToolTemplate</strong></a>(<a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">proto.tools.GeneralGuiTool.GeneralGuiTool</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="ToolTemplate.html#ToolTemplate">ToolTemplate</a></dd>
+<dd><a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">proto.tools.GeneralGuiTool.GeneralGuiTool</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Class methods defined here:<br>
+<dl><dt><a name="ToolTemplate-execute"><strong>execute</strong></a>(cls, choices, galaxyFn<font color="#909090">=None</font>, username<font color="#909090">=''</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Is&nbsp;called&nbsp;when&nbsp;execute-button&nbsp;is&nbsp;pushed&nbsp;by&nbsp;web-user.&nbsp;Should&nbsp;print<br>
+output&nbsp;as&nbsp;HTML&nbsp;to&nbsp;standard&nbsp;out,&nbsp;which&nbsp;will&nbsp;be&nbsp;directed&nbsp;to&nbsp;a&nbsp;results<br>
+page&nbsp;in&nbsp;Galaxy&nbsp;history.&nbsp;If&nbsp;getOutputFormat&nbsp;is&nbsp;anything&nbsp;else&nbsp;than<br>
+'html',&nbsp;the&nbsp;output&nbsp;should&nbsp;be&nbsp;written&nbsp;to&nbsp;the&nbsp;file&nbsp;with&nbsp;path&nbsp;galaxyFn.<br>
+If&nbsp;needed,&nbsp;StaticFile&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;get&nbsp;a&nbsp;path&nbsp;where&nbsp;additional<br>
+files&nbsp;can&nbsp;be&nbsp;put&nbsp;(cls,&nbsp;e.g.&nbsp;generated&nbsp;image&nbsp;files).&nbsp;choices&nbsp;is&nbsp;a&nbsp;list<br>
+of&nbsp;selections&nbsp;made&nbsp;by&nbsp;web-user&nbsp;in&nbsp;each&nbsp;options&nbsp;box.<br>
+&nbsp;<br>
+Mandatory&nbsp;unless&nbsp;<a href="#ToolTemplate-isRedirectTool">isRedirectTool</a>()&nbsp;returns&nbsp;True.</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getDemoSelections"><strong>getDemoSelections</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Defines&nbsp;a&nbsp;set&nbsp;of&nbsp;demo&nbsp;inputs&nbsp;to&nbsp;the&nbsp;option&nbsp;boxes&nbsp;in&nbsp;the<br>
+order&nbsp;defined&nbsp;by&nbsp;getOptionBoxNames&nbsp;and&nbsp;getOptionsBoxOrder.<br>
+If&nbsp;not&nbsp;None,&nbsp;a&nbsp;Demo&nbsp;button&nbsp;appears&nbsp;in&nbsp;the&nbsp;interface.&nbsp;Clicking&nbsp;the<br>
+button&nbsp;fills&nbsp;the&nbsp;option&nbsp;boxed&nbsp;with&nbsp;the&nbsp;defined&nbsp;demo&nbsp;values.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getExtraHistElements"><strong>getExtraHistElements</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Defines&nbsp;extra&nbsp;history&nbsp;elements&nbsp;to&nbsp;be&nbsp;created&nbsp;when&nbsp;clicking&nbsp;execute.<br>
+This&nbsp;is&nbsp;defined&nbsp;by&nbsp;a&nbsp;list&nbsp;of&nbsp;HistElement&nbsp;objects,&nbsp;as&nbsp;in&nbsp;the<br>
+following&nbsp;example:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;from&nbsp;proto.<a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">GeneralGuiTool</a>&nbsp;import&nbsp;HistElement<br>
+&nbsp;&nbsp;&nbsp;return&nbsp;[HistElement(cls.HISTORY_TITLE,&nbsp;'bed',&nbsp;hidden=False)]<br>
+&nbsp;<br>
+It&nbsp;is&nbsp;good&nbsp;practice&nbsp;to&nbsp;use&nbsp;class&nbsp;constants&nbsp;for&nbsp;longer&nbsp;strings.<br>
+&nbsp;<br>
+In&nbsp;the&nbsp;<a href="#ToolTemplate-execute">execute</a>()&nbsp;method,&nbsp;one&nbsp;typically&nbsp;needs&nbsp;to&nbsp;fetch&nbsp;the&nbsp;path&nbsp;to<br>
+the&nbsp;dataset&nbsp;referred&nbsp;to&nbsp;by&nbsp;the&nbsp;extra&nbsp;history&nbsp;element.&nbsp;To&nbsp;fetch&nbsp;the<br>
+path,&nbsp;use&nbsp;the&nbsp;dict&nbsp;cls.extraGalaxyFn&nbsp;with&nbsp;the&nbsp;defined&nbsp;history&nbsp;title<br>
+as&nbsp;key,&nbsp;e.g.&nbsp;"cls.extraGalaxyFn[cls.HISTORY_TITLE]".<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getFullExampleURL"><strong>getFullExampleURL</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;an&nbsp;URL&nbsp;to&nbsp;an&nbsp;example&nbsp;page&nbsp;that&nbsp;describes&nbsp;the&nbsp;tool,&nbsp;for<br>
+instance&nbsp;a&nbsp;Galaxy&nbsp;page.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getInfoForOptionsBoxKey"><strong>getInfoForOptionsBoxKey</strong></a>(cls, prevChoices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>If&nbsp;not&nbsp;None,&nbsp;defines&nbsp;the&nbsp;string&nbsp;content&nbsp;of&nbsp;an&nbsp;clickable&nbsp;info&nbsp;box<br>
+beside&nbsp;the&nbsp;corresponding&nbsp;input&nbsp;box.&nbsp;HTML&nbsp;is&nbsp;allowed.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getInputBoxGroups"><strong>getInputBoxGroups</strong></a>(cls, choices<font color="#909090">=None</font>)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Creates&nbsp;a&nbsp;visual&nbsp;separation&nbsp;of&nbsp;groups&nbsp;of&nbsp;consecutive&nbsp;option&nbsp;boxes<br>
+from&nbsp;the&nbsp;rest&nbsp;(fieldset).&nbsp;Each&nbsp;such&nbsp;group&nbsp;has&nbsp;an&nbsp;associated&nbsp;label<br>
+(string),&nbsp;which&nbsp;is&nbsp;shown&nbsp;to&nbsp;the&nbsp;user.&nbsp;To&nbsp;define&nbsp;groups&nbsp;of&nbsp;option<br>
+boxes,&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;BoxGroup&nbsp;namedtuples&nbsp;with&nbsp;the&nbsp;label,&nbsp;the&nbsp;key<br>
+(or&nbsp;index)&nbsp;of&nbsp;the&nbsp;first&nbsp;and&nbsp;last&nbsp;options&nbsp;boxes&nbsp;(inclusive).<br>
+&nbsp;<br>
+Example:<br>
+&nbsp;&nbsp;&nbsp;from&nbsp;quick.webtool.<a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">GeneralGuiTool</a>&nbsp;import&nbsp;BoxGroup<br>
+&nbsp;&nbsp;&nbsp;return&nbsp;[BoxGroup(label='A&nbsp;group&nbsp;of&nbsp;choices',&nbsp;first='firstKey',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last='secondKey')]<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getInputBoxNames"><strong>getInputBoxNames</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;a&nbsp;list&nbsp;of&nbsp;headers&nbsp;for&nbsp;the&nbsp;input&nbsp;boxes,&nbsp;and&nbsp;implicitly&nbsp;also<br>
+the&nbsp;number&nbsp;of&nbsp;input&nbsp;boxes&nbsp;to&nbsp;display&nbsp;on&nbsp;the&nbsp;page.&nbsp;The&nbsp;returned&nbsp;list<br>
+can&nbsp;have&nbsp;two&nbsp;syntaxes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1)&nbsp;A&nbsp;list&nbsp;of&nbsp;strings&nbsp;denoting&nbsp;the&nbsp;headers&nbsp;for&nbsp;the&nbsp;input&nbsp;boxes&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;numerical&nbsp;order.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2)&nbsp;A&nbsp;list&nbsp;of&nbsp;tuples&nbsp;of&nbsp;strings,&nbsp;where&nbsp;each&nbsp;tuple&nbsp;has<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;two&nbsp;items:&nbsp;a&nbsp;header&nbsp;and&nbsp;a&nbsp;key.<br>
+&nbsp;<br>
+The&nbsp;contents&nbsp;of&nbsp;each&nbsp;input&nbsp;box&nbsp;must&nbsp;be&nbsp;defined&nbsp;by&nbsp;the&nbsp;function<br>
+getOptionsBoxK,&nbsp;where&nbsp;K&nbsp;is&nbsp;either&nbsp;a&nbsp;number&nbsp;in&nbsp;the&nbsp;range&nbsp;of&nbsp;1&nbsp;to&nbsp;the<br>
+number&nbsp;of&nbsp;boxes&nbsp;(case&nbsp;1),&nbsp;or&nbsp;the&nbsp;specified&nbsp;key&nbsp;(case&nbsp;2).<br>
+&nbsp;<br>
+Note:&nbsp;the&nbsp;key&nbsp;has&nbsp;to&nbsp;be&nbsp;camelCase&nbsp;and&nbsp;start&nbsp;with&nbsp;a&nbsp;non-capital&nbsp;letter<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(e.g.&nbsp;"firstKey")<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;[]</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getInputBoxOrder"><strong>getInputBoxOrder</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;the&nbsp;order&nbsp;in&nbsp;which&nbsp;the&nbsp;input&nbsp;boxes&nbsp;should&nbsp;be&nbsp;displayed,<br>
+as&nbsp;a&nbsp;list.&nbsp;The&nbsp;input&nbsp;boxes&nbsp;are&nbsp;specified&nbsp;by&nbsp;index&nbsp;(starting&nbsp;with&nbsp;1)<br>
+or&nbsp;by&nbsp;key.&nbsp;If&nbsp;None,&nbsp;the&nbsp;order&nbsp;of&nbsp;the&nbsp;input&nbsp;boxes&nbsp;is&nbsp;in&nbsp;the&nbsp;order<br>
+specified&nbsp;by&nbsp;<a href="#ToolTemplate-getInputBoxNames">getInputBoxNames</a>().<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getOptionsBoxFirstKey"><strong>getOptionsBoxFirstKey</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Defines&nbsp;the&nbsp;type&nbsp;and&nbsp;contents&nbsp;of&nbsp;the&nbsp;input&nbsp;box.&nbsp;User&nbsp;selections&nbsp;are<br>
+returned&nbsp;to&nbsp;the&nbsp;tools&nbsp;in&nbsp;the&nbsp;prevChoices&nbsp;and&nbsp;choices&nbsp;attributes&nbsp;to<br>
+other&nbsp;methods.&nbsp;These&nbsp;are&nbsp;lists&nbsp;of&nbsp;results,&nbsp;one&nbsp;for&nbsp;each&nbsp;input&nbsp;box<br>
+(in&nbsp;the&nbsp;order&nbsp;specified&nbsp;by&nbsp;<a href="#ToolTemplate-getInputBoxOrder">getInputBoxOrder</a>()).<br>
+&nbsp;<br>
+Mandatory&nbsp;for&nbsp;the&nbsp;first&nbsp;key&nbsp;defined&nbsp;in&nbsp;<a href="#ToolTemplate-getInputBoxNames">getInputBoxNames</a>(),&nbsp;if&nbsp;any.<br>
+&nbsp;<br>
+The&nbsp;input&nbsp;box&nbsp;is&nbsp;defined&nbsp;according&nbsp;to&nbsp;the&nbsp;following&nbsp;syntax:<br>
+&nbsp;<br>
+Selection&nbsp;box:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;['choice1','choice2']<br>
+-&nbsp;Returns:&nbsp;string<br>
+&nbsp;<br>
+Text&nbsp;area:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'textbox'&nbsp;|&nbsp;('textbox',1)&nbsp;|&nbsp;('textbox',1,False)<br>
+-&nbsp;Tuple&nbsp;syntax:&nbsp;(contents,&nbsp;height&nbsp;(#lines)&nbsp;=&nbsp;1,&nbsp;read&nbsp;only&nbsp;flag&nbsp;=&nbsp;False)<br>
+-&nbsp;The&nbsp;contents&nbsp;is&nbsp;the&nbsp;default&nbsp;value&nbsp;shown&nbsp;inside&nbsp;the&nbsp;text&nbsp;area<br>
+-&nbsp;Returns:&nbsp;string<br>
+&nbsp;<br>
+Raw&nbsp;HTML&nbsp;code:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'__rawstr__',&nbsp;'HTML&nbsp;code'<br>
+-&nbsp;This&nbsp;is&nbsp;mainly&nbsp;intended&nbsp;for&nbsp;read&nbsp;only&nbsp;usage.&nbsp;Even&nbsp;though&nbsp;more<br>
+&nbsp;&nbsp;advanced&nbsp;hacks&nbsp;are&nbsp;possible,&nbsp;it&nbsp;is&nbsp;discouraged.<br>
+&nbsp;<br>
+Password&nbsp;field:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'__password__'<br>
+-&nbsp;Returns:&nbsp;string<br>
+&nbsp;<br>
+Genome&nbsp;selection&nbsp;box:&nbsp;&nbsp;&nbsp;'__genome__'<br>
+-&nbsp;Returns:&nbsp;string<br>
+&nbsp;<br>
+History&nbsp;selection&nbsp;box:&nbsp;&nbsp;('__history__',)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('__history__',&nbsp;'bed',&nbsp;'wig')<br>
+-&nbsp;Only&nbsp;history&nbsp;items&nbsp;of&nbsp;specified&nbsp;types&nbsp;are&nbsp;shown.<br>
+-&nbsp;Returns:&nbsp;colon-separated&nbsp;string&nbsp;denoting&nbsp;Galaxy&nbsp;dataset&nbsp;info,&nbsp;as<br>
+&nbsp;&nbsp;&nbsp;&nbsp;described&nbsp;below.<br>
+&nbsp;<br>
+History&nbsp;check&nbsp;box&nbsp;list:&nbsp;('__multihistory__',&nbsp;)&nbsp;|<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('__multihistory__',&nbsp;'bed',&nbsp;'wig')<br>
+-&nbsp;Only&nbsp;history&nbsp;items&nbsp;of&nbsp;specified&nbsp;types&nbsp;are&nbsp;shown.<br>
+-&nbsp;Returns:&nbsp;OrderedDict&nbsp;with&nbsp;Galaxy&nbsp;dataset&nbsp;ids&nbsp;as&nbsp;key&nbsp;(the&nbsp;number&nbsp;YYYY<br>
+&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;described&nbsp;below),&nbsp;and&nbsp;the&nbsp;associated&nbsp;Galaxy&nbsp;dataset&nbsp;info&nbsp;as&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;values,&nbsp;given&nbsp;that&nbsp;the&nbsp;history&nbsp;element&nbsp;is&nbsp;ticked&nbsp;off&nbsp;by&nbsp;the&nbsp;user.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;not,&nbsp;the&nbsp;value&nbsp;is&nbsp;set&nbsp;to&nbsp;None.&nbsp;The&nbsp;Galaxy&nbsp;dataset&nbsp;info&nbsp;structure<br>
+&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;described&nbsp;below.<br>
+&nbsp;<br>
+Hidden&nbsp;field:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('__hidden__',&nbsp;'Hidden&nbsp;value')<br>
+-&nbsp;Returns:&nbsp;string<br>
+&nbsp;<br>
+Table:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[['header1','header2'],&nbsp;['cell1_1','cell1_2'],<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;['cell2_1','cell2_2']]<br>
+-&nbsp;Returns:&nbsp;None<br>
+&nbsp;<br>
+Check&nbsp;box&nbsp;list:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OrderedDict([('key1',&nbsp;True),&nbsp;('key2',&nbsp;False),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('key3',&nbsp;False)])<br>
+-&nbsp;Returns:&nbsp;OrderedDict&nbsp;from&nbsp;key&nbsp;to&nbsp;selection&nbsp;status&nbsp;(bool).<br>
+&nbsp;<br>
+&nbsp;<br>
+###<br>
+Note&nbsp;about&nbsp;the&nbsp;"Galaxy&nbsp;dataset&nbsp;info"&nbsp;data&nbsp;structure:<br>
+###<br>
+&nbsp;<br>
+"Galaxy&nbsp;dataset&nbsp;info"&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;strings&nbsp;coding&nbsp;information&nbsp;about&nbsp;a<br>
+Galaxy&nbsp;history&nbsp;element&nbsp;and&nbsp;its&nbsp;associated&nbsp;dataset,&nbsp;typically&nbsp;used&nbsp;to<br>
+provide&nbsp;info&nbsp;on&nbsp;the&nbsp;history&nbsp;element&nbsp;selected&nbsp;by&nbsp;the&nbsp;user&nbsp;as&nbsp;input&nbsp;to&nbsp;a<br>
+ProTo&nbsp;tool.<br>
+&nbsp;<br>
+Structure:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;['galaxy',&nbsp;fileFormat,&nbsp;path,&nbsp;name]<br>
+&nbsp;<br>
+Optionally&nbsp;encoded&nbsp;as&nbsp;a&nbsp;single&nbsp;string,&nbsp;delineated&nbsp;by&nbsp;colon:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'galaxy:fileFormat:path:name'<br>
+&nbsp;<br>
+Where:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'galaxy'&nbsp;used&nbsp;for&nbsp;assertions&nbsp;in&nbsp;the&nbsp;code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fileFormat&nbsp;(or&nbsp;suffix)&nbsp;contains&nbsp;the&nbsp;file&nbsp;format&nbsp;of&nbsp;the&nbsp;dataset,&nbsp;as<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encoded&nbsp;in&nbsp;the&nbsp;'format'&nbsp;field&nbsp;of&nbsp;a&nbsp;Galaxy&nbsp;history&nbsp;element.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;path&nbsp;(or&nbsp;file&nbsp;name/fn)&nbsp;is&nbsp;the&nbsp;disk&nbsp;path&nbsp;to&nbsp;the&nbsp;dataset&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Typically&nbsp;ends&nbsp;with&nbsp;'XXX/dataset_YYYY.dat'.&nbsp;XXX&nbsp;and&nbsp;YYYY&nbsp;are<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;numbers&nbsp;which&nbsp;are&nbsp;extracted&nbsp;and&nbsp;used&nbsp;as&nbsp;an&nbsp;unique&nbsp;id&nbsp;&nbsp;of&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dataset&nbsp;in&nbsp;the&nbsp;form&nbsp;[XXX,&nbsp;YYYY]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;is&nbsp;the&nbsp;title&nbsp;of&nbsp;the&nbsp;history&nbsp;element<br>
+&nbsp;<br>
+The&nbsp;different&nbsp;parts&nbsp;can&nbsp;be&nbsp;extracted&nbsp;using&nbsp;the&nbsp;functions<br>
+extractFileSuffixFromDatasetInfo(),&nbsp;extractFnFromDatasetInfo(),&nbsp;and<br>
+extractNameFromDatasetInfo()&nbsp;from&nbsp;the&nbsp;module&nbsp;CommonFunctions.py.</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getOptionsBoxSecondKey"><strong>getOptionsBoxSecondKey</strong></a>(cls, prevChoices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>See&nbsp;<a href="#ToolTemplate-getOptionsBoxFirstKey">getOptionsBoxFirstKey</a>().<br>
+&nbsp;<br>
+prevChoices&nbsp;is&nbsp;a&nbsp;namedtuple&nbsp;of&nbsp;selections&nbsp;made&nbsp;by&nbsp;the&nbsp;user&nbsp;in&nbsp;the<br>
+previous&nbsp;input&nbsp;boxes&nbsp;(that&nbsp;is,&nbsp;a&nbsp;namedtuple&nbsp;containing&nbsp;only&nbsp;one&nbsp;element<br>
+in&nbsp;this&nbsp;case).&nbsp;The&nbsp;elements&nbsp;can&nbsp;accessed&nbsp;either&nbsp;by&nbsp;index,&nbsp;e.g.<br>
+prevChoices[0]&nbsp;for&nbsp;the&nbsp;result&nbsp;of&nbsp;input&nbsp;box&nbsp;1,&nbsp;or&nbsp;by&nbsp;key,&nbsp;e.g.<br>
+prevChoices.key&nbsp;(case&nbsp;2).<br>
+&nbsp;<br>
+Mandatory&nbsp;for&nbsp;the&nbsp;subsequent&nbsp;keys&nbsp;(after&nbsp;the&nbsp;first&nbsp;key)&nbsp;defined&nbsp;in<br>
+<a href="#ToolTemplate-getInputBoxNames">getInputBoxNames</a>(),&nbsp;if&nbsp;any.</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getOutputFormat"><strong>getOutputFormat</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>The&nbsp;format&nbsp;of&nbsp;the&nbsp;history&nbsp;element&nbsp;with&nbsp;the&nbsp;output&nbsp;of&nbsp;the&nbsp;tool.&nbsp;Note<br>
+that&nbsp;if&nbsp;'html'&nbsp;is&nbsp;returned,&nbsp;any&nbsp;print&nbsp;statements&nbsp;in&nbsp;the&nbsp;<a href="#ToolTemplate-execute">execute</a>()<br>
+method&nbsp;is&nbsp;printed&nbsp;to&nbsp;the&nbsp;output&nbsp;dataset.&nbsp;For&nbsp;text-based&nbsp;output<br>
+(e.g.&nbsp;bed)&nbsp;the&nbsp;output&nbsp;dataset&nbsp;only&nbsp;contains&nbsp;text&nbsp;written&nbsp;to&nbsp;the<br>
+galaxyFn&nbsp;file,&nbsp;while&nbsp;all&nbsp;print&nbsp;statements&nbsp;are&nbsp;redirected&nbsp;to&nbsp;the&nbsp;info<br>
+field&nbsp;of&nbsp;the&nbsp;history&nbsp;item&nbsp;box.<br>
+&nbsp;<br>
+Note&nbsp;that&nbsp;for&nbsp;'html'&nbsp;output,&nbsp;standard&nbsp;HTML&nbsp;header&nbsp;and&nbsp;footer&nbsp;code&nbsp;is<br>
+added&nbsp;to&nbsp;the&nbsp;output&nbsp;dataset.&nbsp;If&nbsp;one&nbsp;wants&nbsp;to&nbsp;write&nbsp;the&nbsp;complete&nbsp;HTML<br>
+page,&nbsp;use&nbsp;the&nbsp;restricted&nbsp;output&nbsp;format&nbsp;'customhtml'&nbsp;instead.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:<br>
+'html'</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getOutputName"><strong>getOutputName</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>The title (name) of the main output history element.<br>
+ <br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;the name of the tool.</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getRedirectURL"><strong>getRedirectURL</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>This&nbsp;method&nbsp;is&nbsp;called&nbsp;to&nbsp;return&nbsp;an&nbsp;URL&nbsp;if&nbsp;the&nbsp;isRedirectTool&nbsp;method<br>
+returns&nbsp;True.<br>
+&nbsp;<br>
+Mandatory&nbsp;method&nbsp;if&nbsp;<a href="#ToolTemplate-isRedirectTool">isRedirectTool</a>()&nbsp;returns&nbsp;True.</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getResetBoxes"><strong>getResetBoxes</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;a&nbsp;list&nbsp;of&nbsp;input&nbsp;boxes&nbsp;which&nbsp;resets&nbsp;the&nbsp;subsequent&nbsp;stored<br>
+choices&nbsp;previously&nbsp;made.&nbsp;The&nbsp;input&nbsp;boxes&nbsp;are&nbsp;specified&nbsp;by&nbsp;index<br>
+(starting&nbsp;with&nbsp;1)&nbsp;or&nbsp;by&nbsp;key.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;True</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getSubToolClasses"><strong>getSubToolClasses</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;a&nbsp;list&nbsp;of&nbsp;classes&nbsp;for&nbsp;subtools&nbsp;of&nbsp;the&nbsp;main&nbsp;tool.&nbsp;These<br>
+subtools&nbsp;will&nbsp;be&nbsp;selectable&nbsp;from&nbsp;a&nbsp;selection&nbsp;box&nbsp;at&nbsp;the&nbsp;top&nbsp;of&nbsp;the<br>
+page.&nbsp;The&nbsp;input&nbsp;boxes&nbsp;will&nbsp;change&nbsp;according&nbsp;to&nbsp;which&nbsp;subtool&nbsp;is<br>
+selected.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getToolDescription"><strong>getToolDescription</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;a&nbsp;help&nbsp;text&nbsp;in&nbsp;HTML&nbsp;that&nbsp;is&nbsp;displayed&nbsp;below&nbsp;the&nbsp;tool.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;''</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getToolIllustration"><strong>getToolIllustration</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;an&nbsp;id&nbsp;used&nbsp;by&nbsp;StaticFile.py&nbsp;to&nbsp;reference&nbsp;an&nbsp;illustration<br>
+file&nbsp;on&nbsp;disk.&nbsp;The&nbsp;id&nbsp;is&nbsp;a&nbsp;list&nbsp;of&nbsp;optional&nbsp;directory&nbsp;names&nbsp;followed<br>
+by&nbsp;a&nbsp;filename.&nbsp;The&nbsp;base&nbsp;directory&nbsp;is&nbsp;STATIC_PATH&nbsp;as&nbsp;defined&nbsp;by<br>
+Config.py.&nbsp;The&nbsp;full&nbsp;path&nbsp;is&nbsp;created&nbsp;from&nbsp;the&nbsp;base&nbsp;directory<br>
+followed&nbsp;by&nbsp;the&nbsp;id.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-getToolName"><strong>getToolName</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;a&nbsp;header&nbsp;of&nbsp;the&nbsp;tool,&nbsp;which&nbsp;is&nbsp;displayed&nbsp;at&nbsp;the&nbsp;top&nbsp;of&nbsp;the<br>
+page.<br>
+&nbsp;<br>
+Mandatory&nbsp;method&nbsp;for&nbsp;all&nbsp;ProTo&nbsp;tools.</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-isBatchTool"><strong>isBatchTool</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;if&nbsp;this&nbsp;tool&nbsp;could&nbsp;be&nbsp;run&nbsp;from&nbsp;batch&nbsp;using&nbsp;the&nbsp;batch.&nbsp;The<br>
+batch&nbsp;run&nbsp;line&nbsp;can&nbsp;be&nbsp;fetched&nbsp;from&nbsp;the&nbsp;info&nbsp;box&nbsp;at&nbsp;the&nbsp;bottom&nbsp;of&nbsp;the<br>
+tool.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;same as isHistoryTool()</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-isDebugMode"><strong>isDebugMode</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;whether&nbsp;the&nbsp;debug&nbsp;mode&nbsp;is&nbsp;turned&nbsp;on.&nbsp;Debug&nbsp;mode&nbsp;is<br>
+currently&nbsp;mostly&nbsp;used&nbsp;within&nbsp;the&nbsp;Genomic&nbsp;HyperBrowser&nbsp;and&nbsp;will&nbsp;make<br>
+little&nbsp;difference&nbsp;in&nbsp;a&nbsp;plain&nbsp;Galaxy&nbsp;ProTo&nbsp;installation.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-isDynamic"><strong>isDynamic</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;whether&nbsp;changing&nbsp;the&nbsp;content&nbsp;of&nbsp;textboxes&nbsp;causes&nbsp;the&nbsp;page<br>
+to&nbsp;reload.&nbsp;Returning&nbsp;False&nbsp;stops&nbsp;the&nbsp;need&nbsp;for&nbsp;reloading&nbsp;the&nbsp;tool<br>
+after&nbsp;each&nbsp;input,&nbsp;resulting&nbsp;in&nbsp;less&nbsp;lags&nbsp;for&nbsp;the&nbsp;user.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;True</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-isHistoryTool"><strong>isHistoryTool</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;if&nbsp;a&nbsp;History&nbsp;item&nbsp;should&nbsp;be&nbsp;created&nbsp;when&nbsp;the&nbsp;Execute&nbsp;button<br>
+is&nbsp;clicked.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;True</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-isPublic"><strong>isPublic</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;whether&nbsp;the&nbsp;tool&nbsp;is&nbsp;accessible&nbsp;to&nbsp;all&nbsp;users.&nbsp;If&nbsp;False,&nbsp;the<br>
+tool&nbsp;is&nbsp;only&nbsp;accessible&nbsp;to&nbsp;a&nbsp;restricted&nbsp;set&nbsp;of&nbsp;users&nbsp;as&nbsp;well&nbsp;as&nbsp;admin<br>
+users,&nbsp;as&nbsp;defined&nbsp;in&nbsp;the&nbsp;galaxy.ini&nbsp;file.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-isRedirectTool"><strong>isRedirectTool</strong></a>(cls)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Specifies&nbsp;whether&nbsp;the&nbsp;tool&nbsp;should&nbsp;redirect&nbsp;to&nbsp;an&nbsp;URL&nbsp;when&nbsp;the&nbsp;Execute<br>
+button&nbsp;is&nbsp;clicked.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;False</tt></dd></dl>
+
+<dl><dt><a name="ToolTemplate-validateAndReturnErrors"><strong>validateAndReturnErrors</strong></a>(cls, choices)<font color="#909090"><font face="helvetica, arial"> from <a href="__builtin__.html#type">__builtin__.type</a></font></font></dt><dd><tt>Should&nbsp;validate&nbsp;the&nbsp;selected&nbsp;input&nbsp;parameters.&nbsp;If&nbsp;the&nbsp;parameters&nbsp;are<br>
+not&nbsp;valid,&nbsp;an&nbsp;error&nbsp;text&nbsp;explaining&nbsp;the&nbsp;problem&nbsp;should&nbsp;be&nbsp;returned.<br>
+The&nbsp;GUI&nbsp;then&nbsp;shows&nbsp;this&nbsp;text&nbsp;to&nbsp;the&nbsp;user&nbsp;(if&nbsp;not&nbsp;empty)&nbsp;and&nbsp;greys<br>
+out&nbsp;the&nbsp;execute&nbsp;button&nbsp;(even&nbsp;if&nbsp;the&nbsp;text&nbsp;is&nbsp;empty).&nbsp;If&nbsp;all<br>
+parameters&nbsp;are&nbsp;valid,&nbsp;the&nbsp;method&nbsp;should&nbsp;return&nbsp;None,&nbsp;which&nbsp;enables<br>
+the&nbsp;execute&nbsp;button.<br>
+&nbsp;<br>
+Optional&nbsp;method.&nbsp;Default&nbsp;return&nbsp;value&nbsp;if&nbsp;method&nbsp;is&nbsp;not&nbsp;defined:&nbsp;None</tt></dd></dl>
+
+</td></tr></table></td></tr></table>
+</body></html>

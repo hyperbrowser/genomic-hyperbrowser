@@ -3,7 +3,7 @@
 <html>
     <!--js-app.mako-->
     <head>
-        <title>Galaxy</title>
+        <title>${app.config.html_title}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ## For mobile browsers, don't scale up
         <meta name="viewport" content="maximum-scale=1.0">
@@ -11,6 +11,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
         ## relative href for site root
         <link rel="index" href="${ h.url_for( '/' ) }"/>
+        <link href="${h.url_for('/static/hyperbrowser/state/styles.css')}" rel="stylesheet" type="text/css" >
         ## TODO: use loaders to move everything but the essentials below the fold
         ${ h.css(
             'jquery.rating',
@@ -50,6 +51,7 @@
                 ${ h.dumps( bootstrapped ) }
             );
         </script>
+        <script src="${h.url_for('/static/hyperbrowser/state/index.js')}"></script>
     </body>
 </html>
 
@@ -70,6 +72,9 @@
         // this is needed *before* the app code is loaded - many MVC access Galaxy.root for their url
         // TODO: change this by using a common Backbone.Model base class and url fn
         window.Galaxy = { root: '${ options[ "root" ] }' };
+
+        window.force_left_panel = function(op) { window.Galaxy.page.left.force_panel(op); }
+        function hbGetBaseUrl() { return '${h.url_for("/")}'; }
     </script>
 
     %if not form_input_auto_focus is UNDEFINED and form_input_auto_focus:

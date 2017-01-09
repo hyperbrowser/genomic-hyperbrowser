@@ -1,34 +1,35 @@
-# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
-# This file is part of The Genomic HyperBrowser.
-#
-#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-
 import os
-from config.Config import URL_PREFIX
-#from gold.util.CustomExceptions import ShouldNotOccurError
 import re
 
-class HtmlCore(object):
+from config.Config import URL_PREFIX
+from proto.CommonConstants import THOUSANDS_SEPARATOR
+from proto.TableCoreMixin import TableCoreMixin
+
+
+class HtmlCore(TableCoreMixin):
     def __init__(self):
         self._str = ''
 
-    def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=[]):
+    def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=[], redirectUrl=None, reloadTime=None):
         self._str = '''
 <html>
-<head>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/jquery.js"></script>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/sorttable.js"></script>
+<head>'''
+
+        if redirectUrl:
+            self._str += '''
+<meta http-equiv="refresh" content="0; url=%s" />''' % redirectUrl
+
+        if reloadTime:
+            self._str += '''
+<script type="text/javascript">
+    var done = false;
+    setTimeout("if (!done) document.location.reload(true);", %s);
+</script>
+''' % (reloadTime * 1000)
+
+        self._str += '''
+<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
+<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/proto/sorttable.js"></script>
 '''
         for javaScriptFn in extraJavaScriptFns:
             if re.match('https?://', javaScriptFn):
@@ -68,7 +69,12 @@ class HtmlCore(object):
     def smallHeader(self, title):
         return self.highlight(title)
 
-    def end(self):
+    def end(self, stopReload=False):
+        if stopReload:
+            self._str += '''
+<script type="text/javascript">
+    done = true;
+</script>'''
         self._str += '''
 </body>
 </html>'''
@@ -118,31 +124,78 @@ class HtmlCore(object):
         self._str += '<i>' + text + '</i>'
         return self
 
-    def tableHeader(self, headerRow, tagRow=None, firstRow=True, sortable=False, tableId=None):
+    def preformatted(self, text):
+        self._str += '<pre>' + text + '</pre>'
+        return self
+
+    def tableHeader(self, headerRow, tagRow=None, firstRow=True, sortable=False,
+                    tableId=None, tableClass='colored bordered', headerClass='header',
+                    style='table-layout:auto;word-wrap:break-word;', **kwargs):
         if firstRow:
-            tableId = 'id="%s" '%tableId if tableId else ''
-            sortable = ' sortable' if sortable else ''
-            self._str += '<table %sclass="colored bordered%s" width="100%%" style="table-layout:auto; word-wrap:break-word;">' \
-                % (tableId, sortable) + os.linesep
+            tableIdStr = ('id="%s" ' % tableId) if tableId else ''
+            tableClassList = tableClass.split()
+            if sortable:
+                tableClassList.append('sortable')
+            tableClassStr = 'class="' + ' '.join(tableClassList) + '" ' \
+                if tableClassList else ''
+            self._str += '<table %s%s" width="100%%" style="%s">' \
+                % (tableIdStr, tableClassStr, style) + os.linesep
 
         if headerRow not in [None, []]:
             if tagRow is None:
                 tagRow = [''] * len(headerRow)
             self._str += '<tr>'
-            for tag,el in zip(tagRow, headerRow):
-                self._str += '<th class="header"' + (' ' + tag if tag!='' else '') + '>' + str(el) + '</th>'
+            headerClassStr = ' class="' + ' '.join(headerClass.split()) + '"' \
+                if headerClass else ''
+            for tag, el in zip(tagRow, headerRow):
+                self._str += '<th%s' % headerClassStr + \
+                             (' ' + tag if tag != '' else '') + \
+                             '>' + str(el) + '</th>'
             self._str += '</tr>' + os.linesep
 
         return self
 
-    def tableLine(self, row, rowSpanList=None):
-        self._str += '<tr>'
-        for i,el in enumerate(row):
-            self._str += '<td' + (' rowspan=' + str(rowSpanList[i]) if rowSpanList is not None else '') + '>' + str(el) + '</td>'
+    def tableLine(self, row, rowSpanList=None, **kwargs):
+        self.tableRowBegin(**kwargs)
+        for i, el in enumerate(row):
+            rowSpan = rowSpanList[i] if rowSpanList else None
+            self.tableCell(str(el), rowSpan=rowSpan, **kwargs)
+        self.tableRowEnd(**kwargs)
+        return self
+
+    def tableRowBegin(self, rowClass=None, **kwargs):
+        self._str += '<tr'
+        if rowClass:
+            self._str += ' class=%s' % rowClass
+        self._str += '>'
+        return self
+
+    def tableRowEnd(self, **kwargs):
         self._str += '</tr>' + os.linesep
         return self
 
-    def tableFooter(self):
+    def tableCell(self, content, cellClass=None, style=None,
+                  rowSpan=None, colSpan=None, **kwargs):
+        self._str += '<td'
+
+        try:
+            contentNoSpaces = content.replace(THOUSANDS_SEPARATOR, '')
+            float(contentNoSpaces)
+            self._str += ' sorttable_customkey="' + contentNoSpaces + '"'
+        except:
+            pass
+
+        if cellClass:
+            self._str += ' class="%s"' % cellClass
+        if style:
+            self._str += ' style="%s"' % style
+        if rowSpan:
+            self._str += ' rowspan="' + str(rowSpan) + '"'
+        if colSpan:
+            self._str += ' colspan="' + str(colSpan) + '"'
+        self._str += '>' + content + '</td>'
+
+    def tableFooter(self, **kwargs):
         self._str += '</table>'+ os.linesep
         return self
 
@@ -184,7 +237,7 @@ class HtmlCore(object):
     def unorderedList(self, strList):
         self._str += '<ul>'
         for s in strList:
-            self._str += '<li> %s' % s
+            self._str += '<li> %s </li>' % s
         self._str += '</ul>'
         return self
 
@@ -216,16 +269,14 @@ class HtmlCore(object):
         return self
 
     def _getStyleClassOrIdItem(self, styleClass, styleId):
+        assert styleClass or styleId
         if styleClass:
             return '.%s' % styleClass
         elif styleId:
             return '#%s' % styleId
-        else:
-            raise Exception()
-            #raise ShouldNotOccurError()
 
-
-    def toggle(self, text, styleClass=None, styleId=None, withDivider=False, otherAnchor=None, withLine=True):
+    def toggle(self, text, styleClass=None, styleId=None,
+               withDivider=False, otherAnchor=None, withLine=True):
         item = self._getStyleClassOrIdItem(styleClass, styleId)
         classOrId = styleClass if styleClass else styleId
 
@@ -246,6 +297,16 @@ class HtmlCore(object):
     $('%s').hide()
 </script>
 ''' % item
+
+    def fieldsetBegin(self, title=None):
+        self._str += '<fieldset>' + os.linesep
+        if title:
+            self._str += '<legend>%s</legend>' % title + os.linesep
+        return self
+
+    def fieldsetEnd(self):
+        self._str += '</fieldset>' + os.linesep
+        return self
 
     def image(self, imgFn, style=None):
         self._str += '''<img%s src="%s"/>''' % \

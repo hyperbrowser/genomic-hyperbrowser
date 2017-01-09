@@ -18,6 +18,8 @@ FETCH_WHEELS=1
 CREATE_VENV=1
 REPLACE_PIP=$SET_VENV
 COPY_SAMPLE_FILES=1
+INSTALL_R_PACKAGES=1
+HYPERBROWSER_SETUP=1
 
 for arg in "$@"; do
     [ "$arg" = "--skip-eggs" ] && FETCH_WHEELS=0
@@ -26,7 +28,7 @@ for arg in "$@"; do
     [ "$arg" = "--no-create-venv" ] && CREATE_VENV=0
     [ "$arg" = "--no-replace-pip" ] && REPLACE_PIP=0
     [ "$arg" = "--replace-pip" ] && REPLACE_PIP=1
-    [ "$arg" = "--stop-daemon" ] && FETCH_WHEELS=0
+    [ "$arg" = "--stop-daemon" ] && FETCH_WHEELS=0 && INSTALL_R_PACKAGES=0 && HYPERBROWSER_SETUP=0
     [ "$arg" = "--skip-samples" ] && COPY_SAMPLE_FILES=0
 done
 
@@ -35,6 +37,7 @@ SAMPLES="
     config/shed_tool_conf.xml.sample
     config/shed_tool_data_table_conf.xml.sample
     config/shed_data_manager_conf.xml.sample
+    config/tool_conf.xml.sample
     lib/tool_shed/scripts/bootstrap_tool_shed/user_info.xml.sample
     tool-data/shared/ucsc/builds.txt.sample
     tool-data/shared/ucsc/manual_builds.txt.sample
@@ -116,6 +119,29 @@ if [ $SET_VENV -eq 1 ]; then
     then
         printf "Activating virtualenv at $GALAXY_VIRTUAL_ENV\n"
         . "$GALAXY_VIRTUAL_ENV/bin/activate"
+
+        # R setup for Galaxy ProTo.
+        # Thanks to Dr. Paul Harrison for the setup
+        # (http://www.logarithmic.net/pfh/blog/01415014891)
+
+        if [ ! -d "$GALAXY_VIRTUAL_ENV/R/library" ];
+        then
+            printf "Setting up R in virtualenv at $GALAXY_VIRTUAL_ENV\n"
+
+            echo 'export R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
+            for LIB in $GALAXY_VIRTUAL_ENV/lib/python*
+            do
+                echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py
+            done
+
+            echo ". `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which R` \$@" >$GALAXY_VIRTUAL_ENV/bin/R
+            echo ". `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which Rscript` \$@" >$GALAXY_VIRTUAL_ENV/bin/Rscript
+            chmod a+x $GALAXY_VIRTUAL_ENV/bin/R $GALAXY_VIRTUAL_ENV/bin/Rscript
+
+            mkdir $GALAXY_VIRTUAL_ENV/R
+            mkdir $GALAXY_VIRTUAL_ENV/R/library
+        fi
+
         # Because it's a virtualenv, we assume $PYTHONPATH is unnecessary for
         # anything in the venv to work correctly, and having it set can cause
         # problems when there are conflicts with Galaxy's dependencies outside
@@ -178,10 +204,31 @@ if [ -f $PROTO_TOOL_CACHE ]; then
     rm -v $PROTO_TOOL_CACHE
 fi
 
-python ./scripts/R_install_packages.py
-if [ $? -eq 0 ]; then
-    echo "R library loading successful."
-else
-    echo "R library loading failed."
-    exit 1
+if [ $FETCH_WHEELS -eq 1 ]; then
+    pip install -r hyperbrowser-requirements.txt
 fi
+
+#set +e
+
+if [ $FETCH_WHEELS -eq 1 ]; then
+    pip install -r proto-requirements.txt || echo "Failed to install rpy2. R code will not work"
+fi
+
+if [ $INSTALL_R_PACKAGES -eq 1 ]; then
+    python ./scripts/R_install_packages.py
+    if [ $? -eq 0 ]; then
+        echo "R library loading successful."
+    else
+        echo "R library loading failed."
+        exit 1
+    fi
+fi
+
+#set -e
+
+if [ $HYPERBROWSER_SETUP -eq 1 ]; then
+    ./scripts/hyperbrowser_dirs.sh
+    python ./scripts/hyperbrowser_setup.py
+fi
+
+exit 0

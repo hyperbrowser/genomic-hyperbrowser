@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<!--
+# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
+# This file is part of The Genomic HyperBrowser.
+#
+#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<tool id="hb_wigvstep" name="Convert wig to variable step">
+	<description></description>
+	<command interpreter="python">
+        wigvstep.py '$input' '$output' '$gap'
+	</command>	
+	<inputs>
+        <param format="wig" name="input" type="data" label="Input file" help="Wig-file to convert" />
+
+        <param type="text" name="gap" label="Gap value" help="Value to fill gaps with" />
+
+        <param name="dbkey" type="select" help="Choose genome build" label="Genome">
+          <option value="hg18">Human Mar. 2006 (hg18/NCBI36)</option>
+          <!-- <option value="hg17">Human May 2004 (hg17/NCBI35)</option> -->
+        </param>
+	
+      </inputs>
+
+	<help>
+This tool converts bedGraph files to wig variable step format.
+
+-----
+
+**Gap value**
+
+Variable step files are defined over all base pairs. Areas with no segments in 
+the bedGraph file will be filled with this value.
+	</help>
+
+
+	<outputs>
+		<data format="wig" name="output" />
+	</outputs>
+
+
+</tool>

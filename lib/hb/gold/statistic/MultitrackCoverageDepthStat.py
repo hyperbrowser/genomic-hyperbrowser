@@ -1,0 +1,69 @@
+# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
+# This file is part of The Genomic HyperBrowser.
+#
+#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+
+from gold.statistic.MagicStatFactory import MagicStatFactory
+from gold.statistic.Statistic import MultipleRawDataStatistic,\
+    StatisticListSumResSplittable
+from gold.track.TrackFormat import TrackFormatReq
+from quick.statistic.BinSizeStat import BinSizeStat
+from gold.statistic.RawOverlapEventsStat import RawOverlapEventsStat
+
+class MultitrackCoverageDepthStat(MagicStatFactory):
+    '''
+    Returns a list where the index i is the depth level, 
+    and the corresponding value is the number of base-pair positions that are covered by exactly i tracks.
+    '''
+    pass
+
+class MultitrackCoverageDepthStatSplittable(StatisticListSumResSplittable):
+    pass
+
+class MultitrackCoverageDepthStatUnsplittable(MultipleRawDataStatistic):
+
+    def _compute(self): 
+        
+        numTracks = len(self._tracks)
+        binSize = self._binSizeStat.getResult()
+        allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus = self._children[0].getResult()
+
+        results = [0]*(numTracks+1)
+
+#Old implementation
+#         for i, cumCoverStatus in enumerate(cumulativeCoverStatus[:-1]):
+#             depth = bin(cumCoverStatus).count("1")
+#             results[depth] += allEventLengths[i]
+
+        for i, cumCoverStatus in enumerate(cumulativeCoverStatus[:-1]):
+            results[cumCoverStatus] += allEventLengths[i]
+
+        if len(allSortedDecodedEvents)>0:
+            results[0] += allSortedDecodedEvents[0] + (binSize - allSortedDecodedEvents[-1])
+        else:
+            results[0] +=binSize
+
+        return results
+
+    def _createChildren(self):
+        #For the tests to work with multiple tracks we must send Track objects in extraTracks.
+        #Because of the Statistic.constructUniqueKey we must send in a tuple which is hashable.
+        if 'extraTracks' in self._kwArgs:
+            del self._kwArgs['extraTracks']
+#         self._addChild(RawOverlapCodedEventsStat(self._region, self._track, self._track2, extraTracks = tuple(self._tracks[2:]), **self._kwArgs))
+        self._addChild(RawOverlapEventsStat(self._region, self._track, self._track2, extraTracks = tuple(self._tracks[2:]), **self._kwArgs))
+        self._binSizeStat = self._addChild( BinSizeStat(self._region, self._track2))
+        
+    def _getTrackFormatReq(self):
+        return TrackFormatReq(dense=False)

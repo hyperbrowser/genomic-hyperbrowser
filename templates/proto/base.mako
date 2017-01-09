@@ -23,135 +23,15 @@
 
 <%def name="stylesheets()">
     ${h.css('base')}
-    ${h.css('proto/base')}
-    <style type="text/css">
-    .showInfo {
-        cursor: pointer;
-    }
-    .hideInfo {
-        cursor: pointer;
-    }
-    .hidden {
-        display: none;
-    }
-	fieldset {
-        padding: 8px;
-		margin-top: 6px;
-		margin-bottom: 6px;
-    }
-	textarea {
-		margin-top: 6px;
-		margin-bottom: 6px;
-    }
-	input {
-		margin-top: 6px;
-		margin-bottom: 6px;	
-	}
-	.genome {
-		float:left;
-		margin-top:10px;
-		margin-bottom:10px
-	}
-    .option {
-    }
-    a.help {
-        font-weight: bold;
-        text-decoration: none;
-        font-size: 15px;
-    }
-    div.help {
-        display: none;
-        b__order: dashed 1px;
-        padding: 2px;
-        background-image: none;
-    }
-    div.toolHelp {
-    	margin-top: 15px;
-    }
-    hr.space {
-    	margin-top: 15px;
-    	margin-bottom: 15px;
-    }
-    a.option {
-            cursor: pointer;
-            display: block;
-            text-decoration: none;
-            padding: 2px;
-            width: 99%;
-    }
-    a.option:hover {
-        background-color: #006;
-        color: #fff;
-    }
-    a.selected {
-        border: solid 1px #006;
-    }
-    div.options {
-        width: 90%;
-        height: auto;
-        overflow: auto;
-        display: none;
-        position: absolute;
-        border: 2px outset;
-        background-color: #fff;
-    }
-	.infomessagesmall {
-	    margin: 5px;
-	}
-    .invisible {
-        visibility: hidden;
-    }
-    .options label {
-        display: block;
-    }
-    #_stats_text {
-        font-weight: bold;
-    }
-	td {
-	    padding: 20px;
-            white-space: normal;
-	}
-    table {
-        max-width: 100%;
-        text-align: center;
-        margin-left: auto;
-        margin-right: auto;
-        table-layout:auto;
-        word-wrap:break-word;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    h4 {
-        padding-top: 20px;
-        text-align: center;
-    }
-    
-    #__disabled
-    {
-	display:none;
-	position:absolute;
-	top:0px;
-	left:0px;
-	width: 100%;
-	height: 100%;
-	opacity: 0.50;
-	filter:alpha(opacity=50);
-	z-Index:1000;
-        background-color: #EEEEEE;
-        background-image: url("static/proto/images/rays.gif");
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center center;
-        background-size: 32px;
-    }
-
-    </style>
+    ${h.css('proto')}
 </%def>
 
 <%def name="javascripts()">
     ${h.js( "libs/jquery/jquery")}
     ${self.head()}
 </%def>
+
+<%def name="javascript_app()"></%def>
 
 <%def name="head()"></%def>
 <%def name="action()"></%def>

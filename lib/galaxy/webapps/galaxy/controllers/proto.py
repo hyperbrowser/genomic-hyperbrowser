@@ -14,21 +14,35 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import sys, os
 
-from galaxy.web.base.controller import *
-import logging, sets, time
+from galaxy.web.base.controller import web, error, BaseUIController
+import logging
 
 log = logging.getLogger( __name__ )
 
 import traceback
-from multiprocessing import Process, Pipe, Array, Queue
+from multiprocessing import Process, Pipe, Queue
 from importlib import import_module
+
+#from sqlalchemy import create_engine, event, exc
+#from sqlalchemy.orm.session import Session, sessionmaker
+#from sqlalchemy.orm.scoping import scoped_session
+
+
 
 class ProtoController( BaseUIController ):
 
-    @staticmethod
-    def __index_pipe(response, trans, tool):
+    def run_fork(self, response, trans, mako):
+        # this can close active connections in parent threads, since db server endpoint closes
+        #trans.sa_session.get_bind().dispose()
+
+        # don't know why this has no effect
+        #engine = create_engine(trans.app.config.database_connection, pool_size=1)
+        #trans.app.model.context = scoped_session(sessionmaker(bind=engine, autoflush=False, autocommit=True))
+
         # logging locks and/or atexit handlers may be cause of deadlocks in a fork from thread
         # attempt to fix by shutting down and reloading logging module and clear exit handlers
         # logging.shutdown()
@@ -47,62 +61,81 @@ class ProtoController( BaseUIController ):
         exc_info = None
         html = ''
         #response.send_bytes('ping')
+
         try:
-#            from gold.application.GalaxyInterface import GalaxyInterface
-#            template_mako = '/hyperbrowser/' + tool + '.mako'
-            template_mako = '/proto/' + tool + '.mako'
-            toolController = None
-            try:
-                #toolModule = __import__('proto.' + tool, globals(), locals(), ['getController'])
-                toolModule = import_module('proto.' + tool)
-                toolController = toolModule.getController(trans)
-            except Exception, e:
-                print e
-                exc_info = sys.exc_info()
-                pass
-            
-            #html = trans.fill_template(template_mako, trans=trans, hyper=GalaxyInterface, control=toolController)
-            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+            html, exc_info = self.run_tool(mako, trans)
         except Exception, e:
             html = '<html><body><pre>\n'
             if exc_info:
-                html += str(e) + ':\n' + ''.join(traceback.format_exception(exc_info[0],exc_info[1],exc_info[2])) + '\n\n'
+               html += str(e) + ':\n' + exc_info + '\n\n'
+#               html += str(e) + ':\n' + ''.join(traceback.format_exception(exc_info[0],exc_info[1],exc_info[2])) + '\n\n'
             html += str(e) + ':\n' + traceback.format_exc() + '\n</pre></body></html>'
 
         response.send_bytes(html)
         response.close()
 
+        #trans.sa_session.flush()
+        #engine.dispose()
+
+    def run_tool(self, mako, trans):
+        toolController = None
+        exc_info = None
+        try:
+            toolModule = import_module('proto.' + mako)
+            toolController = toolModule.getController(trans)
+        except Exception, e:
+            #                print e
+            exc_info = sys.exc_info()
+        if mako.startswith('/'):
+            template_mako = mako + '.mako'
+            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+        else:
+            template_mako = '/proto/' + mako + '.mako'
+            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+        return html, exc_info
 
     @web.expose
     def index(self, trans, mako = 'generictool', **kwd):
+
         if kwd.has_key('rerun_hda_id'):
             self._import_job_params(trans, kwd['rerun_hda_id'])
                     
         if isinstance(mako, list):
             mako = mako[0]
-        
-        #trans.sa_session.flush()
-        # trans.sa_session.close()
 
-        done = False
-        while not done:
-            trans.sa_session.flush()
+        timeout = 30
+        retry = 3
+        while retry > 0:
+            retry -= 1
 
             my_end, your_end = Pipe()
-            proc = Process(target=self.__index_pipe, args=(your_end,trans,str(mako)))
+            proc = Process(target=self.run_fork, args=(your_end,trans,str(mako)))
+
+            #trans.sa_session.flush()
+
+            # this avoids database exceptions in fork, but defies the point of having a
+            # connection pool
+            #trans.sa_session.get_bind().dispose()
+
+            # attempt to fully load history/dataset objects to avoid "lazy" loading from
+            # database in forked process
+            if trans.get_history():
+                for hda in trans.get_history().active_datasets:
+                    _ = hda.visible, hda.state, hda.dbkey, hda.extension, hda.datatype
+
             proc.start()
             html = ''
             if proc.is_alive():
-                if my_end.poll(10):
+                if my_end.poll(timeout):
                     #ping = my_end.recv_bytes()
                     html = my_end.recv_bytes()
                     my_end.close()
-                    done = True
+                    break
                 else:
-                    log.warn('Fork timed out after 10 sec. Retrying...')
+                    log.warn('Fork timed out after %d sec. Retrying...' % (timeout,))
             else:
                 log.warn('Fork died on startup.')
-                done = True
+                break
 
             proc.join(1)
             if proc.is_alive():

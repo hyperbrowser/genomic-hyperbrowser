@@ -15,11 +15,45 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
-import functools
 import re
+import shelve
 import urllib
-import contextlib
+from collections import OrderedDict
+
+from proto.CommonConstants import THOUSANDS_SEPARATOR
+from proto.config.Config import GALAXY_BASE_DIR, OUTPUT_PRECISION
+from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId
+
+"""
+Note on datasetInfo and datasetId (used in several functions):
+
+DatasetInfo is an especially coded list of strings, used mainly to process
+files from galaxy history, but can also be used otherwise. Structure is:
+['galaxy', fileEnding, datasetFn, name]. The first element is used for
+assertion. The second element contains the file format (as galaxy force
+the ending '.dat'). datasetFn is the dataset file name, typically ending
+with 'XXX/dataset_YYYY.dat', where XXX and YYYY are numbers which may be
+extracted and used as a datasetId in the form [XXX, YYYY]. The last element
+is the name of the history element, mostly used for presentation purposes.
+"""
+
+
+def getToolPrototype(toolId):
+    tool_shelve = None
+    try:
+        tool_shelve = shelve.open(
+            GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve', 'r')
+        module_name, class_name = tool_shelve[str(toolId)]
+        module = __import__(module_name, fromlist=[class_name])
+        # print module, class_name, toolId
+        prototype = getattr(module, class_name)(toolId)
+        # print "Loaded proto tool:", class_name
+    #except KeyError:
+    #    prototype = None
+    finally:
+        if tool_shelve:
+            tool_shelve.close()
+    return prototype
 
 
 def ensurePathExists(fn):
@@ -30,28 +64,6 @@ def ensurePathExists(fn):
         #oldMask = os.umask(0002)
         os.makedirs(path)
         #os.umask(oldMask)
-
-
-def reloadModules():
-    for module in [val for key,val in sys.modules.iteritems() \
-                   if key.startswith('gold') or key.startswith('quick') or key.startswith('test')]:
-        try:
-            reload(module)
-        except:
-            print module
-
-
-def wrapClass(origClass, keywords={}):
-    #for key in keywords.keys():
-    #    if re.match('^[0-9]+$',keywords[key]) is not None:
-    #        keywords[key] = int(keywords[key])
-    #    elif re.match('^[0-9]?[.][0-9]?$',keywords[key]) is not None and keywords[key] != '.':
-    #        keywords[key] = float(keywords[key])
-
-    args = []
-    wrapped = functools.partial(origClass, *args, **keywords)
-    functools.update_wrapper(wrapped, origClass)
-    return wrapped
 
 
 def extractIdFromGalaxyFn(fn):
@@ -106,50 +118,51 @@ def extractIdFromGalaxyFn(fn):
 
 
 def createFullGalaxyIdFromNumber(num):
+    num = int(num)
     id2 = str(num)
-    id1 =  ('%.3f' % (int(id2)/1000 *1.0 / 1000))[2:]
+    id1 =  '%03d' % (num / 1000)
     return [id1, id2]
 
 
-def getGalaxyFnFromDatasetId(num):
-    from config.Config import GALAXY_FILE_PATH
+def getGalaxyFnFromDatasetId(num, galaxyFilePath=None):
+    if not galaxyFilePath:
+        from proto.config.Config import GALAXY_FILE_PATH
+        galaxyFilePath = GALAXY_FILE_PATH
+
     id1, id2 = createFullGalaxyIdFromNumber(num)
-    return os.path.join(GALAXY_FILE_PATH, id1, 'dataset_%s.dat' % id2)
-
-
-def galaxySecureEncodeId(plainId):
-    from config.Config import GALAXY_SECURITY_HELPER_OBJ
-    return GALAXY_SECURITY_HELPER_OBJ.encode_id(plainId)
-
-
-def galaxySecureDecodeId(encodedId):
-    from config.Config import GALAXY_SECURITY_HELPER_OBJ
-    return GALAXY_SECURITY_HELPER_OBJ.decode_id(encodedId)
+    return os.path.join(galaxyFilePath, id1, 'dataset_%s.dat' % id2)
 
 
 def getEncodedDatasetIdFromPlainGalaxyId(plainId):
     return galaxySecureEncodeId(plainId)
 
 
-def getEncodedDatasetIdFromGalaxyFn(cls, galaxyFn):
+def getEncodedDatasetIdFromGalaxyFn(galaxyFn):
     plainId = extractIdFromGalaxyFn(galaxyFn)[1]
     return getEncodedDatasetIdFromPlainGalaxyId(plainId)
 
 
-def getGalaxyFnFromEncodedDatasetId(encodedId):
+def getGalaxyFnFromEncodedDatasetId(encodedId, galaxyFilePath=None):
     plainId = galaxySecureDecodeId(encodedId)
-    return getGalaxyFnFromDatasetId(plainId)
+    return getGalaxyFnFromDatasetId(plainId, galaxyFilePath=galaxyFilePath)
+
+
+def getGalaxyFnFromAnyDatasetId(id, galaxyFilePath=None):
+    try:
+        return getGalaxyFnFromEncodedDatasetId(id,
+                                               galaxyFilePath=galaxyFilePath)
+    except:
+        return getGalaxyFnFromDatasetId(id, galaxyFilePath=galaxyFilePath)
 
 
 def getGalaxyFilesDir(galaxyFn):
     return galaxyFn[:-4] + '_files'
 
-    '''
-    id is the relative file hierarchy, encoded as a list of strings
-    '''
-
 
 def getGalaxyFilesFilename(galaxyFn, id):
+    """
+    id is the relative file hierarchy, encoded as a list of strings
+    """
     return os.path.sep.join([getGalaxyFilesDir(galaxyFn)] + id)
 
 
@@ -170,7 +183,11 @@ def createGalaxyFilesFn(galaxyFn, filename):
 def extractFnFromDatasetInfo(datasetInfo):
     if isinstance(datasetInfo, basestring):
         datasetInfo = datasetInfo.split(':')
-    return getGalaxyFnFromEncodedDatasetId(datasetInfo[2])
+    try:
+        return getGalaxyFnFromEncodedDatasetId(datasetInfo[2])
+    except TypeError:
+        # full path, not id
+        return datasetInfo[2]
 
 
 def extractFileSuffixFromDatasetInfo(datasetInfo, fileSuffixFilterList=None):
@@ -179,7 +196,7 @@ def extractFileSuffixFromDatasetInfo(datasetInfo, fileSuffixFilterList=None):
 
     suffix = datasetInfo[1]
 
-    if fileSuffixFilterList and not suffix.lower() in fileSuffixFilterList():
+    if fileSuffixFilterList and not suffix.lower() in fileSuffixFilterList:
         raise Exception('File type "' + suffix + '" is not supported.')
 
     return suffix
@@ -193,52 +210,90 @@ def extractNameFromDatasetInfo(datasetInfo):
     return unquote(datasetInfo[-1])
 
 
-# def getUniqueRunSpecificId(id=[]):
-#    return ['run_specific'] + id
-#
-# def getUniqueWebPath(id=[]):
-#    from config.Config import STATIC_PATH
-#    return os.sep.join([STATIC_PATH] + getUniqueRunSpecificId(id))
+def getSecureIdAndExtFromDatasetInfoAsStr(datasetInfo):
+        if datasetInfo and datasetInfo.startswith('galaxy'):
+            sep = datasetInfo[6]
+            if sep == ',':
+                splitted = datasetInfo.split(',')
+                id_sel = splitted[1]
+                ext = splitted[2]
+            else:
+                splitted = datasetInfo.split(':')
+                id_sel = splitted[2]
+                ext = splitted[1]
+        else:
+            id_sel = 0
+            ext = ''
+        return id_sel, ext
+
+def createToolURL(toolId, **kwArgs):
+    from proto.tools.GeneralGuiTool import GeneralGuiTool
+    return GeneralGuiTool.createGenericGuiToolURL(toolId, tool_choices=kwArgs)
 
 
-def getLoadToGalaxyHistoryURL(fn, genome='hg18', galaxyDataType='bed', urlPrefix=None):
+def createGalaxyToolURL(toolId, **kwArgs):
+    from proto.config.Config import URL_PREFIX
+    return URL_PREFIX + '/tool_runner?tool_id=' + toolId + \
+            ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
+
+
+def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=None,
+                              histElementName=None):
     if urlPrefix is None:
-        from config.Config import URL_PREFIX
+        from proto.config.Config import URL_PREFIX
         urlPrefix = URL_PREFIX
 
     import base64
 
-    assert galaxyDataType in ['bed', 'bedgraph', 'gtrack', 'gsuite']
-
-    return urlPrefix + '/tool_runner?tool_id=file_import_%s&dbkey=%s&runtool_btn=yes&input=' % (galaxyDataType, genome) \
-            + base64.urlsafe_b64encode(fn) + ('&datatype='+galaxyDataType if galaxyDataType is not None else '')
-
-# def getRelativeUrlFromWebPath(webPath):
-#    from config.Config import GALAXY_BASE_DIR, URL_PREFIX
-#    if webPath.startswith(GALAXY_BASE_DIR):
-#        return URL_PREFIX + webPath[len(GALAXY_BASE_DIR):]
+    assert galaxyDataType is not None
+    return urlPrefix + '/tool_runner?tool_id=file_import' + \
+                       ('&dbkey=' + genome if genome else '') + \
+                       '&runtool_btn=yes&input=' + base64.urlsafe_b64encode(fn) + \
+                       ('&format=' + galaxyDataType if galaxyDataType is not None else '') + \
+                       ('&job_name=' + histElementName if histElementName is not None else '')
 
 
-def isFlatList(list):
-    for l in list:
-        if type(l) == type([]):
-            return False
-    return True
+def strWithStdFormatting(val, separateThousands=True, floatFormatFlag='g'):
+    try:
+        assert val != int(val)
+        integral, fractional = (('%#.' + str(OUTPUT_PRECISION) + floatFormatFlag) % val).split('.')
+    except:
+        integral, fractional = str(val), None
 
-
-def flattenList(list):
-    '''
-    recursively flattens a nested list (does not handle dicts and sets..) e.g.
-    [1, 2, 3, 4, 5] == flattenList([[], [1,2],[3,4,5]])
-    '''
-    if isFlatList(list):
-        return list
+    if not separateThousands:
+        return integral + ('.' + fractional if fractional is not None else '')
     else:
-        return flattenList( reduce(lambda x,y: x+y, list ) )
+        try:
+            return ('-' if integral[0] == '-' else '') + \
+                '{:,}'.format(abs(int(integral))).replace(',', THOUSANDS_SEPARATOR) + \
+                ('.' + fractional if fractional is not None else '')
+        except:
+            return integral
 
 
-def listStartsWith(a, b):
-    return len(a) > len(b) and a[:len(b)] == b
+def strWithNatLangFormatting(val, separateThousands=True):
+    return strWithStdFormatting(val, separateThousands=separateThousands, floatFormatFlag='f')
+
+
+def sortDictOfLists(dictOfLists, sortColumnIndex, descending=True):
+    return OrderedDict(sorted(
+        list(dictOfLists.iteritems()), key=lambda t: (t[1][sortColumnIndex]), reverse=descending))
+
+
+def smartSortDictOfLists(dictOfLists, sortColumnIndex, descending=True):
+    """Sort numbers first than strings, take into account formatted floats"""
+    # convert = lambda text: int(text) if text.isdigit() else text
+    # alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return OrderedDict(sorted(
+        list(dictOfLists.iteritems()), key=lambda t: forceNumericSortingKey(t[1][sortColumnIndex]), reverse=descending))
+
+
+def _strIsFloat(s):
+    try:
+        float(s)
+        return True
+    except:
+        return False
 
 
 def isNan(a):
@@ -250,280 +305,12 @@ def isNan(a):
         return False
 
 
-def isListType(x):
-    import numpy
-    return type(x) == list or type(x) == tuple or isinstance(x, numpy.ndarray) or isinstance(x, dict)
-
-
-def ifDictConvertToList(d):
-    return [(x, d[x]) for x in sorted(d.keys())] if isinstance(d, dict) else d
-
-
-def smartRecursiveAssertList(x, y, assertEqualFunc, assertAlmostEqualFunc):
-    import numpy
-
-    if isListType(x):
-        if isinstance(x, numpy.ndarray):
-            try:
-                if not assertEqualFunc(x.shape, y.shape):
-                    return False
-            except Exception, e:
-                raise AssertionError(str(e) + ' on shape of lists: ' + str(x) + ' and ' + str(y))
-
-            try:
-                if not assertEqualFunc(x.dtype, y.dtype):
-                    return False
-            except Exception, e:
-                raise AssertionError(str(e) + ' on datatypes of lists: ' + str(x) + ' and ' + str(y))
-        else:
-            try:
-                if not assertEqualFunc(len(x), len(y)):
-                    return False
-            except Exception, e:
-                raise AssertionError(str(e) + ' on length of lists: ' + str(x) + ' and ' + str(y))
-
-        for el1,el2 in zip(*[ifDictConvertToList(x) for x in [x, y]]):
-            if not smartRecursiveAssertList(el1, el2, assertEqualFunc, assertAlmostEqualFunc):
-                return False
-        return True
-
-    else:
-        try:
-            return assertAlmostEqualFunc(x, y)
-        except TypeError:
-            return assertEqualFunc(x, y)
-
-
-def bothIsNan(a, b):
-    import numpy
-
-    try:
-        if not any(isListType(x) for x in [a,b]):
-            return numpy.isnan(a) and numpy.isnan(b)
-    except (TypeError, NotImplementedError):
-        pass
-    return False
-
-
-def smartEquals(a, b):
-    if bothIsNan(a, b):
-        return True
-    return a == b
-
-
-def smartRecursiveEquals(a, b):
-    return smartRecursiveAssertList(a, b, smartEquals, smartEquals)
-
-
-def reorderTrackNameListFromTopDownToBottomUp(trackNameSource):
-    prevTns = []
-    source = trackNameSource.__iter__()
-    trackName = source.next()
-
-    try:
-        while True:
-            if len(prevTns) == 0 or listStartsWith(trackName, prevTns[0]):
-                prevTns.insert(0, trackName)
-                trackName = source.next()
-                continue
-            yield prevTns.pop(0)
-
-    except StopIteration:
-        while len(prevTns) > 0:
-            yield prevTns.pop(0)
-
-
-R_ALREADY_SILENCED = False
-R_ALREADY_SILENCED_OUTPUT = False
-
-
-def silenceRWarnings():
-    global R_ALREADY_SILENCED
-    if not R_ALREADY_SILENCED:
-        from proto.RSetup import r
-        r('sink(file("/dev/null", open="wt"), type="message")')
-        R_ALREADY_SILENCED = True
-
-
-def silenceROutput():
-    global R_ALREADY_SILENCED_OUTPUT
-    if not R_ALREADY_SILENCED_OUTPUT:
-        from proto.RSetup import r
-        r('sink(file("/dev/null", open="wt"), type="output")')
-        R_ALREADY_SILENCED_OUTPUT = True
-
-
-def createHyperBrowserURL(genome, trackName1, trackName2=None, track1file=None, track2file=None, \
-                          demoID=None, analcat=None, analysis=None, \
-                          configDict=None, trackIntensity=None, method=None, region=None, \
-                          binsize=None, chrs=None, chrArms=None, chrBands=None, genes=None):
-    urlParams = []
-    urlParams.append( ('dbkey', genome) )
-    urlParams.append( ('track1', ':'.join(trackName1)) )
-    if trackName2:
-        urlParams.append( ('track2', ':'.join(trackName2)) )
-    if track1file:
-        urlParams.append( ('track1file', track1file) )
-    if track2file:
-        urlParams.append( ('track2file', track2file) )
-    if demoID:
-        urlParams.append( ('demoID', demoID) )
-    if analcat:
-        urlParams.append( ('analcat', analcat) )
-    if analysis:
-        urlParams.append( ('analysis', analysis) )
-    if configDict:
-        for key, value in configDict.iteritems():
-            urlParams.append( ('config_%s' % key, value) )
-    if trackIntensity:
-        urlParams.append( ('trackIntensity', trackIntensity) )
-    if method:
-        urlParams.append( ('method', method) )
-    if region:
-        urlParams.append( ('region', region) )
-    if binsize:
-        urlParams.append( ('binsize', binsize) )
-    if chrs:
-        urlParams.append( ('__chrs__', chrs) )
-    if chrArms:
-        urlParams.append( ('__chrArms__', chrArms) )
-    if chrBands:
-        urlParams.append( ('__chrBands__', chrBands) )
-    if genes:
-        urlParams.append( ('genes', genes) )
-    #genes not __genes__?
-    #encode?
-
-    from config.Config import URL_PREFIX
-    return URL_PREFIX + '/hyper?' + '&'.join([urllib.quote(key) + '=' + \
-                                              urllib.quote(value) for key,value in urlParams])
-
-
-def createToolURL(toolId, **kwArgs):
-    from config.Config import URL_PREFIX
-    return URL_PREFIX + '/hyper?mako=generictool&tool_id=' + toolId + \
-            ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
-
-
-def createGalaxyToolURL(toolId, **kwArgs):
-    from config.Config import URL_PREFIX
-    return URL_PREFIX + '/tool_runner?tool_id=' + toolId + \
-            ''.join(['&' + urllib.quote(key) + '=' + urllib.quote(value) for key,value in kwArgs.iteritems()])
-
-
-
-def numAsPaddedBinary(comb, length):
-    return '0'*(length-len(bin(comb)[2:]))+bin(comb)[2:]
-
-
-@contextlib.contextmanager
-def changedWorkingDir(new_dir):
-    orig_dir = os.getcwd()
-    os.chdir(new_dir)
-    try:
-        yield
-    finally:
-        os.chdir(orig_dir)
-
-
-def convertTNstrToTNListFormat(tnStr, doUnquoting=False):
-    tnList = re.split(':|\^|\|', tnStr)
-    if doUnquoting:
-        tnList = [urllib.unquote(x) for x in tnList]
-    return tnList
-
-
-#used by echo
-def format_arg_value(arg_val):
-    """ Return a string representing a (name, value) pair.
-
-    >>> format_arg_value(('x', (1, 2, 3)))
-    'x=(1, 2, 3)'
-    """
-    arg, val = arg_val
-    return "%s=%r" % (arg, val)
-
-
-def echo(fn, write=sys.stdout.write):
-    """ Echo calls to a function.
-
-    Returns a decorated version of the input function which "echoes" calls
-    made to it by writing out the function's name and the arguments it was
-    called with.
-    """
-    import functools
-    # Unpack function's arg count, arg names, arg defaults
-    code = fn.func_code
-    argcount = code.co_argcount
-    argnames = code.co_varnames[:argcount]
-    fn_defaults = fn.func_defaults or list()
-    argdefs = dict(zip(argnames[-len(fn_defaults):], fn_defaults))
-
-    @functools.wraps(fn)
-    def wrapped(*v, **k):
-        # Collect function arguments by chaining together positional,
-        # defaulted, extra positional and keyword arguments.
-        positional = map(format_arg_value, zip(argnames, v))
-        defaulted = [format_arg_value((a, argdefs[a]))
-                     for a in argnames[len(v):] if a not in k]
-        nameless = map(repr, v[argcount:])
-        keyword = map(format_arg_value, k.items())
-        args = positional + defaulted + nameless + keyword
-        write("%s(%s)\n" % (name(fn), ", ".join(args)))
-        return fn(*v, **k)
-    return wrapped
-
-
-def getGeSource(track, genome=None):
-
-    from quick.application.ExternalTrackManager import ExternalTrackManager
-    from gold.origdata.BedGenomeElementSource import BedGenomeElementSource, BedCategoryGenomeElementSource
-    from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-    from gold.origdata.TrackGenomeElementSource import FullTrackGenomeElementSource
-
-    if type(track) == str:
-        track = track.split(':')
-
-    try:
-        fileType = ExternalTrackManager.extractFileSuffixFromGalaxyTN(track)
-        fn = ExternalTrackManager.extractFnFromGalaxyTN(track)
-        if fileType == 'category.bed':
-            return BedCategoryGenomeElementSource(fn)
-        elif fileType == 'gtrack':
-            return GtrackGenomeElementSource(fn)
-        else:
-            return BedGenomeElementSource(fn)
-    except:
-        return FullTrackGenomeElementSource(genome, track, allowOverlaps=False)
-
-
-# generate powerset for set
-# powerset([a,b,c]) = [(), (a), (b), (c), (a,b), (a,c), (a,b), (a,b,c))
-def powerset(iterable):
-    from itertools import chain, combinations
-    s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
-
-
-# Generate all supersets of a set represented by a binary string
-# e.g. allSupersets('010') = ['110','011','111']
-def allSupersets(binaryString):
-    length = len(binaryString)
-    binaryList = list(binaryString)
-    zeroIndex = [i for i,val in enumerate(binaryList) if val == '0']
-    for comb in powerset(zeroIndex):
-        if comb:
-            yield ''.join([binaryList[i] if i not in comb else '1' for i in range(length)])
-
-
-def getUniqueFileName(origFn):
-    import os
-
-    i = 0
-    newOrigFn = origFn
-
-    while os.path.exists(newOrigFn):
-        newOrigFn = origFn + '.%s' % i
-        i += 1
-
-    return newOrigFn
+def forceNumericSortingKey(key):
+    sortKey1 = 0
+    sortKey2 = key
+    if isNan(key):
+        return [sortKey1, sortKey2]
+    if _strIsFloat(str(key).replace(THOUSANDS_SEPARATOR, '')):
+        sortKey1 = 1
+        sortKey2 = float(str(key).replace(THOUSANDS_SEPARATOR, ''))
+    return [sortKey1, sortKey2]

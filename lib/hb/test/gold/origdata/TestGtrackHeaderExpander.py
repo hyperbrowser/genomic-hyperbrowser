@@ -1,0 +1,124 @@
+# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
+# This file is part of The Genomic HyperBrowser.
+#
+#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+
+import unittest
+import os
+from tempfile import NamedTemporaryFile
+
+from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource as Gtrack
+from gold.origdata.GtrackHeaderExpander import expandHeadersOfGtrackFileAndReturnContents, \
+    EXPANDABLE_HEADERS, NOT_GUARANTEED_EXPANDABLE_HEADERS, VALUE_NOT_KEPT_HEADERS
+from gold.origdata.GEDependentAttributesHolder import GEDependentAttributesHolder
+from gold.origdata.GenomeElementSource import GenomeElementSource
+from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
+from test.util.Asserts import TestCaseWithImprovedAsserts
+
+class TestGtrackHeaderExpander(TestWithGeSourceData, TestCaseWithImprovedAsserts):
+    GENOME = 'TestGenome'
+    TRACK_NAME_PREFIX = ['TestGenomeElementSource']
+        
+    def setUp(self):
+        pass
+    
+    def _isHeaderLine(self, line):
+        return len(line) > 3 and \
+                line.startswith('##') and \
+                line[2] != '#' and \
+                ':' in line
+            
+    def _isExpandableHeader(self, line, onlyGuaranteed):
+        return self._isHeaderLine(line) and \
+                ( (Gtrack.getHeaderKeyValue(line)[0] in EXPANDABLE_HEADERS) or \
+                   (not onlyGuaranteed and Gtrack.getHeaderKeyValue(line)[0] in NOT_GUARANTEED_EXPANDABLE_HEADERS) )
+        
+    def _isValueNotKeptHeader(self, line):
+        return self._isHeaderLine(line) and \
+                Gtrack.getHeaderKeyValue(line)[0] in VALUE_NOT_KEPT_HEADERS
+        
+    def testHeaderExpansion(self):
+        geSourceTest = self._commonSetup()
+        
+        for caseName in geSourceTest.cases:
+            if not caseName.startswith('gtrack'):
+                continue
+                
+            if 'no_expand' in caseName:
+                print 'Test case skipped: ' + caseName
+                continue
+                
+            onlyGuaranteed = 'no_types_expanded' in caseName
+            
+            print caseName
+            print '==========='
+            case = geSourceTest.cases[caseName]
+            
+            headerLines = [line if not self._isHeaderLine(line) else
+                            '##' + ': '.join([str(x).lower() for x in Gtrack.getHeaderKeyValue(line.strip())])
+                             for line in case.headerLines]
+            
+            fullContents = os.linesep.join(headerLines + case.lines)
+            print 'Original:\n\n' + fullContents
+            
+            case.headerLines = [line for line in headerLines if not self._isExpandableHeader(line, onlyGuaranteed)]
+            print '-----'
+            print 'With headers removed:\n\n' + os.linesep.join(case.headerLines + case.lines)
+            
+            testFn = self._writeTestFile(case)
+            
+            expandedContents = expandHeadersOfGtrackFileAndReturnContents(testFn, case.genome, onlyNonDefault=False)
+
+            print '-----'
+            print 'With expanded headers:\n\n' + expandedContents
+            
+            expandedContentsOnlyNonDefaults = expandHeadersOfGtrackFileAndReturnContents(testFn, case.genome, onlyNonDefault=True)
+
+            print '-----'
+            print 'With expanded headers (only non-default headers):\n\n' + expandedContentsOnlyNonDefaults
+            
+            origExpandableHeaders = dict([Gtrack.getHeaderKeyValue(line) for line in headerLines \
+                                          if self._isExpandableHeader(line, onlyGuaranteed=False)])
+            notExpandableHeaders = dict([Gtrack.getHeaderKeyValue(line) for line in case.headerLines \
+                                          if self._isHeaderLine(line) and not self._isValueNotKeptHeader(line)])
+            expandedHeaders = dict([Gtrack.getHeaderKeyValue(line) for line in expandedContents.split(os.linesep) \
+                                    if self._isHeaderLine(line)])
+            
+            if 'no_check_expand' in caseName:
+                print 'No checks for case: ' + caseName
+            else:
+                for header in origExpandableHeaders:
+                    self.assertEquals(origExpandableHeaders[header], expandedHeaders[header])
+                for header in notExpandableHeaders:
+                    self.assertEquals(notExpandableHeaders[header], expandedHeaders[header])
+                    
+                for contents in [expandedContents, expandedContentsOnlyNonDefaults]:
+                    
+                    sourceClass = GenomeElementSource if case.sourceClass is None else case.sourceClass
+                    forPreProcessor = True if case.sourceClass is None else False
+
+                    stdGeSource = GEDependentAttributesHolder(sourceClass('expanded.gtrack', case.genome, \
+                                                                          forPreProcessor=forPreProcessor, \
+                                                                          printWarnings=False, \
+                                                                          strToUseInsteadOfFn=contents))
+                    
+                    self.assertEquals(case.assertElementList, [ge for ge in stdGeSource])
+                    self.assertEquals(case.boundingRegionsAssertList, [br for br in stdGeSource.getBoundingRegionTuples()])
+            
+    def runTest(self):
+        pass
+    
+if __name__ == "__main__":
+    #TestGtrackHeaderExpander().debug()
+    unittest.main()

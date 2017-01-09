@@ -16,7 +16,6 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os, traceback, json
-import cPickle as pickle
 from zlib import compress
 from base64 import urlsafe_b64encode
 from cgi import escape
@@ -41,38 +40,23 @@ else:
     %if control.doRedirect():
         <meta http-equiv="Refresh" content="0; url=${control.getRedirectURL()}" />
     %endif
-    <script type="text/javascript">
-        <%include file="common.js"/>
-    </script>
+    ${self.includeScripts()}
     ${h.js('proto/sorttable')}
 </%def>
 
-%if control.userHasFullAccess():
+<%def name="includeScripts()">\
+    <script type="text/javascript">
+        <%include file="common.js"/>
+    </script>
+</%def>
 
-    <form method="post" action="${formAction}">
-
-    <INPUT TYPE="HIDDEN" NAME="cached_options" VALUE="${urlsafe_b64encode(compress(json.dumps(control.cachedOptions)))}">
-    <INPUT TYPE="HIDDEN" NAME="cached_params" VALUE="${urlsafe_b64encode(compress(json.dumps(control.cachedParams)))}">
-    <INPUT TYPE="HIDDEN" NAME="cached_extra" VALUE="${urlsafe_b64encode(compress(json.dumps(control.cachedExtra)))}">
-    <INPUT TYPE="HIDDEN" NAME="old_values" VALUE="${quote(json.dumps(control.oldValues))}">
-    <INPUT TYPE="HIDDEN" NAME="datatype" VALUE="${control.prototype.getOutputFormat(control.choices)}">
-    <INPUT TYPE="HIDDEN" NAME="mako" VALUE="generictool">
-    <INPUT TYPE="HIDDEN" NAME="tool_id" VALUE="${control.toolId}">
-    <INPUT TYPE="HIDDEN" NAME="tool_name" VALUE="${control.toolId}">
-    <INPUT TYPE="HIDDEN" NAME="URL" VALUE="http://dummy">
-    <INPUT TYPE="HIDDEN" NAME="extra_output" VALUE="${quote(json.dumps(control.extra_output))}">
-
-    %if len(control.subClasses) > 0:
-        ${functions.select('sub_class_id', control.subClasses.keys(), control.subClassId, control.subToolSelectionTitle)}
-    %endif
-
-    %for i in control.inputOrder:
+<%def name="showOptionsBox(control, params, i)">
         %if control.inputTypes[i] == 'select':
             ${functions.select(control.inputIds[i], control.options[i], control.displayValues[i], control.inputNames[i], info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'multi':
             ${functions.multichoice(control.inputIds[i], control.options[i], control.inputValues[i], control.inputNames[i], info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'checkbox':
-            ${functions.checkbox(control.inputIds[i], control.options[i], control.displayValues[i], control.inputNames[i], info=control.inputInfo[i])}
+            ${functions.checkbox(control.inputIds[i], control.options[i], control.inputValues[i], control.inputNames[i], info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'text':
             ${functions.text(control.inputIds[i], control.displayValues[i], control.inputNames[i], control.options[i][1], readonly=False, reload=control.prototype.isDynamic(), info=control.inputInfo[i])}
         %elif control.inputTypes[i] == 'text_readonly':
@@ -83,8 +67,6 @@ else:
             ${functions.password(control.inputIds[i], control.displayValues[i], control.inputNames[i], reload=control.prototype.isDynamic(), info=control.inputInfo[i])}
         %elif control.inputTypes[i] == '__genome__':
             ${functions.genomeChooser(control, control.options[i], control.inputValues[i], control.inputIds[i])}
-        %elif control.inputTypes[i] == '__track__':        
-            ${functions.trackChooser(control.trackElements[control.inputIds[i]], i, params, False)}
         %elif control.inputTypes[i] == '__history__':
             ${functions.history_select(control, control.inputIds[i], control.options[i], control.displayValues[i], control.inputNames[i], info=control.inputInfo[i])}
         %elif control.inputTypes[i] == '__toolhistory__':
@@ -96,7 +78,43 @@ else:
         %elif control.inputTypes[i] == 'table':
             ${control.displayValues[i]}
         %endif
-        
+</%def>
+
+%if control.userHasFullAccess():
+
+    <form method="post" action="${formAction}">
+
+    <INPUT TYPE="HIDDEN" NAME="cached_options" VALUE="${control.encodeCache(control.cachedOptions)}">
+    <INPUT TYPE="HIDDEN" NAME="cached_params" VALUE="${control.encodeCache(control.cachedParams)}">
+    <INPUT TYPE="HIDDEN" NAME="cached_extra" VALUE="${control.encodeCache(control.cachedExtra)}">
+    <INPUT TYPE="HIDDEN" NAME="old_values" VALUE="${quote(json.dumps(control.oldValues))}">
+    <INPUT TYPE="HIDDEN" NAME="datatype" VALUE="${control.prototype.getOutputFormat(control.choices)}">
+    <INPUT TYPE="HIDDEN" NAME="job_name" VALUE="${control.prototype.getOutputName(control.choices)}">
+    <INPUT TYPE="HIDDEN" NAME="mako" VALUE="generictool">
+    <INPUT TYPE="HIDDEN" NAME="tool_id" VALUE="${control.toolId}">
+    <INPUT TYPE="HIDDEN" NAME="tool_name" VALUE="${control.toolId}">
+    <INPUT TYPE="HIDDEN" NAME="URL" VALUE="http://dummy">
+    <INPUT TYPE="HIDDEN" NAME="extra_output" VALUE="${quote(json.dumps(control.extra_output))}">
+
+    %if len(control.subClasses) > 0:
+        ${functions.select('sub_class_id', control.subClasses.keys(), control.subClassId, control.subToolSelectionTitle)}
+    %endif
+
+    %for i in control.inputOrder:
+        %if i in control.inputGroup[0]:
+            %for label in control.inputGroup[0][i]:
+                <fieldset><legend>${label}</legend>
+            %endfor
+        %endif
+
+        ${self.showOptionsBox(control, params, i)}
+
+        %if i in control.inputGroup[1]:
+            %for j in range(0, control.inputGroup[1].count(i)):
+                </fieldset>
+            %endfor
+        %endif
+
     %endfor
     
     <p><input id="start" type="submit" name="start" value="Execute" ${'disabled' if not control.isValid() else ''}></p>
@@ -111,45 +129,13 @@ else:
         <div class="infomessage">${control.executeNoHistory()}</div>
     %endif
 
-
-    %if control.prototype.isBatchTool() and control.getBatchLine() and control.isValid() and control.userIsOneOfUs():
-    <p class="infomessage" onclick="$('#batchline').toggle()">
-        <a href="#batchline" title="Click to show/hide">Corresponding batch command line:</a>
-        <span id="batchline" style="display:none"><br>
-        ${control.getBatchLine()}
-        </span>
-    </p>
-    <br/>
-    
-    <p class="infomessage" onclick="$('#testform').toggle()">
-        <a href="#testform" title="Click to show/hide">Add run to test repository:</a>
-        <!--<button id="testsubmit" type="button" style="display:none" >Click Me!</button>-->
-        <form id="testform" style="display:none">
-        set test name: <input type="text" name="testname"><br>
-        <input type="submit" name="testsubmit" value="Add test">
-        </form>
-    </p>
-    <script type="text/javascript">
-        $( "#testform" ).bind( "submit", function( event ) {
-        //$( "#testsubmit" ).click(function() {
-        //var c = $("[name='add_test']:checked").val();
-        if(1)
-        	 {var datastring = $("form").serialize();
-            var lastChar = datastring.indexOf('&testname=');
-            var b = datastring.slice (0,lastChar).replace(/&/g,"\n").replace(/=/g, ":");
-            var c = '&box2='+ $("[name='testname']").val();
-            var testData = "old_values=%7B%7D&datatype=html&mako=generictool&tool_id=hb_add_test_tool&tool_name=hb_add_test_tool&URL=http://dummy&start=Execute&box1=" + b + c
-            
-            $.post("/dev2/tool_runner",  testData);
-            alert('Added test to test-repository..');
-            event.preventDefault();
-            }});
-    </script>
-    %endif
+    ${self.extraGuiContent(control)}
 
 %else:
     ${functions.accessDenied()}
 %endif
+
+<%def name="extraGuiContent(control)"/>
 
 <%def name="toolHelp()">
     %if control.hasDemoURL():

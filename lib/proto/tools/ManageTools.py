@@ -17,11 +17,10 @@ GALAXY_TOOL_XML_PATH = GALAXY_BASE_DIR + '/tools/'
 TOOL_XML_REL_PATH = 'hyperbrowser/'
 
 
-
 class GalaxyToolConfig:
 
     tool_xml_template = '''<tool id="%s" name="%s" version="1.0.0"
-  tool_type="hyperbrowser_generic" proto_tool_module="%s" proto_tool_class="%s">
+  tool_type="%s_generic" proto_tool_module="%s" proto_tool_class="%s">
   <description>%s</description>
 </tool>\n'''
 
@@ -53,53 +52,74 @@ class GalaxyToolConfig:
         with open(self.tool_conf_fn, 'w') as f:
             f.write(self.tool_conf_data)
         
-    def createToolXml(self, tool_fn, tool_id, tool_name, tool_module, tool_cls, tool_descr):
-        tool_xml = self.tool_xml_template % (tool_id, tool_name, tool_module, tool_cls, tool_descr)
+    def createToolXml(self, tool_fn, tool_id, tool_name, tool_type, tool_module, tool_cls, tool_descr):
+        tool_xml = self.tool_xml_template % (tool_id, tool_name, tool_type,
+                                             tool_module, tool_cls, tool_descr)
         return tool_xml
 
 
 def getProtoToolList(except_class_names=[]):
     except_class_names.append('ToolTemplate')
+    except_class_names.append('ToolTemplateMinimal')
+    tmp_tools = {}
     tools = {}
     tool_classes = []
+    all_sub_classes = set()
     pys = []
-    for d in os.walk(PROTO_TOOL_DIR):
+    for d in os.walk(PROTO_TOOL_DIR, followlinks=True):
         if d[0].find('.svn') == -1:
             pys += [os.path.join(d[0], f) for f in d[2] if f.endswith('.py') and not any(f.startswith(x) for x in ['.', '#'])]
-    
-    #print 'Num py', len(pys)        
+
+    # To fix import issue if there are modules in /lib and /lib/proto with the
+    # same name (e.g. 'config').
+    tmpSysPath = sys.path
+    if sys.path[0].endswith('/proto'):
+        sys.path = tmpSysPath[1:]
+
+    #print 'Num py', len(pys)
     for fn in pys:
         with open(fn) as f:
             for line in f:
-                m = re.match(r'class +(\w+) *\((\w+)\)', line)
+                m = re.match(r'class +(\w+) *\(([\w ,]+)\)', line)
                 if m:
                     class_name = m.group(1)
-                    if class_name not in except_class_names:
-                        module_name = os.path.splitext(os.path.relpath(fn, SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
-                        #print module_name
-                        try:
+                    module_name = os.path.splitext(os.path.relpath(os.path.abspath(fn), SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
+                    try:
+                        if module_name != __name__:
                             module = import_module(module_name)
                             prototype_cls = getattr(module, class_name)
-                            if issubclass(prototype_cls, GeneralGuiTool) and not issubclass(prototype_cls, MultiGeneralGuiTool) and hasattr(prototype_cls, 'getToolName'):
-                                prototype = prototype_cls('hb_no_tool_id_yet')
-                                toolModule = module_name.split('.')[2:]
-                                if class_name != toolModule[-1]:
-                                    toolSelectionName = '.'.join(toolModule) + ' [' + class_name + ']'
-                                else:
-                                    toolSelectionName = '.'.join(toolModule)
+                            if issubclass(prototype_cls, GeneralGuiTool):
+                                if issubclass(prototype_cls, MultiGeneralGuiTool):
+                                    if prototype_cls.getSubToolClasses():
+                                        for sub_cls in prototype_cls.getSubToolClasses():
+                                            all_sub_classes.add(sub_cls)
+                                elif hasattr(prototype_cls, 'getToolName'):
+                                    if class_name not in except_class_names:
+                                        prototype = prototype_cls('hb_no_tool_id_yet')
+                                        tool_module = module_name.split('.')[2:]
+                                        if class_name != tool_module[-1]:
+                                            tool_selection_name = '.'.join(tool_module) + ' [' + class_name + ']'
+                                        else:
+                                            tool_selection_name = '.'.join(tool_module)
 
-                                tools[toolSelectionName] = (fn, m.group(2), prototype_cls, module_name)
-                                tool_classes.append(prototype_cls)
-                        except Exception as e:
-                            traceback.print_exc()
+                                        # print (fn, m.group(2), prototype_cls, module_name)
+                                        tmp_tools[tool_selection_name] = (fn, m.group(2), prototype_cls, module_name)
+                    except Exception as e:
+                        traceback.print_exc()
                         #break
     #print 'Num protopy', len(tools)
+
+    for tool_selection_name, tool_info in tmp_tools.iteritems():
+        prototype_cls = tool_info[2]
+        if prototype_cls not in all_sub_classes:
+            tools[tool_selection_name] = tool_info
+            tool_classes.append(prototype_cls)
+
+    sys.path = tmpSysPath
     return tools, tool_classes
 
 
-
 class ExploreToolsTool(MultiGeneralGuiTool):
-
     @staticmethod
     def getToolName():
         return "ProTo tool explorer"
@@ -109,20 +129,35 @@ class ExploreToolsTool(MultiGeneralGuiTool):
         return "-----  Select tool -----"
 
     @staticmethod
-    def isBatchTool():
-        return False
-
-    @staticmethod
     def useSubToolPrefix():
         return True
     
     @classmethod
     def getSubToolClasses(cls):
         tool_shelve = shelve.open(TOOL_SHELVE, 'r')
-        installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys() if os.path.exists(os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) + '.py') ]                
+        installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys()
+                             if os.path.exists(os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) + '.py') ]
         tool_shelve.close()
         tool_list = getProtoToolList(installed_classes)[1]
         return sorted(tool_list, key=lambda c: c.__module__)
+
+    @staticmethod
+    def getToolDescription():
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph("This tool is used to try out ProTo tools that have "
+                       "not been installed as separate tools in the tool "
+                       "menu. This is typically used for development "
+                       "purposes, so that one can polish the tool until it"
+                       "is finished for deployment in the tool menu. "
+                       "When a tool is installed into the menu, the tool "
+                       "disappears from the tool list in this tool."
+                       "The logic for inclusion in the list is that there "
+                       "exists a Python module with a class that inherits "
+                       "from GeneralGuiTool, without there existing "
+                       "a Galaxy xml file for the tool.")
+        return str(core)
 
 
 
@@ -152,7 +187,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
     #    for fn in xmls:
     #        tree = ET.parse(HB_TOOL_DIR + fn)
     #        root = tree.getroot()
-    #        if root.tag == 'tool' and root.attrib.get('tool_type') == 'hyperbrowser_generic':
+    #        if root.tag == 'tool' and root.attrib.get('tool_type') == 'hb_generic':
     #            tool_id = root.attrib['id']
     #            tools[tool_id] = root.attrib
     #    return tools
@@ -185,15 +220,17 @@ class InstallToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getInputBoxNames():
-        return [('Select tool', 'tool'), ('Tool ID', 'toolID'), ('Tool name', 'name'), ('Tool description', 'description'), ('Tool XML file', 'toolXMLPath'), ('Select section', 'section')]
+        return [('Select tool', 'tool'),
+                ('Tool type', 'toolType'),
+                ('Tool ID', 'toolID'),
+                ('Tool name', 'name'),
+                ('Tool description', 'description'),
+                ('Tool XML file', 'toolXMLPath'),
+                ('Select section', 'section')]
 
     @staticmethod
     def getResetBoxes():
-        return [1]
-
-    @staticmethod
-    def isBatchTool():
-        return False
+        return [1, 2]
 
 #    @staticmethod
 #    def isHistoryTool():
@@ -209,11 +246,18 @@ class InstallToolsTool(GeneralGuiTool):
         return ['-- Select tool --'] + sorted(tool_list)
 
     @classmethod
+    def getOptionsBoxToolType(cls, prevchoices):
+        return ['hb', 'proto']
+
+    @classmethod
     def getOptionsBoxToolID(cls, prevchoices):
+        import inflection
         if prevchoices.tool is None or prevchoices.tool.startswith('--'):
             return ''
         tool_list = cls._getToolList()
-        return 'ProTo_' + tool_list[prevchoices.tool][2].__name__
+        module_name = tool_list[prevchoices.tool][2].__name__
+        return prevchoices.toolType + '_' + inflection.underscore(module_name)
+
 
     @classmethod
     def getOptionsBoxName(cls, prevchoices):
@@ -265,9 +309,13 @@ class InstallToolsTool(GeneralGuiTool):
         tool_cls = choices.tool
         prototype = cls._getProtoType(choices.tool)
         tool_file = choices.toolXMLPath
+        tool_type = choices.toolType
         toolConf = GalaxyToolConfig()
         xml = toolConf.addTool(choices.section, tool_file)
-        tool_xml = toolConf.createToolXml(tool_file, choices.toolID, choices.name, prototype.__module__, prototype.__class__.__name__, choices.description)
+        tool_xml = toolConf.createToolXml(tool_file, choices.toolID,
+                                          choices.name, prototype.__module__,
+                                          prototype.__class__.__name__,
+                                          choices.description)
         
         abs_tool_xml_path = GALAXY_TOOL_XML_PATH + choices.toolXMLPath
         try:
@@ -279,40 +327,102 @@ class InstallToolsTool(GeneralGuiTool):
         
         toolConf.write()
 
-        print '''
-        <script type="text/javascript">
-            $().ready(function() {
-                $("#reload_toolbox").click(function(){
-                    $.ajax({
-                    url: "/api/configuration/toolbox",
-                    type: 'PUT'
-                    }).done(function() {
-                            top.location.reload();
-                        }
-                    );
-                });
-            });
-        </script>
-        '''
-        print '<a id="reload_toolbox" href="#">Reload toolbox/menu</a>'
-        print '<pre>' + escape(xml) + '</pre>' + '<pre>' + escape(tool_xml) + '</pre>'
-        
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
 
-        
+        extraJavaScriptCode = '''
+                <script type="text/javascript">
+                    $().ready(function() {
+                        $("#reload_toolbox").click(function(){
+                            $.ajax({
+                            url: "/api/configuration/toolbox",
+                            type: 'PUT'
+                            }).done(function() {
+                                    top.location.reload();
+                                }
+                            );
+                        });
+                    });
+                </script>
+                '''
+        core.begin(extraJavaScriptCode=extraJavaScriptCode)
+        core.link('Reload toolbox/menu', url='#', args='id="reload_toolbox"')
+        core.preformatted(escape(xml))
+        core.preformatted(escape(tool_xml))
+        core.end()
+        print>>open(galaxyFn, 'w'), core
+
+    @staticmethod
+    def getToolDescription():
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph(
+            "This tool is used to install ProTo tools into the tool menu. "
+            "The installation process creates a Galaxy tool XML file and "
+            "adds the tool to the tool menu (in the 'tool_conf.xml' file). "
+            "After execution, the XML file has been generated and added "
+            "to the tool configuration file, but Galaxy needs to reload "
+            "the tool menu for it to become visible. This is done by a "
+            "Galaxy administrator, either from the Admin menu, or from a "
+            "link in the output history element from this tool.")
+        core.paragraph("Note that the after this tool has been executed "
+                       "but before a Galaxy administrator has reloaded the "
+                       "tool menu, the tool is not available from neither "
+                       "of the 'ProTo tool explorer' tool or from the "
+                       "Galaxy menu.")
+        core.divider()
+        core.smallHeader("Parameters")
+
+        core.descriptionLine("Select tool", "The tool to install.",
+                             emphasize=True)
+        core.descriptionLine("Tool ID",
+                             "The Galaxy tool id for the new tool to be "
+                             "created. This is the 'id' argument to the "
+                             "<tool> tag in the tool XML file.",
+                             emphasize=True)
+        core.descriptionLine("Tool name",
+                             "The name of the tool as it will appear in the "
+                             "tool menu. The tool name will appear as a HTML "
+                             "link.", emphasize=True)
+        core.descriptionLine("Tool description",
+                             "The description of the tool as it will appear "
+                             "in the tool menu. The tool description will "
+                             "appear directly after the tool name as "
+                             "normal text.", emphasize=True)
+        core.descriptionLine("Tool XML file",
+                             "The path (relative to 'tools/proto/') and name "
+                             "of the Galaxy tool XML file to be created. "
+                             "The tool file can be named anything and be "
+                             "placed anywhere (as the 'tool_conf.xml' file"
+                             "contains the path to the tool XML file). "
+                             "However, we encourage the practice of placing "
+                             "the Galaxy tool XML file together with the "
+                             "Python module, in the same directory and "
+                             "with the same name as tool module (with e.g. "
+                             "'ABCTool.xml' instead of 'AbcTool.py').",
+                             emphasize=True)
+        core.descriptionLine("Select section in tool_conf.xml file",
+                             "The section in the tool_conf.xml file where"
+                             "the tool should be placed in the menu. "
+                             "This corresponds to the first level in the"
+                             "tool hierarchy.", emphasize=True)
+        return str(core)
+
+    @staticmethod
+    def getOutputFormat(choices):
+        return 'customhtml'
+
+
 class GenerateToolsTool(GeneralGuiTool):
-
     @staticmethod
     def getToolName():
         return "ProTo tool generator"
 
     @staticmethod
-    def isBatchTool():
-        return False
-
-    @staticmethod
     def getInputBoxNames():
         return [('Package name', 'packageName'),
-                ('Module name', 'moduleName'),
+                ('Module/class name', 'moduleName'),
                 ('Tool name', 'toolName'),
                 ('Use template with inline documentation', 'template')]
 
@@ -368,4 +478,50 @@ class GenerateToolsTool(GeneralGuiTool):
         explore_id = quote(choices.moduleName + ': ' + choices.toolName)
         print 'Tool generated: <a href="%s/proto/?tool_id=proto_ExploreToolsTool&sub_class_id=%s">%s: %s</a>' % (URL_PREFIX, explore_id, choices.moduleName, choices.toolName)
         print 'Tool source path: ', pyname
-        
+
+    @staticmethod
+    def getToolDescription():
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph("This tool is used to dynamically generate a Python "
+                       "module defining a new ProTo tool. After tool "
+                       "execution, The tool will be available from the "
+                       "'ProTo tool explorer' tool for development purposes.")
+        core.divider()
+        core.smallHeader("Parameters")
+        core.descriptionLine("Package name",
+                             "The name of the package where the new tool "
+                             "should be installed. The package path is "
+                             "relative to 'proto.tools'. If, for instance, "
+                             "the package is set to 'mypackage.core', the full"
+                             "package hierarchy is 'proto.tools.mypackage."
+                             "core'. Any non-existing directories will be "
+                             "created as needed.", emphasize=True)
+        core.descriptionLine("Module/class name",
+                             "The name of the Python module (filename) and "
+                             "class for the new tool. For historical reasons, "
+                             "ProTo uses 'MixedCase' naming for both the "
+                             "module and the class. By convention, it is "
+                             "advised (but not required) to end the name "
+                             "with 'Tool', e.g. 'MyNewTool'. This will create "
+                             "a Python module 'MyNewTool.py' with the class "
+                             "'MyNewTool', inheriting from "
+                             "'proto.GeneralGuiTool'.", emphasize=True)
+        core.descriptionLine("Tool name",
+                             "A string with the name or title of the tool. "
+                             "This will appear on the top of the tool GUI "
+                             "as well as being the default value for the "
+                             "tool name in the menu (which can be changed "
+                             "when installing).", emphasize=True)
+        core.descriptionLine("Use template with inline documentation",
+                             "The new Python module is based upon a template"
+                             "file containing a simple example tool with "
+                             "two option boxes (one selection box and one "
+                             "text box). There are two such template files, "
+                             "one that contains inline documentation of the "
+                             "methods and possible choices, and one without "
+                             "the documentation. Advanced users could select "
+                             "the latter to make the tool code itself shorter "
+                             "and more readable.", emphasize=True)
+        return str(core)

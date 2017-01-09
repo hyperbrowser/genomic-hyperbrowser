@@ -1,0 +1,352 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module StaticFile</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>StaticFile</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/sveinugu/PycharmProjects/proto/lib/proto/StaticFile.py">/Users/sveinugu/PycharmProjects/proto/lib/proto/StaticFile.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="os.html">os</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="StaticFile.html#StaticFile">StaticFile</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="StaticFile.html#GalaxyRunSpecificFile">GalaxyRunSpecificFile</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="StaticFile.html#RunSpecificPickleFile">RunSpecificPickleFile</a>(<a href="StaticFile.html#GalaxyRunSpecificFile">GalaxyRunSpecificFile</a>, <a href="StaticFile.html#PickleStaticFile">PickleStaticFile</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="StaticFile.html#PickleStaticFile">PickleStaticFile</a>
+</font></dt><dt><font face="helvetica, arial"><a href="StaticFile.html#StaticImage">StaticImage</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="GalaxyRunSpecificFile">class <strong>GalaxyRunSpecificFile</strong></a>(<a href="StaticFile.html#StaticFile">StaticFile</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Handles&nbsp;file&nbsp;path&nbsp;and&nbsp;URL&nbsp;of&nbsp;static&nbsp;(web-accessible)&nbsp;files&nbsp;which&nbsp;are&nbsp;specific<br>
+to&nbsp;a&nbsp;particular&nbsp;history&nbsp;element&nbsp;(run).<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="StaticFile.html#GalaxyRunSpecificFile">GalaxyRunSpecificFile</a></dd>
+<dd><a href="StaticFile.html#StaticFile">StaticFile</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="GalaxyRunSpecificFile-__init__"><strong>__init__</strong></a>(self, id, galaxyFn)</dt><dd><tt>#def&nbsp;<a href="#GalaxyRunSpecificFile-__init__">__init__</a>(self,&nbsp;id,&nbsp;fileEnding,&nbsp;galaxyFn,&nbsp;straightOnStaticPath=False):<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;galaxyId&nbsp;=&nbsp;extractIdFromGalaxyFn(galaxyFn)<br>
+#&nbsp;&nbsp;&nbsp;&nbsp;RunSpecificFile.<a href="#GalaxyRunSpecificFile-__init__">__init__</a>(self,&nbsp;id,&nbsp;fileEnding,&nbsp;galaxyId,&nbsp;straightOnStaticPath)</tt></dd></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getDiskPath"><strong>getDiskPath</strong></a>(self, ensurePath<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getExternalTrackName"><strong>getExternalTrackName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getId"><strong>getId</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getURL"><strong>getURL</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><a name="GalaxyRunSpecificFile-closeRFigure"><strong>closeRFigure</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-fileExists"><strong>fileExists</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getEmbeddedImage"><strong>getEmbeddedImage</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getFile"><strong>getFile</strong></a>(self, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getLink"><strong>getLink</strong></a>(self, linkText)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-getLoadToHistoryLink"><strong>getLoadToHistoryLink</strong></a>(self, linkText, galaxyDataType<font color="#909090">='bed'</font>)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-openRFigure"><strong>openRFigure</strong></a>(self, h<font color="#909090">=600</font>, w<font color="#909090">=800</font>)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-plotRHist"><strong>plotRHist</strong></a>(self, vals, breaks, main, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, **kwArgs)</dt></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-plotRLines"><strong>plotRLines</strong></a>(self, xVals, yLines, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, colors<font color="#909090">=None</font>, legend<font color="#909090">=None</font>, lty<font color="#909090">=None</font>, **kwArgs)</dt><dd><tt>xVals:&nbsp;one&nbsp;list&nbsp;containing&nbsp;x-values<br>
+yLines:&nbsp;list&nbsp;of&nbsp;lists&nbsp;containing&nbsp;y-values<br>
+colors:&nbsp;list&nbsp;of&nbsp;colors&nbsp;to&nbsp;use&nbsp;for&nbsp;each&nbsp;line<br>
+legend:&nbsp;list&nbsp;of&nbsp;legend&nbsp;text&nbsp;per&nbsp;line&nbsp;(color)<br>
+lty:&nbsp;line&nbsp;types&nbsp;for&nbsp;r.legend<br>
+any&nbsp;extra&nbsp;params&nbsp;in&nbsp;kwArgs&nbsp;is&nbsp;sent&nbsp;to&nbsp;r.plot.&nbsp;Use&nbsp;to&nbsp;send&nbsp;for&nbsp;example&nbsp;xlab,ylab</tt></dd></dl>
+
+<dl><dt><a name="GalaxyRunSpecificFile-writeTextToFile"><strong>writeTextToFile</strong></a>(self, text, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PickleStaticFile">class <strong>PickleStaticFile</strong></a>(<a href="StaticFile.html#StaticFile">StaticFile</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="StaticFile.html#PickleStaticFile">PickleStaticFile</a></dd>
+<dd><a href="StaticFile.html#StaticFile">StaticFile</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="PickleStaticFile-loadPickledObject"><strong>loadPickledObject</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-storePickledObject"><strong>storePickledObject</strong></a>(self, obj)</dt></dl>
+
+<hr>
+Methods inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><a name="PickleStaticFile-__init__"><strong>__init__</strong></a>(self, id)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-closeRFigure"><strong>closeRFigure</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-fileExists"><strong>fileExists</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-getDiskPath"><strong>getDiskPath</strong></a>(self, ensurePath<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-getEmbeddedImage"><strong>getEmbeddedImage</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-getFile"><strong>getFile</strong></a>(self, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-getLink"><strong>getLink</strong></a>(self, linkText)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-getLoadToHistoryLink"><strong>getLoadToHistoryLink</strong></a>(self, linkText, galaxyDataType<font color="#909090">='bed'</font>)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-getURL"><strong>getURL</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-openRFigure"><strong>openRFigure</strong></a>(self, h<font color="#909090">=600</font>, w<font color="#909090">=800</font>)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-plotRHist"><strong>plotRHist</strong></a>(self, vals, breaks, main, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, **kwArgs)</dt></dl>
+
+<dl><dt><a name="PickleStaticFile-plotRLines"><strong>plotRLines</strong></a>(self, xVals, yLines, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, colors<font color="#909090">=None</font>, legend<font color="#909090">=None</font>, lty<font color="#909090">=None</font>, **kwArgs)</dt><dd><tt>xVals:&nbsp;one&nbsp;list&nbsp;containing&nbsp;x-values<br>
+yLines:&nbsp;list&nbsp;of&nbsp;lists&nbsp;containing&nbsp;y-values<br>
+colors:&nbsp;list&nbsp;of&nbsp;colors&nbsp;to&nbsp;use&nbsp;for&nbsp;each&nbsp;line<br>
+legend:&nbsp;list&nbsp;of&nbsp;legend&nbsp;text&nbsp;per&nbsp;line&nbsp;(color)<br>
+lty:&nbsp;line&nbsp;types&nbsp;for&nbsp;r.legend<br>
+any&nbsp;extra&nbsp;params&nbsp;in&nbsp;kwArgs&nbsp;is&nbsp;sent&nbsp;to&nbsp;r.plot.&nbsp;Use&nbsp;to&nbsp;send&nbsp;for&nbsp;example&nbsp;xlab,ylab</tt></dd></dl>
+
+<dl><dt><a name="PickleStaticFile-writeTextToFile"><strong>writeTextToFile</strong></a>(self, text, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="RunSpecificPickleFile">class <strong>RunSpecificPickleFile</strong></a>(<a href="StaticFile.html#GalaxyRunSpecificFile">GalaxyRunSpecificFile</a>, <a href="StaticFile.html#PickleStaticFile">PickleStaticFile</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="StaticFile.html#RunSpecificPickleFile">RunSpecificPickleFile</a></dd>
+<dd><a href="StaticFile.html#GalaxyRunSpecificFile">GalaxyRunSpecificFile</a></dd>
+<dd><a href="StaticFile.html#PickleStaticFile">PickleStaticFile</a></dd>
+<dd><a href="StaticFile.html#StaticFile">StaticFile</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="RunSpecificPickleFile-__init__"><strong>__init__</strong></a>(self, galaxyFn)</dt></dl>
+
+<hr>
+Methods inherited from <a href="StaticFile.html#GalaxyRunSpecificFile">GalaxyRunSpecificFile</a>:<br>
+<dl><dt><a name="RunSpecificPickleFile-getDiskPath"><strong>getDiskPath</strong></a>(self, ensurePath<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getExternalTrackName"><strong>getExternalTrackName</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getId"><strong>getId</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getURL"><strong>getURL</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="StaticFile.html#PickleStaticFile">PickleStaticFile</a>:<br>
+<dl><dt><a name="RunSpecificPickleFile-loadPickledObject"><strong>loadPickledObject</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-storePickledObject"><strong>storePickledObject</strong></a>(self, obj)</dt></dl>
+
+<hr>
+Methods inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><a name="RunSpecificPickleFile-closeRFigure"><strong>closeRFigure</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-fileExists"><strong>fileExists</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getEmbeddedImage"><strong>getEmbeddedImage</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getFile"><strong>getFile</strong></a>(self, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getLink"><strong>getLink</strong></a>(self, linkText)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-getLoadToHistoryLink"><strong>getLoadToHistoryLink</strong></a>(self, linkText, galaxyDataType<font color="#909090">='bed'</font>)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-openRFigure"><strong>openRFigure</strong></a>(self, h<font color="#909090">=600</font>, w<font color="#909090">=800</font>)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-plotRHist"><strong>plotRHist</strong></a>(self, vals, breaks, main, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, **kwArgs)</dt></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-plotRLines"><strong>plotRLines</strong></a>(self, xVals, yLines, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, colors<font color="#909090">=None</font>, legend<font color="#909090">=None</font>, lty<font color="#909090">=None</font>, **kwArgs)</dt><dd><tt>xVals:&nbsp;one&nbsp;list&nbsp;containing&nbsp;x-values<br>
+yLines:&nbsp;list&nbsp;of&nbsp;lists&nbsp;containing&nbsp;y-values<br>
+colors:&nbsp;list&nbsp;of&nbsp;colors&nbsp;to&nbsp;use&nbsp;for&nbsp;each&nbsp;line<br>
+legend:&nbsp;list&nbsp;of&nbsp;legend&nbsp;text&nbsp;per&nbsp;line&nbsp;(color)<br>
+lty:&nbsp;line&nbsp;types&nbsp;for&nbsp;r.legend<br>
+any&nbsp;extra&nbsp;params&nbsp;in&nbsp;kwArgs&nbsp;is&nbsp;sent&nbsp;to&nbsp;r.plot.&nbsp;Use&nbsp;to&nbsp;send&nbsp;for&nbsp;example&nbsp;xlab,ylab</tt></dd></dl>
+
+<dl><dt><a name="RunSpecificPickleFile-writeTextToFile"><strong>writeTextToFile</strong></a>(self, text, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="StaticFile">class <strong>StaticFile</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="StaticFile-__init__"><strong>__init__</strong></a>(self, id)</dt></dl>
+
+<dl><dt><a name="StaticFile-closeRFigure"><strong>closeRFigure</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticFile-fileExists"><strong>fileExists</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticFile-getDiskPath"><strong>getDiskPath</strong></a>(self, ensurePath<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="StaticFile-getEmbeddedImage"><strong>getEmbeddedImage</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticFile-getFile"><strong>getFile</strong></a>(self, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<dl><dt><a name="StaticFile-getLink"><strong>getLink</strong></a>(self, linkText)</dt></dl>
+
+<dl><dt><a name="StaticFile-getLoadToHistoryLink"><strong>getLoadToHistoryLink</strong></a>(self, linkText, galaxyDataType<font color="#909090">='bed'</font>)</dt></dl>
+
+<dl><dt><a name="StaticFile-getURL"><strong>getURL</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticFile-openRFigure"><strong>openRFigure</strong></a>(self, h<font color="#909090">=600</font>, w<font color="#909090">=800</font>)</dt></dl>
+
+<dl><dt><a name="StaticFile-plotRHist"><strong>plotRHist</strong></a>(self, vals, breaks, main, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, **kwArgs)</dt></dl>
+
+<dl><dt><a name="StaticFile-plotRLines"><strong>plotRLines</strong></a>(self, xVals, yLines, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, colors<font color="#909090">=None</font>, legend<font color="#909090">=None</font>, lty<font color="#909090">=None</font>, **kwArgs)</dt><dd><tt>xVals:&nbsp;one&nbsp;list&nbsp;containing&nbsp;x-values<br>
+yLines:&nbsp;list&nbsp;of&nbsp;lists&nbsp;containing&nbsp;y-values<br>
+colors:&nbsp;list&nbsp;of&nbsp;colors&nbsp;to&nbsp;use&nbsp;for&nbsp;each&nbsp;line<br>
+legend:&nbsp;list&nbsp;of&nbsp;legend&nbsp;text&nbsp;per&nbsp;line&nbsp;(color)<br>
+lty:&nbsp;line&nbsp;types&nbsp;for&nbsp;r.legend<br>
+any&nbsp;extra&nbsp;params&nbsp;in&nbsp;kwArgs&nbsp;is&nbsp;sent&nbsp;to&nbsp;r.plot.&nbsp;Use&nbsp;to&nbsp;send&nbsp;for&nbsp;example&nbsp;xlab,ylab</tt></dd></dl>
+
+<dl><dt><a name="StaticFile-writeTextToFile"><strong>writeTextToFile</strong></a>(self, text, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="StaticImage">class <strong>StaticImage</strong></a>(<a href="StaticFile.html#StaticFile">StaticFile</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="StaticFile.html#StaticImage">StaticImage</a></dd>
+<dd><a href="StaticFile.html#StaticFile">StaticFile</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="StaticImage-__init__"><strong>__init__</strong></a>(self, id)</dt></dl>
+
+<hr>
+Methods inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><a name="StaticImage-closeRFigure"><strong>closeRFigure</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticImage-fileExists"><strong>fileExists</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticImage-getDiskPath"><strong>getDiskPath</strong></a>(self, ensurePath<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="StaticImage-getEmbeddedImage"><strong>getEmbeddedImage</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticImage-getFile"><strong>getFile</strong></a>(self, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<dl><dt><a name="StaticImage-getLink"><strong>getLink</strong></a>(self, linkText)</dt></dl>
+
+<dl><dt><a name="StaticImage-getLoadToHistoryLink"><strong>getLoadToHistoryLink</strong></a>(self, linkText, galaxyDataType<font color="#909090">='bed'</font>)</dt></dl>
+
+<dl><dt><a name="StaticImage-getURL"><strong>getURL</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StaticImage-openRFigure"><strong>openRFigure</strong></a>(self, h<font color="#909090">=600</font>, w<font color="#909090">=800</font>)</dt></dl>
+
+<dl><dt><a name="StaticImage-plotRHist"><strong>plotRHist</strong></a>(self, vals, breaks, main, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, **kwArgs)</dt></dl>
+
+<dl><dt><a name="StaticImage-plotRLines"><strong>plotRLines</strong></a>(self, xVals, yLines, saveRawData<font color="#909090">=True</font>, alsoOpenAndClose<font color="#909090">=True</font>, colors<font color="#909090">=None</font>, legend<font color="#909090">=None</font>, lty<font color="#909090">=None</font>, **kwArgs)</dt><dd><tt>xVals:&nbsp;one&nbsp;list&nbsp;containing&nbsp;x-values<br>
+yLines:&nbsp;list&nbsp;of&nbsp;lists&nbsp;containing&nbsp;y-values<br>
+colors:&nbsp;list&nbsp;of&nbsp;colors&nbsp;to&nbsp;use&nbsp;for&nbsp;each&nbsp;line<br>
+legend:&nbsp;list&nbsp;of&nbsp;legend&nbsp;text&nbsp;per&nbsp;line&nbsp;(color)<br>
+lty:&nbsp;line&nbsp;types&nbsp;for&nbsp;r.legend<br>
+any&nbsp;extra&nbsp;params&nbsp;in&nbsp;kwArgs&nbsp;is&nbsp;sent&nbsp;to&nbsp;r.plot.&nbsp;Use&nbsp;to&nbsp;send&nbsp;for&nbsp;example&nbsp;xlab,ylab</tt></dd></dl>
+
+<dl><dt><a name="StaticImage-writeTextToFile"><strong>writeTextToFile</strong></a>(self, text, mode<font color="#909090">='w'</font>)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="StaticFile.html#StaticFile">StaticFile</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>STATIC_PATH</strong> = '/Users/sveinugu/PycharmProjects/proto//static/proto'<br>
+<strong>STATIC_REL_PATH</strong> = '/static/proto'</td></tr></table>
+</body></html>
