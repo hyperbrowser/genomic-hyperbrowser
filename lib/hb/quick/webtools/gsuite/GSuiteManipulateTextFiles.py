@@ -58,7 +58,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Manipulate textual datasets referred to in a GSuite"
+        return "Modify primary tracks referred to in a GSuite"
 
     @classmethod
     def getInputBoxNames(cls):
