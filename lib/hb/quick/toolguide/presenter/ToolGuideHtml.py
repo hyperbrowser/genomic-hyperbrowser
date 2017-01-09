@@ -56,7 +56,9 @@ class ToolGuideHtml(object):
                 htmlCore.divBegin(divClass='toolGuideImgTitle')
                 if guideDataValue.imgUrl:
                     htmlCore.image(guideDataValue.imgUrl)
-                htmlCore.link(text=guideDataValue.toolDisplayName, url=str(guideDataValue.toolUrl))
+                htmlCore.link(text=guideDataValue.toolDisplayName, url=str(guideDataValue.toolUrl),
+                              args=(' onclick="%s"' % guideDataValue.onclick)
+                                    if guideDataValue.onclick else '')
                 htmlCore.divEnd()
                 htmlCore.divBegin(divClass='toolGuideDesc')
                 htmlCore.append(guideDataValue.description)

@@ -22,7 +22,8 @@ Configuration for the Tool guide.
 
 '''
 
-from quick.util.CommonFunctions import createGalaxyToolURL, createToolURL
+from quick.util.CommonFunctions import createGalaxyToolURL, createToolURL, \
+    getGalaxyUploadLinkOnclick
 from config.Config import STATIC_REL_PATH
 
 GSUITE_INPUT = 'gsuite'
@@ -48,7 +49,7 @@ TOOL_ID_TO_TOOL_URL_DICT = dict([
 
 TOOL_ID_TO_TOOL_DESCRIPTION_DICT = dict([
                                         ('upload1', '''
-                                        Upload a genomic track to the history pane from disc.
+                                        Upload a genomic track to the history pane from disc. After the track has been uploaded to history, you need to reopen this tool to be able to select it.
                                         '''),
                                          ('hb_track_global_search_tool', '''
                                          Acquire a dataset collection (GSuite) by browsing a catalog of chromatine tracks.
@@ -84,6 +85,8 @@ TOOL_ID_TO_IMG_URL = dict([('upload1', IMG_URL + 'icon_genomeTrack.png'),
                            ('hb_create_g_suite_file_from_history_elements_tool', IMG_URL + 'icon_gSuite.png'),
                            ('hb_extract_subtracks_tool', IMG_URL + 'icon_gSuite.png'),
                            ])
+
+TOOL_ID_TO_ONCLICK = dict([('upload1', getGalaxyUploadLinkOnclick())])
 
 #('hb_track_global_search_tool', URL_PREFIX + '/u/hb-superuser/p/browse-catalog-of-chromatin-tracks')
 TOOL_ID_TO_HELP_PAGE_URL = dict()

@@ -380,7 +380,7 @@ var Tab = Backbone.View.extend({
 
     /** Url formatting */
     _formatUrl: function( url ) {
-        return typeof url == 'string' && url.indexOf( '//' ) === -1 && url.charAt( 0 ) != '/' && !url.startsWith('mailto:') ? Galaxy.root + url : url;
+        return typeof url == 'string' && url.indexOf( '//' ) === -1 && url.charAt( 0 ) != '/' && url.lastIndexOf('mailto:', 0) !== 0 ? Galaxy.root + url : url;
     },
 
     /** body tempate */
