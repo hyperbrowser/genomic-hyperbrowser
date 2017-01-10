@@ -1,16 +1,39 @@
+from gold.gsuite import GSuiteConstants
 from quick.extra.clustering.ClusteringExecution import ClusteringExecution
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.toolguide import ToolGuideConfig
+from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
-class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
-    
+class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
     #CONSTANTS
-    ##Similarity techniques    
+    ##GenomeMixin
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuite', 'gSuiteRef']
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    ALLOW_MULTIPLE_GENOMES = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'  # Other common possibility: 'the analysis'
+
+    ##GSuite validation
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
+                                  GSuiteConstants.VALUED_POINTS,
+                                  GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
+
+    GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
+                                 GSuiteConstants.MULTIPLE]
+
+
+    ##Similarity techniques
     SIMILARITY_POSITIONAL = 'Use similarity of positional distribution along the genome'
     SIMILARITY_RELATIONS_TO_OTHER = 'Use similarity of relations to other sets of genomic features'
     SIMILARITY_DIRECT_SEQ_LVL = 'Use direct sequence-level similarity'
@@ -91,11 +114,12 @@ class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
                 ('Select feature selection option', 'featureSelection'),
                 ('Select pair distance option', 'pairDistOption'),
                 ('Select GSuite (reference tracks)', 'gSuiteRef')
-                ] + cls.getInputBoxNamesForUserBinSelection() + [
+                ] + cls.getInputBoxNamesForGenomeSelection() \
+                  + cls.getInputBoxNamesForUserBinSelection() + [
                 ('Select clustering method', 'clusteringMethod'),
                 ('Select clustering algorithm', 'clusteringAlgorithm'),
                 ('Select clustering option', 'clusteringOption')
-                ]+cls.getInputBoxNamesForDebug()
+                ] + cls.getInputBoxNamesForDebug()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -425,36 +449,67 @@ class ClusTrackTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        if not choices.gSuite:
+            return ToolGuideController.getHtml(cls.toolId,
+                                               [ToolGuideConfig.GSUITE_INPUT],
+                                               choices.isBasic)
+
         errorString = GeneralGuiTool._checkGSuiteFile(choices.gSuite)
         if errorString:
             return errorString
-        
+
+        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gSuite,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+        if errorString:
+            return errorString
+
         if choices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER \
-        or choices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
-            gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+                or choices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
+            if not choices.gSuiteRef:
+                return ToolGuideController.getHtml(cls.toolId,
+                                                   [ToolGuideConfig.GSUITE_INPUT],
+                                                   choices.isBasic)
+
             errorString = GeneralGuiTool._checkGSuiteFile(choices.gSuiteRef)
             if errorString:
                 return errorString
-            refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteRef)
-            errorString = GeneralGuiTool._checkGenomeEquality(gSuite.genome, refGSuite.genome)
+
+            gSuiteRef = getGSuiteFromGalaxyTN(choices.gSuiteRef)
+            errorString = GeneralGuiTool._checkGSuiteRequirements \
+                (gSuiteRef,
+                 cls.GSUITE_ALLOWED_FILE_FORMATS,
+                 cls.GSUITE_ALLOWED_LOCATIONS,
+                 cls.GSUITE_ALLOWED_TRACK_TYPES,
+                 cls.GSUITE_DISALLOWED_GENOMES)
             if errorString:
                 return errorString
+
+        errorString = cls._validateGenome(choices)
+        if errorString:
+            return errorString
         
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
 
-
-    @staticmethod
-    def _getGenome(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return gSuite.genome
-
     @staticmethod
     def _getTrackNameList(choices):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return [track.trackName for track in gSuite.allTracks()]
-    
+        trackNameList = [track.trackName for track in gSuite.allTracks()]
+
+        if choices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER \
+                or choices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
+            if choices.gSuiteRef:
+                gSuiteRef = getGSuiteFromGalaxyTN(choices.gSuiteRef)
+                trackNameList += [track.trackName for track in gSuiteRef.allTracks()]
+
+        return trackNameList
+
     @staticmethod
     def getOutputFormat(choices):
         return 'customhtml'
