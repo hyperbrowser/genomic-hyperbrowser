@@ -76,15 +76,15 @@
   <!--<section name="Assorted tools (Beta)" id="gsuite_beta_tools">-->
   <!--</section>-->
 
-  <!--<section name="Planned tools (Still in development or on hold)" id="gsuite_planned_tools">-->
-     <!--<tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />-->
-  <!--</section>-->
+  <section name="Experimental tools for GSuite HB manuscript" id="gsuite_experimental_tools">
+     <tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />
+     <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
+  </section>
 
   <!--<section name="Not part of current submission" id="gsuite_other_tools">-->
       <!--<tool file="proto/hyperbrowser/gsuite/PilotPageOverlapBetweenTracksTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/GsuiteOverviewTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/NormalizeTracksInGSuiteTool.xml" />-->
-      <!--<tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/QueryTrackCoincidingWithTwoGSuitesTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/restricted/ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/HeatmapOfTwoGsuitesTool.xml" />-->
