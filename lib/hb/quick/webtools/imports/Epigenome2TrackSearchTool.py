@@ -21,7 +21,7 @@ class Epigenome2TrackSearchTool(TrackSearchTool):
     @classmethod
     def _getClassAttributes(cls, db):
         return ['hb_cell_tissue_type','hb_target','hb_genomebuild',\
-                'MARK','MARK CLASS','Standardised epigenome name','Epigenome Mnemonic~~',\
+                'MARK','MARK CLASS','Standardized Epigenome name','Epigenome Mnemonic~~',\
                 'Single Donor (SD) /Composite (C)~43~47','AGE (Post Birth in YEARS/ Fetal in GESTATIONAL WEEKS/CELL LINE CL) ~~',\
                 'Epigenome ID (EID)~~','GROUP~~','ANATOMY~~','TYPE~~','SOLID / LIQUID~64~23','Single Donor (SD) /Composite (C)~43~47',\
                 'SEX (Male_COMMA_ Female_COMMA_ Mixed_COMMA_ Unknown)~33~50','ETHNICITY~~']
