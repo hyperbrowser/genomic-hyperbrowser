@@ -3,7 +3,7 @@ import os, sys
 
 import shutil
 
-from config.Config import STATIC_PATH, GALAXY_FILE_PATH
+from config.Config import STATIC_PATH, GALAXY_FILE_PATH, GALAXY_BASE_DIR
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 
@@ -198,22 +198,22 @@ class FileImport(GeneralGuiTool):
         input = os.path.abspath(input)
         output = galaxyFn
 
-        # tmp hack:
-        input = input.replace('/galaxy_developer/', '/galaxy_gsuite/', 1)
-        input = input.replace('/galaxy_gsuite_submit/', '/galaxy_gsuite/', 1)
-
         input_real = os.path.realpath(input)
+        base_real = os.path.realpath(GALAXY_BASE_DIR)
+        if not input_real.startswith(base_real):
+            input_real = os.path.sep.join([base_real.rstrip(os.path.sep),
+                                           input_real.lstrip(os.path.sep)])
 
         datatype = choices.format if choices.format else choices.datatype
 
         if (input_real.startswith(os.path.realpath(STATIC_PATH))
             or input_real.startswith(os.path.realpath(GALAXY_FILE_PATH))) \
                 and input.endswith('.' + datatype):
-            shutil.copy(input, output)
+            shutil.copy(input_real, output)
         else:
             # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
             #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            raise Exception(input + ' not allowed to import!')
+            raise Exception(input + ' not allowed to import! ')
 
 
     @staticmethod

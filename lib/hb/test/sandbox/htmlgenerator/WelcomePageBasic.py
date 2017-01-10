@@ -18,6 +18,7 @@ Created on Jun 26, 2015
 
 @author: boris
 '''
+from config.Config import STATIC_HB_DIR
 from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick
 from quick.webtools.article.ClusTrackTool import ClusTrackTool
 from quick.webtools.gsuite.CoincidingTracksFromTwoGSuitesTool import CoincidingTracksFromTwoGSuitesTool
@@ -68,8 +69,6 @@ class WelcomePageGenerator(object):
 
     '''
 
-    from config.Config import STATIC_PATH
-
     TRACK_VS_COLLECTION_TOOL_TITLE = GSuiteTracksCoincidingWithQueryTrackTool.getToolName()
     COLLECTION_TOOL_TITLE = GSuiteRepresentativeAndUntypicalTrackTool.getToolName()
     COLLECTION_VS_COLLECTION_TOOL_TITLE = CoincidingTracksFromTwoGSuitesTool.getToolName()
@@ -110,49 +109,49 @@ class WelcomePageGenerator(object):
 
     from quick.util.CommonFunctions import getLoadToGalaxyHistoryURL
     LOAD_GSUITE_SINGLE_TRACK_SAMPLE_FILE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/MS_regions_expanded_10kb.bed', 'hg19',
+        (STATIC_HB_DIR + '/data/gsuite/MS_regions_expanded_10kb.bed', 'hg19',
          'bed', urlPrefix='..', histElementName=DEMO_TRACK_TITLE)
     LOAD_GSUITE_159_TF_GM12878_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/159_TFs_in_gm12878_cell_type.gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/159_TFs_in_gm12878_cell_type.gsuite',
          'hg19', 'gsuite', urlPrefix='..', histElementName=DEMO_GSUITE_159_TF_GM12878_TITLE)
     LOAD_GSUITE_CMYC_43_CELL_TYPES_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/cMyc_across_43_cell_types.gsuite', 'hg19',
+        (STATIC_HB_DIR + '/data/gsuite/cMyc_across_43_cell_types.gsuite', 'hg19',
          'gsuite', urlPrefix='..', histElementName=DEMO_GSUITE_CMYC_43_CELL_TYPES_TITLE)
     LOAD_GSUITE_DNASE_40_CELL_TYPES_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/DNase_in_40_cell_types.gsuite', 'hg19',
+        (STATIC_HB_DIR + '/data/gsuite/DNase_in_40_cell_types.gsuite', 'hg19',
          'gsuite', urlPrefix='..', histElementName=DEMO_GSUITE_DNASE_40_CELL_TYPES_TITLE)
     LOAD_GSUITE_TCGA_PRAD_SAMPLE_TRACK_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/TCGA_PRAD.gtrack', 'hg19', 'gtrack',
+        (STATIC_HB_DIR + '/data/gsuite/TCGA_PRAD.gtrack', 'hg19', 'gtrack',
          urlPrefix='..', histElementName=DEMO_TCGA_PRAD_TRACK_TITLE)
     LOAD_GSUITE_GWAS_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/gwas.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/gwas.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_GWAS_TITLE)
     LOAD_GSUITE_HIST_K562_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/hist_k562.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/hist_k562.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_HIST_K562_TITLE)
     LOAD_GSUITE_K562_ENHANCERS_SAMPLE_BED_TRACK_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_track_k562_enhancers.bed', 'hg19', 'bed',
+        (STATIC_HB_DIR + '/data/gsuite/demo_track_k562_enhancers.bed', 'hg19', 'bed',
          urlPrefix='..', histElementName=DEMO_TRACK_K562_ENHANCERS_TITLE)
     LOAD_GSUITE_COAD_TCGA_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_sv_colade.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/demo_gsuite_sv_colade.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_SOMATIC_COAD_TITLE)
     LOAD_DEMO_GSUITE_SELECTED_TFBS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_selected_tfbs.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/demo_gsuite_selected_tfbs.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_SELECTED_TFBS_TITLE)
     LOAD_DEMO_GSUITE_K562_ENHANCERS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_k562_enhancers.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/demo_gsuite_k562_enhancers.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_K562_ENHANCERS_TITLE)
     LOAD_DEMO_TRACK_MYC_BS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_track_myc_bs.bed', 'hg19', 'bed',
+        (STATIC_HB_DIR + '/data/gsuite/demo_track_myc_bs.bed', 'hg19', 'bed',
          urlPrefix='..', histElementName=DEMO_TRACK_MYC_BS_TITLE)
     LOAD_DEMO_GSUITE_TCGA_EXOME_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_tcga_exome.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/demo_gsuite_tcga_exome.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_TCGA_EXOME_TITLE)
     LOAD_DEMO_GSUITE_TFS_WITH_PWMS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_tfs_with_pwms.gsuite', 'hg19', 'gsuite',
+        (STATIC_HB_DIR + '/data/gsuite/demo_gsuite_tfs_with_pwms.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_TFS_WITH_PWMS_TITLE)
     LOAD_DEMO_TRACK_LICA_CN_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_track_lica_cn.gtrack', 'hg19', 'gtrack',
+        (STATIC_HB_DIR + '/data/gsuite/demo_track_lica_cn.gtrack', 'hg19', 'gtrack',
          urlPrefix='..', histElementName=DEMO_TRACK_LICA_CN_TITLE)
 
     TRACK_VS_COLLECTION_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True"
