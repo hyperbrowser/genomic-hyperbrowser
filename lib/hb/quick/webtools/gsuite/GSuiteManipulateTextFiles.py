@@ -4,6 +4,7 @@ from itertools import chain
 
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
 from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -369,15 +370,6 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         #     except:
         #         pass
 
-    @staticmethod
-    def _changeSuffixIfPresent(text, oldSuffix, newSuffix):
-            prefix, suffix = os.path.splitext(text)
-
-            if suffix and suffix == '.' + oldSuffix:
-                return prefix + '.' + newSuffix
-            else:
-                return text
-
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         '''
@@ -412,7 +404,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
             newSuffix = cls._getSuffix(choices, track)
 
             fileName = os.path.basename(track.path)
-            fileName = cls._changeSuffixIfPresent(fileName, track.suffix, newSuffix)
+            fileName = changeSuffixIfPresent(fileName, oldSuffix=track.suffix, newSuffix=newSuffix)
             title = getTitleWithSuffixReplaced(track.title, newSuffix)
 
             try:

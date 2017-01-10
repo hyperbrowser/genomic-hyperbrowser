@@ -16,6 +16,8 @@ GSUITE_HISTORY_OUTPUT_NAME_DICT = {
                       'in "Preprocess a GSuite for analysis" to retry)',
     'nomanipulate': 'GSuite (%s) - files that failed manipulation (select '
                     'in "Modify primary tracks referred to in a GSuite" to retry)',
+    'nointersect': 'GSuite (%s) - files that failed intersection (in most cases due '
+                   'to lack of segments in the intersection regions)',
     'storage': 'GSuite (%s) - track storage'
 }
 

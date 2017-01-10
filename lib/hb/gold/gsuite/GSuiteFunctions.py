@@ -13,6 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+import os
 
 from gold.gsuite.GSuiteConstants import LOCAL, REMOTE, UNKNOWN, PRIMARY, COMPRESSION_SUFFIXES
 from gold.gsuite.GSuiteRequirements import GSuiteRequirements
@@ -56,6 +57,16 @@ def renameBaseFileNameWithDuplicateIdx(baseFileName, duplicateIdx):
 
         return baseFileName + '_%s' % duplicateIdx +\
                (('.' +'.'.join(suffixes)) if suffixes else '')
+
+
+def changeSuffixIfPresent(text, oldSuffix=None, newSuffix=None):
+    assert newSuffix
+    prefix, suffix = os.path.splitext(text)
+
+    if suffix and oldSuffix is None or suffix == '.' + oldSuffix:
+        return prefix + '.' + newSuffix
+    else:
+        return text
 
 
 def getTitleSuffix(title):

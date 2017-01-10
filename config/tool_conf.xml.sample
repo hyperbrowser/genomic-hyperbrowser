@@ -25,6 +25,7 @@
       <tool file="proto/hyperbrowser/gsuite/ConcatenateGSuitesTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/EditGsuiteMetadataTool.xml" />
       <!--<tool file="proto/hyperbrowser/gsuite/UnionOfGSuiteTracksTool.xml" />-->
+      <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
     <label text="Modify datasets referred to in a GSuite" id="gsuite_dataset_modify"/>
       <tool file="proto/hyperbrowser/gsuite/GSuiteManipulateTextFiles.xml" />
     <label text="Export GSuite datasets" id="gsuite_export_tools"/>
@@ -78,7 +79,6 @@
 
   <section name="Experimental tools for GSuite HB manuscript" id="gsuite_experimental_tools">
      <tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />
-     <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
   </section>
 
   <!--<section name="Not part of current submission" id="gsuite_other_tools">-->
