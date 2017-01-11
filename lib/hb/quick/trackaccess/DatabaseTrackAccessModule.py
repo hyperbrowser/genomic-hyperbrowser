@@ -9,11 +9,9 @@ import sqlite3
 
 import re
 from collections import namedtuple
-import sys
-#sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
-sys.path.append('/hyperbrowser/src/hb_core_developer/trunk/')
 
 from quick.trackaccess.TrackAccessModule import TrackAccessModule
+from config.Config import HB_SOURCE_DATA_BASE_DIR
 
 ValueWithCount = namedtuple('ValueWithCount', ('val', 'count'))
 DBMS_LIST = ['psql','sqlite']
@@ -25,10 +23,9 @@ class DatabaseTrackAccessModule(TrackAccessModule):
     
     def __init__(self, isSqlite = False,raiseDBErrors = True):
         if not isSqlite:
-            self._db = DatabaseAdapter(host='localhost', database='abdulara',
-                                       user='abdulara', password='144144')
+            self._db = DatabaseAdapter(host='localhost', database='abc',
+                                       user='def', password='ghi') # To be filled out
         else:
-            from config.Config import HB_SOURCE_DATA_BASE_DIR
             self._db = DatabaseAdapter(db_file = HB_SOURCE_DATA_BASE_DIR + '/trackaccess/imports.db')
             
         self._db.raiseDBErrors = raiseDBErrors
@@ -57,7 +54,7 @@ class DatabaseTrackAccessModule(TrackAccessModule):
         self._db.createTableFromList('data_type',['ID','type_name','Encode','Epigenome2','ICGC','CGAtlas','FANTOM5','GWAS','EBIHub']\
                                      , pk = 'type_name')
         rows = []
-        f = open('data_type.tsv')
+        f = open(HB_SOURCE_DATA_BASE_DIR + '/trackaccess/data_type.tsv')
         lines = f.readlines()
         f.close()
         for line in lines:
