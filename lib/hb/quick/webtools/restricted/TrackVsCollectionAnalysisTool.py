@@ -375,16 +375,6 @@ class TrackVsCollectionAnalysisTool(GeneralGuiTool, UserBinMixin,
         #    from the collection, organized in a sortable table.
         #'''
 
-    @staticmethod
-    def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.refTrackCollection)
-        return refGSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.refTrackCollection)
-        return [track.trackName for track in refGSuite.allTracks()]
-
     #@staticmethod
     #def getSubToolClasses():
     #    '''

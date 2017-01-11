@@ -70,11 +70,15 @@ class PilotPageSimilarityAndUniquenessOfTracksTool\
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
         return cls.getInputBoxNamesForAnalysisInfo() + \
-               [('Select GSuite', 'gsuite')] + \
+               [('Basic user mode', 'isBasic'),
+                ('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
-    
+
+    @staticmethod
+    def getOptionsBoxIsBasic(prevChoices):
+        return False
     
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):
@@ -145,15 +149,6 @@ class PilotPageSimilarityAndUniquenessOfTracksTool\
         LocalOSConfig.py.
         '''
         return True
-    
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]
 
     @staticmethod
     def isDebugMode():

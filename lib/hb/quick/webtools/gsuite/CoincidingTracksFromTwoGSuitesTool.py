@@ -433,17 +433,6 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         if errorString:
             return errorString
 
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        queryGSuite = getGSuiteFromGalaxyTN(choices.queryGSuite)
-        refGSuite = getGSuiteFromGalaxyTN(choices.refGSuite)
-        return [track.trackName for track in queryGSuite.allTracks()] + \
-               [track.trackName for track in refGSuite.allTracks()]
-
     # @staticmethod
     # def getSubToolClasses():
     #    '''

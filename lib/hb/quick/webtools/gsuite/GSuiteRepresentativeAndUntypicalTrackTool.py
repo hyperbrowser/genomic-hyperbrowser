@@ -459,15 +459,6 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         else:  # Q3, Q4
             return UserBinSourceRegistryForHypothesisTests
 
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]
-
     #@staticmethod
     #def getSubToolClasses():
     #    '''

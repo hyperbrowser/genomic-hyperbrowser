@@ -259,15 +259,6 @@ class UnionOfGSuiteTracksTool(GeneralGuiTool, GenomeMixin, DebugMixin):
         if errorString:
             return errorString
 
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]
-
     # @staticmethod
     # def getSubToolClasses():
     #    '''

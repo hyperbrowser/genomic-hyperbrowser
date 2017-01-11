@@ -498,19 +498,6 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
             return errorString
 
     @staticmethod
-    def _getTrackNameList(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        trackNameList = [track.trackName for track in gSuite.allTracks()]
-
-        if choices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER \
-                or choices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
-            if choices.gSuiteRef:
-                gSuiteRef = getGSuiteFromGalaxyTN(choices.gSuiteRef)
-                trackNameList += [track.trackName for track in gSuiteRef.allTracks()]
-
-        return trackNameList
-
-    @staticmethod
     def getOutputFormat(choices):
         return 'customhtml'
 

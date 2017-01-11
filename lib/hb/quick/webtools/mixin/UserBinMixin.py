@@ -3,13 +3,17 @@ from gold.util.CustomExceptions import AbstractClassError, ShouldNotOccurError
 from proto.tools.GeneralGuiTool import BoxGroup
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.application.UserBinManager import \
+    getNameAndProtoRegSpecLabelsForAllUserBinSources, \
+    getNameAndProtoBinSpecLabelsForAllUserBinSources
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 
 class UserBinMixin(object):
-    from quick.application.UserBinManager import \
-        getNameAndProtoRegSpecLabelsForAllUserBinSources, \
-        getNameAndProtoBinSpecLabelsForAllUserBinSources
+    # For subclass override
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gsuite']
 
+    # Local constants
     REG_SPEC_NAMES, REG_SPEC_LABELS = zip(*getNameAndProtoRegSpecLabelsForAllUserBinSources())
     BIN_SPEC_NAMES, BIN_SPEC_LABELS = zip(*getNameAndProtoBinSpecLabelsForAllUserBinSources())
 
@@ -242,12 +246,26 @@ class UserBinMixin(object):
         if hasattr(choices, 'genome'):
             return choices.genome
         else:
+            genomes = set(getGSuiteFromGalaxyTN(getattr(choices, key)).genome for key in
+                          cls.GSUITE_FILE_OPTIONS_BOX_KEYS if getattr(choices, key))
+            if len(genomes) == 1:
+                genome = genomes.pop()
+                if genome:
+                    return genome
+
             raise ShouldNotOccurError(
                 'Subclass of UserBinMixin needs to override the cls._getGenome method')
 
     @classmethod
     def _getTrackNameList(cls, choices):
-        return []
+        trackNameList = []
+        gsuites = [getGSuiteFromGalaxyTN(getattr(choices, key)) for key in
+                   cls.GSUITE_FILE_OPTIONS_BOX_KEYS if getattr(choices, key)]
+
+        for gsuite in gsuites:
+            trackNameList += [track.trackName for track in gsuite.allTracks()]
+
+        return trackNameList
 
 
 class UserBinMixinForDescriptiveStats(UserBinMixin):

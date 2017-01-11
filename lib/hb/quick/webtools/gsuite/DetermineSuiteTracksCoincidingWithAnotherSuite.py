@@ -312,17 +312,6 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
         if errorString:
             return errorString
 
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
-        return [track.trackName for track in gSuiteFirst.allTracks()] + \
-               [track.trackName for track in gSuiteSecond.allTracks()]
-
     @classmethod
     def getToolDescription(cls):
         core = HtmlCore()

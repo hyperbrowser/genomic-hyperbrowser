@@ -2870,6 +2870,8 @@ class examTool1(GeneralGuiTool):
 
 
 class analyseDeepGsuiteV2(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['firstGSuite', 'secondGSuite']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
 
@@ -4364,18 +4366,6 @@ class analyseDeepGsuiteV2(GeneralGuiTool, UserBinMixin):
 
         print analyseDeepGsuiteV2.createTable(listResult, listOfColumns)
 
-    @staticmethod
-    def _getGenome(choices):
-        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
-        return firstGSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
-        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
-        return [track.trackName for track in firstGSuite.allTracks()] + \
-               [track.trackName for track in secondGSuite.allTracks()]
-
     @classmethod
     def getToolDescription(cls):
         return ''
@@ -4393,6 +4383,8 @@ class analyseDeepGsuiteV2(GeneralGuiTool, UserBinMixin):
 
 
 class analyseDeepGsuite(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['firstGSuite', 'secondGSuite']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
 
@@ -5276,18 +5268,6 @@ class analyseDeepGsuite(GeneralGuiTool, UserBinMixin):
 
         print analyseDeepGsuite.createTable(listResult, operations, listOfColumns)
 
-    @staticmethod
-    def _getGenome(choices):
-        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
-        return firstGSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
-        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
-        return [track.trackName for track in firstGSuite.allTracks()] + \
-               [track.trackName for track in secondGSuite.allTracks()]
-
     @classmethod
     def getToolDescription(cls):
         return ''
@@ -5305,6 +5285,8 @@ class analyseDeepGsuite(GeneralGuiTool, UserBinMixin):
 
 
 class geneExpressionMaxValue(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst']
+
     @staticmethod
     def getToolName():
         '''
@@ -5405,16 +5387,6 @@ class geneExpressionMaxValue(GeneralGuiTool, UserBinMixin):
 
 
         # resultDict = results.getGlobalResult()
-
-    @staticmethod
-    def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return [track.trackName for track in refGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8170,6 +8142,8 @@ class geneExpressionV4(GeneralGuiTool):
 
 
 class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst']
+
     @staticmethod
     def getToolName():
         '''
@@ -8205,16 +8179,6 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
         print results
 
         # resultDict = results.getGlobalResult()
-
-    @staticmethod
-    def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return [track.trackName for track in refGSuite.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -8298,6 +8262,8 @@ class mRNATool(GeneralGuiTool):
 
 
 class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst']
+
     @staticmethod
     def getToolName():
         '''
@@ -8334,16 +8300,6 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
 
         # resultDict = results.getGlobalResult()
 
-    @staticmethod
-    def _getGenome(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return refGSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        refGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return [track.trackName for track in refGSuite.allTracks()]
-
     @classmethod
     def getToolDescription(cls):
         return ''
@@ -8361,6 +8317,8 @@ class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
 
 
 class rankingTFtracks(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
@@ -8550,18 +8508,6 @@ class rankingTFtracks(GeneralGuiTool, UserBinMixin):
     #
     #         print htmlCore
 
-    @staticmethod
-    def _getGenome(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return gSuiteFirst.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
-        return [track.trackName for track in gSuiteFirst.allTracks()] + \
-               [track.trackName for track in gSuiteSecond.allTracks()]
-
     @classmethod
     def getToolDescription(cls):
         return ''
@@ -8587,6 +8533,8 @@ class rankingTFtracks(GeneralGuiTool, UserBinMixin):
 
 
 class rankingTFtracks3(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
@@ -8776,18 +8724,6 @@ class rankingTFtracks3(GeneralGuiTool, UserBinMixin):
     #
     #         print htmlCore
 
-    @staticmethod
-    def _getGenome(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return gSuiteFirst.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
-        return [track.trackName for track in gSuiteFirst.allTracks()] + \
-               [track.trackName for track in gSuiteSecond.allTracks()]
-
     @classmethod
     def getToolDescription(cls):
         return ''
@@ -8813,6 +8749,8 @@ class rankingTFtracks3(GeneralGuiTool, UserBinMixin):
 
 
 class miRNAPrecursors(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
@@ -8956,18 +8894,6 @@ class miRNAPrecursors(GeneralGuiTool, UserBinMixin):
         htmlCore.end()
 
         print htmlCore
-
-    @staticmethod
-    def _getGenome(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return gSuiteFirst.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
-        return [track.trackName for track in gSuiteFirst.allTracks()] + \
-               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
@@ -16374,6 +16300,8 @@ class GenerateTwoLevelOverlapPreferenceStat(GeneralGuiTool):
 
 
 class driverGeneIdentification(GeneralGuiTool, UserBinMixin, DebugMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
@@ -16619,18 +16547,6 @@ class driverGeneIdentification(GeneralGuiTool, UserBinMixin, DebugMixin):
         htmlCore.end()
 
         print htmlCore
-
-    @staticmethod
-    def _getGenome(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        return gSuiteFirst.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
-        return [track.trackName for track in gSuiteFirst.allTracks()] + \
-               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):
