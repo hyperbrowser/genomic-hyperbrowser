@@ -3,7 +3,7 @@ import re
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import HbGSuiteTrack, GSuiteTrack
 from gold.util.CommonFunctions import prettyPrintTrackName, cleanUpTrackType, \
-    extractNameFromDatasetInfo
+    extractNameFromDatasetInfo, createGalaxyToolURL
 
 GSUITE_HISTORY_OUTPUT_NAME_DICT = {
     'progress': 'Progress (%s)',
@@ -61,6 +61,7 @@ def getGSuiteHistoryOutputName(type, description='', datasetInfo=None):
 
 
 def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
+    from proto.config.Config import URL_PREFIX
     from proto.hyperbrowser.HtmlCore import HtmlCore
     from quick.application.GalaxyInterface import GalaxyInterface
 
@@ -68,9 +69,13 @@ def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
     core.append(GalaxyInterface.getHtmlBeginForRuns(galaxyFn))
     core.paragraph('This history element contains GSuite track data, and is hidden by default.')
     core.paragraph('If you want to access the contents of this GSuite, please use the tool: '
-                   '"Export primary tracks from a GSuite to your history", selecting '
+                   '%s, selecting '
                    'a primary GSuite history element that refers to the files contained '
-                   'in this storage.')
+                   'in this storage.' %
+                   str(HtmlCore().link(
+                       'Export primary tracks from a GSuite to your history',
+                       createGalaxyToolURL('hb_g_suite_export_to_history_tool')))
+                   )
     core.end()
     core.append(GalaxyInterface.getHtmlEndForRuns())
 
