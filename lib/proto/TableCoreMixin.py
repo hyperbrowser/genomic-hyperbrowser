@@ -92,6 +92,7 @@ function expandTable(tableId) {
     $(tblId).find("tr").show();
     btnDivId = "#toggle_table_" + tableId;
     $(btnDivId).find("input").toggle();
+    $(tblId).off("click");
 }
 
 function collapseTable(tableId, visibleRows) {
@@ -100,13 +101,36 @@ function collapseTable(tableId, visibleRows) {
     $(trScltr).hide();
     btnDivId = "#toggle_table_" + tableId;
     $(btnDivId).find("input").toggle();
+    $(tblId).on("click", resetFunc(tableId, visibleRows));
+}
+
+var resetFunc = function(tableId, visibleRows) {
+    return function(e) {
+        return resetTable(e, tableId, visibleRows);
+    }
+}
+
+function resetTable(e, tableId, visibleRows) {
+    expandTable(tableId)
+    collapseTable(tableId, visibleRows)
 }
 
 $(document).ready(function(){
-    hiddenRowsSlctr = "table.expandable tr:nth-child(n + %s)";
-    $(hiddenRowsSlctr).hide();
+    tableId = "%s";
+    visibleRows = %s;
+    tblId = "#" + tableId;
+    hiddenRowsSlctr = tblId + " tr:nth-child(n + " + (visibleRows+2) + ")";
+    //  'visibleRows+2' for some reason (one of life's great mysteries)
+    if ($(hiddenRowsSlctr).length>0) {
+        $(hiddenRowsSlctr).hide();
+        $(tblId).on("click", resetFunc(tableId, visibleRows+1));
+    //  'visibleRows+1' for some other reason (one of life's other great mysteries)
+
+    }
 }
-);''' % str(visibleRows + 2))  # '+2' for some reason (one of life's great mysteries)
+);
+
+''' % (tableId, visibleRows))
 
         self._str += '''
 <div id="toggle_table_%s" class="toggle_table_btn">
