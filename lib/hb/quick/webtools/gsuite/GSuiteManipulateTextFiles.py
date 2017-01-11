@@ -351,7 +351,8 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         fileList += [HistElement(getGSuiteHistoryOutputName(
                          'primary', cls.OUTPUT_DESCRIPTION, choices.history), GSUITE_SUFFIX)]
         fileList += [HistElement(getGSuiteHistoryOutputName(
-                         'storage', cls.OUTPUT_DESCRIPTION, choices.history), GSUITE_SUFFIX, hidden=True)]
+                         'storage', cls.OUTPUT_DESCRIPTION, choices.history),
+                         GSUITE_STORAGE_SUFFIX, hidden=True)]
 
         return fileList
 
