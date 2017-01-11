@@ -857,7 +857,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
             if sourceTfsDetails == AllTfsOfRegions.SELECT:
                 return 'Please select a TF track.'
             else:
-                if isinstance(sourceTfsDetails, str):
+                if isinstance(sourceTfsDetails, basestring):
                     trackType = sourceTfsDetails.split(':')[1]
                     if trackType == "gsuite":
                         errorString = GeneralGuiTool._checkGSuiteFile(sourceTfsDetails)

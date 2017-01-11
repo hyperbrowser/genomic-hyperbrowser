@@ -281,7 +281,7 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
                     track.setAttribute(attrNameExtended, str(attrVal))
                     colNameSet.add(attrNameExtended)
                     tableDict[track.title][attrNameExtended] = strWithNatLangFormatting(attrVal)
-                    #             assert isinstance(resultDict['Result'], (int, str, float)), type(resultDict['Result'])
+                    #             assert isinstance(resultDict['Result'], (int, basestring, float)), type(resultDict['Result'])
         if choices.outputType == 'gsuite':
             GSuiteComposer.composeToFile(gSuite, galaxyFn)
         else:  # customhtml
