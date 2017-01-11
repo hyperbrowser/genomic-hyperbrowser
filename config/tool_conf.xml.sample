@@ -37,7 +37,6 @@
       <tool file="proto/hyperbrowser/gsuite/GSuiteMetadataOverviewTool.xml" />
     <label text="Track overview" id="data_overview"/>
       <tool file="proto/hyperbrowser/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml" />
-      <tool file="proto/hyperbrowser/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageSimilarityAndUniquenessOfTracksTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageClusteringInTracksTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageCombinedOverviewOfTracksTool.xml" />
