@@ -278,7 +278,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         core.divBegin(divId='raw-table-result', divClass='result-div')
         core.divBegin(divId='raw-table-result', divClass='result-div-left')
         core.line('''Follow the links to view the results in an HTML table
-        or raw tabular form:<br>''')
+        or raw tabular form:''')
         core.divEnd()
         core.divBegin(divId='raw-table-result', divClass='result-div-right')
         core.line(tablePresenter.getReference(RAW_OVERLAP_TABLE_RESULT_KEY))
