@@ -212,15 +212,12 @@ class FileImport(GeneralGuiTool):
 
         datatype = choices.format if choices.format else choices.datatype
 
-        if (input.startswith(STATIC_PATH)
-            or input.startswith(GALAXY_FILE_PATH)) \
-                and input.endswith('.' + datatype):
+        if input.endswith('.' + datatype):
             shutil.copy(input, output)
         else:
             # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
             #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            raise Exception(input + ' not allowed to import! %s %s %s' %
-                            (GALAXY_BASE_DIR, STATIC_PATH, GALAXY_FILE_PATH))
+            raise Exception(input + ' not allowed to import!')
 
 
     @staticmethod
