@@ -264,10 +264,6 @@
     <tool file="proto/hyperbrowser/util/StandardizeTrackFilesTool.xml" />
     <tool file="proto/hyperbrowser/InstallUcscTool.xml" />
     <tool file="proto/hyperbrowser/track/IntegrateCategoricalTrackFromHistory.xml" />
-
-    <!-- hidden tools -->
-    <tool file="proto/hyperbrowser/file_import/FileImport.xml" />
-    <!-- end hidden tools -->
   </section>
 
   <section name="Development tools" id="debug_tools">
@@ -367,6 +363,10 @@
     <tool file="proto/GenerateToolsTool.xml" />
     <tool file="proto/ExploreToolsTool.xml" />
     <tool file="proto/InstallToolsTool.xml" />
+
+    <!-- hidden tools -->
+    <tool file="proto/FileImport.xml" />
+    <!-- end hidden tools -->
   </section>
 
   <label text=" " id="space0"/>
