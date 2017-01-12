@@ -22,7 +22,8 @@ from collections import OrderedDict
 
 from proto.CommonConstants import THOUSANDS_SEPARATOR
 from proto.config.Config import GALAXY_BASE_DIR, OUTPUT_PRECISION
-from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId
+from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, \
+    GALAXY_SECURITY_HELPER_OBJ
 
 """
 Note on datasetInfo and datasetId (used in several functions):
@@ -251,11 +252,12 @@ def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=Non
         urlPrefix = URL_PREFIX
 
     import base64
+    encodedFn = base64.urlsafe_b64encode(GALAXY_SECURITY_HELPER_OBJ.encode_guid(fn))
 
     assert galaxyDataType is not None
     return urlPrefix + '/tool_runner?tool_id=file_import' + \
                        ('&dbkey=' + genome if genome else '') + \
-                       '&runtool_btn=yes&input=' + base64.urlsafe_b64encode(fn) + \
+                       '&runtool_btn=yes&input=' + encodedFn + \
                        ('&format=' + galaxyDataType if galaxyDataType is not None else '') + \
                        ('&job_name=' + histElementName if histElementName is not None else '')
 
