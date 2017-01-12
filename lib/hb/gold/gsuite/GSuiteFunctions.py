@@ -15,7 +15,8 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
-from gold.gsuite.GSuiteConstants import LOCAL, REMOTE, UNKNOWN, PRIMARY, COMPRESSION_SUFFIXES
+from gold.gsuite.GSuiteConstants import LOCAL, REMOTE, UNKNOWN, PRIMARY, COMPRESSION_SUFFIXES, \
+    PREPROCESSED
 from gold.gsuite.GSuiteRequirements import GSuiteRequirements
 from gold.gsuite.GSuiteTrack import GSuiteTrack, SearchQueryForSuffixGSuiteTrack
 from gold.util.CommonFunctions import getFileSuffix, stripFileSuffix
@@ -84,7 +85,8 @@ def getTitleWithSuffixReplaced(title, newSuffix):
 
 
 def getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack):
-    gSuiteReq = GSuiteRequirements(allowedLocations=[LOCAL, REMOTE], allowedFileFormats=[PRIMARY, UNKNOWN])
+    gSuiteReq = GSuiteRequirements(allowedLocations=[LOCAL, REMOTE],
+                                   allowedFileFormats=[PREPROCESSED, PRIMARY, UNKNOWN])
     gSuiteReq.check(gSuiteTrack)
 
     title, suffix, path = gSuiteTrack.title, gSuiteTrack.suffix, gSuiteTrack.path
