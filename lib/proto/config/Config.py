@@ -18,8 +18,9 @@ ADMIN_USERS = [username.strip() for username in
 RESTRICTED_USERS = [username.strip() for username in
                     config.getWithDefault('restricted_users', '', 'galaxy_proto').split(',')]
 OUTPUT_PRECISION = int(config.getWithDefault('output_precision', '4', 'galaxy_proto'))
-STATIC_REL_PATH = URL_PREFIX + '/static/proto'
-STATIC_PATH = GALAXY_BASE_DIR + '/' + STATIC_REL_PATH
+STATIC_DIR = '/static/proto'
+STATIC_REL_PATH = URL_PREFIX + STATIC_DIR
+STATIC_PATH = GALAXY_BASE_DIR + STATIC_DIR
 GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + config.getWithDefault('file_path', 'database/files')
 
 
