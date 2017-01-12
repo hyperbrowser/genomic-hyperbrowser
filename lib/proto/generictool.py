@@ -36,6 +36,7 @@ def getClassName(obj):
 
 
 class GenericToolController(BaseToolController):
+    STATIC_IMAGE_CLS = StaticImage
     initChoicesDict = None
 
     def __init__(self, trans, job):
@@ -612,7 +613,7 @@ class GenericToolController(BaseToolController):
         image = None
         id = self.prototype.getToolIllustration()
         if id:
-            image = StaticImage(id)
+            image = self.STATIC_IMAGE_CLS(id)
         return image
 
     def getDemoURL(self):
