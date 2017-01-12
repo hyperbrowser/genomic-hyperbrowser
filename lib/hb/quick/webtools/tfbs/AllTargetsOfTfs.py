@@ -49,9 +49,9 @@ class AllTargetsOfTfs(GeneralGuiTool, DebugMixin):
                 ('TF Tracks', 'tfTracks'),\
                 ] + DebugMixin.getInputBoxNamesForDebug()
 
-    @staticmethod
-    def getOptionsBoxGenome():
-        return ['--- Select ---'] + ['hg19','mm9'] #'__genome__'
+    @classmethod
+    def getOptionsBoxGenome(cls):
+        return [cls.SELECT, 'hg19', 'mm9'] #'__genome__'
 
     @staticmethod
     def getInfoForOptionsBoxGenome():
@@ -316,57 +316,62 @@ class AllTargetsOfTfs(GeneralGuiTool, DebugMixin):
         htmlCore.end()
         print htmlCore
 
-    # @staticmethod
-    # def validateAndReturnErrors(choices):
-    #     genomicRegionsSource = choices.genomicRegionsSource
-    #     genomicRegions = choices.genomicRegions
-    #     sourceTfs = choices.sourceTfs
-    #     tfTracks = choices.tfTracks
-    #
-    #     # Check that all boxes have data:
-    #     if genomicRegionsSource == AllTargetsOfTfs.SELECT:
-    #         return 'Please select a genomic region source.'
-    #     if not genomicRegions:
-    #         return 'Please select a genomic region.'
-    #
-    #     # Check tracks for Genomic Regions-History:
-    #     if genomicRegionsSource=='History (user-defined)':
-    #         if len(genomicRegions.split(":")) > 1:
-    #             if genomicRegions.split(":")[1] == "gsuite":
-    #                 errorString = GeneralGuiTool._checkGSuiteFile(genomicRegions)
-    #                 if errorString:
-    #                     return errorString
-    #                 else:
-    #                     gSuite = getGSuiteFromGalaxyTN(genomicRegions)
-    #                     sizeErrorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuite, 1, 1000)
-    #                     if sizeErrorString:
-    #                         return sizeErrorString
-    #                     else:
-    #                         reqErrorString = GeneralGuiTool._checkGSuiteRequirements \
-    #                             (gSuite,
-    #                              AllTargetsOfTfs.GSUITE_ALLOWED_FILE_FORMATS,
-    #                              AllTargetsOfTfs.GSUITE_ALLOWED_LOCATIONS,
-    #                              AllTargetsOfTfs.GSUITE_ALLOWED_TRACK_TYPES,
-    #                              AllTargetsOfTfs.GSUITE_DISALLOWED_GENOMES)
-    #                         if reqErrorString:
-    #                             return reqErrorString
-    #             else:
-    #                 errorString = GeneralGuiTool._checkTrack(choices, 'genomicRegions', 'genome')
-    #                 if errorString:
-    #                     return errorString
-    #
-    #     if sourceTfs == AllTargetsOfTfs.SELECT:
-    #         return 'Please select a TF source.'
-    #     if not tfTracks:
-    #         return 'Please select a TF track.'
-    #
-    #     # Check tracks for TFs-History:
-    #     if sourceTfs=='History (user-defined)':
-    #         tfErrorString = GeneralGuiTool._checkTrack(choices, 'tfTracks', 'genome')
-    #         if tfErrorString:
-    #             return tfErrorString
-    #
-    #     return None
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
+        genome = choices.genome
+        genomicRegionsSource = choices.genomicRegionsSource
+        genomicRegions = choices.genomicRegions
+        sourceTfs = choices.sourceTfs
+        tfTracks = choices.tfTracks
+
+        # Check genome
+        if genome == cls.SELECT:
+            return 'Please select a genome build.'
+
+        # Check that all boxes have data:
+        if genomicRegionsSource == AllTargetsOfTfs.SELECT:
+            return 'Please select a genomic region source.'
+        if not genomicRegions:
+            return 'Please select a genomic region.'
+
+        # Check tracks for Genomic Regions-History:
+        if genomicRegionsSource=='History (user-defined)':
+            if len(genomicRegions.split(":")) > 1:
+                if genomicRegions.split(":")[1] == "gsuite":
+                    errorString = GeneralGuiTool._checkGSuiteFile(genomicRegions)
+                    if errorString:
+                        return errorString
+                    else:
+                        gSuite = getGSuiteFromGalaxyTN(genomicRegions)
+                        sizeErrorString = GeneralGuiTool._checkGSuiteTrackListSize(gSuite, 1, 1000)
+                        if sizeErrorString:
+                            return sizeErrorString
+                        else:
+                            reqErrorString = GeneralGuiTool._checkGSuiteRequirements \
+                                (gSuite,
+                                 AllTargetsOfTfs.GSUITE_ALLOWED_FILE_FORMATS,
+                                 AllTargetsOfTfs.GSUITE_ALLOWED_LOCATIONS,
+                                 AllTargetsOfTfs.GSUITE_ALLOWED_TRACK_TYPES,
+                                 AllTargetsOfTfs.GSUITE_DISALLOWED_GENOMES)
+                            if reqErrorString:
+                                return reqErrorString
+                else:
+                    errorString = GeneralGuiTool._checkTrack(choices, 'genomicRegions', 'genome')
+                    if errorString:
+                        return errorString
+
+        if sourceTfs == AllTargetsOfTfs.SELECT:
+            return 'Please select a TF source.'
+        if not tfTracks:
+            return 'Please select a TF track.'
+
+        # Check tracks for TFs-History:
+        if sourceTfs=='History (user-defined)':
+            tfErrorString = GeneralGuiTool._checkTrack(choices, 'tfTracks', 'genome')
+            if tfErrorString:
+                return tfErrorString
+
+        return None
 
     @staticmethod
     def getOutputFormat(choices=None):
