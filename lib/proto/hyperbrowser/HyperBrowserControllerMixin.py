@@ -16,10 +16,13 @@
 #
 
 from gold.application.GalaxyInterface import GalaxyInterface
+from proto.hyperbrowser.StaticFile import StaticImage
 from proto.hyperbrowser.hyper_gui import TrackWrapper
 
 
 class HyperBrowserControllerMixin(object):
+    STATIC_IMAGE_CLS = StaticImage
+
     def _init(self):
         super(HyperBrowserControllerMixin, self)._init()
 
