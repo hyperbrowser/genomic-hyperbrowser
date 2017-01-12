@@ -42,9 +42,9 @@ def getGSuiteHistoryOutputName(type, description='', datasetInfo=None):
     if datasetInfo:
         datasetName = extractNameFromDatasetInfo(datasetInfo)
 
-        match = re.search('\(.+\)', datasetName)
+        match = re.search('\A([0-9]+ - )?GSuite \((.+?)\)', datasetName)
         if match:
-            lastDesc = match.group(0)[1:-1]
+            lastDesc = match.group(2)
         else:
             lastDesc = datasetName
 
@@ -57,7 +57,8 @@ def getGSuiteHistoryOutputName(type, description='', datasetInfo=None):
             datasetName = re.sub('^[0-9]+ - ', '', datasetName)
             return datasetName.replace(lastDesc, description)
 
-    return GSUITE_HISTORY_OUTPUT_NAME_DICT[type] % description
+    name = GSUITE_HISTORY_OUTPUT_NAME_DICT[type] % description
+    return name[:255]  # The database limit for history name length
 
 
 def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
