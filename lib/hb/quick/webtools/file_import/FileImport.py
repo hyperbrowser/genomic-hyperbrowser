@@ -198,22 +198,21 @@ class FileImport(GeneralGuiTool):
         input = os.path.abspath(input)
         output = galaxyFn
 
-        input_real = os.path.realpath(input)
-        base_real = os.path.realpath(GALAXY_BASE_DIR)
-        if not input_real.startswith(base_real):
-            input_real = os.path.sep.join([base_real.rstrip(os.path.sep),
-                                           input_real.lstrip(os.path.sep)])
+        if not input.startswith(GALAXY_BASE_DIR):
+            input = os.path.sep.join([GALAXY_BASE_DIR.rstrip(os.path.sep),
+                                           input.lstrip(os.path.sep)])
 
         datatype = choices.format if choices.format else choices.datatype
 
-        if (input_real.startswith(os.path.realpath(STATIC_PATH))
-            or input_real.startswith(os.path.realpath(GALAXY_FILE_PATH))) \
+        if (input.startswith(STATIC_PATH)
+            or input.startswith(GALAXY_FILE_PATH)) \
                 and input.endswith('.' + datatype):
-            shutil.copy(input_real, output)
+            shutil.copy(input, output)
         else:
             # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
             #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            raise Exception(input + ' not allowed to import! ')
+            raise Exception(input + ' not allowed to import! %s %s %s' %
+                            (GALAXY_BASE_DIR, STATIC_PATH, GALAXY_FILE_PATH))
 
 
     @staticmethod
