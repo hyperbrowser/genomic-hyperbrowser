@@ -247,7 +247,7 @@ class UserBinMixin(object):
             return choices.genome
         else:
             genomes = set(getGSuiteFromGalaxyTN(getattr(choices, key)).genome for key in
-                          cls.GSUITE_FILE_OPTIONS_BOX_KEYS if getattr(choices, key))
+                          cls.GSUITE_FILE_OPTIONS_BOX_KEYS if hasattr(choices, key))
             if len(genomes) == 1:
                 genome = genomes.pop()
                 if genome:
@@ -260,7 +260,7 @@ class UserBinMixin(object):
     def _getTrackNameList(cls, choices):
         trackNameList = []
         gsuites = [getGSuiteFromGalaxyTN(getattr(choices, key)) for key in
-                   cls.GSUITE_FILE_OPTIONS_BOX_KEYS if getattr(choices, key)]
+                   cls.GSUITE_FILE_OPTIONS_BOX_KEYS if hasattr(choices, key)]
 
         for gsuite in gsuites:
             trackNameList += [track.trackName for track in gsuite.allTracks()]
