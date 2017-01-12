@@ -120,6 +120,10 @@
     <tool file="proto/GenerateToolsTool.xml" />
     <tool file="proto/ExploreToolsTool.xml" />
     <tool file="proto/InstallToolsTool.xml" />
+
+    <!-- hidden tools -->
+    <tool file="proto/FileImport.xml" />
+    <!-- end hidden tools -->
   </section>
   <section id="installedProto" name="Installed ProTo tools">
   </section>
