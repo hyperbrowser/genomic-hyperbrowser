@@ -10,7 +10,7 @@ import re
 from urlparse import urlparse
 from ftputil import FTPHost
 
-from config.Config import HB_SOURCE_CODE_BASE_DIR
+from config.Config import HB_SOURCE_CODE_BASE_DIR, HB_SOURCE_DATA_BASE_DIR
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.trackaccess.EncodeDatabase import EncodeDatabase
 from quick.trackaccess.CommonVocabularyParser import CommonVocabularyParser
@@ -517,7 +517,7 @@ class ICGCTrackAccessModule(object):
             rName = rName.strip()
             row.update({'col_name':col, 'col_readable_name':rName,'col_val':'.'})
             rowList.append(row)
-        f = open('icgc-cancertypes','r')
+        f = open(HB_SOURCE_DATA_BASE_DIR + '/trackaccess/icgc-cancertypes','r')
         lines = f.readlines()
         f.close()
         
