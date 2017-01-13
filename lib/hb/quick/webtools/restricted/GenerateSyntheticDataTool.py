@@ -13,7 +13,7 @@ from quick.extra.SimulationTools import PointIter, SimulationPointIter
 class GenerateSyntheticDataTool(GeneralGuiTool):
     @staticmethod
     def getToolName():
-        return "Generate synthetics track with Poisson distribution"
+        return "Generate synthetics dataset with Poisson distribution"
 
     @staticmethod
     def getInputBoxNames():
@@ -46,7 +46,7 @@ class GenerateSyntheticDataTool(GeneralGuiTool):
     def getToolDescription():
         htmlCore = HtmlCore()
 
-        htmlCore.paragraph('This tool provides the possibility to generate synthetic track with Poisson distribution.')
+        htmlCore.paragraph('This tool provides the possibility to generate synthetic dataset with Poisson distribution.')
 
         htmlCore.divider()
 
@@ -73,17 +73,17 @@ class GenerateSyntheticDataTool(GeneralGuiTool):
         ''')
         htmlCore.line(', where first three lines are a header, the fourth line contains the information about'
                       'region (chromosome, start, end position) and values ' \
-                      '(inter-, intra-mutations, probability) for which will be calculated synthetic track.')
+                      '(inter-, intra-mutations, probability) for which will be calculated synthetic dataset.')
 
         htmlCore.divider()
 
         htmlCore.line('IMPORTANT INFORMATION')
-        htmlCore.line('The file can contains more than one line with parameters, but the calculated simulated tracks ' \
+        htmlCore.line('The file can contains more than one line with parameters, but the calculated simulated datasets ' \
                       'for every regions are merged together at the end.')
 
         htmlCore.divider()
 
-        htmlCore.paragraph('The output for tool is a gSuite containing one simulated track.')
+        htmlCore.paragraph('The output for tool is a GSuite containing one simulated dataset.')
 
         htmlCore.divider()
 
@@ -92,6 +92,10 @@ class GenerateSyntheticDataTool(GeneralGuiTool):
                       ' Upload file ')
 
         return str(htmlCore)
+
+    @staticmethod
+    def isPublic():
+        return True
 
     # @staticmethod
     # def getFullExampleURL():
@@ -107,7 +111,7 @@ class GenerateSyntheticDataTool(GeneralGuiTool):
         dataOut = cls.readGTrack(parameters)
         cls.generateSynGSuite(dataOut, galaxyFn, genome)
 
-        print 'Gsuite with synthetic track is in the history.'
+        print 'Gsuite with synthetic dataset is in the history.'
 
     @classmethod
     def readGTrack(cls, parameters):

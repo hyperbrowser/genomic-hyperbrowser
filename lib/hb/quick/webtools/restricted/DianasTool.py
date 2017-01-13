@@ -2806,11 +2806,18 @@ class examTool1(GeneralGuiTool):
     def getInputBoxNames():
         return [
             ('Select GSuite', 'gSuite'),
+            #('Select file cintains examiners name', examName)
         ]
 
     @staticmethod
     def getOptionsBoxGSuite():
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+
+    #
+    # check if file format is correct
+    #
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
