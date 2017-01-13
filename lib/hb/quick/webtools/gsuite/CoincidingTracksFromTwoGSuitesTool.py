@@ -45,8 +45,8 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return ''' Are certain tracks of one suite coinciding particularly strongly
-        with certain tracks of another suite?'''
+        return "Are certain tracks of one suite coinciding particularly strongly with certain " \
+               "tracks of another suite?"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -241,8 +241,10 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         analysisSpec.addParameter('refTrackTitleList', refTrackTitles)
         analysisSpec.addParameter('similarityStatClassName',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassNameKey])
-        analysisSpec.addParameter('removeZeroRow', choices.removeZeroRow)
-        analysisSpec.addParameter('removeZeroColumn', choices.removeZeroCol)
+        if choices.removeZeroRow:
+            analysisSpec.addParameter('removeZeroRow', choices.removeZeroRow)
+        if choices.removeZeroCol:
+            analysisSpec.addParameter('removeZeroColumn', choices.removeZeroCol)
         resultsObj = doAnalysis(analysisSpec, analysisBins, queryTrackList + refTrackList)
         results = resultsObj.getGlobalResult()
 
