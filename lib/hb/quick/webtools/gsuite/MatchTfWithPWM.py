@@ -19,7 +19,7 @@ class MatchTfWithPWM(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Match a suit of TFs with PWMs"
+        return "Match a suite of TFs with PWMs"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -40,7 +40,7 @@ class MatchTfWithPWM(GeneralGuiTool):
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [('Gsuit file containing transcription factors', 'gsuite')] #+\
+        return [('Gsuite file containing transcription factors', 'gsuite')] #+\
                 #cls.getInputBoxNamesForGenomeSelection() +\
                 #UserBinSelector.getUserBinInputBoxNames()
 
