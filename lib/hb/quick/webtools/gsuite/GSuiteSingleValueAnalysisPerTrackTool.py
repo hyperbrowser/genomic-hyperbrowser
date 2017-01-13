@@ -11,9 +11,6 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.AvgElementLengthStat import AvgElementLengthStat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin

@@ -16,8 +16,6 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteFullAnalysisV2Stat import RAW_OVERLAP_TABLE_RESULT_KEY, \
     SIMILARITY_SCORE_TABLE_RESULT_KEY
 from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -383,6 +381,9 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not (choices.queryGSuite and choices.refGSuite):
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 

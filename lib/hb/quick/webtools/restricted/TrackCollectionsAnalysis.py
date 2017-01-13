@@ -9,8 +9,6 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.RawOverlapToSelfStat import RawOverlapToSelfStat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS,\
     STAT_OVERLAP_RATIO, STAT_FACTOR_OBSERVED_VS_EXPECTED, processRawResults,\
     STAT_COVERAGE_RATIO_VS_REF_TRACK, STAT_COVERAGE_RATIO_VS_QUERY_TRACK,\
@@ -312,6 +310,9 @@ class TrackCollectionsAnalysis(GeneralGuiTool, UserBinMixin,
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.gSuiteFirst:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
         if not choices.gSuiteSecond:

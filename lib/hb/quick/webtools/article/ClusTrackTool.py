@@ -1,8 +1,6 @@
 from gold.gsuite import GSuiteConstants
 from quick.extra.clustering.ClusteringExecution import ClusteringExecution
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -450,6 +448,8 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         the method should return None, which enables the execute button.
         '''
         if not choices.gSuite:
+            from quick.toolguide.controller.ToolGuide import ToolGuideController
+            from quick.toolguide import ToolGuideConfig
             return ToolGuideController.getHtml(cls.toolId,
                                                [ToolGuideConfig.GSUITE_INPUT],
                                                choices.isBasic)
@@ -471,6 +471,8 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         if choices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER \
                 or choices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
             if not choices.gSuiteRef:
+                from quick.toolguide.controller.ToolGuide import ToolGuideController
+                from quick.toolguide import ToolGuideConfig
                 return ToolGuideController.getHtml(cls.toolId,
                                                    [ToolGuideConfig.GSUITE_INPUT],
                                                    choices.isBasic)

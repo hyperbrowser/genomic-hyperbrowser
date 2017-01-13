@@ -67,7 +67,7 @@ job_metrics_conf.xml
 workflow_schedulers_conf.xml
 config/*
 static/welcome.html.*
-# static/welcome.html
+static/welcome.html
 
 # Tool data.
 tool-data/annotation_profiler_options.xml

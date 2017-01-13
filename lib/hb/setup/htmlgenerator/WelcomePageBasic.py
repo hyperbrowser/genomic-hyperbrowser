@@ -18,7 +18,7 @@ Created on Jun 26, 2015
 
 @author: boris
 '''
-from config.Config import STATIC_DIR
+from config.Config import STATIC_DIR, GALAXY_BASE_DIR, HB_SOURCE_CODE_BASE_DIR
 from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick
 from quick.webtools.article.ClusTrackTool import ClusTrackTool
 from quick.webtools.gsuite.CoincidingTracksFromTwoGSuitesTool import CoincidingTracksFromTwoGSuitesTool
@@ -535,14 +535,21 @@ class WelcomePageGenerator(object):
     
 
 if __name__ == '__main__':
-    import os, sys
-    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+    # import os, sys
+    # os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
-    wg = WelcomePageGenerator('wpcontent.txt', 'wpprefix.html', 'wppostfix.html')
-    with open('../../../../../static/welcome.html', 'w') as f:
+    import os
+
+    path = os.path.dirname(__file__)
+    wg = WelcomePageGenerator(path + '/wpcontent.txt',
+                              path +'/wpprefix.html',
+                              path + '/wppostfix.html')
+    with open(GALAXY_BASE_DIR + '/static/welcome.html', 'w') as f:
 #     with open('testWelcome.html', 'w') as f:
         f.write(LinkExpansion(wg.content).expandLinks())
     
-    with open('../../../quick/toolguide/BasicModeQuestionCatalog.py', 'w') as f:
+    with open(HB_SOURCE_CODE_BASE_DIR +
+              '/quick/toolguide/BasicModeQuestionCatalog.py', 'w') as f:
         f.write(wg.getBasicModeQuestionCatalogContent())
-    print LinkExpansion(wg.content).expandLinks()
+    # print LinkExpansion(wg.content).expandLinks()
+        print 'OK: Finished generating welcome page'

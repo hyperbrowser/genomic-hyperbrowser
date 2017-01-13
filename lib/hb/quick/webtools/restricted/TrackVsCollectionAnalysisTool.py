@@ -6,8 +6,6 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.util import TrackReportCommon
 from quick.util.TrackReportCommon import STAT_LIST_INDEX,\
     STAT_FACTOR_OBSERVED_VS_EXPECTED, addPlotToHtmlCore
@@ -275,8 +273,9 @@ class TrackVsCollectionAnalysisTool(GeneralGuiTool, UserBinMixin,
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        
-        
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.targetTrack and not choices.refTrackCollection:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.TRACK_INPUT, ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
         if not choices.targetTrack:

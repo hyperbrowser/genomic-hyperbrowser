@@ -23,8 +23,6 @@ from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultMod
 from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
     GSuiteSimilarityToQueryTrackRankingsWrapperStat
 from quick.statistic.SingleValueOverlapStat import SingleValueOverlapStat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
@@ -497,6 +495,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         the method should return None, which enables the execute button.
         :param choices:  Dict holding all current selections
         """
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.queryTrack and not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.TRACK_INPUT, ToolGuideConfig.GSUITE_INPUT],
                                                choices.isBasic)

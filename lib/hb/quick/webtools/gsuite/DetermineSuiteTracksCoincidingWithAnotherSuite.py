@@ -1,7 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.gsuite import GSuiteConstants
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -262,6 +260,9 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not (choices.gSuiteFirst and choices.gSuiteSecond):
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 

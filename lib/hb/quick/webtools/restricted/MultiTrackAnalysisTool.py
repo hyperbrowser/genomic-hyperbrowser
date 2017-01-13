@@ -10,8 +10,6 @@ from quick.multitrack.MultiTrackAnalysis import MultiTrackBasePairCoverage,\
     MultiTrackCoverageProportionToOthers
 from quick.multitrack.MultiTrackCommon import getGSuiteDataFromGalaxyTN,\
     getGSuiteFromGalaxyTN
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
@@ -389,6 +387,9 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.histElement:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
         errorString = GeneralGuiTool._checkGSuiteFile(choices.histElement)

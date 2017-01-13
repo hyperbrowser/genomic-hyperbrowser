@@ -22,8 +22,6 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import GSuiteRepresentativenessOfTracksRankingsWrapperStat
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from quick.webtools.gsuite.GSuiteTracksCoincidingWithQueryTrackTool import GSuiteTracksCoincidingWithQueryTrackTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
@@ -424,7 +422,9 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 
