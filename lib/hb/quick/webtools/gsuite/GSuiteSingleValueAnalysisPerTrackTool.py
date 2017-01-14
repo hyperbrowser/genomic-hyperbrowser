@@ -14,6 +14,7 @@ from quick.statistic.AvgElementLengthStat import AvgElementLengthStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
@@ -306,6 +307,9 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
 
         if not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
