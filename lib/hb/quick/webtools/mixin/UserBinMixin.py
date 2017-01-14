@@ -260,7 +260,8 @@ class UserBinMixin(object):
     def _getTrackNameList(cls, choices):
         trackNameList = []
         gsuites = [getGSuiteFromGalaxyTN(getattr(choices, key)) for key in
-                   cls.GSUITE_FILE_OPTIONS_BOX_KEYS if hasattr(choices, key)]
+                   cls.GSUITE_FILE_OPTIONS_BOX_KEYS if
+                   hasattr(choices, key) and getattr(choices, key)]
 
         for gsuite in gsuites:
             trackNameList += [track.trackName for track in gsuite.allTracks()]
