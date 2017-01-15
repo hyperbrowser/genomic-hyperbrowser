@@ -1,5 +1,6 @@
 from proto.tools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
-from proto.config.Config import GALAXY_BASE_DIR, GALAXY_REL_TOOL_CONFIG_FILE, URL_PREFIX
+from proto.config.Config import GALAXY_BASE_DIR, GALAXY_REL_TOOL_CONFIG_FILE, \
+    URL_PREFIX, PROTO_TOOL_SHELVE_FN
 import os, re, shelve, shutil, sys, traceback
 from importlib import import_module
 from collections import OrderedDict
@@ -11,7 +12,6 @@ SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib'
 #HB_TOOL_DIR = GALAXY_BASE_DIR + '/tools/hyperbrowser/new-xml/'
 #PROTO_TOOL_DIR = HB_SOURCE_CODE_BASE_DIR + '/quick/webtools/'
 PROTO_TOOL_DIR = GALAXY_BASE_DIR + '/lib/proto/tools/'
-TOOL_SHELVE = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
 TOOL_CONF = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
 GALAXY_TOOL_XML_PATH = GALAXY_BASE_DIR + '/tools/'
 TOOL_XML_REL_PATH = 'hyperbrowser/'
@@ -134,7 +134,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
     
     @classmethod
     def getSubToolClasses(cls):
-        tool_shelve = shelve.open(TOOL_SHELVE, 'r')
+        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
         installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys()
                              if os.path.exists(os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) + '.py') ]
         tool_shelve.close()
@@ -199,7 +199,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def _getToolList(cls):
-        tool_shelve = shelve.open(TOOL_SHELVE, 'r')
+        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
         tool_IDs = set(tool_shelve.keys())
         installed_classes = [tool_shelve.get(t)[1] for t in tool_IDs]
         tool_shelve.close()
