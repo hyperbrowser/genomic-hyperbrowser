@@ -579,8 +579,10 @@ class GenericToolController(BaseToolController):
             </html>
             '''
 
-
     def _executeTool(self, toolClassName, choices, galaxyFn, username):
+        super(GenericToolController, self)._executeTool(
+            toolClassName, choices, galaxyFn, username)
+
         self._monkeyPatchAttr('extraGalaxyFn', self.extraGalaxyFn)
         self._monkeyPatchAttr('runParams', self.json_params)
         self.prototype.execute(choices, galaxyFn=galaxyFn, username=username)
