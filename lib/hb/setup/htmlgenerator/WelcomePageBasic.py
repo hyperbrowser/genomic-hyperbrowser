@@ -106,8 +106,8 @@ class WelcomePageGenerator(object):
     FILE_FORMATS_PAGE_TITLE = "supported file formats"
     DEMO_GSUITE_TFS_WITH_PWMS_TITLE = "sample GSuite collection: genomic locations of binding sites of selected TFs in K562 (CTCF, c-Jun, c-Myc, GATA-1 and more) with added PWM metadata"
     MATCH_TF_WITH_PWMS_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/MatchTfWithPWM.xml')
-    EDIT_GSUITE_METADATA_TOOL_TITLE = "Edit a metadata column in a GSuite"
-    GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE = "Determine suite tracks coinciding with another suite"
+    EDIT_GSUITE_METADATA_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/EditGsuiteMetadataTool.xml')
+    GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/DetermineSuiteTracksCoincidingWithAnotherSuite.xml')
     DEMO_TRACK_LICA_CN_TITLE = "sample track with genomic locations of somatic variants in liver cancer (the LICA-CN set from The Cancer Genome Atlas)"
     ALL_TARGETS_OF_TFS_TOOL_TITLE = getNameFromToolXml('/quick/webtools/tfbs/AllTargetsOfTfs.xml')
     ALL_TFS_OF_REGION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/tfbs/AllTfsOfRegions.xml')

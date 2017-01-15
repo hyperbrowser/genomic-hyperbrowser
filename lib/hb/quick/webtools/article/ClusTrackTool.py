@@ -107,6 +107,7 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         '''
         return [
                 ('Basic user mode', 'isBasic'),
+                ('', 'basicQuestionId'),
                 ('Select GSuite (tracks to cluster)','gSuite'),
                 ('Select similarity technique', 'similarityTech'),
                 ('Select feature selection option', 'featureSelection'),
@@ -132,6 +133,10 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
     @staticmethod
     def getOptionsBoxIsBasic():
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxGSuite(prevChoices): # Alternatively: getOptionsBox1()

@@ -68,6 +68,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         '''
         return [
                    ('Basic user mode', 'isBasic'),
+                   ('', 'basicQuestionId'),
                    ('Select the query GSuite', 'queryGSuite'),
                    ('Select the reference GSuite', 'refGSuite')
                ] + \
@@ -93,6 +94,10 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
     @staticmethod
     def getOptionsBoxIsBasic():  # Alternatively: getOptionsBox1()
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxQueryGSuite(prevChoices):

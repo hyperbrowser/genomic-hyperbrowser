@@ -43,7 +43,8 @@ class MatchTfWithPWM(GeneralGuiTool, GenomeMixin):
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [('Gsuite file containing transcription factors', 'gsuite')] +\
+        return [('', 'basicQuestionId'),
+                ('Gsuite file containing transcription factors', 'gsuite')] +\
                 cls.getInputBoxNamesForGenomeSelection()
                 #UserBinSelector.getUserBinInputBoxNames()
 
@@ -57,9 +58,12 @@ class MatchTfWithPWM(GeneralGuiTool, GenomeMixin):
     #    '''
     #    return None
 
+    @staticmethod
+    def getOptionsBoxBasicQuestionId():
+        return '__hidden__', None
 
     @staticmethod
-    def getOptionsBoxGsuite(): # Alternatively: getOptionsBox2()
+    def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox2()
         '''
         See getOptionsBoxFirstKey().
 

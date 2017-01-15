@@ -47,7 +47,8 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Genome', 'genome'),\
+        return [('', 'basicQuestionId'),
+                ('Genome', 'genome'),\
                 ('Genomic Regions Source', 'genomicRegions'),\
                 ('Genomic Regions Tracks', 'genomicRegionsTracks'),\
                 ('TF Source', 'sourceTfs'),\
@@ -56,7 +57,11 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                 ] + cls.getInputBoxNamesForUserBinSelection() + DebugMixin.getInputBoxNamesForDebug()
 
     @classmethod
-    def getOptionsBoxGenome(cls):
+    def getOptionsBoxBasicQuestionId(cls):
+        return '__hidden__', None
+
+    @classmethod
+    def getOptionsBoxGenome(cls, prevChoices):
         return [cls.SELECT, 'hg19', 'mm9']
 
     @staticmethod

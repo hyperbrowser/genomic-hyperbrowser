@@ -167,6 +167,7 @@ class TrackSearchTool(GeneralGuiTool):
 
 
         return [#('Track source', 'source'), \
+                ('', 'basicQuestionId'), \
                 ('','repoInfo'), \
                 ('Search for tracks using metadata?', 'search'), \
                 ('','staticInfo'),\
@@ -212,9 +213,12 @@ class TrackSearchTool(GeneralGuiTool):
     #    if prevChoices.source != '-- Select track source --':
     #        return ['-- Select search method --', 'Structured search']
 
+    @classmethod
+    def getOptionsBoxBasicQuestionId(cls):
+        return '__hidden__', None
 
     @classmethod
-    def getOptionsBoxRepoInfo(cls):
+    def getOptionsBoxRepoInfo(cls, prevChoices):
         info = cls._getRepoInfo()
         if info is None:
             return
@@ -1189,7 +1193,7 @@ class TrackSearchTool(GeneralGuiTool):
     @classmethod
     def _getAttrSelectionDescription(cls, choices):
         # Note: Copy-paste of code here is due to previous lack of refactoring from
-        # the tool author. It does not look pretty.
+        # the tool author.
         vals = []
         for i in xrange(len(cls.ATTRIBUTES)):
             rep_val = getattr(choices, 'valueList%s' % i)

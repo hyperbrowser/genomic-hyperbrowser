@@ -83,6 +83,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         Note: the key has to be camelCase and start with a non-capital letter (e.g. "firstKey")
         '''
         return [('Basic user mode', 'isBasic'),
+                ('', 'basicQuestionId'),
                 ('Select a GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
@@ -158,6 +159,10 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         - Returns: OrderedDict from key to selection status (bool).
         '''
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox2()

@@ -53,7 +53,8 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [('Point mutation data set','snp'),
+        return [('', 'basicQuestionId'),
+                ('Point mutation data set','snp'),
                 ('Transcription factors (GSuite file from history)', 'gsuite')] +\
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection()
@@ -82,13 +83,16 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
     #    '''
     #    return None
 
+    @staticmethod
+    def getOptionsBoxBasicQuestionId():
+        return '__hidden__', None
 
     # @staticmethod
     # def getOptionsBoxGenome(): # Alternatively: getOptionsBox1()
     #     return '__genome__'
 
     @staticmethod
-    def getOptionsBoxSnp(): # Alternatively: getOptionsBox1()
+    def getOptionsBoxSnp(prevChoices): # Alternatively: getOptionsBox1()
          # if prevChoices.genome or True:
         #return ('__history__', 'category.bed', 'bed')
         from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments #for example

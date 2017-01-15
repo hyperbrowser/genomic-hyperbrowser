@@ -71,6 +71,7 @@ class PilotPageSimilarityAndUniquenessOfTracksTool\
         '''
         return cls.getInputBoxNamesForAnalysisInfo() + \
                [('Basic user mode', 'isBasic'),
+                ('', 'basicQuestionId'),
                 ('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection() + \
@@ -79,6 +80,10 @@ class PilotPageSimilarityAndUniquenessOfTracksTool\
     @staticmethod
     def getOptionsBoxIsBasic(prevChoices):
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
     
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):

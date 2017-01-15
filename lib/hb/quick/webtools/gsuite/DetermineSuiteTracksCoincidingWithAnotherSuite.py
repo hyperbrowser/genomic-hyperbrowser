@@ -47,6 +47,7 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
     def getInputBoxNames(cls):
         return [
                    ('Basic user mode', 'isBasic'),
+                   ('', 'basicQuestionId'),
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite [rows]', 'gSuiteSecond'),
                ] + \
@@ -57,6 +58,10 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
     @staticmethod
     def getOptionsBoxIsBasic():
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxGSuiteFirst(prevChoices):

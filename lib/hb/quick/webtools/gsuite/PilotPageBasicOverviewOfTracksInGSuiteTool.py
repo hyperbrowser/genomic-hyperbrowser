@@ -77,6 +77,7 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
         return [('Basic user mode', 'isBasic'),
+                ('', 'basicQuestionId'),
                 ('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection()
@@ -84,6 +85,10 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
     @staticmethod
     def getOptionsBoxIsBasic():
         return False
+
+    staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):

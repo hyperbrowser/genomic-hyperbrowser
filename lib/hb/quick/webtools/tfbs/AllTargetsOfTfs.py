@@ -40,7 +40,8 @@ class AllTargetsOfTfs(GeneralGuiTool, DebugMixin):
 
     @staticmethod
     def getInputBoxNames():
-        return [('Genome', 'genome'),\
+        return [('', 'basicQuestionId'),
+                ('Genome', 'genome'),\
                 ('Genomic Regions Source', 'genomicRegionsSource'),\
                 ('Genomic Regions', 'genomicRegions'),\
                 #('Upstream Flank Size (bp)','upFlankSize'),\
@@ -50,7 +51,11 @@ class AllTargetsOfTfs(GeneralGuiTool, DebugMixin):
                 ] + DebugMixin.getInputBoxNamesForDebug()
 
     @classmethod
-    def getOptionsBoxGenome(cls):
+    def getOptionsBoxBasicQuestionId(cls):
+        return '__hidden__', None
+
+    @classmethod
+    def getOptionsBoxGenome(cls, prevChoices):
         return [cls.SELECT, 'hg19', 'mm9'] #'__genome__'
 
     @staticmethod

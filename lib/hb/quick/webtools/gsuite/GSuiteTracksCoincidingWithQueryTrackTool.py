@@ -85,6 +85,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         """
         return \
             [('Basic user mode', 'isBasic'),
+             ('', 'basicQuestionId'),
              ('Select query track from history', 'queryTrack'),
              ('Select reference GSuite', 'gsuite')] + \
             cls.getInputBoxNamesForGenomeSelection() + \
@@ -111,6 +112,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @staticmethod
     def getOptionsBoxIsBasic():  # Alternatively: getOptionsBox1()
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxQueryTrack(prevChoices):
