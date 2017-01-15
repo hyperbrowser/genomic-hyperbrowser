@@ -394,7 +394,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             
             core.end()
             if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'],
+                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['similarity_score'],
                                                         cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         elif analysisQuestion == cls.Q2:
             analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles)
@@ -402,7 +402,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
                                         queryTrackTitle, results, similarityStatClassName)
             if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score', 'P_Value'],
+                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['similarity_score', 'p_value'],
                                                         cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         else:
             mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \

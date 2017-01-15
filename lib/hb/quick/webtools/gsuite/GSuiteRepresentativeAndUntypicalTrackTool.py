@@ -299,7 +299,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             core.end()
             
             if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
+                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['similarity_score'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         elif analysisQuestion == cls.Q2:
             analysisSpec = AnalysisSpec(GSuiteRepresentativenessOfTracksRankingsWrapperStat)
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
@@ -341,7 +341,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             
             
             if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
+                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['similarity_score'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         elif analysisQuestion == cls.Q3:
             
             mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
@@ -379,7 +379,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             core.divEnd()
             core.end()
             if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score', 'P_value'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
+                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['similarity_score', 'p_value'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         else:
             mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
             analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> CollectionSimilarityHypothesisWrapperStat'
