@@ -1,3 +1,5 @@
+from gold.gsuite import GSuiteConstants
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -14,6 +16,15 @@ BINDING_A_PRIORI_PROB = 0.01
 
 
 class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    ALLOW_MULTIPLE_GENOMES = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'  # Other common possibility: 'the analysis'
+
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_FILE_TYPES = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
 
     @staticmethod
     def getToolName():
@@ -21,7 +32,7 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Loss or gain of function due to point mutations"
+        return "Scan for loss or gain of TF function due to point mutations"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -42,9 +53,10 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [('Genome', 'genome'), ('Point mutation data set','snp'),('Transcription factors (GSuite file from history)', 'gsuite')] #+\
-                #cls.getInputBoxNamesForGenomeSelection() +\
-                #UserBinSelector.getUserBinInputBoxNames()
+        return [('Point mutation data set','snp'),
+                ('Transcription factors (GSuite file from history)', 'gsuite')] +\
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -71,17 +83,17 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
     #    return None
 
 
-    @staticmethod
-    def getOptionsBoxGenome(): # Alternatively: getOptionsBox1()
-        return '__genome__'
+    # @staticmethod
+    # def getOptionsBoxGenome(): # Alternatively: getOptionsBox1()
+    #     return '__genome__'
 
     @staticmethod
-    def getOptionsBoxSnp(prevChoices): # Alternatively: getOptionsBox1()
-         if prevChoices.genome or True:
-            #return ('__history__', 'category.bed', 'bed')
-            from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments #for example
-            return ('__history__',) + tuple(getSupportedFileSuffixesForPointsAndSegments())
-            #return '__history__', getSupportedFileSuffixesForPointsAndSegments()
+    def getOptionsBoxSnp(): # Alternatively: getOptionsBox1()
+         # if prevChoices.genome or True:
+        #return ('__history__', 'category.bed', 'bed')
+        from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments #for example
+        return ('__history__',) + tuple(getSupportedFileSuffixesForPointsAndSegments())
+        #return '__history__', getSupportedFileSuffixesForPointsAndSegments()
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox2()
@@ -133,8 +145,8 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         print str(html)
         #m.run()
 
-    @staticmethod
-    def validateAndReturnErrors(choices):
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
         '''
         Should validate the selected input parameters. If the parameters are not
         valid, an error text explaining the problem should be returned. The GUI
@@ -142,7 +154,29 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        return None
+
+        errorString = cls._checkHistoryTrack(choices, 'snp', choices.genome)
+        if errorString:
+            return errorString
+
+        errorString = cls._checkGSuiteFile(choices.gsuite)
+        if errorString:
+            return errorString
+
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        errorString = cls._checkGSuiteRequirements(
+            gSuite,
+            allowedLocations=cls.GSUITE_ALLOWED_LOCATIONS,
+            allowedFileFormats=cls.GSUITE_ALLOWED_FILE_TYPES,
+            allowedTrackTypes=cls.GSUITE_ALLOWED_TRACK_TYPES)
+
+        if errorString:
+            return errorString
+
+        errorString = cls._checkGenome(choices.genome)
+        if errorString:
+            return errorString
 
     #@staticmethod
     #def getSubToolClasses():

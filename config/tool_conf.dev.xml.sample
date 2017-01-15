@@ -25,6 +25,7 @@
       <tool file="proto/hyperbrowser/gsuite/ConcatenateGSuitesTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/EditGsuiteMetadataTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/UnionOfGSuiteTracksTool.xml" />
+      <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
     <label text="Modify datasets referred to in a GSuite" id="gsuite_dataset_modify"/>
       <tool file="proto/hyperbrowser/gsuite/GSuiteManipulateTextFiles.xml" />
     <label text="Export GSuite datasets" id="gsuite_export_tools"/>
@@ -35,7 +36,6 @@
     <label text="Metadata overview" id="metadata_overview"/>
       <tool file="proto/hyperbrowser/gsuite/GSuiteMetadataOverviewTool.xml" />
     <label text="Track overview" id="data_overview"/>
-      <tool file="proto/hyperbrowser/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageSimilarityAndUniquenessOfTracksTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageClusteringInTracksTool.xml" />
@@ -64,6 +64,8 @@
 	<label text="TF workbench" id="tf_workbench_tools"/>
       <tool file="proto/hyperbrowser/tfbs/AllTargetsOfTfs.xml" />
       <tool file="proto/hyperbrowser/tfbs/AllTfsOfRegions.xml" />
+      <tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />
+      <tool file="proto/hyperbrowser/gsuite/MatchTfWithPWM.xml" />
     <label text="Repeats analysis tools" id="repeats_analysis_tools"/>
       <tool file="proto/hyperbrowser/gsuite/FindMonomerRepeatsForFastaGSuiteTool.xml" />
 	  <tool file="proto/hyperbrowser/gsuite/ExtractTrackFromRepositoryFromBinsDefinedByGSuiteTool.xml" />
@@ -76,7 +78,7 @@
   <section name="Assorted tools (Beta)" id="gsuite_beta_tools">
   </section>
 
-  <section name="Planned tools (Still in development or on hold)" id="gsuite_planned_tools">
+  <section name="Experimental tools for GSuite HB manuscript" id="gsuite_experimental_tools">
      <tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />
   </section>
 
@@ -84,7 +86,6 @@
       <tool file="proto/hyperbrowser/gsuite/PilotPageOverlapBetweenTracksTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/GsuiteOverviewTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/NormalizeTracksInGSuiteTool.xml" />
-      <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/QueryTrackCoincidingWithTwoGSuitesTool.xml" />
       <tool file="proto/hyperbrowser/restricted/ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth.xml" />
       <tool file="proto/hyperbrowser/gsuite/HeatmapOfTwoGsuitesTool.xml" />
@@ -124,7 +125,7 @@
     <tool file="proto/hyperbrowser/nmer/NmerAnalyzeTool.xml" />
     <tool file="proto/hyperbrowser/nmer/NmerInspectTool.xml" />
     <tool file="proto/hyperbrowser/track/AnalyzeMultiTrackRelations.xml" />
-      <tool file="proto/hyperbrowser/util/CalculateWeekdayProfits.xml" />
+    <tool file="proto/hyperbrowser/util/CalculateWeekdayProfits.xml" />
     <tool file="proto/hyperbrowser/gsuite/GenerateGsuiteFileWithHotSpotRegions.xml" />
   </section>
 
@@ -238,7 +239,6 @@
     <tool file="proto/hyperbrowser/tfbs/TestOverrepresentationOfPwmInDna.xml" />
     <tool file="proto/hyperbrowser/restricted/ExtractPwms.xml" />
       <tool file="proto/hyperbrowser/tfbs/AnalyzeTfsVersusSnv.xml" />
-    <tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />
   </section>
 
   <section name="Gene tools" id="gene_tools">

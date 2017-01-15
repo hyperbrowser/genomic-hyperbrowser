@@ -64,6 +64,8 @@
 	<label text="TF workbench" id="tf_workbench_tools"/>
       <tool file="proto/hyperbrowser/tfbs/AllTargetsOfTfs.xml" />
       <tool file="proto/hyperbrowser/tfbs/AllTfsOfRegions.xml" />
+      <tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />
+      <tool file="proto/hyperbrowser/gsuite/MatchTfWithPWM.xml" />
     <!--<label text="Repeats analysis tools" id="repeats_analysis_tools"/>-->
       <!--<tool file="proto/hyperbrowser/gsuite/FindMonomerRepeatsForFastaGSuiteTool.xml" />-->
 	  <!--<tool file="proto/hyperbrowser/gsuite/ExtractTrackFromRepositoryFromBinsDefinedByGSuiteTool.xml" />-->
@@ -237,7 +239,6 @@
     <!--<tool file="proto/hyperbrowser/tfbs/TestOverrepresentationOfPwmInDna.xml" />-->
     <!--<tool file="proto/hyperbrowser/restricted/ExtractPwms.xml" />-->
       <!--<tool file="proto/hyperbrowser/tfbs/AnalyzeTfsVersusSnv.xml" />-->
-    <!--<tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />-->
   </section>
 
   <section name="Gene tools" id="gene_tools">
