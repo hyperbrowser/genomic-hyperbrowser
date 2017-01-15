@@ -53,8 +53,14 @@ COPYRIGHT_TEXT = '''# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.'''
 
 from collections import OrderedDict
-
 from LinkExpansion import LinkExpansion
+
+
+def getNameFromToolXml(toolXmlFn):
+    from config.Config import HB_SOURCE_CODE_BASE_DIR
+    import xml.etree.ElementTree as ET
+    root = ET.parse(HB_SOURCE_CODE_BASE_DIR + toolXmlFn).getroot()
+    return root.attrib['name']
 
 
 class WelcomePageGenerator(object):
@@ -69,19 +75,19 @@ class WelcomePageGenerator(object):
 
     '''
 
-    TRACK_VS_COLLECTION_TOOL_TITLE = GSuiteTracksCoincidingWithQueryTrackTool.getToolName()
-    COLLECTION_TOOL_TITLE = GSuiteRepresentativeAndUntypicalTrackTool.getToolName()
-    COLLECTION_VS_COLLECTION_TOOL_TITLE = CoincidingTracksFromTwoGSuitesTool.getToolName()
+    TRACK_VS_COLLECTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/GSuiteTracksCoincidingWithQueryTrackTool.xml')
+    COLLECTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/GSuiteRepresentativeAndUntypicalTrackTool.xml')
+    COLLECTION_VS_COLLECTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/CoincidingTracksFromTwoGSuitesTool.xml')
     UPLOAD_FILE_TOOL_TITLE = "Upload file"
-    BASIC_SEARCH_TOOL_TITLE = TrackGlobalSearchTool.getToolName()
-    ADVANCED_SEARCH_TOOL_TITLE = TrackSourceTestTool.getToolName()
-    GSUITE_FROM_HISTORY_TOOL_TITLE = CreateGSuiteFileFromHistoryElementsTool.getToolName()
+    BASIC_SEARCH_TOOL_TITLE = getNameFromToolXml('/quick/webtools/imports/TrackGlobalSearchTool.xml')
+    ADVANCED_SEARCH_TOOL_TITLE = getNameFromToolXml('/quick/webtools/imports/TrackSourceTestTool.xml')
+    GSUITE_FROM_HISTORY_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/CreateGSuiteFileFromHistoryElementsTool.xml')
     DEMO_TRACK_TITLE = "sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions"
-    OVERLAP_BETWEEN_TRACKS_TITLE = PilotPageBasicOverviewOfTracksInGSuiteTool.getToolName()
-    EXTRACT_FROM_ARCHIVE_TITLE = CompileGSuiteFromArchiveTool.getToolName()
-    SIMILARITY_AND_UNIQUENESS_TITLE = PilotPageSimilarityAndUniquenessOfTracksTool.getToolName()
+    OVERLAP_BETWEEN_TRACKS_TITLE = getNameFromToolXml('/quick/webtools/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml')
+    EXTRACT_FROM_ARCHIVE_TITLE = getNameFromToolXml('/quick/webtools/gsuite/CompileGSuiteFromArchiveTool.xml')
+    SIMILARITY_AND_UNIQUENESS_TITLE = getNameFromToolXml('/quick/webtools/gsuite/PilotPageSimilarityAndUniquenessOfTracksTool.xml')
     CONSTRUCT_GSUITE_PAGE_TITLE = "a tool for constructing a track suite (GSuite)"
-    GSUITE_FROM_REPOSITORY_TOOL_TITLE = ExtractSubtracksTool.getToolName()
+    GSUITE_FROM_REPOSITORY_TOOL_TITLE = getNameFromToolXml('/quick/webtools/track/ExtractSubtracksTool.xml')
     #     DEMO_GWAS_BLUPRINT_TRACK_TITLE = "sample GWAS Blueprint track"
     DEMO_TCGA_PRAD_TRACK_TITLE = "sample track with genomic locations of somatic variants in prostate adenocarcinoma (the COAD set from The Cancer Genome Atlas)"
     DEMO_GSUITE_159_TF_GM12878_TITLE = "sample GSuite collection: genomic locations of binding sites of various TFs for the gm12878 lymphoblastoid cell line"
@@ -89,9 +95,9 @@ class WelcomePageGenerator(object):
     DEMO_GSUITE_DNASE_40_CELL_TYPES_TITLE = "sample GSuite of DNaseI accessibility for different cell types"
     DEMO_GSUITE_HIST_K562_TITLE = "sample GSuite collection: genomic locations of various histone modifications for the K562 chronic myelogenous leukemia cell line"
     DEMO_GSUITE_GWAS_TITLE = "sample GSuite collection: genomic locations of lead SNP variants for various traits"
-    CREATE_GTRACK_FROM_TABULAR_TOOL_TITLE = TabularToGtrackTool.getToolName()
+    CREATE_GTRACK_FROM_TABULAR_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gtrack/TabularToGtrackTool.xml')
     DEMO_TRACK_K562_ENHANCERS_TITLE = "sample track with genomic locations of enhancer regions active within the K562 chronic myelogenous leukemia cell line"
-    CLUS_TRACK_TOOL_TITLE = ClusTrackTool.getToolName()
+    CLUS_TRACK_TOOL_TITLE = getNameFromToolXml('/quick/webtools/article/ClusTrackTool.xml')
     DEMO_GSUITE_SOMATIC_COAD_TITLE = "sample GSuite collection: somatic variant locations for 216 Colon adenocarcinoma patients (the COAD dataset from The Cancer Genome Atlas)"
     DEMO_GSUITE_SELECTED_TFBS_TITLE = "sample GSuite collection: genomic locations of binding sites of selected TFs (CEBPB, FOS, JUN, MYC, NANOG, NR2F2, TEAD4)"
     DEMO_GSUITE_K562_ENHANCERS_TITLE = "sample track with genomic locations of enhancer regions active within the K562 chronic myelogenous leukemia cell line"
@@ -99,13 +105,13 @@ class WelcomePageGenerator(object):
     DEMO_GSUITE_TCGA_EXOME_TITLE = "sample GSuite collection: exon locations for 560 genes included in the Cancer Census"
     FILE_FORMATS_PAGE_TITLE = "supported file formats"
     DEMO_GSUITE_TFS_WITH_PWMS_TITLE = "sample GSuite collection: genomic locations of binding sites of selected TFs in K562 (CTCF, c-Jun, c-Myc, GATA-1 and more) with added PWM metadata"
-    MATCH_TF_WITH_PWMS_TOOL_TITLE = "Match tf with pwm"
+    MATCH_TF_WITH_PWMS_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/MatchTfWithPWM.xml')
     EDIT_GSUITE_METADATA_TOOL_TITLE = "Edit a metadata column in a GSuite"
     GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE = "Determine suite tracks coinciding with another suite"
     DEMO_TRACK_LICA_CN_TITLE = "sample track with genomic locations of somatic variants in liver cancer (the LICA-CN set from The Cancer Genome Atlas)"
-    ALL_TARGETS_OF_TFS_TOOL_TITLE = AllTargetsOfTfs.getToolName()
-    ALL_TFS_OF_REGION_TOOL_TITLE = AllTfsOfRegions.getToolName()
-    TF_BINDING_DISRUPTION_TOOL_TITLE = "TF binding disruption"
+    ALL_TARGETS_OF_TFS_TOOL_TITLE = getNameFromToolXml('/quick/webtools/tfbs/AllTargetsOfTfs.xml')
+    ALL_TFS_OF_REGION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/tfbs/AllTfsOfRegions.xml')
+    TF_BINDING_DISRUPTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/article/TfBindingDisruption.xml')
 
     from quick.util.CommonFunctions import getLoadToGalaxyHistoryURL
     LOAD_GSUITE_SINGLE_TRACK_SAMPLE_FILE_URL = getLoadToGalaxyHistoryURL \
