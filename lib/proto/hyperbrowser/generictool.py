@@ -14,25 +14,19 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 #
-# instance is dynamically imported into namespace of <modulename>.mako template (see web/controllers/hyper.py)
 
-# import sys, os, json
-# from collections import namedtuple, OrderedDict, defaultdict
-# from urllib import quote, unquote
-# from quick.webtools.GeneralGuiTool import HistElement
-# from proto.hyperbrowser.StaticFile import StaticImage
-# from proto.hyperbrowser.HtmlCore import HtmlCore
-# from config.Config import URL_PREFIX
-# from gold.application.LogSetup import usageAndErrorLogging
-# from gold.util.CommonFunctions import getClassName
 from proto.generictool import GenericToolController
 from HyperBrowserControllerMixin import HyperBrowserControllerMixin
-# from gold.application.GalaxyInterface import GalaxyInterface
 
 
 class HBGenericToolController(HyperBrowserControllerMixin, GenericToolController):
     def _init(self):
         super(HBGenericToolController, self)._init()
+
+    def _executeTool(self, toolClassName, choices, galaxyFn, username):
+        super(HBGenericToolController, self)._executeTool(
+            toolClassName, choices, galaxyFn, username)
+
 
 def getController(transaction = None, job = None):
     return HBGenericToolController(transaction, job)
