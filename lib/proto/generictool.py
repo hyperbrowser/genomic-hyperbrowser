@@ -114,7 +114,8 @@ class GenericToolController(BaseToolController):
                             self.extra_output.append(e)
 
     def _init(self):
-        super(GenericToolController, self)._init()
+        if hasattr(super(GenericToolController, self), '_init'):
+            super(GenericToolController, self)._init()
 
     def _getInputGroup(self, inputBoxGroups):
         startGroupInfo = defaultdict(list)
@@ -262,7 +263,7 @@ class GenericToolController(BaseToolController):
                 #print 'from cache:',id
                 self.input_changed = (val != self.cachedParams[id])
             except Exception as e:
-                print 'cache load failed:', e, id
+                # print 'cache load failed for id "%s": %s' % (id, e)
                 opts, info = self._getOptionsBox(i, val)
                 self.input_changed = True
         
@@ -580,8 +581,9 @@ class GenericToolController(BaseToolController):
             '''
 
     def _executeTool(self, toolClassName, choices, galaxyFn, username):
-        super(GenericToolController, self)._executeTool(
-            toolClassName, choices, galaxyFn, username)
+        if hasattr(super(GenericToolController, self), '_executeTool'):
+            super(GenericToolController, self)._executeTool(
+                toolClassName, choices, galaxyFn, username)
 
         self._monkeyPatchAttr('extraGalaxyFn', self.extraGalaxyFn)
         self._monkeyPatchAttr('runParams', self.json_params)
