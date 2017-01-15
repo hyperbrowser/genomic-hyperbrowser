@@ -1,4 +1,5 @@
 from collections import OrderedDict, namedtuple
+from unidecode import unidecode
 
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteHbIntegration
@@ -330,7 +331,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 rowList = []
                 for attr in cls.RESULT_COLS:
                     if attr in row:
-                        rowList.append(str(row[attr]).encode("utf-8"))
+                        rowList.append(unicode(row[attr]))
 
                 htmlTableDict[filename] = rowList
 
@@ -339,7 +340,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         html = HtmlCore()
         html.tableFromDictionary(htmlTableDict, columnNames = ['File name'] + cls.RESULT_COLS_HEADER,\
                                  tableId='t1', expandable=True)
-        return '__rawstr__',str(html)
+
+        return '__rawstr__', unicode(html)
 
     @classmethod
     def getOptionsBoxHistoryElementsInfo(cls,prevChoices):
@@ -375,7 +377,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             core.descriptionLine(label, description)
         core.styleInfoEnd()
 
-        return '__rawstr__', str(core)
+        return '__rawstr__', unicode(core)
 
     @classmethod
     def getExtraHistElements(cls, choices):
@@ -386,7 +388,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 choices.source.find('HyperBrowser') == -1 and \
                 choices.transfer != 'Yes':
             from quick.webtools.GeneralGuiTool import HistElement
-            desc = choices.subCategory
+            desc = unidecode(choices.subCategory)
 
             fileList += \
                 [HistElement(getGSuiteHistoryOutputName('remote', desc), GSUITE_SUFFIX),
@@ -489,7 +491,6 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         #if choices.outputType == 'Categorized Search for Tracks':
         if not choices.filetype in [None,'',[]] and len([x for x,selected in choices.filetype.iteritems() if selected]) == 0:
             return 'You have to select at least one file type'
-
 
             if choices.downloadAndPreprocess == 'Yes':
                 errorStr = cls._checkGenome(choices.genome)

@@ -11,6 +11,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from collections import OrderedDict, namedtuple
+from unidecode import unidecode
 from quick.gsuite.GSuiteHbIntegration import getSubtracksAsGSuite
 from quick.trackaccess.DatabaseTrackAccessModule import DatabaseTrackAccessModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -502,7 +503,7 @@ class TrackGlobalSearchModule(object):
                 protocol = url.split(':')[0]
                 url = url.replace(protocol+':',self.DOWNLOAD_PROTOCOL+':')
 
-            uri = url
+            uri = str(url)
             # from gold.gsuite.GSuiteTrack import urlparse
             # parsedUrl = urlparse.urlparse(url)
             #
@@ -537,7 +538,7 @@ class TrackGlobalSearchModule(object):
                     colReadableName = colList[j]
                 ## some datatypes are not string, e.g. datetime, and some others contain non-printable characters, e.g. \x00
                 import string
-                value = filter(lambda x: x in string.printable, str(row[j]))
+                value = filter(lambda x: x in string.printable, unidecode(row[j]))
                 attr_val_list.append((colReadableName,value))
                 
             try:

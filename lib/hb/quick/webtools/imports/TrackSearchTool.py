@@ -3,6 +3,7 @@ import re
 
 from collections import OrderedDict
 from functools import partial
+from unidecode import unidecode
 
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteUtils as GSuiteUtils
@@ -746,7 +747,7 @@ class TrackSearchTool(GeneralGuiTool):
             for attr in cls.RESULT_COLS:
                 if attr in avail_table_attrs:
                     try:
-                        rowList.append(row[avail_table_attrs[attr]].encode("utf-8"))
+                        rowList.append(row[avail_table_attrs[attr]])
                     except:
                         rowList.append('None')
             output['<a href="'+row[0]+'">'+filename+'</a>'] = rowList
@@ -759,7 +760,8 @@ class TrackSearchTool(GeneralGuiTool):
         html = HtmlCore()
         html.tableFromDictionary(output, columnNames = ['File name'] + cls.RESULT_COLS_HEADER,\
                                  tableId='t1', expandable=True)
-        return '__rawstr__',str(html)
+        return '__rawstr__', unicode(html)
+
     #@staticmethod
     @classmethod
     def execute(cls,choices, galaxyFn=None, username=''):
@@ -1029,7 +1031,7 @@ class TrackSearchTool(GeneralGuiTool):
         
         core.tableFooter()
         core.end()
-        outFile.write(str(core))
+        outFile.write(unicode(core))
 
         outFile.close()
 
@@ -1095,7 +1097,7 @@ class TrackSearchTool(GeneralGuiTool):
                 protocol = url.split(':')[0]
                 url = url.replace(protocol+':',cls.DOWNLOAD_PROTOCOL+':')
 
-            uri = url
+            uri = str(url)
 
             # from gold.gsuite.GSuiteTrack import urlparse
             # parsedUrl = urlparse.urlparse(url)
@@ -1127,10 +1129,10 @@ class TrackSearchTool(GeneralGuiTool):
                 ## some datatypes are not string, e.g. datetime, and some others contain non-printable characters, e.g. \x00
                 import string
                 if isinstance(row[j],basestring):
-                    value = row[j].encode('utf-8').strip()
+                    value = row[j].strip()
                 else:
-                    value = str(row[j]).encode('utf-8').strip()
-                value = filter(lambda x: x in string.printable, unicode(value.decode('utf-8')))
+                    value = str(row[j]).strip()
+                value = filter(lambda x: x in string.printable, unidecode(value))
                 gsuiteAttr = cls._makeGSuiteAttribute(colList[j],colReadableName)
                 if gsuiteAttr:
                     attr_val_list.append((gsuiteAttr,value))
@@ -1212,6 +1214,8 @@ class TrackSearchTool(GeneralGuiTool):
                 if rep_val in [cls.SELECT_CHOICE, cls.RANGE_CHOICE, None, '']:
                     continue
                 vals.append(cls._getAttributeValueNameFromReadableName(rep_val)[1])
+
+        vals = [unidecode(val) for val in vals]
         return ', '.join(vals)
 
     @classmethod

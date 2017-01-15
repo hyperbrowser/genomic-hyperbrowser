@@ -273,7 +273,9 @@ class DatabaseAdapter(object):
         if self.isSqlite:
             self._connection = sqlite3.connect(self._connKwArgs['db_file'])
             #To use regular strings instead of unicode strings which is the default:
-            self._connection.text_factory = sqlite3.OptimizedUnicode
+            # self._connection.text_factory = sqlite3.OptimizedUnicode
+            self._connection.text_factory = lambda x: unicode(x, "utf8", "ignore")
+
         else:
             self._connection = psycopg2.connect(**self._connKwArgs)
         return True
