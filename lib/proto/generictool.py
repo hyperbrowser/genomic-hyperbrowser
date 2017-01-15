@@ -19,7 +19,7 @@
 import sys, os, json, shelve
 import cPickle as pickle
 from zlib import compress, decompress
-from base64 import urlsafe_b64decode, urlsafe_b64encode
+from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from collections import namedtuple, OrderedDict, defaultdict
 from urllib import quote, unquote
 from proto.tools.GeneralGuiTool import HistElement
@@ -243,10 +243,10 @@ class GenericToolController(BaseToolController):
         self.cachedExtra[id] = pickle.dumps(data)
 
     def getCacheData(self, id):
-        return pickle.loads(str(self.cachedExtra[id]))
+        return pickle.loads(b64decode(str(self.cachedExtra[id])))
 
     def putCachedOption(self, id, data):
-        self.cachedOptions[id] = pickle.dumps(data)
+        self.cachedOptions[id] = b64encode(pickle.dumps(data))
 
     def getCachedOption(self, id):
         return pickle.loads(str(self.cachedOptions[id]))
