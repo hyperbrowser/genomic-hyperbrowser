@@ -22,6 +22,7 @@ STATIC_DIR = '/static/proto'
 STATIC_REL_PATH = URL_PREFIX + STATIC_DIR
 STATIC_PATH = GALAXY_BASE_DIR + STATIC_DIR
 GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + config.getWithDefault('file_path', 'database/files')
+PROTO_TOOL_SHELVE_FN = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
 
 
 def userHasFullAccess(galaxyUserName):
