@@ -26,11 +26,11 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
                                   ('Convert Narrowpeak to GTrack', 'NarrowpeakToGTrack'),
                                   ('Remove duplicate lines', 'RemoveDuplicateLines'),
                                   ('Filter GTrack by segment length', 'FilterGTrackByGELength'),
-                                  ('Expand all points and segments equally', 'ExpandBedSegments')
+                                  ('Expand all points and segments equally', 'ExpandBedSegments'),
+                                  ('Subsample elements of each track', 'SubsampleTracks')
                                   ])
 
     ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns'),
-                                   ('Subsample elements of each track', 'SubsampleTracks'),
                                    ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),
                                    ('Convert maf to 3-column bed', 'ConvertMafTo3ColBed')
                                   ])
