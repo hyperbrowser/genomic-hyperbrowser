@@ -67,7 +67,7 @@ class ProtoGenericTool(ProtoTool):
             inputs = ElementTree.Element('inputs')
             inputs.append(ElementTree.Element('param', name='mako', type='hidden', value=self.proto_mako))
             inputs.append(ElementTree.Element('param', name='tool_id', type='hidden', value=root.get('id')))
-            inputs.append(ElementTree.Element('param', name='tool_name', type='hidden', value=root.get('id')))
+            inputs.append(ElementTree.Element('param', name='tool_name', type='hidden', value=root.get('name')))
             root.append(inputs)
         if root.find('outputs') is None:
             outputs = ElementTree.Element('outputs')

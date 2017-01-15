@@ -360,7 +360,7 @@ class GenericToolController(BaseToolController):
                         for k,v in opts.items():
                             itemval = self.params.get(id + '|' + k, None)
                             #if itemval:
-                            values[str(k)] = itemval
+                            values[unicode(k)] = itemval
 
                         val = values
 
@@ -404,7 +404,7 @@ class GenericToolController(BaseToolController):
                         for r in range(1, len(opts)):
                             core.tableLine(opts[r])
                     core.tableFooter()
-                    val = str(core)
+                    val = unicode(core)
                     display_only = True
 
                 else:
@@ -561,9 +561,9 @@ class GenericToolController(BaseToolController):
             if isinstance(extra_output, list):
                 for output in extra_output:
                     if isinstance(output, HistElement):
-                        self.extraGalaxyFn[str(output.name)] = self.params[output.name]
+                        self.extraGalaxyFn[unicode(output.name)] = self.params[output.name]
                     else:
-                        self.extraGalaxyFn[str(output[0])] = self.params[output[0]]
+                        self.extraGalaxyFn[unicode(output[0])] = self.params[output[0]]
 
 
         username = self.params['userEmail'] if 'userEmail' in self.params else ''
