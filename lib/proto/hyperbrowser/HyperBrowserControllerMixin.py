@@ -25,15 +25,17 @@ class HyperBrowserControllerMixin(object):
     STATIC_IMAGE_CLS = StaticImage
 
     def _init(self):
-        super(HyperBrowserControllerMixin, self)._init()
+        if hasattr(super(HyperBrowserControllerMixin, self), '_init'):
+            super(HyperBrowserControllerMixin, self)._init()
 
         self.trackElements = {}
         self.batchline = ''
 
     @usageAndErrorLogging
     def _executeTool(self, toolClassName, choices, galaxyFn, username):
-        super(HyperBrowserControllerMixin, self)._executeTool(
-            toolClassName, choices, galaxyFn, username)
+        if hasattr(super(HyperBrowserControllerMixin, self), '_executeTool'):
+            super(HyperBrowserControllerMixin, self)._executeTool(
+                toolClassName, choices, galaxyFn, username)
 
     def getInputValueForTrack(self, id, name):
         try:

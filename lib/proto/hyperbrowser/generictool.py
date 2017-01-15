@@ -20,12 +20,7 @@ from HyperBrowserControllerMixin import HyperBrowserControllerMixin
 
 
 class HBGenericToolController(HyperBrowserControllerMixin, GenericToolController):
-    def _init(self):
-        super(HBGenericToolController, self)._init()
-
-    def _executeTool(self, toolClassName, choices, galaxyFn, username):
-        super(HBGenericToolController, self)._executeTool(
-            toolClassName, choices, galaxyFn, username)
+    pass
 
 
 def getController(transaction = None, job = None):
