@@ -73,7 +73,7 @@ class TrackSourceTestTool(MultiGeneralGuiTool):
         from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
 
-        core.paragraph('The tool provides a structured search for genomic tracks Stored in '
+        core.paragraph('The tool provides a structured search for genomic tracks stored in '
                        'the following repositories:')
         core.unorderedList(['ENCODE tracks which are located in both UCSC and Ensembl databases.',
 #                            'Roadmap Epigenomics',

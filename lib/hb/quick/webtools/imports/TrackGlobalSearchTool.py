@@ -539,10 +539,20 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
-        desc = 'This tool provides a categorized search functionality for histone modifications, transcriptional factors' \
-               ' and methods to identify open chromatin in different external repositories using the "Compile GSuite ' \
-               'from external database" tool.'
+        desc = """This tool is a simplified version of the <b>Create a remote GSuite from a public repository</b> tool.
+        Several categories of genomic tracks that can be found in the supported databases have been preselected and
+        categorized to ease the search. Additionally the
+        selected genomic tracks will be downloaded and preprocessed, i.e. prepared for analysis. Each intermediate step
+        will be reported for transparency. This tool offers easier
+        use at the exchange of the fine tuned search available in the more advanced tool."""
         core.paragraph(desc)
+
+        core. paragraph('To use the tool, please follow these steps:')
+        core.orderedList(['Select one of the predefined categories.',
+                         'Select the attribute of interest.',
+                          'Select either all or a preferred database.',
+                          'Select the preferred data type.',
+                          'Execute the tool.'])
 
         return str(core)# + cls.getPlot()
 
