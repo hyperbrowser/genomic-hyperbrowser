@@ -79,7 +79,8 @@
   <!--</section>-->
 
   <section name="Experimental tools for GSuite HB manuscript" id="gsuite_experimental_tools">
-     <tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />
+    <tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />
+    <tool file="proto/hyperbrowser/restricted/GenericPlotDataTool.xml" />
   </section>
 
   <!--<section name="Not part of current submission" id="gsuite_other_tools">-->
@@ -112,7 +113,6 @@
       <tool file="proto/hyperbrowser/plot/BinScaledPlotTool.xml" />
       <!--<tool file="proto/hyperbrowser/restricted/SegmentsOverlapVisualizationTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/restricted/SegmentsOverlapVisualizationHeatmapTool.xml" />-->
-      <!--<tool file="proto/hyperbrowser/restricted/GenericPlotDataTool.xml" />-->
   </section>
 
   <!--<section name="Genomic variation analysis" id="genomic_variation_tools">-->
