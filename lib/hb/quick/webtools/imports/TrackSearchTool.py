@@ -1132,10 +1132,10 @@ class TrackSearchTool(GeneralGuiTool):
                     value = row[j].strip()
                 else:
                     value = str(row[j]).strip()
-                value = filter(lambda x: x in string.printable, unidecode(value))
+                value = filter(lambda x: x in string.printable, unidecode(unicode(value)))
                 gsuiteAttr = cls._makeGSuiteAttribute(colList[j],colReadableName)
                 if gsuiteAttr:
-                    attr_val_list.append((gsuiteAttr,value))
+                    attr_val_list.append((gsuiteAttr, value))
                 
             #print attr_val_list
             gSuite.addTrack(GSuiteTrack(uri, doUnquote = cls._unquoteTrackURL(),
@@ -1215,7 +1215,7 @@ class TrackSearchTool(GeneralGuiTool):
                     continue
                 vals.append(cls._getAttributeValueNameFromReadableName(rep_val)[1])
 
-        vals = [unidecode(val) for val in vals]
+        vals = [unidecode(unicode(val)) for val in vals]
         return ', '.join(vals)
 
     @classmethod

@@ -5,10 +5,10 @@ __date__ ="$March 30, 2015$"
 __PythonVersion__= "2.7 [MSC v.1500 32 bit (Intel)]"
 
 import os
-import sys
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
+# import sys
+#
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
 
 from collections import OrderedDict, namedtuple
 from unidecode import unidecode
@@ -200,7 +200,7 @@ class TrackGlobalSearchModule(object):
                     datatypes[row[0]] = int(row[1])
             except Exception as ex:
 
-                raise Exception(str(ex)+'----'+str(row))
+                raise Exception(str(ex)+'----'+unicode(row))
                 
         return datatypes    
     
@@ -297,7 +297,7 @@ class TrackGlobalSearchModule(object):
             for row in selectedRows:
                 filename = row[0].split('/')[-1]
                 fileList.append((str(i) + ' - ' + filename,True))
-                htmlDict[filename] = str(HtmlCore().link(filename, row[0]))
+                htmlDict[filename] = unicode(HtmlCore().link(filename, row[0]))
                 #fileList.append((str(i) + ' - ' + str(HtmlCore().link(filename, row[0])),True))
                 #fileList.append((str(i) + ' - ' +self.SOURCE[item.sourceTool]+' - '+ filename,True))
                 #fileList.append(('< a href = "'+row[0]+'">' +filename+'</a>',True))
@@ -528,7 +528,7 @@ class TrackGlobalSearchModule(object):
             
             for j in range(1,len(row)):
                 try:
-                    if row[j] is None or str(row[j]).strip() == '':
+                    if row[j] is None or unicode(row[j]).strip() == '':
                         continue
                 except Exception as ex:
                     raise ValueError('Row value Error: '+str(ex))
@@ -538,7 +538,7 @@ class TrackGlobalSearchModule(object):
                     colReadableName = colList[j]
                 ## some datatypes are not string, e.g. datetime, and some others contain non-printable characters, e.g. \x00
                 import string
-                value = filter(lambda x: x in string.printable, unidecode(row[j]))
+                value = filter(lambda x: x in string.printable, unidecode(unicode(row[j])))
                 attr_val_list.append((colReadableName,value))
                 
             try:
@@ -727,7 +727,7 @@ class TrackGlobalSearchModule(object):
             
             rowDict = {}
             for i, row in enumerate(rows):
-                rowKey = str(i) + ' - ' + row[0].split('/')[-1]
+                rowKey = unicode(i) + ' - ' + row[0].split('/')[-1]
                 rowDict[rowKey] = row
             
             print '--------'
