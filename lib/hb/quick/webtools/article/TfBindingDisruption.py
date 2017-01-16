@@ -178,7 +178,7 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         if errorString:
             return errorString
 
-        errorString = cls._checkGenome(choices.genome)
+        errorString = cls._validateGenome(choices.genome)
         if errorString:
             return errorString
 
