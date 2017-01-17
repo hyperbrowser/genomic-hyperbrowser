@@ -86,7 +86,7 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxIsBasic():
         return False
 
-    staticmethod
+    @staticmethod
     def getOptionsBoxBasicQuestionId(prevChoices):
         return '__hidden__', None
 
