@@ -18,7 +18,7 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 class UnionOfGSuiteTracksTool(GeneralGuiTool, GenomeMixin, DebugMixin):
 
     EXTRA_OUTPUT_TITLE = 'Union track'
-    EXTRA_OUTPUT_FORMAT = 'gtrack'
+    EXTRA_OUTPUT_FORMAT = 'bed'
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
@@ -272,98 +272,98 @@ class UnionOfGSuiteTracksTool(GeneralGuiTool, GenomeMixin, DebugMixin):
 
     @staticmethod
     def isPublic():
-       '''
-       Specifies whether the tool is accessible to all users. If False, the
-       tool is only accessible to a restricted set of users as defined in
-       LocalOSConfig.py.
-       '''
-       return True
-        #
-        # @staticmethod
-        # def isRedirectTool():
-        #    '''
-        #    Specifies whether the tool should redirect to an URL when the Execute
-        #    button is clicked.
-        #    '''
-        #    return False
-        #
-        # @staticmethod
-        # def getRedirectURL(choices):
-        #    '''
-        #    This method is called to return an URL if the isRedirectTool method
-        #    returns True.
-        #    '''
-        #    return ''
-        #
-        # @staticmethod
-        # def isHistoryTool():
-        #    '''
-        #    Specifies if a History item should be created when the Execute button is
-        #    clicked.
-        #    '''
-        #    return True
-        #
-        # @classmethod
-        # def isBatchTool(cls):
-        #    '''
-        #    Specifies if this tool could be run from batch using the batch. The
-        #    batch run line can be fetched from the info box at the bottom of the
-        #    tool.
-        #    '''
-        #    return cls.isHistoryTool()
-        #
-        # @staticmethod
-        # def isDynamic():
-        #    '''
-        #    Specifies whether changing the content of texboxes causes the page to
-        #    reload.
-        #    '''
-        #    return True
-        #
-        # @staticmethod
-        # def getResetBoxes():
-        #    '''
-        #    Specifies a list of input boxes which resets the subsequent stored
-        #    choices previously made. The input boxes are specified by index
-        #    (starting with 1) or by key.
-        #    '''
-        #    return []
-        #
-        # @staticmethod
-        # def getToolDescription():
-        #    '''
-        #    Specifies a help text in HTML that is displayed below the tool.
-        #    '''
-        #    return ''
-        #
-        # @staticmethod
-        # def getToolIllustration():
-        #    '''
-        #    Specifies an id used by StaticFile.py to reference an illustration file
-        #    on disk. The id is a list of optional directory names followed by a file
-        #    name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
-        #    full path is created from the base directory followed by the id.
-        #    '''
-        #    return None
-        #
-        # @staticmethod
-        # def getFullExampleURL():
-        #    return None
-        #
+        '''
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as defined in
+        LocalOSConfig.py.
+        '''
+        return True
+    #
+    # @staticmethod
+    # def isRedirectTool():
+    #     '''
+    #     Specifies whether the tool should redirect to an URL when the Execute
+    #     button is clicked.
+    #     '''
+    #     return False
+    #
+    # @staticmethod
+    # def getRedirectURL(choices):
+    #     '''
+    #     This method is called to return an URL if the isRedirectTool method
+    #     returns True.
+    #     '''
+    #     return ''
+    #
+    # @staticmethod
+    # def isHistoryTool():
+    #     '''
+    #     Specifies if a History item should be created when the Execute button is
+    #     clicked.
+    #     '''
+    #     return True
+    #
+    # @classmethod
+    # def isBatchTool(cls):
+    #     '''
+    #     Specifies if this tool could be run from batch using the batch. The
+    #     batch run line can be fetched from the info box at the bottom of the
+    #     tool.
+    #     '''
+    #     return cls.isHistoryTool()
+    #
+    # @staticmethod
+    # def isDynamic():
+    #     '''
+    #     Specifies whether changing the content of texboxes causes the page to
+    #     reload.
+    #     '''
+    #     return True
+    #
+    # @staticmethod
+    # def getResetBoxes():
+    #     '''
+    #     Specifies a list of input boxes which resets the subsequent stored
+    #     choices previously made. The input boxes are specified by index
+    #     (starting with 1) or by key.
+    #     '''
+    #     return []
+    #
+    # @staticmethod
+    # def getToolDescription():
+    #     '''
+    #     Specifies a help text in HTML that is displayed below the tool.
+    #     '''
+    #     return ''
+    #
+    # @staticmethod
+    # def getToolIllustration():
+    #     '''
+    #     Specifies an id used by StaticFile.py to reference an illustration file
+    #     on disk. The id is a list of optional directory names followed by a file
+    #     name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+    #     full path is created from the base directory followed by the id.
+    #     '''
+    #     return None
+    #
+    # @staticmethod
+    # def getFullExampleURL():
+    #     return None
+    #
     @staticmethod
     def isDebugMode():
-       '''
-       Specifies whether the debug mode is turned on.
-       '''
-       return False
-        #
+        '''
+        Specifies whether the debug mode is turned on.
+        '''
+        return False
+    #
     # @staticmethod
     # def getOutputFormat(choices):
-    #    '''
-    #    The format of the history element with the output of the tool. Note
-    #    that html output shows print statements, but that text-based output
-    #    (e.g. bed) only shows text written to the galaxyFn file.In the latter
-    #    case, all all print statements are redirected to the info field of the
-    #    history item box.
-    #    '''
-    #    return 'gtrack'
+    #     '''
+    #     The format of the history element with the output of the tool. Note
+    #     that html output shows print statements, but that text-based output
+    #     (e.g. bed) only shows text written to the galaxyFn file.In the latter
+    #     case, all all print statements are redirected to the info field of the
+    #     history item box.
+    #     '''
+    #     return 'gtrack'
