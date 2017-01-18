@@ -8,6 +8,7 @@ from gold.track.Track import Track
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.MultitrackSummarizedInteractionWrapperStat import MultitrackSummarizedInteractionWrapperStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -29,8 +30,11 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
                                   GSuiteConstants.VALUED_SEGMENTS]
     SUMMARY_FUNC_DEFAULT = 'avg'
 
-    Q1 = "Show me a list of all bins and the co-occurence within each bin"
-    Q2 = "Show me a list of all bins and the co-occurence within each bin, and also compute a p-value for the highest ranked bin"
+    Q1 = "Show me a list of all bins and the co-occurrence within each bin"
+    Q1_SHORT = "co-occurrence within each bin [rank]"
+    Q2 = "Show me a list of all bins and the co-occurrence within each bin, and also compute " \
+         "a p-value for the highest ranked bin"
+    Q2_SHORT = "co-occurrence within each bin [p-val]"
 
 
     @staticmethod
@@ -322,7 +326,6 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
             else:
                 prettyResults[key] = "No result"
 
-
         core.header(statTxt + " co-occurence between pairs of tracks within each bin")
 
         if choices.analysisName == cls.Q2:
@@ -341,9 +344,17 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
 
         visibleRows = 20
         makeTableExpandable = len(prettyResults) > visibleRows
-        core.tableFromDictionary(prettyResults, tableId='res', presorted=0,
-                                 columnNames=['Bin', 'Co-occurrence within the bin'], sortable=True,
-                                 expandable=makeTableExpandable, visibleRows=visibleRows)
+        columnNames = ['Bin', 'Co-occurrence within the bin']
+        if choices.analysisName == cls.Q1:
+            shortQuestion = cls.Q1_SHORT
+        else:
+            shortQuestion = cls.Q2_SHORT
+
+        addTableWithTabularAndGsuiteImportButtons(
+            core, choices, galaxyFn, shortQuestion, tableDict=prettyResults,
+            columnNames=columnNames, sortable=True, presorted=0,
+            expandable=makeTableExpandable, visibleRows=visibleRows)
+
         core.divEnd()
         core.end()
 
@@ -413,3 +424,14 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
     @staticmethod
     def isPublic():
         return True
+
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'co-occurring-regions.png']

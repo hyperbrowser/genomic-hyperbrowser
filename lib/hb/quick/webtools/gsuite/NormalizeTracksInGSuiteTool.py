@@ -1,6 +1,4 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.toolguide.controller.ToolGuide import ToolGuideController
-from quick.toolguide import ToolGuideConfig
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
@@ -168,7 +166,9 @@ class NormalizeTracksInGSuiteTool(GeneralGuiTool):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.gSuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], True)
         

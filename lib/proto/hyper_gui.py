@@ -76,7 +76,7 @@ class GalaxyWrapper:
         params = trans.request.rerun_job_params if hasattr(trans.request, 'rerun_job_params') else trans.request.params
         for key in params.keys():
             try:
-                self.params[key] = str(params[key]) if params[key] != None else None
+                self.params[key] = unicode(params[key]) if params[key] != None else None
             except:
                 self.params[key] = params[key]
 
@@ -130,7 +130,7 @@ class GalaxyWrapper:
         items = OrderedDict()
         for dataset in self.getHistory(exts):
             option_tag, val = self.makeHistoryOption(dataset)
-            items[str(dataset.dataset_id)] = val
+            items[unicode(dataset.dataset_id)] = val
         return items
 
     def makeHistoryOption(self, dataset, select=None, sep=':'):

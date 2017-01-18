@@ -21,8 +21,9 @@ import urllib
 from collections import OrderedDict
 
 from proto.CommonConstants import THOUSANDS_SEPARATOR
-from proto.config.Config import GALAXY_BASE_DIR, OUTPUT_PRECISION
-from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId
+from proto.config.Config import PROTO_TOOL_SHELVE_FN, OUTPUT_PRECISION
+from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, \
+    GALAXY_SECURITY_HELPER_OBJ
 
 """
 Note on datasetInfo and datasetId (used in several functions):
@@ -41,8 +42,7 @@ is the name of the history element, mostly used for presentation purposes.
 def getToolPrototype(toolId):
     tool_shelve = None
     try:
-        tool_shelve = shelve.open(
-            GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve', 'r')
+        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
         module_name, class_name = tool_shelve[str(toolId)]
         module = __import__(module_name, fromlist=[class_name])
         # print module, class_name, toolId
@@ -251,11 +251,12 @@ def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=Non
         urlPrefix = URL_PREFIX
 
     import base64
+    encodedFn = base64.urlsafe_b64encode(GALAXY_SECURITY_HELPER_OBJ.encode_guid(fn))
 
     assert galaxyDataType is not None
     return urlPrefix + '/tool_runner?tool_id=file_import' + \
                        ('&dbkey=' + genome if genome else '') + \
-                       '&runtool_btn=yes&input=' + base64.urlsafe_b64encode(fn) + \
+                       '&runtool_btn=yes&input=' + encodedFn + \
                        ('&format=' + galaxyDataType if galaxyDataType is not None else '') + \
                        ('&job_name=' + histElementName if histElementName is not None else '')
 
@@ -321,3 +322,26 @@ def forceNumericSortingKey(key):
         sortKey1 = 1
         sortKey2 = float(str(key).replace(THOUSANDS_SEPARATOR, ''))
     return [sortKey1, sortKey2]
+
+
+def convertToDictOfLists(dataDict):
+    """Convert a dict of tuples or single values to dict of lists"""
+    dataDictOfLists = OrderedDict()
+    for key, val in dataDict.iteritems():
+        if isinstance(val, list):
+            dataDictOfLists[key] = val
+        elif isinstance(val, tuple):
+            dataDictOfLists[key] = list(val)
+        else:
+            dataDictOfLists[key] = [val]
+    return dataDictOfLists
+
+
+def fromDictOfDictsToDictOfListsAndColumnNameList(dataDict, firstColName=''):
+    colNames = []
+    convertedDataDict = OrderedDict()
+    for key1, val1 in dataDict.iteritems():
+        if not colNames:
+            colNames = [firstColName] + val1.keys()
+        convertedDataDict[key1] = val1.values()
+    return convertedDataDict, colNames

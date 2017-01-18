@@ -4,6 +4,7 @@ from gold.gsuite import GSuiteConstants
 from gold.track.Track import Track
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.SummarizedWrapperStat import SummarizedWrapperStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -28,9 +29,11 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
     SUMMARY_FUNC_DEFAULT = 'avg'
 
     Q1 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments"
-    Q2 = "Show me a list of all bins and the enrichment within each bin, based on the number of base pairs covered by segments"
+    Q1_SHORT = "Enrichment in bins [number of segments]"
+    Q2 = "Show me a list of all binsand the enrichment within each bin, based on the number of base pairs covered by segments"
+    Q2_SHORT = "Enrichment in bins [number of base pairs]"
     Q3 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments. Also compute p-values for each bin."
-
+    Q3_SHORT = "Enrichment in bins [number of segments, p-val]"
 
     @staticmethod
     def getToolName():
@@ -313,7 +316,21 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         if choices.analysisName == cls.Q3:
             columnNames.append('p-value')
 
-        core.tableFromDictionary(prettyResults, columnNames=columnNames, sortable=True, presorted=0, tableId='res')
+        core.divBegin()
+        if choices.analysisName == cls.Q1:
+            shortQuestion = cls.Q1_SHORT
+        elif choices.analysisName == cls.Q2:
+            shortQuestion = cls.Q2_SHORT
+        else:  # Q3
+            shortQuestion = cls.Q3_SHORT
+
+        visibleRows = 20
+        makeTableExpandable = len(prettyResults) > visibleRows
+
+        addTableWithTabularAndGsuiteImportButtons(
+            core, choices, galaxyFn, shortQuestion, tableDict=prettyResults,
+            columnNames=columnNames, sortable=True, presorted=0, expandable=makeTableExpandable)
+
         core.divEnd()
         core.end()
 
@@ -385,3 +402,14 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
     @staticmethod
     def isPublic():
         return True
+
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'enriched-regions.png']

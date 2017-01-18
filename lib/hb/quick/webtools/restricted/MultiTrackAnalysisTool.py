@@ -10,8 +10,6 @@ from quick.multitrack.MultiTrackAnalysis import MultiTrackBasePairCoverage,\
     MultiTrackCoverageProportionToOthers
 from quick.multitrack.MultiTrackCommon import getGSuiteDataFromGalaxyTN,\
     getGSuiteFromGalaxyTN
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
@@ -19,6 +17,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['histElement']
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
@@ -388,6 +387,9 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.histElement:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
         errorString = GeneralGuiTool._checkGSuiteFile(choices.histElement)
@@ -486,13 +488,3 @@ class MultiTrackAnalysisTool(GeneralGuiTool, UserBinMixin):
     @staticmethod
     def getFullExampleURL():
         return 'u/hb-superuser/p/analyse-relations-of-datasets-in-gsuite'
-
-    @staticmethod
-    def _getGenome(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.histElement)
-        return gSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.histElement)
-        return [track.trackName for track in gSuite.allTracks()]

@@ -1,10 +1,11 @@
 import base64
-import os, sys
+import os
 
 import shutil
 
-from config.Config import STATIC_PATH, GALAXY_FILE_PATH
-from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+from proto.config.Config import STATIC_PATH, GALAXY_FILE_PATH, GALAXY_BASE_DIR
+from proto.config.Security import GALAXY_SECURITY_HELPER_OBJ
+from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class FileImport(GeneralGuiTool):
@@ -193,27 +194,30 @@ class FileImport(GeneralGuiTool):
         selections made by web-user in each options box.
         """
         input = str(choices.input)
-        if not input.startswith('/'):
+
+        try:
             input = base64.urlsafe_b64decode(input)
+            input = GALAXY_SECURITY_HELPER_OBJ.decode_guid(input)
+        except:
+            raise Exception('Old-style "import to history" URLs have been deprecated due to '
+                            'security concerns. If you clicked from the output of an analysis '
+                            'job, please re-run the job to get updated links.')
+
         input = os.path.abspath(input)
         output = galaxyFn
 
-        # tmp hack:
-        input = input.replace('/galaxy_developer/', '/galaxy_gsuite/', 1)
-        input = input.replace('/galaxy_gsuite_submit/', '/galaxy_gsuite/', 1)
-
-        input_real = os.path.realpath(input)
+        if not input.startswith(GALAXY_BASE_DIR):
+            input = os.path.sep.join([GALAXY_BASE_DIR.rstrip(os.path.sep),
+                                           input.lstrip(os.path.sep)])
 
         datatype = choices.format if choices.format else choices.datatype
 
-        if (input_real.startswith(os.path.realpath(STATIC_PATH))
-            or input_real.startswith(os.path.realpath(GALAXY_FILE_PATH))) \
-                and input.endswith('.' + datatype):
-            shutil.copy(input, output)
-        else:
+        # if input.endswith('.' + datatype):
+        shutil.copy(input, output)
+        # else:
             # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
             #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            raise Exception(input + ' not allowed to import!')
+            # raise Exception(input + ' not allowed to import!')
 
 
     @staticmethod

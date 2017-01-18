@@ -228,6 +228,7 @@ fi
 
 if [ $HYPERBROWSER_SETUP -eq 1 ]; then
     ./scripts/hyperbrowser_dirs.sh
+    PYTHONPATH=./lib:$PYTHONPATH python ./lib/setup/htmlgenerator/WelcomePageBasic.py
     python ./scripts/hyperbrowser_setup.py
 fi
 

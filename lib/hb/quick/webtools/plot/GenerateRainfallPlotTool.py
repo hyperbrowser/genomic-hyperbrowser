@@ -21,11 +21,11 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         return [
-            ('Select gsuite', 'gsuite'),
+            ('Select GSuite', 'gsuite'),
             ('Select type of plotting', 'multiPlot'),
-            ('Select scale for bps value', 'scale'),
-            ('Select bps (1000000)', 'bps'),
-            ('Point overlap points on black', 'overlap')
+            # ('Select scale for bps value', 'scale'),
+            ('Select bin size (default: 1000000)', 'bps'),
+            # ('Point overlap points on black', 'overlap')
         ]
 
     @staticmethod
@@ -36,13 +36,13 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
     def getOptionsBoxMultiPlot(prevChoices):
         return ['Single', 'Multi']
 
-    @staticmethod
-    def getOptionsBoxScale(prevChoices):
-        return ['Linear', 'Log']
+    # @staticmethod
+    # def getOptionsBoxScale(prevChoices):
+    #     return ['Linear', 'Log']
 
-    @staticmethod
-    def getOptionsBoxOverlap(prevChoices):
-        return ['no', 'yes']
+    # @staticmethod
+    # def getOptionsBoxOverlap(prevChoices):
+    #     return ['no', 'yes']
 
 
     @staticmethod
@@ -53,13 +53,39 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
     def getOutputFormat(choices):
         return 'customhtml'
 
+
+
     @staticmethod
     def validateAndReturnErrors(choices):
 
         if not choices.gsuite:
             return "Please select a GSuite from history"
 
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        if gsuite.genome == 'unknown':
+            return "Please select a genome while creating GSuite"
+
         return None
+
+
+    @staticmethod
+    def getToolDescription():
+
+        htmlCore = HtmlCore()
+
+        htmlCore.paragraph('The tool is used to generate frequency of dataset and rainfall plots.')
+
+        htmlCore.divider()
+
+        htmlCore.paragraph('The input for tool is a GSuite file contains one or more datasets.')
+        htmlCore.paragraph('The output for tool is a plot.')
+
+
+        return str(htmlCore)
+
+    @staticmethod
+    def isPublic():
+        return True
 
 
     @classmethod
@@ -70,8 +96,9 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
 
         #all boxes
         multiPlot = choices.multiPlot
-        scale = choices.scale
-        overlap = choices.overlap
+        #scale = choices.scale
+        #overlap = choices.overlap
+        overlap = 'no'
         bps = int(choices.bps)
 
         rp = RP(gsuite)
@@ -93,7 +120,7 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
             res += GenerateRainfallPlotTool.drawSinglePlot(vg, newResBinSizeListSortedList, chrLength, newResList, newSeriesNameRes, newResBinSizeList, overlap, seriesType, yAxisMultiVal)
 
         else:
-            res += GenerateRainfallPlotTool.drawMultiPlot(newResList, newSeriesNameRes, newResBinSizeList, vg, seriesType, yAxisMultiVal, scale)
+            res += GenerateRainfallPlotTool.drawMultiPlot(newResList, newSeriesNameRes, newResBinSizeList, vg, seriesType, yAxisMultiVal)
 
 
         htmlCore = HtmlCore()
@@ -131,8 +158,12 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
 
     @classmethod
     def prepareDataForRP(cls, newResList, newSeriesNameRes, newResBinSizeList):
-        for nrNum in range(0, len(newResList)):
-            newSeriesNameRes[nrNum] = newSeriesNameRes[nrNum] + ' -- ' + str(len(newResList[nrNum]))
+
+        for nrNum in range(0, len(newResList)*2):
+            if nrNum % 2 ==0:
+                newSeriesNameRes[nrNum] = 'Frequency of ' + newSeriesNameRes[nrNum]
+            else:
+                newSeriesNameRes[nrNum] = 'Rainfall plot of ' + newSeriesNameRes[nrNum].replace('-- point', '')
 
         data = newResList + newResBinSizeList
 
@@ -311,18 +342,18 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
 
         res = ''
         # line plot with sum of frequencies
-        res += vg.drawLineChart(
-            [newResBinSizeListSortedList],
-            seriesName=['sum per bin'],
-            height=300,
-            xAxisTitle='Genomic position',
-            yAxisTitle='values',
-            minY=0,
-            plotLines=chrLength.values(),
-            plotLinesName=chrLength.keys()
-        )
-
-        res += '<div style="clear:both;"> </div>'
+        # res += vg.drawLineChart(
+        #     [newResBinSizeListSortedList],
+        #     seriesName=['sum per bin'],
+        #     height=300,
+        #     xAxisTitle='Genomic position',
+        #     yAxisTitle='values',
+        #     minY=0,
+        #     plotLines=chrLength.values(),
+        #     plotLinesName=chrLength.keys()
+        # )
+        #
+        # res += '<div style="clear:both;"> </div>'
 
         data, newSeriesNameRes = GenerateRainfallPlotTool.prepareDataForRP(newResList, newSeriesNameRes,
                                                                            newResBinSizeList)
@@ -355,23 +386,31 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
 
     @classmethod
     def countForMultiPlot(cls, newResList, newSeriesNameRes, newResBinSizeList):
+
+        for nrNum in range(0, len(newResList) * 2):
+            if nrNum % 2 == 0:
+                newSeriesNameRes[nrNum] = 'Frequency of ' + newSeriesNameRes[nrNum]
+            else:
+                newSeriesNameRes[nrNum] = 'Rainfall plot of ' + newSeriesNameRes[nrNum].replace('-- point', '')
+
+
         maxLength = -10000
         for nrNum in range(1, len(newResList)):
             if maxLength < newResList[nrNum][-1][0]:
                 maxLength = newResList[nrNum][-1][0]
 
-        newSeriesNameRes[0] = newSeriesNameRes[0] + ' -- ' + str(len(newResList[0]))
+        #newSeriesNameRes[0] = newSeriesNameRes[0] + ' -- ' + str(len(newResList[0]))
         for nrNum in range(1, len(newResList)):
             for nrNum1 in range(0, len(newResList[nrNum])):
                 newResList[nrNum][nrNum1][0] = newResList[nrNum][nrNum1][0] + maxLength * nrNum
             for nrNum1 in range(0, len(newResBinSizeList[nrNum])):
                 newResBinSizeList[nrNum][nrNum1][0] = newResBinSizeList[nrNum][nrNum1][0] + maxLength * nrNum
-            newSeriesNameRes[nrNum] = newSeriesNameRes[nrNum] + ' -- ' + str(len(newResList[nrNum]))
+            #newSeriesNameRes[nrNum] = newSeriesNameRes[nrNum] + ' -- ' + str(len(newResList[nrNum]))
 
         return newResList, newResBinSizeList, newSeriesNameRes
 
     @classmethod
-    def drawMultiPlot(cls, newResList, newSeriesNameRes, newResBinSizeList, vg, seriesType, yAxisMultiVal, scale):
+    def drawMultiPlot(cls, newResList, newSeriesNameRes, newResBinSizeList, vg, seriesType, yAxisMultiVal):
         res = ''
         newResList, newResBinSizeList, newSeriesNameRes = GenerateRainfallPlotTool.countForMultiPlot(newResList,
                                                                                                      newSeriesNameRes,
@@ -384,8 +423,8 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
             reversed=False,
             markerRadius=1,
             label='<b>{series.name}: </b>{point.x}, {point.y} <br \>',
-            xAxisTitle='chr start pos',
-            yAxisTitle=['distance(log10)', 'points per bin (' + str(scale) + ')'],
+            xAxisTitle='Genomic position',
+            yAxisTitle=['Genomic distance', 'Values'],
             yAxisMulti=yAxisMultiVal,
             minY=0,
             # plotLines=chrLength.values(),
@@ -440,9 +479,13 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
                 if key in newDict:
                     newDict2[key] = sorted(newDict[key], key=lambda x: x[1])
 
+            j=0
+            chr =''
             for key, it in newDict2.items():
-                if i == 0:
+
+                if j == 0:
                     chr = key
+                    j+=1
                 i = 0
                 prevEnd = 0
                 label = 0
@@ -454,19 +497,22 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
                             dataDictLine[trackName][int(el[1])] = 1
                         start = int(el[1])
                         if prevEnd != 0:
-                            if not label in dataDict[trackName]:
-                                dataDict[trackName][label] = OrderedDict()
-                                dataDict[trackName][label]['val'] = 0
-                                dataDict[trackName][label]['tot'] = 0
 
-                            # print str(start) + '-' + str(prevEnd)
 
-                            if start - prevEnd != 0:
-                                dataDict[trackName][label]['val'] += math.log(start - prevEnd, 10)
+                            if chr == key: #this is a condition which allow us to do not count the distance for the last an start points on the next chromosomes
+                                if not label in dataDict[trackName]:
+                                    dataDict[trackName][label] = OrderedDict()
+                                    dataDict[trackName][label]['val'] = 0
+                                    dataDict[trackName][label]['tot'] = 0
+
+                                if start - prevEnd > 0:
+                                    dataDict[trackName][label]['val'] += math.log(start - prevEnd, 10)
+                                elif start - prevEnd == 0:
+                                    dataDict[trackName][label]['val'] += start - prevEnd
+
+                                dataDict[trackName][label]['tot'] += 1
                             else:
-                                dataDict[trackName][label]['val'] += start - prevEnd
-
-                            dataDict[trackName][label]['tot'] += 1
+                                chr = key
 
                         label = int(el[1]) + int(chrLength[el[0]])
 
@@ -474,6 +520,7 @@ class GenerateRainfallPlotTool(GeneralGuiTool):
                         i += 1
 
             elementOrder.append(i)
+
 
         listResCopy = []
         for key0, it0 in dataDict.iteritems():

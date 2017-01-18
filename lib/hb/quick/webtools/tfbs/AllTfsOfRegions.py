@@ -47,7 +47,8 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Genome', 'genome'),\
+        return [('', 'basicQuestionId'),
+                ('Genome', 'genome'),\
                 ('Genomic Regions Source', 'genomicRegions'),\
                 ('Genomic Regions Tracks', 'genomicRegionsTracks'),\
                 ('TF Source', 'sourceTfs'),\
@@ -55,9 +56,13 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                 ('TF Tracks', 'tfTracks')\
                 ] + cls.getInputBoxNamesForUserBinSelection() + DebugMixin.getInputBoxNamesForDebug()
 
-    @staticmethod
-    def getOptionsBoxGenome():
-        return ['--- Select ---'] + ['hg19','mm9']
+    @classmethod
+    def getOptionsBoxBasicQuestionId(cls):
+        return '__hidden__', None
+
+    @classmethod
+    def getOptionsBoxGenome(cls, prevChoices):
+        return [cls.SELECT, 'hg19', 'mm9']
 
     @staticmethod
     def getInfoForOptionsBoxGenome():
@@ -88,8 +93,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                 for gSuite in genElementGSuiteName:
                     thisGSuite = getGSuiteFromGSuiteFile(gSuite)
                     for track in thisGSuite.allTracks():
-                        uri = track.uri
-                        selectedTrackNames.append(uri.replace("hb:/Private:Antonio:","hb:"))
+                        selectedTrackNames.append(':'.join(track.trackName[2:]))
                 return [cls.SELECT] + selectedTrackNames
 
     @staticmethod
@@ -223,12 +227,12 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                             selectedTrackNames = []
                             gSuite = getGSuiteFromGalaxyTN(sourceTfsDetails)
                             for track in gSuite.allTracks():
-                                selectedTrackNames.append('hb:/' + '/'.join(track.trackName))
+                                selectedTrackNames.append(':'.join(track.trackName))
                             falses = ['False']*len(selectedTrackNames)
                             return OrderedDict(zip(selectedTrackNames,falses))
                     else:
                         tfTrackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, galaxyTN)
-                        return ['hb:/' + '/'.join(tfTrackName)]
+                        return [':'.join(tfTrackName)]
                 else:
                     return
             else:
@@ -416,8 +420,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                 else:
                     genElementTrackName = selectedGenRegTrack
         elif genomicRegions == 'Hyperbrowser repository (cell-type-specific)':
-                genomicRegionsTrackOld = genomicRegionsTracks.replace("hb:","Private:Antonio:")
-                genElementTrackName = genomicRegionsTrackOld.split(":")
+                genElementTrackName = ['Private', 'Antonio'] + genomicRegionsTracks.split(':')
         else:
             return
 
@@ -442,12 +445,12 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                 trackTitles.append(tfTrackName[len(tfTrackName)-1])
 
             else:
-                tfTrackName = i.split(':')[1].split('/')
+                tfTrackName = i.split(':')
 
                 queryGSuite = getGSuiteFromGalaxyTN(sourceTfsDetails)
 
                 for x in queryGSuite.allTracks():
-                    selectedTrackNames = ('hb:/' + '/'.join(x.trackName))
+                    selectedTrackNames = (':'.join(x.trackName))
                     if i == selectedTrackNames:
                         tracks.append(Track(x.trackName, x.title))
                         trackTitles.append(x.trackName[-1])
@@ -542,7 +545,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
             if sourceTfs == 'Hyperbrowser repository':
                 tfTrackName = TfTrackNameMappings.getTfTrackNameMappings(genome)[ sourceTfsDetails ] + [i]
             else:
-                tfTrackName = i.split(':')[1].split('/')
+                tfTrackName = i.split(':')
                 tfTrackName.pop(0)
             #tfIntersection.expandReferenceTrack(upFlankSize, downFlankSize)
             tfIntersection = TrackIntersection(genome, genElementTrackName, tfTrackName, galaxyFn, str(n))
@@ -827,14 +830,18 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
         print htmlCore
 
 
-    @staticmethod
-    def validateAndReturnErrors(choices):
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
         genome = choices.genome
         genomicRegions = choices.genomicRegions
         genomicRegionsTracks = choices.genomicRegionsTracks
         sourceTfs = choices.sourceTfs
         sourceTfsDetails = choices.sourceTfsDetails
         tfTracks = choices.tfTracks
+
+        # Check genome
+        if genome == cls.SELECT:
+            return 'Please select a genome build.'
 
         # Check that all region boxes have data:
         if genomicRegions == AllTfsOfRegions.SELECT:
@@ -857,7 +864,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
             if sourceTfsDetails == AllTfsOfRegions.SELECT:
                 return 'Please select a TF track.'
             else:
-                if isinstance(sourceTfsDetails, str):
+                if isinstance(sourceTfsDetails, basestring):
                     trackType = sourceTfsDetails.split(':')[1]
                     if trackType == "gsuite":
                         errorString = GeneralGuiTool._checkGSuiteFile(sourceTfsDetails)
@@ -882,6 +889,11 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                             return errorString
 
         return None
+
+    @classmethod
+    def _getGenome(cls, choices):
+        if choices.genome != cls.SELECT:
+            return choices.genome
 
     @staticmethod
     def getOutputFormat(choices=None):

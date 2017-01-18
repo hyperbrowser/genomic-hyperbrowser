@@ -42,10 +42,10 @@ class GenericGSuiteVsGSuiteV2Stat(MagicStatFactory):
 class GenericGSuiteVsGSuiteV2StatUnsplittable(StatisticV2):
     def _init(self, pairwiseStatistic, queryTrackTitleList=None, refTrackTitleList=None,
               removeZeroRow='No', removeZeroColumn='No', **kwArgs):
-        assert isinstance(queryTrackTitleList, (str,
+        assert isinstance(queryTrackTitleList, (basestring,
                                                 list)), '''Mandatory parameter queryTrackTitleList is missing or is
                                                 of wrong type (allowed types: str and list)'''
-        assert isinstance(refTrackTitleList, (str,
+        assert isinstance(refTrackTitleList, (basestring,
                                               list)), '''Mandatory parameter refTrackTitleList is missing or is
                                               of wrong type (allowed types: str and list)'''
         assert removeZeroRow in ['No', 'Yes'], 'removeZeroRow argument must be one of Yes or No'

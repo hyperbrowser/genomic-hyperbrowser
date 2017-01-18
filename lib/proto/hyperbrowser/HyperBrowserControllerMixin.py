@@ -16,15 +16,26 @@
 #
 
 from gold.application.GalaxyInterface import GalaxyInterface
+from gold.application.LogSetup import usageAndErrorLogging
+from proto.hyperbrowser.StaticFile import StaticImage
 from proto.hyperbrowser.hyper_gui import TrackWrapper
 
 
 class HyperBrowserControllerMixin(object):
+    STATIC_IMAGE_CLS = StaticImage
+
     def _init(self):
-        super(HyperBrowserControllerMixin, self)._init()
+        if hasattr(super(HyperBrowserControllerMixin, self), '_init'):
+            super(HyperBrowserControllerMixin, self)._init()
 
         self.trackElements = {}
         self.batchline = ''
+
+    @usageAndErrorLogging
+    def _executeTool(self, toolClassName, choices, galaxyFn, username):
+        if hasattr(super(HyperBrowserControllerMixin, self), '_executeTool'):
+            super(HyperBrowserControllerMixin, self)._executeTool(
+                toolClassName, choices, galaxyFn, username)
 
     def getInputValueForTrack(self, id, name):
         try:

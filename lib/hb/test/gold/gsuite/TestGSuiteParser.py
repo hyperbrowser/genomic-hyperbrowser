@@ -144,19 +144,19 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
 
     def testParseTrackLineSimpleHttps(self):
         contents = \
-            'https://server.other.com/path/to/download?search=file2.bed\n'
+            'https://server.other.com/path/to/download?search=file2.bed.gz\n'
 
         gSuite = self._parseContents(contents)
 
         self._commonAssertSingleSimpleTrack(gSuite,
-                                            uri='https://server.other.com/path/to/download?search=file2.bed',
+                                            uri='https://server.other.com/path/to/download?search=file2.bed.gz',
                                             scheme='https',
                                             netloc='server.other.com',
                                             path='/path/to/download',
-                                            query='search=file2.bed',
-                                            suffix='bed',
+                                            query='search=file2.bed.gz',
+                                            suffix='gz',
                                             trackName=None,
-                                            title='file2.bed',
+                                            title='file2.bed.gz',
                                             location='remote',
                                             fileFormat='primary',
                                             trackType='unknown',
@@ -297,7 +297,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
     def testParseTrackLineFull(self):
         contents = \
             '###uri\ttitle\tcell\tantibody\n' \
-            'ftp://server.somewhere.com/path/to/file1.bed\tTrack\tk562\tcMyb\n' \
+            'ftp://server.somewhere.com/path/to/file1.bed.gz\tTrack\tk562\tcMyb\n' \
             'http://server.other.com/path/to/file2.bed?query=something\tTrack2\tGM12878\tcMyc\n' \
             'https://server.other.com/path/to/file3.bed?query=something\tTrack3\tGM12878\tcMyb\n' \
             'rsync://server.other.com/path/to/file4;wig\tTrack4\tNHFL\t.\n' \
@@ -311,12 +311,12 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         self.assertEquals(7, len(tracks))
 
         self._commonAssertTrack(tracks[0],
-                                uri='ftp://server.somewhere.com/path/to/file1.bed',
+                                uri='ftp://server.somewhere.com/path/to/file1.bed.gz',
                                 scheme='ftp',
                                 netloc='server.somewhere.com',
-                                path='/path/to/file1.bed',
+                                path='/path/to/file1.bed.gz',
                                 query=None,
-                                suffix='bed',
+                                suffix='gz',
                                 trackName=None,
                                 title='Track',
                                 location='remote',

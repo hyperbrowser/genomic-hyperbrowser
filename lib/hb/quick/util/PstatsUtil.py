@@ -1,5 +1,3 @@
-import pygraphviz
-
 import re
 import timeit
 
@@ -286,6 +284,7 @@ class OverheadStats(Stats):
             dot.graph(profile, TEMPERATURE_COLORMAP_WITH_FONTS)
 
     def renderGraph(self, dotFilename, outFilename):
+        import pygraphviz
         graph = pygraphviz.AGraph(dotFilename)
         graph.layout('dot')
         graph.draw(outFilename)

@@ -13,8 +13,10 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+import os
 
-from gold.gsuite.GSuiteConstants import LOCAL, REMOTE, UNKNOWN, PRIMARY, COMPRESSION_SUFFIXES
+from gold.gsuite.GSuiteConstants import LOCAL, REMOTE, UNKNOWN, PRIMARY, COMPRESSION_SUFFIXES, \
+    PREPROCESSED
 from gold.gsuite.GSuiteRequirements import GSuiteRequirements
 from gold.gsuite.GSuiteTrack import GSuiteTrack, SearchQueryForSuffixGSuiteTrack
 from gold.util.CommonFunctions import getFileSuffix, stripFileSuffix
@@ -58,6 +60,16 @@ def renameBaseFileNameWithDuplicateIdx(baseFileName, duplicateIdx):
                (('.' +'.'.join(suffixes)) if suffixes else '')
 
 
+def changeSuffixIfPresent(text, oldSuffix=None, newSuffix=None):
+    assert newSuffix
+    prefix, suffix = os.path.splitext(text)
+
+    if suffix and oldSuffix is None or suffix == '.' + oldSuffix:
+        return prefix + '.' + newSuffix
+    else:
+        return text
+
+
 def getTitleSuffix(title):
     return getFileSuffix(splitTitleIfDuplicate(title)[0])
 
@@ -73,7 +85,8 @@ def getTitleWithSuffixReplaced(title, newSuffix):
 
 
 def getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack):
-    gSuiteReq = GSuiteRequirements(allowedLocations=[LOCAL, REMOTE], allowedFileFormats=[PRIMARY, UNKNOWN])
+    gSuiteReq = GSuiteRequirements(allowedLocations=[LOCAL, REMOTE],
+                                   allowedFileFormats=[PREPROCESSED, PRIMARY, UNKNOWN])
     gSuiteReq.check(gSuiteTrack)
 
     title, suffix, path = gSuiteTrack.title, gSuiteTrack.suffix, gSuiteTrack.path

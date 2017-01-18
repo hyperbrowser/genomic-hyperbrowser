@@ -16,8 +16,6 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteFullAnalysisV2Stat import RAW_OVERLAP_TABLE_RESULT_KEY, \
     SIMILARITY_SCORE_TABLE_RESULT_KEY
 from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -47,8 +45,8 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return ''' Are certain tracks of one suite coinciding particularly strongly
-        with certain tracks of another suite?'''
+        return "Are certain tracks of one suite coinciding particularly strongly with certain " \
+               "tracks of another suite?"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -70,6 +68,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         '''
         return [
                    ('Basic user mode', 'isBasic'),
+                   ('', 'basicQuestionId'),
                    ('Select the query GSuite', 'queryGSuite'),
                    ('Select the reference GSuite', 'refGSuite')
                ] + \
@@ -95,6 +94,10 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
     @staticmethod
     def getOptionsBoxIsBasic():  # Alternatively: getOptionsBox1()
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxQueryGSuite(prevChoices):
@@ -243,8 +246,10 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         analysisSpec.addParameter('refTrackTitleList', refTrackTitles)
         analysisSpec.addParameter('similarityStatClassName',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassNameKey])
-        analysisSpec.addParameter('removeZeroRow', choices.removeZeroRow)
-        analysisSpec.addParameter('removeZeroColumn', choices.removeZeroCol)
+        if choices.removeZeroRow:
+            analysisSpec.addParameter('removeZeroRow', choices.removeZeroRow)
+        if choices.removeZeroCol:
+            analysisSpec.addParameter('removeZeroColumn', choices.removeZeroCol)
         resultsObj = doAnalysis(analysisSpec, analysisBins, queryTrackList + refTrackList)
         results = resultsObj.getGlobalResult()
 
@@ -278,7 +283,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         core.divBegin(divId='raw-table-result', divClass='result-div')
         core.divBegin(divId='raw-table-result', divClass='result-div-left')
         core.line('''Follow the links to view the results in an HTML table
-        or raw tabular form:<br>''')
+        or raw tabular form:''')
         core.divEnd()
         core.divBegin(divId='raw-table-result', divClass='result-div-right')
         core.line(tablePresenter.getReference(RAW_OVERLAP_TABLE_RESULT_KEY))
@@ -383,6 +388,9 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not (choices.queryGSuite and choices.refGSuite):
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 
@@ -432,17 +440,6 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
-
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        queryGSuite = getGSuiteFromGalaxyTN(choices.queryGSuite)
-        refGSuite = getGSuiteFromGalaxyTN(choices.refGSuite)
-        return [track.trackName for track in queryGSuite.allTracks()] + \
-               [track.trackName for track in refGSuite.allTracks()]
 
     # @staticmethod
     # def getSubToolClasses():
@@ -503,22 +500,37 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
     #    '''
     #    return []
     #
-    # @staticmethod
-    # def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
-    #
-    # @staticmethod
-    # def getToolIllustration():
-    #    '''
-    #    Specifies an id used by StaticFile.py to reference an illustration file
-    #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by Config.py. The
-    #    full path is created from the base directory followed by the id.
-    #    '''
-    #    return None
+    @staticmethod
+    def getToolDescription():
+        '''
+        Specifies a help text in HTML that is displayed below the tool.
+        '''
+        core = HtmlCore()
+        core.divBegin()
+        core.paragraph("""This tools implements a solution to the statistical question
+                    'Are certain tracks of one suite coinciding particularly strongly with
+                    certain tracks of another suite?'. To use the tool:""")
+        core.orderedList(["Select the query GSuite (dataset collection of interest).",
+                          "Select the reference GSuite (dataset collection to be screened against the query collection).",
+                          "Select additional options (advanced mode only).",
+                          "Execute the tool."])
+        core.paragraph("""<br><br><b>Tool illustration.</b>
+                    Coinciding tracks from two collections.<br>
+                    Qi - Query track i (i = 1,..,m).<br>
+                    Ri - Reference track i (i = 1,..,n).<br>
+                    """)
+        core.divEnd()
+        return str(core)
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'suite-suite.png']
     #
     # @staticmethod
     # def getFullExampleURL():

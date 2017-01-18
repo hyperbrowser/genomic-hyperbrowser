@@ -136,14 +136,16 @@ class GenomeMixin(object):
         for key in cls.GSUITE_FILE_OPTIONS_BOX_KEYS:
             galaxyTN = getattr(prevChoices, key)
 
-            try:
-                from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-                gSuite = getGSuiteFromGalaxyTN(galaxyTN)
-                genomes.append(gSuite.genome)
-            except:
-                return None
+            if galaxyTN:
+                try:
+                    from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+                    gSuite = getGSuiteFromGalaxyTN(galaxyTN)
+                    genomes.append(gSuite.genome)
+                except:
+                    return None
 
-        return genomes
+        if genomes:
+            return genomes
     
     @classmethod
     def _getNumSpecifiedGenomes(cls, prevChoices):

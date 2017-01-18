@@ -11,6 +11,8 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 # web page.
 
 class GsuiteOverviewTool(GeneralGuiTool, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuite']
+
     @staticmethod
     def getToolName():
         '''
@@ -277,13 +279,3 @@ class GsuiteOverviewTool(GeneralGuiTool, UserBinMixin):
         history item box.
         '''
         return 'customhtml'
-
-    @staticmethod
-    def _getGenome(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return gSuite.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        return [track.trackName for track in gSuite.allTracks()]

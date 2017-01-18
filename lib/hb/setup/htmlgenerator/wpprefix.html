@@ -249,227 +249,234 @@
 	   }
 	   </script>
 	   <script>
-	   function draw()
+
+		function draw()
 		{
-		var canvas = document.getElementById('myCanvas');
-		if (canvas.getContext)
-		{
-			ctx = canvas.getContext('2d');
-
-			ctx.strokeStyle = "#696969";
-			ctx.strokeRect(480,10,280,730);
-
-			text1 = ["Create a GSuite of genomic tracks", "From an External Source",
-					 "Create a remote GSuite from a public repository"];
-			links1 = ["","","../tool_runner?tool_id=generictool&tool_id=hb_track_source_test_tool"];
-			subs1 = [1];
-			llength1 = [15,19,21];
-
-			createBox(ctx,10,20,60,text1,links1,subs1,llength1,"#EAECEE");
-
-			text2 = ["Create a GSuite of genomic tracks", "From History",
-					 "Create a GSuite from datasets in your history",
-					 "Create a GSuite from a single track based on a single column/attribute",
-					 "Create a GSuite from an archive in history"];
-			links2 = ["","",
-					  "../tool_runner?tool_id=hb_create_g_suite_file_from_history_elements_tool",
-					  "../tool_runner?tool_id=hb_compile_gsuite_from_single_track_attribute_tool",
-					  "../tool_runner?tool_id=hb_compile_g_suite_from_archive_tool"];
-			subs2 = [1];
-			llength2 = [15,19,21];
-
-			createBox(ctx,10,225,130,text2,links2,subs2,llength2,"#EAECEE");
-
-			text3 = ["Create a GSuite of genomic tracks", "From an External Source",
-					 "Create a GSuite from an integrated catalog of genomic datasets", "From Hyperbrowser Repository",
-					 "Create a GSuite from the HyperBrowser repository"];
-			links3 = ["","","../tool_runner?tool_id=hb_track_global_search_tool","",
-					  "../tool_runner?tool_id=hb_extract_subtracks_tool"];
-			subs3 = [1,3];
-			llength3 = [15,19,22];
-
-			createBox(ctx,10,525,95,text3,links3,subs3,llength3,"#EAECEE");
-
-			text4 = ["Customize a GSuite",
-					 "Modify GSuites", "Select a subset of tracks from a GSuite",
-					 "Select a subset of meta- data columns in a GSuite",
-					 "Concatenate two GSuites", "Edit a metadata column in a GSuite"];
-			links4 = ["","","../tool_runner?tool_id=generictool&tool_id=hb_g_suite_select_rows",
-					  "../tool_runner?tool_id=hb_g_suite_select_columns",
-					  "../tool_runner?tool_id=hb_concatenate_gsuites_tool",
-					  "../tool_runner?tool_id=hb_edit_gsuite_metadata_tool"];
-			subs4 = [1,6,8];
-			llength4 = [15,19,21];
-
-			createBox(ctx,170,60,105,text4,links4,subs4,llength4,"#FDF2E9");
-
-			text5 = ["Customize a GSuite",
-					 "Modify Datasets Referred to in a GSuite",
-					 "Modify primary tracks referred to in a GSuite",
-					 "Export GSuite Datasets",
-					 "Export primary tracks from a GSuite to your history"];
-			links5 = ["","","../tool_runner?tool_id=hb_g_suite_manipulate_text_files",
-					  "","../tool_runner?tool_id=hb_g_suite_export_to_history_tool"];
-			subs5 = [1,3];
-			llength5 = [15,19,21];
-
-			createBox(ctx,170,470,95,text5,links5,subs5,llength5,"#FDF2E9");
-
-			text6 = ["Customize a GSuite",
-					 "Convert GSuite Tracks", "Convert GSuite tracks from remote to primary"];
-			links6 = ["","","../tool_runner?tool_id=hb_g_suite_download_files"];
-			subs6 = [1];
-			llength6 = [15,19,21];
-
-			createBox(ctx,330,20,45,text6,links6,subs6,llength6,"#FDF2E9");
-
-			text7 = ["Customize a GSuite",
-					 "Convert GSuite Tracks", "Preprocess a GSuite for analysis"];
-			links7 = ["","","../tool_runner?tool_id=hb_preprocess_g_suite_tracks_tool"];
-			subs7 = [1];
-			llength7 = [15,19,21];
-
-			createBox(ctx,330,310,45,text7,links7,subs7,llength7,"#FDF2E9");
-
-
-
-			text8 = ["Customize a GSuite",
-					 "Convert GSuite Tracks",
-					 "Convert GSuite a tracks from preprocessed to primary"];
-			links8 = ["","",
-					  "../tool_runner?tool_id=hb_g_suite_convert_from_preprocessed_to_primary_tool"];
-			subs8 = [1];
-			llength8 = [15,19,21];
-
-			createBox(ctx,330,470,60,text8,links8,subs8,llength8,"#FDF2E9");
-
-			text9 = ["Quantitative overview of GSuites",
-					 "Metadata Overview", "Summary of metadata attributes for GSuite",
-					 "Track Overview", "Summary statistics per track in a GSuite",
-					 "Similarity and uniqueness of tracks in GSuite",
-					 "Tendency of track elements to clump together along the genome (Ripleys K)",
-					 "Calculate all summary statistics for tracks in GSuite (all of the above)",
-					 "Compute a basic measure for each track in a GSuite",
-					 "Determine suite tracks coinciding with another suite"];
-			links9 = ["","","../tool_runner?tool_id=hb_g_suite_metadata_overview_tool",
-					  "","../tool_runner?tool_id=hb_pilot_page_basic_overview_of_tracks_in_g_suite_tool",
-					  "../tool_runner?tool_id=hb_pilot_page_similarity_and_uniqueness_of_tracks_tool",
-					  "../tool_runner?tool_id=hb_pilot_page_clustering_in_tracks_tool",
-					  "../tool_runner?tool_id=hb_pilot_page_combined_overview_of_tracks_tool",
-					  "../tool_runner?tool_id=hb_g_suite_single_value_analysis_per_track_tool",
-					  "../tool_runner?tool_id=hb_determine_suite_tracks_coinciding_with_another_suite"];
-			subs9 = [1,3];
-			llength9 = [15,19,21];
-
-			createBox(ctx,490,20,240,text9,links9,subs9,llength9,"#FFFFE0");
-
-			text10 = ["Statistical analysis of a GSuite",
-					 "Similarity-based Analysis of Tracks in GSuite",
-					 "Determine repre- sentative and atypical tracks in a GSuite",
-					 "Determine GSuite tracks coinciding with a target track",
-					 "Determine coinciding track combinations from two suites",
-					 "Distribution of Suite Data Along the Genome",
-					 "Determine regions where GSuite tracks are enriched",
-					 "Determine regions where GSuite tracks co-occur more strongly"];
-			links10 = ["","","../tool_runner?tool_id=hb_g_suite_representative_and_untypical_track_tool",
-					  "../tool_runner?tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool",
-					  "../tool_runner?tool_id=hb_coinciding_tracks_from_two_g_suites_tool",
-					  "","../tool_runner?tool_id=hb_multi_track_count_overrepresentation_bins",
-					  "../tool_runner?tool_id=hb_multi_track_cooccurrence_bins"];
-			subs10 = [1,5];
-			llength10 = [15,19,21];
-
-			createBox(ctx,630,20,220,text10,links10,subs10,llength10,"#FFFFE0");
-
-			text11 = ["Visual analysis of GSuites",
-					 "Color-coded segments from a query track based on overlap with reference tracks in a GSuite",
-					 "Generate a heatmap based on overlap of segments from a query track with reference tracks in a GSuite",
-					 "Generate a Venn diagram of overlap between tracks in a GSuite"];
-			links11 = ["","../tool_runner?tool_id=hb_segments_overlap_visualization_tool",
-					  "../tool_runner?tool_id=hb_segments_overlap_visualization_heatmap_tool",
-					  "../tool_runner?tool_id=hb_create_bps_venn_d_iagram"];
-			subs11 = [];
-			llength11 = [15,19,20];
-
-			createBox(ctx,490,470,175,text11,links11,subs11,llength11,"#FFFFE0");
-
-			text12 = ["Domain- specific analysis ",
-					 "Scan targets of a transcription factor",
-					 "Scan transcription factors of a genomic region"];
-			links12 = ["","../tool_runner?tool_id=hb_all_targets_of_tfs",
-					  "hyper?mako=generictool&tool_id=hb_all_tfs_of_regions"];
-			subs12 = [];
-			llength12 = [15,19,21];
-
-			createBox(ctx,630,455,85,text12,links12,subs12,llength12,"#FFFFE0");
-
-			text13 = ["Auxiliary tools",
-					 "Generate the union track of all tracks in a GSuite"];
-			links13 = ["","","../tool_runner?tool_id=hb_g_suite_download_files"];
-			subs13 = [];
-			llength13 = [15,19,21];
-
-			createBox(ctx,630,645,65,text13,links13,subs13,llength13,"#FFFFE0");
-
-			//1-7
-			arrow(ctx,130,40,325,40);
-
-			//1-4
-			arrow(ctx,130,125,160,125);
-
-			//2-4
-			arrow(ctx,130,250,160,250);
-
-			//2-7
-			arrow(ctx,130,370,325,370);
-
-			//4-5
-			arrow(ctx,130,440,170,470);
-
-			//4-8
-			arrow(ctx,250,280,340,465);
-			arrow(ctx,340,465,250,280);
-
-			//3-4
-			arrow(ctx,125,530,200,280);
-
-			//3-END STAGE
-			arrow(ctx,130,715,475,715);
-			//3-8
-			arrow(ctx,390,715,390,600);
-
-			//8-5
-			arrow(ctx,330,540,295,540);
-
-			//6-8
-			arrow(ctx,390,465,390,425);
-			arrow(ctx,390,425,390,465);
-
-			//7-END STAGE
-			arrow(ctx,450,370,475,370);
-
-			//4-6
-			arrow(ctx,325,100,295,100);
-			arrow(ctx,295,100,325,100);
-
-			//4-7
-			arrow(ctx,295,210,370,305);
-			arrow(ctx,370,305,295,210);
-
-			//4-END STAGE
-			arrow(ctx,290,170,475,170);
-
-			//7-5
-			arrow(ctx,370,132,230,465);
-
-			//6-7
-			arrow(ctx,410,132,410,305);
-
-			//5-7
-			arrow(ctx,290,480,335,420);
-
-
-			canvasListening(canvas);
+			var canvas = document.getElementById('myCanvas');
+			if (canvas.getContext)
+			{
+				ctx = canvas.getContext('2d');
+		
+				ctx.strokeStyle = "#696969";
+				ctx.strokeRect(480,10,280,730);
+		
+				ctx.font="italic 10pt Arial";
+				ctx.strokeRect(160,50,140,290);
+				ctx.fillText("Operates on all", 183, 300);
+				ctx.fillText("types of GSuites", 180, 322);
+		
+				text1 = ["Create a GSuite of genomic tracks", "From an External Source",
+						 "Create a remote GSuite from a public repository"];
+				links1 = ["","","../tool_runner?tool_id=generictool&tool_id=hb_track_source_test_tool"];
+				subs1 = [1];
+				llength1 = [15,19,21];
+		
+				createBox(ctx,10,20,60,text1,links1,subs1,llength1,"#EAECEE");
+		
+				text2 = ["Create a GSuite of genomic tracks", "From History",
+						 "Create a GSuite from datasets in your history",
+						 "Create a GSuite from a single track based on a single column/attribute",
+						 "Create a GSuite from an archive in history"];
+				links2 = ["","",
+						  "../tool_runner?tool_id=hb_create_g_suite_file_from_history_elements_tool",
+						  "../tool_runner?tool_id=hb_compile_gsuite_from_single_track_attribute_tool",
+						  "../tool_runner?tool_id=hb_compile_g_suite_from_archive_tool"];
+				subs2 = [1];
+				llength2 = [15,19,21];
+		
+				createBox(ctx,10,225,130,text2,links2,subs2,llength2,"#EAECEE");
+		
+				text3 = ["Create a GSuite of genomic tracks", "From an External Source",
+						 "Create a GSuite from an integrated catalog of genomic datasets", "From Hyperbrowser Repository",
+						 "Create a GSuite from the HyperBrowser repository"];
+				links3 = ["","","../tool_runner?tool_id=hb_track_global_search_tool","",
+						  "../tool_runner?tool_id=hb_extract_subtracks_tool"];
+				subs3 = [1,3];
+				llength3 = [15,19,22];
+		
+				createBox(ctx,10,525,95,text3,links3,subs3,llength3,"#EAECEE");
+		
+				text4 = ["Customize a GSuite",
+						 "Modify GSuites", "Select a subset of tracks from a GSuite",
+						 "Select a subset of meta- data columns in a GSuite",
+						 "Concatenate two GSuites", "Edit a metadata column in a GSuite"];
+				links4 = ["","","../tool_runner?tool_id=generictool&tool_id=hb_g_suite_select_rows",
+						  "../tool_runner?tool_id=hb_g_suite_select_columns",
+						  "../tool_runner?tool_id=hb_concatenate_gsuites_tool",
+						  "../tool_runner?tool_id=hb_edit_gsuite_metadata_tool"];
+				subs4 = [1,6,8];
+				llength4 = [15,19,21];
+		
+				createBox(ctx,170,60,105,text4,links4,subs4,llength4,"#FDF2E9");
+		
+				text5 = ["Customize a GSuite",
+						 "Modify Datasets Referred to in a GSuite",
+						 "Modify primary tracks referred to in a GSuite",
+						 "Export GSuite Datasets",
+						 "Export primary tracks from a GSuite to your history"];
+				links5 = ["","","../tool_runner?tool_id=hb_g_suite_manipulate_text_files",
+						  "","../tool_runner?tool_id=hb_g_suite_export_to_history_tool"];
+				subs5 = [1,3];
+				llength5 = [15,19,21];
+		
+				createBox(ctx,170,470,95,text5,links5,subs5,llength5,"#FDF2E9");
+		
+				text6 = ["Customize a GSuite",
+						 "Convert GSuite Tracks", "Convert GSuite tracks from remote to primary"];
+				links6 = ["","","../tool_runner?tool_id=hb_g_suite_download_files"];
+				subs6 = [1];
+				llength6 = [15,19,21];
+		
+				createBox(ctx,330,20,45,text6,links6,subs6,llength6,"#FDF2E9");
+		
+				text7 = ["Customize a GSuite",
+						 "Convert GSuite Tracks", "Preprocess a GSuite for analysis"];
+				links7 = ["","","../tool_runner?tool_id=hb_preprocess_g_suite_tracks_tool"];
+				subs7 = [1];
+				llength7 = [15,19,21];
+		
+				createBox(ctx,330,310,45,text7,links7,subs7,llength7,"#FDF2E9");
+		
+		
+		
+				text8 = ["Customize a GSuite",
+						 "Convert GSuite Tracks",
+						 "Convert GSuite a tracks from preprocessed to primary"];
+				links8 = ["","",
+						  "../tool_runner?tool_id=hb_g_suite_convert_from_preprocessed_to_primary_tool"];
+				subs8 = [1];
+				llength8 = [15,19,21];
+		
+				createBox(ctx,330,470,60,text8,links8,subs8,llength8,"#FDF2E9");
+		
+				text9 = ["Quantitative overview of GSuites",
+						 "Metadata Overview", "Summary of metadata attributes for GSuite",
+						 "Track Overview", "Summary statistics per track in a GSuite",
+						 "Similarity and uniqueness of tracks in GSuite",
+						 "Tendency of track elements to clump together along the genome (Ripleys K)",
+						 "Calculate all summary statistics for tracks in GSuite (all of the above)",
+						 "Compute a basic measure for each track in a GSuite",
+						 "Determine suite tracks coinciding with another suite"];
+				links9 = ["","","../tool_runner?tool_id=hb_g_suite_metadata_overview_tool",
+						  "","../tool_runner?tool_id=hb_pilot_page_basic_overview_of_tracks_in_g_suite_tool",
+						  "../tool_runner?tool_id=hb_pilot_page_similarity_and_uniqueness_of_tracks_tool",
+						  "../tool_runner?tool_id=hb_pilot_page_clustering_in_tracks_tool",
+						  "../tool_runner?tool_id=hb_pilot_page_combined_overview_of_tracks_tool",
+						  "../tool_runner?tool_id=hb_g_suite_single_value_analysis_per_track_tool",
+						  "../tool_runner?tool_id=hb_determine_suite_tracks_coinciding_with_another_suite"];
+				subs9 = [1,3];
+				llength9 = [15,19,21];
+		
+				createBox(ctx,490,20,240,text9,links9,subs9,llength9,"#FFFFE0");
+		
+				text10 = ["Statistical analysis of a GSuite",
+						 "Similarity-based Analysis of Tracks in GSuite",
+						 "Determine repre- sentative and atypical tracks in a GSuite",
+						 "Determine GSuite tracks coinciding with a target track",
+						 "Determine coinciding track combinations from two suites",
+						 "Distribution of Suite Data Along the Genome",
+						 "Determine regions where GSuite tracks are enriched",
+						 "Determine regions where GSuite tracks co-occur more strongly"];
+				links10 = ["","","../tool_runner?tool_id=hb_g_suite_representative_and_untypical_track_tool",
+						  "../tool_runner?tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool",
+						  "../tool_runner?tool_id=hb_coinciding_tracks_from_two_g_suites_tool",
+						  "","../tool_runner?tool_id=hb_multi_track_count_overrepresentation_bins",
+						  "../tool_runner?tool_id=hb_multi_track_cooccurrence_bins"];
+				subs10 = [1,5];
+				llength10 = [15,19,21];
+		
+				createBox(ctx,630,20,220,text10,links10,subs10,llength10,"#FFFFE0");
+		
+				text11 = ["Visual analysis of GSuites",
+						 "Color-coded segments from a query track based on overlap with reference tracks in a GSuite",
+						 "Generate a heatmap based on overlap of segments from a query track with reference tracks in a GSuite",
+						 "Generate a Venn diagram of overlap between tracks in a GSuite"];
+				links11 = ["","../tool_runner?tool_id=hb_segments_overlap_visualization_tool",
+						  "../tool_runner?tool_id=hb_segments_overlap_visualization_heatmap_tool",
+						  "../tool_runner?tool_id=hb_create_bps_venn_d_iagram"];
+				subs11 = [];
+				llength11 = [15,19,20];
+		
+				createBox(ctx,490,470,175,text11,links11,subs11,llength11,"#FFFFE0");
+		
+				text12 = ["Domain- specific analysis ",
+						 "Scan targets of a transcription factor",
+						 "Scan transcription factors of a genomic region"];
+				links12 = ["","../tool_runner?tool_id=hb_all_targets_of_tfs",
+						  "hyper?mako=generictool&tool_id=hb_all_tfs_of_regions"];
+				subs12 = [];
+				llength12 = [15,19,21];
+		
+				createBox(ctx,630,455,85,text12,links12,subs12,llength12,"#FFFFE0");
+		
+				text13 = ["Auxiliary tools",
+						 "Generate the union track of all tracks in a GSuite"];
+				links13 = ["","","../tool_runner?tool_id=hb_g_suite_download_files"];
+				subs13 = [];
+				llength13 = [15,19,21];
+		
+				createBox(ctx,630,645,65,text13,links13,subs13,llength13,"#FFFFE0");
+		
+				//1-7
+				arrow(ctx,130,40,325,40);
+		
+				//1-4
+				//arrow(ctx,130,125,160,125);
+		
+				//2-4
+				//arrow(ctx,130,250,160,250);
+		
+				//2-7
+				arrow(ctx,130,370,325,370);
+		
+				//2-5
+				arrow(ctx,130,440,170,470);
+		
+				//4-8
+				//arrow(ctx,250,280,340,465);
+				//arrow(ctx,340,465,250,280);
+		
+				//3-4
+				//arrow(ctx,125,530,200,280);
+		
+				//3-END STAGE
+				arrow(ctx,130,715,475,715);
+				//3-8
+				arrow(ctx,390,715,390,600);
+		
+				//8-5
+				arrow(ctx,330,540,295,540);
+		
+				//6-8
+				arrow(ctx,390,465,390,425);
+				arrow(ctx,390,425,390,465);
+		
+				//7-END STAGE
+				arrow(ctx,450,370,475,370);
+		
+				//4-6
+				//arrow(ctx,325,100,295,100);
+				//arrow(ctx,295,100,325,100);
+		
+				//4-7
+				//arrow(ctx,295,210,370,305);
+				//arrow(ctx,370,305,295,210);
+		
+				//4-END STAGE
+				//arrow(ctx,290,170,475,170);
+		
+				//7-5
+				arrow(ctx,370,132,270,465);
+		
+				//6-7
+				arrow(ctx,410,132,410,305);
+		
+				//5-7
+				arrow(ctx,290,480,335,420);
+		
+		
+				canvasListening(canvas);
+		
 			}
 		}
 
@@ -509,10 +516,11 @@
 		    </p>
 
                                <p class="noticebox">
-                               <b>IMPORTANT:</b> Please note that this is an alpha version of the GSuite HyperBrowser, which is planned to be fully released in January 2017.
-                               The version has been released in order to prepare example runs for the release. While you can use
-                               the current pre-published instance as you will, keep in mind that you will probably encounter bugs and other issues. In addition,
-                               the examples are not working yet.
+                               <b>IMPORTANT:</b> Please note that this is a beta version of the GSuite HyperBrowser.
+								  This version has been released as a companion to the GSuite HyperBrowser manuscript,
+								  which is currently under review. While you can use the current pre-published instance
+								  as you will, keep in mind that you might encounter bugs and other issues. Please let
+								  us know if you experience any issues with our software.
 			       </p>
 		    <!--<p>
 		    Two different operation modes are available to guide you through your analysis.

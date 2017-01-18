@@ -24,7 +24,7 @@ from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
 # Version information
 #
 
-HB_VERSION = 'v2.0a'
+HB_VERSION = 'v2.0b'
 
 
 #
@@ -133,8 +133,9 @@ GALAXY_COMPILED_TEMPLATES = GALAXY_BASE_DIR + '/database/compiled_templates'
 GALAXY_TEMPLATES_PATH = GALAXY_BASE_DIR + '/templates'
 GALAXY_LIB_PATH = GALAXY_BASE_DIR + '/lib'
 
-STATIC_REL_PATH = URL_PREFIX + '/static/hyperbrowser'
-STATIC_PATH = GALAXY_BASE_DIR + '/static/hyperbrowser'
+STATIC_DIR = '/static/hyperbrowser'
+STATIC_REL_PATH = URL_PREFIX + STATIC_DIR
+STATIC_PATH = GALAXY_BASE_DIR + STATIC_DIR
 
 HB_SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib/hb'
 HB_SOURCE_DATA_BASE_DIR = HB_SOURCE_CODE_BASE_DIR + '/data'

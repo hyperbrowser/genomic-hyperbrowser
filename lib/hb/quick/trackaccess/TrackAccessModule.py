@@ -57,7 +57,7 @@ class TrackAccessModule(object):
     #    return res
     #
     #def searchStructured(self, searchQueryDict):
-    #    assert all(isinstance(key, basestr) & isinstance(val, basestr) for key,val in searchQueryDict.iteritems())
+    #    assert all(isinstance(key, basestring) & isinstance(val, basestring) for key,val in searchQueryDict.iteritems())
     #    if len(searchQueryDict) == 0:
     #        return []
     #

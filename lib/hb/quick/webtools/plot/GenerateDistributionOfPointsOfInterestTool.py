@@ -22,7 +22,7 @@ class GenerateDistributionOfPointsOfInterestTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         return [
-            ('Select gsuite with data', 'gsuite'),
+            ('Select GSuite with data', 'gsuite'),
             ('Select file with regions (bed)', 'bedRegions')
         ]
 
@@ -45,6 +45,29 @@ class GenerateDistributionOfPointsOfInterestTool(GeneralGuiTool):
         if not choices.bedRegions:
             return "Please select a bed file with regions"
         return None
+
+    @staticmethod
+    def getToolDescription():
+
+        htmlCore = HtmlCore()
+
+        htmlCore.paragraph('The tool is used to generate density of distribution.')
+
+        htmlCore.divider()
+
+        htmlCore.paragraph('The input for tool is following:')
+        htmlCore.line('- GSuite')
+        htmlCore.line('- file with regions (bed format), which should be given by user')
+
+        htmlCore.divider()
+
+        htmlCore.paragraph('The output for tool is a plot.')
+
+        return str(htmlCore)
+
+    @staticmethod
+    def isPublic():
+        return True
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):

@@ -71,8 +71,8 @@ class PilotPageOverlapBetweenTracksTool(GeneralGuiTool, UserBinMixin,
                [('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection()
-    
-    
+
+
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
@@ -128,12 +128,3 @@ class PilotPageOverlapBetweenTracksTool(GeneralGuiTool, UserBinMixin,
         LocalOSConfig.py.
         '''
         return True
-    
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]

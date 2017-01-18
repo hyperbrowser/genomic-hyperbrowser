@@ -4,6 +4,7 @@ from itertools import chain
 
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
 from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -25,11 +26,11 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
                                   ('Convert Narrowpeak to GTrack', 'NarrowpeakToGTrack'),
                                   ('Remove duplicate lines', 'RemoveDuplicateLines'),
                                   ('Filter GTrack by segment length', 'FilterGTrackByGELength'),
-                                  ('Expand all points and segments equally', 'ExpandBedSegments')
+                                  ('Expand all points and segments equally', 'ExpandBedSegments'),
+                                  ('Subsample elements of each track', 'SubsampleTracks')
                                   ])
 
     ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns'),
-                                   ('Subsample elements of each track', 'SubsampleTracks'),
                                    ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),
                                    ('Convert maf to 3-column bed', 'ConvertMafTo3ColBed')
                                   ])
@@ -350,7 +351,8 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         fileList += [HistElement(getGSuiteHistoryOutputName(
                          'primary', cls.OUTPUT_DESCRIPTION, choices.history), GSUITE_SUFFIX)]
         fileList += [HistElement(getGSuiteHistoryOutputName(
-                         'storage', cls.OUTPUT_DESCRIPTION, choices.history), GSUITE_SUFFIX, hidden=True)]
+                         'storage', cls.OUTPUT_DESCRIPTION, choices.history),
+                         GSUITE_STORAGE_SUFFIX, hidden=True)]
 
         return fileList
 
@@ -368,15 +370,6 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         #         return fileList
         #     except:
         #         pass
-
-    @staticmethod
-    def _changeSuffixIfPresent(text, oldSuffix, newSuffix):
-            prefix, suffix = os.path.splitext(text)
-
-            if suffix and suffix == '.' + oldSuffix:
-                return prefix + '.' + newSuffix
-            else:
-                return text
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -412,7 +405,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
             newSuffix = cls._getSuffix(choices, track)
 
             fileName = os.path.basename(track.path)
-            fileName = cls._changeSuffixIfPresent(fileName, track.suffix, newSuffix)
+            fileName = changeSuffixIfPresent(fileName, oldSuffix=track.suffix, newSuffix=newSuffix)
             title = getTitleWithSuffixReplaced(track.title, newSuffix)
 
             try:

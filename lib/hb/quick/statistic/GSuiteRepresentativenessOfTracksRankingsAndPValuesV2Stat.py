@@ -36,7 +36,7 @@ class GSuiteRepresentativenessOfTracksRankingsAndPValuesV2Stat(MagicStatFactory)
 class GSuiteRepresentativenessOfTracksRankingsAndPValuesV2StatUnsplittable(StatisticV2):
     
     def _init(self, trackTitles='', **kwArgs):
-        assert isinstance(trackTitles, (str, list)), 'Mandatory parameter trackTitles is missing or is of wrong type (allowed types: str and list)'
+        assert isinstance(trackTitles, (basestring, list)), 'Mandatory parameter trackTitles is missing or is of wrong type (allowed types: basestring and list)'
         self._trackTitles = [unquote(t) for t in trackTitles.split(CommonConstants.TRACK_TITLES_SEPARATOR)] if \
         isinstance(trackTitles, basestring) else [unquote(t) for t in trackTitles]
     

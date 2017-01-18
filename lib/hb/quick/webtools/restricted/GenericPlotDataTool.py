@@ -13,8 +13,8 @@ from gold.gsuite import GSuiteConstants, GSuiteFunctions
 # web page.
 
 class GenericPlotDataTool(GeneralGuiTool):
-    
-    
+
+
     ALLOW_UNKNOWN_GENOME = True
     
     @staticmethod
@@ -23,7 +23,7 @@ class GenericPlotDataTool(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Plot GSuite metadata"
+        return "Plot metadata values of a GSuite file"
         #Plot tabular values
 
     @staticmethod
@@ -396,7 +396,7 @@ class GenericPlotDataTool(GeneralGuiTool):
         
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        
+
         errorString = GeneralGuiTool._checkGSuiteFile(choices.gSuite)
         if errorString:
             return errorString

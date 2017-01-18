@@ -36,7 +36,8 @@ class ExtractSubtracksTool(GeneralGuiTool):
 
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return [('Select genome','genome'),
+        return [('', 'basicQuestionId'),
+                ('Select genome','genome'),
                 ('Select parent track','parentTrack')]
 
     #@staticmethod
@@ -50,7 +51,11 @@ class ExtractSubtracksTool(GeneralGuiTool):
     #    return None
 
     @staticmethod
-    def getOptionsBoxGenome(): # Alternatively: getOptionsBox1()
+    def getOptionsBoxBasicQuestionId():
+        return '__hidden__', None
+
+    @staticmethod
+    def getOptionsBoxGenome(prevChoices): # Alternatively: getOptionsBox1()
         '''
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to other

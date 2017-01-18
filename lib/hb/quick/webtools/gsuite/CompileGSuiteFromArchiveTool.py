@@ -1,3 +1,5 @@
+from gold.gsuite import GSuiteConstants
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.util.CustomExceptions import ShouldNotOccurError
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
@@ -7,6 +9,10 @@ from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 # web page.
 
 class CompileGSuiteFromArchiveTool(GeneralGuiTool):
+    GSUITE_OUTPUT_LOCATION = GSuiteConstants.LOCAL
+    GSUITE_OUTPUT_FILE_FORMAT = GSuiteConstants.PRIMARY
+    GSUITE_OUTPUT_TRACK_TYPE = GSuiteConstants.UNKNOWN
+
     @staticmethod
     def getToolName():
         '''
@@ -220,13 +226,13 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
     @classmethod
     def _getOutputHistoryDescription(cls, choices):
         from proto.CommonFunctions import extractNameFromDatasetInfo
-        return 'extracted from archive: ' + extractNameFromDatasetInfo(choices.archive)
+        return 'extracted from archive: ' + extractNameFromDatasetInfo(choices.archive) \
+            if choices.archive else ''
 
     @classmethod
     def getOutputName(cls, choices):
-        if choices.archive:
-            description = cls._getOutputHistoryDescription(choices)
-            return getGSuiteHistoryOutputName('progress', description)
+        description = cls._getOutputHistoryDescription(choices)
+        return getGSuiteHistoryOutputName('progress', description)
 
     #@staticmethod
     #def getSubToolClasses():
@@ -287,12 +293,46 @@ class CompileGSuiteFromArchiveTool(GeneralGuiTool):
     #    '''
     #    return []
     #
-    #@staticmethod
-    #def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
+    @classmethod
+    def getToolDescription(cls):
+        '''
+        Specifies a help text in HTML that is displayed below the tool.
+        '''
+
+        core = HtmlCore()
+        core.paragraph('This tool creates a new GSuite file based upon the contents of an '
+                       'archive file. Currently, the tool supports ".tar" (with and without '
+                       '".gz") and ".zip" files. To use the tool, please upload an archive file '
+                       'to your history using the Galaxy import tool (click the icon to the right '
+                       'of the "Tools" header in the top left of the window). You will need to '
+                       'manually select the file type as "gsuite.zip" or "gsuite.tar", as '
+                       'described below. After uploading, you then open this tool, select the '
+                       'archive, and click "Execute".')
+        core.divider()
+        core.smallHeader('* IMPORTANT *')
+        core.paragraph(str(HtmlCore().emphasize(
+                       'In order to circumvent Galaxy\'s integrated archive decompresssion (which '
+                       'for zip files only extracts a single file), you must manually select '
+                       '"gsuite.tar" or "gsuite.zip" in the "Type" column in the upload file '
+                       'dialog box.')))
+        core.divider()
+        core.smallHeader('Keep directory hierarchy intact and present as columns in the GSuite '
+                         'file?')
+        core.paragraph('By default, any directory structure in the archive is kept intact in '
+                       'the file path in the URIs in the output GSuite file. In addition, one '
+                       'column is added per level in the directory hierarchy, with the values '
+                       'denoting the directory where the file resides. In this way, one can '
+                       'make use of the directory structure as metadata categories. Optionally, '
+                       'one can ignore the hierarchy, flattening the archive into a single '
+                       'directory level, with no extra columns added.')
+
+        cls._addGSuiteFileDescription(core,
+                                      outputLocation=cls.GSUITE_OUTPUT_LOCATION,
+                                      outputFileFormat=cls.GSUITE_OUTPUT_FILE_FORMAT,
+                                      outputTrackType=cls.GSUITE_OUTPUT_TRACK_TYPE,
+                                      errorFile=False)
+
+        return str(core)
     #
     #@staticmethod
     #def getToolIllustration():

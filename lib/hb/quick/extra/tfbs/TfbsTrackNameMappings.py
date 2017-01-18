@@ -82,11 +82,11 @@ class TfbsGSuiteNameMappings:
             ])
         elif genome == 'hg19':
             return OrderedDict([\
-            ('Enhancer histone marks per cell type (H3K4me1, H3K27ac, and H3K36me3, for GM12878, H1HESC, HeLaS3, HepG2, HUVEC, K562, and NHEK cells)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_enhancer_histone_markers_cell_type_2.gsuite'),\
-            ('Enhancer per tissue/organ (FANTOM5 enhancers for 41 different tissues/organs)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_enhancers_anatomy_2.gsuite'),\
-            ('Enhancer per cell type (FANTOM5 enhancers for 71 different cell types)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_enhancers_cell_type_2.gsuite'),\
-            ('Open chromatin per cell type (ENCODE synthesis data for Gliobla, GM12878, GM12892, H1HESC, HeLaS3, HepG2, HUVEC, K562, Medullo, and NHEK cells)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_open_chromatin_cell_type_2.gsuite'),\
-            ('Segmentation per cell type (Segway predictions for GM12878, H1HESC, HeLaS3, HepG2, HUVEC, and K562 cells, plus ChromHMM predictions for K562 cells)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_segmentation_cell_type_2.gsuite')
+            ('Enhancer histone marks per cell type (H3K4me1, H3K27ac, and H3K36me3, for GM12878, H1HESC, HeLaS3, HepG2, HUVEC, K562, and NHEK cells)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_enhancer_histone_markers_cell_type.gsuite'),\
+            ('Enhancer per tissue/organ (FANTOM5 enhancers for 41 different tissues/organs)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_enhancers_anatomy.gsuite'),\
+            ('Enhancer per cell type (FANTOM5 enhancers for 71 different cell types)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_enhancers_cell_type.gsuite'),\
+            ('Open chromatin per cell type (ENCODE synthesis data for Gliobla, GM12878, GM12892, H1HESC, HeLaS3, HepG2, HUVEC, K562, Medullo, and NHEK cells)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_open_chromatin_cell_type.gsuite'),\
+            ('Segmentation per cell type (Segway predictions for GM12878, H1HESC, HeLaS3, HepG2, HUVEC, and K562 cells, plus ChromHMM predictions for K562 cells)', HB_SOURCE_DATA_BASE_DIR + '/TfTool/hg19_segmentation_cell_type.gsuite')
             ])
 
 class HiCNameMappings:

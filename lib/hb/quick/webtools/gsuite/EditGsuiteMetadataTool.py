@@ -20,7 +20,7 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Edit a meta-data column in a GSuite"
+        return "Edit a metadata column in a GSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -43,7 +43,8 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         #Creates a drop-down list where you can choose the GSuite that you want to work with
         #Creates a drop-down list of the attributes available in the GSuite
         #Creates the MAX_NUM_OF_TRACKS amount of selectAttribute functions, here without any header
-        return [('Select GSuite', 'gsuite'), \
+        return [('', 'basicQuestionId'), \
+                ('Select GSuite', 'gsuite'), \
                 ('Select meta-data column to edit','attrName')] +\
                 [('', 'selectAttribute%s' % i) for i \
                  in range((cls.MAX_NUM_OF_TRACKS))]
@@ -58,9 +59,13 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
     #    '''
     #    return None
 
+    @staticmethod
+    def getOptionsBoxBasicQuestionId():
+        return '__hidden__', None
+
     #Generates a GSuite selection box with galaxy track names
     @staticmethod
-    def getOptionsBoxGsuite(): # Alternatively: getOptionsBox1()
+    def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox1()
         '''
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to other

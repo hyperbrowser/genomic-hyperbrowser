@@ -1,10 +1,12 @@
-from proto.config.Config import STATIC_PATH, STATIC_REL_PATH
+from proto.config.Config import GALAXY_BASE_DIR, STATIC_DIR, STATIC_PATH, STATIC_REL_PATH
 from proto.CommonFunctions import ensurePathExists, getLoadToGalaxyHistoryURL, \
     extractNameFromDatasetInfo, extractIdFromGalaxyFn, getGalaxyFilesFilename
 from proto.HtmlCore import HtmlCore
 import os
 
+
 class StaticFile(object):
+    STATIC_DIR = STATIC_DIR
     STATIC_PATH = STATIC_PATH
     STATIC_REL_PATH = STATIC_REL_PATH
 
@@ -13,8 +15,9 @@ class StaticFile(object):
         assert id[0] in ['files','images'], 'Only a restricted set of first elements of id is supported, in order to have control of phyical storage locations. ID: '+str(id)
         self._id = id
 
-    def getDiskPath(self, ensurePath=False):
-        fn = os.sep.join([self.STATIC_PATH] + self._id)
+    def getDiskPath(self, ensurePath=False, relativeToBase=False):
+        path = self.STATIC_DIR if relativeToBase else self.STATIC_PATH
+        fn = os.sep.join([path] + self._id)
         if ensurePath:
             ensurePathExists(fn)
         return fn
@@ -44,7 +47,8 @@ class StaticFile(object):
     def getLoadToHistoryLink(self, linkText, galaxyDataType='bed'):
         return str(HtmlCore().link(linkText,
                                    getLoadToGalaxyHistoryURL
-                                   (self.getDiskPath(), galaxyDataType=galaxyDataType)))
+                                   (self.getDiskPath(relativeToBase=True),
+                                    galaxyDataType=galaxyDataType)))
 
     def openRFigure(self, h=600, w=800):
         from proto.RSetup import r
@@ -150,8 +154,13 @@ class GalaxyRunSpecificFile(StaticFile):
         #galaxyId = galaxyFn if type(galaxyFn) in (list,tuple) else extractIdFromGalaxyFn(galaxyFn)
         #StaticFile.__init__(self, getUniqueRunSpecificId(galaxyId + id))
 
-    def getDiskPath(self, ensurePath=False):
-        fn = getGalaxyFilesFilename(self._galaxyFn, self._relativeId)
+    def getDiskPath(self, ensurePath=False, relativeToBase=False):
+        path = self._galaxyFn
+        if relativeToBase:
+            if path.startswith(GALAXY_BASE_DIR):
+                path = path[len(GALAXY_BASE_DIR):]
+
+        fn = getGalaxyFilesFilename(path, self._relativeId)
         #fn = os.sep.join([GALAXY_FILE_PATH] + [self._id[1], 'dataset_'+self._id[2]+'_files'] + self._id[3:])
         if ensurePath:
             ensurePathExists(fn)

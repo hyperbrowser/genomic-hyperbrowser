@@ -19,7 +19,7 @@
 import sys, os, json, shelve
 import cPickle as pickle
 from zlib import compress, decompress
-from base64 import urlsafe_b64decode, urlsafe_b64encode
+from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from collections import namedtuple, OrderedDict, defaultdict
 from urllib import quote, unquote
 from proto.tools.GeneralGuiTool import HistElement
@@ -36,6 +36,7 @@ def getClassName(obj):
 
 
 class GenericToolController(BaseToolController):
+    STATIC_IMAGE_CLS = StaticImage
     initChoicesDict = None
 
     def __init__(self, trans, job):
@@ -113,7 +114,8 @@ class GenericToolController(BaseToolController):
                             self.extra_output.append(e)
 
     def _init(self):
-        super(GenericToolController, self)._init()
+        if hasattr(super(GenericToolController, self), '_init'):
+            super(GenericToolController, self)._init()
 
     def _getInputGroup(self, inputBoxGroups):
         startGroupInfo = defaultdict(list)
@@ -241,10 +243,10 @@ class GenericToolController(BaseToolController):
         self.cachedExtra[id] = pickle.dumps(data)
 
     def getCacheData(self, id):
-        return pickle.loads(str(self.cachedExtra[id]))
+        return pickle.loads(b64decode(str(self.cachedExtra[id])))
 
     def putCachedOption(self, id, data):
-        self.cachedOptions[id] = pickle.dumps(data)
+        self.cachedOptions[id] = b64encode(pickle.dumps(data))
 
     def getCachedOption(self, id):
         return pickle.loads(str(self.cachedOptions[id]))
@@ -261,7 +263,7 @@ class GenericToolController(BaseToolController):
                 #print 'from cache:',id
                 self.input_changed = (val != self.cachedParams[id])
             except Exception as e:
-                print 'cache load failed:', e, id
+                # print 'cache load failed for id "%s": %s' % (id, e)
                 opts, info = self._getOptionsBox(i, val)
                 self.input_changed = True
         
@@ -359,7 +361,7 @@ class GenericToolController(BaseToolController):
                         for k,v in opts.items():
                             itemval = self.params.get(id + '|' + k, None)
                             #if itemval:
-                            values[str(k)] = itemval
+                            values[unicode(k)] = itemval
 
                         val = values
 
@@ -403,7 +405,7 @@ class GenericToolController(BaseToolController):
                         for r in range(1, len(opts)):
                             core.tableLine(opts[r])
                     core.tableFooter()
-                    val = str(core)
+                    val = unicode(core)
                     display_only = True
 
                 else:
@@ -560,9 +562,9 @@ class GenericToolController(BaseToolController):
             if isinstance(extra_output, list):
                 for output in extra_output:
                     if isinstance(output, HistElement):
-                        self.extraGalaxyFn[str(output.name)] = self.params[output.name]
+                        self.extraGalaxyFn[unicode(output.name)] = self.params[output.name]
                     else:
-                        self.extraGalaxyFn[str(output[0])] = self.params[output[0]]
+                        self.extraGalaxyFn[unicode(output[0])] = self.params[output[0]]
 
 
         username = self.params['userEmail'] if 'userEmail' in self.params else ''
@@ -578,8 +580,11 @@ class GenericToolController(BaseToolController):
             </html>
             '''
 
-
     def _executeTool(self, toolClassName, choices, galaxyFn, username):
+        if hasattr(super(GenericToolController, self), '_executeTool'):
+            super(GenericToolController, self)._executeTool(
+                toolClassName, choices, galaxyFn, username)
+
         self._monkeyPatchAttr('extraGalaxyFn', self.extraGalaxyFn)
         self._monkeyPatchAttr('runParams', self.json_params)
         self.prototype.execute(choices, galaxyFn=galaxyFn, username=username)
@@ -612,7 +617,7 @@ class GenericToolController(BaseToolController):
         image = None
         id = self.prototype.getToolIllustration()
         if id:
-            image = StaticImage(id)
+            image = self.STATIC_IMAGE_CLS(id)
         return image
 
     def getDemoURL(self):

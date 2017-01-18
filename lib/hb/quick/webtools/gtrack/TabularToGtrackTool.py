@@ -34,7 +34,8 @@ class TabularToGtrackTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
-        return [('Select input source:', 'source'), \
+        return [('', 'basicQuestionId'), \
+                ('Select input source:', 'source'), \
                 ('Select tabular file:', 'history'), \
                 ('Type or paste in tabular file:', 'input'), \
                 ('Character to use to split lines into columns: ', 'splitChar'), \
@@ -59,7 +60,11 @@ class TabularToGtrackTool(GeneralGuiTool):
                  ("Crop segments crossing sequence ends:", 'cropCrossingSegments')]
 
     @staticmethod
-    def getOptionsBoxSource():
+    def getOptionsBoxBasicQuestionId():
+        return '__hidden__', None
+
+    @staticmethod
+    def getOptionsBoxSource(prevChoices):
         return ['Tabular file from history', 'Tabular file from input box']
 
     @staticmethod

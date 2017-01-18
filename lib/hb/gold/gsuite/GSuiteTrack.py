@@ -324,10 +324,17 @@ class SuffixDependentGSuiteTrack(GSuiteTrack):
                 self.fileFormat = PRIMARY
 
             except NotSupportedError:
-                if self.suffix == BTRACK_SUFFIX:
-                    self.fileFormat = PREPROCESSED
-                else:
-                    self.fileFormat = UNKNOWN
+                try:
+                    from gold.gsuite.GSuiteFunctions import \
+                        getTitleAndSuffixWithCompressionSuffixesRemoved
+                    uncomprSuffix = getTitleAndSuffixWithCompressionSuffixesRemoved(self)[1]
+                    getGenomeElementSourceClass(None, suffix=uncomprSuffix)
+                    self.fileFormat = PRIMARY
+                except NotSupportedError:
+                    if self.suffix == BTRACK_SUFFIX:
+                        self.fileFormat = PREPROCESSED
+                    else:
+                        self.fileFormat = UNKNOWN
 
         if oldFileFormat != UNKNOWN and oldFileFormat != self.fileFormat:
             raise InvalidFormatError('File format specified as parameter ("%s") does not ' % oldFileFormat +\

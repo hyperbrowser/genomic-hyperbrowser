@@ -17,6 +17,10 @@ pi0
 plotrix
 sm
 vioplot
+mvtnorm
+sfsmisc
+polycor
+
 
 # Todo: Experimental packages (from developer), double-check these
 
@@ -25,3 +29,10 @@ AnnotationDbi
 RSQLite
 org.Hs.eg.db
 hgu133plus2.db
+locfit
+DESeq
+limma
+edgeR
+DESeq2
+MASS
+calibrate

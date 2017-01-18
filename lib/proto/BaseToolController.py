@@ -30,10 +30,6 @@ class BaseToolController(object):
         elif job:
             self.openJobParams(job)
 
-    def _init(self):
-        if hasattr(super(BaseToolController, self), '_init'):
-            super(BaseToolController, self)._init()
-
     def openTransaction(self, trans):
         self.transaction = trans
         self.galaxy = GalaxyWrapper(trans)

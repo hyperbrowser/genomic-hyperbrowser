@@ -566,7 +566,8 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 # web page.
 
 class Tool4(GeneralGuiTool, UserBinMixin):
-    
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
+
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS, GSuiteConstants.POINTS]
