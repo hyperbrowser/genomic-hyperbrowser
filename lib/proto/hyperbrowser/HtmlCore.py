@@ -2,6 +2,11 @@ from proto.HtmlCore import HtmlCore as ProtoHtmlCore
 
 
 class HtmlCore(ProtoHtmlCore):
+    @staticmethod
+    def _getTextCoreCls():
+        from proto.hyperbrowser.TextCore import TextCore as HbTextCore
+        return HbTextCore
+
     def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=['hb_base.css'],
               redirectUrl=None, reloadTime=None):
         return super(HtmlCore, self).begin(extraJavaScriptFns=extraJavaScriptFns,
@@ -54,5 +59,48 @@ $('.%sclickmeTable').on('click', function(e) {
 });
 </script>
 """ % ((tableId,) * 3)
-        
+
+        return self
+
+    @staticmethod
+    def _produceTableWithGsuiteButton(core, gsuiteFn=None, gsuiteHistElementName=None,
+                                      origProduceTableCallbackFunc=None,
+                                      **kwArgsToCallback):
+        assert gsuiteFn is not None
+        from proto.CommonFunctions import ensurePathExists
+        ensurePathExists(gsuiteFn)
+        core.importFileToHistoryButton("Import GSuite with results to history",
+                                       gsuiteFn, 'gsuite', gsuiteHistElementName)
+
+        return origProduceTableCallbackFunc(core, **kwArgsToCallback)
+
+    def tableWithImportButtons(self, tabularFile=False, tabularFn=None,
+                               tabularHistElementName='Raw table',
+                               gsuiteFile=False, gsuiteFn=None,
+                               gsuiteHistElementName='GSuite with results',
+                               produceTableCallbackFunc=None,
+                               **kwArgsToCallback):
+        assert tabularFile or gsuiteFile
+        if tabularFile:
+            assert tabularFn
+        assert produceTableCallbackFunc is not None
+
+        if tabularFile and gsuiteFile:
+            self.tableWithTabularImportButton(
+                tabularFn=tabularFn, tabularHistElementName=tabularHistElementName,
+                produceTableCallbackFunc=self._produceTableWithGsuiteButton,
+                gsuiteFn=gsuiteFn, gsuiteHistElementName=gsuiteHistElementName,
+                origProduceTableCallbackFunc=produceTableCallbackFunc,
+                **kwArgsToCallback)
+        elif tabularFile:
+            self.tableWithTabularImportButton(
+                tabularFn=tabularFn, tabularHistElementName=tabularHistElementName,
+                produceTableCallbackFunc=produceTableCallbackFunc,
+                **kwArgsToCallback)
+        elif gsuiteFile:
+            self._produceTableWithGsuiteButton(
+                gsuiteFn=gsuiteFn, gsuiteHistElementName=gsuiteHistElementName,
+                origProduceTableCallbackFunc=produceTableCallbackFunc,
+                **kwArgsToCallback)
+
         return self

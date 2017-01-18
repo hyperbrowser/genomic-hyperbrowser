@@ -8,13 +8,15 @@ from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountSegmentStat import CountSegmentStat
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.AvgElementLengthStat import AvgElementLengthStat
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
@@ -68,8 +70,6 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
                    ('Select a measure (descriptive statistic)', 'analysis'),
                    # ('Select parameter', 'paramOne'),
                    ('', 'explainOutput'),
-                   ('Select output', 'outputType'),
-                   # ('Concatenate the main results as columns to the input GSuite', 'addResults')
                ] + cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
 
@@ -208,10 +208,6 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
     #
     #     return selectedAnalysis
 
-    # @staticmethod
-    # def getOptionsBoxAddResults(prevChoices):
-    #     return ['No', 'Yes']
-
     @staticmethod
     def getOptionsBoxExplainOutput(prevChoices):
         core = HtmlCore()
@@ -220,15 +216,6 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         <br> or select 'html' to view a simple table of the results.""")
         core.divEnd()
         return '__rawstr__', str(core)
-
-    @staticmethod
-    def getOptionsBoxOutputType(prevChoices):
-        return ['gsuite', 'customhtml']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     if choices.gsuite and choices.addResults == 'Yes':
-    #         return [HistElement(GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME, GSUITE_SUFFIX)]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -264,39 +251,46 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
 
         tableDict = OrderedDict()
 
-        colNameSet = set()  # for html presentation of results
         for track in tracks:
             tableDict[track.title] = OrderedDict()
             result = doAnalysis(selectedAnalysis, analysisBins, [track])
             resultDict = result.getGlobalResult()
             if 'Result' in resultDict:
-                track.setAttribute(analysisName, str(resultDict['Result']))
-                colNameSet.add(analysisName)
+                track.setAttribute(analysisName.lower(), str(resultDict['Result']))
                 tableDict[track.title][analysisName] = strWithNatLangFormatting(resultDict['Result'])
             else:
                 for attrName, attrVal in resultDict.iteritems():
                     attrNameExtended = analysisName + ':' + attrName
-                    track.setAttribute(attrNameExtended, str(attrVal))
-                    colNameSet.add(attrNameExtended)
+                    track.setAttribute(attrNameExtended.lower(), str(attrVal))
                     tableDict[track.title][attrNameExtended] = strWithNatLangFormatting(attrVal)
-                    #             assert isinstance(resultDict['Result'], (int, basestring, float)), type(resultDict['Result'])
-        if choices.outputType == 'gsuite':
-            GSuiteComposer.composeToFile(gSuite, galaxyFn)
-        else:  # customhtml
-            core = HtmlCore()
-            core.begin()
-            core.header('Results: ' + analysisName)
-            core.tableFromDictOfDicts(tableDict, presorted=0, tableId='resTable', firstColName='Track title', expandable=True, visibleRows=20)
-            # colNameList = list(colNameSet)
-            # core.tableHeader(['Track'] + colNameList, sortable=True)
-            # for track in gSuite.allTracks():
-            #     colVals = [track.title]
-            #     for colName in colNameList:
-            #         colVals.append(track.getAttribute(colName))
-            #     core.tableLine(colVals)
-            # core.tableFooter()
-            core.end()
-            print core
+                    # assert isinstance(resultDict['Result'], (int, basestring, float)), type(resultDict['Result'])
+
+        core = HtmlCore()
+        core.begin()
+        core.header('Results: ' + analysisName)
+
+        def _produceTable(core, tableDict=None, tableId=None):
+            return core.tableFromDictOfDicts(tableDict, firstColName='Track title',
+                                             tableId=tableId, expandable=True,
+                                             visibleRows=20, presorted=0)
+
+        tableId = 'results_table'
+        tableFile = GalaxyRunSpecificFile([tableId, 'table.tsv'], galaxyFn)
+        tabularHistElementName = 'Raw results: ' + analysisName
+
+        gsuiteFile = GalaxyRunSpecificFile([tableId, 'input_with_results.gsuite'], galaxyFn)
+        GSuiteComposer.composeToFile(gSuite, gsuiteFile.getDiskPath())
+        gsuiteHistElementName = \
+            getGSuiteHistoryOutputName('result', ', ' + analysisName, choices.gsuite)
+
+        core.tableWithImportButtons(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+                                    tabularHistElementName=tabularHistElementName,
+                                    gsuiteFile=True, gsuiteFn=gsuiteFile.getDiskPath(),
+                                    gsuiteHistElementName=gsuiteHistElementName,
+                                    produceTableCallbackFunc=_produceTable,
+                                    tableDict=tableDict, tableId=tableId)
+        core.end()
+        print core
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -353,7 +347,7 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
 
     @staticmethod
     def getOutputFormat(choices=None):
-        return choices.outputType
+        return 'customhtml'
 
     @staticmethod
     def isDebugMode():

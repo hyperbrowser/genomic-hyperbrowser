@@ -4,6 +4,8 @@ from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import HbGSuiteTrack, GSuiteTrack
 from gold.util.CommonFunctions import prettyPrintTrackName, cleanUpTrackType, \
     extractNameFromDatasetInfo, createGalaxyToolURL
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.gsuite import GSuiteStatUtils
 
 GSUITE_HISTORY_OUTPUT_NAME_DICT = {
     'progress': 'Progress (%s)',
@@ -18,7 +20,8 @@ GSUITE_HISTORY_OUTPUT_NAME_DICT = {
                     'in "Modify primary tracks referred to in a GSuite" to retry)',
     'nointersect': 'GSuite (%s) - files that failed intersection (in most cases due '
                    'to lack of segments in the intersection regions)',
-    'storage': 'GSuite (%s) - track storage'
+    'storage': 'GSuite (%s) - track storage',
+    'result': 'GSuite (%s) - results appended'
 }
 
 
@@ -122,3 +125,39 @@ def getSubtracksAsGSuite(genome, parentTrack, username=''):
         gSuite.addTrack(GSuiteTrack(uri, title=title, trackType=trackType, genome=genome))
 
     return gSuite
+
+
+def addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, shortQuestion,
+                                              tableDict, columnNames, gsuite=None,
+                                              results=None, gsuiteAppendAttrs=None,
+                                              **kwArgsForTable):
+    def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
+        return core.tableFromDictionary(
+            tableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
+
+    tableId = 'resultsTable'
+    tableFile = GalaxyRunSpecificFile([tableId, 'table.tsv'], galaxyFn)
+    tabularHistElementName = 'Raw results: ' + shortQuestion
+
+    if gsuite:
+        gsuiteFile = GalaxyRunSpecificFile([tableId, 'input_with_results.gsuite'], galaxyFn)
+        GSuiteStatUtils.addResultsToInputGSuite(
+            gsuite, results, gsuiteAppendAttrs, gsuiteFile.getDiskPath())
+        gsuiteHistElementName = \
+            getGSuiteHistoryOutputName('result', ', ' + shortQuestion, choices.gsuite)
+
+        core.tableWithImportButtons(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+                                    tabularHistElementName=tabularHistElementName,
+                                    gsuiteFile=True, gsuiteFn=gsuiteFile.getDiskPath(),
+                                    gsuiteHistElementName=gsuiteHistElementName,
+                                    produceTableCallbackFunc=_produceTable,
+                                    tableDict=tableDict,
+                                    columnNames=columnNames, tableId=tableId,
+                                    **kwArgsForTable)
+    else:
+        core.tableWithImportButtons(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+                                    tabularHistElementName=tabularHistElementName,
+                                    produceTableCallbackFunc=_produceTable,
+                                    tableDict=tableDict,
+                                    columnNames=columnNames, tableId=tableId,
+                                    **kwArgsForTable)

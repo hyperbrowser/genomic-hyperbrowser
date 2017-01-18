@@ -322,3 +322,26 @@ def forceNumericSortingKey(key):
         sortKey1 = 1
         sortKey2 = float(str(key).replace(THOUSANDS_SEPARATOR, ''))
     return [sortKey1, sortKey2]
+
+
+def convertToDictOfLists(dataDict):
+    """Convert a dict of tuples or single values to dict of lists"""
+    dataDictOfLists = OrderedDict()
+    for key, val in dataDict.iteritems():
+        if isinstance(val, list):
+            dataDictOfLists[key] = val
+        elif isinstance(val, tuple):
+            dataDictOfLists[key] = list(val)
+        else:
+            dataDictOfLists[key] = [val]
+    return dataDictOfLists
+
+
+def fromDictOfDictsToDictOfListsAndColumnNameList(dataDict, firstColName=''):
+    colNames = []
+    convertedDataDict = OrderedDict()
+    for key1, val1 in dataDict.iteritems():
+        if not colNames:
+            colNames = [firstColName] + val1.keys()
+        convertedDataDict[key1] = val1.values()
+    return convertedDataDict, colNames
