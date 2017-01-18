@@ -706,22 +706,37 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return []
     #
-    # @staticmethod
-    # def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
-    #
-    # @staticmethod
-    # def getToolIllustration():
-    #    '''
-    #    Specifies an id used by StaticFile.py to reference an illustration file
-    #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by Config.py. The
-    #    full path is created from the base directory followed by the id.
-    #    '''
-    #    return None
+    @staticmethod
+    def getToolDescription():
+        '''
+        Specifies a help text in HTML that is displayed below the tool.
+        '''
+
+        core = HtmlCore()
+        core.divBegin()
+        core.paragraph("""This tools implements a solution to the statistical question
+            'Which tracks (in a suite) coincide most strongly with a separate single track?'. To use the tool:""")
+        core.orderedList(["Select the query track (dataset of interest).",
+                          "Select the reference GSuite (dataset collection to be screened against the query track).",
+                          "Select additional options (advanced mode only).",
+                          "Execute the tool."])
+        core.paragraph("""<br><br><b>Tool illustration.</b>
+            Tracks in a collection that coincide with a query track of interest.<br>
+            Q - The query track.<br>
+            Ri - Reference track i (i = 1,..,n).<br>
+            """)
+        core.divEnd()
+        return str(core)
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'track-gsuite.png']
     #
     # @staticmethod
     # def getFullExampleURL():

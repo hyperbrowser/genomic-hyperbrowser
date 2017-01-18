@@ -424,3 +424,14 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
     @staticmethod
     def isPublic():
         return True
+
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'co-occurring-regions.png']

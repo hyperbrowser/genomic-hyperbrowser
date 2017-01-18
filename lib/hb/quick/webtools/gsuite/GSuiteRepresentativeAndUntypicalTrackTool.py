@@ -548,22 +548,34 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return []
     #
-    #@staticmethod
-    #def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
-    #
-    #@staticmethod
-    #def getToolIllustration():
-    #    '''
-    #    Specifies an id used by StaticFile.py to reference an illustration file
-    #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by Config.py. The
-    #    full path is created from the base directory followed by the id.
-    #    '''
-    #    return None
+    @staticmethod
+    def getToolDescription():
+        '''
+        Specifies a help text in HTML that is displayed below the tool.
+        '''
+        core = HtmlCore()
+        core.divBegin()
+        core.paragraph("""This tools implements a solution to the statistical question
+                    'Which tracks (in a suite) are most representative and most atypical'. To use the tool:""")
+        core.orderedList(["Select the GSuite (dataset collection of interest).",
+                          "Select additional options (advanced mode only).",
+                          "Execute the tool."])
+        core.paragraph("""<br><br><b>Tool illustration.</b>
+                    Relatedness of tracks in a collection.<br>
+                    Ri - Track i (i = 1,..,n).<br>
+                    """)
+        core.divEnd()
+        return str(core)
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'suite.png']
     #
     #@staticmethod
     #def getFullExampleURL():
