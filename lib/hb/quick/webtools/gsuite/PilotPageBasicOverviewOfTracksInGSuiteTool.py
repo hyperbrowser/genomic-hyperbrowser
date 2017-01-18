@@ -76,15 +76,23 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
 
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return [('Select GSuite', 'gsuite')] + \
+        return [('Basic user mode', 'isBasic'),
+                ('', 'basicQuestionId'),
+                ('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection()
-    
-    
-    @staticmethod
-    def getOptionsBoxGsuite():
-        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
+    @staticmethod
+    def getOptionsBoxIsBasic():
+        return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
+
+    @staticmethod
+    def getOptionsBoxGsuite(prevChoices):
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -144,15 +152,6 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
         LocalOSConfig.py.
         '''
         return True
-    
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]
 
 #     @staticmethod
 #     def isDebugMode():

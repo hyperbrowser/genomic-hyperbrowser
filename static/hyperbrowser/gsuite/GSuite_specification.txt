@@ -617,4 +617,4 @@ v0.1 - 2015.07.06:
 v0.2 - 2016.07.06:
 
     * Fixed typos and cleaned up text several places. Ready for initial
-      submission og the GSuite HyperBrowser manuscript.
+      submission of the GSuite HyperBrowser manuscript.

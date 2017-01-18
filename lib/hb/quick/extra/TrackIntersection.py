@@ -24,6 +24,8 @@ class BasicTrackIntersection(object):
         return len(self.getIntersectedReferenceBins() )
 
     def run(self):
+        assert self._referenceTrackFn is not None
+
         if (isinstance(self._referenceTrackFn, basestring)):
             regSpec, binSpec = 'file', self._referenceTrackFn
         elif (type(self._referenceTrackFn)==list):

@@ -269,7 +269,9 @@ class FullTrackGenomeElementSource(TrackGenomeElementSource):
                                           allowOverlaps=allowOverlaps, printWarnings=True)
         
 class TrackViewListGenomeElementSource(TrackGenomeElementSource):
-    def __init__(self, genome, trackViewList, trackName, *args, **kwArgs):
+    def __init__(self, genome, trackViewList, trackName=None, *args, **kwArgs):
+        # trackName does not seem to be used for anything in this subclass, setting to None
+        # seems to be unproblematic
         assert len(trackViewList) > 0
         TrackGenomeElementSource.__init__(self, genome=genome, trackName=trackName, boundingRegions=[tv.genomeAnchor for tv in trackViewList], \
                                           globalCoords=True, printWarnings=True, *args, **kwArgs)

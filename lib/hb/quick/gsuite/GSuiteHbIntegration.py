@@ -3,7 +3,9 @@ import re
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import HbGSuiteTrack, GSuiteTrack
 from gold.util.CommonFunctions import prettyPrintTrackName, cleanUpTrackType, \
-    extractNameFromDatasetInfo
+    extractNameFromDatasetInfo, createGalaxyToolURL
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.gsuite import GSuiteStatUtils
 
 GSUITE_HISTORY_OUTPUT_NAME_DICT = {
     'progress': 'Progress (%s)',
@@ -16,7 +18,10 @@ GSUITE_HISTORY_OUTPUT_NAME_DICT = {
                       'in "Preprocess a GSuite for analysis" to retry)',
     'nomanipulate': 'GSuite (%s) - files that failed manipulation (select '
                     'in "Modify primary tracks referred to in a GSuite" to retry)',
-    'storage': 'GSuite (%s) - track storage'
+    'nointersect': 'GSuite (%s) - files that failed intersection (in most cases due '
+                   'to lack of segments in the intersection regions)',
+    'storage': 'GSuite (%s) - track storage',
+    'result': 'GSuite (%s) - results appended'
 }
 
 
@@ -40,9 +45,9 @@ def getGSuiteHistoryOutputName(type, description='', datasetInfo=None):
     if datasetInfo:
         datasetName = extractNameFromDatasetInfo(datasetInfo)
 
-        match = re.search('\(.+\)', datasetName)
+        match = re.search('\A([0-9]+ - )?GSuite \((.+?)\)', datasetName)
         if match:
-            lastDesc = match.group(0)[1:-1]
+            lastDesc = match.group(2)
         else:
             lastDesc = datasetName
 
@@ -55,10 +60,12 @@ def getGSuiteHistoryOutputName(type, description='', datasetInfo=None):
             datasetName = re.sub('^[0-9]+ - ', '', datasetName)
             return datasetName.replace(lastDesc, description)
 
-    return GSUITE_HISTORY_OUTPUT_NAME_DICT[type] % description
+    name = GSUITE_HISTORY_OUTPUT_NAME_DICT[type] % description
+    return name[:255]  # The database limit for history name length
 
 
 def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
+    from proto.config.Config import URL_PREFIX
     from proto.hyperbrowser.HtmlCore import HtmlCore
     from quick.application.GalaxyInterface import GalaxyInterface
 
@@ -66,9 +73,13 @@ def writeGSuiteHiddenTrackStorageHtml(galaxyFn):
     core.append(GalaxyInterface.getHtmlBeginForRuns(galaxyFn))
     core.paragraph('This history element contains GSuite track data, and is hidden by default.')
     core.paragraph('If you want to access the contents of this GSuite, please use the tool: '
-                   '"Export primary tracks from a GSuite to your history", selecting '
+                   '%s, selecting '
                    'a primary GSuite history element that refers to the files contained '
-                   'in this storage.')
+                   'in this storage.' %
+                   str(HtmlCore().link(
+                       'Export primary tracks from a GSuite to your history',
+                       createGalaxyToolURL('hb_g_suite_export_to_history_tool')))
+                   )
     core.end()
     core.append(GalaxyInterface.getHtmlEndForRuns())
 
@@ -114,3 +125,39 @@ def getSubtracksAsGSuite(genome, parentTrack, username=''):
         gSuite.addTrack(GSuiteTrack(uri, title=title, trackType=trackType, genome=genome))
 
     return gSuite
+
+
+def addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, shortQuestion,
+                                              tableDict, columnNames, gsuite=None,
+                                              results=None, gsuiteAppendAttrs=None,
+                                              **kwArgsForTable):
+    def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
+        return core.tableFromDictionary(
+            tableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
+
+    tableId = 'resultsTable'
+    tableFile = GalaxyRunSpecificFile([tableId, 'table.tsv'], galaxyFn)
+    tabularHistElementName = 'Raw results: ' + shortQuestion
+
+    if gsuite:
+        gsuiteFile = GalaxyRunSpecificFile([tableId, 'input_with_results.gsuite'], galaxyFn)
+        GSuiteStatUtils.addResultsToInputGSuite(
+            gsuite, results, gsuiteAppendAttrs, gsuiteFile.getDiskPath())
+        gsuiteHistElementName = \
+            getGSuiteHistoryOutputName('result', ', ' + shortQuestion, choices.gsuite)
+
+        core.tableWithImportButtons(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+                                    tabularHistElementName=tabularHistElementName,
+                                    gsuiteFile=True, gsuiteFn=gsuiteFile.getDiskPath(),
+                                    gsuiteHistElementName=gsuiteHistElementName,
+                                    produceTableCallbackFunc=_produceTable,
+                                    tableDict=tableDict,
+                                    columnNames=columnNames, tableId=tableId,
+                                    **kwArgsForTable)
+    else:
+        core.tableWithImportButtons(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+                                    tabularHistElementName=tabularHistElementName,
+                                    produceTableCallbackFunc=_produceTable,
+                                    tableDict=tableDict,
+                                    columnNames=columnNames, tableId=tableId,
+                                    **kwArgsForTable)

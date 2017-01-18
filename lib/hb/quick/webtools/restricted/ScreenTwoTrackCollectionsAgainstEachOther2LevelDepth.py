@@ -15,7 +15,8 @@ from quick.webtools.restricted.ScreenTwoTrackCollectionsAgainstEachOther2LevelDe
 
 class ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth\
             (GeneralGuiTool, UserBinMixin):
-    
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
+
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
     

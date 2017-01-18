@@ -1,5 +1,6 @@
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.util.CommonFunctions import mean, prettyPrintTrackName
+from quick.webtools.misc.Tool3 import CreateGCFunction
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.tfbs.createTfbsMappings import pwm2TFids, pwm2TFnamesNew
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
@@ -9,11 +10,11 @@ from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
 class Tool1(MultiGeneralGuiTool):
     @staticmethod
     def getToolName():
-        return "Geir's tools"
+        return "Geir's ad hoc tools"
 
     @staticmethod
     def getSubToolClasses():
-        return [CreateBpLevelTrackTool, ChrNamesTool, MapTfTool, ScanFastaByPwmTool, PlotFigure1Tool, PlotFigure2Tool, ExtractLocalFdrsBelowThresholdTool, CreateGCFunction, PrunePubmedPaperSummaries, ComputeFdrValues, AliaksanderDemo, NewRunApiDemo, CubeDemo, HotSpotDemo, MultiplyTool, CheckProfileAndDebugStatus, SetGTrackValueColumn, TestRTool, TestGEWriterTool, PlainScatterPlot, RevCompMergeTool, CheckPoissonDistributionTool,MultiplyTool,DemoCatGSuiteTool, AssignGradesTool, AdhocReceptorRepertoirTool]
+        return [CreateBpLevelTrackTool, ChrNamesTool, MapTfTool, ScanFastaByPwmTool, PlotFigure1Tool, PlotFigure2Tool, ExtractLocalFdrsBelowThresholdTool, CreateGCFunction, PrunePubmedPaperSummaries, ComputeFdrValues, AliaksanderDemo, NewRunApiDemo, CubeDemo, HotSpotDemo, MultiplyTool, CheckProfileAndDebugStatus, SetGTrackValueColumn, TestRTool, TestGEWriterTool, PlainScatterPlot, RevCompMergeTool, CheckPoissonDistributionTool,MultiplyTool,DemoCatGSuiteTool, AssignGradesTool, AdhocReceptorRepertoirTool, ComputeMeanScoresTool2]
 
 
 class CreateBpLevelTrackTool(GeneralGuiTool):
@@ -893,61 +894,6 @@ convest <- function(p,niter=100,plot=FALSE,report=FALSE,file="",tol=1e-06)
     def isPublic():
         return True
 
-#TEMPORARY COPIED FROM TOOL3
-class CreateGCFunction(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
-        '''
-        Specifies a header of the tool, which is displayed at the top of the
-        page.
-        '''
-        return "Create GC-content function track "
-
-    @staticmethod
-    def getInputBoxNames():
-
-        return ['Select genome','Write Output trackname'] #Alternatively: [ ('box1','1'), ('box2','2') ]
-
-    #@staticmethod
-    #def getInputBoxOrder():
-    #    '''
-    #    Specifies the order in which the input boxes should be displayed, as a
-    #    list. The input boxes are specified by index (starting with 1) or by
-    #    key. If None, the order of the input boxes is in the order specified by
-    #    getInputBoxNames.
-    #    '''
-    #    return None
-
-    @staticmethod
-    def getOptionsBox1(): # Alternatively: getOptionsBoxKey()
-
-        return '__genome__'
-
-
-
-    @staticmethod
-    def getOptionsBox2(prevChoices):
-        return ''
-
-
-    @classmethod
-    def execute(cls, choices, galaxyFn=None, username=''):
-
-        genome = choices[0]
-        outTrackName = choices[1].split(':')
-
-        analysisDef ='[dataStat=GcContentStat] [outTrackName=%s] -> CreateFunctionTrackStat' %  '^'.join(outTrackName)
-        from quick.application.GalaxyInterface import GalaxyInterface
-        #print GalaxyInterface.getHbFunctionOutputBegin(galaxyFn, withDebug=False)
-        GalaxyInterface.runManual([['Sequence', 'DNA']], analysisDef, '*', '*', genome, username=username, printResults=False, printHtmlWarningMsgs=False)
-
-
-
-
-    @staticmethod
-    def validateAndReturnErrors(choices):
-
-        return None
 
 class PrunePubmedPaperSummaries(GeneralGuiTool):
     @staticmethod
@@ -1707,3 +1653,33 @@ class AdhocReceptorRepertoirTool(GeneralGuiTool):
 
         core.tableFooter()
         print core
+
+class ComputeMeanScoresTool2(GeneralGuiTool):
+    @staticmethod
+    def getToolName():
+        return 'Ad hoc tool for computing mean scores of an exam evaluation sheet having scores from two examiners per student'
+
+    @staticmethod
+    def getInputBoxNames():
+        return ['Input file (csv)']
+
+    @staticmethod
+    def getOptionsBox1():
+        return ('__history__',)
+
+    @staticmethod
+    def getOutputFormat(choices):
+        return 'txt'
+
+
+    @staticmethod
+    def execute(choices, galaxyFn, username):
+        # fn = choices[0]
+        # from collections import defaultdict
+        # scoreLines = defaultdict(list)
+        # for line in open(fn).readlines()[2:]:
+        #     studnr = line.split(',')[0]
+        #     scoreLinesp[studnr].append(line.split(',')[1:])
+        # for studnr in scoreLines:
+        #     assert len(scoreLines[studnr])==2
+        print 'yes'

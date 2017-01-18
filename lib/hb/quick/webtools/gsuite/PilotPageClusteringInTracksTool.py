@@ -9,7 +9,7 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
 
-class PilotPageClusteringInTracksTool(GeneralGuiTool, GenomeMixin):#(UserBinSelector):
+class PilotPageClusteringInTracksTool(GeneralGuiTool, GenomeMixin):#(UserBinMixin):
     '''
         https://docs.google.com/document/d/1c03750V_xDXfdTYrHOoAZPIjVihtOUpfXlWQm7dO95Q/edit
         
@@ -63,7 +63,7 @@ class PilotPageClusteringInTracksTool(GeneralGuiTool, GenomeMixin):#(UserBinSele
         return [('Select GSuite', 'gsuite')] + \
                GenomeMixin.getInputBoxNamesForGenomeSelection()
         
-    # + UserBinSelector.getUserBinInputBoxNames()
+    # + UserBinMixin.getInputBoxNamesForUserBinSelection()
     
     
     @staticmethod
@@ -129,14 +129,4 @@ class PilotPageClusteringInTracksTool(GeneralGuiTool, GenomeMixin):#(UserBinSele
         LocalOSConfig.py.
         '''
         return True
-    
-#     @staticmethod
-#     def _getGenome(choices):
-#         refGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-#         return refGSuite.genome
-# 
-#     @staticmethod
-#     def _getTrackNameList(choices):
-#         refGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-#         return [track.trackName for track in refGSuite.allTracks()]
-#
+

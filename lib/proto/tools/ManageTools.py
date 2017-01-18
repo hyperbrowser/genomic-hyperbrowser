@@ -1,5 +1,6 @@
 from proto.tools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
-from proto.config.Config import GALAXY_BASE_DIR, GALAXY_REL_TOOL_CONFIG_FILE, URL_PREFIX
+from proto.config.Config import GALAXY_BASE_DIR, GALAXY_REL_TOOL_CONFIG_FILE, \
+    URL_PREFIX, PROTO_TOOL_SHELVE_FN
 import os, re, shelve, shutil, sys, traceback
 from importlib import import_module
 from collections import OrderedDict
@@ -11,7 +12,6 @@ SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib'
 #HB_TOOL_DIR = GALAXY_BASE_DIR + '/tools/hyperbrowser/new-xml/'
 #PROTO_TOOL_DIR = HB_SOURCE_CODE_BASE_DIR + '/quick/webtools/'
 PROTO_TOOL_DIR = GALAXY_BASE_DIR + '/lib/proto/tools/'
-TOOL_SHELVE = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
 TOOL_CONF = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
 GALAXY_TOOL_XML_PATH = GALAXY_BASE_DIR + '/tools/'
 TOOL_XML_REL_PATH = 'hyperbrowser/'
@@ -64,7 +64,7 @@ def getProtoToolList(except_class_names=[]):
     tmp_tools = {}
     tools = {}
     tool_classes = []
-    all_sub_classes = set()
+    all_installed_sub_classes = set()
     pys = []
     for d in os.walk(PROTO_TOOL_DIR, followlinks=True):
         if d[0].find('.svn') == -1:
@@ -90,9 +90,9 @@ def getProtoToolList(except_class_names=[]):
                             prototype_cls = getattr(module, class_name)
                             if issubclass(prototype_cls, GeneralGuiTool):
                                 if issubclass(prototype_cls, MultiGeneralGuiTool):
-                                    if prototype_cls.getSubToolClasses():
+                                    if class_name in except_class_names and prototype_cls.getSubToolClasses():
                                         for sub_cls in prototype_cls.getSubToolClasses():
-                                            all_sub_classes.add(sub_cls)
+                                            all_installed_sub_classes.add(sub_cls)
                                 elif hasattr(prototype_cls, 'getToolName'):
                                     if class_name not in except_class_names:
                                         prototype = prototype_cls('hb_no_tool_id_yet')
@@ -111,7 +111,7 @@ def getProtoToolList(except_class_names=[]):
 
     for tool_selection_name, tool_info in tmp_tools.iteritems():
         prototype_cls = tool_info[2]
-        if prototype_cls not in all_sub_classes:
+        if prototype_cls not in all_installed_sub_classes:
             tools[tool_selection_name] = tool_info
             tool_classes.append(prototype_cls)
 
@@ -134,7 +134,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
     
     @classmethod
     def getSubToolClasses(cls):
-        tool_shelve = shelve.open(TOOL_SHELVE, 'r')
+        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
         installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys()
                              if os.path.exists(os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) + '.py') ]
         tool_shelve.close()
@@ -199,7 +199,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def _getToolList(cls):
-        tool_shelve = shelve.open(TOOL_SHELVE, 'r')
+        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
         tool_IDs = set(tool_shelve.keys())
         installed_classes = [tool_shelve.get(t)[1] for t in tool_IDs]
         tool_shelve.close()

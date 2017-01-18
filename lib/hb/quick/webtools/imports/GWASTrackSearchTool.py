@@ -30,7 +30,7 @@ class GWASTrackSearchTool(TrackSearchTool):
     
     @classmethod
     def _getClassAttributes(cls, db):
-        return ['hb_experiment_type','hb_genome_build','hb_target','CHR_ID','CONTEXT','DISEASE/TRAIT',\
+        return ['hb_experiment_type','hb_genomebuild','hb_target','CHR_ID','CONTEXT','DISEASE/TRAIT',\
                 'MAPPED_GENE','INTERGENIC',\
                 'PLATFORM [SNPS PASSING QC]','PUBMEDID','REGION','REPORTED GENE(S)','SNPS','STUDY']
         # # attributes = []
@@ -170,4 +170,11 @@ class GWASTrackSearchTool(TrackSearchTool):
             progressViewer.update()
 
         GSuiteComposer.composeToFile(gSuite, outFile)
+
+    @classmethod
+    def getOutputName(cls, choices):
+        from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+
+        description = cls._getAttrSelectionDescription(choices)
+        return getGSuiteHistoryOutputName('primary', description)
 

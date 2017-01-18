@@ -55,8 +55,6 @@ class RP():
 
         elementOrder = []
 
-        # problem z powtarzalnoscia regionow ... naprawic to
-
         newDictRegions = OrderedDict()
         tracRegions = 0
         for trackN in self.gsuite.allTrackTitles():
@@ -126,20 +124,17 @@ class RP():
                                 endReg = elReg.split('-')[2]
 
                                 if prevEnd > int(startReg) and start <= int(endReg) and chrReg == key:
-                                    # print tracRegions
-                                    # print elReg
-                                    # print 'was'
+
                                     newDictRegions[tracRegions][elReg].append(start - prevEnd)
                                     break
 
-                            # print str(trackName) + ' chrReg ' + str(elReg)   +   ' ' + str(newDictRegions)
 
 
                             if start - prevEnd != 0:
                                 dataDict[trackName][label]['val'] += math.log(start - prevEnd, 10)
                             else:
                                 dataDict[trackName][label]['val'] += start - prevEnd
-                                # countAverageDistance['distance'] += start - prevEnd
+
 
                             dataDict[trackName][label]['tot'] += 1
 

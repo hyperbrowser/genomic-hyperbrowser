@@ -100,6 +100,7 @@ window.app = function app( options, bootstrapped ){
             '(/)' : 'home',
             // TODO: remove annoying 'root' from root urls
             '(/)root*' : 'home',
+            '(/)!mode=:mode' : 'home'
         },
 
         /**  */
@@ -138,7 +139,8 @@ window.app = function app( options, bootstrapped ){
         _loadCenterIframe : function( url, root ){
             root = root || Galaxy.root;
             url = root + url;
-            centerPanel.$( '#galaxy_main' ).prop( 'src', url );
+            if (centerPanel.$( '#galaxy_main' ).attr( 'src') !== url)
+                centerPanel.$( '#galaxy_main' ).prop( 'src', url );
         },
 
     }))( options );
@@ -163,7 +165,7 @@ window.app = function app( options, bootstrapped ){
         // start the router - which will call any of the routes above
         Backbone.history.start({
             root        : Galaxy.root,
-            pushState   : false,
+            pushState   : true,
         });
     });
 };

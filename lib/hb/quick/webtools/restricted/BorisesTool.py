@@ -574,7 +574,7 @@ class MultiTrackSingleAnalysisTool(GeneralGuiTool):
                     attrNameExtended = analysisName + ':' + attrName
                     track.setAttribute(attrNameExtended, str(attrVal))
                     colNameSet.add(attrNameExtended)
-                    #             assert isinstance(resultDict['Result'], (int, str, float)), type(resultDict['Result'])
+                    #             assert isinstance(resultDict['Result'], (int, basestring, float)), type(resultDict['Result'])
         if choices.outputType == 'gsuite':
             GSuiteComposer.composeToFile(gSuite, galaxyFn)
         else:  # customhtml

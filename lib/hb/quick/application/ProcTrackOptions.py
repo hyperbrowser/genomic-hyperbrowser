@@ -18,6 +18,7 @@ import os
 from gold.util.CommonFunctions import createDirPath
 from gold.description.TrackInfo import TrackInfo
 from gold.track.BoundingRegionShelve import isBoundingRegionFileName
+from quick.util.CommonFunctions import smartStrLower
 from quick.util.GenomeInfo import GenomeInfo
 
 class ProcTrackOptions:
@@ -40,7 +41,7 @@ class ProcTrackOptions:
         if not fullAccess and not ProcTrackOptions._isLiteratureTrack(genome, trackName):
             subtypes = [x for x in subtypes if not TrackInfo(genome, trackName+[x]).private]
 
-        return sorted(subtypes, key=str.lower)
+        return sorted(subtypes, key=smartStrLower)
 
     @staticmethod
     def _isLiteratureTrack(genome, trackName):

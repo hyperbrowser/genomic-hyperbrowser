@@ -5,7 +5,7 @@ from gold.result.HeatmapPresenter import HeatmapFromNumpyPresenter
 from gold.result.Results import Results
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-from quick.application import GalaxyInterface
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.extra.clustering.FeatureCatalog import DirectDistanceCatalog, FeatureCatalog, \
     LocalResultsAsFeaturesCatalog
 from quick.util.CommonFunctions import silenceRWarnings

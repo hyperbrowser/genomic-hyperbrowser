@@ -173,7 +173,7 @@ var DatasetListItemEdit = _super.extend(
                         var form = new ToolForm.View({ 'job_id' : creating_job });
                         form.deferred.execute( function(){
                             // console.log(form.options);
-                            if (form.options.model_class.startsWith('Proto'))
+                            if (form.options.model_class.lastIndexOf('Proto', 0) === 0)
                                 galaxy_main.location = rerun_url;
                             else
                                 Galaxy.app.display( form );

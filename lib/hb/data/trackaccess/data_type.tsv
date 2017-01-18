@@ -8,7 +8,7 @@ Regions	bed.gz,bed9.gz,gff.gz,gtf.gz,bigBed,bb	.	*meth_seq.*.tsv.gz	.	.	.	.
 Regions (with read counts)	.	.	*mirna_seq.*.tsv.gz	.	.	.	.
 Variants (germline)	.	.	.	.	.	.	.
 Variants (somatic)	.	.	.	.	.	.	.
-Variants	.	.	*copy_number_somatic_mutation.*.tsv.gz,*simple_somatic_mutation.*.tar.gz *,*structural_somatic_mutation.*.tsv.gz	.	.	gtrack	.
+Variants	.	.	*copy_number_somatic_mutation.*.tsv.gz,*simple_somatic_mutation.*.tsv.gz,*structural_somatic_mutation.*.tsv.gz	.	.	gtrack	.
 Raw reads (aligned)	bam	.	.	.	.	.	.
 Raw reads	fastq.gz,csfasta.gz	.	.	.	.	.	.
 Sequence	.	.	.	.	.	.	.

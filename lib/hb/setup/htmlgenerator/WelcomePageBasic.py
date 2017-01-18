@@ -18,6 +18,8 @@ Created on Jun 26, 2015
 
 @author: boris
 '''
+from config.Config import STATIC_DIR, GALAXY_BASE_DIR, HB_SOURCE_CODE_BASE_DIR
+from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick
 from quick.webtools.article.ClusTrackTool import ClusTrackTool
 from quick.webtools.gsuite.CoincidingTracksFromTwoGSuitesTool import CoincidingTracksFromTwoGSuitesTool
 from quick.webtools.gsuite.CompileGSuiteFromArchiveTool import CompileGSuiteFromArchiveTool
@@ -51,8 +53,14 @@ COPYRIGHT_TEXT = '''# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.'''
 
 from collections import OrderedDict
-
 from LinkExpansion import LinkExpansion
+
+
+def getNameFromToolXml(toolXmlFn):
+    from config.Config import HB_SOURCE_CODE_BASE_DIR
+    import xml.etree.ElementTree as ET
+    root = ET.parse(HB_SOURCE_CODE_BASE_DIR + toolXmlFn).getroot()
+    return root.attrib['name']
 
 
 class WelcomePageGenerator(object):
@@ -67,21 +75,19 @@ class WelcomePageGenerator(object):
 
     '''
 
-    from config.Config import STATIC_PATH
-
-    TRACK_VS_COLLECTION_TOOL_TITLE = GSuiteTracksCoincidingWithQueryTrackTool.getToolName()
-    COLLECTION_TOOL_TITLE = GSuiteRepresentativeAndUntypicalTrackTool.getToolName()
-    COLLECTION_VS_COLLECTION_TOOL_TITLE = CoincidingTracksFromTwoGSuitesTool.getToolName()
+    TRACK_VS_COLLECTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/GSuiteTracksCoincidingWithQueryTrackTool.xml')
+    COLLECTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/GSuiteRepresentativeAndUntypicalTrackTool.xml')
+    COLLECTION_VS_COLLECTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/CoincidingTracksFromTwoGSuitesTool.xml')
     UPLOAD_FILE_TOOL_TITLE = "Upload file"
-    BASIC_SEARCH_TOOL_TITLE = TrackGlobalSearchTool.getToolName()
-    ADVANCED_SEARCH_TOOL_TITLE = TrackSourceTestTool.getToolName()
-    GSUITE_FROM_HISTORY_TOOL_TITLE = CreateGSuiteFileFromHistoryElementsTool.getToolName()
+    BASIC_SEARCH_TOOL_TITLE = getNameFromToolXml('/quick/webtools/imports/TrackGlobalSearchTool.xml')
+    ADVANCED_SEARCH_TOOL_TITLE = getNameFromToolXml('/quick/webtools/imports/TrackSourceTestTool.xml')
+    GSUITE_FROM_HISTORY_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/CreateGSuiteFileFromHistoryElementsTool.xml')
     DEMO_TRACK_TITLE = "sample track with Multiple Sclerosis-associated regions, expanded 10kb in both directions"
-    OVERLAP_BETWEEN_TRACKS_TITLE = PilotPageBasicOverviewOfTracksInGSuiteTool.getToolName()
-    EXTRACT_FROM_ARCHIVE_TITLE = CompileGSuiteFromArchiveTool.getToolName()
-    SIMILARITY_AND_UNIQUENESS_TITLE = PilotPageSimilarityAndUniquenessOfTracksTool.getToolName()
+    OVERLAP_BETWEEN_TRACKS_TITLE = getNameFromToolXml('/quick/webtools/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml')
+    EXTRACT_FROM_ARCHIVE_TITLE = getNameFromToolXml('/quick/webtools/gsuite/CompileGSuiteFromArchiveTool.xml')
+    SIMILARITY_AND_UNIQUENESS_TITLE = getNameFromToolXml('/quick/webtools/gsuite/PilotPageSimilarityAndUniquenessOfTracksTool.xml')
     CONSTRUCT_GSUITE_PAGE_TITLE = "a tool for constructing a track suite (GSuite)"
-    GSUITE_FROM_REPOSITORY_TOOL_TITLE = ExtractSubtracksTool.getToolName()
+    GSUITE_FROM_REPOSITORY_TOOL_TITLE = getNameFromToolXml('/quick/webtools/track/ExtractSubtracksTool.xml')
     #     DEMO_GWAS_BLUPRINT_TRACK_TITLE = "sample GWAS Blueprint track"
     DEMO_TCGA_PRAD_TRACK_TITLE = "sample track with genomic locations of somatic variants in prostate adenocarcinoma (the COAD set from The Cancer Genome Atlas)"
     DEMO_GSUITE_159_TF_GM12878_TITLE = "sample GSuite collection: genomic locations of binding sites of various TFs for the gm12878 lymphoblastoid cell line"
@@ -89,9 +95,9 @@ class WelcomePageGenerator(object):
     DEMO_GSUITE_DNASE_40_CELL_TYPES_TITLE = "sample GSuite of DNaseI accessibility for different cell types"
     DEMO_GSUITE_HIST_K562_TITLE = "sample GSuite collection: genomic locations of various histone modifications for the K562 chronic myelogenous leukemia cell line"
     DEMO_GSUITE_GWAS_TITLE = "sample GSuite collection: genomic locations of lead SNP variants for various traits"
-    CREATE_GTRACK_FROM_TABULAR_TOOL_TITLE = TabularToGtrackTool.getToolName()
+    CREATE_GTRACK_FROM_TABULAR_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gtrack/TabularToGtrackTool.xml')
     DEMO_TRACK_K562_ENHANCERS_TITLE = "sample track with genomic locations of enhancer regions active within the K562 chronic myelogenous leukemia cell line"
-    CLUS_TRACK_TOOL_TITLE = ClusTrackTool.getToolName()
+    CLUS_TRACK_TOOL_TITLE = getNameFromToolXml('/quick/webtools/article/ClusTrackTool.xml')
     DEMO_GSUITE_SOMATIC_COAD_TITLE = "sample GSuite collection: somatic variant locations for 216 Colon adenocarcinoma patients (the COAD dataset from The Cancer Genome Atlas)"
     DEMO_GSUITE_SELECTED_TFBS_TITLE = "sample GSuite collection: genomic locations of binding sites of selected TFs (CEBPB, FOS, JUN, MYC, NANOG, NR2F2, TEAD4)"
     DEMO_GSUITE_K562_ENHANCERS_TITLE = "sample track with genomic locations of enhancer regions active within the K562 chronic myelogenous leukemia cell line"
@@ -99,65 +105,66 @@ class WelcomePageGenerator(object):
     DEMO_GSUITE_TCGA_EXOME_TITLE = "sample GSuite collection: exon locations for 560 genes included in the Cancer Census"
     FILE_FORMATS_PAGE_TITLE = "supported file formats"
     DEMO_GSUITE_TFS_WITH_PWMS_TITLE = "sample GSuite collection: genomic locations of binding sites of selected TFs in K562 (CTCF, c-Jun, c-Myc, GATA-1 and more) with added PWM metadata"
-    MATCH_TF_WITH_PWMS_TOOL_TITLE = "Match tf with pwm"
-    EDIT_GSUITE_METADATA_TOOL_TITLE = "Edit a metadata column in a GSuite"
-    GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE = "Determine suite tracks coinciding with another suite"
+    MATCH_TF_WITH_PWMS_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/MatchTfWithPWM.xml')
+    EDIT_GSUITE_METADATA_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/EditGsuiteMetadataTool.xml')
+    GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE = getNameFromToolXml('/quick/webtools/gsuite/DetermineSuiteTracksCoincidingWithAnotherSuite.xml')
     DEMO_TRACK_LICA_CN_TITLE = "sample track with genomic locations of somatic variants in liver cancer (the LICA-CN set from The Cancer Genome Atlas)"
-    ALL_TARGETS_OF_TFS_TOOL_TITLE = AllTargetsOfTfs.getToolName()
-    ALL_TFS_OF_REGION_TOOL_TITLE = AllTfsOfRegions.getToolName()
-    TF_BINDING_DISRUPTION_TOOL_TITLE = "TF binding disruption"
+    ALL_TARGETS_OF_TFS_TOOL_TITLE = getNameFromToolXml('/quick/webtools/tfbs/AllTargetsOfTfs.xml')
+    ALL_TFS_OF_REGION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/tfbs/AllTfsOfRegions.xml')
+    TF_BINDING_DISRUPTION_TOOL_TITLE = getNameFromToolXml('/quick/webtools/article/TfBindingDisruption.xml')
 
     from quick.util.CommonFunctions import getLoadToGalaxyHistoryURL
     LOAD_GSUITE_SINGLE_TRACK_SAMPLE_FILE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/MS_regions_expanded_10kb.bed', 'hg19',
+        (STATIC_DIR + '/data/gsuite/MS_regions_expanded_10kb.bed', 'hg19',
          'bed', urlPrefix='..', histElementName=DEMO_TRACK_TITLE)
     LOAD_GSUITE_159_TF_GM12878_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/159_TFs_in_gm12878_cell_type.gsuite',
+        (STATIC_DIR + '/data/gsuite/159_TFs_in_gm12878_cell_type.gsuite',
          'hg19', 'gsuite', urlPrefix='..', histElementName=DEMO_GSUITE_159_TF_GM12878_TITLE)
     LOAD_GSUITE_CMYC_43_CELL_TYPES_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/cMyc_across_43_cell_types.gsuite', 'hg19',
+        (STATIC_DIR + '/data/gsuite/cMyc_across_43_cell_types.gsuite', 'hg19',
          'gsuite', urlPrefix='..', histElementName=DEMO_GSUITE_CMYC_43_CELL_TYPES_TITLE)
     LOAD_GSUITE_DNASE_40_CELL_TYPES_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/DNase_in_40_cell_types.gsuite', 'hg19',
+        (STATIC_DIR + '/data/gsuite/DNase_in_40_cell_types.gsuite', 'hg19',
          'gsuite', urlPrefix='..', histElementName=DEMO_GSUITE_DNASE_40_CELL_TYPES_TITLE)
     LOAD_GSUITE_TCGA_PRAD_SAMPLE_TRACK_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/TCGA_PRAD.gtrack', 'hg19', 'gtrack',
+        (STATIC_DIR + '/data/gsuite/TCGA_PRAD.gtrack', 'hg19', 'gtrack',
          urlPrefix='..', histElementName=DEMO_TCGA_PRAD_TRACK_TITLE)
     LOAD_GSUITE_GWAS_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/gwas.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/gwas.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_GWAS_TITLE)
     LOAD_GSUITE_HIST_K562_SAMPLE_GSUITE_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/hist_k562.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/hist_k562.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_HIST_K562_TITLE)
     LOAD_GSUITE_K562_ENHANCERS_SAMPLE_BED_TRACK_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_track_k562_enhancers.bed', 'hg19', 'bed',
+        (STATIC_DIR + '/data/gsuite/demo_track_k562_enhancers.bed', 'hg19', 'bed',
          urlPrefix='..', histElementName=DEMO_TRACK_K562_ENHANCERS_TITLE)
     LOAD_GSUITE_COAD_TCGA_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_sv_colade.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/demo_gsuite_sv_colade.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_SOMATIC_COAD_TITLE)
     LOAD_DEMO_GSUITE_SELECTED_TFBS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_selected_tfbs.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/demo_gsuite_selected_tfbs.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_SELECTED_TFBS_TITLE)
     LOAD_DEMO_GSUITE_K562_ENHANCERS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_k562_enhancers.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/demo_gsuite_k562_enhancers.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_K562_ENHANCERS_TITLE)
     LOAD_DEMO_TRACK_MYC_BS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_track_myc_bs.bed', 'hg19', 'bed',
+        (STATIC_DIR + '/data/gsuite/demo_track_myc_bs.bed', 'hg19', 'bed',
          urlPrefix='..', histElementName=DEMO_TRACK_MYC_BS_TITLE)
     LOAD_DEMO_GSUITE_TCGA_EXOME_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_tcga_exome.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/demo_gsuite_tcga_exome.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_TCGA_EXOME_TITLE)
     LOAD_DEMO_GSUITE_TFS_WITH_PWMS_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_gsuite_tfs_with_pwms.gsuite', 'hg19', 'gsuite',
+        (STATIC_DIR + '/data/gsuite/demo_gsuite_tfs_with_pwms.gsuite', 'hg19', 'gsuite',
          urlPrefix='..', histElementName=DEMO_GSUITE_TFS_WITH_PWMS_TITLE)
     LOAD_DEMO_TRACK_LICA_CN_URL = getLoadToGalaxyHistoryURL \
-        (STATIC_PATH + '/data/gsuite/demo_track_lica_cn.gtrack', 'hg19', 'gtrack',
+        (STATIC_DIR + '/data/gsuite/demo_track_lica_cn.gtrack', 'hg19', 'gtrack',
          urlPrefix='..', histElementName=DEMO_TRACK_LICA_CN_TITLE)
 
     TRACK_VS_COLLECTION_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_g_suite_tracks_coinciding_with_query_track_tool&isBasic=1&isBasic=True"
     COLLECTION_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_g_suite_representative_and_untypical_track_tool&isBasic=1&isBasic=True"
     COLLECTION_VS_COLLECTION_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_coinciding_tracks_from_two_g_suites_tool&isBasic=1&isBasic=True"
-    UPLOAD_FILE_TOOL_URL = "../tool_runner?tool_id=upload1"
+    UPLOAD_FILE_TOOL_URL = createGalaxyToolURL('upload1')
+    UPLOAD_FILE_TOOL_ONCLICK = getGalaxyUploadLinkOnclick()
     BASIC_SEARCH_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_track_global_search_tool" #add basicQuestionId param
     ADVANCED_SEARCH_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_track_source_test_tool" #add basicQuestionId param
     GSUITE_FROM_HISTORY_TOOL_URL = "../hyper?mako=generictool&tool_id=hb_create_g_suite_file_from_history_elements_tool" #add basicQuestionId param
@@ -272,42 +279,42 @@ class WelcomePageGenerator(object):
     #The 4th element of the tuple is a flag whether we should add the parameter basicQuestionId to the url to enable redirect back to the basic welcome page
     #The 5th element of the tuple is a flag whether we should add the parameter nmQid to the url to enable the analysis question to be displayed in the tool
     PLACEHOLDERS_DICT = {
-                        TRACK_VS_COLLECTION_TOOL_PLACEHOLDER : (TRACK_VS_COLLECTION_TOOL_URL, TRACK_VS_COLLECTION_TOOL_TITLE, TRACK_VS_COLLECTION_TOOL_HOVER, False, True),
-                        COLLECTION_TOOL_PLACEHOLDER : (COLLECTION_TOOL_URL, COLLECTION_TOOL_TITLE, COLLECTION_TOOL_HOVER, False, True),
-                        COLLECTION_VS_COLLECTION_TOOL_PLACEHOLDER : (COLLECTION_VS_COLLECTION_TOOL_URL, COLLECTION_VS_COLLECTION_TOOL_TITLE, COLLECTION_VS_COLLECTION_TOOL_HOVER, False, True),
-                        UPLOAD_FILE_TOOL_PLACEHOLDER : (UPLOAD_FILE_TOOL_URL, UPLOAD_FILE_TOOL_TITLE, UPLOAD_FILE_TOOL_HOVER, False, False),
-                        BASIC_SEARCH_TOOL_PLACEHOLDER : (BASIC_SEARCH_TOOL_URL, BASIC_SEARCH_TOOL_TITLE, BASIC_SEARCH_TOOL_HOVER, True, False),
-                        ADVANCED_SEARCH_TOOL_PLACEHOLDER : (ADVANCED_SEARCH_TOOL_URL, ADVANCED_SEARCH_TOOL_TITLE, ADVANCED_SEARCH_TOOL_HOVER, True, False),
-                        GSUITE_FROM_HISTORY_TOOL_PLACEHOLDER : (GSUITE_FROM_HISTORY_TOOL_URL, GSUITE_FROM_HISTORY_TOOL_TITLE, GSUITE_FROM_HISTORY_TOOL_HOVER, True, False),
-                        DEMO_TRACK_PLACEHOLDER : (DEMO_TRACK_URL, DEMO_TRACK_TITLE, DEMO_TRACK_HOVER, True, False),
-                        OVERLAP_BETWEEN_TRACKS_PLACEHOLDER : (OVERLAP_BETWEEN_TRACKS_URL, OVERLAP_BETWEEN_TRACKS_TITLE, OVERLAP_BETWEEN_TRACKS_HOVER, False, True),
-                        EXTRACT_FROM_ARCHIVE_PLACEHOLDER : (EXTRACT_FROM_ARCHIVE_URL, EXTRACT_FROM_ARCHIVE_TITLE, EXTRACT_FROM_ARCHIVE_HOVER, True, False),
-                        SIMILARITY_AND_UNIQUENESS_PLACEHOLDER : (SIMILARITY_AND_UNIQUENESS_URL, SIMILARITY_AND_UNIQUENESS_TITLE, SIMILARITY_AND_UNIQUENESS_HOVER, False, True),
-                        CONSTRUCT_GSUITE_PAGE_PLACEHOLDER : (CONSTRUCT_GSUITE_PAGE_URL, CONSTRUCT_GSUITE_PAGE_TITLE, CONSTRUCT_GSUITE_PAGE_HOVER, True, False),
-                        GSUITE_FROM_REPOSITORY_TOOL_PLACEHOLDER : (GSUITE_FROM_REPOSITORY_TOOL_URL, GSUITE_FROM_REPOSITORY_TOOL_TITLE, GSUITE_FROM_REPOSITORY_TOOL_HOVER, True, False),
-#                         DEMO_GWAS_BLUPRINT_TRACK_PLACEHOLDER : (DEMO_GWAS_BLUPRINT_TRACK_URL, DEMO_GWAS_BLUPRINT_TRACK_TITLE, DEMO_GWAS_BLUPRINT_TRACK_HOVER, True),
-                        DEMO_TCGA_PRAD_TRACK_PLACEHOLDER : (DEMO_TCGA_PRAD_TRACK_URL, DEMO_TCGA_PRAD_TRACK_TITLE, DEMO_TCGA_PRAD_TRACK_HOVER, True, False),
-                        DEMO_GSUITE_159_TF_GM12878_PLACEHOLDER : (DEMO_GSUITE_159_TF_GM12878_URL, DEMO_GSUITE_159_TF_GM12878_TITLE, DEMO_GSUITE_159_TF_GM12878_HOVER, True, False),
-                        DEMO_GSUITE_CMYC_43_CELL_TYPES_PLACEHOLDER : (DEMO_GSUITE_CMYC_43_CELL_TYPES_URL, DEMO_GSUITE_CMYC_43_CELL_TYPES_TITLE, DEMO_GSUITE_CMYC_43_CELL_TYPES_HOVER, True, False),
-                        DEMO_GSUITE_DNASE_40_CELL_TYPES_PLACEHOLDER : (DEMO_GSUITE_DNASE_40_CELL_TYPES_URL, DEMO_GSUITE_DNASE_40_CELL_TYPES_TITLE, DEMO_GSUITE_DNASE_40_CELL_TYPES_HOVER, True, False),
-                        DEMO_GSUITE_HIST_K562_PLACEHOLDER : (DEMO_GSUITE_HIST_K562_URL, DEMO_GSUITE_HIST_K562_TITLE, DEMO_GSUITE_HIST_K562_HOVER, True, False),
-                        DEMO_GSUITE_GWAS_PLACEHOLDER : (DEMO_GSUITE_GWAS_URL, DEMO_GSUITE_GWAS_TITLE, DEMO_GSUITE_GWAS_HOVER, True, False),
-                        DEMO_TRACK_K562_ENHANCERS_PLACEHOLDER : (DEMO_TRACK_K562_ENHANCERS_URL, DEMO_TRACK_K562_ENHANCERS_TITLE, DEMO_TRACK_K562_ENHANCERS_HOVER, True, False),
-                        CREATE_GTRACK_FROM_TABULAR_TOOL_PLACEHOLDER : (CREATE_GTRACK_FROM_TABULAR_TOOL_URL, CREATE_GTRACK_FROM_TABULAR_TOOL_TITLE, CREATE_GTRACK_FROM_TABULAR_TOOL_HOVER, True, False),
-                        CLUS_TRACK_TOOL_PLACEHOLDER : (CLUS_TRACK_TOOL_URL, CLUS_TRACK_TOOL_TITLE, CLUS_TRACK_TOOL_HOVER, False, False),
-                        DEMO_GSUITE_SOMATIC_COAD_PLACEHOLDER: (DEMO_GSUITE_SOMATIC_COAD_URL, DEMO_GSUITE_SOMATIC_COAD_TITLE, DEMO_GSUITE_SOMATIC_COAD_HOVER, True, False),
-                        DEMO_GSUITE_SELECTED_TFBS_PLACEHOLDER: (DEMO_GSUITE_SELECTED_TFBS_URL, DEMO_GSUITE_SELECTED_TFBS_TITLE, DEMO_GSUITE_SELECTED_TFBS_HOVER, True, False),
-                        DEMO_TRACK_MYC_BS_PLACEHOLDER: (DEMO_TRACK_MYC_BS_URL, DEMO_TRACK_MYC_BS_TITLE, DEMO_TRACK_MYC_BS_HOVER, True, False),
-                        DEMO_GSUITE_TCGA_EXOME_PLACEHOLDER: (DEMO_GSUITE_TCGA_EXOME_URL, DEMO_GSUITE_TCGA_EXOME_TITLE, DEMO_GSUITE_TCGA_EXOME_HOVER, True, False),
-                        FILE_FORMATS_PAGE_PLACEHOLDER: (FILE_FORMATS_PAGE_URL, FILE_FORMATS_PAGE_TITLE, FILE_FORMATS_HOVER, True, False),
-                        DEMO_GSUITE_TFS_WITH_PWMS_PLACEHOLDER : (DEMO_GSUITE_TFS_WITH_PWMS_URL, DEMO_GSUITE_TFS_WITH_PWMS_TITLE, DEMO_GSUITE_TFS_WITH_PWMS_HOVER, True, False),
-                        MATCH_TF_WITH_PWMS_TOOL_PLACEHOLDER : (MATCH_TF_WITH_PWMS_TOOL_URL, MATCH_TF_WITH_PWMS_TOOL_TITLE, MATCH_TF_WITH_PWMS_TOOL_HOVER, False, True),
-                        EDIT_GSUITE_METADATA_TOOL_PLACEHOLDER : (EDIT_GSUITE_METADATA_TOOL_URL, EDIT_GSUITE_METADATA_TOOL_TITLE, EDIT_GSUITE_METADATA_TOOL_HOVER, True, False),
-                        GSUITE_TRACKS_VS_GSUITE_TOOL_PLACEHOLDER : (GSUITE_TRACKS_VS_GSUITE_TOOL_URL, GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE, GSUITE_TRACKS_VS_GSUITE_TOOL_HOVER, False, True),
-                        DEMO_TRACK_LICA_CN_PLACEHOLDER : (DEMO_TRACK_LICA_CN_URL, DEMO_TRACK_LICA_CN_TITLE, DEMO_TRACK_LICA_CN_HOVER, True, False),
-                        ALL_TARGETS_OF_TFS_TOOL_PLACEHOLDER : (ALL_TARGETS_OF_TFS_TOOL_URL, ALL_TFS_OF_REGION_TOOL_TITLE, ALL_TARGETS_OF_TFS_TOOL_HOVER, False, True),
-                        ALL_TFS_OF_REGION_TOOL_PLACEHOLDER : (ALL_TFS_OF_REGION_TOOL_URL, ALL_TFS_OF_REGION_TOOL_TITLE, ALL_TFS_OF_REGION_TOOL_HOVER, False, True),
-                        TF_BINDING_DISRUPTION_TOOL_PLACEHOLDER : (TF_BINDING_DISRUPTION_TOOL_URL, TF_BINDING_DISRUPTION_TOOL_TITLE, TF_BINDING_DISRUPTION_TOOL_HOVER, False, False)
+                        TRACK_VS_COLLECTION_TOOL_PLACEHOLDER : (TRACK_VS_COLLECTION_TOOL_URL, TRACK_VS_COLLECTION_TOOL_TITLE, TRACK_VS_COLLECTION_TOOL_HOVER, True, True, False),
+                        COLLECTION_TOOL_PLACEHOLDER : (COLLECTION_TOOL_URL, COLLECTION_TOOL_TITLE, COLLECTION_TOOL_HOVER, True, True, False),
+                        COLLECTION_VS_COLLECTION_TOOL_PLACEHOLDER : (COLLECTION_VS_COLLECTION_TOOL_URL, COLLECTION_VS_COLLECTION_TOOL_TITLE, COLLECTION_VS_COLLECTION_TOOL_HOVER, True, True, False),
+                        UPLOAD_FILE_TOOL_PLACEHOLDER : (UPLOAD_FILE_TOOL_URL, UPLOAD_FILE_TOOL_TITLE, UPLOAD_FILE_TOOL_HOVER, False, False, UPLOAD_FILE_TOOL_ONCLICK),
+                        BASIC_SEARCH_TOOL_PLACEHOLDER : (BASIC_SEARCH_TOOL_URL, BASIC_SEARCH_TOOL_TITLE, BASIC_SEARCH_TOOL_HOVER, True, False, False),
+                        ADVANCED_SEARCH_TOOL_PLACEHOLDER : (ADVANCED_SEARCH_TOOL_URL, ADVANCED_SEARCH_TOOL_TITLE, ADVANCED_SEARCH_TOOL_HOVER, True, False, False),
+                        GSUITE_FROM_HISTORY_TOOL_PLACEHOLDER : (GSUITE_FROM_HISTORY_TOOL_URL, GSUITE_FROM_HISTORY_TOOL_TITLE, GSUITE_FROM_HISTORY_TOOL_HOVER, True, False, False),
+                        DEMO_TRACK_PLACEHOLDER : (DEMO_TRACK_URL, DEMO_TRACK_TITLE, DEMO_TRACK_HOVER, True, False, False),
+                        OVERLAP_BETWEEN_TRACKS_PLACEHOLDER : (OVERLAP_BETWEEN_TRACKS_URL, OVERLAP_BETWEEN_TRACKS_TITLE, OVERLAP_BETWEEN_TRACKS_HOVER, True, True, False),
+                        EXTRACT_FROM_ARCHIVE_PLACEHOLDER : (EXTRACT_FROM_ARCHIVE_URL, EXTRACT_FROM_ARCHIVE_TITLE, EXTRACT_FROM_ARCHIVE_HOVER, True, False, False),
+                        SIMILARITY_AND_UNIQUENESS_PLACEHOLDER : (SIMILARITY_AND_UNIQUENESS_URL, SIMILARITY_AND_UNIQUENESS_TITLE, SIMILARITY_AND_UNIQUENESS_HOVER, True, True, False),
+                        CONSTRUCT_GSUITE_PAGE_PLACEHOLDER : (CONSTRUCT_GSUITE_PAGE_URL, CONSTRUCT_GSUITE_PAGE_TITLE, CONSTRUCT_GSUITE_PAGE_HOVER, True, False, False),
+                        GSUITE_FROM_REPOSITORY_TOOL_PLACEHOLDER : (GSUITE_FROM_REPOSITORY_TOOL_URL, GSUITE_FROM_REPOSITORY_TOOL_TITLE, GSUITE_FROM_REPOSITORY_TOOL_HOVER, True, False, False),
+#                         DEMO_GWAS_BLUPRINT_TRACK_PLACEHOLDER : (DEMO_GWAS_BLUPRINT_TRACK_URL, DEMO_GWAS_BLUPRINT_TRACK_TITLE, DEMO_GWAS_BLUPRINT_TRACK_HOVER, True, False, False),
+                        DEMO_TCGA_PRAD_TRACK_PLACEHOLDER : (DEMO_TCGA_PRAD_TRACK_URL, DEMO_TCGA_PRAD_TRACK_TITLE, DEMO_TCGA_PRAD_TRACK_HOVER, True, False, False),
+                        DEMO_GSUITE_159_TF_GM12878_PLACEHOLDER : (DEMO_GSUITE_159_TF_GM12878_URL, DEMO_GSUITE_159_TF_GM12878_TITLE, DEMO_GSUITE_159_TF_GM12878_HOVER, True, False, False),
+                        DEMO_GSUITE_CMYC_43_CELL_TYPES_PLACEHOLDER : (DEMO_GSUITE_CMYC_43_CELL_TYPES_URL, DEMO_GSUITE_CMYC_43_CELL_TYPES_TITLE, DEMO_GSUITE_CMYC_43_CELL_TYPES_HOVER, True, False, False),
+                        DEMO_GSUITE_DNASE_40_CELL_TYPES_PLACEHOLDER : (DEMO_GSUITE_DNASE_40_CELL_TYPES_URL, DEMO_GSUITE_DNASE_40_CELL_TYPES_TITLE, DEMO_GSUITE_DNASE_40_CELL_TYPES_HOVER, True, False, False),
+                        DEMO_GSUITE_HIST_K562_PLACEHOLDER : (DEMO_GSUITE_HIST_K562_URL, DEMO_GSUITE_HIST_K562_TITLE, DEMO_GSUITE_HIST_K562_HOVER, True, False, False),
+                        DEMO_GSUITE_GWAS_PLACEHOLDER : (DEMO_GSUITE_GWAS_URL, DEMO_GSUITE_GWAS_TITLE, DEMO_GSUITE_GWAS_HOVER, True, False, False),
+                        DEMO_TRACK_K562_ENHANCERS_PLACEHOLDER : (DEMO_TRACK_K562_ENHANCERS_URL, DEMO_TRACK_K562_ENHANCERS_TITLE, DEMO_TRACK_K562_ENHANCERS_HOVER, True, False, False),
+                        CREATE_GTRACK_FROM_TABULAR_TOOL_PLACEHOLDER : (CREATE_GTRACK_FROM_TABULAR_TOOL_URL, CREATE_GTRACK_FROM_TABULAR_TOOL_TITLE, CREATE_GTRACK_FROM_TABULAR_TOOL_HOVER, True, False, False),
+                        CLUS_TRACK_TOOL_PLACEHOLDER : (CLUS_TRACK_TOOL_URL, CLUS_TRACK_TOOL_TITLE, CLUS_TRACK_TOOL_HOVER, True, False, False),
+                        DEMO_GSUITE_SOMATIC_COAD_PLACEHOLDER: (DEMO_GSUITE_SOMATIC_COAD_URL, DEMO_GSUITE_SOMATIC_COAD_TITLE, DEMO_GSUITE_SOMATIC_COAD_HOVER, True, False, False),
+                        DEMO_GSUITE_SELECTED_TFBS_PLACEHOLDER: (DEMO_GSUITE_SELECTED_TFBS_URL, DEMO_GSUITE_SELECTED_TFBS_TITLE, DEMO_GSUITE_SELECTED_TFBS_HOVER, True, False, False),
+                        DEMO_TRACK_MYC_BS_PLACEHOLDER: (DEMO_TRACK_MYC_BS_URL, DEMO_TRACK_MYC_BS_TITLE, DEMO_TRACK_MYC_BS_HOVER, True, False, False),
+                        DEMO_GSUITE_TCGA_EXOME_PLACEHOLDER: (DEMO_GSUITE_TCGA_EXOME_URL, DEMO_GSUITE_TCGA_EXOME_TITLE, DEMO_GSUITE_TCGA_EXOME_HOVER, True, False, False),
+                        FILE_FORMATS_PAGE_PLACEHOLDER: (FILE_FORMATS_PAGE_URL, FILE_FORMATS_PAGE_TITLE, FILE_FORMATS_HOVER, True, False, False),
+                        DEMO_GSUITE_TFS_WITH_PWMS_PLACEHOLDER : (DEMO_GSUITE_TFS_WITH_PWMS_URL, DEMO_GSUITE_TFS_WITH_PWMS_TITLE, DEMO_GSUITE_TFS_WITH_PWMS_HOVER, True, False, False),
+                        MATCH_TF_WITH_PWMS_TOOL_PLACEHOLDER : (MATCH_TF_WITH_PWMS_TOOL_URL, MATCH_TF_WITH_PWMS_TOOL_TITLE, MATCH_TF_WITH_PWMS_TOOL_HOVER, True, True, False),
+                        EDIT_GSUITE_METADATA_TOOL_PLACEHOLDER : (EDIT_GSUITE_METADATA_TOOL_URL, EDIT_GSUITE_METADATA_TOOL_TITLE, EDIT_GSUITE_METADATA_TOOL_HOVER, True, False, False),
+                        GSUITE_TRACKS_VS_GSUITE_TOOL_PLACEHOLDER : (GSUITE_TRACKS_VS_GSUITE_TOOL_URL, GSUITE_TRACKS_VS_GSUITE_TOOL_TITLE, GSUITE_TRACKS_VS_GSUITE_TOOL_HOVER, True, True, False),
+                        DEMO_TRACK_LICA_CN_PLACEHOLDER : (DEMO_TRACK_LICA_CN_URL, DEMO_TRACK_LICA_CN_TITLE, DEMO_TRACK_LICA_CN_HOVER, True, False, False),
+                        ALL_TARGETS_OF_TFS_TOOL_PLACEHOLDER : (ALL_TARGETS_OF_TFS_TOOL_URL, ALL_TFS_OF_REGION_TOOL_TITLE, ALL_TARGETS_OF_TFS_TOOL_HOVER, True, True, False),
+                        ALL_TFS_OF_REGION_TOOL_PLACEHOLDER : (ALL_TFS_OF_REGION_TOOL_URL, ALL_TFS_OF_REGION_TOOL_TITLE, ALL_TFS_OF_REGION_TOOL_HOVER, True, True, False),
+                        TF_BINDING_DISRUPTION_TOOL_PLACEHOLDER : (TF_BINDING_DISRUPTION_TOOL_URL, TF_BINDING_DISRUPTION_TOOL_TITLE, TF_BINDING_DISRUPTION_TOOL_HOVER, True, False, False)
                          }
 
     def __init__(self, fileName, prefixFn, postfixFn):
@@ -372,6 +379,9 @@ class WelcomePageGenerator(object):
 
         if val[2] and val[2] != '':
             lph += '|hover===' + val[1]
+
+        if val[5] and val[5] != '':
+            lph += '|onclick===' + val[5]
 
         lph += '>>'
 
@@ -531,14 +541,21 @@ class WelcomePageGenerator(object):
     
 
 if __name__ == '__main__':
-    import os, sys
-    os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+    # import os, sys
+    # os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
 
-    wg = WelcomePageGenerator('wpcontent.txt', 'wpprefix.html', 'wppostfix.html')
-    with open('../../../../../static/welcome.html', 'w') as f:
+    import os
+
+    path = os.path.dirname(__file__)
+    wg = WelcomePageGenerator(path + '/wpcontent.txt',
+                              path +'/wpprefix.html',
+                              path + '/wppostfix.html')
+    with open(GALAXY_BASE_DIR + '/static/welcome.html', 'w') as f:
 #     with open('testWelcome.html', 'w') as f:
         f.write(LinkExpansion(wg.content).expandLinks())
     
-    with open('../../../quick/toolguide/BasicModeQuestionCatalog.py', 'w') as f:
+    with open(HB_SOURCE_CODE_BASE_DIR +
+              '/quick/toolguide/BasicModeQuestionCatalog.py', 'w') as f:
         f.write(wg.getBasicModeQuestionCatalogContent())
-    print LinkExpansion(wg.content).expandLinks()
+    # print LinkExpansion(wg.content).expandLinks()
+        print 'OK: Finished generating welcome page'

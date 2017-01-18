@@ -11,6 +11,7 @@ from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.util import CommonConstants
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.util.CommonFunctions import prettyPrintTrackName, \
     strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -23,8 +24,7 @@ from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultMod
 from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
     GSuiteSimilarityToQueryTrackRankingsWrapperStat
 from quick.statistic.SingleValueOverlapStat import SingleValueOverlapStat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
+from quick.util import CommonFunctions
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
@@ -40,8 +40,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                                GenomeMixin, GSuiteResultsTableMixin,
                                                DebugMixin):
     Q1 = "Rank suite tracks by similarity to query track"
+    Q1_SHORT = "similarity to query track [rank]"
     Q2 = "Calculate p-values per track in suite: Is a track in the suite " \
          "more similar to the query track than expected by chance? (MC)"
+    Q2_SHORT = "similarity to query track [p-val]"
     Q3 = "Calculate p-value of suite: Are the tracks in the suite (as a " \
          "whole) more similar to the query track than expected by chance (MC)?"
 
@@ -87,6 +89,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         """
         return \
             [('Basic user mode', 'isBasic'),
+             ('', 'basicQuestionId'),
              ('Select query track from history', 'queryTrack'),
              ('Select reference GSuite', 'gsuite')] + \
             cls.getInputBoxNamesForGenomeSelection() + \
@@ -96,7 +99,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
              ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
             cls.getInputBoxNamesForAttributesSelection() + \
-            [('Concatenate the main results as columns to the input GSuite', 'addResults')] + \
             cls.getInputBoxNamesForUserBinSelection() + \
             cls.getInputBoxNamesForDebug()
 
@@ -113,6 +115,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @staticmethod
     def getOptionsBoxIsBasic():  # Alternatively: getOptionsBox1()
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxQueryTrack(prevChoices):
@@ -229,10 +235,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             #                 return [GSuiteConstants.TITLE_COL] + [key for key, val in prevChoices.additionalAttributes.iteritems() if val]
             #
 
-    @staticmethod
-    def getOptionsBoxAddResults(prevChoices):
-        return ['No', 'Yes']
-
     # @staticmethod
     # def getOptionsBox3(prevChoices):
     #    return ['']
@@ -252,11 +254,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     # @staticmethod
     # def getDemoSelections():
     #    return ['testChoice1','..']
-
-    @classmethod
-    def getExtraHistElements(cls, choices):
-        if choices.gsuite and choices.addResults == 'Yes':
-            return [HistElement(GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME, GSUITE_SUFFIX)]
 
     @staticmethod
     def drawPlot(results, additionalResultsDict, title, columnInd=0):
@@ -348,16 +345,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         core = HtmlCore()
         if analysisQuestion == cls.Q1:
-            analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsWrapperStat)
-            analysisSpec.addParameter('pairwiseStatistic',
-                                      GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
-            #             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
-            analysisSpec.addParameter('reverse', reverse)
-            analysisSpec.addParameter('trackTitles', trackTitles)
-            analysisSpec.addParameter('queryTracksNum', str(1))
+            analysisSpec = cls.prepareQ1(reverse, similarityStatClassName, trackTitles)
 
-            resultsObj = doAnalysis(analysisSpec, analysisBins, tracks)
-            results = resultsObj.getGlobalResult()
+            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
             gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track'],
                                                                additionalResultsDict=additionalResultsDict,
@@ -367,89 +357,37 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             else:
                 gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
 
-            core.begin()
-            core.divBegin(divId='results-page')
-            core.divBegin(divClass='results-section')
-            core.header(analysisQuestion)
-            topTrackTitle = results.keys()[0]
-            core.paragraph('''
-                The track "%s" in the GSuite is the one most similar to the query track %s, with a similarity score of %s 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                as measured by the "%s" track similarity measure.
-            ''' % (
-                topTrackTitle, queryTrackTitle, strWithNatLangFormatting(results[topTrackTitle]),
-                similarityStatClassName))
-            #             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to query track'], sortable=True, tableId='resultsTable')
-            core.tableFromDictionary(gsPerTrackResults[1], columnNames=gsPerTrackResults[0], sortable=True,
-                                     tableId='resultsTable', addInstruction=True)
-            
-
-            columnInd = 0
-            if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-                columnInd = 1
-
-            res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(results, additionalResultsDict,
-                                                                    'Similarity to query track', columnInd=columnInd)
-            core.line(res)
-
-            core.divEnd()
-            core.divEnd()
-            
-            core.end()
-            if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'],
-                                                        cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
+            core = cls.generateQ1output(additionalResultsDict, analysisQuestion, choices, galaxyFn, gsPerTrackResults,
+                                        queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
             analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles)
+
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
-            core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
-                                        queryTrackTitle, results, similarityStatClassName)
-            if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score', 'P_Value'],
-                                                        cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
-        else:
-            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
-            analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
-            analysisSpec = AnalysisDefHandler(analysisDefString)
-            analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
-            analysisSpec.addParameter('rawStatistic', 'SummarizedInteractionWithOtherTracksV2Stat')
-            analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
-                similarityStatClassName])  # needed for call of non randomized stat for assertion
-            analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
-            analysisSpec.addParameter('tail', 'right-tail')
+
+            core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict,
+                                        analysisQuestion, choices, galaxyFn, queryTrackTitle,
+                                        gsuite, results, similarityStatClassName)
+        else:  # Q3
+            analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc)
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
-            pval = results['P-value']
-            observed = results['TSMC_SummarizedInteractionWithOtherTracksV2Stat']
-            significanceLevel = 'strong' if pval < 0.01 else ('weak' if pval < 0.05 else 'no')
-            core = HtmlCore()
-            core.begin()
-            core.divBegin(divId='results-page')
-            core.divBegin(divClass='results-section')
-            core.header(analysisQuestion)
-            core.paragraph('''
-                The query track %s shows %s significance in similarity to the suite of %s 
-                and corresponding p-value of %s,
-                as measured by "%s" track similarity measure.
-            ''' % (
-                queryTrackTitle, significanceLevel, strWithNatLangFormatting(observed), strWithNatLangFormatting(pval),
-                similarityStatClassName))
-            core.divEnd()
-            core.divEnd()
-            core.end()
+            core = cls.generateQ3output(analysisQuestion, queryTrackTitle, results, similarityStatClassName)
 
         print str(core)
 
     @classmethod
-    def generateQ2Output(cls, additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
-                         queryTrackTitle, results, similarityStatClassName):
-        gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track', 'P-value'],
-                                                           additionalResultsDict=additionalResultsDict,
-                                                           additionalAttributesDict=additionalAttributesDict)
-        if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-            gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
-        else:
-            gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
+    def prepareQ1(cls, reverse, similarityStatClassName, trackTitles):
+        analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsWrapperStat)
+        analysisSpec.addParameter('pairwiseStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
+        analysisSpec.addParameter('reverse', reverse)
+        analysisSpec.addParameter('trackTitles', trackTitles)
+        analysisSpec.addParameter('queryTracksNum', str(1))
+        return analysisSpec
+
+    @classmethod
+    def generateQ1output(cls, additionalResultsDict, analysisQuestion, choices, galaxyFn,
+                         gsPerTrackResults, queryTrackTitle, gsuite, results,
+                         similarityStatClassName):
         core = HtmlCore()
         core.begin()
         core.divBegin(divId='results-page')
@@ -457,13 +395,27 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         core.header(analysisQuestion)
         topTrackTitle = results.keys()[0]
         core.paragraph('''
-                The track "%s" has the lowest P-value of %s corresponding to %s  similarity to the query track "%s"
-                as measured by "%s" track similarity measure.
-            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
-                   strWithNatLangFormatting(results[topTrackTitle][0]), queryTrackTitle, similarityStatClassName))
-        #             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to query track', 'P-value'], sortable=False)
-        core.tableFromDictionary(gsPerTrackResults[1], columnNames=gsPerTrackResults[0], sortable=True,
-                                 tableId='resultsTable')
+                The track "%s" in the GSuite is the one most similar to the query track %s, with a similarity score of %s
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                as measured by the "%s" track similarity measure.
+            ''' % (
+            topTrackTitle, queryTrackTitle, strWithNatLangFormatting(results[topTrackTitle]),
+            similarityStatClassName))
+        core.divBegin()
+
+        addTableWithTabularAndGsuiteImportButtons(
+            core, choices, galaxyFn, cls.Q1_SHORT, tableDict=gsPerTrackResults[1],
+            columnNames=gsPerTrackResults[0], gsuite=gsuite, results=results,
+            gsuiteAppendAttrs=['similarity_score'], sortable=True)
+
+        core.divEnd()
+        columnInd = 0
+        if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
+            columnInd = 1
+
+        res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(
+            results, additionalResultsDict,
+            'Similarity to query track', columnInd=columnInd)
+        core.line(res)
         core.divEnd()
         core.divEnd()
         core.end()
@@ -488,6 +440,99 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return analysisSpec
 
     @classmethod
+    def generateQ2Output(cls, additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
+                         galaxyFn, queryTrackTitle, gsuite, results, similarityStatClassName):
+        gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track', 'P-value'],
+                                                           additionalResultsDict=additionalResultsDict,
+                                                           additionalAttributesDict=additionalAttributesDict)
+        if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
+            gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
+        else:
+            gsPerTrackResults = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId='results-page')
+        core.divBegin(divClass='results-section')
+        core.header(analysisQuestion)
+        topTrackTitle = results.keys()[0]
+        core.paragraph('''
+                The track "%s" has the lowest P-value of %s corresponding to %s  similarity to the query track "%s"
+                as measured by "%s" track similarity measure.
+            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
+                   strWithNatLangFormatting(results[topTrackTitle][0]), queryTrackTitle, similarityStatClassName))
+
+        addTableWithTabularAndGsuiteImportButtons(
+            core, choices, galaxyFn, cls.Q2_SHORT, tableDict=gsPerTrackResults[1],
+            columnNames=gsPerTrackResults[0], gsuite=gsuite, results=results,
+            gsuiteAppendAttrs=['similarity_score', 'p_value'], sortable=True)
+
+        columnInd = 0
+        if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
+            columnInd = 1
+
+        resultsSeparateListPart = OrderedDict()
+        additionalResultsDictIncludePartFromResults = OrderedDict()
+
+        for k, v in results.iteritems():
+            if k not in resultsSeparateListPart.keys():
+                resultsSeparateListPart[k] = v[0]
+            if k not in additionalResultsDictIncludePartFromResults.keys():
+                additionalResultsDictIncludePartFromResults[k] = OrderedDict()
+            additionalResultsDictIncludePartFromResults[k]['P-Value'] = v[1]
+            for k1, v1 in additionalResultsDict[k].iteritems():
+                additionalResultsDictIncludePartFromResults[k][k1] = v1
+
+        res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(
+            resultsSeparateListPart, additionalResultsDictIncludePartFromResults,
+            'Similarity to query track', columnInd=columnInd)
+        core.line(res)
+        core.divEnd()
+        core.divEnd()
+        core.end()
+        return core
+
+    @classmethod
+    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES[
+                                '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('rawStatistic', 'SummarizedInteractionWithOtherTracksV2Stat')
+        analysisSpec.addParameter('pairwiseStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                      similarityStatClassName])  # needed for call of non randomized stat for assertion
+        analysisSpec.addParameter('summaryFunc',
+                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
+        analysisSpec.addParameter('tail', 'right-tail')
+        return analysisSpec
+
+    @classmethod
+    def generateQ3output(cls, analysisQuestion, queryTrackTitle, results, similarityStatClassName):
+        pval = results['P-value']
+        observed = results['TSMC_SummarizedInteractionWithOtherTracksV2Stat']
+        significanceLevel = 'strong' if pval < 0.01 else ('weak' if pval < 0.05 else 'no')
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId='results-page')
+        core.divBegin(divClass='results-section')
+        core.header(analysisQuestion)
+        core.paragraph('''
+                    The query track %s shows %s significance in similarity to the suite of %s
+                    and corresponding p-value of %s,
+                    as measured by "%s" track similarity measure.
+                ''' % (
+            queryTrackTitle, significanceLevel, strWithNatLangFormatting(observed),
+            strWithNatLangFormatting(pval),
+            similarityStatClassName))
+        core.divEnd()
+        core.divEnd()
+        core.end()
+        return core
+
+    @classmethod
     def validateAndReturnErrors(cls, choices):
         """
         Should validate the selected input parameters. If the parameters are not
@@ -497,6 +542,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         the method should return None, which enables the execute button.
         :param choices:  Dict holding all current selections
         """
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.queryTrack and not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.TRACK_INPUT, ToolGuideConfig.GSUITE_INPUT],
                                                choices.isBasic)
@@ -543,15 +591,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             return UserBinSourceRegistryForDescriptiveStats
         else:  # Q2, Q3
             return UserBinSourceRegistryForHypothesisTests
-
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]
 
     # @staticmethod
     # def getSubToolClasses():
@@ -613,22 +652,37 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return []
     #
-    # @staticmethod
-    # def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
-    #
-    # @staticmethod
-    # def getToolIllustration():
-    #    '''
-    #    Specifies an id used by StaticFile.py to reference an illustration file
-    #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by Config.py. The
-    #    full path is created from the base directory followed by the id.
-    #    '''
-    #    return None
+    @staticmethod
+    def getToolDescription():
+        '''
+        Specifies a help text in HTML that is displayed below the tool.
+        '''
+
+        core = HtmlCore()
+        core.divBegin()
+        core.paragraph("""This tools implements a solution to the statistical question
+            'Which tracks (in a suite) coincide most strongly with a separate single track?'. To use the tool:""")
+        core.orderedList(["Select the query track (dataset of interest).",
+                          "Select the reference GSuite (dataset collection to be screened against the query track).",
+                          "Select additional options (advanced mode only).",
+                          "Execute the tool."])
+        core.paragraph("""<br><br><b>Tool illustration.</b>
+            Tracks in a collection that coincide with a query track of interest.<br>
+            Q - The query track.<br>
+            Ri - Reference track i (i = 1,..,n).<br>
+            """)
+        core.divEnd()
+        return str(core)
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'track-gsuite.png']
     #
     # @staticmethod
     # def getFullExampleURL():

@@ -113,7 +113,7 @@ def motifSearch(haystack, needle):
             if j == i + len(needle) - 1:
                 # We have come to end without breaking, we have a match. Return
                 return possibleFoundPosition
-                # TODO (Ivar 02.10.2015): Return all found positions instead of only one
+
     return False
 
 # Returns a "probability" that the motif (needle) will bind/fit in every possible position in the haystack sequence
@@ -363,12 +363,6 @@ class MutationAffectingGeneRegulation:
         # Add some fake mutations
         #snps[1].append(SNP(1, 1708718, "C", "A"))
         #snps[1].append(SNP(1, 1708720, "G", "C"))
-        snps[1].append(SNP(1, 10057, "G", "C"))
-        snps[1].append(SNP(1, 10470, "G", "C"))
-        snps[1].append(SNP(1, 10602, "G", "C"))
-        snps[1].append(SNP(1, 10902, "G", "C"))
-        snps[1].append(SNP(1, 10903, "G", "C"))
-        snps[1].append(SNP(1, 16861881, "G", "T"))
 
         # Add all transcription factor tracks from gsuite file
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)

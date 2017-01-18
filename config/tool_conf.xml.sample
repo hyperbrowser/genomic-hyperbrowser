@@ -24,7 +24,8 @@
       <tool file="proto/hyperbrowser/gsuite/GSuiteSelectColumns.xml" />
       <tool file="proto/hyperbrowser/gsuite/ConcatenateGSuitesTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/EditGsuiteMetadataTool.xml" />
-      <!--<tool file="proto/hyperbrowser/gsuite/UnionOfGSuiteTracksTool.xml" />-->
+      <tool file="proto/hyperbrowser/gsuite/UnionOfGSuiteTracksTool.xml" />
+      <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
     <label text="Modify datasets referred to in a GSuite" id="gsuite_dataset_modify"/>
       <tool file="proto/hyperbrowser/gsuite/GSuiteManipulateTextFiles.xml" />
     <label text="Export GSuite datasets" id="gsuite_export_tools"/>
@@ -35,7 +36,6 @@
     <label text="Metadata overview" id="metadata_overview"/>
       <tool file="proto/hyperbrowser/gsuite/GSuiteMetadataOverviewTool.xml" />
     <label text="Track overview" id="data_overview"/>
-      <tool file="proto/hyperbrowser/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageBasicOverviewOfTracksInGSuiteTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageSimilarityAndUniquenessOfTracksTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/PilotPageClusteringInTracksTool.xml" />
@@ -64,6 +64,8 @@
 	<label text="TF workbench" id="tf_workbench_tools"/>
       <tool file="proto/hyperbrowser/tfbs/AllTargetsOfTfs.xml" />
       <tool file="proto/hyperbrowser/tfbs/AllTfsOfRegions.xml" />
+      <tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />
+      <tool file="proto/hyperbrowser/gsuite/MatchTfWithPWM.xml" />
     <!--<label text="Repeats analysis tools" id="repeats_analysis_tools"/>-->
       <!--<tool file="proto/hyperbrowser/gsuite/FindMonomerRepeatsForFastaGSuiteTool.xml" />-->
 	  <!--<tool file="proto/hyperbrowser/gsuite/ExtractTrackFromRepositoryFromBinsDefinedByGSuiteTool.xml" />-->
@@ -76,15 +78,15 @@
   <!--<section name="Assorted tools (Beta)" id="gsuite_beta_tools">-->
   <!--</section>-->
 
-  <!--<section name="Planned tools (Still in development or on hold)" id="gsuite_planned_tools">-->
-     <!--<tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />-->
-  <!--</section>-->
+  <section name="Experimental tools for GSuite HB manuscript" id="gsuite_experimental_tools">
+    <tool file="proto/hyperbrowser/article/ClusTrackTool.xml" />
+    <tool file="proto/hyperbrowser/restricted/GenericPlotDataTool.xml" />
+  </section>
 
   <!--<section name="Not part of current submission" id="gsuite_other_tools">-->
       <!--<tool file="proto/hyperbrowser/gsuite/PilotPageOverlapBetweenTracksTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/GsuiteOverviewTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/NormalizeTracksInGSuiteTool.xml" />-->
-      <!--<tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/QueryTrackCoincidingWithTwoGSuitesTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/restricted/ScreenTwoTrackCollectionsAgainstEachOther2LevelDepth.xml" />-->
       <!--<tool file="proto/hyperbrowser/gsuite/HeatmapOfTwoGsuitesTool.xml" />-->
@@ -111,7 +113,6 @@
       <tool file="proto/hyperbrowser/plot/BinScaledPlotTool.xml" />
       <!--<tool file="proto/hyperbrowser/restricted/SegmentsOverlapVisualizationTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/restricted/SegmentsOverlapVisualizationHeatmapTool.xml" />-->
-      <!--<tool file="proto/hyperbrowser/restricted/GenericPlotDataTool.xml" />-->
   </section>
 
   <!--<section name="Genomic variation analysis" id="genomic_variation_tools">-->
@@ -238,7 +239,6 @@
     <!--<tool file="proto/hyperbrowser/tfbs/TestOverrepresentationOfPwmInDna.xml" />-->
     <!--<tool file="proto/hyperbrowser/restricted/ExtractPwms.xml" />-->
       <!--<tool file="proto/hyperbrowser/tfbs/AnalyzeTfsVersusSnv.xml" />-->
-    <!--<tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />-->
   </section>
 
   <section name="Gene tools" id="gene_tools">
@@ -264,10 +264,6 @@
     <tool file="proto/hyperbrowser/util/StandardizeTrackFilesTool.xml" />
     <tool file="proto/hyperbrowser/InstallUcscTool.xml" />
     <tool file="proto/hyperbrowser/track/IntegrateCategoricalTrackFromHistory.xml" />
-
-    <!-- hidden tools -->
-    <tool file="proto/hyperbrowser/file_import/FileImport.xml" />
-    <!-- end hidden tools -->
   </section>
 
   <section name="Development tools" id="debug_tools">
@@ -367,6 +363,10 @@
     <tool file="proto/GenerateToolsTool.xml" />
     <tool file="proto/ExploreToolsTool.xml" />
     <tool file="proto/InstallToolsTool.xml" />
+
+    <!-- hidden tools -->
+    <tool file="proto/FileImport.xml" />
+    <!-- end hidden tools -->
   </section>
 
   <label text=" " id="space0"/>

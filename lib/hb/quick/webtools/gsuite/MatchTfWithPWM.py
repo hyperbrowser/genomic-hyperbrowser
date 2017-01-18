@@ -1,12 +1,15 @@
+from proto.CommonFunctions import extractFnFromDatasetInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.gsuite import GSuiteConstants
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
 
-class MatchTfWithPWM(GeneralGuiTool):
-
+class MatchTfWithPWM(GeneralGuiTool, GenomeMixin):
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    ALLOW_MULTIPLE_GENOMES = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'  # Other common possibility: 'the analysis'
 
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
     GSUITE_ALLOWED_FILE_TYPES = [GSuiteConstants.PREPROCESSED]
@@ -19,7 +22,7 @@ class MatchTfWithPWM(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Match a suit of TFs with PWMs"
+        return "Match a suite of TFs with PWMs"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -40,8 +43,9 @@ class MatchTfWithPWM(GeneralGuiTool):
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
 
-        return [('Gsuit file containing transcription factors', 'gsuite')] #+\
-                #cls.getInputBoxNamesForGenomeSelection() +\
+        return [('', 'basicQuestionId'),
+                ('Gsuite file containing transcription factors', 'gsuite')] +\
+                cls.getInputBoxNamesForGenomeSelection()
                 #UserBinSelector.getUserBinInputBoxNames()
 
     #@staticmethod
@@ -54,9 +58,12 @@ class MatchTfWithPWM(GeneralGuiTool):
     #    '''
     #    return None
 
+    @staticmethod
+    def getOptionsBoxBasicQuestionId():
+        return '__hidden__', None
 
     @staticmethod
-    def getOptionsBoxGsuite(): # Alternatively: getOptionsBox2()
+    def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox2()
         '''
         See getOptionsBoxFirstKey().
 
@@ -89,7 +96,7 @@ class MatchTfWithPWM(GeneralGuiTool):
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        fileName = choices.gsuite.split(":")[2]
+        fileName = extractFnFromDatasetInfo(choices.gsuite)
         attributes_ordered = []
 
         metaFields = []
@@ -185,23 +192,23 @@ class MatchTfWithPWM(GeneralGuiTool):
         valid, the method should return None, which enables the execute button.
         '''
 
-        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
+        errorString = cls._checkGSuiteFile(choices.gsuite)
         if errorString:
             return errorString
 
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        errorString = GeneralGuiTool._checkGSuiteRequirements(
+        errorString = cls._checkGSuiteRequirements(
             gSuite,
             allowedLocations=cls.GSUITE_ALLOWED_LOCATIONS,
             allowedFileFormats=cls.GSUITE_ALLOWED_FILE_TYPES,
             allowedTrackTypes=cls.GSUITE_ALLOWED_TRACK_TYPES)
-
         if errorString:
             return errorString
 
-
-        return None
+        errorString = cls._validateGenome(choices.genome)
+        if errorString:
+            return errorString
 
     @staticmethod
     def isPublic():

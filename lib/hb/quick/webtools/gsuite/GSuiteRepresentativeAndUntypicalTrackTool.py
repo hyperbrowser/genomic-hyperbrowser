@@ -5,7 +5,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
-from gold.gsuite.GSuiteConstants import GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME,\
+from gold.gsuite.GSuiteConstants import GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME, \
     GSUITE_SUFFIX
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
@@ -13,17 +13,19 @@ from gold.track.Track import Track
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName, \
+    addTableWithTabularAndGsuiteImportButtons
 from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
 from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
 from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
-from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import GSuiteRepresentativenessOfTracksRankingsWrapperStat
+from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import \
+    GSuiteRepresentativenessOfTracksRankingsWrapperStat
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from quick.webtools.gsuite.GSuiteTracksCoincidingWithQueryTrackTool import GSuiteTracksCoincidingWithQueryTrackTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
@@ -38,12 +40,14 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                                                 GenomeMixin, GSuiteResultsTableMixin,
                                                 DebugMixin):
-    
-    Q1 = "Rank the tracks by representativeness of the suite (descending, i.e. most representative on top)"
+
+    Q1 = "Rank the tracks by representativeness of the suite"  # (descending, i.e. most representative on top)"
+    Q1_SHORT = "similarity to rest of tracks in suite [rank]"
     Q2 = "Rank the tracks by representativeness of the suite (ascending, i.e. most atypical on top)"
     Q3 = "Calculate p-value per track for similarity to the rest of the tracks in the suite (MC)"
+    Q3_SHORT = "similarity to rest of tracks in suite [p-val]"
     Q4 = "Calculate p-value per suite: Are the tracks in the suite (as a whole) more similar than expected by chance? (MC)"
-    
+
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
@@ -57,7 +61,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
 
     GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
                                  GSuiteConstants.MULTIPLE]
-    
+
     @staticmethod
     def getToolName():
         '''
@@ -85,6 +89,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         Note: the key has to be camelCase and start with a non-capital letter (e.g. "firstKey")
         '''
         return [('Basic user mode', 'isBasic'),
+                ('', 'basicQuestionId'),
                 ('Select a GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
@@ -94,7 +99,6 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                 ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
                cls.getInputBoxNamesForAttributesSelection() + \
-               [('Concatenate the main results as columns to the input GSuite', 'addResults')] + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
 
@@ -162,6 +166,10 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         return False
 
     @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
+
+    @staticmethod
     def getOptionsBoxGsuite(prevChoices): # Alternatively: getOptionsBox2()
         '''
         See getOptionsBoxFirstKey().
@@ -192,25 +200,12 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxReversed(prevChoices):
         if not prevChoices.isBasic:
             return False
-        
+
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
         if not prevChoices.isBasic and prevChoices.analysisName in [cls.Q3, cls.Q4]:
             analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$'])
             return analysisSpec.getOptionsAsText().values()[0]
-        
-    @staticmethod
-    def getOptionsBoxAddResults(prevChoices):
-        return ['No', 'Yes']
-    
-    @classmethod
-    def getExtraHistElements(cls, choices):
-        if choices.gsuite and choices.addResults == 'Yes':
-            return [HistElement(GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME, GSUITE_SUFFIX)]
-
-    #@staticmethod
-    #def getOptionsBox4(prevChoices):
-    #    return ['']
 
     #@staticmethod
     #def getInfoForOptionsBoxKey(prevChoices):
@@ -244,23 +239,21 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         similaryStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
         reverse = 'Yes' if choices.reversed else 'No'
-        
+
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         tracks = [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join([quote(x.title, safe='') for x in gsuite.allTracks()])
-        
+
         additionalResultsDict = OrderedDict()
         additionalAttributesDict = OrderedDict()
         if analysisQuestion in [cls.Q1, cls.Q2, cls.Q3]:
-            
             additionalAttributesDict = cls.getSelectedAttributesForEachTrackDict(choices.additionalAttributes, gsuite)
             #additional analysis
             stats = [CountStat, CountElementStat]
             additionalResultsDict = runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None)
-       
-        
+
         if analysisQuestion == cls.Q1:
             analysisSpec = AnalysisSpec(GSuiteRepresentativenessOfTracksRankingsWrapperStat)
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
@@ -269,14 +262,18 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('ascending', 'No')
             analysisSpec.addParameter('trackTitles', trackTitles)
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
-            
-            gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc], additionalResultsDict=additionalResultsDict, additionalAttributesDict=additionalAttributesDict)
+
+            gsPerTrackResultsModel = GSuitePerTrackResultModel(
+                results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc],
+                additionalResultsDict=additionalResultsDict,
+                additionalAttributesDict=additionalAttributesDict)
             if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-                columnTitles, decoratedResultsDict = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
+                columnTitles, decoratedResultsDict = \
+                    gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
             else:
-                columnTitles, decoratedResultsDict = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
-            
-            
+                columnTitles, decoratedResultsDict = \
+                    gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
+
             core = HtmlCore()
             core.begin()
             core.divBegin(divId='results-page')
@@ -287,67 +284,87 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                 The track "%s" is the most representative track of the GSuite with %s %s similarity to the rest of the tracks
                 as measured by "%s" track similarity measure.
             ''' % (topTrackTitle, results[topTrackTitle], summaryFunc, similaryStatClassName))
-#             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to rest of tracks in suite (' + summaryFunc+')'], sortable=False)
-            core.tableFromDictionary(decoratedResultsDict, columnNames=columnTitles, sortable=True, tableId='resultsTable', addInstruction=True)
-            
-            #plot
+
+            addTableWithTabularAndGsuiteImportButtons(
+                core, choices, galaxyFn, cls.Q1_SHORT, decoratedResultsDict, columnTitles,
+                gsuite=gsuite, results=results, gsuiteAppendAttrs=['similarity_score'],
+                sortable=True)
+
+            # plot
             columnInd = 0
             if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
                 columnInd = 1
-            res  = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(results, additionalResultsDict, 'Similarity to rest of tracks in suite (%s)' % summaryFunc, columnInd=columnInd)
+            res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(
+                results, additionalResultsDict,
+                'Similarity to rest of tracks in suite (%s)' % summaryFunc,
+                columnInd=columnInd)
             core.line(res)
             core.divEnd()
             core.divEnd()
             core.end()
-            
-            if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
-        elif analysisQuestion == cls.Q2:
-            analysisSpec = AnalysisSpec(GSuiteRepresentativenessOfTracksRankingsWrapperStat)
-            analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
-            analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
-            analysisSpec.addParameter('reverse', reverse)
-            analysisSpec.addParameter('ascending', 'Yes')
-            analysisSpec.addParameter('trackTitles', trackTitles)
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
-            
-            gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc], additionalResultsDict=additionalResultsDict, additionalAttributesDict=additionalAttributesDict)
-            if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-                columnTitles, decoratedResultsDict = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
-            else:
-                columnTitles, decoratedResultsDict = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
-            
-         
-            
-            core = HtmlCore()
-            core.begin()
-            core.divBegin(divId='results-page')
-            core.divBegin(divClass='results-section')
-            core.header(analysisQuestion)
-            topTrackTitle = results.keys()[0]
-            core.paragraph('''
-                The track "%s" is the most atypical track of the GSuite with %s %s similarity to the rest of the tracks
-                as measured by the "%s" track similarity measure.
-            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle]), summaryFunc, similaryStatClassName))
-#             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to rest of tracks in suite (' + summaryFunc+')'], sortable=False)
-            core.tableFromDictionary(decoratedResultsDict, columnNames=columnTitles, sortable=True, tableId='resultsTable')
-            
-            columnInd = 0
-            if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-                columnInd = 1
-            res  = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(results, additionalResultsDict, 'Similarity to rest of tracks in suite (%s)' % summaryFunc, columnInd=columnInd)
-            core.line(res)
-            core.divEnd()
-            core.divEnd()
-            core.end()
-            
-            
-            if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
+
+        # elif analysisQuestion == cls.Q2:
+        #     analysisSpec = AnalysisSpec(GSuiteRepresentativenessOfTracksRankingsWrapperStat)
+        #     analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
+        #     analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
+        #     analysisSpec.addParameter('reverse', reverse)
+        #     analysisSpec.addParameter('ascending', 'Yes')
+        #     analysisSpec.addParameter('trackTitles', trackTitles)
+        #     results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+        #
+        #     gsPerTrackResultsModel = GSuitePerTrackResultModel(
+        #         results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc],
+        #         additionalResultsDict=additionalResultsDict,
+        #         additionalAttributesDict=additionalAttributesDict)
+        #     if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
+        #         columnTitles, decoratedResultsDict = \
+        #             gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
+        #     else:
+        #         columnTitles, decoratedResultsDict = \
+        #             gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
+        #
+        #     core = HtmlCore()
+        #     core.begin()
+        #     core.divBegin(divId='results-page')
+        #     core.divBegin(divClass='results-section')
+        #     core.header(analysisQuestion)
+        #     topTrackTitle = results.keys()[0]
+        #     core.paragraph('''
+        #         The track "%s" is the most atypical track of the GSuite with %s %s similarity to the rest of the tracks
+        #         as measured by the "%s" track similarity measure.
+        #     ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle]), summaryFunc, similaryStatClassName))
+        #     # core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to rest of tracks in suite (' + summaryFunc+')'], sortable=False)
+        #
+        #     from quick.util import CommonFunctions
+        #     rawDataURIList = CommonFunctions.getHyperlinksForRawTableData(
+        #         dataDict=decoratedResultsDict, colNames=columnTitles,
+        #         tableId="resultsTable", galaxyFn=galaxyFn)
+        #     core.tableFromDictionary(decoratedResultsDict, columnNames=columnTitles, sortable=True,
+        #                              tableId='resultsTable', addInstruction=True,
+        #                              addRawDataSelectBox=True, rawDataURIList=rawDataURIList)
+        #     # core.tableFromDictionary(decoratedResultsDict, columnNames=columnTitles, sortable=True, tableId='resultsTable')
+        #
+        #     columnInd = 0
+        #     if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
+        #         columnInd = 1
+        #     res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(
+        #         results, additionalResultsDict,
+        #         'Similarity to rest of tracks in suite (%s)' % summaryFunc,
+        #         columnInd=columnInd)
+        #     core.line(res)
+        #     core.divEnd()
+        #     core.divEnd()
+        #     core.end()
+        #
+        #     if choices.addResults == 'Yes':
+        #         GSuiteStatUtils.addResultsToInputGSuite(
+        #             gsuite, results, ['Similarity_score'],
+        #             cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         elif analysisQuestion == cls.Q3:
-            
-            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
-            
+
+            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+
             analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> GSuiteRepresentativenessOfTracksRankingsAndPValuesWrapperStat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
@@ -359,13 +376,18 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('trackTitles', trackTitles)
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
             core = HtmlCore()
-            
-            gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc, 'P-value'], additionalResultsDict=additionalResultsDict, additionalAttributesDict=additionalAttributesDict)
+
+            gsPerTrackResultsModel = GSuitePerTrackResultModel(
+                results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc, 'P-value'],
+                additionalResultsDict=additionalResultsDict,
+                additionalAttributesDict=additionalAttributesDict)
             if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
-                columnTitles, decoratedResultsDict = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
+                columnTitles, decoratedResultsDict = \
+                    gsPerTrackResultsModel.generateColumnTitlesAndResultsDict(choices.leadAttribute)
             else:
-                columnTitles, decoratedResultsDict = gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
-            
+                columnTitles, decoratedResultsDict = \
+                    gsPerTrackResultsModel.generateColumnTitlesAndResultsDict()
+
             core.begin()
             core.divBegin(divId='results-page')
             core.divBegin(divClass='results-section')
@@ -374,16 +396,21 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             core.paragraph('''
                 The track "%s" has the lowest P-value of %s corresponding to %s %s similarity to the rest of the tracks
                 as measured by "%s" track similarity measure.
-            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]), strWithNatLangFormatting(results[topTrackTitle][0]), summaryFunc, similaryStatClassName))
-#             core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to rest of tracks in suite (' + summaryFunc+')', 'P-value'], sortable=False)
-            core.tableFromDictionary(decoratedResultsDict, columnNames=columnTitles, sortable=True)
+            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
+                   strWithNatLangFormatting(results[topTrackTitle][0]), summaryFunc, similaryStatClassName))
+            # core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to rest of tracks in suite (' + summaryFunc+')', 'P-value'], sortable=False)
+
+            addTableWithTabularAndGsuiteImportButtons(
+                core, choices, galaxyFn, cls.Q3_SHORT, decoratedResultsDict, columnTitles,
+                gsuite=gsuite, results=results, gsuiteAppendAttrs=['similarity_score', 'p_value'],
+                sortable=True)
+
             core.divEnd()
             core.divEnd()
             core.end()
-            if choices.addResults == 'Yes':
-                GSuiteStatUtils.addResultsToInputGSuite(gsuite, results, ['Similarity_score', 'P_value'], cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
-        else:
-            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+        else: # Q4
+            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
             analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> CollectionSimilarityHypothesisWrapperStat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
@@ -391,29 +418,29 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('rawStatistic', 'MultitrackSummarizedInteractionV2Stat')
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
-            analysisSpec.addParameter('multitrackSummaryFunc', 'avg') #should it be a choice?
+            analysisSpec.addParameter('multitrackSummaryFunc', 'avg')  # should it be a choice?
             analysisSpec.addParameter('tail', 'right-tail')
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
             pval = results['P-value']
             observed = results['TSMC_MultitrackSummarizedInteractionV2Stat']
-            significanceLevel = 'strong' if pval < 0.01 else ('weak' if pval < 0.05 else 'no') 
+            significanceLevel = 'strong' if pval < 0.01 else ('weak' if pval < 0.05 else 'no')
             core = HtmlCore()
             core.begin()
             core.divBegin(divId='results-page')
             core.divBegin(divClass='results-section')
             core.header(analysisQuestion)
             core.paragraph('''
-                The tracks in the suite show %s significance in their collective similarity 
-                (average similarity of a track to the rest) of %s 
+                The tracks in the suite show %s significance in their collective similarity
+                (average similarity of a track to the rest) of %s
                 and corresponding p-value of %s,
                 as measured by "%s" track similarity measure.
-            ''' % (significanceLevel, strWithNatLangFormatting(observed), strWithNatLangFormatting(pval), similaryStatClassName))
+            ''' % (significanceLevel, strWithNatLangFormatting(observed),
+                   strWithNatLangFormatting(pval), similaryStatClassName))
             core.divEnd()
             core.divEnd()
             core.end()
-            
+
         print str(core)
-        
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -424,18 +451,20 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 
         errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
         if errorString:
             return errorString
-        
+
         errorString = cls._validateGenome(choices)
         if errorString:
             return errorString
-        
+
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
         errorString = GeneralGuiTool._checkGSuiteRequirements \
@@ -444,10 +473,10 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
              cls.GSUITE_ALLOWED_LOCATIONS,
              cls.GSUITE_ALLOWED_TRACK_TYPES,
              cls.GSUITE_DISALLOWED_GENOMES)
-        
+
         if errorString:
-            return errorString        
-        
+            return errorString
+
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
@@ -458,15 +487,6 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             return UserBinSourceRegistryForDescriptiveStats
         else:  # Q3, Q4
             return UserBinSourceRegistryForHypothesisTests
-
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        return [track.trackName for track in gsuite.allTracks()]
 
     #@staticmethod
     #def getSubToolClasses():
@@ -479,12 +499,13 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
     #
     @staticmethod
     def isPublic():
-       '''
-       Specifies whether the tool is accessible to all users. If False, the
-       tool is only accessible to a restricted set of users as defined in
-       LocalOSConfig.py.
-       '''
-       return True
+        '''
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as defined in
+        LocalOSConfig.py.
+        '''
+        return True
+
     #
     #@staticmethod
     #def isRedirectTool():
@@ -527,22 +548,34 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
     #    '''
     #    return []
     #
-    #@staticmethod
-    #def getToolDescription():
-    #    '''
-    #    Specifies a help text in HTML that is displayed below the tool.
-    #    '''
-    #    return ''
-    #
-    #@staticmethod
-    #def getToolIllustration():
-    #    '''
-    #    Specifies an id used by StaticFile.py to reference an illustration file
-    #    on disk. The id is a list of optional directory names followed by a file
-    #    name. The base directory is STATIC_PATH as defined by Config.py. The
-    #    full path is created from the base directory followed by the id.
-    #    '''
-    #    return None
+    @staticmethod
+    def getToolDescription():
+        '''
+        Specifies a help text in HTML that is displayed below the tool.
+        '''
+        core = HtmlCore()
+        core.divBegin()
+        core.paragraph("""This tools implements a solution to the statistical question
+                    'Which tracks (in a suite) are most representative and most atypical'. To use the tool:""")
+        core.orderedList(["Select the GSuite (dataset collection of interest).",
+                          "Select additional options (advanced mode only).",
+                          "Execute the tool."])
+        core.paragraph("""<br><br><b>Tool illustration.</b>
+                    Relatedness of tracks in a collection.<br>
+                    Ri - Track i (i = 1,..,n).<br>
+                    """)
+        core.divEnd()
+        return str(core)
+
+    @staticmethod
+    def getToolIllustration():
+        '''
+        Specifies an id used by StaticFile.py to reference an illustration file
+        on disk. The id is a list of optional directory names followed by a file
+        name. The base directory is STATIC_PATH as defined by AutoConfig.py. The
+        full path is created from the base directory followed by the id.
+        '''
+        return ['illustrations', 'tools', 'suite.png']
     #
     #@staticmethod
     #def getFullExampleURL():
@@ -559,10 +592,10 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
     #
     @staticmethod
     def isDebugMode():
-       '''
-       Specifies whether debug messages are printed.
-       '''
-       return False
+        '''
+        Specifies whether debug messages are printed.
+        '''
+        return False
 
     @staticmethod
     def getOutputFormat(choices):

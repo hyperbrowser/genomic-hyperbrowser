@@ -62,15 +62,15 @@
 
 		    <h3 class="overview" align="center">GSuite Analysis Workflow Diagram</h3>
 		    <h4 class="overview_subtitle" align="center">(follow the links in the diagram to access the tools directly)</h4>
-		    
-		    <div style="width:900px; height:750px; margin: 0 auto; padding: 5px;"> 
+
+		    <div style="width:900px; height:750px; margin: 0 auto; padding: 5px;">
 			<canvas id="myCanvas" width="770" height="750">
 			Your browser does not support the HTML5 canvas tag.
 			</canvas>
 			</div>
 
 		    <p>
-		    The power of the GSuite HyperBrowser is best seen when its tools are combined in a full investigation scenario. We provide several <a href="welcome_usecases.html">use-cases</a>,
+		    The power of the GSuite HyperBrowser is best seen when its tools are combined in a full investigation scenario. We provide several <a href="welcome.html?tabOn=tab4">examples</a>,
 		    which illustrate the standard workflow structure, involving tools from the three main stages of a typical analysis. With annotated step-by-step analysis histories that include everything from the dataset acquisition to final results, these examples demonstrate solutions to a selection of complex research questions.
 		    </p>
 		    <p>
@@ -94,7 +94,7 @@
 				<h2>
 					Examples of analyses using GSuite
 				</h2>
-				
+
 				<p>
 					To demonstrate the purpose and capabilities of the GSuite HyperBrowser, we assembled a collection of complex example investigations. Our use-cases include three categories: exploration of genomic track characteristics, reproduction of a previously published study and answering of a novel research question. Each example is provided with an annotated analysis history, which documents the step-by-step process leading from initial dataset acquisition to final results while retaining all intermediate data files and parameter choices. Although each of the cases presents an objectively non-trivial task, both regarding data management and analysis methodology, the following self-contained GSuite-enabled solutions are very simple in terms of work required by the user.
 				</p>
@@ -102,9 +102,9 @@
 					(The individual cases can be expanded/hid by a simple click.)
 				</p>
 			</div>
-						
 
-				
+
+
 			<div class="tab4collectionTitle" id="T3">
 				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B3" class='-off' /></div>
 					- Chromatin accessibility (DHSs) across cell types
@@ -118,7 +118,7 @@
 
 				<div class="tab4collectionDescDetails">The Encyclopedia of DNA Elements (ENCODE) Consortium is an international effort aiming to build a comprehensive list of functional elements of the human genome. ENCODE generated maps of regulatory elements using DNA hypersensitivity assays, assays of DNA methylation, and immunoprecipitation of proteins that interact with DNA/RNA, followed by sequencing (i.e. modified histones, transcription factors, chromatin regulators, and RNA-binding proteins) [2].</div>
 
-				<div class="tab4collectionDescDetails">[1] Cockerill, P. N. Structure and function of active chromatin and DNase I hypersensitive sites. FEBS J. 278, 2182â€“2210 (2011).</div>
+				<div class="tab4collectionDescDetails">[1] Cockerill, P. N. Structure and function of active chromatin and DNase I hypersensitive sites. FEBS J. 278, 2182-2210 (2011).</div>
 
 				<div class="tab4collectionDescDetails">[2] ENCODE: Encyclopedia of DNA Elements (2015). https://www.encodeproject.org</div>
 
@@ -129,12 +129,20 @@
 
 
 
-				<div class="tab4collectionDescDetails">This example examines the characteristics of ENCODE-generated DHS tracks accessible via HyperBrowser tool ''Create a remote GSuite from a public repository''. About 450 tracks, encompassing over 150 different cell types and multiple methods of generating DHS profiles, are included in the initial track overview (each individual track corresponds to DNase I hypersensitive sites of a specific cell-type, treatment, method ... combination). In addition, a closer look is taken at a selected subset of cell-types and methods, exploring their effect on DHS profiling results.</div>
+				<div class="tab4collectionDescDetails">This example examines the characteristics of ENCODE-generated DHS
+					tracks accessible via HyperBrowser tool ''Create a remote GSuite from a public repository''. About
+					450 tracks, encompassing over 150 different cell types and multiple methods of generating DHS
+					profiles, are included in the initial track overview (each individual track corresponds to DNase I
+					hypersensitive sites of a specific cell-type, treatment, method ... combination). In addition, a
+					closer look is taken at a selected subset of cell-types and methods, exploring their effect on DHS
+					profiling results.</div>
 
 				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
 				<div class="tab4collectionDescDetails_history">
-					Annotated analysis history (including all the utilized data and operations) is available on a separate page:
-					<a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/chromatin-accessibility-dnase-across-cell-types">Analysis history: Chromatin accessibility (DHS) across cell types</a>.
+					Annotated analysis history (including all the utilized data and operations) is available on a
+					separate page:
+					<a href="../u/hb-superuser/h/chromatin-accessibility-dnase-across-cell-types" target="_blank">
+						Analysis history: Chromatin accessibility (DHS) across cell types</a>.
 					(All results mentioned below refer to elements from this history page.)
 				</div>
 
@@ -144,77 +152,137 @@
 				<div class = "welcomeAnalysisDetailsV2V2" > - Overview of all tracks: </div>
 				<div class="tab4collectionDescDetailsV2">
 					<div class="tab4collectionDescDetails_historyV2">
-						<div class="tab4collectionDescDetails">For the initial overview creation, all the tracks available via HyperBrowser tool "Create a remote GSuite from a public repository" and satisfying the following criteria were selected:</div>
+						<div class="tab4collectionDescDetails">For the initial overview creation, all the tracks
+							available via HyperBrowser tool "Create a remote GSuite from a public repository" and
+							satisfying the following criteria were selected:</div>
 						<div class="tab4collectionDescDetails">repository: ENCODE (UCSC and Ensembl)</div>
 						<div class="tab4collectionDescDetails">Experiment (Assay) Type: DnaseSeq</div>
 						<div class="tab4collectionDescDetails">File Type: narrowPeak</div>
 
 
 						<div class="tab4collectionDescDetails_historyV3">
-							<a a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/d/9a9cc6fb2d6935e0/">Overview page for the 452-track GSuite for ENCODE DHS data </a> shows differences and similarities between tracks (e.g. with respect to genome/exone/repeat coverage or mutual overlap). It documents a considerable variability in peak count (77 458	- 405 844 peaks, median of 154 233.5 peaks) and average peak width (150 - 826 bp, median of 150 bp), which together determine the total base-pair coverage of the individual tracks (11 670 340	- 109 437 893 bp, median of 26 853 060 bp). To what degree should these differences be attributed to technical reasons?
+							<a a href="../datasets/4dbf01f6ddb71b5e/display/" target="_blank">Overview page for the 452-track GSuite for
+								ENCODE DHS data </a> shows differences and similarities between tracks (e.g. with
+							respect to genome/exone/repeat coverage or mutual overlap). It documents a considerable
+							variability in peak count (77 458	- 405 844 peaks, median of 154 233.5 peaks) and average
+							peak width (150 - 826 bp, median of 150 bp), which together determine the total base-pair
+							coverage of the individual tracks (11 670 340	- 109 437 893 bp, median of 26 853 060 bp).
+							To what degree should these differences be attributed to technical reasons?
 						</div>
 					</div>
 				</div>
 
-				<div class = "welcomeAnalysisDetailsV2V2" > - Comparison of the effect of cell types and data processing methods on DHS profiles: </div>
+				<div class = "welcomeAnalysisDetailsV2V2" > - Comparison of the effect of cell types and data processing
+					methods on DHS profiles: </div>
 
 					<div class="tab4collectionDescDetailsV2">
 
 						<div class="tab4collectionDescDetails_historyV2">
-							<div class="tab4collectionDescDetails">A subset of 3 cell-types (cell-lines representing different lineages), each with a triplet of alternative DHSs tracks (representatives of ENCODE's methods of DHSs determination), was created for a closer inspection.</div>
+							<div class="tab4collectionDescDetails">A subset of 3 cell-types (cell-lines representing
+								different lineages), each with a triplet of alternative DHSs tracks (representatives of
+								ENCODE's methods of DHSs determination), was created for a closer inspection.</div>
 
-							<div class="tab4collectionDescDetails">The selected cell types and their characteristics:</div>
+							<div class="tab4collectionDescDetails">The selected cell types and their
+								characteristics:</div>
 
 
 							<table class="tableEx">
 							<tr><th>Cell</th><th> Lineage</th><th> Tissue</th><th> Karyotype</th></tr>
 
-							<tr><td>H1-hESC</td><td> inner cell mass </td><td>embryonic stem cell</td><td> normal</td></tr>
+							<tr><td>H1-hESC</td><td> inner cell mass </td><td>embryonic stem cell</td><td> normal</td>
+							</tr>
 
 							<tr><td>GM12878 </td><td> mesoderm</td><td> blood </td><td>normal</td></tr>
 
 							<tr><td>HeLa-S3 </td><td>ectoderm</td><td> cervix</td><td> cancer</td></tr>
 							</table>
 
-							<div class="tab4collectionDescDetails">(<a href="http://www.neuroepigenomics.org/encode/cellTypes.html">Read more about cell types used in the ENCODE project.</a>)</div>
+							<div class="tab4collectionDescDetails">
+								(<a href="http://www.neuroepigenomics.org/encode/cellTypes.html" target="_blank">
+								Read more about cell types used in the ENCODE project.</a>)</div>
 
 
 
-								<div class="tab4collectionDescDetails">Multiple methods for determining DHS sites were used with each of the selected cell types:</div>
+								<div class="tab4collectionDescDetails">Multiple methods for determining DHS sites were
+									used with each of the selected cell types:</div>
 
 								<table class="tableEx">
-								<tr><th>Method</th><th> Short description</th><th> Reference build/Analysis source</th><th> Track name indicator</th></tr>
+								<tr><th>Method</th><th> Short description</th><th> Reference build/Analysis source</th>
+									<th> Track name indicator</th></tr>
 
-								<tr><td>a) "Uniform DNaseI HS"</td><td> DNaseI Hypersensitivity Uniform Peaks from ENCODE/Analysis, Integrated Regulation from UCSC </td><td>Human Genome Build 37 (hg19): ENCODE Analysis Data at UCSC</td><td> "AwgDnaseUwduke"</td></tr>
+								<tr><td>a) "Uniform DNaseI HS"</td><td> DNaseI Hypersensitivity Uniform Peaks from
+									ENCODE/Analysis, Integrated Regulation from UCSC </td><td>Human Genome Build 37
+									(hg19): ENCODE Analysis Data at UCSC</td><td> "AwgDnaseUwduke"</td></tr>
 
-								<tr><td>b) "Duke DNaseI HS" </td><td> Open Chromatin by DNaseI HS from ENCODE/OpenChrom(Duke University)</td><td> Human Genome Build 37 (hg19): ENCODE Production Data </td><td>"OpenChromDnase"</td></tr>
+								<tr><td>b) "Duke DNaseI HS" </td><td> Open Chromatin by DNaseI HS from
+									ENCODE/OpenChrom(Duke University)</td><td> Human Genome Build 37 (hg19):
+									ENCODE Production Data </td><td>"OpenChromDnase"</td></tr>
 
-								<tr><td>c) "UW DNaseI HS" </td><td>DNaseI Hypersensitivity by Digital DNaseI from ENCODE/University of Washington</td><td> Human Genome Build 37 (hg19): ENCODE Production Data</td><td> "UwDnase"</td></tr>
+								<tr><td>c) "UW DNaseI HS" </td><td>DNaseI Hypersensitivity by Digital DNaseI from
+									ENCODE/University of Washington</td><td> Human Genome Build 37 (hg19): ENCODE
+									Production Data</td><td> "UwDnase"</td></tr>
 								</table>
 
-								<div class="tab4collectionDescDetails">(<a href="http://genome.ucsc.edu/ENCODE/downloads.html">Read more about data (types) produced by the ENCODE consortium.</a>)</div>
+								<div class="tab4collectionDescDetails">
+									(<a href="http://genome.ucsc.edu/ENCODE/downloads.html" target="_blank">Read more
+									about data (types) produced by the ENCODE consortium.</a>)</div>
 
 								<div class="tab4collectionDescDetailsDesc"> - 11-track subset overview</div>
 							<div class="tab4collectionDescDetailsV3">
-								<div class="tab4collectionDescDetails">11 of the original 452 tracks were included in a new GSuite collection based on their cell-type+method combination (9 tracks for all possible combinations plus two duplicate tracks; tracks from experiments involving additional cell culture treatments were not included). <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/d/36a5e6818497890e/">Overview statistics for the reduced GSuite</a> show that:</div>
+								<div class="tab4collectionDescDetails">11 of the original 452 tracks were included in
+									a new GSuite collection based on their cell-type and method combination (9 tracks for
+									the possible combinations plus two replicate tracks; tracks from experiments
+									involving additional cell culture treatments were not included).
+									<a href="../datasets/1fb45178ce1be618/display/" target="_blank">Overview statistics for the
+										reduced GSuite</a> show that:</div>
 
-								<div class="tab4collectionDescDetails">1. After ordering the tracks by base-pair coverage, it is apparent that the method of determining DHS sites (and not the cell type) is the primary cause of differences. Without any exception, tracks produced by method b) cover a higher proportion of the reference genome than tracks produced by method a), while the output tracks of method c) are grouped at the bottom of the ordering. The cell types are, however, consistently ranked within each group (even though the differences deciding about this ranking are sometimes small): H1-hESC covers more unique base-pairs than HeLa-S3, which in turn covers more unique base-pairs than GM12878. (statistic "Base-pair coverage")</div>
+								<div class="tab4collectionDescDetails">1. After ordering the tracks by base-pair
+									coverage, it is apparent that the method of determining DHS sites (and not the
+									cell type) is the primary cause of differences. Without any exception, tracks
+									produced by method b) cover a higher proportion of the reference genome than tracks
+									produced by method a), while the output tracks of method c) are grouped at the
+									bottom of the ordering. The cell types are, however, consistently ranked within
+									each group (even though the differences deciding about this ranking are sometimes
+									small): H1-hESC covers more unique base-pairs than HeLa-S3, which in turn covers
+									more unique base-pairs than GM12878. (statistic "Base-pair coverage")</div>
 
-								<div class="tab4collectionDescDetails">2. The average peak width is strictly method-dependent, with method b) being markedly different compared to methods a) and c), which are practically identical regarding this measure. (statistic "Segment length average")</div>
+								<div class="tab4collectionDescDetails">2. The average peak width is strictly
+									method-dependent, with method b) being markedly different compared to methods
+									a) and c), which are practically identical regarding this measure. (statistic
+									"Segment length average")</div>
 
-								<div class="tab4collectionDescDetails">3. Method a) generates more peaks than the other methods. The GM12878 cell-line produces fewer peaks when compared to other cell types (when processed by the same method). (statistic "Segment count")</div>
+								<div class="tab4collectionDescDetails">3. Method a) generates more peaks than the other
+									methods. The GM12878 cell-line produces fewer peaks when compared to other cell
+									types (when processed by the same method). (statistic "Segment count")</div>
 							</div>
 								<div class="tab4collectionDescDetailsDesc"> - Clustering of tracks</div>
 							<div class="tab4collectionDescDetailsV3">
-								<div class="tab4collectionDescDetails">How would the 11 tracks cluster considering the apparent dependency of DHS profiles on the method of their creation?</div>
+								<div class="tab4collectionDescDetails">How would the 11 tracks cluster considering the
+									apparent dependency of DHS profiles on the method of their creation?</div>
 
-								<div class="tab4collectionDescDetails">When clustered with a method based on "similarity of positional distribution along the genome" (using the default binning settings), <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/d/b01a66ce370636d4/cluster_tracks_result_figure.pdf">the tracks cluster primarily by analysis method</a>. When clustered with a method based on "direct sequence similarity" (using pairwise overlap enrichment), <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/d/57d86cf71653dd9e/cluster_tracks_result_figure.pdf">the tracks cluster primarily by cell type</a>. These results suggest that while the examined DHS determination methods suffer from biases with respect to peak density, true biological signal comes through on base-pair level.</div>
+								<div class="tab4collectionDescDetails">When clustered with a method based on
+									"similarity of positional distribution along the genome" (using the default binning
+									settings),
+									<a href="../datasets/0e30154224cc3fa4/display/cluster_tracks_result_figure.pdf"
+									   target="_blank"> the tracks cluster primarily by analysis method</a>.
+									When clustered with a method based on "direct sequence similarity" (using pairwise
+									overlap enrichment),
+									<a href="../datasets/2860860fd225747c/display/cluster_tracks_result_figure.pdf"
+									   target="_blank">the tracks cluster primarily by cell type</a>.
+									These results suggest that while the examined DHS determination methods suffer from
+									biases with respect to peak density, true biological signal comes
+									through on base-pair level.</div>
 							</div>
 								<div class="tab4collectionDescDetailsDesc"> - Conclusions</div>
 							<div class="tab4collectionDescDetailsV3">
-								<div class="tab4collectionDescDetails">When working with ENCODE, attention to tracks' origin should be paid and special care should be taken when drawing conclusions from comparisons of tracks which do not come from the same production source. Initial exploration of tracks' properties is highly recommended.</div>
+								<div class="tab4collectionDescDetails">When working with ENCODE, attention to tracks'
+									origin should be paid and special care should be taken when drawing conclusions
+									from comparisons of tracks which do not come from the same production source.
+									Initial exploration of tracks' properties is highly recommended.</div>
 
-								<div class="tab4collectionDescDetails">Choice of track comparison methods can have a prominent influence on the results - an appropriate analysis approach needs to be selected on case-by-case basis.</div>
+								<div class="tab4collectionDescDetails">Choice of track comparison methods can have a
+									prominent influence on the results - an appropriate analysis approach needs to be
+									selected on case-by-case basis.</div>
 
 
 
@@ -223,9 +291,9 @@
 						</div>
 					</div>
 			</div>
-				
 
-				
+
+
 
 			<div class="tab4collectionTitle" id="T7">
 				<div class="imgBackground"><img src="hyperbrowser/images/div/DNAlying.png" height="20" width="20" id="B7" class='-off' /></div>
@@ -287,7 +355,7 @@
 						a miRNA suite.
 					</div>
 
-					<img src="https://hyperbrowser.uio.no/gsuite/static/hyperbrowser/images/div/mirna_illustration.png" title="Figure 1: Illustration of the different parts of a miRNA" style="width: auto; height: 400px;"></img>
+					<img src="../static/hyperbrowser/images/div/mirna_illustration.png" title="Figure 1: Illustration of the different parts of a miRNA" style="width: auto; height: 400px;"></img>
 					<div class="tab4collectionDescDetails">Figure 1: Illustration of the different parts of a miRNA</div>
 
 					<div class="tab4collectionDescDetails">[1] Kozomara, A., and S. Griffiths-Jones, miRBase: annotating high
@@ -310,13 +378,13 @@
 						<div class="tab4collectionDescDetails">1. The intersection between each GWAS extended SNP dataset (GSuite)
 							against each data set of a particular miRNA part or whole miRNA (GSuite). Annotated analysis history is
 							available on a separate page:
-							<a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/disease-associated-snps-in-mirnas">Disease-associated SNPs in miRNAs</a>
+							<a href="../u/hb-superuser/h/disease-associated-snps-in-mirnas" target="_blank">Disease-associated SNPs in miRNAs</a>
 						</div>
 
 						<div class="tab4collectionDescDetails">2. The intersection between the common SNP dataset (track) against each
 							dataset of a particular miRNA part or whole miRNA (GSuite). Annotated analysis history is available on a
 							separate page:
-							<a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/mirna-vs-expanded-snps-v3">Common SNPs in miRNAs</a>
+							<a href="../u/hb-superuser/h/common-snps-in-mirnas" target="_blank">Common SNPs in miRNAs</a>
 						</div>
 					</div>
 				</div>
@@ -334,7 +402,7 @@
 								precursor depending on their importance for miRNA function (figure 1).
 							</div>
 
-							<img src="https://hyperbrowser.uio.no/gsuite/static/hyperbrowser/images/div/mirna/Figure_1.png" style="width: 100%; height: auto;"></img>
+							<img src="../static/hyperbrowser/images/div/mirna/Figure_1.png" style="width: 100%; height: auto;"></img>
 							<div class="tab4collectionDescDetails">Figure 1: distribution of common SNPs across different
 								parts of the human genome. MiRNA loci show significantly lower SNPs/10 Kbps than the rest
 								of the genome.
@@ -345,7 +413,7 @@
 						<div class="tab4collectionDescDetailsV3">
 							<div class="tab4collectionDescDetails">
 								<div class="tab4collectionDescDetails_historyV3">
-									<a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/d/a8c49983d9322150">Of
+									<a href="../u/hb-superuser/d/3660b276e57b0ab8" target="_blank">Of
 										the 3'266'867 disease related (unique) SNPs in 78 GWAS datasets, 62 were
 										observed in 50 of the 521 miRNAs.</a>
 								</div>
@@ -358,7 +426,7 @@
 								next-highest prevalence (5) followed by identical numbers (4) for loop and matures.
 							</div>
 
-							<img src="https://hyperbrowser.uio.no/gsuite/static/hyperbrowser/images/div/mirna/Figure_2.png" style="width: 100%; height: auto;"></img>
+							<img src="../static/hyperbrowser/images/div/mirna/Figure_2.png" style="width: 100%; height: auto;"></img>
 							<div class="tab4collectionDescDetails"> Figure 2: distribution of common and disease-related
 								SNPs across different parts of the human genome.
 							</div>
@@ -374,7 +442,7 @@
 								disease-related SNPs shows an enrichment of SNPs in exons and 5' flanking regions
 								of miRNAs.
 							</div>
-							<img src="https://hyperbrowser.uio.no/gsuite/static/hyperbrowser/images/div/mirna/Figure_3.png" style="width: 100%; height: auto;"></img>
+							<img src="../static/hyperbrowser/images/div/mirna/Figure_3.png" style="width: 100%; height: auto;"></img>
 							<div class="tab4collectionDescDetails">Figure 3: Normalized distribution of common and
 								disease-related SNPs across different parts of the human genome show deviations.
 							</div>
@@ -408,7 +476,7 @@
 						mutation profile. In this example usage of GSuite, we will investigate the strong statistical
 						association that was found for chromatin accessibility in melanocytes and the somatic mutation
 						density in malignant melanoma [2]
-						(see <a href="http://www.nature.com/nature/journal/v518/n7539/fig_tab/nature14221_F1.html" >
+						(see <a href="http://www.nature.com/nature/journal/v518/n7539/fig_tab/nature14221_F1.html" target="_blank">
 							wym-1462355009093 </a>). We will demonstrate through a fully reproducible
 						workflow how this question may be approached within the GSuite framework.
 					</div>
@@ -445,7 +513,7 @@
 				<div class="tab4collectionDescDetailsV2">
 					<div class="tab4collectionDescDetails_historyV2">
 						<div class="tab4collectionDescDetailsV3">
-							<div class="tab4collectionDescDetails">The <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/chromatin-accessibility-and-mutational-profiles-of-tumors" > analysis </a>
+							<div class="tab4collectionDescDetails">The <a href="../u/hb-superuser/h/chromatin-accessibility-and-mutational-profiles-of-tumors" target="_blank"> analysis </a>
 								was roughly divided in three parts:</div>
 							<div class="tab4collectionDescDetails">1) Creation of two mutation datasets, each containing
 								somatic variants in skin cancer donors (from the International Cancer Genome Consortium, ICGC)
@@ -521,18 +589,18 @@
 					</div>
 					<div class="tab4collectionDescDetails">[1] ENCODE Project Consortium, Bernstein BE, Birney E, Dunham I,
 						Green ED, Gunter C, et al. (2012) An integrated encyclopedia of DNA elements in the human genome.
-						Nature 489: 57â€“74
+						Nature 489: 57-74
 					</div>
 					<div class="tab4collectionDescDetails">[2] Barski A, Cuddapah S, Cui K, Roh T-Y, Schones DE, Wang Z,
 						et al. (2007) High-resolution profiling of histone methylations in the human genome. Cell
-						129: 823â€“837.
+						129: 823-837.
 					</div>
 					<div class="tab4collectionDescDetails">[3] Mikkelsen TS, Xu Z, Zhang X, Wang L, Gimble JM, Lander ES,
 						et al. (2010) Comparative epigenomic analysis of murine and human adipogenesis.
-						Cell 143: 156â€“169.
+						Cell 143: 156-169.
 					</div>
 					<div class="tab4collectionDescDetails">[4] Barth T and Imhof A (2010) Fast signals and slow marks:
-						the dynamics of histone modifications., 35(11), 618â€“626.
+						the dynamics of histone modifications., 35(11), 618-626.
 					</div>
 
 				</div>
@@ -540,7 +608,7 @@
 				<div class = "welcomeAnalysisDetailsV2" > - Datasets used in the analysis: </div>
 				<div class="tab4collectionDescDetails_history">
 					<div class="tab4collectionDescDetails">Annotated analysis history (including all the utilized data and
-						operations) is available on a <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/imported-imported-transcription-factors-mads2"> separate page </a>. (All results mentioned below refer
+						operations) is available on a <a href="../u/hb-superuser/h/co-localisation-of-transcription-factors-and-histone-marks" target="_blank"> separate page </a>. (All results mentioned below refer
 						to elements from this history page.)
 					</div>
 					<div class="tab4collectionDescDetails">Initial two GSuites for the subset of
@@ -582,7 +650,7 @@
 					<div class="tab4collectionDescDetails">To investigate how the transcription factors colocalizes with the
 						different histone modifications, the two GSuites were preprocessed for analysis using
 						"Preprocess a GSuite for analysis" and secondly a co-localization analysis were setup using
-						"Determine coinciding track combinations from two suites" selecting the following parameters:
+						"Determine coinciding track combinations from two GSuites" selecting the following parameters:
 					</div>
 					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Query track:</b> GSuite with transcription factors containing the middle point of each peak.</div>
 					<div class="tab4collectionDescDetails" style="margin-left: 20px;"><b>Reference track:</b> GSuite with Histone modifications</div>
@@ -642,18 +710,18 @@
 				<div class = "welcomeAnalysisDetailsV2" > - Datasets used in the analysis: </div>
 				<div class="tab4collectionDescDetails_history">
 					<div class="tab4collectionDescDetails">
-						To perform a similarity measure of GATA1 in K562 cells, we collected 318 ChIP-seq datasets
-						from ENCODE (PMID 22955616) and downloaded to history. We then performed similarity testing
-						of GATA1 ChIP-seq track (Snyder lab, Stanford) against the 317 experimental datasets
-						using the Forbes and Jaccard similarity measures.
+						To perform a similarity measure of GATA1 in K562 cells, we collected 318 ChIP-seq datasets from
+						ENCODE (PMID 22955616) and downloaded to history. We then performed similarity testing of GATA1
+						ChIP-seq track (Snyder lab, Stanford) against the 317 experimental datasets using the Forbes,
+						Jaccard and tetrachoric correlation similarity measures.
 					</div>
 				</div>
 
 				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
 				<div class="tab4collectionDescDetails_history">
 					Annotated analysis histories (including all the utilized data and operations) are available on
-					separate pages for the <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/gata1-example---the-effect-of-similarity-measure"> analysis leading to ranking of tracks </a>
-					and the <a href="https://hyperbrowser.uio.no/gsuite/u/hb-superuser/h/gata1-example---subsampling-tracks">quantitative analysis of
+					separate pages for the <a href="../u/sandve/h/gata1-example---the-effect-of-similarity-measure" target="_blank"> analysis leading to ranking of tracks </a>
+					and the <a href="../u/sandve/h/gata1-example---effects-of-subsampling" target="_blank">quantitative analysis of
 					correlation between similarity measures and track sizes </a>. For both histories, the history elements
 					are annotated with details of the performed analysis and their main interpretation.
 
@@ -663,32 +731,36 @@
 				<div class="tab4collectionDescDetailsV2">
 					<div class="tab4collectionDescDetails_historyV2">
 						<div class="tab4collectionDescDetailsV3">
-							<div class="tab4collectionDescDetails">We generated two separate rankings of the 317 chip-seq tracks,
-								based on their similarity against the GATA1 track according to the Forbes and Jaccard similarity
-								measures, respectively. In addition to exploring the biological interpretations of the two different
-								rankings, we performed a quantitative analysis of how similarity values correlated with the size of
-								tracks and how the (Forbes versus Jaccard) similarity values changed through subsampling of elements
-								from the tracks.
+							<div class="tab4collectionDescDetails">We generated two separate rankings of the 317 chip-seq
+								tracks, based on their similarity against the GATA1 track according to the Forbes, Jaccard
+								and tetrachoric correlation similarity measures, respectively. In addition to exploring the
+								biological interpretations of the three different rankings, we performed a quantitative
+								analysis of how similarity values correlated with the size of tracks and how the similarity
+								values changed through subsampling of elements from the tracks.
 							</div>
-							<div class="tab4collectionDescDetails">The two alternative measures (Forbes and Jaccard) resulted in
-								very different rankings of similarity to GATA1. With the Forbes measure, another replicate of
-								GATA1 was ranked first, along with several other potentially interesting TFs at the top, but
-								without expected co-binding TFs like TAL1 being among the most highly ranked TF. The ranking
-								according to the Jaccard measure were clearly influenced by size of tracks, with other
-								replicates for GATA1 not being among the highest ranked TF. At the same time, the expected
-								co-binding TF TAL1 was ranked among the top tracks, along with several tracks for GATA2.
+							<div class="tab4collectionDescDetails">he three alternative measures (Forbes, Jaccard and
+								tetrachoric correlation) resulted in markedly different rankings of similarity to GATA1.
+								With the Forbes measure, another replicate of GATA1 was ranked first, along with several
+								other potentially interesting TFs at the top, but without expected co-binding TFs like
+								TAL1 being among the most highly ranked TF. The ranking according to the Jaccard measure
+								were clearly influenced by size of tracks, with other replicates for GATA1 not being
+								among the highest ranked TF. At the same time, the expected co-binding TF TAL1 was ranked
+								among the top tracks, along with several tracks for GATA2. The results using tetrachoric
+								correlation appeared superior to that of the other measures - including both the other
+								GATA1 track, several GATA2 tracks and the TF TAL1 at the top of the ranking.
 							</div>
 							<div class="tab4collectionDescDetails">To further explore the influence of track size on the
 								measures, we performed a quantitative analysis of the Forbes and Jaccard similarity values.
-								We selected 291 ChIP-seq tracks that had at least 1000 peaks, and made separate Scatterplots
-								of Forbes similarity versus track size and Jaccard similarity versus track size.
-								The Jaccard similarity values was seen to be strongly correlated with track size.
+								We selected 291 ChIP-seq tracks that had at least 1000 peaks, and made separate
+								Scatterplots of Forbes, Jaccard and tetrachoric correlation similarity versus track
+								size. The Jaccard similarity values was seen to be strongly correlated with track size.
 								To further determine whether this was directly connected to track size, we randomly
-								subsampled a set of 1000 peaks for each track. The Forbes values were essentially unchanged
-								by this subsampling, while the Jaccard values changed substantially. This shows that the
-								Jaccard measure is very sensitive to the number of elements in tracks, and that care must be
-								taken to ensure that biological interpretations are not dominated by technicalities related to
-								the number of discovered peaks.
+								subsampled a set of 1000 peaks for each track. The Forbes values were essentially
+								unchanged by this subsampling, while the Jaccard values changed substantially. The
+								tetrachoric correlation was affected to some degree, but much less markedly than the
+								Jaccard values. This shows that the Jaccard measure is very sensitive to the number of
+								elements in tracks, and that care must be taken to ensure that biological interpretations
+								are not dominated by technicalities related to the number of discovered peaks.
 							</div>
 						</div>
 					</div>

@@ -1,11 +1,23 @@
+import os
+
 import gold.gsuite.GSuiteConstants as GSuiteConstants
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent, getTitleWithSuffixReplaced
+from gold.gsuite.GSuitePreprocessor import GSuitePreprocessor
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
+from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
+from quick.extra.ProgressViewer import ProgressViewer
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName, \
+    writeGSuiteHiddenTrackStorageHtml
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
 
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
+class MultiTrackIntersectTool(GeneralGuiTool, GenomeMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuite']
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    ALLOW_MULTIPLE_GENOMES = False
+    WHAT_GENOME_IS_USED_FOR = 'the output GSuite file' # Other common possibility: 'the analysis'
 
-class MultiTrackIntersectTool(GeneralGuiTool):
     FROM_HISTORY_TEXT = 'From history'
     FROM_HYPERBROWSER_TEXT = 'From HyperBrowser repository'
 
@@ -26,6 +38,10 @@ class MultiTrackIntersectTool(GeneralGuiTool):
     GSUITE_OUTPUT_FILE_FORMAT = GSuiteConstants.PREPROCESSED
     GSUITE_OUTPUT_TRACK_TYPE = GSuiteConstants.SEGMENTS
 
+    OUTPUT_GSUITE_DESCRIPTION = ', intersected'
+    PROGRESS_INTERSECT_MSG = 'Intersect tracks'
+    PROGRESS_PREPROCESS_MSG = 'Preprocess tracks'
+
     @staticmethod
     def getToolName():
         '''
@@ -34,8 +50,8 @@ class MultiTrackIntersectTool(GeneralGuiTool):
         '''
         return "Intersect preprocessed tracks in GSuite with a single track"
 
-    @staticmethod
-    def getInputBoxNames():
+    @classmethod
+    def getInputBoxNames(cls):
         '''
         Specifies a list of headers for the input boxes, and implicitly also the
         number of input boxes to display on the page. The returned list can have
@@ -52,9 +68,9 @@ class MultiTrackIntersectTool(GeneralGuiTool):
 
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return [('Select genome buid:', 'genome'),
-                ('Select GSuite file from history:', 'gSuite'),
-                ('Select source of filtering track:', 'trackSource'),
+        return [('Select GSuite file from history:', 'gSuite')] +\
+               cls.getInputBoxNamesForGenomeSelection() +\
+               [('Select source of filtering track:', 'trackSource'),
                 ('Select track from history:', 'trackHistory'),
                 ('Select track:', 'track'),
                 ('Overlap handling:', 'withOverlaps')]
@@ -69,57 +85,8 @@ class MultiTrackIntersectTool(GeneralGuiTool):
     #    '''
     #    return None
 
-    @staticmethod
-    def getOptionsBoxGenome(): # Alternatively: getOptionsBox1()
-        '''
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to other
-        methods. These are lists of results, one for each input box (in the
-        order specified by getInputBoxOrder()).
-
-        The input box is defined according to the following syntax:
-
-        Selection box:          ['choice1','choice2']
-        - Returns: string
-
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - The contents is the default value shown inside the text area
-        - Returns: string
-
-        Password field:         '__password__'
-        - Returns: string
-
-        Genome selection box:   '__genome__'
-        - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
-
-        History selection box:  ('__history__',) | ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting galaxy track name, as
-                   specified in ExternalTrackManager.py.
-
-        History check box list: ('__multihistory__', ) | ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with galaxy id as key and galaxy track name
-                   as value if checked, else None.
-
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
-
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'], ['cell2_1','cell2_2']]
-        - Returns: None
-
-        Check box list:         OrderedDict([('key1', True), ('key2', False), ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
-        '''
-        return '__genome__'
-
     @classmethod
-    def getOptionsBoxGSuite(cls, prevChoices): # Alternatively: getOptionsBox2()
+    def getOptionsBoxGSuite(cls): # Alternatively: getOptionsBox2()
         '''
         See getOptionsBoxFirstKey().
 
@@ -165,21 +132,22 @@ class MultiTrackIntersectTool(GeneralGuiTool):
 
     @classmethod
     def getExtraHistElements(cls, choices):
-        from quick.webtools.GeneralGuiTool import HistElement
-        fileList = []
-
-        if choices.gSuite:
-            try:
-                from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-                gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-
-                for track in gSuite.allTracks():
-                    fileList.append( HistElement(track.title, cls.OUTPUT_TRACKS_SUFFIX, hidden=True) )
-
-            except:
-                pass
-
-        return fileList
+        desc = cls.OUTPUT_GSUITE_DESCRIPTION
+        return [HistElement(getGSuiteHistoryOutputName(
+                                'nointersect', description=desc, datasetInfo=choices.gSuite),
+                            GSuiteConstants.GSUITE_SUFFIX),
+                HistElement(getGSuiteHistoryOutputName(
+                                'primary', description=desc, datasetInfo=choices.gSuite),
+                            GSuiteConstants.GSUITE_SUFFIX),
+                HistElement(getGSuiteHistoryOutputName(
+                                'nopreprocessed', description=desc, datasetInfo=choices.gSuite),
+                            GSuiteConstants.GSUITE_SUFFIX),
+                HistElement(getGSuiteHistoryOutputName(
+                                'preprocessed', description=desc, datasetInfo=choices.gSuite),
+                            GSuiteConstants.GSUITE_SUFFIX),
+                HistElement(getGSuiteHistoryOutputName(
+                                'storage', description=desc, datasetInfo=choices.gSuite),
+                            GSuiteConstants.GSUITE_STORAGE_SUFFIX, hidden=True)]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -222,14 +190,38 @@ class MultiTrackIntersectTool(GeneralGuiTool):
 
             userBinSource = UserBinSource(regSpec, binSpec, genome)
 
-        outGSuite = GSuite()
+        desc = cls.OUTPUT_GSUITE_DESCRIPTION
+        emptyFn = cls.extraGalaxyFn \
+            [getGSuiteHistoryOutputName('nointersect', description=desc, datasetInfo=choices.gSuite)]
+        primaryFn = cls.extraGalaxyFn \
+            [getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
+        errorFn = cls.extraGalaxyFn \
+            [getGSuiteHistoryOutputName('nopreprocessed', description=desc, datasetInfo=choices.gSuite)]
+        preprocessedFn = cls.extraGalaxyFn \
+            [getGSuiteHistoryOutputName('preprocessed', description=desc, datasetInfo=choices.gSuite)]
+        hiddenStorageFn = cls.extraGalaxyFn \
+            [getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
 
         analysisDef = '-> TrackIntersectionStat'
 #         analysisDef = '-> TrackIntersectionWithValStat'
+
+        numTracks = gSuite.numTracks()
+        progressViewer = ProgressViewer([(cls.PROGRESS_INTERSECT_MSG, numTracks),
+                                         (cls.PROGRESS_PREPROCESS_MSG, numTracks)], galaxyFn)
+        emptyGSuite = GSuite()
+        primaryGSuite = GSuite()
+
         for track in gSuite.allTracks():
-            histFileName = cls.extraGalaxyFn[track.title]
-            galaxyTN = ExternalTrackManager.constructGalaxyTnFromSuitedFn(
-                histFileName, fileEnding=cls.OUTPUT_TRACKS_SUFFIX, name=track.title)
+            newSuffix = cls.OUTPUT_TRACKS_SUFFIX
+            extraFileName = os.path.sep.join(track.trackName)
+            extraFileName = changeSuffixIfPresent(extraFileName, newSuffix=newSuffix)
+            title = getTitleWithSuffixReplaced(track.title, newSuffix)
+
+            primaryTrackUri = GalaxyGSuiteTrack.generateURI(
+                galaxyFn=hiddenStorageFn, extraFileName=extraFileName,
+                suffix=newSuffix if not extraFileName.endswith(newSuffix) else '')
+            primaryTrack = GSuiteTrack(primaryTrackUri, title=title,
+                                       genome=track.genome, attributes=track.attributes)
 
             if choices.withOverlaps == cls.NO_OVERLAPS:
                 res = GalaxyInterface.runManual([track.trackName, filterTrackName], analysisDef, '*', '*',
@@ -237,37 +229,43 @@ class MultiTrackIntersectTool(GeneralGuiTool):
 
                 trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
 
-                tvGeSource = TrackViewListGenomeElementSource(genome, trackViewList, galaxyTN)
+                tvGeSource = TrackViewListGenomeElementSource(genome, trackViewList)
 
                 composerCls = getComposerClsFromFileSuffix(cls.OUTPUT_TRACKS_SUFFIX)
-                composerCls(tvGeSource).composeToFile(histFileName)
-                #BedComposer(tvGeSource).composeToFile(histFileName)
-                #BedGraphComposer(tvGeSource).composeToFile(histFileName)
+                composerCls(tvGeSource).composeToFile(primaryTrack.path)
             else:
                 TrackExtractor.extractOneTrackManyRegsToOneFile( \
-                    track.trackName, userBinSource, histFileName, fileFormatName=cls.OUTPUT_TRACKS_SUFFIX, \
+                    track.trackName, userBinSource, primaryTrack.path, fileFormatName=cls.OUTPUT_TRACKS_SUFFIX, \
                     globalCoords=True, asOriginal=False, allowOverlaps=True)
 
             # Temporary hack until better solution for empty result tracks have been implemented
 
             from gold.origdata.GenomeElementSource import GenomeElementSource
-            geSource = GenomeElementSource(histFileName, genome=genome, suffix=cls.OUTPUT_TRACKS_SUFFIX)
+            geSource = GenomeElementSource(primaryTrack.path, genome=genome, suffix=cls.OUTPUT_TRACKS_SUFFIX)
 
             try:
                 geSource.parseFirstDataLine()
-            except: # Most likely empty file
-                continue
-
+                primaryGSuite.addTrack(primaryTrack)
+            except Exception, e: # Most likely empty file
+                primaryTrack.comment = e.message
+                emptyGSuite.addTrack(primaryTrack)
+                numTracks -= 1
+                progressViewer.updateProgressObjectElementCount(
+                    cls.PROGRESS_PREPROCESS_MSG, numTracks)
             #
-            
-            stdTrackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, galaxyTN)
 
-            uri = HbGSuiteTrack.generateURI(trackName=stdTrackName)
-            outGSuite.addTrack(GSuiteTrack(uri, title=track.title, trackType=cls.GSUITE_OUTPUT_TRACK_TYPE,
-                                           genome=genome, attributes=track.attributes))
+            progressViewer.update()
 
-        GSuiteComposer.composeToFile(outGSuite, galaxyFn)
+        gSuitePreprocessor = GSuitePreprocessor()
+        preprocessedGSuite, errorGSuite = gSuitePreprocessor.\
+            visitAllGSuiteTracksAndReturnOutputAndErrorGSuites \
+                (primaryGSuite, progressViewer)
 
+        GSuiteComposer.composeToFile(emptyGSuite, emptyFn)
+        GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
+        GSuiteComposer.composeToFile(preprocessedGSuite, preprocessedFn)
+        GSuiteComposer.composeToFile(errorGSuite, errorFn)
+        writeGSuiteHiddenTrackStorageHtml(hiddenStorageFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -278,7 +276,7 @@ class MultiTrackIntersectTool(GeneralGuiTool):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        errorStr = cls._checkGenome(choices.genome)
+        errorStr = cls._validateGenome(choices)
         if errorStr:
             return errorStr
 
@@ -293,16 +291,12 @@ class MultiTrackIntersectTool(GeneralGuiTool):
         if errorStr:
             return errorStr
 
-        errorStr = cls._checkGenomeEquality(choices.genome, gSuite.genome)
-        if errorStr:
-            return errorStr
-
         errorStr = cls._checkGSuiteRequirements(
             gSuite,
-            allowedFileFormats = cls.GSUITE_ALLOWED_FILE_FORMATS,
-            allowedLocations = cls.GSUITE_ALLOWED_LOCATIONS,
-            allowedTrackTypes = cls.GSUITE_ALLOWED_TRACK_TYPES,
-            disallowedGenomes = cls.GSUITE_DISALLOWED_GENOMES)
+            allowedFileFormats=cls.GSUITE_ALLOWED_FILE_FORMATS,
+            allowedLocations=cls.GSUITE_ALLOWED_LOCATIONS,
+            allowedTrackTypes=cls.GSUITE_ALLOWED_TRACK_TYPES,
+            disallowedGenomes=cls.GSUITE_DISALLOWED_GENOMES)
         if errorStr:
             return errorStr
 
@@ -319,6 +313,12 @@ class MultiTrackIntersectTool(GeneralGuiTool):
                                                   trackChoice, 'genome')
         if errorStr:
             return errorStr
+
+    @classmethod
+    def getOutputName(cls, choices):
+        return getGSuiteHistoryOutputName('progress', description=cls.OUTPUT_GSUITE_DESCRIPTION,
+                                          datasetInfo=choices.gSuite)
+
 
     #@staticmethod
     #def getSubToolClasses():
@@ -440,4 +440,4 @@ class MultiTrackIntersectTool(GeneralGuiTool):
         case, all all print statements are redirected to the info field of the
         history item box.
         '''
-        return 'gsuite'
+        return 'customhtml'

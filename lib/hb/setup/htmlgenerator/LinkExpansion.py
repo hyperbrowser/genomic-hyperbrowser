@@ -53,7 +53,12 @@ class LinkExpansion():
         
         if 'hover' in params:
             processedLink += ' hover="' + params['hover'] + '"'
+
+        if 'onclick' in params:
+            processedLink += ' onclick="' + params['onclick'] + '"'
+
         processedLink += '>'
+
         if 'title' in params:
             processedLink += params['title']
         else:

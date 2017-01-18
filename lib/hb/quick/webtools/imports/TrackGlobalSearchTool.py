@@ -1,4 +1,5 @@
 from collections import OrderedDict, namedtuple
+from unidecode import unidecode
 
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteHbIntegration
@@ -330,7 +331,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 rowList = []
                 for attr in cls.RESULT_COLS:
                     if attr in row:
-                        rowList.append(str(row[attr]).encode("utf-8"))
+                        rowList.append(unicode(row[attr]))
 
                 htmlTableDict[filename] = rowList
 
@@ -339,7 +340,8 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         html = HtmlCore()
         html.tableFromDictionary(htmlTableDict, columnNames = ['File name'] + cls.RESULT_COLS_HEADER,\
                                  tableId='t1', expandable=True)
-        return '__rawstr__',str(html)
+
+        return '__rawstr__', unicode(html)
 
     @classmethod
     def getOptionsBoxHistoryElementsInfo(cls,prevChoices):
@@ -375,7 +377,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
             core.descriptionLine(label, description)
         core.styleInfoEnd()
 
-        return '__rawstr__', str(core)
+        return '__rawstr__', unicode(core)
 
     @classmethod
     def getExtraHistElements(cls, choices):
@@ -386,7 +388,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 choices.source.find('HyperBrowser') == -1 and \
                 choices.transfer != 'Yes':
             from quick.webtools.GeneralGuiTool import HistElement
-            desc = choices.subCategory
+            desc = unidecode(choices.subCategory)
 
             fileList += \
                 [HistElement(getGSuiteHistoryOutputName('remote', desc), GSUITE_SUFFIX),
@@ -463,7 +465,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                     (localGSuite, progressViewer)
             #preProcessedGSuite, errorPreProcessGSuite = localGSuite.preProcessAllLocalTracksAndReturnOutputAndErrorGSuites(progressViewer)
             GSuiteComposer.composeToFile(remoteGSuite,
-                cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', desc)])
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('remote', desc)])
             GSuiteComposer.composeToFile(errorLocalGSuite,
                 cls.extraGalaxyFn[getGSuiteHistoryOutputName('nodownload', desc)])
             GSuiteComposer.composeToFile(localGSuite,
@@ -489,7 +491,6 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         #if choices.outputType == 'Categorized Search for Tracks':
         if not choices.filetype in [None,'',[]] and len([x for x,selected in choices.filetype.iteritems() if selected]) == 0:
             return 'You have to select at least one file type'
-
 
             if choices.downloadAndPreprocess == 'Yes':
                 errorStr = cls._checkGenome(choices.genome)
@@ -538,10 +539,20 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
-        desc = 'This tool provides a categorized search functionality for histone modifications, transcriptional factors' \
-               ' and methods to identify open chromatin in different external repositories using the "Compile GSuite ' \
-               'from external database" tool.'
+        desc = """This tool is a simplified version of the <b>Create a remote GSuite from a public repository</b> tool.
+        Several categories of genomic tracks that can be found in the supported databases have been preselected and
+        categorized to ease the search. Additionally the
+        selected genomic tracks will be downloaded and preprocessed, i.e. prepared for analysis. Each intermediate step
+        will be reported for transparency. This tool offers easier
+        use at the exchange of the fine tuned search available in the more advanced tool."""
         core.paragraph(desc)
+
+        core. paragraph('To use the tool, please follow these steps:')
+        core.orderedList(['Select one of the predefined categories.',
+                         'Select the attribute of interest.',
+                          'Select either all or a preferred database.',
+                          'Select the preferred data type.',
+                          'Execute the tool.'])
 
         return str(core)# + cls.getPlot()
 

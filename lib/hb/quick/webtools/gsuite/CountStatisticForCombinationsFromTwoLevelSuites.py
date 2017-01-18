@@ -10,8 +10,8 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 class CountStatisticForCombinationsFromTwoLevelSuites(GeneralGuiTool, UserBinMixin):
-    
-    
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['firstGSuite', 'secondGSuite']
+
     STAT_LIST_INDEX = [
                         STAT_OVERLAP_COUNT_BPS,
                         STAT_COVERAGE_REF_TRACK_BPS,

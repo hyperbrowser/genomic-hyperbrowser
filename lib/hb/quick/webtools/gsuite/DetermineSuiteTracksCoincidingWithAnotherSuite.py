@@ -1,7 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.gsuite import GSuiteConstants
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -49,6 +47,7 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
     def getInputBoxNames(cls):
         return [
                    ('Basic user mode', 'isBasic'),
+                   ('', 'basicQuestionId'),
                    ('Select target track collection GSuite', 'gSuiteFirst'),
                    ('Select reference track collection GSuite [rows]', 'gSuiteSecond'),
                ] + \
@@ -59,6 +58,10 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
     @staticmethod
     def getOptionsBoxIsBasic():
         return False
+
+    @staticmethod
+    def getOptionsBoxBasicQuestionId(prevChoices):
+        return '__hidden__', None
 
     @staticmethod
     def getOptionsBoxGSuiteFirst(prevChoices):
@@ -262,6 +265,9 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not (choices.gSuiteFirst and choices.gSuiteSecond):
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 
@@ -311,17 +317,6 @@ class DetermineSuiteTracksCoincidingWithAnotherSuite(GeneralGuiTool, GenomeMixin
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
-
-    @staticmethod
-    def _getGenome(choices):
-        return choices.genome
-
-    @staticmethod
-    def _getTrackNameList(choices):
-        gSuiteFirst = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        gSuiteSecond = getGSuiteFromGalaxyTN(choices.gSuiteSecond)
-        return [track.trackName for track in gSuiteFirst.allTracks()] + \
-               [track.trackName for track in gSuiteSecond.allTracks()]
 
     @classmethod
     def getToolDescription(cls):

@@ -6,14 +6,14 @@ from gold.util.CommonConstants import TRACK_TITLES_SEPARATOR
 from quick.multitrack.MultiTrackAnalysis import MultiTrackAnalysis
 from quick.multitrack.MultiTrackCommon import getGSuiteDataFromGalaxyTN,\
     getGSuiteFromGalaxyTN
-from quick.toolguide import ToolGuideConfig
-from quick.toolguide.controller.ToolGuide import ToolGuideController
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['histElement1', 'histElement2']
+
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
@@ -290,6 +290,9 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
         if not choices.histElement1 or not choices.histElement2:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
         
@@ -458,11 +461,3 @@ class HeatmapOfTwoGsuitesTool(GeneralGuiTool, UserBinMixin, DebugMixin):
         history item box.
         '''
         return 'customhtml'
-
-    @classmethod
-    def _getGenome(cls, choices):
-        return cls._getTrackData(choices)[2]
-
-    @classmethod
-    def _getTrackNameList(cls, choices):
-        return cls._getTrackData(choices)[1]

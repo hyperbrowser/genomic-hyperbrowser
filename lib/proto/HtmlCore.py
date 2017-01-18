@@ -1,8 +1,6 @@
 import os
 import re
 
-from config.Config import URL_PREFIX
-from proto.CommonConstants import THOUSANDS_SEPARATOR
 from proto.TableCoreMixin import TableCoreMixin
 
 
@@ -10,7 +8,14 @@ class HtmlCore(TableCoreMixin):
     def __init__(self):
         self._str = ''
 
+    @staticmethod
+    def _getTextCoreCls():
+        from proto.TextCore import TextCore
+        return TextCore
+
     def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=[], redirectUrl=None, reloadTime=None):
+        from config.Config import URL_PREFIX
+
         self._str = '''
 <html>
 <head>'''
@@ -150,7 +155,7 @@ class HtmlCore(TableCoreMixin):
             for tag, el in zip(tagRow, headerRow):
                 self._str += '<th%s' % headerClassStr + \
                              (' ' + tag if tag != '' else '') + \
-                             '>' + str(el) + '</th>'
+                             '>' + unicode(el) + '</th>'
             self._str += '</tr>' + os.linesep
 
         return self
@@ -159,7 +164,7 @@ class HtmlCore(TableCoreMixin):
         self.tableRowBegin(**kwargs)
         for i, el in enumerate(row):
             rowSpan = rowSpanList[i] if rowSpanList else None
-            self.tableCell(str(el), rowSpan=rowSpan, **kwargs)
+            self.tableCell(unicode(el), rowSpan=rowSpan, **kwargs)
         self.tableRowEnd(**kwargs)
         return self
 
@@ -175,13 +180,18 @@ class HtmlCore(TableCoreMixin):
         return self
 
     def tableCell(self, content, cellClass=None, style=None,
-                  rowSpan=None, colSpan=None, **kwargs):
+                  rowSpan=None, colSpan=None, removeThousandsSep=False, **kwargs):
         self._str += '<td'
 
         try:
+            from proto.CommonConstants import THOUSANDS_SEPARATOR
             contentNoSpaces = content.replace(THOUSANDS_SEPARATOR, '')
-            float(contentNoSpaces)
-            self._str += ' sorttable_customkey="' + contentNoSpaces + '"'
+
+            if removeThousandsSep:
+                content = contentNoSpaces
+            else:
+                float(contentNoSpaces)
+                self._str += ' sorttable_customkey="' + contentNoSpaces + '"'
         except:
             pass
 
@@ -190,13 +200,105 @@ class HtmlCore(TableCoreMixin):
         if style:
             self._str += ' style="%s"' % style
         if rowSpan:
-            self._str += ' rowspan="' + str(rowSpan) + '"'
+            self._str += ' rowspan="' + unicode(rowSpan) + '"'
         if colSpan:
-            self._str += ' colspan="' + str(colSpan) + '"'
+            self._str += ' colspan="' + unicode(colSpan) + '"'
         self._str += '>' + content + '</td>'
 
-    def tableFooter(self, **kwargs):
+    def tableFooter(self, expandable=False, tableId=None, numRows=None, visibleRows=6, **kwargs):
         self._str += '</table>'+ os.linesep
+
+        if expandable:
+            assert tableId, 'Table ID must be set for expandable tables.'
+            assert numRows, 'Number of rows must be set for expandable tables.'
+
+            if numRows > visibleRows:
+                self.tableExpandButton(tableId, numRows,
+                                       visibleRows=visibleRows)
+        return self
+
+    def tableExpandButton(self, tableId, totalRows, visibleRows=6):
+            self.script('''
+    function expandTable(tableId) {
+        tblId = "#" + tableId;
+        $(tblId).find("tr").show();
+        btnDivId = "#toggle_table_" + tableId;
+        $(btnDivId).find("input").toggle();
+        $(tblId).off("click");
+    }
+
+    function collapseTable(tableId, visibleRows) {
+        tblId = "#" + tableId;
+        trScltr = tblId + " tr:nth-child(n + " + visibleRows + ")";
+        $(trScltr).hide();
+        btnDivId = "#toggle_table_" + tableId;
+        $(btnDivId).find("input").toggle();
+        $(tblId).on("click", resetFunc(tableId, visibleRows));
+    }
+
+    var resetFunc = function(tableId, visibleRows) {
+        return function(e) {
+            return resetTable(e, tableId, visibleRows);
+        }
+    }
+
+    function resetTable(e, tableId, visibleRows) {
+        expandTable(tableId)
+        collapseTable(tableId, visibleRows)
+    }
+
+    $(document).ready(function(){
+        tableId = "%s";
+        visibleRows = %s;
+        tblId = "#" + tableId;
+        hiddenRowsSlctr = tblId + " tr:nth-child(n + " + (visibleRows+2) + ")";
+        //  'visibleRows+2' for some reason (one of life's great mysteries)
+        if ($(hiddenRowsSlctr).length>0) {
+            $(hiddenRowsSlctr).hide();
+            $(tblId).on("click", resetFunc(tableId, visibleRows+1));
+        //  'visibleRows+1' for some other reason (one of life's other great mysteries)
+
+        }
+    }
+    );
+
+    ''' % (tableId, visibleRows))
+
+            self._str += '''
+    <div id="toggle_table_%s" class="toggle_table_btn">
+    <input type="button" value="Expand table (now showing %s of %s rows)..." id="expand_table_btn" style="background: #F5F5F5;" onclick="expandTable('%s')"/>
+    <input type="button" value="Collapse table (now showing %s of %s rows)" id="collapse_table_btn" style="background: #F5F5F5; display: none;" onclick="collapseTable('%s', %s)"/>
+    ''' % (tableId, visibleRows, totalRows, tableId, totalRows, totalRows, tableId,
+           visibleRows + 1)
+            return self
+
+    def tableWithTabularImportButton(self, tabularFn=None,
+                                     tabularHistElementName='Raw table',
+                                     produceTableCallbackFunc=None,
+                                     **kwArgsToCallback):
+        assert produceTableCallbackFunc is not None
+        assert tabularFn is not None
+
+        textCore = self._getTextCoreCls()()
+        textCore = produceTableCallbackFunc(textCore, **kwArgsToCallback)
+
+        from proto.CommonFunctions import ensurePathExists
+        ensurePathExists(tabularFn)
+        open(tabularFn, 'w').write(str(textCore))
+
+        self.importFileToHistoryButton("Import table to history (tabular)",
+                                       tabularFn, 'tabular', tabularHistElementName)
+
+        return produceTableCallbackFunc(self, **kwArgsToCallback)
+
+    def importFileToHistoryButton(self, label, importFn, galaxyDataType, histElementName):
+        from proto.CommonFunctions import getLoadToGalaxyHistoryURL
+        importUrl = getLoadToGalaxyHistoryURL(importFn, galaxyDataType=galaxyDataType,
+                                              histElementName=histElementName)
+        self._str += '''<button type = "button" ''' + \
+                     '''style="margin-right: 10px; margin-bottom: 10px;" ''' + \
+                     '''onclick = "location.href='%s'">%s</button>''' \
+                     % (importUrl, label)
         return self
 
     def divider(self, withSpacing=False):
