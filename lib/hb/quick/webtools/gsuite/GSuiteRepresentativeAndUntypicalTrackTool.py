@@ -287,7 +287,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
 
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, cls.Q1_SHORT, decoratedResultsDict, columnTitles,
-                gsuite=gsuite, results=results, gsuiteAppendAttrs=['Similarity_score'],
+                gsuite=gsuite, results=results, gsuiteAppendAttrs=['similarity_score'],
                 sortable=True)
 
             # plot
@@ -402,7 +402,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
 
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, cls.Q3_SHORT, decoratedResultsDict, columnTitles,
-                gsuite=gsuite, results=results, gsuiteAppendAttrs=['Similarity_score', 'P_value'],
+                gsuite=gsuite, results=results, gsuiteAppendAttrs=['similarity_score', 'p_value'],
                 sortable=True)
 
             core.divEnd()

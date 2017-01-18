@@ -459,7 +459,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         addTableWithTabularAndGsuiteImportButtons(
             core, choices, galaxyFn, cls.Q1_SHORT, tableDict=gsPerTrackResults[1],
             columnNames=gsPerTrackResults[0], gsuite=gsuite, results=results,
-            gsuiteAppendAttrs=['Similarity_score'], sortable=True)
+            gsuiteAppendAttrs=['similarity_score'], sortable=True)
 
         core.divEnd()
         columnInd = 0
@@ -518,7 +518,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         addTableWithTabularAndGsuiteImportButtons(
             core, choices, galaxyFn, cls.Q2_SHORT, tableDict=gsPerTrackResults[1],
             columnNames=gsPerTrackResults[0], gsuite=gsuite, results=results,
-            gsuiteAppendAttrs=['Similarity_score', 'P_Value'], sortable=True)
+            gsuiteAppendAttrs=['similarity_score', 'p_value'], sortable=True)
 
         columnInd = 0
         if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
