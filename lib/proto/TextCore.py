@@ -1,16 +1,19 @@
 import os
-from proto.HtmlCore import HtmlCore
+
 from proto.TableCoreMixin import TableCoreMixin
 
 
 class TextCore(TableCoreMixin):
-    HTML_CORE_CLS = HtmlCore
-
     def __init__(self):
         self._str = ''
 
+    @staticmethod
+    def _getHtmlCoreCls():
+        from proto.HtmlCore import HtmlCore
+        return HtmlCore
+
     def __getattr__(self, item):
-        if getattr(self.HTML_CORE_CLS, item):
+        if getattr(self._getHtmlCoreCls(), item):
             return self._default
         else:
             raise AttributeError('TextCore does not contain member "%s".' % item)
@@ -56,13 +59,26 @@ class TextCore(TableCoreMixin):
         return self
 
     def tableHeader(self, headerRow, **kwargs):
-        self._str += '\t'.join([str(el).upper() for el in headerRow])
+        self._str += '#' + ('\t'.join([str(el) for el in headerRow]))
         self._str += os.linesep
         return self
 
-    def tableLine(self, row, rowSpanList=None, **kwargs):
-        self._str += '\t'.join(['' if rowSpanList is not None and rowSpanList[i]==0 \
-                                else str(el) for i,el in enumerate(row)])
+    def tableLine(self, row, rowSpanList=None, removeThousandsSep=True, **kwargs):
+        rowOutput = []
+
+        for i, el in enumerate(row):
+            if rowSpanList is not None and rowSpanList[i] == 0:
+                rowOutput.append('')
+            else:
+                if removeThousandsSep:
+                    try:
+                        from proto.CommonConstants import THOUSANDS_SEPARATOR
+                        el = el.replace(THOUSANDS_SEPARATOR, '')
+                    except:
+                        pass
+                rowOutput.append(str(el))
+
+        self._str += '\t'.join(rowOutput)
         self._str += os.linesep
         return self
 
