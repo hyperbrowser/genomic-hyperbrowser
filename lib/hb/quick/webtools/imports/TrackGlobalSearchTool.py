@@ -465,7 +465,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                     (localGSuite, progressViewer)
             #preProcessedGSuite, errorPreProcessGSuite = localGSuite.preProcessAllLocalTracksAndReturnOutputAndErrorGSuites(progressViewer)
             GSuiteComposer.composeToFile(remoteGSuite,
-                cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', desc)])
+                cls.extraGalaxyFn[getGSuiteHistoryOutputName('remote', desc)])
             GSuiteComposer.composeToFile(errorLocalGSuite,
                 cls.extraGalaxyFn[getGSuiteHistoryOutputName('nodownload', desc)])
             GSuiteComposer.composeToFile(localGSuite,
