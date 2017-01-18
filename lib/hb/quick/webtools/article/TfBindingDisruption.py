@@ -163,6 +163,29 @@ class TfBindingDisruption(GeneralGuiTool, UserBinMixin, GenomeMixin):
         if errorString:
             return errorString
 
+        from quick.application.ExternalTrackManager import ExternalTrackManager
+        fileName = choices.snp
+        if fileName != None and fileName != "":
+            fName = ExternalTrackManager.extractFnFromGalaxyTN(fileName)
+            suffix = ExternalTrackManager.extractFileSuffixFromGalaxyTN(fileName)
+            from gold.origdata.GenomeElementSource import GenomeElementSource
+            geSource = GenomeElementSource(fName, suffix=suffix)
+
+
+            # Hacky way to check validity:
+            # Check for errors when reading first column
+            # Probably more correct ways to do this?
+            try:
+                for ge in geSource:
+                    chr = ge.chr
+                    start = ge.mutated_from_allele
+                    from_allele = ge.mutated_to_allele
+                    to_allele = ge.mutated_to_allele
+                    break
+            except:
+                return "Invalid SNP data file. The SNP data file should as a minimum contain the following columns:" + \
+                        " seqid, start, end, mutated_from_allele, mutated_to_allele"
+
         errorString = cls._checkGSuiteFile(choices.gsuite)
         if errorString:
             return errorString
