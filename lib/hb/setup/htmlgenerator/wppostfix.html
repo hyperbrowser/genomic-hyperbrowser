@@ -384,7 +384,7 @@
 						<div class="tab4collectionDescDetails">2. The intersection between the common SNP dataset (track) against each
 							dataset of a particular miRNA part or whole miRNA (GSuite). Annotated analysis history is available on a
 							separate page:
-							<a href="../u/hb-superuser/h/mirna-vs-expanded-snps-v3" target="_blank">Common SNPs in miRNAs</a>
+							<a href="../u/hb-superuser/h/common-snps-in-mirnas" target="_blank">Common SNPs in miRNAs</a>
 						</div>
 					</div>
 				</div>
@@ -710,18 +710,18 @@
 				<div class = "welcomeAnalysisDetailsV2" > - Datasets used in the analysis: </div>
 				<div class="tab4collectionDescDetails_history">
 					<div class="tab4collectionDescDetails">
-						To perform a similarity measure of GATA1 in K562 cells, we collected 318 ChIP-seq datasets
-						from ENCODE (PMID 22955616) and downloaded to history. We then performed similarity testing
-						of GATA1 ChIP-seq track (Snyder lab, Stanford) against the 317 experimental datasets
-						using the Forbes and Jaccard similarity measures.
+						To perform a similarity measure of GATA1 in K562 cells, we collected 318 ChIP-seq datasets from
+						ENCODE (PMID 22955616) and downloaded to history. We then performed similarity testing of GATA1
+						ChIP-seq track (Snyder lab, Stanford) against the 317 experimental datasets using the Forbes,
+						Jaccard and tetrachoric correlation similarity measures.
 					</div>
 				</div>
 
 				<div class = "welcomeAnalysisDetailsV2V2" > - Analysis datasets - history </div>
 				<div class="tab4collectionDescDetails_history">
 					Annotated analysis histories (including all the utilized data and operations) are available on
-					separate pages for the <a href="../u/hb-superuser/h/gata1-example---the-effect-of-similarity-measure" target="_blank"> analysis leading to ranking of tracks </a>
-					and the <a href="../u/hb-superuser/h/gata1-example---subsampling-tracks" target="_blank">quantitative analysis of
+					separate pages for the <a href="../u/sandve/h/gata1-example---the-effect-of-similarity-measure" target="_blank"> analysis leading to ranking of tracks </a>
+					and the <a href="../u/sandve/h/gata1-example---effects-of-subsampling" target="_blank">quantitative analysis of
 					correlation between similarity measures and track sizes </a>. For both histories, the history elements
 					are annotated with details of the performed analysis and their main interpretation.
 
@@ -731,32 +731,36 @@
 				<div class="tab4collectionDescDetailsV2">
 					<div class="tab4collectionDescDetails_historyV2">
 						<div class="tab4collectionDescDetailsV3">
-							<div class="tab4collectionDescDetails">We generated two separate rankings of the 317 chip-seq tracks,
-								based on their similarity against the GATA1 track according to the Forbes and Jaccard similarity
-								measures, respectively. In addition to exploring the biological interpretations of the two different
-								rankings, we performed a quantitative analysis of how similarity values correlated with the size of
-								tracks and how the (Forbes versus Jaccard) similarity values changed through subsampling of elements
-								from the tracks.
+							<div class="tab4collectionDescDetails">We generated two separate rankings of the 317 chip-seq
+								tracks, based on their similarity against the GATA1 track according to the Forbes, Jaccard
+								and tetrachoric correlation similarity measures, respectively. In addition to exploring the
+								biological interpretations of the three different rankings, we performed a quantitative
+								analysis of how similarity values correlated with the size of tracks and how the similarity
+								values changed through subsampling of elements from the tracks.
 							</div>
-							<div class="tab4collectionDescDetails">The two alternative measures (Forbes and Jaccard) resulted in
-								very different rankings of similarity to GATA1. With the Forbes measure, another replicate of
-								GATA1 was ranked first, along with several other potentially interesting TFs at the top, but
-								without expected co-binding TFs like TAL1 being among the most highly ranked TF. The ranking
-								according to the Jaccard measure were clearly influenced by size of tracks, with other
-								replicates for GATA1 not being among the highest ranked TF. At the same time, the expected
-								co-binding TF TAL1 was ranked among the top tracks, along with several tracks for GATA2.
+							<div class="tab4collectionDescDetails">he three alternative measures (Forbes, Jaccard and
+								tetrachoric correlation) resulted in markedly different rankings of similarity to GATA1.
+								With the Forbes measure, another replicate of GATA1 was ranked first, along with several
+								other potentially interesting TFs at the top, but without expected co-binding TFs like
+								TAL1 being among the most highly ranked TF. The ranking according to the Jaccard measure
+								were clearly influenced by size of tracks, with other replicates for GATA1 not being
+								among the highest ranked TF. At the same time, the expected co-binding TF TAL1 was ranked
+								among the top tracks, along with several tracks for GATA2. The results using tetrachoric
+								correlation appeared superior to that of the other measures - including both the other
+								GATA1 track, several GATA2 tracks and the TF TAL1 at the top of the ranking.
 							</div>
 							<div class="tab4collectionDescDetails">To further explore the influence of track size on the
 								measures, we performed a quantitative analysis of the Forbes and Jaccard similarity values.
-								We selected 291 ChIP-seq tracks that had at least 1000 peaks, and made separate Scatterplots
-								of Forbes similarity versus track size and Jaccard similarity versus track size.
-								The Jaccard similarity values was seen to be strongly correlated with track size.
+								We selected 291 ChIP-seq tracks that had at least 1000 peaks, and made separate
+								Scatterplots of Forbes, Jaccard and tetrachoric correlation similarity versus track
+								size. The Jaccard similarity values was seen to be strongly correlated with track size.
 								To further determine whether this was directly connected to track size, we randomly
-								subsampled a set of 1000 peaks for each track. The Forbes values were essentially unchanged
-								by this subsampling, while the Jaccard values changed substantially. This shows that the
-								Jaccard measure is very sensitive to the number of elements in tracks, and that care must be
-								taken to ensure that biological interpretations are not dominated by technicalities related to
-								the number of discovered peaks.
+								subsampled a set of 1000 peaks for each track. The Forbes values were essentially
+								unchanged by this subsampling, while the Jaccard values changed substantially. The
+								tetrachoric correlation was affected to some degree, but much less markedly than the
+								Jaccard values. This shows that the Jaccard measure is very sensitive to the number of
+								elements in tracks, and that care must be taken to ensure that biological interpretations
+								are not dominated by technicalities related to the number of discovered peaks.
 							</div>
 						</div>
 					</div>
