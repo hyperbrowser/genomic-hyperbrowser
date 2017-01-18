@@ -370,7 +370,7 @@ def addHistogramVisualization(tableData, tableHeader, plotType):
             seriesName, categories, data = dT.changeDictIntoList()
 
             from proto.RSetup import r, robjects
-            #count histoggram
+            # count histogram
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
             dd=robjects.FloatVector(data)
             simpleHist = r(rCode)(dd)
