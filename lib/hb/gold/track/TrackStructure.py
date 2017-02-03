@@ -13,7 +13,11 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+from collections import OrderedDict
+
 from gold.track.Track import Track
+from quick.application.SignatureDevianceLogging import takes
+
 '''
 Created on Sep 23, 2015
 
@@ -74,3 +78,31 @@ class TrackStructure(dict):
         #It doesn't work without specifying a genome
         #return hash(tuple([tuple([x.getUniqueKey() for x in self[k]]) for k in keys]))
         return hash(tuple([tuple([tuple(x.trackName) for x in self[k]]) for k in keys]))
+
+class TrackStructureV2(dict):
+    #@takes(object, str, TrackStructureV2)
+    def __setitem__(self, key, value):
+        assert isinstance(key, str)
+        assert isinstance(value, TrackStructureV2)
+        dict.__setitem__(self, key, value)
+
+class SingleTrackTS(TrackStructureV2):
+    @takes(object, Track, dict)
+    def __init__(self, track, metadata):
+        self.track = track
+        self.metadata = metadata
+
+class MultipleTracksTS(TrackStructureV2):
+    pass
+    # def __init__(self):
+    #     pass
+
+    def getMetadataFields(self):
+        allMetadataFields = OrderedDict()
+
+        for ts in self.values():
+            for metadataField in ts.metadata.keys():
+                allMetadataFields[metadataField] = True
+
+        return allMetadataFields.keys()
+

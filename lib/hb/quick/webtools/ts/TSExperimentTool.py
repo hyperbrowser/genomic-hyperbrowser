@@ -245,6 +245,7 @@ class TSExperimentTool(GeneralGuiTool):
         import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getMultipleTracksTS(genome, choices_gsuite)
+        print refTS.getMetadataFields()
 
         print 'YES!'
 
