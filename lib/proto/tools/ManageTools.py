@@ -105,7 +105,8 @@ def getProtoToolList(except_class_names=[]):
                                         # print (fn, m.group(2), prototype_cls, module_name)
                                         tmp_tools[tool_selection_name] = (fn, m.group(2), prototype_cls, module_name)
                     except Exception as e:
-                        traceback.print_exc()
+                        #traceback.print_exc()
+                        pass #at least for now, while master have problems..
                         #break
     #print 'Num protopy', len(tools)
 

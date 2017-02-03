@@ -239,23 +239,27 @@ class TSExperimentTool(GeneralGuiTool):
         Mandatory unless isRedirectTool() returns True.
         """
         choices_gsuite = choices.gs
-        selected_category = choices.cat
+        selected_metadata= choices.cat
         choices_queryTrack = choices.query
         genome = 'hg19'
         import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getMultipleTracksTS(genome, choices_gsuite)
         from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
-        categoricalTS = CategoricalTS()
-        assert selected_category in refTS.getMetadataFields()
-        catValues = refTS.getAllValuesForMetadataField(selected_category)
-        for val in catValues:
-            categoricalTS[str(val)] = refTS.getTrackSubsetTS(selected_category, val)
+
+        #Temporary note: the functionality of the following commented lines
+        # were moved into the method getSplittedByCategoryTS
+        # categoricalTS = CategoricalTS()
+        # catValues = refTS.getAllValuesForMetadataField(selected_metadata)
+        # for val in catValues:
+        #     categoricalTS[str(val)] = refTS.getTrackSubsetTS(selected_metadata, val)
+        categoricalTS = refTS.getSplittedByCategoryTS(selected_metadata)
+
         fullTS = TrackStructureV2()
         fullTS['query'] = queryTS
         fullTS['ref'] = categoricalTS
         print fullTS
-        print 'YES!'
+        print 'YES and shortened!'
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

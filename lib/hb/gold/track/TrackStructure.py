@@ -118,5 +118,16 @@ class MultipleTracksTS(TrackStructureV2):
                 subsetTS[key] = ts
         return subsetTS
 
+    def getSplittedByCategoryTS(self, metadataField):
+        '''
+        Returns a categorical TS, containing a separate MultipleTracksTS
+        per value in selected metadata field
+        '''
+        categoricalTS = CategoricalTS()
+        catValues = self.getAllValuesForMetadataField(metadataField)
+        for cat in catValues:
+            categoricalTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
+        return categoricalTS
+
 class CategoricalTS(TrackStructureV2):
     pass
