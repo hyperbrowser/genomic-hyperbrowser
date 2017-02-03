@@ -136,3 +136,5 @@ doc/build
 .syncthing*
 .svn
 ./**/.svn
+# used by docker
+.home/*
