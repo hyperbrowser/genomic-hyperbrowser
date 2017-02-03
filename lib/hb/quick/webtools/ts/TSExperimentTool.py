@@ -238,7 +238,15 @@ class TSExperimentTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        choices_gsuite = choices.gs
+        selected_category = choices.cat
+        choices_queryTrack = choices.query
+        genome = 'hg19'
+        import quick.gsuite.GuiBasedTsFactory as factory
+        queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
+        refTS = factory.getMultipleTracksTS(genome, choices_gsuite)
+
+        print 'YES!'
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
