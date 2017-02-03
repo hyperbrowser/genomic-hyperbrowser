@@ -245,8 +245,16 @@ class TSExperimentTool(GeneralGuiTool):
         import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getMultipleTracksTS(genome, choices_gsuite)
-        print refTS.getMetadataFields()
-
+        from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
+        categoricalTS = CategoricalTS()
+        assert selected_category in refTS.getMetadataFields()
+        catValues = refTS.getAllValuesForMetadataField(selected_category)
+        for val in catValues:
+            categoricalTS[str(val)] = refTS.getTrackSubsetTS(selected_category, val)
+        fullTS = TrackStructureV2()
+        fullTS['query'] = queryTS
+        fullTS['ref'] = categoricalTS
+        print fullTS
         print 'YES!'
 
     @classmethod

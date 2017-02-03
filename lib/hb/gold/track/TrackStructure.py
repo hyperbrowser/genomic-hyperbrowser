@@ -106,3 +106,17 @@ class MultipleTracksTS(TrackStructureV2):
 
         return allMetadataFields.keys()
 
+    def getAllValuesForMetadataField(self, metadataField):
+        return set([ts.metadata.get(metadataField) for ts in self.values()])
+
+
+    def getTrackSubsetTS(self, metadataField, selectedValue):
+        subsetTS = MultipleTracksTS()
+        for key, ts in self.iteritems():
+            assert isinstance(ts, SingleTrackTS)
+            if ts.metadata.get(metadataField) == selectedValue:
+                subsetTS[key] = ts
+        return subsetTS
+
+class CategoricalTS(TrackStructureV2):
+    pass
