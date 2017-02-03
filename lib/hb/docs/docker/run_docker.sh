@@ -43,7 +43,7 @@ fi
     --user $(id -u) \
     -p ${GALAXY_HTTP_PORT} --net=host \
     -v $(pwd):/from_host \
-    -e "HOME=/from_host/.home/" \
-    -ti "$DOCKERIMGAGE_NAME" bash -c "cd /from_host && mkdir -p .home/ && ./run.sh"
+    -e "HOME=/from_host/.docker/" \
+    -ti "$DOCKERIMGAGE_NAME" bash -c "cd /from_host && mkdir -p .docker/ && ./run.sh"
 )
 
