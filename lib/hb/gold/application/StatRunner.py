@@ -44,7 +44,7 @@ class StatJob(object):
 
     #@takes(StatJob, UserBinSource, Track, Track, Statistic)
     #statClass will typically be a functools.partial object
-    def __init__(self, userBinSource, track, track2, statClass, *args, **kwArgs):
+    def __init__(self, userBinSource, trackStructure, statClass, *args, **kwArgs):
         #Not relevant, as minimal runs are anyway done
         #if StatJob.USER_BIN_SOURCE != None:
             #logMessage('USER_BIN_SOURCE already set in StatJob')
@@ -56,54 +56,57 @@ class StatJob(object):
         #    kwArgs['userBins'] = userBinSource
 
         self._userBinSource = userBinSource
-        self._track = track
-        self._track2 = track2
+        # self._track = track
+        # self._track2 = track2
+        self._trackStructure = trackStructure
         self._statClass = statClass
         self._args = args
         self._kwArgs = kwArgs
         self._numUserBins = None
 
     def _initProgress(self, printProgress):
-        if hasattr(self._statClass, 'keywords'):
-            #since kwArgs to Statistic usually has been wrapped in by functools.partial.
-            statKwArgs = self._statClass.keywords
-        else:
-            statKwArgs = self._kwArgs
-        
-        from quick.statistic.McFdrSamplingStat import McFdrSamplingStat
-        from quick.statistic.SequentialMcSamplingStat import SequentialMcSamplingStat
-        #if self._kwArgs.get('minimal') == True or statKwArgs.get('silentProgress') == 'yes': #minimal is in kwArgs to StatJob
-        if self._kwArgs.get('minimal') == True: #minimal is in kwArgs to StatJob
-            progressClass = SilentProgress
-        #elif self._kwArgs.get('numResamplings') < self._kwArgs.get('maxSamples'):
-        #elif self._statClass.keywords.get('numResamplings') < self._statClass.keywords.get('maxSamples'): #since kwArgs to Statistic has been wrapped in by functools.partial.
-        elif statKwArgs.get('mcSamplerClass') in ['McFdrSamplingStat', McFdrSamplingStat]:
-            progressClass = McFdrProgress
-        elif statKwArgs.get('mcSamplerClass') in ['SequentialMcSamplingStat', SequentialMcSamplingStat]:
-            progressClass = SequentialMcProgress
-        elif RandomizationManagerStat.getMcSamplingScheme(statKwArgs) == 'Sequential MC': 
-            progressClass = SequentialMcProgress
-        elif RandomizationManagerStat.getMcSamplingScheme(statKwArgs) == 'MCFDR': 
-            progressClass = McFdrProgress
-        else:
-            #print 'KWARGS: ',self._kwArgs, self._args
-            progressClass = StandardProgress
-            
-        #self._progress = progressClass(self.getNumUserBins(), printProgress, description=\
-        #                    '<p><b>Analyzing ' + str(self._track.trackName) + \
-        #                    (' vs ' + str(self._track2.trackName) if self._track2 is not None else '') + ' using statistic: ' + \
-        #                    self._statClass.__name__ + '</b><br><br> Performing local analysis: <br>')
-        if hasattr(self, '_analysis'):
-            nspi = self._analysis.getChoice('numSamplesPerChunk')
-        else:
-            nspi = self._kwArgs.get('numSamplesPerChunk')
-            
-        self._progress = progressClass(self.getNumUserBins(), printProgress, description=\
-                            '<b>Analyzing ' + str(self._track.trackName) + \
-                            (' vs ' + str(self._track2.trackName) if self._track2 is not None else '') + ' using statistic: ' + \
-                            self._statClass.__name__ + '</b>\n\nPerforming local analysis:',\
-                            numSamplesPerIteration=nspi)
-        self._progress.addCount(0)
+        raise NotImplementedError
+
+        # if hasattr(self._statClass, 'keywords'):
+        #     #since kwArgs to Statistic usually has been wrapped in by functools.partial.
+        #     statKwArgs = self._statClass.keywords
+        # else:
+        #     statKwArgs = self._kwArgs
+        #
+        # from quick.statistic.McFdrSamplingStat import McFdrSamplingStat
+        # from quick.statistic.SequentialMcSamplingStat import SequentialMcSamplingStat
+        # #if self._kwArgs.get('minimal') == True or statKwArgs.get('silentProgress') == 'yes': #minimal is in kwArgs to StatJob
+        # if self._kwArgs.get('minimal') == True: #minimal is in kwArgs to StatJob
+        #     progressClass = SilentProgress
+        # #elif self._kwArgs.get('numResamplings') < self._kwArgs.get('maxSamples'):
+        # #elif self._statClass.keywords.get('numResamplings') < self._statClass.keywords.get('maxSamples'): #since kwArgs to Statistic has been wrapped in by functools.partial.
+        # elif statKwArgs.get('mcSamplerClass') in ['McFdrSamplingStat', McFdrSamplingStat]:
+        #     progressClass = McFdrProgress
+        # elif statKwArgs.get('mcSamplerClass') in ['SequentialMcSamplingStat', SequentialMcSamplingStat]:
+        #     progressClass = SequentialMcProgress
+        # elif RandomizationManagerStat.getMcSamplingScheme(statKwArgs) == 'Sequential MC':
+        #     progressClass = SequentialMcProgress
+        # elif RandomizationManagerStat.getMcSamplingScheme(statKwArgs) == 'MCFDR':
+        #     progressClass = McFdrProgress
+        # else:
+        #     #print 'KWARGS: ',self._kwArgs, self._args
+        #     progressClass = StandardProgress
+        #
+        # #self._progress = progressClass(self.getNumUserBins(), printProgress, description=\
+        # #                    '<p><b>Analyzing ' + str(self._track.trackName) + \
+        # #                    (' vs ' + str(self._track2.trackName) if self._track2 is not None else '') + ' using statistic: ' + \
+        # #                    self._statClass.__name__ + '</b><br><br> Performing local analysis: <br>')
+        # if hasattr(self, '_analysis'):
+        #     nspi = self._analysis.getChoice('numSamplesPerChunk')
+        # else:
+        #     nspi = self._kwArgs.get('numSamplesPerChunk')
+        #
+        # self._progress = progressClass(self.getNumUserBins(), printProgress, description=\
+        #                     '<b>Analyzing ' + str(self._track.trackName) + \
+        #                     (' vs ' + str(self._track2.trackName) if self._track2 is not None else '') + ' using statistic: ' + \
+        #                     self._statClass.__name__ + '</b>\n\nPerforming local analysis:',\
+        #                     numSamplesPerIteration=nspi)
+        # self._progress.addCount(0)
         
     def run(self, reset=True, printProgress=PRINT_PROGRESS):
         if reset:
@@ -116,7 +119,7 @@ class StatJob(object):
             results.addError(e)
             return results
         
-        self._initProgress(printProgress)
+        # self._initProgress(printProgress)
         
         if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']):
             from quick.application.parallel.JobHandler import JobHandler
@@ -141,7 +144,7 @@ class StatJob(object):
                 break
             
             numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats)>0 else 0            
-            self._progress.addFullLocalAnalysisIteration(numNotDetermined)
+            # self._progress.addFullLocalAnalysisIteration(numNotDetermined)
             if len(stats) == 0 or numNotDetermined == 0:
                 break
             #print 'Continuing McFdr'
@@ -154,19 +157,19 @@ class StatJob(object):
         #startGlobal = time.time()
         #import pdb
         #pdb.set_trace()
-        self._progress.globalAnalysisStarted()
-        self._progress.printMessage('\nPerforming global analysis...')
+        # self._progress.globalAnalysisStarted()
+        # self._progress.printMessage('\nPerforming global analysis...')
         while True:
             stat = self._doGlobalAnalysis(results, stats)
             if stat is None:                
                 break
             nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)
-            self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
+            # self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
 
             if nonDetermined == 0:
                 break
             
-        self._progress.globalAnalysisEnded()
+        # self._progress.globalAnalysisEnded()
         #print "<br>global analysis took %f seconds" % (time.time() - startGlobal)
         self._endProgress()
         return results
@@ -180,7 +183,7 @@ class StatJob(object):
             #Currently, just to ensure that rawdata is not memoized for all userbins..:
             stat.afterComputeCleanup()
             
-            self._progress.addCount()
+            # self._progress.addCount()
         return stats
             
     def _doGlobalAnalysis(self, results, stats):
@@ -196,7 +199,8 @@ class StatJob(object):
         
     def _getSingleResult(self, region):
         #print 'Kw Here: ', self._kwArgs, 'args here: ', self._args
-        stat = self._statClass(region, self._track, self._track2, *self._args, **self._kwArgs)
+        print self._statClass
+        stat = self._statClass(region, self._trackStructure, *self._args, **self._kwArgs)
         try:
             res = stat.getResult()
         except (CentromerError, NoneResultError),e:
@@ -230,12 +234,14 @@ class StatJob(object):
         return True
     
     def _emptyResults(self):
-        return Results(self._track.trackName, self._track2.trackName \
-                        if self._track2 is not None else [], self._statClass.__name__)
+        return Results(["Track 1"], ["Track 2"], self._statClass.__name__)
+        # return Results(self._track.trackName, self._track2.trackName \
+        #                 if self._track2 is not None else [], self._statClass.__name__)
         
     def _endProgress(self):
-        self._progress.printMessage('\nFormatting results...')
-        self._progress.printActiveTime()
+        pass
+        # self._progress.printMessage('\nFormatting results...')
+        # self._progress.printActiveTime()
 
     def _avoidUbStatMemoization(self):
         #fixme: temporary solution.. along with its use later on..:
@@ -325,7 +331,9 @@ class AnalysisDefJob(StatJob):
         from gold.description.RunDescription import RunDescription
         import gold.description.Analysis as AnalysisModule
         #AnalysisModule.VERBOSE = True
-        msg = 'Started run with invalid statistic... Def: ' + self._analysisDef
+        msg = 'Started run with invalid statistic... Please run with debug mode set to "Debug by raising hidden ' \
+              'exceptions" to see underlying problem. ' \
+              'Def: ' + self._analysisDef
                     #+ ', Run description: ' + \
                     #RunDescription.getRevEngBatchLine( self._trackName1, self._trackName2, self._analysisDef, \
                                                       #'Not Available', 'Not Available', self._userBinSource.genome)
