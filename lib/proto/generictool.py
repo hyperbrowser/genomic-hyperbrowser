@@ -27,7 +27,7 @@ from proto.HtmlCore import HtmlCore
 from proto.config.Config import URL_PREFIX, GALAXY_BASE_DIR
 from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, GALAXY_SECURITY_HELPER_OBJ
 from BaseToolController import BaseToolController
-from proto.CommonFunctions import getToolPrototype
+from proto.ProtoToolRegister import getToolPrototype
 from proto.StaticFile import StaticImage
 
 
