@@ -16,12 +16,11 @@
 
 import os
 import re
-import shelve
 import urllib
 from collections import OrderedDict
 
 from proto.CommonConstants import THOUSANDS_SEPARATOR
-from proto.config.Config import PROTO_TOOL_SHELVE_FN, OUTPUT_PRECISION
+from proto.config.Config import OUTPUT_PRECISION
 from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, \
     GALAXY_SECURITY_HELPER_OBJ
 
@@ -37,23 +36,6 @@ with 'XXX/dataset_YYYY.dat', where XXX and YYYY are numbers which may be
 extracted and used as a datasetId in the form [XXX, YYYY]. The last element
 is the name of the history element, mostly used for presentation purposes.
 """
-
-
-def getToolPrototype(toolId):
-    tool_shelve = None
-    try:
-        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
-        module_name, class_name = tool_shelve[str(toolId)]
-        module = __import__(module_name, fromlist=[class_name])
-        # print module, class_name, toolId
-        prototype = getattr(module, class_name)(toolId)
-        # print "Loaded proto tool:", class_name
-    #except KeyError:
-    #    prototype = None
-    finally:
-        if tool_shelve:
-            tool_shelve.close()
-    return prototype
 
 
 def ensurePathExists(fn):
