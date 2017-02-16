@@ -12,17 +12,22 @@ config = GalaxyConfigParser()
 if not globals().get('URL_PREFIX'):
     URL_PREFIX = getUrlPrefix(config)
 
+GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + config.getWithDefault('file_path', 'database/files')
 GALAXY_REL_TOOL_CONFIG_FILE = config.getWithDefault('tool_config_file', 'config/tool_conf.xml')
 ADMIN_USERS = [username.strip() for username in
                config.getWithDefault('admin_users', '').split(',')]
 RESTRICTED_USERS = [username.strip() for username in
                     config.getWithDefault('restricted_users', '', 'galaxy_proto').split(',')]
 OUTPUT_PRECISION = int(config.getWithDefault('output_precision', '4', 'galaxy_proto'))
-STATIC_DIR = '/static/proto'
-STATIC_REL_PATH = URL_PREFIX + STATIC_DIR
-STATIC_PATH = GALAXY_BASE_DIR + STATIC_DIR
-GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + config.getWithDefault('file_path', 'database/files')
+
+GALAXY_TOOL_CONFIG_FILE = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
+GALAXY_TOOL_XML_PATH = GALAXY_BASE_DIR + '/tools/'
+PROTO_TOOL_DIR = GALAXY_BASE_DIR + '/lib/proto/tools/'
 PROTO_TOOL_SHELVE_FN = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
+SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib'
+STATIC_DIR = '/static/proto'
+STATIC_PATH = GALAXY_BASE_DIR + STATIC_DIR
+STATIC_REL_PATH = URL_PREFIX + STATIC_DIR
 
 
 def userHasFullAccess(galaxyUserName):
