@@ -17,6 +17,7 @@
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.statistic.StatisticV2 import StatisticV2
+from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 
 
 class SummarizedInteractionPerTsCatV2Stat(MagicStatFactory):
@@ -32,7 +33,16 @@ class SummarizedInteractionPerTsCatV2Stat(MagicStatFactory):
 
 class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
     def _compute(self):
-        pass
+        #self._reRootedTS.result = self._catSummaryFunc([catTS.result for catTS in self._reRootedTS.values()])
+        #self._reRootedTS.summarizeChildResults(summaryFunc)
+        #return self._reRootedTS
+        result = summaryFunc([catChild.getResult() for catChild in self._catChildren])
+        raise
+
 
     def _createChildren(self):
-        pass
+        #self._catResults = {}
+        self._reRootedTS = self._trackStructure.reRoot( self._trackStructure['ref'])
+        for cat, catTS in self._reRootedTS.iteritems():
+            #self._catChildren[cat] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, catTS, self._kwArgs))
+            self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, catTS, self._kwArgs))

@@ -86,11 +86,21 @@ class TrackStructureV2(dict):
         assert isinstance(value, TrackStructureV2)
         dict.__setitem__(self, key, value)
 
+
+# reducedTSlist = ts.split(['ref', 'something'])
+# reducedTS = ts.select(ts['ref'], 'A')
+
+# tsCopy = ts.copy()
+# tsCopy['ref'] = ts.copy()['ref']['A']
+
 class SingleTrackTS(TrackStructureV2):
     @takes(object, Track, dict)
     def __init__(self, track, metadata):
         self.track = track
         self.metadata = metadata
+
+    def __setitem__(self, key, value):
+        raise
 
 class MultipleTracksTS(TrackStructureV2):
     pass

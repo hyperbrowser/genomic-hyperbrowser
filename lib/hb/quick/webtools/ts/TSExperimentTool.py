@@ -1,4 +1,7 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+
+from quick.application.UserBinSource import UserBinSource
+from quick.statistic import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 
 class TSExperimentTool(GeneralGuiTool):
@@ -258,7 +261,14 @@ class TSExperimentTool(GeneralGuiTool):
         fullTS = TrackStructureV2()
         fullTS['query'] = queryTS
         fullTS['ref'] = categoricalTS
-        print fullTS
+        #print fullTS
+        from gold.application.HBAPI import doAnalysis
+        from gold.description.AnalysisDefHandler import AnalysisSpec
+        spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+
+        bins = UserBinSource('*','chr1',genome='hg19')
+        result = doAnalysis(spec, bins, fullTS)
+
         print 'YES and shortened!'
 
     @classmethod

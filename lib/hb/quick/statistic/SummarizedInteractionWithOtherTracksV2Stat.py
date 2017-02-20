@@ -67,12 +67,14 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         
     def _compute(self):
         if self._summaryFunction:
-            if self._summaryFunction == 'RawResults':
-                resultList = [child.getResult() for child in self._children]
-                return resultList
-            else:
-                childrenResList = [child.getResult() for child in self._children]
-                return self._summaryFunction(childrenResList)
+            #resultList = [child.getResult() for child in self._children]
+            self._pairedTs.summarize(self._summaryFunction)
+            return self._pairedTs
+            #resultList = self._pairedTs
+            # if self._summaryFunction == 'RawResults':
+            #     return resultList
+            # else:
+            #     return self._summaryFunction(resultList)
         else:
             raise ShouldNotOccurError('The summary function is not defined. Must be one of %' % str(sorted(self.functionDict.keys())))
             #we could return the list of results to make it more generic
@@ -80,9 +82,20 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
             
             
     def _createChildren(self):
-        t1 = self._trackStructure.getQueryTrackList()[0]
-        for t2 in self._trackStructure.getReferenceTrackList():
+        # t1 = self._trackStructure.getQueryTrackList()[0]
+        # for t2 in self._trackStructure.getReferenceTrackList():
+        #     if self._reversed == 'Yes':
+        #         self._addChild( self._rawStatistic(self._region, t2, t1, **self._kwArgs))
+        #     else:
+        #         self._addChild( self._rawStatistic(self._region, t1, t2, **self._kwArgs))
+        #xx = self._trackStructure.makePairwiseCombinations(['query'], ['ref'])
+        ts = self._trackStructure
+        self._pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
+
+        for pairTS in pairedTS:
+            #t1, t2 = [x.track for x in pairTS.values()]
+            #t1, t2 = pairTS['t1'].track, pairTS['t2'].track
+            #t1, t2 = pairTS['query'].track, pairTS['ref'].track
             if self._reversed == 'Yes':
-                self._addChild( self._rawStatistic(self._region, t2, t1, **self._kwArgs))
-            else:
-                self._addChild( self._rawStatistic(self._region, t1, t2, **self._kwArgs))
+                pairTS.reverse()
+            self._addChild(PairedTSStat(self._region, pairTS, self._rawStatistic, **self._kwArgs))
