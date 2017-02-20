@@ -1,7 +1,7 @@
 #For doAnalysis
 import logging
 from gold.application.LogSetup import setupDebugModeAndLogging
-from gold.application.StatRunner import AnalysisDefJob
+from gold.application.StatRunner import AnalysisDefJob, StatJob
 
 #For getTrackData
 from gold.track.Track import Track, PlainTrack
@@ -18,10 +18,10 @@ from gold.result import Results
 from gold.application import GSuiteAPI
 from gold.application.StatRunnerV2 import StatJobV2
 from urllib import quote
-from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings
+from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings, wrapClass
 
 
-def doAnalysis(analysisSpec, analysisBins, tracks):
+def doAnalysis(analysisSpec, analysisBins, trackStructure):
     '''Performs an analysis,
     as specified by analysisSpec object,
     in each bin specified by analysisBins,
@@ -43,19 +43,25 @@ def doAnalysis(analysisSpec, analysisBins, tracks):
     silenceRWarnings()
     silenceNumpyWarnings()
 
-    if len(tracks) > 2:
-        from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
-        analysisSpec.addParameter(
-            'extraTracks',
-            MULTIPLE_EXTRA_TRACKS_SEPARATOR.join(
-                ['^'.join([quote(part) for part in x.trackName])
-                 for x in tracks[2:]]
-            )
-        )
-    job = AnalysisDefJob(analysisSpec.getDefAfterChoices(),
-                         tracks[0].trackName,
-                         tracks[1].trackName if len(tracks) > 1 else None,
-                         analysisBins, galaxyFn=None)
+    # # if isinstance(tracks, TrackStructure):
+    # #     pass
+    # if len(tracks) > 2:
+    #     from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
+    #     analysisSpec.addParameter(
+    #         'extraTracks',
+    #         MULTIPLE_EXTRA_TRACKS_SEPARATOR.join(
+    #             ['^'.join([quote(part) for part in x.trackName])
+    #              for x in tracks[2:]]
+    #         )
+    #     )
+    # job = AnalysisDefJob(analysisSpec.getDefAfterChoices(),
+    #                      tracks[0].trackName,
+    #                      tracks[1].trackName if len(tracks) > 1 else None,
+    #                      analysisBins, galaxyFn=None)
+    analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
+    statClass = analysisDef._statClassList[0]
+    validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True) )
+    job = StatJob(analysisBins, trackStructure, validStatClass)
     res = job.run(printProgress=False)  # printProgress should be optional?
     return res
 
