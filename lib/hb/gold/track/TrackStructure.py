@@ -80,6 +80,12 @@ class TrackStructure(dict):
         return hash(tuple([tuple([tuple(x.trackName) for x in self[k]]) for k in keys]))
 
 class TrackStructureV2(dict):
+    #Note: we might want an init method here that creates an attribute "results"
+    #For now, this attribute is created when assigned a value
+    #An advantage of this is that it distinguished lack of result from a result that has value None (if that might be relevant)
+    #A disadvantage is that it becomes less clear that such an attribute might exist,
+    # and its existence has to be checked with hasattr(ts,'results')
+
     #@takes(object, str, TrackStructureV2)
     def __setitem__(self, key, value):
         assert isinstance(key, str)
