@@ -86,3 +86,5 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                 self._addChild( self._rawStatistic(self._region, t2, t1, **self._kwArgs))
             else:
                 self._addChild( self._rawStatistic(self._region, t1, t2, **self._kwArgs))
+
+#test
