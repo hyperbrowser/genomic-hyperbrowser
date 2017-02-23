@@ -1,28 +1,42 @@
 import os
 from urllib import quote
 
-from proto.config.Config import URL_PREFIX, PROTO_TOOL_DIR
+from proto.HtmlCore import HtmlCore
+from proto.config.Config import URL_PREFIX, PROTO_TOOL_DIR, SOURCE_CODE_BASE_DIR
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class GenerateToolsTool(GeneralGuiTool):
     MAX_DIR_LEVELS = 5
     NO_SELECTION = '--- Select a tool directory ---'
-    NEW_DIR = '-- Create a new directory --'
+    NEW_DIR = 'Create a new directory...'
+
+    assert PROTO_TOOL_DIR.startswith(SOURCE_CODE_BASE_DIR)
+    PROTO_REL_TOOL_DIRS = PROTO_TOOL_DIR[len(SOURCE_CODE_BASE_DIR) + 1:].split(os.path.sep)
 
     @staticmethod
     def getToolName():
         return "ProTo tool generator"
 
     @classmethod
+    def _getDirSelectionInputBoxNames(cls):
+        inputBoxNames = []
+        for i in range(cls.MAX_DIR_LEVELS):
+            dirSelText = '&nbsp;&nbsp;' * i
+            if i > 0:
+                dirSelText += '-> '
+            dirSelText += 'Choose directory for new tool (level %s)' % (i + 1)
+            inputBoxNames += [(dirSelText, 'dirLevel%s' % i)]
+
+            newDirText = '&nbsp;&nbsp;' * i + 'Name of new directory'
+            inputBoxNames += [(newDirText, 'newDir%s' % i)]
+        return inputBoxNames
+
+    @classmethod
     def getInputBoxNames(cls):
         return [('', 'hidden')] + \
-               [('  ' * i + ('|_' if i > 0 else '') +
-                'Choose directory for new tool (level %s)' % (i+1), 'dirLevel%s' % i)
-                for i in range(cls.MAX_DIR_LEVELS)] + \
-               [('    ' * i + 'Name of new directory', 'newName%s' % i)
-                for i in range(cls.MAX_DIR_LEVELS)] + \
-               [('Package name', 'packageName'),
+                cls._getDirSelectionInputBoxNames() +\
+               [('Package name', 'packageNameInfo'),
                 ('Module/class name', 'moduleName'),
                 ('Tool name', 'toolName'),
                 ('Use template with inline documentation', 'template')]
@@ -33,37 +47,47 @@ class GenerateToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getOptionsBoxHidden():
-        return '__hidden__'
+        # Just to make sure that the variable input boxes always take prevChoices
+        return '__hidden__', ''
 
     @classmethod
-    def _getSelectedDir(cls, prevChoices, index=MAX_DIR_LEVELS):
+    def _getSelectedDirs(cls, prevChoices, index=MAX_DIR_LEVELS):
         dirs = []
         for i in range(index):
-            dirSelection = getattr(prevChoices, 'dirLevel' + i)
+            dirSelection = getattr(prevChoices, 'dirLevel%s' % i)
 
             if dirSelection == cls.NEW_DIR:
-                dirSelection = getattr(prevChoices, 'newDir' + i).strip()
+                dirSelection = getattr(prevChoices, 'newDir%s' % i).strip()
 
-            if dirSelection != cls.NO_SELECTION:
+            if dirSelection and dirSelection != cls.NO_SELECTION:
                 dirs.append(dirSelection)
             else:
                 break
 
-        return os.path.sep.join([PROTO_TOOL_DIR] + dirs)
+        return dirs
 
     @classmethod
     def _getOptionsBoxDirLevel(cls, prevChoices, index):
-        from gold.application.LogSetup import logMessage
-        logMessage(repr(prevChoices))
-        if index == 0 or getattr(prevChoices, 'dirLevel' + (index - 1)) != cls.NO_SELECTION:
-            selectedDir = cls._getSelectedDir(prevChoices, index)
-            subDirs = [x for x in os.listdir(selectedDir) if
-                       os.path.isdir(os.sep.join(selectedDir, x))]
+        prevDirLevelKey = 'dirLevel%s' % (index - 1)
+        prevDirLevel = getattr(prevChoices, prevDirLevelKey) if \
+            hasattr(prevChoices, prevDirLevelKey) else ''
+        if index == 0 or \
+                (prevDirLevel and prevDirLevel != cls.NO_SELECTION and
+                    not (prevDirLevel == cls.NEW_DIR and
+                         not getattr(prevChoices, 'newDir%s' % (index - 1)))):
+
+            selectedDir = os.path.sep.join([PROTO_TOOL_DIR] +
+                                           cls._getSelectedDirs(prevChoices, index))
+            try:
+                subDirs = [x for x in os.listdir(selectedDir) if
+                           os.path.isdir(os.sep.join([selectedDir, x]))]
+            except:
+                subDirs = []
             return [cls.NO_SELECTION] + subDirs + [cls.NEW_DIR]
 
     @classmethod
     def _getOptionsBoxNewDir(cls, prevChoices, index):
-        curDirChoice = getattr(prevChoices, 'dirLevel' + index)
+        curDirChoice = getattr(prevChoices, 'dirLevel%s' % index)
         if curDirChoice == cls.NEW_DIR:
             return '', 1
 
@@ -78,41 +102,57 @@ class GenerateToolsTool(GeneralGuiTool):
 
         from gold.application.LogSetup import logMessage
 
-    @staticmethod
-    def getOptionsBoxPackageName():
-        return ''
+    @classmethod
+    def _getProtoToolPackageName(cls, prevChoices):
+        return '.'.join(cls.PROTO_REL_TOOL_DIRS + cls._getSelectedDirs(prevChoices))
+
+    @classmethod
+    def getOptionsBoxPackageNameInfo(cls, prevChoices):
+        core = HtmlCore()
+        core.divBegin(divClass='infomessagesmall')
+        core.append('Package name selected: ')
+        core.emphasize(cls._getProtoToolPackageName(prevChoices))
+        core.divEnd()
+        return '__rawstr__', str(core)
 
     @staticmethod
-    def getOptionsBoxModuleName(prevchoices):
+    def getOptionsBoxModuleName(prevChoices):
         return 'ChangeMeTool'
 
     @staticmethod
-    def getOptionsBoxToolName(prevchoices):
+    def getOptionsBoxToolName(prevChoices):
         return 'Title of tool'
 
     @staticmethod
-    def getOptionsBoxTemplate(prevchoices):
+    def getOptionsBoxTemplate(prevChoices):
         return ['Yes', 'No']
 
-    @staticmethod
-    def execute(choices, galaxyFn=None, username=''):
-        packagePath = choices.packageName.split('.')
-        packageDir = PROTO_TOOL_DIR + '/'.join(packagePath)
+    @classmethod
+    def _getPackageDir(cls, selectedDirs):
+        return os.path.sep.join([PROTO_TOOL_DIR] + selectedDirs)
+
+    @classmethod
+    def _getPyName(cls, choices):
+        packageDir = cls._getPackageDir(cls._getSelectedDirs(choices))
+        return packageDir + '/' + choices.moduleName + '.py'
+
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
+        selectedDirs = cls._getSelectedDirs(choices)
+        packageDir = cls._getPackageDir(selectedDirs)
         if not os.path.exists(packageDir):
             os.makedirs(packageDir)
 
-        for i in range(len(packagePath)):
-            init_py = PROTO_TOOL_DIR + '/'.join(packagePath[0:i+1]) + '/__init__.py'
+        for i in range(len(selectedDirs)):
+            init_py = os.path.sep.join([PROTO_TOOL_DIR] + selectedDirs[0:i+1]) + '/__init__.py'
             if not os.path.exists(init_py):
                 print 'creating ', init_py
                 open(init_py, 'a').close()
 
-        pyname = packageDir + '/' + choices.moduleName + '.py'
-
         if choices.template == 'Yes':
-            templatefn = PROTO_TOOL_DIR + 'ToolTemplate.py'
+            templatefn = os.path.join(PROTO_TOOL_DIR, 'ToolTemplate.py')
         else:
-            templatefn = PROTO_TOOL_DIR + 'ToolTemplateMinimal.py'
+            templatefn = os.path.join(PROTO_TOOL_DIR, 'ToolTemplateMinimal.py')
 
         with open(templatefn) as t:
             template = t.read()
@@ -121,15 +161,29 @@ class GenerateToolsTool(GeneralGuiTool):
         template = template.replace('ToolTemplate', choices.moduleName)
         template = template.replace('Tool not yet in use', choices.toolName)
 
-        with open(pyname, 'w') as p:
+        pyName = cls._getPyName(choices)
+        with open(pyName, 'w') as p:
             p.write(template)
-        explore_id = quote(choices.moduleName + ': ' + choices.toolName)
-        print 'Tool generated: <a href="%s/proto/?tool_id=proto_ExploreToolsTool&sub_class_id=%s">%s: %s</a>' % (URL_PREFIX, explore_id, choices.moduleName, choices.toolName)
-        print 'Tool source path: ', pyname
+
+        explore_id = quote('.'.join(selectedDirs + [choices.moduleName]) + ': ' + choices.toolName)
+        print 'Tool generated: <a href="%s/proto/?tool_id=proto_explore_tools_tool&' \
+              'sub_class_id=%s">%s: %s</a>' % \
+              (URL_PREFIX, explore_id, choices.moduleName, choices.toolName)
+        print 'Tool source path:', pyName
+
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
+        packageName = cls._getProtoToolPackageName(choices)
+        if packageName and packageName != packageName.lower():
+            return 'Please use all lowercase letters for the package name: ' + packageName
+
+        pyName = cls._getPyName(choices)
+        if os.path.exists(pyName):
+            return 'Python module "%s" already exists. Please rename the module or ' % pyName + \
+                   'select another package/directory.'
 
     @staticmethod
     def getToolDescription():
-        from proto.HtmlCore import HtmlCore
         core = HtmlCore()
         core.smallHeader("General description")
         core.paragraph("This tool is used to dynamically generate a Python "
@@ -173,5 +227,9 @@ class GenerateToolsTool(GeneralGuiTool):
                              "the latter to make the tool code itself shorter "
                              "and more readable.", emphasize=True)
         return str(core)
+
+    # @classmethod
+    # def getResetBoxes(cls):
+        # return flatten([('dirLevel%s' % i, 'newDir%s' % i) for i in range(cls.MAX_DIR_LEVELS)])
 
 GenerateToolsTool.setupExtraBoxMethods()

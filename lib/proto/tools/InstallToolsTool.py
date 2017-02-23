@@ -58,52 +58,52 @@ class InstallToolsTool(GeneralGuiTool):
         return ['-- Select tool --'] + sorted(tool_list)
 
     @classmethod
-    def getOptionsBoxToolType(cls, prevchoices):
+    def getOptionsBoxToolType(cls, prevChoices):
         return ['proto']
 
     @classmethod
-    def getOptionsBoxToolID(cls, prevchoices):
+    def getOptionsBoxToolID(cls, prevChoices):
         import inflection
-        if prevchoices.tool is None or prevchoices.tool.startswith('--'):
+        if prevChoices.tool is None or prevChoices.tool.startswith('--'):
             return ''
         tool_list = cls._getToolList()
-        module_name = tool_list[prevchoices.tool][2].__name__
-        return prevchoices.toolType + '_' + inflection.underscore(module_name)
+        module_name = tool_list[prevChoices.tool][2].__name__
+        return prevChoices.toolType + '_' + inflection.underscore(module_name)
 
 
     @classmethod
-    def getOptionsBoxName(cls, prevchoices):
-        prototype = cls._getProtoType(prevchoices.tool)
+    def getOptionsBoxName(cls, prevChoices):
+        prototype = cls._getProtoType(prevChoices.tool)
         if prototype is not None:
             return prototype.getToolName()
 
     @classmethod
-    def getOptionsBoxDescription(cls, prevchoices):
+    def getOptionsBoxDescription(cls, prevChoices):
         return ''
 
     @classmethod
-    def getOptionsBoxToolXMLPath(cls, prevchoices):
-        prototype = cls._getProtoType(prevchoices.tool)
+    def getOptionsBoxToolXMLPath(cls, prevChoices):
+        prototype = cls._getProtoType(prevChoices.tool)
         if prototype is not None:
             package = prototype.__module__.split('.')
             package_dir = '/'.join(package[2:-1]) + '/' if len(package) > 3 else ''
             return 'proto/' + package_dir + prototype.__class__.__name__ + '.xml'
 
     @classmethod
-    def getOptionsBoxSection(cls, prevchoices):
+    def getOptionsBoxSection(cls, prevChoices):
         toolConf = GalaxyToolConfig()
         return toolConf.getSections()
 
     #@classmethod
-    #def getOptionsBoxInfo(cls, prevchoices):
+    #def getOptionsBoxInfo(cls, prevChoices):
     #    txt = ''
-    #    if prevchoices.tool and prevchoices.section:
-    #        txt = 'Install %s into %s' % (prevchoices.tool, prevchoices.section)
-    #    tool_cls = prevchoices.tool
+    #    if prevChoices.tool and prevChoices.section:
+    #        txt = 'Install %s into %s' % (prevChoices.tool, prevChoices.section)
+    #    tool_cls = prevChoices.tool
     #    prototype = cls.prototype
-    #    tool_file = prevchoices.toolXMLPath
-    #    xml = cls.toolConf.addTool(prevchoices.section, tool_file)
-    #    tool_xml = cls.toolConf.createToolXml(tool_file, prevchoices.toolID, prevchoices.name, prototype.__module__, prototype.__class__.__name__, prevchoices.description)
+    #    tool_file = prevChoices.toolXMLPath
+    #    xml = cls.toolConf.addTool(prevChoices.section, tool_file)
+    #    tool_xml = cls.toolConf.createToolXml(tool_file, prevChoices.toolID, prevChoices.name, prototype.__module__, prototype.__class__.__name__, prevChoices.description)
     #    return 'rawstr', '<pre>' + escape(xml) + '</pre>' + '<pre>' + escape(tool_xml) + '</pre>'
 
     @classmethod
@@ -130,7 +130,7 @@ class InstallToolsTool(GeneralGuiTool):
                                           prototype.__class__.__name__,
                                           choices.description)
 
-        abs_tool_xml_path = GALAXY_TOOL_XML_PATH + choices.toolXMLPath
+        abs_tool_xml_path = os.path.join(GALAXY_TOOL_XML_PATH, choices.toolXMLPath)
         try:
             os.makedirs(os.path.dirname(abs_tool_xml_path))
         except:
