@@ -7,7 +7,7 @@ from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class GenerateToolsTool(GeneralGuiTool):
-    MAX_DIR_LEVELS = 5
+    MAX_DIR_LEVELS = 6
     NO_SELECTION = '--- Select a tool directory ---'
     NEW_DIR = 'Create a new directory...'
 
@@ -173,9 +173,13 @@ class GenerateToolsTool(GeneralGuiTool):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        packageName = cls._getProtoToolPackageName(choices)
-        if packageName and packageName != packageName.lower():
-            return 'Please use all lowercase letters for the package name: ' + packageName
+        for dirName in cls._getSelectedDirs(choices):
+            if dirName and dirName != dirName.lower():
+                return 'Please use all lowercase letters for the directory name: ' + dirName
+
+            if '.' in dirName:
+                return 'Period characters, i.e. ".", are not allowed in a directory name: ' \
+                       + dirName
 
         pyName = cls._getPyName(choices)
         if os.path.exists(pyName):
@@ -192,14 +196,15 @@ class GenerateToolsTool(GeneralGuiTool):
                        "'ProTo tool explorer' tool for development purposes.")
         core.divider()
         core.smallHeader("Parameters")
-        core.descriptionLine("Package name",
-                             "The name of the package where the new tool "
-                             "should be installed. The package path is "
-                             "relative to 'proto.tools'. If, for instance, "
-                             "the package is set to 'mypackage.core', the full"
-                             "package hierarchy is 'proto.tools.mypackage."
-                             "core'. Any non-existing directories will be "
-                             "created as needed.", emphasize=True)
+        core.descriptionLine("Choose directory for new tool",
+                             "Hierarchical selection of directory in which to "
+                             "place the new tool. The directory structure defines "
+                             "the Python package which is used if one needs to import "
+                             "the tool. The package name is automatically shown in an info "
+                             "box according to the selections. It is also possible "
+                             "to create new directories. Note that the creation of "
+                             "new directories happens at execution of this tool. ",
+                             emphasize=True)
         core.descriptionLine("Module/class name",
                              "The name of the Python module (filename) and "
                              "class for the new tool. For historical reasons, "
