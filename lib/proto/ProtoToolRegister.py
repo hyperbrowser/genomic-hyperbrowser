@@ -71,8 +71,6 @@ def getProtoToolList(exceptClassNames=[]):
                                             tool_selection_name = '.'.join(tool_module)
 
                                         # print (fn, m.group(2), prototype_cls, module_name)
-                                        from gold.application.LogSetup import logMessage
-                                        logMessage(repr((fn, m.group(2), prototype_cls, module_name)))
                                         tmp_tools[tool_selection_name] = \
                                             (fn, m.group(2), prototype_cls, module_name)
                     except Exception as e:

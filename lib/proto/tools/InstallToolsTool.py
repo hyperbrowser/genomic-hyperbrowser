@@ -11,6 +11,7 @@ from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 class InstallToolsTool(GeneralGuiTool):
     prototype = None
+    TOOL_TYPE = 'proto'
 
     @classmethod
     def _getToolList(cls):
@@ -18,7 +19,7 @@ class InstallToolsTool(GeneralGuiTool):
         return getProtoToolList(installed_classes)[0]
 
     @classmethod
-    def _getProtoType(cls, tool):
+    def _getPrototype(cls, tool):
         try:
             prototype = cls._getToolList()[tool][2]()
         except:
@@ -33,7 +34,6 @@ class InstallToolsTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         return [('Select tool', 'tool'),
-                ('Tool type', 'toolType'),
                 ('Tool ID', 'toolID'),
                 ('Tool name', 'name'),
                 ('Tool description', 'description'),
@@ -58,52 +58,48 @@ class InstallToolsTool(GeneralGuiTool):
         return ['-- Select tool --'] + sorted(tool_list)
 
     @classmethod
-    def getOptionsBoxToolType(cls, prevchoices):
-        return ['hb', 'proto']
-
-    @classmethod
-    def getOptionsBoxToolID(cls, prevchoices):
+    def getOptionsBoxToolID(cls, prevChoices):
         import inflection
-        if prevchoices.tool is None or prevchoices.tool.startswith('--'):
+        if prevChoices.tool is None or prevChoices.tool.startswith('--'):
             return ''
         tool_list = cls._getToolList()
-        module_name = tool_list[prevchoices.tool][2].__name__
-        return prevchoices.toolType + '_' + inflection.underscore(module_name)
+        module_name = tool_list[prevChoices.tool][2].__name__
+        return cls.TOOL_TYPE + '_' + inflection.underscore(module_name)
 
 
     @classmethod
-    def getOptionsBoxName(cls, prevchoices):
-        prototype = cls._getProtoType(prevchoices.tool)
+    def getOptionsBoxName(cls, prevChoices):
+        prototype = cls._getPrototype(prevChoices.tool)
         if prototype is not None:
             return prototype.getToolName()
 
     @classmethod
-    def getOptionsBoxDescription(cls, prevchoices):
+    def getOptionsBoxDescription(cls, prevChoices):
         return ''
 
     @classmethod
-    def getOptionsBoxToolXMLPath(cls, prevchoices):
-        prototype = cls._getProtoType(prevchoices.tool)
+    def getOptionsBoxToolXMLPath(cls, prevChoices):
+        prototype = cls._getPrototype(prevChoices.tool)
         if prototype is not None:
             package = prototype.__module__.split('.')
             package_dir = '/'.join(package[2:-1]) + '/' if len(package) > 3 else ''
             return 'proto/' + package_dir + prototype.__class__.__name__ + '.xml'
 
     @classmethod
-    def getOptionsBoxSection(cls, prevchoices):
+    def getOptionsBoxSection(cls, prevChoices):
         toolConf = GalaxyToolConfig()
         return toolConf.getSections()
 
     #@classmethod
-    #def getOptionsBoxInfo(cls, prevchoices):
+    #def getOptionsBoxInfo(cls, prevChoices):
     #    txt = ''
-    #    if prevchoices.tool and prevchoices.section:
-    #        txt = 'Install %s into %s' % (prevchoices.tool, prevchoices.section)
-    #    tool_cls = prevchoices.tool
+    #    if prevChoices.tool and prevChoices.section:
+    #        txt = 'Install %s into %s' % (prevChoices.tool, prevChoices.section)
+    #    tool_cls = prevChoices.tool
     #    prototype = cls.prototype
-    #    tool_file = prevchoices.toolXMLPath
-    #    xml = cls.toolConf.addTool(prevchoices.section, tool_file)
-    #    tool_xml = cls.toolConf.createToolXml(tool_file, prevchoices.toolID, prevchoices.name, prototype.__module__, prototype.__class__.__name__, prevchoices.description)
+    #    tool_file = prevChoices.toolXMLPath
+    #    xml = cls.toolConf.addTool(prevChoices.section, tool_file)
+    #    tool_xml = cls.toolConf.createToolXml(tool_file, prevChoices.toolID, prevChoices.name, prototype.__module__, prototype.__class__.__name__, prevChoices.description)
     #    return 'rawstr', '<pre>' + escape(xml) + '</pre>' + '<pre>' + escape(tool_xml) + '</pre>'
 
     @classmethod
@@ -119,22 +115,23 @@ class InstallToolsTool(GeneralGuiTool):
         #     txt = 'Install %s into %s' % (choices.tool, choices.section)
         # tool_cls = choices.tool
 
-        prototype = cls._getProtoType(choices.tool)
+        prototype = cls._getPrototype(choices.tool)
         tool_file = choices.toolXMLPath
-        tool_type = choices.toolType
         toolConf = GalaxyToolConfig()
         xml = toolConf.addTool(choices.section, tool_file)
         tool_xml = toolConf.createToolXml(choices.toolID,
-                                          choices.name, tool_type,
+                                          choices.name, cls.TOOL_TYPE,
                                           prototype.__module__,
                                           prototype.__class__.__name__,
                                           choices.description)
 
-        abs_tool_xml_path = GALAXY_TOOL_XML_PATH + choices.toolXMLPath
+        abs_tool_xml_path = os.path.join(GALAXY_TOOL_XML_PATH, choices.toolXMLPath)
+
         try:
             os.makedirs(os.path.dirname(abs_tool_xml_path))
         except:
             pass
+
         with open(abs_tool_xml_path, 'w') as tf:
             tf.write(tool_xml)
 
@@ -144,20 +141,20 @@ class InstallToolsTool(GeneralGuiTool):
         core = HtmlCore()
 
         extraJavaScriptCode = '''
-                <script type="text/javascript">
-                    $().ready(function() {
-                        $("#reload_toolbox").click(function(){
-                            $.ajax({
-                            url: "/api/configuration/toolbox",
-                            type: 'PUT'
-                            }).done(function() {
-                                    top.location.reload();
-                                }
-                            );
-                        });
-                    });
-                </script>
-                '''
+<script type="text/javascript">
+    $().ready(function() {
+        $("#reload_toolbox").click(function(){
+            $.ajax({
+            url: "/api/configuration/toolbox",
+            type: 'PUT'
+            }).done(function() {
+                    top.location.reload();
+                }
+            );
+        });
+    });
+</script>
+'''
         core.begin(extraJavaScriptCode=extraJavaScriptCode)
         core.link('Reload toolbox/menu', url='#', args='id="reload_toolbox"')
         core.preformatted(escape(xml))
