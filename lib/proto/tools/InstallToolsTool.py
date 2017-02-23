@@ -11,6 +11,7 @@ from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 class InstallToolsTool(GeneralGuiTool):
     prototype = None
+    TOOL_TYPE = 'proto'
 
     @classmethod
     def _getToolList(cls):
@@ -18,7 +19,7 @@ class InstallToolsTool(GeneralGuiTool):
         return getProtoToolList(installed_classes)[0]
 
     @classmethod
-    def _getProtoType(cls, tool):
+    def _getPrototype(cls, tool):
         try:
             prototype = cls._getToolList()[tool][2]()
         except:
@@ -33,7 +34,6 @@ class InstallToolsTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         return [('Select tool', 'tool'),
-                ('Tool type', 'toolType'),
                 ('Tool ID', 'toolID'),
                 ('Tool name', 'name'),
                 ('Tool description', 'description'),
@@ -58,22 +58,18 @@ class InstallToolsTool(GeneralGuiTool):
         return ['-- Select tool --'] + sorted(tool_list)
 
     @classmethod
-    def getOptionsBoxToolType(cls, prevChoices):
-        return ['proto']
-
-    @classmethod
     def getOptionsBoxToolID(cls, prevChoices):
         import inflection
         if prevChoices.tool is None or prevChoices.tool.startswith('--'):
             return ''
         tool_list = cls._getToolList()
         module_name = tool_list[prevChoices.tool][2].__name__
-        return prevChoices.toolType + '_' + inflection.underscore(module_name)
+        return cls.TOOL_TYPE + '_' + inflection.underscore(module_name)
 
 
     @classmethod
     def getOptionsBoxName(cls, prevChoices):
-        prototype = cls._getProtoType(prevChoices.tool)
+        prototype = cls._getPrototype(prevChoices.tool)
         if prototype is not None:
             return prototype.getToolName()
 
@@ -83,7 +79,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxToolXMLPath(cls, prevChoices):
-        prototype = cls._getProtoType(prevChoices.tool)
+        prototype = cls._getPrototype(prevChoices.tool)
         if prototype is not None:
             package = prototype.__module__.split('.')
             package_dir = '/'.join(package[2:-1]) + '/' if len(package) > 3 else ''
@@ -119,22 +115,23 @@ class InstallToolsTool(GeneralGuiTool):
         #     txt = 'Install %s into %s' % (choices.tool, choices.section)
         # tool_cls = choices.tool
 
-        prototype = cls._getProtoType(choices.tool)
+        prototype = cls._getPrototype(choices.tool)
         tool_file = choices.toolXMLPath
-        tool_type = choices.toolType
         toolConf = GalaxyToolConfig()
         xml = toolConf.addTool(choices.section, tool_file)
         tool_xml = toolConf.createToolXml(choices.toolID,
-                                          choices.name, tool_type,
+                                          choices.name, cls.TOOL_TYPE,
                                           prototype.__module__,
                                           prototype.__class__.__name__,
                                           choices.description)
 
         abs_tool_xml_path = os.path.join(GALAXY_TOOL_XML_PATH, choices.toolXMLPath)
+
         try:
             os.makedirs(os.path.dirname(abs_tool_xml_path))
         except:
             pass
+
         with open(abs_tool_xml_path, 'w') as tf:
             tf.write(tool_xml)
 
@@ -144,20 +141,20 @@ class InstallToolsTool(GeneralGuiTool):
         core = HtmlCore()
 
         extraJavaScriptCode = '''
-                <script type="text/javascript">
-                    $().ready(function() {
-                        $("#reload_toolbox").click(function(){
-                            $.ajax({
-                            url: "/api/configuration/toolbox",
-                            type: 'PUT'
-                            }).done(function() {
-                                    top.location.reload();
-                                }
-                            );
-                        });
-                    });
-                </script>
-                '''
+<script type="text/javascript">
+    $().ready(function() {
+        $("#reload_toolbox").click(function(){
+            $.ajax({
+            url: "/api/configuration/toolbox",
+            type: 'PUT'
+            }).done(function() {
+                    top.location.reload();
+                }
+            );
+        });
+    });
+</script>
+'''
         core.begin(extraJavaScriptCode=extraJavaScriptCode)
         core.link('Reload toolbox/menu', url='#', args='id="reload_toolbox"')
         core.preformatted(escape(xml))
