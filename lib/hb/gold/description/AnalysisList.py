@@ -275,7 +275,9 @@ Located nearby?:
     [H1_different:_=The locations of the points of track 1 are dependent on the locations of the segments of track 2]
     [assumptions:_Null model=
         PermutedSegsAndSampledIntersegsTrack_:Preserve segments (T2) and number of points (T1); randomize positions (T1) (MC)/
-        PermutedSegsAndIntersegsTrack_:Preserve segments (T2) and inter-point distances (T1); randomize positions (T1) (MC)]
+        PermutedSegsAndIntersegsTrack_:Preserve segments (T2) and inter-point distances (T1); randomize positions (T1) (MC)/
+        _PermutedSegsAndSampledIntersegsTrack:Preserve points (T1) and segment lengths (T2); randomize positions (T2) (MC)/
+        _PermutedSegsAndIntersegsTrack:Preserve points (T1), segment lengths and inter-segment gaps (T2); randomize positions (T2) (MC)]
     $MCFDR$
     $RANDSEED$
 #    [rawStatistic:=LogMeanSegDistStat:]
