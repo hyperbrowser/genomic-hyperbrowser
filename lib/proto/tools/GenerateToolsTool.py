@@ -6,13 +6,23 @@ from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class GenerateToolsTool(GeneralGuiTool):
+    MAX_DIR_LEVELS = 5
+    NO_SELECTION = '--- Select a tool directory ---'
+    NEW_DIR = '-- Create a new directory --'
+
     @staticmethod
     def getToolName():
         return "ProTo tool generator"
 
-    @staticmethod
-    def getInputBoxNames():
-        return [('Package name', 'packageName'),
+    @classmethod
+    def getInputBoxNames(cls):
+        return [('', 'hidden')] + \
+               [('  ' * i + ('|_' if i > 0 else '') +
+                'Choose directory for new tool (level %s)' % (i+1), 'dirLevel%s' % i)
+                for i in range(cls.MAX_DIR_LEVELS)] + \
+               [('    ' * i + 'Name of new directory', 'newName%s' % i)
+                for i in range(cls.MAX_DIR_LEVELS)] + \
+               [('Package name', 'packageName'),
                 ('Module/class name', 'moduleName'),
                 ('Tool name', 'toolName'),
                 ('Use template with inline documentation', 'template')]
@@ -20,6 +30,53 @@ class GenerateToolsTool(GeneralGuiTool):
     #@staticmethod
     #def getResetBoxes():
     #    return ['moduleName']
+
+    @staticmethod
+    def getOptionsBoxHidden():
+        return '__hidden__'
+
+    @classmethod
+    def _getSelectedDir(cls, prevChoices, index=MAX_DIR_LEVELS):
+        dirs = []
+        for i in range(index):
+            dirSelection = getattr(prevChoices, 'dirLevel' + i)
+
+            if dirSelection == cls.NEW_DIR:
+                dirSelection = getattr(prevChoices, 'newDir' + i).strip()
+
+            if dirSelection != cls.NO_SELECTION:
+                dirs.append(dirSelection)
+            else:
+                break
+
+        return os.path.sep.join([PROTO_TOOL_DIR] + dirs)
+
+    @classmethod
+    def _getOptionsBoxDirLevel(cls, prevChoices, index):
+        from gold.application.LogSetup import logMessage
+        logMessage(repr(prevChoices))
+        if index == 0 or getattr(prevChoices, 'dirLevel' + (index - 1)) != cls.NO_SELECTION:
+            selectedDir = cls._getSelectedDir(prevChoices, index)
+            subDirs = [x for x in os.listdir(selectedDir) if
+                       os.path.isdir(os.sep.join(selectedDir, x))]
+            return [cls.NO_SELECTION] + subDirs + [cls.NEW_DIR]
+
+    @classmethod
+    def _getOptionsBoxNewDir(cls, prevChoices, index):
+        curDirChoice = getattr(prevChoices, 'dirLevel' + index)
+        if curDirChoice == cls.NEW_DIR:
+            return '', 1
+
+    @classmethod
+    def setupExtraBoxMethods(cls):
+        from functools import partial
+        for i in xrange(cls.MAX_DIR_LEVELS):
+            setattr(cls, 'getOptionsBoxDirLevel%s' % i,
+                    partial(cls._getOptionsBoxDirLevel, index=i))
+            setattr(cls, 'getOptionsBoxNewDir%s' % i,
+                    partial(cls._getOptionsBoxNewDir, index=i))
+
+        from gold.application.LogSetup import logMessage
 
     @staticmethod
     def getOptionsBoxPackageName():
@@ -116,3 +173,5 @@ class GenerateToolsTool(GeneralGuiTool):
                              "the latter to make the tool code itself shorter "
                              "and more readable.", emphasize=True)
         return str(core)
+
+GenerateToolsTool.setupExtraBoxMethods()

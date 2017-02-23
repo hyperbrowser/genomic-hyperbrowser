@@ -59,7 +59,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxToolType(cls, prevchoices):
-        return ['hb', 'proto']
+        return ['proto']
 
     @classmethod
     def getOptionsBoxToolID(cls, prevchoices):
