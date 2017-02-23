@@ -281,7 +281,6 @@
   </section>
 
   <section name="Assorted tools" id="assorted_tools">
-    <!-- <tool file="hyperbrowser/batch.xml" /> -->
     <!-- <tool file="hyperbrowser/batchrun-titan.xml" /> -->
     <!--<tool file="hyperbrowser/batchrun.xml" />-->
     <!-- <tool file="hyperbrowser/filterMarkedSegments.xml" /> -->
