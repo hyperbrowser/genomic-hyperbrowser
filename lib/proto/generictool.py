@@ -177,18 +177,18 @@ class GenericToolController(BaseToolController):
         info = None
         if i > 0:
             ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds[:(i+1)])
-            prevchoices = ChoiceTuple._make(self.inputValues + [val])
-            #self.choices = prevchoices
+            prevChoices = ChoiceTuple._make(self.inputValues + [val])
+            #self.choices = prevChoices
             if id.startswith('Box'):
-                opts = getattr(self.prototype, 'getOptions' + id)(prevchoices)
+                opts = getattr(self.prototype, 'getOptions' + id)(prevChoices)
                 try:
-                    info = getattr(self.prototype, 'getInfoForOptions' + id)(prevchoices)
+                    info = getattr(self.prototype, 'getInfoForOptions' + id)(prevChoices)
                 except:
                     pass
             else:
-                opts = getattr(self.prototype, 'getOptionsBox' + id)(prevchoices)
+                opts = getattr(self.prototype, 'getOptionsBox' + id)(prevChoices)
                 try:
-                    info = getattr(self.prototype, 'getInfoForOptionsBox' + id)(prevchoices)
+                    info = getattr(self.prototype, 'getInfoForOptionsBox' + id)(prevChoices)
                 except:
                     pass
         else:
