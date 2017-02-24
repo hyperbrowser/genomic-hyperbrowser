@@ -368,6 +368,28 @@
     <!-- end hidden tools -->
   </section>
 
+  <label text="Galaxy ProTo" id="proto_label" />
+
+  <!--<section id="protoTools" name="ProTo development tools">-->
+    <!--<tool file="proto/GenerateToolsTool.xml" />-->
+    <!--<tool file="proto/ExploreToolsTool.xml" />-->
+    <!--<tool file="proto/InstallToolsTool.xml" />-->
+
+    <!--&lt;!&ndash; hidden tools &ndash;&gt;-->
+    <!--<tool file="proto/FileImport.xml" /> -->
+    <!--&lt;!&ndash; end hidden tools &ndash;&gt;-->
+  <!--</section>-->
+
+  <section id="hbProtoTools" name="HB ProTo development tools">
+    <tool file="proto/hyperbrowser/HbGenerateToolsTool.xml" />
+    <tool file="proto/hyperbrowser/HbExploreToolsTool.xml" />
+    <tool file="proto/hyperbrowser/HbInstallToolsTool.xml" />
+
+    <!-- hidden tools -->
+    <tool file="proto/FileImport.xml" />
+    <!-- end hidden tools -->
+  </section>
+
   <label text=" " id="space0"/>
   
   <label text="Standard Galaxy tools" id="galaxy_tools" />
