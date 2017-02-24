@@ -25,13 +25,13 @@ def getInstalledProtoTools():
     return installed_classes
 
 
-def getProtoToolList(exceptClassNames=[]):
+def getProtoToolList(exceptClassNames=[], toolDir=PROTO_TOOL_DIR):
     tmp_tools = {}
     tools = {}
     tool_classes = []
     all_installed_sub_classes = set()
     pys = []
-    for d in os.walk(PROTO_TOOL_DIR, followlinks=True):
+    for d in os.walk(toolDir, followlinks=True):
         if d[0].find('.svn') == -1:
             pys += [os.path.join(d[0], f) for f in d[2] if f.endswith('.py') and
                     not any(f.startswith(x) for x in ['.', '#'])]
@@ -63,7 +63,9 @@ def getProtoToolList(exceptClassNames=[]):
                                             all_installed_sub_classes.add(sub_cls)
                                 elif hasattr(prototype_cls, 'getToolName'):
                                     if class_name not in exceptClassNames:
-                                        tool_module = module_name.split('.')[2:]
+                                        toolDirLen = len(toolDir.split(os.path.sep)) - \
+                                            len(SOURCE_CODE_BASE_DIR.split(os.path.sep))
+                                        tool_module = module_name.split('.')[toolDirLen:]
                                         if class_name != tool_module[-1]:
                                             tool_selection_name = '.'.join(tool_module) + \
                                                                   ' [' + class_name + ']'
