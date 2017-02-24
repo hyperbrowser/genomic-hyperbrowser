@@ -11,6 +11,10 @@ class HbGenerateToolsTool(GeneralGuiToolMixin, ProtoGenerateToolsTool):
     WEB_CONTROLLER = 'hyper'
     EXPLORE_TOOL_ID = 'hb_proto_explore_tools_tool'
 
+    @staticmethod
+    def getToolName():
+        return "HB ProTo tool generator"
+
     @classmethod
     def _getProtoToolSymlinkedPackageName(cls, prevChoices):
         return '.'.join(['quick', 'webtools'] + cls._getSelectedDirs(prevChoices))

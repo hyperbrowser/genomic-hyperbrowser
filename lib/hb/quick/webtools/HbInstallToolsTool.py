@@ -3,10 +3,14 @@ from proto.tools.InstallToolsTool import InstallToolsTool as ProtoInstallToolsTo
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 
 
-class InstallToolsTool(GeneralGuiToolMixin, ProtoInstallToolsTool):
+class HbInstallToolsTool(GeneralGuiToolMixin, ProtoInstallToolsTool):
     TOOL_DIR = PROTO_HB_TOOL_DIR
     TOOL_ID_PREFIX = 'hb'
     XML_TOOL_DIR = 'proto/hyperbrowser'
+
+    @staticmethod
+    def getToolName():
+        return "HB ProTo tool installer"
 
     @classmethod
     def getOptionsBoxToolXMLPath(cls, prevChoices):
