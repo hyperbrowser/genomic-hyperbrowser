@@ -4,19 +4,23 @@ import shutil
 from cgi import escape
 
 from proto.ProtoToolRegister import getProtoToolList, getInstalledProtoTools
-from proto.config.Config import (GALAXY_TOOL_CONFIG_FILE,
-                                 GALAXY_TOOL_XML_PATH)
+from proto.config.Config import (GALAXY_TOOL_CONFIG_FILE, PROTO_TOOL_DIR, SOURCE_CODE_BASE_DIR)
+from proto.config.GalaxyConfigParser import GALAXY_BASE_DIR
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class InstallToolsTool(GeneralGuiTool):
-    prototype = None
-    TOOL_TYPE = 'proto'
+    SELECT_TOOL_STR = '--- Select tool ---'
+
+    # For subclass override
+    TOOL_DIR = PROTO_TOOL_DIR
+    XML_TOOL_DIR = 'proto'
+    TOOL_ID_PREFIX = 'proto'
 
     @classmethod
     def _getToolList(cls):
         installed_classes = getInstalledProtoTools()
-        return getProtoToolList(installed_classes)[0]
+        return getProtoToolList(installed_classes, toolDir=cls.TOOL_DIR)[0]
 
     @classmethod
     def _getPrototype(cls, tool):
@@ -25,7 +29,6 @@ class InstallToolsTool(GeneralGuiTool):
         except:
             prototype = None
         return prototype
-
 
     @staticmethod
     def getToolName():
@@ -55,17 +58,16 @@ class InstallToolsTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxTool(cls):
         tool_list = cls._getToolList()
-        return ['-- Select tool --'] + sorted(tool_list)
+        return [cls.SELECT_TOOL_STR] + sorted(tool_list)
 
     @classmethod
     def getOptionsBoxToolID(cls, prevChoices):
         import inflection
-        if prevChoices.tool is None or prevChoices.tool.startswith('--'):
+        if prevChoices.tool is None or prevChoices.tool == cls.SELECT_TOOL_STR:
             return ''
         tool_list = cls._getToolList()
         module_name = tool_list[prevChoices.tool][2].__name__
-        return cls.TOOL_TYPE + '_' + inflection.underscore(module_name)
-
+        return cls.TOOL_ID_PREFIX + '_' + inflection.underscore(module_name)
 
     @classmethod
     def getOptionsBoxName(cls, prevChoices):
@@ -78,12 +80,22 @@ class InstallToolsTool(GeneralGuiTool):
         return ''
 
     @classmethod
-    def getOptionsBoxToolXMLPath(cls, prevChoices):
+    def _getProtoRelToolDirs(cls, fromBase=False):
+        cmpDir = GALAXY_BASE_DIR if fromBase else SOURCE_CODE_BASE_DIR
+        assert cls.TOOL_DIR.startswith(cmpDir)
+        return cls.TOOL_DIR[len(cmpDir) + 1:].split(os.path.sep)
+
+    @classmethod
+    def _getToolXmlPath(cls, prevChoices):
         prototype = cls._getPrototype(prevChoices.tool)
         if prototype is not None:
             package = prototype.__module__.split('.')
-            package_dir = '/'.join(package[2:-1]) + '/' if len(package) > 3 else ''
-            return 'proto/' + package_dir + prototype.__class__.__name__ + '.xml'
+            package_dir = os.path.sep.join(package[len(cls._getProtoRelToolDirs()):-1])
+            return package_dir + os.path.sep + prototype.__class__.__name__ + '.xml'
+
+    @classmethod
+    def getOptionsBoxToolXMLPath(cls, prevChoices):
+        return cls._getToolXmlPath(prevChoices)
 
     @classmethod
     def getOptionsBoxSection(cls, prevChoices):
@@ -103,12 +115,6 @@ class InstallToolsTool(GeneralGuiTool):
     #    return 'rawstr', '<pre>' + escape(xml) + '</pre>' + '<pre>' + escape(tool_xml) + '</pre>'
 
     @classmethod
-    def validateAndReturnErrors(cls, choices):
-        if not choices.toolID or len(choices.toolID) < 6 or not re.match(r'^[a-zA-Z0-9_]+$', choices.toolID):
-            return 'Tool ID must be at least 6 characters and not contain special chars'
-        return None
-
-    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         # txt = ''
         # if choices.tool and choices.section:
@@ -116,16 +122,16 @@ class InstallToolsTool(GeneralGuiTool):
         # tool_cls = choices.tool
 
         prototype = cls._getPrototype(choices.tool)
-        tool_file = choices.toolXMLPath
+        tool_file = os.path.join(cls.XML_TOOL_DIR, choices.toolXMLPath)
         toolConf = GalaxyToolConfig()
         xml = toolConf.addTool(choices.section, tool_file)
         tool_xml = toolConf.createToolXml(choices.toolID,
-                                          choices.name, cls.TOOL_TYPE,
+                                          choices.name, cls.TOOL_ID_PREFIX,
                                           prototype.__module__,
                                           prototype.__class__.__name__,
                                           choices.description)
 
-        abs_tool_xml_path = os.path.join(GALAXY_TOOL_XML_PATH, choices.toolXMLPath)
+        abs_tool_xml_path = os.path.join(cls.TOOL_DIR, choices.toolXMLPath)
 
         try:
             os.makedirs(os.path.dirname(abs_tool_xml_path))
@@ -162,8 +168,23 @@ class InstallToolsTool(GeneralGuiTool):
         core.end()
         print>>open(galaxyFn, 'w'), core
 
-    @staticmethod
-    def getToolDescription():
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
+        if choices.tool == cls.SELECT_TOOL_STR:
+            return 'Please select a ProTo tool to install in the menu'
+
+        if not choices.toolID or len(choices.toolID) < 6 or \
+                not re.match(r'^[a-z0-9_]+$', choices.toolID):
+            return 'Tool ID must be at least 6 characters, ' \
+                   'all lowercase characters or underscore, ' \
+                   'and not contain special characters: ' + choices.toolID
+
+        if not choices.toolID.startswith(cls.TOOL_ID_PREFIX + '_'):
+            return 'Tool ID must start with "%s": %s' % \
+                   (cls.TOOL_ID_PREFIX + '_', choices.toolID)
+
+    @classmethod
+    def getToolDescription(cls):
         from proto.HtmlCore import HtmlCore
         core = HtmlCore()
         core.smallHeader("General description")
@@ -201,10 +222,11 @@ class InstallToolsTool(GeneralGuiTool):
                              "appear directly after the tool name as "
                              "normal text.", emphasize=True)
         core.descriptionLine("Tool XML file",
-                             "The path (relative to 'tools/proto/') and name "
+                             "The path (relative to '%s') and name " %
+                             os.path.sep.join([''] + cls._getProtoRelToolDirs(fromBase=True)) +
                              "of the Galaxy tool XML file to be created. "
                              "The tool file can be named anything and be "
-                             "placed anywhere (as the 'tool_conf.xml' file"
+                             "placed anywhere (as the 'tool_conf.xml' file "
                              "contains the path to the tool XML file). "
                              "However, we encourage the practice of placing "
                              "the Galaxy tool XML file together with the "
@@ -238,7 +260,7 @@ class GalaxyToolConfig(object):
     def getSections(self):
         self.sectionPos = {}
         section_names = []
-        for m in re.finditer(r'<section ([^>]+)>', self.tool_conf_data):
+        for m in re.finditer(r'\n[^!\n]+<section ([^>]+)>', self.tool_conf_data):
             attrib = {}
             for a in re.findall(r'([^ =]+)="([^"]+)"', m.group(1)):
                 attrib[a[0]] = a[1]
@@ -248,7 +270,7 @@ class GalaxyToolConfig(object):
 
     def addTool(self, section_name, tool_file):
         self.getSections()
-        tool_tag = '\n\t<tool file="%s" />' % (tool_file,)
+        tool_tag = '\n    <tool file="%s" />' % (tool_file,)
         pos = self.sectionPos[section_name]
         self.tool_conf_data = self.tool_conf_data[:pos] + tool_tag + self.tool_conf_data[pos:]
         return self.tool_conf_data
@@ -258,7 +280,7 @@ class GalaxyToolConfig(object):
         with open(self.tool_conf_fn, 'w') as f:
             f.write(self.tool_conf_data)
 
-    def createToolXml(self, tool_id, tool_name, tool_type, tool_module, tool_cls, tool_descr):
-        tool_xml = self.tool_xml_template % (tool_id, tool_name, tool_type,
+    def createToolXml(self, tool_id, tool_name, tool_id_prefix, tool_module, tool_cls, tool_descr):
+        tool_xml = self.tool_xml_template % (tool_id, tool_name, tool_id_prefix,
                                              tool_module, tool_cls, tool_descr)
         return tool_xml
