@@ -3,7 +3,7 @@ import re
 import shutil
 from cgi import escape
 
-from proto.ProtoToolRegister import getProtoToolList, getInstalledProtoTools
+from proto.ProtoToolRegister import getProtoToolList
 from proto.config.Config import (GALAXY_TOOL_CONFIG_FILE, PROTO_TOOL_DIR, SOURCE_CODE_BASE_DIR)
 from proto.config.GalaxyConfigParser import GALAXY_BASE_DIR
 from proto.tools.GeneralGuiTool import GeneralGuiTool
@@ -19,8 +19,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def _getToolList(cls):
-        installed_classes = getInstalledProtoTools()
-        return getProtoToolList(installed_classes, toolDir=cls.TOOL_DIR)[0]
+        return getProtoToolList(toolDir=cls.TOOL_DIR)[0]
 
     @classmethod
     def _getPrototype(cls, tool):
@@ -91,7 +90,8 @@ class InstallToolsTool(GeneralGuiTool):
         if prototype is not None:
             package = prototype.__module__.split('.')
             package_dir = os.path.sep.join(package[len(cls._getProtoRelToolDirs()):-1])
-            return package_dir + os.path.sep + prototype.__class__.__name__ + '.xml'
+            return package_dir + os.path.sep + prototype.__class__.__name__ + '.xml' \
+                if package_dir else prototype.__class__.__name__ + '.xml'
 
     @classmethod
     def getOptionsBoxToolXMLPath(cls, prevChoices):
