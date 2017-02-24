@@ -1,8 +1,12 @@
-from proto.ProtoToolRegister import getInstalledProtoTools, getProtoToolList
+from proto.ProtoToolRegister import getProtoToolList
+from proto.config.Config import PROTO_TOOL_DIR
 from proto.tools.GeneralGuiTool import MultiGeneralGuiTool
 
 
 class ExploreToolsTool(MultiGeneralGuiTool):
+    # For subclass override
+    TOOL_DIR = PROTO_TOOL_DIR
+
     @staticmethod
     def getToolName():
         return "ProTo tool explorer"
@@ -17,8 +21,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
 
     @classmethod
     def getSubToolClasses(cls):
-        installed_classes = getInstalledProtoTools()
-        tool_list = getProtoToolList(installed_classes)[1]
+        tool_list = getProtoToolList(toolDir=cls.TOOL_DIR)[1]
         return sorted(tool_list, key=lambda c: c.__module__)
 
     @staticmethod
