@@ -9,33 +9,38 @@ from proto.config.Config import SOURCE_CODE_BASE_DIR, PROTO_TOOL_DIR, PROTO_TOOL
 from proto.tools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
 
 
-EXCEPT_MODULE_NAMES = ['proto.tools.ExploreToolsTool',
-                       'proto.tools.InstallToolsTool',
-                       'proto.tools.ToolTemplate',
-                       'proto.tools.ToolTemplateMinimal']
+DEFAULT_EXCEPT_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate'),
+                             ('proto.tools.ToolTemplateMinimal', 'ToolTemplate')]
 
 
 def getInstalledProtoTools():
     tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
-    installed_classes = [tool_shelve.get(t)[1] for t in tool_shelve.keys() if os.path.exists(
-        os.path.join(SOURCE_CODE_BASE_DIR,
-                     tool_shelve.get(t)[0].replace('.', os.path.sep))
-        + '.py')]
+    installed_class_info = [tool_shelve.get(t) for t in tool_shelve.keys() if os.path.exists(
+        os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) +
+        '.py')]
     tool_shelve.close()
-    return installed_classes
+    return installed_class_info
 
 
-def getProtoToolList(exceptClassNames=[]):
+def getUniqueKeyForClass(module, cls):
+    module_fn = os.path.join(SOURCE_CODE_BASE_DIR, module.replace('.', os.path.sep))
+    module_fn = os.path.realpath(module_fn)
+    return os.path.join(module_fn, cls)
+
+
+def getProtoToolList(toolDir=PROTO_TOOL_DIR):
     tmp_tools = {}
     tools = {}
     tool_classes = []
     all_installed_sub_classes = set()
     pys = []
-    for d in os.walk(PROTO_TOOL_DIR, followlinks=True):
+    for d in os.walk(toolDir, followlinks=True):
         if d[0].find('.svn') == -1:
             pys += [os.path.join(d[0], f) for f in d[2] if f.endswith('.py') and
                     not any(f.startswith(x) for x in ['.', '#'])]
 
+    except_class_info = DEFAULT_EXCEPT_CLASS_INFO + getInstalledProtoTools()
+    except_classes = set([getUniqueKeyForClass(module, cls) for module, cls in except_class_info])
     # To fix import issue if there are modules in /lib and /lib/proto with the
     # same name (e.g. 'config').
     tmpSysPath = sys.path
@@ -52,27 +57,31 @@ def getProtoToolList(exceptClassNames=[]):
                     module_name = os.path.splitext(os.path.relpath(
                         os.path.abspath(fn), SOURCE_CODE_BASE_DIR))[0].replace(os.path.sep, '.')
                     try:
-                        if module_name not in EXCEPT_MODULE_NAMES:
-                            module = import_module(module_name)
-                            prototype_cls = getattr(module, class_name)
-                            if issubclass(prototype_cls, GeneralGuiTool):
-                                if issubclass(prototype_cls, MultiGeneralGuiTool):
-                                    if class_name in exceptClassNames and \
-                                            prototype_cls.getSubToolClasses():
-                                        for sub_cls in prototype_cls.getSubToolClasses():
-                                            all_installed_sub_classes.add(sub_cls)
-                                elif hasattr(prototype_cls, 'getToolName'):
-                                    if class_name not in exceptClassNames:
-                                        tool_module = module_name.split('.')[2:]
-                                        if class_name != tool_module[-1]:
-                                            tool_selection_name = '.'.join(tool_module) + \
-                                                                  ' [' + class_name + ']'
-                                        else:
-                                            tool_selection_name = '.'.join(tool_module)
+                        module = import_module(module_name)
+                        prototype_cls = getattr(module, class_name)
 
-                                        # print (fn, m.group(2), prototype_cls, module_name)
-                                        tmp_tools[tool_selection_name] = \
-                                            (fn, m.group(2), prototype_cls, module_name)
+                        if getUniqueKeyForClass(module_name, class_name) not in except_classes:
+                            if issubclass(prototype_cls, GeneralGuiTool) \
+                                    and not issubclass(prototype_cls, MultiGeneralGuiTool) \
+                                    and hasattr(prototype_cls, 'getToolName'):
+                                toolDirLen = len(toolDir.split(os.path.sep)) - \
+                                    len(SOURCE_CODE_BASE_DIR.split(os.path.sep))
+                                tool_module = module_name.split('.')[toolDirLen:]
+                                if class_name != tool_module[-1]:
+                                    tool_selection_name = '.'.join(tool_module) + \
+                                                          ' [' + class_name + ']'
+                                else:
+                                    tool_selection_name = '.'.join(tool_module)
+
+                                # print (fn, m.group(2), prototype_cls, module_name)
+                                tmp_tools[tool_selection_name] = \
+                                    (fn, m.group(2), prototype_cls, module_name)
+
+                        elif issubclass(prototype_cls, MultiGeneralGuiTool)  \
+                                and 'ExploreToolsTool' not in class_name \
+                                and prototype_cls.getSubToolClasses():
+                            for sub_cls in prototype_cls.getSubToolClasses():
+                                all_installed_sub_classes.add(sub_cls)
                     except Exception as e:
                         traceback.print_exc()
                         # break

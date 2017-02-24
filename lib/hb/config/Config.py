@@ -18,7 +18,7 @@
 
 from config.DebugConfig import DebugConfig, DebugModes
 from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
-                                 GALAXY_BASE_DIR, OUTPUT_PRECISION)
+                                 GALAXY_BASE_DIR, OUTPUT_PRECISION, PROTO_TOOL_DIR)
 
 #
 # Version information
@@ -161,6 +161,7 @@ MAPS_PATH = RESULTS_STATIC_PATH + '/maps'
 MAPS_COMMON_PATH = MAPS_PATH + '/common'
 MAPS_TEMPLATE_PATH = GALAXY_TEMPLATES_PATH + '/hyperbrowser/gmap'
 
+PROTO_HB_TOOL_DIR = PROTO_TOOL_DIR + '/hyperbrowser'
 
 #
 # To be removed

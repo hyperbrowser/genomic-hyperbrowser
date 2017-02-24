@@ -53,6 +53,8 @@ class Tool2(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxTable(cls):
+        1 + 'a'
+        return '__genome__'
         header = 'File name, Experiment type, Type of data, Cell/tissue type, Target, Genome build, File suffix'.split(', ')
         row = 'wgEncodeUwHistoneK562H3k36me3StdPkRep1.narrowPeak.gz, ChIP-Seq, Peaks (narrow), K562, H3K36me3, hg19, narrowPeak'.split(', ')
         #return [header, row]
@@ -66,6 +68,7 @@ class Tool2(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxHtml(cls, prevChoices):
+        return '__track__'
         return '__rawStr__', '<p><img src="http://www.mn.uio.no/ifi/personer/adm/sveinugu/sveinugu.jpg"></p>'
 
     @classmethod

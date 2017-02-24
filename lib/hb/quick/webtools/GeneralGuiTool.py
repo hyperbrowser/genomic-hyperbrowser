@@ -412,5 +412,6 @@ class GeneralGuiToolMixin(object):
 class GeneralGuiTool(GeneralGuiToolMixin, ProtoGeneralGuiTool):
     pass
 
+
 class MultiGeneralGuiTool(GeneralGuiToolMixin, ProtoMultiGeneralGuiTool):
     pass
