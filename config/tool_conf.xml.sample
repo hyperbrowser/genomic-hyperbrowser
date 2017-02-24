@@ -118,7 +118,7 @@
   <!--<section name="Genomic variation analysis" id="genomic_variation_tools">-->
     <!--<tool file="proto/hyperbrowser/track/AnalyzeFunctionalGenomicsOfGwasTracks.xml" />-->
   <!--</section>-->
-    
+
   <section name="Specialized analysis of tracks" id="specialized_analysis">
     <tool file="proto/hyperbrowser/threeD/ColocalizationIn3DTool.xml" />
     <tool file="hyperbrowser/clusteringTool.xml" />
@@ -358,25 +358,13 @@
 
   <label text="Galaxy ProTo" id="proto_label" />
 
-  <section id="protoTools" name="ProTo development tools">
-    <tool file="proto/GenerateToolsTool.xml" />
-    <tool file="proto/ExploreToolsTool.xml" />
-    <tool file="proto/InstallToolsTool.xml" />
-
-    <!-- hidden tools -->
-    <tool file="proto/FileImport.xml" />
-    <!-- end hidden tools -->
-  </section>
-
-  <label text="Galaxy ProTo" id="proto_label" />
-
   <!--<section id="protoTools" name="ProTo development tools">-->
     <!--<tool file="proto/GenerateToolsTool.xml" />-->
     <!--<tool file="proto/ExploreToolsTool.xml" />-->
     <!--<tool file="proto/InstallToolsTool.xml" />-->
 
     <!--&lt;!&ndash; hidden tools &ndash;&gt;-->
-    <!--<tool file="proto/FileImport.xml" /> -->
+    <!--<tool file="proto/FileImport.xml" />-->
     <!--&lt;!&ndash; end hidden tools &ndash;&gt;-->
   <!--</section>-->
 
