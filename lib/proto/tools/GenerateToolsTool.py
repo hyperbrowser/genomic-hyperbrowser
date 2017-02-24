@@ -11,8 +11,14 @@ class GenerateToolsTool(GeneralGuiTool):
     NO_SELECTION = '--- Select a tool directory ---'
     NEW_DIR = 'Create a new directory...'
 
-    assert PROTO_TOOL_DIR.startswith(SOURCE_CODE_BASE_DIR)
-    PROTO_REL_TOOL_DIRS = PROTO_TOOL_DIR[len(SOURCE_CODE_BASE_DIR) + 1:].split(os.path.sep)
+    # For subclass override
+    TOOL_DIR = PROTO_TOOL_DIR
+    WEB_CONTROLLER = 'proto'
+    EXPLORE_TOOL_ID = 'proto_explore_tools_tool'
+
+    def __new__(cls, *args, **kwargs):
+        cls._setupExtraBoxMethods()
+        return GeneralGuiTool.__new__(cls, *args, **kwargs)
 
     @staticmethod
     def getToolName():
@@ -59,7 +65,7 @@ class GenerateToolsTool(GeneralGuiTool):
             if dirSelection == cls.NEW_DIR:
                 dirSelection = getattr(prevChoices, 'newDir%s' % i).strip()
 
-            if dirSelection and dirSelection != cls.NO_SELECTION:
+            if dirSelection is not None and dirSelection != cls.NO_SELECTION:
                 dirs.append(dirSelection)
             else:
                 break
@@ -76,7 +82,7 @@ class GenerateToolsTool(GeneralGuiTool):
                     not (prevDirLevel == cls.NEW_DIR and
                          not getattr(prevChoices, 'newDir%s' % (index - 1)))):
 
-            selectedDir = os.path.sep.join([PROTO_TOOL_DIR] +
+            selectedDir = os.path.sep.join([cls.TOOL_DIR] +
                                            cls._getSelectedDirs(prevChoices, index))
             try:
                 subDirs = [x for x in os.listdir(selectedDir) if
@@ -92,7 +98,7 @@ class GenerateToolsTool(GeneralGuiTool):
             return '', 1
 
     @classmethod
-    def setupExtraBoxMethods(cls):
+    def _setupExtraBoxMethods(cls):
         from functools import partial
         for i in xrange(cls.MAX_DIR_LEVELS):
             setattr(cls, 'getOptionsBoxDirLevel%s' % i,
@@ -103,8 +109,13 @@ class GenerateToolsTool(GeneralGuiTool):
         from gold.application.LogSetup import logMessage
 
     @classmethod
+    def _getProtoRelToolDirs(cls):
+        assert cls.TOOL_DIR.startswith(SOURCE_CODE_BASE_DIR)
+        return cls.TOOL_DIR[len(SOURCE_CODE_BASE_DIR) + 1:].split(os.path.sep)
+
+    @classmethod
     def _getProtoToolPackageName(cls, prevChoices):
-        return '.'.join(cls.PROTO_REL_TOOL_DIRS + cls._getSelectedDirs(prevChoices))
+        return '.'.join(cls._getProtoRelToolDirs() + cls._getSelectedDirs(prevChoices))
 
     @classmethod
     def getOptionsBoxPackageNameInfo(cls, prevChoices):
@@ -129,7 +140,7 @@ class GenerateToolsTool(GeneralGuiTool):
 
     @classmethod
     def _getPackageDir(cls, selectedDirs):
-        return os.path.sep.join([PROTO_TOOL_DIR] + selectedDirs)
+        return os.path.sep.join([cls.TOOL_DIR] + selectedDirs)
 
     @classmethod
     def _getPyName(cls, choices):
@@ -144,7 +155,7 @@ class GenerateToolsTool(GeneralGuiTool):
             os.makedirs(packageDir)
 
         for i in range(len(selectedDirs)):
-            init_py = os.path.sep.join([PROTO_TOOL_DIR] + selectedDirs[0:i+1]) + '/__init__.py'
+            init_py = os.path.sep.join([cls.TOOL_DIR] + selectedDirs[0:i+1]) + '/__init__.py'
             if not os.path.exists(init_py):
                 print 'creating ', init_py
                 open(init_py, 'a').close()
@@ -165,15 +176,22 @@ class GenerateToolsTool(GeneralGuiTool):
         with open(pyName, 'w') as p:
             p.write(template)
 
-        explore_id = quote('.'.join(selectedDirs + [choices.moduleName]) + ': ' + choices.toolName)
-        print 'Tool generated: <a href="%s/proto/?tool_id=proto_explore_tools_tool&' \
-              'sub_class_id=%s">%s: %s</a>' % \
-              (URL_PREFIX, explore_id, choices.moduleName, choices.toolName)
+        numExcludedDirs = len(cls.TOOL_DIR.split(os.path.sep)) - \
+            len(SOURCE_CODE_BASE_DIR.split(os.path.sep))
+        exploreSubClassId = '.'.join(cls._getProtoRelToolDirs()[numExcludedDirs:] +
+                                     selectedDirs + [choices.moduleName])
+        explore_id = quote(exploreSubClassId + ': ' + choices.toolName)
+        print 'Tool generated: <a href="%s/%s/?tool_id=%s&sub_class_id=%s">%s: %s</a>' % \
+              (URL_PREFIX, cls.WEB_CONTROLLER, cls.EXPLORE_TOOL_ID,
+               explore_id, choices.moduleName, choices.toolName)
         print 'Tool source path:', pyName
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
         for dirName in cls._getSelectedDirs(choices):
+            if not dirName:
+                return 'Please enter a directory name'
+
             if dirName and dirName != dirName.lower():
                 return 'Please use all lowercase letters for the directory name: ' + dirName
 
@@ -232,9 +250,3 @@ class GenerateToolsTool(GeneralGuiTool):
                              "the latter to make the tool code itself shorter "
                              "and more readable.", emphasize=True)
         return str(core)
-
-    # @classmethod
-    # def getResetBoxes(cls):
-        # return flatten([('dirLevel%s' % i, 'newDir%s' % i) for i in range(cls.MAX_DIR_LEVELS)])
-
-GenerateToolsTool.setupExtraBoxMethods()
