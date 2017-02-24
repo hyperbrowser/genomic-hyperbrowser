@@ -21,7 +21,6 @@ RESTRICTED_USERS = [username.strip() for username in
 OUTPUT_PRECISION = int(config.getWithDefault('output_precision', '4', 'galaxy_proto'))
 
 GALAXY_TOOL_CONFIG_FILE = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
-GALAXY_TOOL_XML_PATH = GALAXY_BASE_DIR + '/tools'
 PROTO_TOOL_DIR = GALAXY_BASE_DIR + '/lib/proto/tools'
 PROTO_TOOL_SHELVE_FN = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
 SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib'
