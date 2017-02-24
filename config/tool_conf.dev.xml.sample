@@ -48,7 +48,7 @@
       <tool file="proto/hyperbrowser/gsuite/GSuiteRepresentativeAndUntypicalTrackTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/GSuiteTracksCoincidingWithQueryTrackTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/CoincidingTracksFromTwoGSuitesTool.xml" />
-	  <tool file="proto/hyperbrowser/gsuite/DetermineSuiteTracksCoincidingWithAnotherSuite.xml" />
+      <tool file="proto/hyperbrowser/gsuite/DetermineSuiteTracksCoincidingWithAnotherSuite.xml" />
     <label text="Distribution of suite data along the genome" id="gsuite_genome_distribution"/>
       <tool file="proto/hyperbrowser/gsuite/MultiTrackCountOverrepresentationBins.xml" />
       <tool file="proto/hyperbrowser/gsuite/MultiTrackCooccurrenceBins.xml" />
@@ -61,14 +61,14 @@
   </section>
 
   <section name="Domain-specific analysis" id="analyse_domain_specific">
-	<label text="TF workbench" id="tf_workbench_tools"/>
+    <label text="TF workbench" id="tf_workbench_tools"/>
       <tool file="proto/hyperbrowser/tfbs/AllTargetsOfTfs.xml" />
       <tool file="proto/hyperbrowser/tfbs/AllTfsOfRegions.xml" />
       <tool file="proto/hyperbrowser/article/TfBindingDisruption.xml" />
       <tool file="proto/hyperbrowser/gsuite/MatchTfWithPWM.xml" />
     <label text="Repeats analysis tools" id="repeats_analysis_tools"/>
       <tool file="proto/hyperbrowser/gsuite/FindMonomerRepeatsForFastaGSuiteTool.xml" />
-	  <tool file="proto/hyperbrowser/gsuite/ExtractTrackFromRepositoryFromBinsDefinedByGSuiteTool.xml" />
+      <tool file="proto/hyperbrowser/gsuite/ExtractTrackFromRepositoryFromBinsDefinedByGSuiteTool.xml" />
   </section>
 
   <section name="GSuite documentation" id="gsuite_docs">
@@ -118,7 +118,7 @@
   <section name="Genomic variation analysis" id="genomic_variation_tools">
     <tool file="proto/hyperbrowser/track/AnalyzeFunctionalGenomicsOfGwasTracks.xml" />
   </section>
-	
+    
   <section name="Specialized analysis of tracks" id="specialized_analysis">
     <tool file="proto/hyperbrowser/threeD/ColocalizationIn3DTool.xml" />
     <tool file="hyperbrowser/clusteringTool.xml" />
@@ -327,7 +327,7 @@
     <tool file="proto/hyperbrowser/restricted/ExecuteBatchCommandsV2.xml" />
     <tool file="proto/hyperbrowser/restricted/AbdulrahmansTool.xml" />
     <tool file="proto/hyperbrowser/restricted/AbdulrahmansTool1.xml" />
-	<!-- <tool file="hyperbrowser/abdulrahman/abdulrahman_test1.xml" />-->
+    <!-- <tool file="hyperbrowser/abdulrahman/abdulrahman_test1.xml" />-->
     <tool file="proto/hyperbrowser/tfbs/AntoniosTool.xml" />
     <tool file="proto/hyperbrowser/restricted/NullModelRandomizer.xml" />
     <tool file="proto/hyperbrowser/restricted/PrintInternalTrackURITool.xml" />
