@@ -3,7 +3,7 @@
 # This script runs the hyperbrowser in a docker environment to
 # provides all required library dependencies. 
 
-set -e
+trap 'exit' ERR
 
 #-------------------------------------------------------------------------------
 
