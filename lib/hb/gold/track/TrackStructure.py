@@ -17,6 +17,7 @@ from collections import OrderedDict
 
 from gold.track.Track import Track
 from quick.application.SignatureDevianceLogging import takes
+import copy
 
 '''
 Created on Sep 23, 2015
@@ -92,12 +93,11 @@ class TrackStructureV2(dict):
         assert isinstance(value, TrackStructureV2)
         dict.__setitem__(self, key, value)
 
-
-# reducedTSlist = ts.split(['ref', 'something'])
-# reducedTS = ts.select(ts['ref'], 'A')
-
-# tsCopy = ts.copy()
-# tsCopy['ref'] = ts.copy()['ref']['A']
+    def _copyTreeStructure(self):
+        newCopy = copy.copy(self)
+        for key in self.keys():
+            newCopy[key] = newCopy[key]._copyTreeStructure()
+        return newCopy
 
 class SingleTrackTS(TrackStructureV2):
     @takes(object, Track, dict)
@@ -107,6 +107,13 @@ class SingleTrackTS(TrackStructureV2):
 
     def __setitem__(self, key, value):
         raise
+
+    def _copyTreeStructure(self):
+        return self
+
+    def _copySegregatedSubtree(self, nodeToSplitOn, keyOfSubtree):
+        return self
+
 
 class MultipleTracksTS(TrackStructureV2):
     pass
@@ -145,5 +152,27 @@ class MultipleTracksTS(TrackStructureV2):
             categoricalTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
         return categoricalTS
 
+    def _copySegregatedSubtree(self, nodeToSplitOn, subCategoryKey):
+        newCopy = copy.copy(self)
+        for key, value in self.items():
+            if value == nodeToSplitOn:
+                newCopy[key] = value[subCategoryKey]._copyTreeStructure()
+            else:
+                newCopy[key] = value._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
+        return newCopy
+
+
+    def makeTreeSegregatedByCategory(self, nodeToSplitOn):
+        # TODO Lonneke; add asserts to test input
+
+        newRoot = MultipleTracksTS()
+        for subCategoryKey, subtree in nodeToSplitOn.items():
+            newRoot[subCategoryKey] = self._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
+        return newRoot
+
+
+
 class CategoricalTS(TrackStructureV2):
     pass
+
+
