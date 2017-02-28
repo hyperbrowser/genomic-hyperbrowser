@@ -120,13 +120,40 @@ class TrackStructureV2(dict):
 
 
     def makeTreeSegregatedByCategory(self, nodeToSplitOn):
-        # TODO Lonneke; add asserts to test input
+        # TODO Lonneke: what if root is given, how to split?
+
         assert len(nodeToSplitOn.items()) > 0
+        #if self == nodeToSplitOn:
+        #    return self._copyTreeStructure()
 
         newRoot = TrackStructureV2()
         for subCategoryKey, subtree in nodeToSplitOn.items():
             newRoot[subCategoryKey] = self._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
         return newRoot
+
+    def _getLeafNodes(self):
+        leafNodes = []
+        for subtree in self.values():
+            leafNodes += subtree._getLeafNodes()
+        return leafNodes
+
+    def makePairwiseCombinations(self, referenceTS):
+        # Not necessary? See Trello
+        # assert self.isFlat()
+        # assert referenceTS.isFlat()
+
+        queryLeafNodes = self._getLeafNodes()
+        referenceLeafNodes = referenceTS._getLeafNodes()
+
+        root = TrackStructureV2()
+
+        for query in queryLeafNodes:
+            for reference in referenceLeafNodes:
+                newPair = TrackStructureV2()
+                newPair['query'] = query
+                newPair['reference'] = reference
+                root[query.track.trackName + "_" + reference.track.trackName] = newPair
+        return root
 
 class SingleTrackTS(TrackStructureV2):
     @takes(object, Track, dict)
@@ -142,6 +169,9 @@ class SingleTrackTS(TrackStructureV2):
 
     def _copySegregatedSubtree(self, nodeToSplitOn, keyOfSubtree):
         return self
+
+    def _getLeafNodes(self):
+        return [self]
 
 
 class FlatTracksTS(TrackStructureV2):
