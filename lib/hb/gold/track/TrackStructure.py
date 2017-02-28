@@ -93,6 +93,16 @@ class TrackStructureV2(dict):
         assert isinstance(value, TrackStructureV2)
         dict.__setitem__(self, key, value)
 
+    def isFlat(self):
+        # All children are SingleTrackTS -> True
+        # There are no children -> True
+        # Is SingleTrackTS -> True
+        # Is FlatTracksTS -> True
+        for child in self.values():
+            if not isinstance(child, SingleTrackTS):
+                return False
+        return True
+
     def _copyTreeStructure(self):
         newCopy = copy.copy(self)
         for key in self.keys():
