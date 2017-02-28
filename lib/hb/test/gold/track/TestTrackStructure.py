@@ -17,13 +17,13 @@ from gold.track.TrackStructure import FlatTracksTS
 
 class TestTrackStructure(unittest.TestCase):
     def _buildTestTrees(self):
-        #  inputTree      splitOnA         splitOnB
-        #    /  \             |              /   \
-        #   A    B            C             D     E
-        #   |   / \          /  \          /\     /\
-        #   C   D   E       A    B        A  B   A  B
-        #   |   |   |       |   / \       |  |   |  |
-        #   t1  t2  t3      t1 D   E      C  t2  C  t3
+        #  inputTree      splitOnA         splitOnB           pairwise (A vs B)
+        #    /  \             |              /   \              /  \
+        #   A    B            C             D     E         t1_t2  t1_t3
+        #   |   / \          /  \          /\     /\         / \    / \
+        #   C   D   E       A    B        A  B   A  B       Q   R  Q   R
+        #   |   |   |       |   / \       |  |   |  |       |   |  |   |
+        #   t1  t2  t3      t1 D   E      C  t2  C  t3      t1  t2 t1  t2
         #                      |   |      |      |
         #                      t2  t3     t1     t1
 
@@ -57,6 +57,14 @@ class TestTrackStructure(unittest.TestCase):
         self.splitOnB['E']['A']['C'] = t1
         self.splitOnB['E']['B'] = t3
 
+        self.pairwiseCombinations = TrackStructureV2()
+        self.pairwiseCombinations["t1_t2"] = TrackStructureV2()
+        self.pairwiseCombinations["t1_t2"]["query"] = t1
+        self.pairwiseCombinations["t1_t2"]["reference"] = t2
+        self.pairwiseCombinations["t1_t3"] = TrackStructureV2()
+        self.pairwiseCombinations["t1_t3"]["query"] = t1
+        self.pairwiseCombinations["t1_t3"]["reference"] = t3
+
     def setUp(self):
         self._buildTestTrees()
 
@@ -87,14 +95,15 @@ class TestTrackStructure(unittest.TestCase):
         # should the new structure be different from input and have more levels?
 
     def testMakePairwiseCombinations(self):
-        # TODO Lonneke
-        pass
+        pairwiseOutput = self.inputTree['A'].makePairwiseCombinations(self.inputTree['B'])
+        self.assertEqual(pairwiseOutput, self.pairwiseCombinations)
 
+        # combination between empty TrackStructures should result in just an empty TrackStructure
+        empty = TrackStructureV2()
+        empty.makePairwiseCombinations(empty)
+        self.assertEqual(empty.makePairwiseCombinations(empty), empty)
 
-
-
-
-
+        # TODO Lonneke add more border cases?
 
 
 
