@@ -10,7 +10,7 @@ import unittest
 from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.TrackStructure import SingleTrackTS
-from gold.track.TrackStructure import MultipleTracksTS
+from gold.track.TrackStructure import FlatTracksTS
 
 
 
@@ -34,23 +34,23 @@ class TestTrackStructure(unittest.TestCase):
         st3 = SingleTrackTS(Track('3'), dict())
         st4 = SingleTrackTS(Track('4'), dict())
 
-        root = MultipleTracksTS()
-        root['A1'] = MultipleTracksTS()
+        root = TrackStructureV2()
+        root['A1'] = TrackStructureV2()
         root['A1']['B1'] = st1
         root['A1']['B2'] = st2
-        root['A2'] = MultipleTracksTS()
+        root['A2'] = TrackStructureV2()
         root['A2']['B3'] = st3
         root['A2']['B4'] = st4
 
-        correctOutput = MultipleTracksTS()
-        correctOutput['B1'] = MultipleTracksTS()
+        correctOutput = TrackStructureV2()
+        correctOutput['B1'] = TrackStructureV2()
         correctOutput['B1']['A1'] = st1
-        correctOutput['B1']['A2'] = MultipleTracksTS()
+        correctOutput['B1']['A2'] = TrackStructureV2()
         correctOutput['B1']['A2']['B3'] = st3
         correctOutput['B1']['A2']['B4'] = st4
-        correctOutput['B2'] = MultipleTracksTS()
+        correctOutput['B2'] = TrackStructureV2()
         correctOutput['B2']['A1'] = st2
-        correctOutput['B2']['A2'] = MultipleTracksTS()
+        correctOutput['B2']['A2'] = TrackStructureV2()
         correctOutput['B2']['A2']['B3'] = st3
         correctOutput['B2']['A2']['B4'] = st4
 

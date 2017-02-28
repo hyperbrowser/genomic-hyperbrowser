@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from gold.track.Track import PlainTrack
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.track.TrackStructure import SingleTrackTS, MultipleTracksTS
+from gold.track.TrackStructure import SingleTrackTS, FlatTracksTS
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 
@@ -12,7 +12,7 @@ def getSingleTrackTS(genome, guiSelectedTrack, title='Dummy'):
     return SingleTrackTS(track, {'title':title})
 
 def getMultipleTracksTS(genome, guiSelectedGSuite):
-    ts = MultipleTracksTS()
+    ts = FlatTracksTS()
     gsuite = getGSuiteFromGalaxyTN(guiSelectedGSuite)
     for gsTrack in gsuite.allTracks():
         track = PlainTrack(gsTrack.trackName)
