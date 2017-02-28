@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 # install postgresql
 #   database: hbdb
 #   username: hbuser
-#     use "database_connection = postgres://hbuser@localhost:5433/hbdb" in cfg
+#     use "database_connection = postgres://hbuser@localhost:5432/hbdb" in cfg
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -q \
    postgresql-9.5 \
    postgresql-contrib-9.5 \
