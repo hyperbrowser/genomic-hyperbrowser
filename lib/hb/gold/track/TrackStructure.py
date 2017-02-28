@@ -99,6 +99,24 @@ class TrackStructureV2(dict):
             newCopy[key] = newCopy[key]._copyTreeStructure()
         return newCopy
 
+    def _copySegregatedSubtree(self, nodeToSplitOn, subCategoryKey):
+        newCopy = copy.copy(self)
+        for key, value in self.items():
+            if value == nodeToSplitOn:
+                newCopy[key] = value[subCategoryKey]._copyTreeStructure()
+            else:
+                newCopy[key] = value._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
+        return newCopy
+
+
+    def makeTreeSegregatedByCategory(self, nodeToSplitOn):
+        # TODO Lonneke; add asserts to test input
+
+        newRoot = TrackStructureV2()
+        for subCategoryKey, subtree in nodeToSplitOn.items():
+            newRoot[subCategoryKey] = self._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
+        return newRoot
+
 class SingleTrackTS(TrackStructureV2):
     @takes(object, Track, dict)
     def __init__(self, track, metadata):
@@ -115,7 +133,7 @@ class SingleTrackTS(TrackStructureV2):
         return self
 
 
-class MultipleTracksTS(TrackStructureV2):
+class FlatTracksTS(TrackStructureV2):
     pass
     # def __init__(self):
     #     pass
@@ -140,7 +158,7 @@ class MultipleTracksTS(TrackStructureV2):
 
 
     def getTrackSubsetTS(self, metadataField, selectedValue):
-        subsetTS = MultipleTracksTS()
+        subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():
             assert isinstance(ts, SingleTrackTS)
             if ts.metadata.get(metadataField) == selectedValue:
@@ -158,27 +176,7 @@ class MultipleTracksTS(TrackStructureV2):
             categoricalTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
         return categoricalTS
 
-    def _copySegregatedSubtree(self, nodeToSplitOn, subCategoryKey):
-        newCopy = copy.copy(self)
-        for key, value in self.items():
-            if value == nodeToSplitOn:
-                newCopy[key] = value[subCategoryKey]._copyTreeStructure()
-            else:
-                newCopy[key] = value._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
-        return newCopy
-
-
-    def makeTreeSegregatedByCategory(self, nodeToSplitOn):
-        # TODO Lonneke; add asserts to test input
-
-        newRoot = MultipleTracksTS()
-        for subCategoryKey, subtree in nodeToSplitOn.items():
-            newRoot[subCategoryKey] = self._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
-        return newRoot
-
-
 
 class CategoricalTS(TrackStructureV2):
     pass
-
 
