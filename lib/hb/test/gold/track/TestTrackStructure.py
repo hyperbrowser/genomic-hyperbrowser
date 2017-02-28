@@ -16,8 +16,49 @@ from gold.track.TrackStructure import FlatTracksTS
 
 
 class TestTrackStructure(unittest.TestCase):
+    def _buildTestTrees(self):
+        #  inputTree      splitOnA         splitOnB
+        #    /  \             |              /   \
+        #   A    B            C             D     E
+        #   |   / \          /  \          /\     /\
+        #   C   D   E       A    B        A  B   A  B
+        #   |   |   |       |   / \       |  |   |  |
+        #   t1  t2  t3      t1 D   E      C  t2  C  t3
+        #                      |   |      |      |
+        #                      t2  t3     t1     t1
+
+        t1 = SingleTrackTS(Track('t1'), dict())
+        t2 = SingleTrackTS(Track('t2'), dict())
+        t3 = SingleTrackTS(Track('t3'), dict())
+
+        self.inputTree = TrackStructureV2()
+        self.inputTree['A'] = TrackStructureV2()
+        self.inputTree['A']['C'] = t1
+        self.inputTree['B'] = TrackStructureV2()
+        self.inputTree['B']['D'] = t2
+        self.inputTree['B']['E'] = t3
+
+        # correct result of the input tree splitted on node A
+        self.splitOnA = TrackStructureV2()
+        self.splitOnA['C'] = TrackStructureV2()
+        self.splitOnA['C']['A'] = t1
+        self.splitOnA['C']['B'] = TrackStructureV2()
+        self.splitOnA['C']['B']['D'] = t2
+        self.splitOnA['C']['B']['E'] = t3
+
+        # correct result of the input tree splitted on node B
+        self.splitOnB = TrackStructureV2()
+        self.splitOnB['D'] = TrackStructureV2()
+        self.splitOnB['D']['A'] = TrackStructureV2()
+        self.splitOnB['D']['A']['C'] = t1
+        self.splitOnB['D']['B'] = t2
+        self.splitOnB['E'] = TrackStructureV2()
+        self.splitOnB['E']['A'] = TrackStructureV2()
+        self.splitOnB['E']['A']['C'] = t1
+        self.splitOnB['E']['B'] = t3
+
     def setUp(self):
-        pass
+        self._buildTestTrees()
 
     def _isEqualTrackStructure(self, correct, output):
         self.assertEqual(correct.keys(), output.keys())
@@ -27,81 +68,27 @@ class TestTrackStructure(unittest.TestCase):
             if isinstance(correct[key], SingleTrackTS):
                 self.assertEqual(correct[key], output[key])
 
-    def _testWithSingleCategory(self):
-        # root                    root
-        #  / \                      |
-        # A   B                     C
-        # |   |  split on node B   / \
-        # t1  C  -------------->  A   B
-        #     |                   |   |
-        #     t2                  t1  t2
-
-
-        t1 = SingleTrackTS(Track('t1'), dict())
-        t2 = SingleTrackTS(Track('t2'), dict())
-
-        inputStructure = TrackStructureV2()
-        inputStructure['A'] = t1
-        inputStructure['B'] =  TrackStructureV2()
-        inputStructure['B']['C'] = t2
-
-        correctOutput = TrackStructureV2()
-        correctOutput['C'] = TrackStructureV2()
-        correctOutput['C']['A'] = t1
-        correctOutput['C']['B'] = t2
-
-        realOutput = inputStructure.makeTreeSegregatedByCategory(inputStructure['B'])
-        self._isEqualTrackStructure(correctOutput, realOutput)
-
-    def _testWithMultipleCategories(self):
-        #  root                         root
-        #  /  \                         /  \
-        # A    B                       C    D
-        # |   / \   split on node B   /\    /\
-        # t1 C   D  -------------->  A  B  A  B
-        #    |   |                   |  |  |  |
-        #    t2  t3                  t1 t2 t1 t3
-
-        t1 = SingleTrackTS(Track('t1'), dict())
-        t2 = SingleTrackTS(Track('t2'), dict())
-        t3 = SingleTrackTS(Track('t3'), dict())
-
-        inputStructure = TrackStructureV2()
-        inputStructure['A'] = t1
-        inputStructure['B'] =  TrackStructureV2()
-        inputStructure['B']['C'] = t2
-        inputStructure['B']['D'] = t3
-
-        correctOutput = TrackStructureV2()
-        correctOutput['C'] = TrackStructureV2()
-        correctOutput['D'] = TrackStructureV2()
-        correctOutput['C']['A'] = t1
-        correctOutput['C']['B'] = t2
-        correctOutput['D']['A'] = t1
-        correctOutput['D']['B'] = t3
-
-        realOutput = inputStructure.makeTreeSegregatedByCategory(inputStructure['B'])
-        self._isEqualTrackStructure(correctOutput, realOutput)
-
-    def _testWithWrongInput(self):
-        # root
-        #  / \
-        # A   B  Splitting on node A or B should fail
-        # |   |
-        # t1  t2
-
-        inputStructure = TrackStructureV2()
-        inputStructure['A'] = SingleTrackTS(Track('t1'), dict())
-        inputStructure['B'] = SingleTrackTS(Track('t2'), dict())
-
-        with self.assertRaises(AssertionError):
-            inputStructure.makeTreeSegregatedByCategory(inputStructure['A'])
-            inputStructure.makeTreeSegregatedByCategory(inputStructure['B'])
-
     def testMakeTreeSegregatedByCategory(self):
-        self._testWithSingleCategory()
-        self._testWithMultipleCategories()
-        self._testWithWrongInput()
+        # test splitting on a node that has a single category
+        singleCategoryOutput = self.inputTree.makeTreeSegregatedByCategory(self.inputTree['A'])
+        self.assertEqual(singleCategoryOutput, self.splitOnA)
+
+        # test splitting on a node that has multiple categories
+        singleCategoryOutput = self.inputTree.makeTreeSegregatedByCategory(self.inputTree['B'])
+        self.assertEqual(singleCategoryOutput, self.splitOnB)
+
+        # test splitting on a node without categories (should return an error)
+        with self.assertRaises(AssertionError):
+            self.inputTree.makeTreeSegregatedByCategory(self.inputTree['A']['C'])
+
+        # TODO lonneke test with root as input
+        # should this return the same structure as the input?
+        # should metadata be moved around?
+        # should the new structure be different from input and have more levels?
+
+    def testMakePairwiseCombinations(self):
+        # TODO Lonneke
+        pass
 
 
 
