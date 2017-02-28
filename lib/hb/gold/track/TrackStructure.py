@@ -120,6 +120,12 @@ class MultipleTracksTS(TrackStructureV2):
     # def __init__(self):
     #     pass
 
+    #@takes(object, str, TrackStructureV2)
+    def __setitem__(self, key, value):
+        assert isinstance(key, str)
+        assert isinstance(value, SingleTrackTS)
+        dict.__setitem__(self, key, value)
+
     def getMetadataFields(self):
         allMetadataFields = OrderedDict()
 
