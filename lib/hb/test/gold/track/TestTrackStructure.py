@@ -27,35 +27,85 @@ class TestTrackStructure(unittest.TestCase):
             if isinstance(correct[key], SingleTrackTS):
                 self.assertEqual(correct[key], output[key])
 
-    def testMakeTreeSegregatedByCategory(self):
-        # TODO Lonneke; clean up & investigate border cases
-        st1 = SingleTrackTS(Track('1'), dict())
-        st2 = SingleTrackTS(Track('2'), dict())
-        st3 = SingleTrackTS(Track('3'), dict())
-        st4 = SingleTrackTS(Track('4'), dict())
+    def _testWithSingleCategory(self):
+        # root                    root
+        #  / \                      |
+        # A   B                     C
+        # |   |  split on node B   / \
+        # t1  C  -------------->  A   B
+        #     |                   |   |
+        #     t2                  t1  t2
 
-        root = TrackStructureV2()
-        root['A1'] = TrackStructureV2()
-        root['A1']['B1'] = st1
-        root['A1']['B2'] = st2
-        root['A2'] = TrackStructureV2()
-        root['A2']['B3'] = st3
-        root['A2']['B4'] = st4
+
+        t1 = SingleTrackTS(Track('t1'), dict())
+        t2 = SingleTrackTS(Track('t2'), dict())
+
+        inputStructure = TrackStructureV2()
+        inputStructure['A'] = t1
+        inputStructure['B'] =  TrackStructureV2()
+        inputStructure['B']['C'] = t2
 
         correctOutput = TrackStructureV2()
-        correctOutput['B1'] = TrackStructureV2()
-        correctOutput['B1']['A1'] = st1
-        correctOutput['B1']['A2'] = TrackStructureV2()
-        correctOutput['B1']['A2']['B3'] = st3
-        correctOutput['B1']['A2']['B4'] = st4
-        correctOutput['B2'] = TrackStructureV2()
-        correctOutput['B2']['A1'] = st2
-        correctOutput['B2']['A2'] = TrackStructureV2()
-        correctOutput['B2']['A2']['B3'] = st3
-        correctOutput['B2']['A2']['B4'] = st4
+        correctOutput['C'] = TrackStructureV2()
+        correctOutput['C']['A'] = t1
+        correctOutput['C']['B'] = t2
 
-        realOutput = root.makeTreeSegregatedByCategory(root['A1'])
+        realOutput = inputStructure.makeTreeSegregatedByCategory(inputStructure['B'])
         self._isEqualTrackStructure(correctOutput, realOutput)
+
+    def _testWithMultipleCategories(self):
+        #  root                         root
+        #  /  \                         /  \
+        # A    B                       C    D
+        # |   / \   split on node B   /\    /\
+        # t1 C   D  -------------->  A  B  A  B
+        #    |   |                   |  |  |  |
+        #    t2  t3                  t1 t2 t1 t3
+
+        t1 = SingleTrackTS(Track('t1'), dict())
+        t2 = SingleTrackTS(Track('t2'), dict())
+        t3 = SingleTrackTS(Track('t3'), dict())
+
+        inputStructure = TrackStructureV2()
+        inputStructure['A'] = t1
+        inputStructure['B'] =  TrackStructureV2()
+        inputStructure['B']['C'] = t2
+        inputStructure['B']['D'] = t3
+
+        correctOutput = TrackStructureV2()
+        correctOutput['C'] = TrackStructureV2()
+        correctOutput['D'] = TrackStructureV2()
+        correctOutput['C']['A'] = t1
+        correctOutput['C']['B'] = t2
+        correctOutput['D']['A'] = t1
+        correctOutput['D']['B'] = t3
+
+        realOutput = inputStructure.makeTreeSegregatedByCategory(inputStructure['B'])
+        self._isEqualTrackStructure(correctOutput, realOutput)
+
+    def _testWithWrongInput(self):
+        # root
+        #  / \
+        # A   B  Splitting on node A or B should fail
+        # |   |
+        # t1  t2
+
+        inputStructure = TrackStructureV2()
+        inputStructure['A'] = SingleTrackTS(Track('t1'), dict())
+        inputStructure['B'] = SingleTrackTS(Track('t2'), dict())
+
+        with self.assertRaises(AssertionError):
+            inputStructure.makeTreeSegregatedByCategory(inputStructure['A'])
+            inputStructure.makeTreeSegregatedByCategory(inputStructure['B'])
+
+    def testMakeTreeSegregatedByCategory(self):
+        self._testWithSingleCategory()
+        self._testWithMultipleCategories()
+        self._testWithWrongInput()
+
+
+
+
 
 
 

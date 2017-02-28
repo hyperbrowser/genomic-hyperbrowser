@@ -111,6 +111,7 @@ class TrackStructureV2(dict):
 
     def makeTreeSegregatedByCategory(self, nodeToSplitOn):
         # TODO Lonneke; add asserts to test input
+        assert len(nodeToSplitOn.items()) > 0
 
         newRoot = TrackStructureV2()
         for subCategoryKey, subtree in nodeToSplitOn.items():
