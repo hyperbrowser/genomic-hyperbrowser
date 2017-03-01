@@ -93,6 +93,29 @@ class TrackStructureV2(dict):
         assert isinstance(value, TrackStructureV2)
         dict.__setitem__(self, key, value)
 
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+
+        if len(self.keys()) != len(other.keys()):
+            return False
+
+        for k in self.keys():
+            if k not in other.keys():
+                return False
+
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        '''
+        Pre-sort the keys to always get the same order of the track lists in the Track structure.
+        Return the hash of the tuple with the hash values of self.values (recursive)
+        The recursion ends at a TrackStructure without children (returns hash of empty tuple),
+        or at a SingleTrackStructure (returns the hash of the track name and title)
+        '''
+        keys = sorted(self.keys())
+        return hash(tuple([hash(self[key]) for key in keys]))
+
     def isFlat(self):
         # All children are SingleTrackTS -> True
         # There are no children -> True
@@ -163,6 +186,11 @@ class SingleTrackTS(TrackStructureV2):
 
     def __setitem__(self, key, value):
         raise
+
+    def __hash__(self):
+        # track.getUniqueKey(...) is not a good candidate for hashing as it needs a genome
+        # when a new track is created you can only be sure a name and title have been provided
+        return hash((hash(self.track.trackName), hash(self.track.trackTitle)))
 
     def _copyTreeStructure(self):
         return self
