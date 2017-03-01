@@ -11,7 +11,7 @@ def getSingleTrackTS(genome, guiSelectedTrack, title='Dummy'):
     track = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, guiSelectedTrack)
     return SingleTrackTS(track, {'title':title})
 
-def getMultipleTracksTS(genome, guiSelectedGSuite):
+def getFlatTracksTS(genome, guiSelectedGSuite):
     ts = FlatTracksTS()
     gsuite = getGSuiteFromGalaxyTN(guiSelectedGSuite)
     for gsTrack in gsuite.allTracks():

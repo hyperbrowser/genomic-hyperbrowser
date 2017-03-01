@@ -157,7 +157,7 @@ class TSExperimentTool(GeneralGuiTool):
         genome = 'hg19'
         import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
-        refTS = factory.getMultipleTracksTS(genome, choices_gsuite)
+        refTS = factory.getFlatTracksTS(genome, choices_gsuite)
         from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
 
         #Temporary note: the functionality of the following commented lines
