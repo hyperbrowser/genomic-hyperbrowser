@@ -27,56 +27,57 @@ class TestTrackStructure(unittest.TestCase):
         #                      |   |      |      |
         #                      t2  t3     t1     t1
 
-        t1 = SingleTrackTS(Track('t1'), {"field 1": "value 1"})
-        t2 = SingleTrackTS(Track('t2'), {"field 1": "value 2", "field 2": 6})
-        t3 = SingleTrackTS(Track('t3'), {"field 1": "value 3", "field 3": None})
+        self.t1 = SingleTrackTS(Track('t1'), {"field 1": "value 1"})
+        self.t2 = SingleTrackTS(Track('t2'), {"field 1": "value 2", "field 2": 6})
+        self.t3 = SingleTrackTS(Track('t3'), {"field 1": "value 3", "field 3": None})
 
         self.inputTree = TrackStructureV2()
         self.inputTree['A'] = TrackStructureV2()
-        self.inputTree['A']['C'] = t1
+        self.inputTree['A']['C'] = self.t1
         self.inputTree['B'] = TrackStructureV2()
-        self.inputTree['B']['D'] = t2
-        self.inputTree['B']['E'] = t3
+        self.inputTree['B']['D'] = self.t2
+        self.inputTree['B']['E'] = self.t3
 
         # correct result of the input tree splitted on node A
-        self.splitOnA = TrackStructureV2()
-        self.splitOnA['C'] = TrackStructureV2()
-        self.splitOnA['C']['A'] = t1
-        self.splitOnA['C']['B'] = TrackStructureV2()
-        self.splitOnA['C']['B']['D'] = t2
-        self.splitOnA['C']['B']['E'] = t3
+        self.splittedOnNodeA = TrackStructureV2()
+        self.splittedOnNodeA['C'] = TrackStructureV2()
+        self.splittedOnNodeA['C']['A'] = self.t1
+        self.splittedOnNodeA['C']['B'] = TrackStructureV2()
+        self.splittedOnNodeA['C']['B']['D'] = self.t2
+        self.splittedOnNodeA['C']['B']['E'] = self.t3
 
         # correct result of the input tree splitted on node B
-        self.splitOnB = TrackStructureV2()
-        self.splitOnB['D'] = TrackStructureV2()
-        self.splitOnB['D']['A'] = TrackStructureV2()
-        self.splitOnB['D']['A']['C'] = t1
-        self.splitOnB['D']['B'] = t2
-        self.splitOnB['E'] = TrackStructureV2()
-        self.splitOnB['E']['A'] = TrackStructureV2()
-        self.splitOnB['E']['A']['C'] = t1
-        self.splitOnB['E']['B'] = t3
+        self.splittedOnNodeB = TrackStructureV2()
+        self.splittedOnNodeB['D'] = TrackStructureV2()
+        self.splittedOnNodeB['D']['A'] = TrackStructureV2()
+        self.splittedOnNodeB['D']['A']['C'] = self.t1
+        self.splittedOnNodeB['D']['B'] = self.t2
+        self.splittedOnNodeB['E'] = TrackStructureV2()
+        self.splittedOnNodeB['E']['A'] = TrackStructureV2()
+        self.splittedOnNodeB['E']['A']['C'] = self.t1
+        self.splittedOnNodeB['E']['B'] = self.t3
 
         self.pairwiseCombinations = TrackStructureV2()
         self.pairwiseCombinations["t1_t2"] = TrackStructureV2()
-        self.pairwiseCombinations["t1_t2"]["query"] = t1
-        self.pairwiseCombinations["t1_t2"]["reference"] = t2
+        self.pairwiseCombinations["t1_t2"]["query"] = self.t1
+        self.pairwiseCombinations["t1_t2"]["reference"] = self.t2
         self.pairwiseCombinations["t1_t3"] = TrackStructureV2()
-        self.pairwiseCombinations["t1_t3"]["query"] = t1
-        self.pairwiseCombinations["t1_t3"]["reference"] = t3
+        self.pairwiseCombinations["t1_t3"]["query"] = self.t1
+        self.pairwiseCombinations["t1_t3"]["reference"] = self.t3
 
-        self.flatTs = FlatTracksTS()
-        self.flatTs['A'] = t1
-        self.flatTs['B'] = t2
-        self.flatTs['C'] = t3
+        self.flatTrackStructure = FlatTracksTS()
+        self.flatTrackStructure['A'] = self.t1
+        self.flatTrackStructure['B'] = self.t2
+        self.flatTrackStructure['C'] = self.t3
 
     def setUp(self):
         self._buildTestTrees()
 
-    def _isEqualTrackStructure(self, correct, output):
+    def _assertEqualTrackStructure(self, correct, output):
         self.assertEqual(correct.keys(), output.keys())
         for key, value in correct.items():
-            self._isEqualTrackStructure(correct[key], output[key])
+            self._assertEqualTrackStructure(correct[key], output[key])
+            self.assertIsInstance(output[key], correct[key].__class__)
             self.assertIsInstance(output, TrackStructureV2)
             if isinstance(correct[key], SingleTrackTS):
                 self.assertEqual(correct[key], output[key])
@@ -84,11 +85,11 @@ class TestTrackStructure(unittest.TestCase):
     def testMakeTreeSegregatedByCategory(self):
         # test splitting on a node that has a single category
         singleCategoryOutput = self.inputTree.makeTreeSegregatedByCategory(self.inputTree['A'])
-        self._isEqualTrackStructure(singleCategoryOutput, self.splitOnA)
+        self._assertEqualTrackStructure(singleCategoryOutput, self.splittedOnNodeA)
 
         # test splitting on a node that has multiple categories
         singleCategoryOutput = self.inputTree.makeTreeSegregatedByCategory(self.inputTree['B'])
-        self._isEqualTrackStructure(singleCategoryOutput, self.splitOnB)
+        self._assertEqualTrackStructure(singleCategoryOutput, self.splittedOnNodeB)
 
         # test splitting on a node without categories (should return an error)
         with self.assertRaises(AssertionError):
@@ -111,12 +112,21 @@ class TestTrackStructure(unittest.TestCase):
         # TODO Lonneke add more border cases?
 
     def testGetMetadataField(self):
-        self.assertItemsEqual(("field 1", "field 2", "field 3"), self.flatTs.getMetadataFields())
+        self.assertItemsEqual(("field 1", "field 2", "field 3"), self.flatTrackStructure.getMetadataFields())
 
     def testGetAllValuesForMetadataField(self):
-        self.assertItemsEqual(("value 1", "value 2", "value 3",), self.flatTs.getAllValuesForMetadataField("field 1"))
-        self.assertItemsEqual((6,), self.flatTs.getAllValuesForMetadataField("field 2"))
-        self.assertItemsEqual((None,), self.flatTs.getAllValuesForMetadataField("field 3"))
+        self.assertItemsEqual(("value 1", "value 2", "value 3",), self.flatTrackStructure.getAllValuesForMetadataField("field 1"))
+        self.assertItemsEqual((6,), self.flatTrackStructure.getAllValuesForMetadataField("field 2"))
+        self.assertItemsEqual((None,), self.flatTrackStructure.getAllValuesForMetadataField("field 3"))
+
+    def testGetFlattenedTS(self):
+        getFlattenedTsResult = FlatTracksTS()
+        getFlattenedTsResult['t1'] = self.t1
+        getFlattenedTsResult['t1 (2)'] = self.t1
+        getFlattenedTsResult['t2'] = self.t2
+        getFlattenedTsResult['t3'] = self.t3
+        self._assertEqualTrackStructure(getFlattenedTsResult, self.splittedOnNodeB.getFlattenedTS())
+
 
 
 if __name__ == "__main__":
