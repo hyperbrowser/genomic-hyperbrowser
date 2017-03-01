@@ -27,9 +27,9 @@ class TestTrackStructure(unittest.TestCase):
         #                      |   |      |      |
         #                      t2  t3     t1     t1
 
-        t1 = SingleTrackTS(Track('t1'), dict())
-        t2 = SingleTrackTS(Track('t2'), dict())
-        t3 = SingleTrackTS(Track('t3'), dict())
+        t1 = SingleTrackTS(Track('t1'), {"field 1": "value 1"})
+        t2 = SingleTrackTS(Track('t2'), {"field 1": "value 2", "field 2": 6})
+        t3 = SingleTrackTS(Track('t3'), {"field 1": "value 3", "field 3": None})
 
         self.inputTree = TrackStructureV2()
         self.inputTree['A'] = TrackStructureV2()
@@ -65,6 +65,11 @@ class TestTrackStructure(unittest.TestCase):
         self.pairwiseCombinations["t1_t3"]["query"] = t1
         self.pairwiseCombinations["t1_t3"]["reference"] = t3
 
+        self.flatTs = FlatTracksTS()
+        self.flatTs['A'] = t1
+        self.flatTs['B'] = t2
+        self.flatTs['C'] = t3
+
     def setUp(self):
         self._buildTestTrees()
 
@@ -79,11 +84,11 @@ class TestTrackStructure(unittest.TestCase):
     def testMakeTreeSegregatedByCategory(self):
         # test splitting on a node that has a single category
         singleCategoryOutput = self.inputTree.makeTreeSegregatedByCategory(self.inputTree['A'])
-        self.assertEqual(singleCategoryOutput, self.splitOnA)
+        self._isEqualTrackStructure(singleCategoryOutput, self.splitOnA)
 
         # test splitting on a node that has multiple categories
         singleCategoryOutput = self.inputTree.makeTreeSegregatedByCategory(self.inputTree['B'])
-        self.assertEqual(singleCategoryOutput, self.splitOnB)
+        self._isEqualTrackStructure(singleCategoryOutput, self.splitOnB)
 
         # test splitting on a node without categories (should return an error)
         with self.assertRaises(AssertionError):
@@ -105,6 +110,13 @@ class TestTrackStructure(unittest.TestCase):
 
         # TODO Lonneke add more border cases?
 
+    def testGetMetadataField(self):
+        self.assertItemsEqual(("field 1", "field 2", "field 3"), self.flatTs.getMetadataFields())
+
+    def testGetAllValuesForMetadataField(self):
+        self.assertItemsEqual(("value 1", "value 2", "value 3",), self.flatTs.getAllValuesForMetadataField("field 1"))
+        self.assertItemsEqual((6,), self.flatTs.getAllValuesForMetadataField("field 2"))
+        self.assertItemsEqual((None,), self.flatTs.getAllValuesForMetadataField("field 3"))
 
 
 if __name__ == "__main__":
