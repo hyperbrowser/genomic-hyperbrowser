@@ -160,6 +160,32 @@ class TrackStructureV2(dict):
             leafNodes += subtree._getLeafNodes()
         return leafNodes
 
+    def _getOriginalNodeName(self, originalName, usedNames):
+        nodeName = originalName
+
+        counter = 2
+        while nodeName in usedNames:
+            nodeName = originalName + " (" + str(counter) + ")"
+            counter += 1
+
+        return nodeName
+
+    def getFlattenedTS(self):
+        '''Returns a flattened (FlatTracksTS) copy of the TrackStructure, does not alter the
+        TrackStructure itself. Only the metadata in leaf nodes is preserved.'''
+        if self.isFlat():
+            return self._copyTreeStructure()
+
+        # copy the root and clear the key/value pairs
+        # this way all other (metadata) fields won't be removed
+        newRoot = FlatTracksTS()
+
+        for leafNode in self._getLeafNodes():
+            newRoot[self._getOriginalNodeName(leafNode.track.trackName, newRoot.keys())] = leafNode
+
+        return newRoot
+
+
     def makePairwiseCombinations(self, referenceTS):
         # Not necessary? See Trello
         # assert self.isFlat()
@@ -250,3 +276,6 @@ class FlatTracksTS(TrackStructureV2):
 
 class CategoricalTS(TrackStructureV2):
     pass
+
+
+
