@@ -258,14 +258,14 @@ class FlatTracksTS(TrackStructureV2):
         subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():
             assert isinstance(ts, SingleTrackTS)
-            if ts.metadata.get(metadataField) == selectedValue:
+            if metadataField in ts.metadata and ts.metadata.get(metadataField) == selectedValue:
                 subsetTS[key] = ts
         return subsetTS
 
     def getSplittedByCategoryTS(self, metadataField):
         '''
-        Returns a categorical TS, containing a separate MultipleTracksTS
-        per value in selected metadata field
+        Returns a categorical TS, containing a separate MultipleTracksTS per value in selected
+        metadata field. Nodes that do not contain the given metadata field are not returned.
         '''
         categoricalTS = CategoricalTS()
         catValues = self.getAllValuesForMetadataField(metadataField)
@@ -276,6 +276,4 @@ class FlatTracksTS(TrackStructureV2):
 
 class CategoricalTS(TrackStructureV2):
     pass
-
-
 

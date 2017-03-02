@@ -11,6 +11,7 @@ from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.TrackStructure import SingleTrackTS
 from gold.track.TrackStructure import FlatTracksTS
+from gold.track.TrackStructure import CategoricalTS
 
 
 
@@ -29,7 +30,7 @@ class TestTrackStructure(unittest.TestCase):
 
         self.t1 = SingleTrackTS(Track('t1'), {"field 1": "value 1"})
         self.t2 = SingleTrackTS(Track('t2'), {"field 1": "value 2", "field 2": 6})
-        self.t3 = SingleTrackTS(Track('t3'), {"field 1": "value 3", "field 3": None})
+        self.t3 = SingleTrackTS(Track('t3'), {"field 1": "value 2", "field 3": None})
 
         self.inputTree = TrackStructureV2()
         self.inputTree['A'] = TrackStructureV2()
@@ -115,7 +116,7 @@ class TestTrackStructure(unittest.TestCase):
         self.assertItemsEqual(("field 1", "field 2", "field 3"), self.flatTrackStructure.getMetadataFields())
 
     def testGetAllValuesForMetadataField(self):
-        self.assertItemsEqual(("value 1", "value 2", "value 3",), self.flatTrackStructure.getAllValuesForMetadataField("field 1"))
+        self.assertItemsEqual(("value 1", "value 2",), self.flatTrackStructure.getAllValuesForMetadataField("field 1"))
         self.assertItemsEqual((6,), self.flatTrackStructure.getAllValuesForMetadataField("field 2"))
         self.assertItemsEqual((None,), self.flatTrackStructure.getAllValuesForMetadataField("field 3"))
 
@@ -126,6 +127,57 @@ class TestTrackStructure(unittest.TestCase):
         getFlattenedTsResult['t2'] = self.t2
         getFlattenedTsResult['t3'] = self.t3
         self._assertEqualTrackStructure(getFlattenedTsResult, self.splittedOnNodeB.getFlattenedTS())
+
+    def testGetSplittedByCategoryTS(self):
+        splitByField1 = CategoricalTS()
+        field1value1 = FlatTracksTS()
+        field1value2 = FlatTracksTS()
+        splitByField1['value 1'] = field1value1
+        splitByField1['value 1']['A'] = self.t1
+        splitByField1['value 2'] = field1value2
+        splitByField1['value 2']['B'] = self.t2
+        splitByField1['value 2']['C'] = self.t3
+
+        self._assertEqualTrackStructure(splitByField1, self.flatTrackStructure.getSplittedByCategoryTS("field 1"))
+
+        splitByField2 = CategoricalTS()
+        field2val6 = FlatTracksTS()
+        splitByField2[6] = field2val6
+        splitByField2[6]['B'] = self.t2
+
+        self._assertEqualTrackStructure(splitByField2, self.flatTrackStructure.getSplittedByCategoryTS("field 2"))
+
+        splitByField3 = CategoricalTS()
+        field3None = FlatTracksTS()
+        splitByField3[None] = field3None
+        splitByField3[None]['C'] = self.t3
+
+        self._assertEqualTrackStructure(splitByField3, self.flatTrackStructure.getSplittedByCategoryTS("field 3"))
+
+
+
+
+
+        self.flatTrackStructure.getSplittedByCategoryTS("field 3")
+        self.flatTrackStructure.getSplittedByCategoryTS("field does not exist")
+
+    def testGetTrackSubsetTS(self):
+        subsetField1Value2 = FlatTracksTS()
+        subsetField1Value2['B'] = self.t2
+        subsetField1Value2['C'] = self.t3
+        self._assertEqualTrackStructure(subsetField1Value2, self.flatTrackStructure.getTrackSubsetTS("field 1", "value 2"))
+
+        subsetField3None = FlatTracksTS()
+        subsetField3None['C'] = self.t3
+        self._assertEqualTrackStructure(subsetField3None, self.flatTrackStructure.getTrackSubsetTS("field 3", None))
+
+        empty = FlatTracksTS()
+        self._assertEqualTrackStructure(empty, self.flatTrackStructure.getTrackSubsetTS("field does not exist", "value"))
+        self._assertEqualTrackStructure(empty, self.flatTrackStructure.getTrackSubsetTS("field 1", "val does not exist"))
+
+
+
+
 
 
 
