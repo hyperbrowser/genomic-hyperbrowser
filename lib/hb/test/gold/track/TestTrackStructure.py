@@ -29,8 +29,8 @@ class TestTrackStructure(unittest.TestCase):
         #                      t2  t3     t1     t1
 
         self.t1 = SingleTrackTS(Track('t1'), {'field 1': 'value 1'})
-        self.t2 = SingleTrackTS(Track('t2'), {'field 1': 'value 2', 'field 2': 6})
-        self.t3 = SingleTrackTS(Track('t3'), {'field 1': 'value 2', 'field 3': None})
+        self.t2 = SingleTrackTS(Track('t2'), {'field 1': 'value 2', 'field 2': '6'})
+        self.t3 = SingleTrackTS(Track('t3'), {'field 1': 'value 2', 'field 3': 'None'})
 
         self.inputTree = TrackStructureV2()
         self.inputTree['A'] = TrackStructureV2()
@@ -117,8 +117,8 @@ class TestTrackStructure(unittest.TestCase):
 
     def testGetAllValuesForMetadataField(self):
         self.assertItemsEqual(('value 1', 'value 2',), self.flatTrackStructure.getAllValuesForMetadataField('field 1'))
-        self.assertItemsEqual((6,), self.flatTrackStructure.getAllValuesForMetadataField('field 2'))
-        self.assertItemsEqual((None,), self.flatTrackStructure.getAllValuesForMetadataField('field 3'))
+        self.assertItemsEqual(('6',), self.flatTrackStructure.getAllValuesForMetadataField('field 2'))
+        self.assertItemsEqual(('None',), self.flatTrackStructure.getAllValuesForMetadataField('field 3'))
 
     def testGetFlattenedTS(self):
         getFlattenedTsResult = FlatTracksTS()
@@ -137,24 +137,22 @@ class TestTrackStructure(unittest.TestCase):
         splitByField1['value 2'] = field1value2
         splitByField1['value 2']['B'] = self.t2
         splitByField1['value 2']['C'] = self.t3
-
         self._assertEqualTrackStructure(splitByField1, self.flatTrackStructure.getSplittedByCategoryTS('field 1'))
 
-        #splitByField2 = CategoricalTS()
-        #field2val6 = FlatTracksTS()
-        #splitByField2[6] = field2val6
-        #splitByField2[6]['B'] = self.t2
+        splitByField2 = CategoricalTS()
+        field2val6 = FlatTracksTS()
+        splitByField2['6'] = field2val6
+        splitByField2['6']['B'] = self.t2
+        self._assertEqualTrackStructure(splitByField2, self.flatTrackStructure.getSplittedByCategoryTS('field 2'))
 
+        splitByField3 = CategoricalTS()
+        field3None = FlatTracksTS()
+        splitByField3['None'] = field3None
+        splitByField3['None']['C'] = self.t3
+        self._assertEqualTrackStructure(splitByField3, self.flatTrackStructure.getSplittedByCategoryTS("field 3"))
 
-
-        #splitByField3 = CategoricalTS()
-        #field3None = FlatTracksTS()
-        #splitByField3[None] = field3None
-        #splitByField3[None]['C'] = self.t3
-
-        #self._assertEqualTrackStructure(splitByField3, self.flatTrackStructure.getSplittedByCategoryTS("field 3"))
-        self.flatTrackStructure.getSplittedByCategoryTS('field 3')
-        self.flatTrackStructure.getSplittedByCategoryTS('field does not exist')
+        empty = CategoricalTS()
+        self._assertEqualTrackStructure(empty, self.flatTrackStructure.getSplittedByCategoryTS('field does not exist'))
 
     def testGetTrackSubsetTS(self):
         subsetField1Value2 = FlatTracksTS()
@@ -162,9 +160,15 @@ class TestTrackStructure(unittest.TestCase):
         subsetField1Value2['C'] = self.t3
         self._assertEqualTrackStructure(subsetField1Value2, self.flatTrackStructure.getTrackSubsetTS('field 1', 'value 2'))
 
+        subsetField2val6 = FlatTracksTS()
+        subsetField2val6['B'] = self.t2
+        self._assertEqualTrackStructure(subsetField2val6, self.flatTrackStructure.getTrackSubsetTS('field 2', 6))
+        self._assertEqualTrackStructure(subsetField2val6, self.flatTrackStructure.getTrackSubsetTS('field 2', '6'))
+
         subsetField3None = FlatTracksTS()
         subsetField3None['C'] = self.t3
         self._assertEqualTrackStructure(subsetField3None, self.flatTrackStructure.getTrackSubsetTS('field 3', None))
+        self._assertEqualTrackStructure(subsetField3None, self.flatTrackStructure.getTrackSubsetTS('field 3', 'None'))
 
         empty = FlatTracksTS()
         self._assertEqualTrackStructure(empty, self.flatTrackStructure.getTrackSubsetTS('field does not exist', 'value'))

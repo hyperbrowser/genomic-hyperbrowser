@@ -209,6 +209,9 @@ class SingleTrackTS(TrackStructureV2):
     def __init__(self, track, metadata):
         assert isinstance(track, Track)
         assert isinstance(metadata, dict)
+        for key, value in metadata.items():
+            assert isinstance(key, str)
+            assert isinstance(value, str)
         self.track = track
         self.metadata = metadata
 
@@ -251,14 +254,16 @@ class FlatTracksTS(TrackStructureV2):
         return allMetadataFields.keys()
 
     def getAllValuesForMetadataField(self, metadataField):
-        return set([ts.metadata.get(metadataField) for ts in self.values() if metadataField in ts.metadata.keys()])
+        return set([str(ts.metadata.get(metadataField)) for ts in self.values() if metadataField in ts.metadata.keys()])
 
 
     def getTrackSubsetTS(self, metadataField, selectedValue):
+        assert isinstance(metadataField, str)
+
         subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():
             assert isinstance(ts, SingleTrackTS)
-            if metadataField in ts.metadata and ts.metadata.get(metadataField) == selectedValue:
+            if metadataField in [str(field) for field in ts.metadata] and str(ts.metadata.get(metadataField)) == str(selectedValue):
                 subsetTS[key] = ts
         return subsetTS
 
@@ -276,4 +281,3 @@ class FlatTracksTS(TrackStructureV2):
 
 class CategoricalTS(TrackStructureV2):
     pass
-
