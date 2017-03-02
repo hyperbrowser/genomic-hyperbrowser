@@ -36,13 +36,18 @@ class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
         #self._reRootedTS.result = self._catSummaryFunc([catTS.result for catTS in self._reRootedTS.values()])
         #self._reRootedTS.summarizeChildResults(summaryFunc)
         #return self._reRootedTS
-        result = summaryFunc([catChild.getResult() for catChild in self._catChildren])
-        raise
-
+        #results = summaryFunc([catChild.getResults() for catChild in self._children])
+        from gold.track.TrackStructure import TrackStructureV2
+        ts = TrackStructureV2()
+        for cat in self._catResults:
+            ts[cat] = self._catResults[cat].getResult()
+        ts.results = str( dict([(cat,ts[cat].results) for cat in ts.keys()]) )
+        return ts
 
     def _createChildren(self):
         #self._catResults = {}
-        self._reRootedTS = self._trackStructure.reRoot( self._trackStructure['ref'])
-        for cat, catTS in self._reRootedTS.iteritems():
+        reRootedTS = self._trackStructure.makeTreeSegregatedByCategory( self._trackStructure['reference'])
+        self._catResults = {}
+        for cat, catTS in reRootedTS.iteritems():
             #self._catChildren[cat] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, catTS, self._kwArgs))
-            self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, catTS, self._kwArgs))
+            self._catResults[cat] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, catTS, **self._kwArgs))

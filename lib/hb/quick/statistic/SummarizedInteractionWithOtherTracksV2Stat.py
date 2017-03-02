@@ -20,10 +20,11 @@ Created on Nov 3, 2015
 @author: boris
 """
 from gold.util.CommonFunctions import smartMeanWithNones, smartSum
+from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatisticV2 import StatisticV2
 from gold.util.CustomExceptions import ShouldNotOccurError
 from gold.statistic.MagicStatFactory import MagicStatFactory
-
+from gold.track.TrackStructure import TrackStructureV2
 
 class SummarizedInteractionWithOtherTracksV2Stat(MagicStatFactory):
     """
@@ -52,6 +53,7 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                     }
     
     def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
+        print 'TEMP3: ',pairwiseStatistic
         self._rawStatistic = self.getRawStatisticClass(pairwiseStatistic)
         self._summaryFunction = self._resolveFunction(summaryFunc)
         assert reverse in ['Yes', 'No'], 'reverse must be one of "Yes" or "No"'
@@ -68,6 +70,7 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
     def _compute(self):
         if self._summaryFunction:
             listOfPairTSs = [child.getResult() for child in self._children]
+
             fullTs = TrackStructureV2()
             for i,pairTS in enumerate(listOfPairTSs):
                 fullTs[str(i)] = pairTS
@@ -99,12 +102,13 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         #xx = self._trackStructure.makePairwiseCombinations(['query'], ['ref'])
         ts = self._trackStructure
         #self._pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
-        pairedTs = ts['query'].makePairwiseCombinations(ts['reference'])
+        pairedTS = ts['query'].makePairwiseCombinations(ts['reference'])
 
-        for pairTS in pairedTS:
+        for pairTSKey in pairedTS:
             #t1, t2 = [x.track for x in pairTS.values()]
             #t1, t2 = pairTS['t1'].track, pairTS['t2'].track
             #t1, t2 = pairTS['query'].track, pairTS['ref'].track
+            pairTS = pairedTS[pairTSKey]
             if self._reversed == 'Yes':
                 pairTS.reverse()
-            self._addChild(PairedTSStat(self._region, pairTS, self._rawStatistic, **self._kwArgs))
+            self._addChild(PairedTSStat(self._region, pairTS, rawStatistic=self._rawStatistic, **self._kwArgs))

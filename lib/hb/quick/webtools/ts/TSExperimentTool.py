@@ -175,10 +175,12 @@ class TSExperimentTool(GeneralGuiTool):
         fullTS['reference'] = categoricalTS
         #print fullTS
         spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
-
+        from quick.statistic.StatFacades import ObservedVsExpectedStat
+        spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
+        spec.addParameter('summaryFunc','avg')
         bins = UserBinSource('chr1','*',genome='hg19')
-        result = doAnalysis(spec, bins, fullTS)
-
+        res = doAnalysis(spec, bins, fullTS)
+        print res.results
         print 'YES and shortened!'
 
     @classmethod
