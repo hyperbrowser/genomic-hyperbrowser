@@ -212,7 +212,7 @@ class TrackStructureV2(dict):
 class SingleTrackTS(TrackStructureV2):
     @takes(object, Track, dict)
     def __init__(self, track, metadata):
-        assert isinstance(track, Track)
+        assert isinstance(track, Track), track
         assert isinstance(metadata, dict)
         for key, value in metadata.items():
             assert isinstance(key, str)
@@ -226,7 +226,7 @@ class SingleTrackTS(TrackStructureV2):
     def __hash__(self):
         # track.getUniqueKey(...) is not a good candidate for hashing as it needs a genome
         # when a new track is created you can only be sure a name and title have been provided
-        return hash((hash(self.track.trackName), hash(self.track.trackTitle)))
+        return hash((hash(tuple(self.track.trackName)), hash(self.track.trackTitle)))
 
     def _copyTreeStructure(self):
         return self
@@ -263,7 +263,7 @@ class FlatTracksTS(TrackStructureV2):
 
 
     def getTrackSubsetTS(self, metadataField, selectedValue):
-        assert isinstance(metadataField, str)
+        assert isinstance(metadataField, (str,unicode)), (metadataField, type(metadataField))
 
         subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():

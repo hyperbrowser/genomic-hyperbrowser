@@ -1,8 +1,12 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 from quick.application.UserBinSource import UserBinSource
-from quick.statistic import SummarizedInteractionPerTsCatV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
+import quick.gsuite.GuiBasedTsFactory as factory
+from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
 
 class TSExperimentTool(GeneralGuiTool):
     @classmethod
@@ -155,10 +159,8 @@ class TSExperimentTool(GeneralGuiTool):
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
         genome = 'hg19'
-        import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
-        from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
 
         #Temporary note: the functionality of the following commented lines
         # were moved into the method getSplittedByCategoryTS
@@ -172,11 +174,9 @@ class TSExperimentTool(GeneralGuiTool):
         fullTS['query'] = queryTS
         fullTS['reference'] = categoricalTS
         #print fullTS
-        from gold.application.HBAPI import doAnalysis
-        from gold.description.AnalysisDefHandler import AnalysisSpec
         spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
 
-        bins = UserBinSource('*','chr1',genome='hg19')
+        bins = UserBinSource('chr1','*',genome='hg19')
         result = doAnalysis(spec, bins, fullTS)
 
         print 'YES and shortened!'
@@ -353,3 +353,4 @@ class TSExperimentTool(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+

@@ -59,6 +59,7 @@ def doAnalysis(analysisSpec, analysisBins, trackStructure):
     #                      tracks[1].trackName if len(tracks) > 1 else None,
     #                      analysisBins, galaxyFn=None)
     analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
+    print 'TEMP1: ', analysisSpec.getDefAfterChoices()
     statClass = analysisDef._statClassList[0]
     validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True) )
     job = StatJob(analysisBins, trackStructure, validStatClass)
