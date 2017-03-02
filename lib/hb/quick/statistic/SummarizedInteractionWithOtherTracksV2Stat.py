@@ -53,7 +53,7 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                     }
     
     def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
-        print 'TEMP3: ',pairwiseStatistic
+        #print 'TEMP3: ',pairwiseStatistic
         self._rawStatistic = self.getRawStatisticClass(pairwiseStatistic)
         self._summaryFunction = self._resolveFunction(summaryFunc)
         assert reverse in ['Yes', 'No'], 'reverse must be one of "Yes" or "No"'

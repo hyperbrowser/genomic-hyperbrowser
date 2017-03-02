@@ -180,7 +180,9 @@ class TSExperimentTool(GeneralGuiTool):
         spec.addParameter('summaryFunc','avg')
         bins = UserBinSource('chr1','*',genome='hg19')
         res = doAnalysis(spec, bins, fullTS)
-        print res.results
+        #print 'TEMP4:', res.getGlobalResult()
+        ts = res.getGlobalResult()['Result']
+        print 'Results: ', ts.results
         print 'YES and shortened!'
 
     @classmethod
