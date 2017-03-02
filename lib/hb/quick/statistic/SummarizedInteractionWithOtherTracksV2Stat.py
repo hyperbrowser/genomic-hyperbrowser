@@ -67,9 +67,17 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         
     def _compute(self):
         if self._summaryFunction:
-            #resultList = [child.getResult() for child in self._children]
-            self._pairedTs.summarize(self._summaryFunction)
-            return self._pairedTs
+            listOfPairTSs = [child.getResult() for child in self._children]
+            fullTs = TrackStructureV2()
+            for i,pairTS in enumerate(listOfPairTSs):
+                fullTs[str(i)] = pairTS
+            rawResults = [ts.results for ts in listOfPairTSs]
+            if self._summaryFunction == 'RawResults':
+                fullTs.results = rawResults
+            else:
+                fullTs.results  = self._summaryFunction(rawResults)
+            #self._pairedTs.summarize(self._summaryFunction)
+            return fullTs
             #resultList = self._pairedTs
             # if self._summaryFunction == 'RawResults':
             #     return resultList
@@ -90,7 +98,8 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         #         self._addChild( self._rawStatistic(self._region, t1, t2, **self._kwArgs))
         #xx = self._trackStructure.makePairwiseCombinations(['query'], ['ref'])
         ts = self._trackStructure
-        self._pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
+        #self._pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
+        pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
 
         for pairTS in pairedTS:
             #t1, t2 = [x.track for x in pairTS.values()]

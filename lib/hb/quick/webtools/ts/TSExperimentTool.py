@@ -170,7 +170,7 @@ class TSExperimentTool(GeneralGuiTool):
 
         fullTS = TrackStructureV2()
         fullTS['query'] = queryTS
-        fullTS['ref'] = categoricalTS
+        fullTS['reference'] = categoricalTS
         #print fullTS
         from gold.application.HBAPI import doAnalysis
         from gold.description.AnalysisDefHandler import AnalysisSpec
