@@ -28,9 +28,9 @@ class TestTrackStructure(unittest.TestCase):
         #                      |   |      |      |
         #                      t2  t3     t1     t1
 
-        self.t1 = SingleTrackTS(Track('t1'), {'field 1': 'value 1'})
-        self.t2 = SingleTrackTS(Track('t2'), {'field 1': 'value 2', 'field 2': '6'})
-        self.t3 = SingleTrackTS(Track('t3'), {'field 1': 'value 2', 'field 3': 'None'})
+        self.t1 = SingleTrackTS(Track(['t1']), {'field 1': 'value 1'})
+        self.t2 = SingleTrackTS(Track(['t2']), {'field 1': 'value 2', 'field 2': '6'})
+        self.t3 = SingleTrackTS(Track(['t3']), {'field 1': 'value 2', 'field 3': 'None'})
 
         self.inputTree = TrackStructureV2()
         self.inputTree['A'] = TrackStructureV2()
@@ -59,12 +59,13 @@ class TestTrackStructure(unittest.TestCase):
         self.splittedOnNodeB['E']['B'] = self.t3
 
         self.pairwiseCombinations = TrackStructureV2()
-        self.pairwiseCombinations['t1_t2'] = TrackStructureV2()
-        self.pairwiseCombinations['t1_t2']['query'] = self.t1
-        self.pairwiseCombinations['t1_t2']['reference'] = self.t2
-        self.pairwiseCombinations['t1_t3'] = TrackStructureV2()
-        self.pairwiseCombinations['t1_t3']['query'] = self.t1
-        self.pairwiseCombinations['t1_t3']['reference'] = self.t3
+        # TODO Lonneke better names to represent the tracks!
+        self.pairwiseCombinations["['t1']_['t2']"] = TrackStructureV2()
+        self.pairwiseCombinations["['t1']_['t2']"]['query'] = self.t1
+        self.pairwiseCombinations["['t1']_['t2']"]['reference'] = self.t2
+        self.pairwiseCombinations["['t1']_['t3']"] = TrackStructureV2()
+        self.pairwiseCombinations["['t1']_['t3']"]['query'] = self.t1
+        self.pairwiseCombinations["['t1']_['t3']"]['reference'] = self.t3
 
         self.flatTrackStructure = FlatTracksTS()
         self.flatTrackStructure['A'] = self.t1
@@ -122,10 +123,11 @@ class TestTrackStructure(unittest.TestCase):
 
     def testGetFlattenedTS(self):
         getFlattenedTsResult = FlatTracksTS()
-        getFlattenedTsResult['t1'] = self.t1
-        getFlattenedTsResult['t1 (2)'] = self.t1
-        getFlattenedTsResult['t2'] = self.t2
-        getFlattenedTsResult['t3'] = self.t3
+        # TODO Lonneke find better way for naming these
+        getFlattenedTsResult["['t1']"] = self.t1
+        getFlattenedTsResult["['t1'] (2)"] = self.t1
+        getFlattenedTsResult["['t2']"] = self.t2
+        getFlattenedTsResult["['t3']"] = self.t3
         self._assertEqualTrackStructure(getFlattenedTsResult, self.splittedOnNodeB.getFlattenedTS())
 
     def testGetSplittedByCategoryTS(self):
@@ -175,7 +177,7 @@ class TestTrackStructure(unittest.TestCase):
         self._assertEqualTrackStructure(empty, self.flatTrackStructure.getTrackSubsetTS('field 1', 'val does not exist'))
 
     def testIsPairedTs(self):
-        self.assertTrue(self.pairwiseCombinations['t1_t2'].isPairedTs())
+        self.assertTrue(self.pairwiseCombinations["['t1']_['t2']"].isPairedTs())
 
 
 

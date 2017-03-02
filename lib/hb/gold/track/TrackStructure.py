@@ -166,11 +166,11 @@ class TrackStructureV2(dict):
         return leafNodes
 
     def _getOriginalNodeName(self, originalName, usedNames):
-        nodeName = originalName
+        nodeName = str(originalName)
 
         counter = 2
         while nodeName in usedNames:
-            nodeName = originalName + " (" + str(counter) + ")"
+            nodeName = str(originalName) + " (" + str(counter) + ")"
             counter += 1
 
         return nodeName
@@ -186,6 +186,7 @@ class TrackStructureV2(dict):
         newRoot = FlatTracksTS()
 
         for leafNode in self._getLeafNodes():
+            # TODO Lonneke use a better, original key to represent the tracks
             newRoot[self._getOriginalNodeName(leafNode.track.trackName, newRoot.keys())] = leafNode
 
         return newRoot
@@ -206,7 +207,7 @@ class TrackStructureV2(dict):
                 newPair = TrackStructureV2()
                 newPair['query'] = query
                 newPair['reference'] = reference
-                root[query.track.trackName + "_" + reference.track.trackName] = newPair
+                root[str(query.track.trackName) + "_" + str(reference.track.trackName)] = newPair
         return root
 
 class SingleTrackTS(TrackStructureV2):
@@ -286,3 +287,4 @@ class FlatTracksTS(TrackStructureV2):
 
 class CategoricalTS(TrackStructureV2):
     pass
+

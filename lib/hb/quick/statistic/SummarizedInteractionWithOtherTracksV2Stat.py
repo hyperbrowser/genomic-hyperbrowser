@@ -99,7 +99,7 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         #xx = self._trackStructure.makePairwiseCombinations(['query'], ['ref'])
         ts = self._trackStructure
         #self._pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
-        pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
+        pairedTs = ts['query'].makePairwiseCombinations(ts['reference'])
 
         for pairTS in pairedTS:
             #t1, t2 = [x.track for x in pairTS.values()]
