@@ -41,7 +41,7 @@ class PairedTSStatUnsplittable(StatisticV2):
         return ts
 
     def _createChildren(self):
-        assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure
+        assert self._trackStructure.isPairedTs() #TODO Should PairedTS be a subclass of TrackStructure
         t1 = self._trackStructure['query']
         t2 = self._trackStructure['reference']
         self.addChild(self._rawStatistic(self._region, t1, t2))
