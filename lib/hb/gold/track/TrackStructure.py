@@ -126,6 +126,11 @@ class TrackStructureV2(dict):
                 return False
         return True
 
+    def isPairedTs(self):
+        return self.keys() == ['query', 'reference'] \
+               and isinstance(self['query'], SingleTrackTS) \
+               and isinstance(self['reference'], SingleTrackTS)
+
     def _copyTreeStructure(self):
         newCopy = copy.copy(self)
         for key in self.keys():

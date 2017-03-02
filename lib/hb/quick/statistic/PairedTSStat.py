@@ -32,7 +32,7 @@ class PairedTSStat(MagicStatFactory):
 
 
 class PairedTSStatUnsplittable(StatisticV2):
-    def _init(self, rawStatistic **kwArgs):
+    def _init(self, rawStatistic, **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)
 
     def _compute(self):
@@ -41,7 +41,7 @@ class PairedTSStatUnsplittable(StatisticV2):
         return ts
 
     def _createChildren(self):
-        assert self._trackStructure.keys() == set(['query','reference']) #TODO: Change to assert subclass PairTS or use method isPairTS...
+        assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure
         t1 = self._trackStructure['query']
         t2 = self._trackStructure['reference']
-        self.addChild( self._rawStatistic(self._region, t1, t2) )
+        self.addChild(self._rawStatistic(self._region, t1, t2))

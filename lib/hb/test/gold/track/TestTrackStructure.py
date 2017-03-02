@@ -174,6 +174,9 @@ class TestTrackStructure(unittest.TestCase):
         self._assertEqualTrackStructure(empty, self.flatTrackStructure.getTrackSubsetTS('field does not exist', 'value'))
         self._assertEqualTrackStructure(empty, self.flatTrackStructure.getTrackSubsetTS('field 1', 'val does not exist'))
 
+    def testIsPairedTs(self):
+        self.assertTrue(self.pairwiseCombinations['t1_t2'].isPairedTs())
+
 
 
 
