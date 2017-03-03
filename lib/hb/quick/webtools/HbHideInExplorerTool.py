@@ -8,4 +8,4 @@ class HbHideInExplorerTool(GeneralGuiToolMixin, ProtoHideInExplorerTool):
 
     @classmethod
     def getToolName(cls):
-        return "Hide ProTo tool modules from 'Explore HB ProTo tools'"
+        return "Hide HB ProTo tool modules from 'Explore HB ProTo tools'"
