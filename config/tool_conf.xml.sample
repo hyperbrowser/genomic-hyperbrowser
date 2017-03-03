@@ -119,6 +119,8 @@
   <section id="protoTools" name="ProTo development tools">
     <tool file="proto/GenerateToolsTool.xml" />
     <tool file="proto/ExploreToolsTool.xml" />
+    <tool file="proto/HideInExplorerTool.xml" />
+    <tool file="proto/DebugToolImportTool.xml" />
     <tool file="proto/InstallToolsTool.xml" />
 
     <!-- hidden tools -->
