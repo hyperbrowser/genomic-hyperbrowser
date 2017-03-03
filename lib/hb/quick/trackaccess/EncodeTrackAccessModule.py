@@ -860,8 +860,6 @@ class GWASTrackAccessModule(object):
                 print zip(cols, row)
                 print 'Error message:'
                 print str(e)
-                if 'index' in str(e):
-                    raise
                 continue
 
         self._cols['uri'] = None
@@ -922,8 +920,18 @@ class GWASTrackAccessModule(object):
                         newRowDict[col] = rowDict[col].split(';')[j]
                 rowList += self._parseRow(cols, newRowDict.values())
 
-        if str(rowDict['CHR_ID'].strip()) == '' or str(rowDict['CHR_POS'].strip()) == '':
-            raise ValueError('Missing genome position information')
+        if rowDict['CHR_ID'].strip() == '' or rowDict['CHR_POS'].strip() == '':
+            snps = rowDict['SNPS'].strip().lower()
+            if snps.startswith('chr'):
+                for splitChar in ['.', ':']:
+                    if splitChar in snps:
+                        chrId, chrPos = snps.split(splitChar)[:2]
+                        rowDict['CHR_ID'] = chrId[3:]
+                        rowDict['CHR_POS'] = chrPos
+                        break
+
+            if rowDict['CHR_ID'].strip() == '' or rowDict['CHR_POS'].strip() == '':
+                raise ValueError('Missing genome position information')
 
         rowList.append(rowDict)
 
