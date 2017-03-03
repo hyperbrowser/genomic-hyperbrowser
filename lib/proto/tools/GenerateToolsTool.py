@@ -22,7 +22,7 @@ class GenerateToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getToolName():
-        return "ProTo tool generator"
+        return "Generate ProTo tool"
 
     @classmethod
     def _getDirSelectionInputBoxNames(cls):
