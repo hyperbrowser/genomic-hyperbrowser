@@ -1,4 +1,4 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class ToolTemplate(GeneralGuiTool):

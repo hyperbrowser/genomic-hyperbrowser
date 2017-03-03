@@ -161,9 +161,9 @@ class GenerateToolsTool(GeneralGuiTool):
                 open(init_py, 'a').close()
 
         if choices.template == 'Yes':
-            templatefn = os.path.join(PROTO_TOOL_DIR, 'ToolTemplate.py')
+            templatefn = os.path.join(cls.TOOL_DIR, 'ToolTemplate.py')
         else:
-            templatefn = os.path.join(PROTO_TOOL_DIR, 'ToolTemplateMinimal.py')
+            templatefn = os.path.join(cls.TOOL_DIR, 'ToolTemplateMinimal.py')
 
         with open(templatefn) as t:
             template = t.read()
