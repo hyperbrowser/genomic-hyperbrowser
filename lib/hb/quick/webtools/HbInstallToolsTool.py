@@ -10,7 +10,7 @@ class HbInstallToolsTool(GeneralGuiToolMixin, ProtoInstallToolsTool):
 
     @staticmethod
     def getToolName():
-        return "HB ProTo tool installer"
+        return "Install HyperBrowser ProTo tool"
 
     @classmethod
     def getOptionsBoxToolXMLPath(cls, prevChoices):

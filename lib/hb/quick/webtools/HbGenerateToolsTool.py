@@ -13,7 +13,7 @@ class HbGenerateToolsTool(GeneralGuiToolMixin, ProtoGenerateToolsTool):
 
     @staticmethod
     def getToolName():
-        return "HB ProTo tool generator"
+        return "Generate HyperBrowser ProTo tool"
 
     @classmethod
     def _getProtoToolSymlinkedPackageName(cls, prevChoices):

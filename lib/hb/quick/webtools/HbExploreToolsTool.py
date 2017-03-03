@@ -8,4 +8,4 @@ class HbExploreToolsTool(GeneralGuiToolMixin, ProtoExploreToolsTool):
 
     @classmethod
     def getToolName(cls):
-        return "HB ProTo tool explorer"
+        return "Explore HyperBrowser ProTo tools"
