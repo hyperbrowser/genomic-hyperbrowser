@@ -11,7 +11,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
 
     @staticmethod
     def getToolName():
-        return "ProTo tool explorer"
+        return "Explore ProTo tools"
 
     @staticmethod
     def getToolSelectionName():

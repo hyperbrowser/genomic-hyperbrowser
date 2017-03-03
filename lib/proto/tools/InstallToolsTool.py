@@ -31,7 +31,7 @@ class InstallToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getToolName():
-        return "ProTo tool installer"
+        return "Install ProTo tool"
 
     @staticmethod
     def getInputBoxNames():
