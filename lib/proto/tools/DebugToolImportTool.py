@@ -4,7 +4,7 @@ from importlib import import_module
 from proto.HtmlCore import HtmlCore
 from proto.ProtoToolRegister import getProtoToolList
 from proto.config.Config import PROTO_TOOL_DIR
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class DebugToolImportTool(GeneralGuiTool):
