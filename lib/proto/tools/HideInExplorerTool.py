@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 
 from proto.ProtoToolRegister import (getProtoToolList, getRelativeModulePath,
@@ -99,11 +100,21 @@ class HideInExplorerTool(GeneralGuiTool):
     # @classmethod
     # def getResetBoxes(cls):
     #     return []
-    #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
-    #
+
+    @classmethod
+    def getToolDescription(cls):
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph("This tool is used to hide modules containing ProTo tools from "
+                       'the "Explore ProTo tools" tool. This is both useful in order to '
+                       "to reduce the list, and also to reduce the loading times of the "
+                       "explore tool.")
+        core.paragraph("Hidden tool modules are stored in the "
+                       '"%s" ' % os.path.basename(HIDDEN_MODULES_CONFIG_FN) +
+                       'file in the "config" folder. This file can be manually edited if needed.')
+        return str(core)
+
     # @classmethod
     # def getToolIllustration(cls):
     #     return None

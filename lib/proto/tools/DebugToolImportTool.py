@@ -99,11 +99,23 @@ class DebugToolImportTool(GeneralGuiTool):
     # @classmethod
     # def getResetBoxes(cls):
     #     return []
-    #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
-    #
+
+    @classmethod
+    def getToolDescription(cls):
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.smallHeader("General description")
+        core.paragraph("This tool is used for debugging when an uninstalled tool does not appear "
+                       'in the "Explore ProTo tools" tool. This is typically due to an Python '
+                       "exception being raised at the import the tool module. This tool "
+                       "lists all modules under the tool directory that cannot be imported "
+                       "due to an exception. When selecting the tool, a traceback of the "
+                       'exception is shown. One can also click "Execute" to store the exception '
+                       "within a history element (which will then become red). This is "
+                       "useful if one wants to send a bug report for the exception, or if one "
+                       "wants to keep a backlog of the error messages.")
+        return str(core)
+
     # @classmethod
     # def getToolIllustration(cls):
     #     return None

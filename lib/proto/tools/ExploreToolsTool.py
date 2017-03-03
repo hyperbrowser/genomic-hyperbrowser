@@ -1,4 +1,6 @@
-from proto.ProtoToolRegister import getNonHiddenProtoToolList
+import os
+
+from proto.ProtoToolRegister import getNonHiddenProtoToolList, HIDDEN_NONTOOL_MODULES_CONFIG_FN
 from proto.config.Config import PROTO_TOOL_DIR
 from proto.tools.GeneralGuiTool import MultiGeneralGuiTool
 
@@ -41,4 +43,11 @@ class ExploreToolsTool(MultiGeneralGuiTool):
                        "exists a Python module with a class that inherits "
                        "from GeneralGuiTool, without there existing "
                        "a Galaxy xml file for the tool.")
+        core.paragraph("Note: when the list of tools is generated, modules "
+                       "under the tool directory that does not contain "
+                       "ProTo tool classes are stored and excluded from "
+                       "subsequent runs. This is done to improve loading "
+                       "times. The hidden tool modules are stored in the "
+                       '"%s" ' % os.path.basename(HIDDEN_NONTOOL_MODULES_CONFIG_FN) +
+                       'file in the "config" folder. This file can be manually edited if needed.')
         return str(core)
