@@ -14,10 +14,10 @@ MULTI_GENERAL_GUI_TOOL = 'MultiGeneralGuiTool'
 
 EXPLORE_TOOLS_TOOL_CLS_NAME = 'ExploreToolsTool'
 
-DEFAULT_EXCEPT_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate'),
-                             ('proto.tools.ToolTemplateMinimal', 'ToolTemplate'),
-                             ('quick.webtools.ToolTemplate', 'ToolTemplate'),
-                             ('quick.webtools.ToolTemplateMinimal', 'ToolTemplate')]
+DEFAULT_INSTALLED_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate'),
+                                ('proto.tools.ToolTemplateMinimal', 'ToolTemplate'),
+                                ('quick.webtools.ToolTemplate', 'ToolTemplate'),
+                                ('quick.webtools.ToolTemplateMinimal', 'ToolTemplate')]
 
 HIDDEN_MODULES_CONFIG_FN = \
     os.path.join(CONFIG_DIR, 'proto_tool_explorer_hidden_modules.txt')
@@ -95,22 +95,22 @@ def _commonGetProtoToolList(tool_dir=PROTO_TOOL_DIR, except_modules_set=set(), d
     tmpSysPath = _fixSameNameImportIssues()
 
     pys = _findAllPythonFiles(tool_dir)
-    except_classes_set = _findExceptClassesSet()
+    installed_classes_set = _findInstalledClassesSet()
 
     tool_info_dict = \
         _findAllUninstalledTools(pys, tool_dir, except_modules_set,
-                                 except_classes_set, debug_imports=debug_imports)
+                                 installed_classes_set, debug_imports=debug_imports)
 
     sys.path = tmpSysPath
 
     return tool_info_dict
 
 
-def _findExceptClassesSet():
-    except_class_info = DEFAULT_EXCEPT_CLASS_INFO + getInstalledProtoTools()
-    except_classes_set = set([getUniqueKeyForClass(module, class_name) for
-                              module, class_name in except_class_info])
-    return except_classes_set
+def _findInstalledClassesSet():
+    installed_class_info = DEFAULT_INSTALLED_CLASS_INFO + getInstalledProtoTools()
+    installed_classes_set = set([getUniqueKeyForClass(module, class_name) for
+                                 module, class_name in installed_class_info])
+    return installed_classes_set
 
 
 def _fixSameNameImportIssues():
@@ -132,12 +132,12 @@ def _filterInstalledSubClassTools(tmp_tool_info_dict, all_installed_sub_classes)
 
 
 def _findAllUninstalledTools(pys, tool_dir, except_modules_set,
-                             except_classes_set, debug_imports=False):
+                             installed_classes_set, debug_imports=False):
     all_modules = _findAllModulesWithClasses(except_modules_set, pys)
 
-    except_classes_set.update(_findInstalledSubClasses(all_modules, except_classes_set))
+    installed_classes_set.update(_findInstalledSubClasses(all_modules, installed_classes_set))
     tool_info_dict = _getInfoForAllUninstalledTools(
-        all_modules, tool_dir, except_classes_set, debug_imports=debug_imports)
+        all_modules, tool_dir, installed_classes_set, debug_imports=debug_imports)
 
     return tool_info_dict
 
@@ -174,27 +174,37 @@ def _findInstalledSubClasses(all_modules, except_classes_set):
     return all_installed_sub_classes_set
 
 
-def _getInfoForAllUninstalledTools(all_modules, tool_dir, except_classes_set, debug_imports=False):
+def _getInfoForAllUninstalledTools(all_modules, tool_dir,
+                                   installed_classes_set, debug_imports=False):
     tool_info_dict = OrderedDict()
 
     for module_name, class_info_list in all_modules:
+        module_has_nontool_cls = False
+        module_has_tool_cls = False
+
         for class_name, super_classes in class_info_list:
             uniqueKey = getUniqueKeyForClass(module_name, class_name)
             try:
-                if uniqueKey not in except_classes_set:
+                if uniqueKey not in installed_classes_set:
                     tool_selection_name, tool_info = \
                         _extractToolInfo(class_name, module_name, tool_dir)
                     if tool_selection_name:
+                        module_has_tool_cls = True
                         if not debug_imports:
                             tool_info_dict[tool_selection_name] = tool_info
                     else:
-                        if not MULTI_GENERAL_GUI_TOOL in super_classes:
-                            _storeAsNonToolHiddenModule(module_name)
+                        module_has_nontool_cls = True
+                else:
+                    module_has_tool_cls = True
             except Exception as e:
                 if debug_imports:
                     tool_selection_name = \
                         _createToolSelectionName(class_name, module_name, tool_dir)
                     tool_info_dict[tool_selection_name] = ProtoToolInfo(class_name, module_name)
+
+        if module_has_nontool_cls and not module_has_tool_cls \
+                and not MULTI_GENERAL_GUI_TOOL in super_classes:
+            _storeAsNonToolHiddenModule(module_name)
 
     return tool_info_dict
 
