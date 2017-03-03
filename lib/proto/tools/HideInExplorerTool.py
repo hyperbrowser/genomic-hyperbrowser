@@ -5,7 +5,7 @@ from proto.ProtoToolRegister import (getProtoToolList, getRelativeModulePath,
                                      retrieveHiddenModulesSet, storeHiddenModules,
                                      HIDDEN_MODULES_CONFIG_FN)
 from proto.config.Config import PROTO_TOOL_DIR
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class HideInExplorerTool(GeneralGuiTool):
@@ -13,7 +13,7 @@ class HideInExplorerTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Hide tool modules from ProTo tool explorer"
+        return "Hide ProTo tool modules from 'Explore ProTo tools'"
 
     @classmethod
     def getInputBoxNames(cls):
