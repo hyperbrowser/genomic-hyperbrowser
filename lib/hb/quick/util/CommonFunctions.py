@@ -226,6 +226,8 @@ def smartMin(li, ignoreNans=False):
 
     return min(resultsWithoutNone(li, ignoreNans))
 
+def minAndMax(li):
+    return ( min(li), max(li) )
 
 def isIter(obj):
     from numpy import memmap
