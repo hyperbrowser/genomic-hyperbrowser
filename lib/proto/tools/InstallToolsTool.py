@@ -18,13 +18,13 @@ class InstallToolsTool(GeneralGuiTool):
     TOOL_ID_PREFIX = 'proto'
 
     @classmethod
-    def _getToolList(cls):
-        return getProtoToolList(toolDir=cls.TOOL_DIR)[0]
+    def _getToolInfoDict(cls):
+        return getProtoToolList(tool_dir=cls.TOOL_DIR)
 
     @classmethod
     def _getPrototype(cls, tool):
         try:
-            prototype = cls._getToolList()[tool][2]()
+            prototype = cls._getToolInfoDict()[tool].prototype_cls()
         except:
             prototype = None
         return prototype
@@ -56,16 +56,16 @@ class InstallToolsTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxTool(cls):
-        tool_list = cls._getToolList()
-        return [cls.SELECT_TOOL_STR] + sorted(tool_list)
+        tool_info_dict = cls._getToolInfoDict()
+        return [cls.SELECT_TOOL_STR] + sorted(tool_info_dict.keys())
 
     @classmethod
     def getOptionsBoxToolID(cls, prevChoices):
         import inflection
         if prevChoices.tool is None or prevChoices.tool == cls.SELECT_TOOL_STR:
             return ''
-        tool_list = cls._getToolList()
-        module_name = tool_list[prevChoices.tool][2].__name__
+        tool_info_dict = cls._getToolInfoDict()
+        module_name = tool_info_dict[prevChoices.tool].prototype_cls.__name__
         return cls.TOOL_ID_PREFIX + '_' + inflection.underscore(module_name)
 
     @classmethod
