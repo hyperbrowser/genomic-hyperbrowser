@@ -750,6 +750,8 @@ class TrackSearchTool(GeneralGuiTool):
                         rowList.append(row[avail_table_attrs[attr]])
                     except:
                         rowList.append('None')
+                else:
+                    rowList.append('N/A')
             output['<a href="'+row[0]+'">'+filename+'</a>'] = rowList
 
 
@@ -850,7 +852,7 @@ class TrackSearchTool(GeneralGuiTool):
                 if rep_val in [cls.SELECT_CHOICE,cls.RANGE_CHOICE,None,'']:
                     continue
                 val = cls._getAttributeValueNameFromReadableName(rep_val)[1]
-                WHERE += col  + " LIKE '" + val + "' AND "
+                WHERE += col  + ' LIKE "' + val + '" AND '
             ###elif getattr(choices, 'multiSelect%s' % i) == 'Text Search':
             ###    '''Multi-line text'''
             ###    selected_vals = [x.strip() for x in rep_val.split('\n')]
