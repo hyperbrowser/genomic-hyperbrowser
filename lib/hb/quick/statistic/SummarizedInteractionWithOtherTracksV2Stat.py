@@ -22,9 +22,11 @@ Created on Nov 3, 2015
 from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatisticV2 import StatisticV2
-from gold.util.CustomExceptions import ShouldNotOccurError
+from gold.util.CustomExceptions import ShouldNotOccurError, InvalidStatArgumentError
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.track.TrackStructure import TrackStructureV2
+from quick.util.CommonFunctions import minAndMax
+
 
 class SummarizedInteractionWithOtherTracksV2Stat(MagicStatFactory):
     """
@@ -49,14 +51,14 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                     'avg': smartMeanWithNones,
                     'max': max,
                     'min': min,
+                    'minAndMax': minAndMax,
                     'raw': 'RawResults'
                     }
     
     def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
-        #print 'TEMP3: ',pairwiseStatistic
         self._rawStatistic = self.getRawStatisticClass(pairwiseStatistic)
         self._summaryFunction = self._resolveFunction(summaryFunc)
-        assert reverse in ['Yes', 'No'], 'reverse must be one of "Yes" or "No"'
+        #self._summaryFunction = self[summaryFunc] #TODO: Should we replace the whole _resolveFunction with this one. Is such an error not clear enough?
         self._reversed = reverse
     
     def _resolveFunction(self, summaryFunc):
@@ -68,47 +70,26 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
             return self.functionDict[summaryFunc]
         
     def _compute(self):
-        if self._summaryFunction:
-            listOfPairTSs = [child.getResult() for child in self._children]
-
-            fullTs = TrackStructureV2()
-            for i,pairTS in enumerate(listOfPairTSs):
-                fullTs[str(i)] = pairTS
-            rawResults = [ts.results for ts in listOfPairTSs]
-            if self._summaryFunction == 'RawResults':
-                fullTs.results = rawResults
-            else:
-                fullTs.results  = self._summaryFunction(rawResults)
-            #self._pairedTs.summarize(self._summaryFunction)
-            return fullTs
-            #resultList = self._pairedTs
-            # if self._summaryFunction == 'RawResults':
-            #     return resultList
-            # else:
-            #     return self._summaryFunction(resultList)
+        listOfPairTSs = [child.getResult() for child in self._children]
+        fullTs = TrackStructureV2()
+        for i,pairTS in enumerate(listOfPairTSs):
+            fullTs[str(i)] = pairTS
+        #rawResults = [ts.results for ts in listOfPairTSs]
+        rawResults = fullTs.result.values()
+        if self._summaryFunction == 'RawResults':
+            fullTs.result = rawResults
         else:
-            raise ShouldNotOccurError('The summary function is not defined. Must be one of %' % str(sorted(self.functionDict.keys())))
-            #we could return the list of results to make it more generic
-            #but we should add this only if needed in the future
-            
+            fullTs.result = self._summaryFunction(rawResults)
+        return fullTs
             
     def _createChildren(self):
-        # t1 = self._trackStructure.getQueryTrackList()[0]
-        # for t2 in self._trackStructure.getReferenceTrackList():
-        #     if self._reversed == 'Yes':
-        #         self._addChild( self._rawStatistic(self._region, t2, t1, **self._kwArgs))
-        #     else:
-        #         self._addChild( self._rawStatistic(self._region, t1, t2, **self._kwArgs))
-        #xx = self._trackStructure.makePairwiseCombinations(['query'], ['ref'])
         ts = self._trackStructure
-        #self._pairedTs = tsTookit.makePairwiseCombinations(ts['query'], ts['ref'])
-        pairedTS = ts['query'].makePairwiseCombinations(ts['reference'])
+        if self._reversed == 'No':
+            pairedTS = ts['query'].makePairwiseCombinations(ts['reference'])
+        elif self._reversed == 'Yes':
+            pairedTS = ts['reference'].makePairwiseCombinations(ts['query'])
+        else:
+            raise InvalidStatArgumentError('reverse must be one of "Yes" or "No"')
 
         for pairTSKey in pairedTS:
-            #t1, t2 = [x.track for x in pairTS.values()]
-            #t1, t2 = pairTS['t1'].track, pairTS['t2'].track
-            #t1, t2 = pairTS['query'].track, pairTS['ref'].track
-            pairTS = pairedTS[pairTSKey]
-            if self._reversed == 'Yes':
-                pairTS.reverse()
-            self._addChild(PairedTSStat(self._region, pairTS, rawStatistic=self._rawStatistic, **self._kwArgs))
+            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], rawStatistic=self._rawStatistic, **self._kwArgs))

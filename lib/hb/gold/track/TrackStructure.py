@@ -16,6 +16,7 @@
 from collections import OrderedDict
 
 from gold.track.Track import Track
+from gold.util.CustomExceptions import LackingTsResultsError
 from quick.application.SignatureDevianceLogging import takes
 import copy
 
@@ -92,6 +93,21 @@ class TrackStructureV2(dict):
         assert isinstance(key, str)
         assert isinstance(value, TrackStructureV2)
         dict.__setitem__(self, key, value)
+
+
+    def _getResult(self):
+        if hasattr(self, '_result'):
+            return self._result
+        else:
+            return self._inferResult()
+
+    def _inferResult(self):
+        return dict([(cat,self[cat].result) for cat in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+
+    def _setResult(self, value):
+        self._result = value
+
+    result = property(_getResult, _setResult)
 
     def __eq__(self, other):
         if type(self) != type(other):
@@ -223,6 +239,9 @@ class SingleTrackTS(TrackStructureV2):
 
     def __setitem__(self, key, value):
         raise
+
+    def _inferResult(self):
+        raise LackingTsResultsError
 
     def __hash__(self):
         # track.getUniqueKey(...) is not a good candidate for hashing as it needs a genome

@@ -37,11 +37,11 @@ class PairedTSStatUnsplittable(StatisticV2):
 
     def _compute(self):
         ts = self._trackStructure._copyTreeStructure()
-        ts.results = self._children[0].getResult()
+        ts.result = self._children[0].getResult()
         return ts
 
     def _createChildren(self):
-        assert self._trackStructure.isPairedTs() #TODO Should PairedTS be a subclass of TrackStructure
+        assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure?
         t1 = self._trackStructure['query'].track
         t2 = self._trackStructure['reference'].track
         self._addChild(self._rawStatistic(self._region, t1, t2))

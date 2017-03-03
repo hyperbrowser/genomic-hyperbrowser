@@ -7,8 +7,11 @@ import quick.gsuite.GuiBasedTsFactory as factory
 from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from quick.statistic.StatFacades import ObservedVsExpectedStat
+from quick.webtools.mixin.DebugMixin import DebugMixin
 
-class TSExperimentTool(GeneralGuiTool):
+
+class TSExperimentTool(GeneralGuiTool, DebugMixin):
     @classmethod
     def getToolName(cls):
         """
@@ -42,7 +45,8 @@ class TSExperimentTool(GeneralGuiTool):
         """
         return [('Select categorical GSuite of 4 tracks', 'gs'),
                 ('Select query track', 'query'),
-                ('Select category', 'cat')]
+                ('Select category', 'cat')] + cls.getInputBoxNamesForDebug()
+
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -144,17 +148,12 @@ class TSExperimentTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        """
-        Is called when execute-button is pushed by web-user. Should print
-        output as HTML to standard out, which will be directed to a results
-        page in Galaxy history. If getOutputFormat is anything else than
-        'html', the output should be written to the file with path galaxyFn.
-        If needed, StaticFile can be used to get a path where additional
-        files can be put (cls, e.g. generated image files). choices is a list
-        of selections made by web-user in each options box.
+        #cls._setDebugModeIfSelected(choices)
+        # from config.DebugConfig import DebugConfig
+        # from config.DebugConfig import DebugModes
+        # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
 
-        Mandatory unless isRedirectTool() returns True.
-        """
+
         choices_gsuite = choices.gs
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
@@ -162,28 +161,19 @@ class TSExperimentTool(GeneralGuiTool):
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
 
-        #Temporary note: the functionality of the following commented lines
-        # were moved into the method getSplittedByCategoryTS
-        # categoricalTS = CategoricalTS()
-        # catValues = refTS.getAllValuesForMetadataField(selected_metadata)
-        # for val in catValues:
-        #     categoricalTS[str(val)] = refTS.getTrackSubsetTS(selected_metadata, val)
         categoricalTS = refTS.getSplittedByCategoryTS(selected_metadata)
 
         fullTS = TrackStructureV2()
         fullTS['query'] = queryTS
         fullTS['reference'] = categoricalTS
-        #print fullTS
         spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
-        from quick.statistic.StatFacades import ObservedVsExpectedStat
+
         spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
-        spec.addParameter('summaryFunc','avg')
+        spec.addParameter('summaryFunc','minAndMax')
         bins = UserBinSource('chr1','*',genome='hg19')
         res = doAnalysis(spec, bins, fullTS)
-        #print 'TEMP4:', res.getGlobalResult()
         ts = res.getGlobalResult()['Result']
-        print 'Results: ', ts.results
-        print 'YES and shortened!'
+        print 'Results: ', ts.result
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
