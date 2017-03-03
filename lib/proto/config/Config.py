@@ -23,6 +23,7 @@ OUTPUT_PRECISION = int(config.getWithDefault('output_precision', '4', 'galaxy_pr
 GALAXY_TOOL_CONFIG_FILE = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
 PROTO_TOOL_DIR = GALAXY_BASE_DIR + '/lib/proto/tools'
 PROTO_TOOL_SHELVE_FN = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
+CONFIG_DIR = GALAXY_BASE_DIR + '/config'
 SOURCE_CODE_BASE_DIR = GALAXY_BASE_DIR + '/lib'
 STATIC_DIR = '/static/proto'
 STATIC_PATH = GALAXY_BASE_DIR + STATIC_DIR

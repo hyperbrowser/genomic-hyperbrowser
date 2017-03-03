@@ -1,4 +1,4 @@
-from proto.ProtoToolRegister import getProtoToolList
+from proto.ProtoToolRegister import getNonHiddenProtoToolList
 from proto.config.Config import PROTO_TOOL_DIR
 from proto.tools.GeneralGuiTool import MultiGeneralGuiTool
 
@@ -21,8 +21,9 @@ class ExploreToolsTool(MultiGeneralGuiTool):
 
     @classmethod
     def getSubToolClasses(cls):
-        tool_list = getProtoToolList(toolDir=cls.TOOL_DIR)[1]
-        return sorted(tool_list, key=lambda c: c.__module__)
+        tool_info_dict = getNonHiddenProtoToolList(tool_dir=cls.TOOL_DIR)
+        tool_classes = [tool_info.prototype_cls for tool_info in tool_info_dict.values()]
+        return sorted(tool_classes, key=lambda c: c.__module__)
 
     @staticmethod
     def getToolDescription():
@@ -32,7 +33,7 @@ class ExploreToolsTool(MultiGeneralGuiTool):
         core.paragraph("This tool is used to try out ProTo tools that have "
                        "not been installed as separate tools in the tool "
                        "menu. This is typically used for development "
-                       "purposes, so that one can polish the tool until it"
+                       "purposes, so that one can polish the tool until it "
                        "is finished for deployment in the tool menu. "
                        "When a tool is installed into the menu, the tool "
                        "disappears from the tool list in this tool."

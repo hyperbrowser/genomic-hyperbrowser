@@ -1,4 +1,4 @@
-<tool id="proto_install_tools_tool" name="ProTo tool installer" version="1.0.0"
+<tool id="proto_install_tools_tool" name="Install ProTo tool" version="1.0.0"
   tool_type="proto_generic" proto_tool_module="proto.tools.InstallToolsTool" proto_tool_class="InstallToolsTool">
   <description></description>
 </tool>
