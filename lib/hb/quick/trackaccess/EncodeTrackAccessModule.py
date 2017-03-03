@@ -908,6 +908,7 @@ class GWASTrackAccessModule(object):
 
         # In order to fix lines containing multiple SNPs
         if semicolonCols and 'CHR_ID' in semicolonCols:
+            assert 'CHR_POS' in semicolonCols
             numSemicolons = rowDict[semicolonCols[0]].count(';')
             for col in semicolonCols[1:]:
                 if rowDict[col].count(';') != numSemicolons and col != 'DISEASE/TRAIT':
@@ -919,6 +920,7 @@ class GWASTrackAccessModule(object):
                     if ';' in rowDict[col]:
                         newRowDict[col] = rowDict[col].split(';')[j]
                 rowList += self._parseRow(cols, newRowDict.values())
+            return rowList
 
         if rowDict['CHR_ID'].strip() == '' or rowDict['CHR_POS'].strip() == '':
             snps = rowDict['SNPS'].strip().lower()
