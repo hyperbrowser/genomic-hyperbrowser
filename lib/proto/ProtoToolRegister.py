@@ -49,8 +49,8 @@ def getRelativeModulePath(module_name):
     return os.path.realpath(module_fn)[len(os.path.realpath(SOURCE_CODE_BASE_DIR)):]
 
 
-def getProtoToolList(tool_dir=PROTO_TOOL_DIR):
-    return _commonGetProtoToolList(tool_dir)
+def getProtoToolList(tool_dir=PROTO_TOOL_DIR, debug_imports=False):
+    return _commonGetProtoToolList(tool_dir, debug_imports=debug_imports)
 
 
 def getNonHiddenProtoToolList(tool_dir=PROTO_TOOL_DIR):
@@ -89,14 +89,15 @@ def getToolPrototype(toolId):
 
 # Private functions
 
-def _commonGetProtoToolList(tool_dir=PROTO_TOOL_DIR, except_modules_set=set()):
+def _commonGetProtoToolList(tool_dir=PROTO_TOOL_DIR, except_modules_set=set(), debug_imports=False):
     tmpSysPath = _fixSameNameImportIssues()
 
     pys = _findAllPythonFiles(tool_dir)
     except_classes_set = _findExceptClassesSet()
 
     tool_info_dict = \
-        _findAllUninstalledTools(pys, tool_dir, except_modules_set, except_classes_set)
+        _findAllUninstalledTools(pys, tool_dir, except_modules_set,
+                                 except_classes_set, debug_imports=debug_imports)
 
     sys.path = tmpSysPath
 
@@ -128,11 +129,13 @@ def _filterInstalledSubClassTools(tmp_tool_info_dict, all_installed_sub_classes)
     return tool_info_dict
 
 
-def _findAllUninstalledTools(pys, tool_dir, except_modules_set, except_classes_set):
+def _findAllUninstalledTools(pys, tool_dir, except_modules_set,
+                             except_classes_set, debug_imports=False):
     all_modules = _findAllModulesWithClasses(except_modules_set, pys)
 
     except_classes_set.update(_findInstalledSubClasses(all_modules, except_classes_set))
-    tool_info_dict = _getInfoForAllUninstalledTools(all_modules, tool_dir, except_classes_set)
+    tool_info_dict = _getInfoForAllUninstalledTools(
+        all_modules, tool_dir, except_classes_set, debug_imports=debug_imports)
 
     return tool_info_dict
 
@@ -169,7 +172,7 @@ def _findInstalledSubClasses(all_modules, except_classes_set):
     return all_installed_sub_classes_set
 
 
-def _getInfoForAllUninstalledTools(all_modules, tool_dir, except_classes_set):
+def _getInfoForAllUninstalledTools(all_modules, tool_dir, except_classes_set, debug_imports=False):
     tool_info_dict = OrderedDict()
 
     for module_name, class_info_list in all_modules:
@@ -180,14 +183,16 @@ def _getInfoForAllUninstalledTools(all_modules, tool_dir, except_classes_set):
                     tool_selection_name, tool_info = \
                         _extractToolInfo(class_name, module_name, tool_dir)
                     if tool_selection_name:
-                        tool_info_dict[tool_selection_name] = tool_info
+                        if not debug_imports:
+                            tool_info_dict[tool_selection_name] = tool_info
                     else:
                         if not MULTI_GENERAL_GUI_TOOL in super_classes:
                             _storeAsNonToolHiddenModule(module_name)
             except Exception as e:
-                pass
-                # traceback.print_exc()
-                # break
+                if debug_imports:
+                    tool_selection_name = \
+                        _createToolSelectionName(class_name, module_name, tool_dir)
+                    tool_info_dict[tool_selection_name] = ProtoToolInfo(class_name, module_name)
 
     return tool_info_dict
 
