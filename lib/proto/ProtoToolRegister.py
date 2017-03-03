@@ -15,7 +15,9 @@ MULTI_GENERAL_GUI_TOOL = 'MultiGeneralGuiTool'
 EXPLORE_TOOLS_TOOL_CLS_NAME = 'ExploreToolsTool'
 
 DEFAULT_EXCEPT_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate'),
-                             ('proto.tools.ToolTemplateMinimal', 'ToolTemplate')]
+                             ('proto.tools.ToolTemplateMinimal', 'ToolTemplate'),
+                             ('quick.webtools.ToolTemplate', 'ToolTemplate'),
+                             ('quick.webtools.ToolTemplateMinimal', 'ToolTemplate')]
 
 HIDDEN_MODULES_CONFIG_FN = \
     os.path.join(CONFIG_DIR, 'proto_tool_explorer_hidden_modules.txt')
