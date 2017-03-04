@@ -166,7 +166,7 @@ class GeneralGuiTool(object):
 
     @classmethod
     def createGenericGuiToolURL(cls, tool_id, sub_class_name=None, tool_choices=None):
-        from proto.CommonFunctions import getToolPrototype
+        from proto.ProtoToolRegister import getToolPrototype
         tool = getToolPrototype(tool_id)
         base_url = '?mako=generictool&tool_id=' + tool_id + '&'
         if sub_class_name and isinstance(tool, MultiGeneralGuiTool):

@@ -1,11 +1,11 @@
 import ast
-
 import os
 import sys
 import shutil
 import string
 import urllib2
 import re
+from traceback import print_stack
 
 from urlparse import urlparse
 from ftputil import FTPHost
@@ -844,23 +844,24 @@ class GWASTrackAccessModule(object):
         
         
         for line in indexFileLines[1:]:
-            rowDict = {}
-            row = line.split('\t')
+            if not line.strip():
+                continue
+
             #cols = self._cols.keys()
             try:
-                for i in range(len(cols)):
-                    rowDict[cols[i]] = row[i].strip('\r')
+                row = line.split('\t')
+                self._rowList += self._parseRow(cols, row)
 
-                if str(rowDict['CHR_ID'].strip()) == '' or str(rowDict['CHR_POS'].strip()) == '':
-                    continue
+            # except ValueError:
+            #     continue
+
             except Exception as e:
-                    print 'Error in track: '
-                    print row
-                    print 'Error message:'
-                    print str(e)
-                    continue
-            self._rowList.append(rowDict)
-        
+                print 'Error in track: '
+                print zip(cols, row)
+                print 'Error message:'
+                print str(e)
+                continue
+
         self._cols['uri'] = None
         self._cols['hb_genomebuild'] = None
         self._cols['hb_datatype'] = None
@@ -893,7 +894,51 @@ class GWASTrackAccessModule(object):
         #query = 'update file_gwas set "DISEASE/TRAIT" = "BETA2-Glycoprotein I (BETA2-GPI) plasma levels", hb_target = "BETA2-Glycoprotein I (BETA2-GPI) plasma levels" where  "DISEASE/TRAIT" like "&beta;2-Glycoprotein I (&beta;2-GPI) plasma levels";'
         query = 'update file_gwas set "DISEASE/TRAIT" = replace("DISEASE/TRAIT", "&beta;","BETA") where "DISEASE/TRAIT" like "%&beta;%"'
         output = self.DB._db.runQuery(query)
-        
+
+    def _parseRow(self, cols, row):
+        rowList = []
+        rowDict = OrderedDict()
+        semicolonCols = []
+
+        for i in range(len(cols)):
+            curRow = row[i].strip('\r')
+            rowDict[cols[i]] = curRow
+            if ';' in curRow:
+                semicolonCols.append(cols[i])
+
+        # In order to fix lines containing multiple SNPs
+        if semicolonCols and 'CHR_ID' in semicolonCols:
+            assert 'CHR_POS' in semicolonCols
+            numSemicolons = rowDict[semicolonCols[0]].count(';')
+            for col in semicolonCols[1:]:
+                if rowDict[col].count(';') != numSemicolons and col != 'DISEASE/TRAIT':
+                    rowDict[col] = ''
+
+            for j in range(numSemicolons + 1):
+                newRowDict = rowDict.copy()
+                for col in semicolonCols:
+                    if ';' in rowDict[col]:
+                        newRowDict[col] = rowDict[col].split(';')[j]
+                rowList += self._parseRow(cols, newRowDict.values())
+            return rowList
+
+        if rowDict['CHR_ID'].strip() == '' or rowDict['CHR_POS'].strip() == '':
+            snps = rowDict['SNPS'].strip().lower()
+            if snps.startswith('chr'):
+                for splitChar in ['.', ':']:
+                    if splitChar in snps:
+                        chrId, chrPos = snps.split(splitChar)[:2]
+                        rowDict['CHR_ID'] = chrId[3:]
+                        rowDict['CHR_POS'] = chrPos
+                        break
+
+            if rowDict['CHR_ID'].strip() == '' or rowDict['CHR_POS'].strip() == '':
+                raise ValueError('Missing genome position information')
+
+        rowList.append(rowDict)
+
+        return rowList
+
     def setMetadata(self):
         METADATA_TABLE = 'file_col_metadata'
         rowList = []
