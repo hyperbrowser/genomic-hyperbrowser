@@ -55,7 +55,8 @@ from quick.extra.FunctionCategorizer import FunctionCategorizer
 from quick.extra.OrigFormatConverter import OrigFormatConverter
 from quick.extra.StandardizeTrackFiles import runParserClass
 from quick.extra.TrackExtractor import TrackExtractor
-from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists, getToolPrototype
+from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists
+from proto.ProtoToolRegister import getToolPrototype
 from quick.util.GenomeInfo import GenomeInfo
 from third_party.asteval_raise_errors import Interpreter
 

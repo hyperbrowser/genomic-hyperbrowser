@@ -1,8 +1,10 @@
+import os
+
+from config.Config import DATA_FILES_PATH
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.util.CommonFunctions import mean, prettyPrintTrackName
 from quick.webtools.misc.Tool3 import CreateGCFunction
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.extra.tfbs.createTfbsMappings import pwm2TFids, pwm2TFnamesNew
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
 
 
@@ -458,8 +460,8 @@ class MapTfTool(GeneralGuiTool):
     #def getDemoSelections():
     #    return ['testChoice1','..']
 
-    @staticmethod
-    def execute(choices, galaxyFn=None, username=''):
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
         '''
         Is called when execute-button is pushed by web-user. Should print
         output as HTML to standard out, which will be directed to a results page
@@ -469,17 +471,21 @@ class MapTfTool(GeneralGuiTool):
         (e.g. generated image files). choices is a list of selections made by
         web-user in each options box.
         '''
-        assert choices[0]=='Direct text input'
-        assert choices[1]=='Transfac PWM ID (Mxx)'
+        assert choices[0] == 'Direct text input'
+        assert choices[1] == 'Transfac PWM ID (Mxx)'
 
-        if choices[2]=='TF ID':
-            mappingShelf = pwm2TFids
-        elif choices[2]=='TF Name':
-            mappingShelf = pwm2TFnamesNew
+        if choices[2] == 'TF ID':
+            mappingShelf = cls.openTfbsShelve('pwm2TFids.shelf')
+        elif choices[2] == 'TF Name':
+            mappingShelf = cls.openTfbsShelve('pwm2TFnamesNew.shelf')
 
         for inputId in choices[3].split(','):
             print inputId, ': ', mappingShelf[inputId]
 
+    @classmethod
+    def openTfbsShelve(cls, fn):
+        from third_party import safeshelve
+        return safeshelve.open(os.path.join(DATA_FILES_PATH, 'tfbs', fn), 'r')
 
     @staticmethod
     def validateAndReturnErrors(choices):

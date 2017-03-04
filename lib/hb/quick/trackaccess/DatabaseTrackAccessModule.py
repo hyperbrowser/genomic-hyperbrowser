@@ -639,7 +639,7 @@ class DatabaseAdapter(object):
 #======================================================
 #print db.getColGroup('file_encode','lab')
 #======================================================
-db = DatabaseTrackAccessModule(True)
+# db = DatabaseTrackAccessModule(True)
 ############################Database Tests########################################
 #print db._db.dropTable('tab')
 #print db._db.createTableFromList('tab', ['a1','b1','c1'], pk = 'a1')
