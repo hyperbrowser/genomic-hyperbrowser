@@ -21,15 +21,6 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.track.Track import Track
 from gold.util import CommonConstants
-from quick.statistic.GenericResultsCombinerStat import GenericResultsCombinerStat
-from quick.statistic.NormalizedObservedVsExpectedStat import NormalizedObservedVsExpectedStat
-from quick.statistic.PropOfReferenceTrackInsideTargetTrackStat import PropOfReferenceTrackInsideTargetTrackStat
-from quick.statistic.PropOfReferenceTrackInsideUnionStat import PropOfReferenceTrackInsideUnionStat
-from quick.statistic.RatioOfIntersectionToGeometricMeanStat import RatioOfIntersectionToGeometricMeanStat
-from quick.statistic.RatioOfOverlapToUnionStat import RatioOfOverlapToUnionStat
-from quick.statistic.StatFacades import ObservedVsExpectedStat
-from quick.statistic.T1T2BinValuesCorrelationWithKendallCountStat import T1T2BinValuesCorrelationWithKendallCountStat
-from quick.statistic.TetrachoricCorrelationStat import TetrachoricCorrelationStat
 
 T1_RATIO_OF_SECOND_INSIDE_FIRST = 'Proportion of the query track base-pairs coinciding with base-pairs from the reference track'
 T2_RATIO_OF_SECOND_INSIDE_UNION = 'Proportion of the union of base-pairs of the two tracks that are covered by the reference track'
@@ -42,15 +33,15 @@ T8_CORRELATED_BIN_COVERAGE = 'Correlated bin coverage'
 T9_TETRA_CORRELATION = 'Tetrachoric correlation of query track base-pairs and base-pairs from the reference track'
 
 PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING = OrderedDict([
-    (T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, ObservedVsExpectedStat.__name__),
-    (T7_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, NormalizedObservedVsExpectedStat.__name__),
-    (T3_RATIO_OF_INTERSECTION_TO_UNION, RatioOfOverlapToUnionStat.__name__),
-    (T1_RATIO_OF_SECOND_INSIDE_FIRST, PropOfReferenceTrackInsideTargetTrackStat.__name__),
-    (T2_RATIO_OF_SECOND_INSIDE_UNION, PropOfReferenceTrackInsideUnionStat.__name__),
-    (T4_RATIO_OF_INTERSECTION_TO_GEOMETRIC_MEAN, RatioOfIntersectionToGeometricMeanStat.__name__),
+    (T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, 'ObservedVsExpectedStat'),
+    (T7_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, 'NormalizedObservedVsExpectedStat'),
+    (T3_RATIO_OF_INTERSECTION_TO_UNION, 'RatioOfOverlapToUnionStat'),
+    (T1_RATIO_OF_SECOND_INSIDE_FIRST, 'PropOfReferenceTrackInsideTargetTrackStat'),
+    (T2_RATIO_OF_SECOND_INSIDE_UNION, 'PropOfReferenceTrackInsideUnionStat'),
+    (T4_RATIO_OF_INTERSECTION_TO_GEOMETRIC_MEAN, 'RatioOfIntersectionToGeometricMeanStat'),
     # (T6_STANDARD_DEVIATIONS_OF_OBSERVED_MINUS_EXPECTED_OVERLAP, None),
-    (T8_CORRELATED_BIN_COVERAGE, T1T2BinValuesCorrelationWithKendallCountStat.__name__),
-    (T9_TETRA_CORRELATION, TetrachoricCorrelationStat.__name__)
+    (T8_CORRELATED_BIN_COVERAGE, 'T1T2BinValuesCorrelationWithKendallCountStat'),
+    (T9_TETRA_CORRELATION, 'TetrachoricCorrelationStat')
 ])
 
 PAIRWISE_STAT_LABELS = PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING.keys()
@@ -75,6 +66,8 @@ def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=No
                                          or ^-separated string of statistic names'''
 
     resultsDict = OrderedDict()
+
+    from quick.statistic.GenericResultsCombinerStat import GenericResultsCombinerStat
     additionalAnalysisSpec = AnalysisSpec(GenericResultsCombinerStat)
 
     statsParam = stats if isinstance(stats, basestring) else "^".join([x.__name__ for x in stats])

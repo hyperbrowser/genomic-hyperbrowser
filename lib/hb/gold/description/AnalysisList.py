@@ -270,12 +270,14 @@ Located nonuniformly inside?:
 Located nearby?:
     Are the points of track 1 [tail:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the segments of track 2 than expected by chance?
     [H0:_=The points of track 1 are located independently of the segments of track 2]
-    [H1_more:_=The points of track 1 are located close to the segments of track 2]
-    [H1_less:_=The points of track 1 are located far apart from the segments of track 2]
+    [H1_less:_=The points of track 1 are located close to the segments of track 2]
+    [H1_more:_=The points of track 1 are located far apart from the segments of track 2]
     [H1_different:_=The locations of the points of track 1 are dependent on the locations of the segments of track 2]
     [assumptions:_Null model=
         PermutedSegsAndSampledIntersegsTrack_:Preserve segments (T2) and number of points (T1); randomize positions (T1) (MC)/
-        PermutedSegsAndIntersegsTrack_:Preserve segments (T2) and inter-point distances (T1); randomize positions (T1) (MC)]
+        PermutedSegsAndIntersegsTrack_:Preserve segments (T2) and inter-point distances (T1); randomize positions (T1) (MC)/
+        _PermutedSegsAndSampledIntersegsTrack:Preserve points (T1) and segment lengths (T2); randomize positions (T2) (MC)/
+        _PermutedSegsAndIntersegsTrack:Preserve points (T1), segment lengths and inter-segment gaps (T2); randomize positions (T2) (MC)]
     $MCFDR$
     $RANDSEED$
 #    [rawStatistic:=LogMeanSegDistStat:]
@@ -379,8 +381,8 @@ Proportional overlap?:
 Located nearby?:
     Are the segments of track 1 [tail:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the segments of track 2 than expected by chance?
     [H0:_=The segments of track 1 are located independently of the segments of track 2]
-    [H1_more:_=The segments of track 1 are located close to the segments of track 2]
-    [H1_less:_=The segments of track 1 are located far apart from the segments of track 2]
+    [H1_less:_=The segments of track 1 are located close to the segments of track 2]
+    [H1_more:_=The segments of track 1 are located far apart from the segments of track 2]
     [H1_different:_=The locations of the segments of track 1 are dependent on the locations of the segments of track 2]
     [assumptions:_Null model=
         PermutedSegsAndSampledIntersegsTrack_:Preserve segments (T2) and segment lengths (T1); randomize positions (T1) (MC)/
