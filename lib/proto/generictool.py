@@ -27,7 +27,7 @@ from proto.HtmlCore import HtmlCore
 from proto.config.Config import URL_PREFIX, GALAXY_BASE_DIR
 from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, GALAXY_SECURITY_HELPER_OBJ
 from BaseToolController import BaseToolController
-from proto.CommonFunctions import getToolPrototype
+from proto.ProtoToolRegister import getToolPrototype
 from proto.StaticFile import StaticImage
 
 
@@ -177,18 +177,18 @@ class GenericToolController(BaseToolController):
         info = None
         if i > 0:
             ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds[:(i+1)])
-            prevchoices = ChoiceTuple._make(self.inputValues + [val])
-            #self.choices = prevchoices
+            prevChoices = ChoiceTuple._make(self.inputValues + [val])
+            #self.choices = prevChoices
             if id.startswith('Box'):
-                opts = getattr(self.prototype, 'getOptions' + id)(prevchoices)
+                opts = getattr(self.prototype, 'getOptions' + id)(prevChoices)
                 try:
-                    info = getattr(self.prototype, 'getInfoForOptions' + id)(prevchoices)
+                    info = getattr(self.prototype, 'getInfoForOptions' + id)(prevChoices)
                 except:
                     pass
             else:
-                opts = getattr(self.prototype, 'getOptionsBox' + id)(prevchoices)
+                opts = getattr(self.prototype, 'getOptionsBox' + id)(prevChoices)
                 try:
-                    info = getattr(self.prototype, 'getInfoForOptionsBox' + id)(prevchoices)
+                    info = getattr(self.prototype, 'getInfoForOptionsBox' + id)(prevChoices)
                 except:
                     pass
         else:

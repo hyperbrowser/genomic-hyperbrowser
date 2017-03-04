@@ -1,39 +1,17 @@
-import sys, traceback
-from importlib import import_module
-
-from galaxy.web.base.controller import web, log
 from galaxy.webapps.galaxy.controllers import proto
 
 
 class HyperController(proto.ProtoController):
-    def run_tool(self, mako, trans):
-        toolController = None
-        exc_info = None
-        try:
-            toolModule = import_module('proto.hyperbrowser.' + mako.split('/')[-1])
-        except ImportError:
-            toolModule = None
+    @staticmethod
+    def _convert_mako_from_rel_to_abs(mako):
+        return '/hyperbrowser/' + mako
 
-        if toolModule:
-            toolController = toolModule.getController(trans)
+    @staticmethod
+    def _get_controller_module_name(rel_mako):
+        return 'proto.hyperbrowser.' + rel_mako
 
-        if mako.startswith('/'):
-            from gold.application.GalaxyInterface import GalaxyInterface
-            template_mako = mako + '.mako'
-            #print mako, template_mako
-            html = trans.fill_template(template_mako, trans=trans, hyper=GalaxyInterface, control=toolController)
-        elif toolController:
-            template_mako = '/hyperbrowser/' + mako + '.mako'
-            html = trans.fill_template(template_mako, trans=trans, control=toolController)
-        return html, exc_info
-
-    @web.expose
-    def index(self, trans, mako='/hyperbrowser/analyze', **kwd):
-        #print mako
-        if isinstance(mako, list):
-            mako = mako[0]
-        if mako[0] != '/':
-            mako = '/hyperbrowser/' + mako
-            # print mako
-        return super(HyperController, self).index(trans, mako, **kwd)
-
+    @staticmethod
+    def _fill_mako_template(template_mako, tool_controller, trans):
+        from gold.application.GalaxyInterface import GalaxyInterface
+        return trans.fill_template(template_mako, trans=trans,
+                                   hyper=GalaxyInterface, control=tool_controller)
