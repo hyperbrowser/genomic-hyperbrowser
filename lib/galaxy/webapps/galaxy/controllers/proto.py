@@ -16,16 +16,18 @@
 
 from __future__ import absolute_import
 
-import sys, os
-
-from galaxy.web.base.controller import web, error, BaseUIController
 import logging
-
-log = logging.getLogger( __name__ )
-
+import os
+import pkgutil
 import traceback
+
 from multiprocessing import Process, Pipe, Queue
 from importlib import import_module
+
+from galaxy.web.base.controller import web, error, BaseUIController
+
+
+log = logging.getLogger( __name__ )
 
 #from sqlalchemy import create_engine, event, exc
 #from sqlalchemy.orm.session import Session, sessionmaker
@@ -63,13 +65,11 @@ class ProtoController( BaseUIController ):
         #response.send_bytes('ping')
 
         try:
-            html, exc_info = self.run_tool(mako, trans)
+            html = self.run_tool(mako, trans)
         except Exception, e:
             html = '<html><body><pre>\n'
-            if exc_info:
-               html += str(e) + ':\n' + exc_info + '\n\n'
-#               html += str(e) + ':\n' + ''.join(traceback.format_exception(exc_info[0],exc_info[1],exc_info[2])) + '\n\n'
-            html += str(e) + ':\n' + traceback.format_exc() + '\n</pre></body></html>'
+            html += str(e) + ':\n' + traceback.format_exc()
+            html += '\n</pre></body></html>'
 
         response.send_bytes(html)
         response.close()
@@ -77,25 +77,45 @@ class ProtoController( BaseUIController ):
         #trans.sa_session.flush()
         #engine.dispose()
 
-    def run_tool(self, mako, trans):
-        toolController = None
-        exc_info = None
-        try:
-            toolModule = import_module('proto.' + mako)
-            toolController = toolModule.getController(trans)
-        except Exception, e:
-            #                print e
-            exc_info = sys.exc_info()
-        if mako.startswith('/'):
-            template_mako = mako + '.mako'
-            html = trans.fill_template(template_mako, trans=trans, control=toolController)
+    @staticmethod
+    def _convert_mako_from_rel_to_abs(mako):
+        return '/proto/' + mako
+
+    @staticmethod
+    def _get_controller_module_name(rel_mako):
+        return 'proto.' + rel_mako
+
+    def _parse_mako_filename(self, mako):
+        if not mako.startswith('/'):
+            rel_mako = mako
+            mako = self._convert_mako_from_rel_to_abs(mako)
         else:
-            template_mako = '/proto/' + mako + '.mako'
-            html = trans.fill_template(template_mako, trans=trans, control=toolController)
-        return html, exc_info
+            rel_mako = mako.split('/')[-1]
+
+        controller_module_name = self._get_controller_module_name(rel_mako)
+        template_mako = mako + '.mako'
+        return controller_module_name, template_mako
+
+    @staticmethod
+    def _fill_mako_template(template_mako, tool_controller, trans):
+        return trans.fill_template(template_mako, trans=trans, control=tool_controller)
+
+    def run_tool(self, mako, trans):
+        controller_module_name, template_mako = self._parse_mako_filename(mako)
+
+        controller_loader = pkgutil.find_loader(controller_module_name)
+        if controller_loader:
+            tool_module = import_module(controller_module_name)
+            tool_controller = tool_module.getController(trans)
+        else:
+            tool_controller = None
+
+        html = self._fill_mako_template(template_mako, tool_controller, trans)
+
+        return html
 
     @web.expose
-    def index(self, trans, mako = 'generictool', **kwd):
+    def index(self, trans, mako='generictool', **kwd):
 
         if kwd.has_key('rerun_hda_id'):
             self._import_job_params(trans, kwd['rerun_hda_id'])

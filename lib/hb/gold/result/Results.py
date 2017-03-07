@@ -25,6 +25,15 @@ from quick.application.SignatureDevianceLogging import returns
 from quick.result.model.ResultTypes import GlobalVisualizationResultType, \
     LinePlotResultType, RawVisualizationResultType
 
+# class ToBeNamedResults(Results):
+#     def __init__(self, trackName1, trackName2, statClassName):
+#         Results.__init__(self)
+#         self._trackName1 = trackName1
+#         self._trackName2 = trackName2
+#         self._statClassName = statClassName
+#         self._resultInfo = ResultInfo(trackName1, trackName2, statClassName)#is an object based on ResultInfoList.py that converts a resultkey to a textual representation used by the GUI
+
+
 """This class is a specialized dict that stores data from an analysis run wich includes metadata, localresults and globalresult
     The keys for Results(dict) are GenomeRegion objects that represents the regions an analysis has been performed on.
     The values for Results(dict) are dicts containing local results
@@ -60,7 +69,7 @@ class Results(dict):
         self._trackName1 = trackName1
         self._trackName2 = trackName2
         self._statClassName = statClassName
-        #self._analysis = None        
+        #self._analysis = None
         self._analysisText = None #not needed anymore..
         self._runDescription = None
         self._genome = None

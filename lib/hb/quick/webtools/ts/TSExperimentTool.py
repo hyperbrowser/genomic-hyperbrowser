@@ -1,7 +1,17 @@
-from proto.tools.GeneralGuiTool import GeneralGuiTool
+from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+
+from quick.application.UserBinSource import UserBinSource
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
+from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
+import quick.gsuite.GuiBasedTsFactory as factory
+from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from quick.statistic.StatFacades import ObservedVsExpectedStat
+from quick.webtools.mixin.DebugMixin import DebugMixin
 
 
-class ToolTemplate(GeneralGuiTool):
+class TSExperimentTool(GeneralGuiTool, DebugMixin):
     @classmethod
     def getToolName(cls):
         """
@@ -10,7 +20,7 @@ class ToolTemplate(GeneralGuiTool):
 
         Mandatory method for all ProTo tools.
         """
-        return "Tool not yet in use"
+        return "TS experiment"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -33,8 +43,10 @@ class ToolTemplate(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('First header', 'firstKey'),
-                ('Second Header', 'secondKey')]
+        return [('Select categorical GSuite of 4 tracks', 'gs'),
+                ('Select query track', 'query'),
+                ('Select category', 'cat')] + cls.getInputBoxNamesForDebug()
+
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -67,100 +79,12 @@ class ToolTemplate(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxFirstKey(cls):  # Alt: getOptionsBox1()
-        """
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to
-        other methods. These are lists of results, one for each input box
-        (in the order specified by getInputBoxOrder()).
+    def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
 
-        Mandatory for the first key defined in getInputBoxNames(), if any.
-
-        The input box is defined according to the following syntax:
-
-        Selection box:          ['choice1','choice2']
-        - Returns: string
-
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - The contents is the default value shown inside the text area
-        - Returns: string
-
-        Raw HTML code:          '__rawstr__', 'HTML code'
-        - This is mainly intended for read only usage. Even though more
-          advanced hacks are possible, it is discouraged.
-
-        Password field:         '__password__'
-        - Returns: string
-
-        Genome selection box:   '__genome__'
-        - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
-
-        History selection box:  ('__history__',) |
-                                ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting Galaxy dataset info, as
-            described below.
-
-        History check box list: ('__multihistory__', ) |
-                                ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with Galaxy dataset ids as key (the number YYYY
-            as described below), and the associated Galaxy dataset info as the
-            values, given that the history element is ticked off by the user.
-            If not, the value is set to None. The Galaxy dataset info structure
-            is described below.
-
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
-
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'],
-                                 ['cell2_1','cell2_2']]
-        - Returns: None
-
-        Check box list:         OrderedDict([('key1', True), ('key2', False),
-                                             ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
-
-
-        ###
-        Note about the "Galaxy dataset info" data structure:
-        ###
-
-        "Galaxy dataset info" is a list of strings coding information about a
-        Galaxy history element and its associated dataset, typically used to
-        provide info on the history element selected by the user as input to a
-        ProTo tool.
-
-        Structure:
-            ['galaxy', fileFormat, path, name]
-
-        Optionally encoded as a single string, delineated by colon:
-
-            'galaxy:fileFormat:path:name'
-
-        Where:
-            'galaxy' used for assertions in the code
-            fileFormat (or suffix) contains the file format of the dataset, as
-                encoded in the 'format' field of a Galaxy history element.
-            path (or file name/fn) is the disk path to the dataset file.
-                Typically ends with 'XXX/dataset_YYYY.dat'. XXX and YYYY are
-                numbers which are extracted and used as an unique id  of the
-                dataset in the form [XXX, YYYY]
-            name is the title of the history element
-
-        The different parts can be extracted using the functions
-        extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
-        extractNameFromDatasetInfo() from the module CommonFunctions.py.
-        """
-        return ['testChoice1', 'testChoice2', '...']
+        return GeneralGuiToolMixin.getHistorySelectionElement()
 
     @classmethod
-    def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxQuery(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -173,6 +97,10 @@ class ToolTemplate(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
+        return GeneralGuiToolMixin.getHistorySelectionElement()
+
+    @classmethod
+    def getOptionsBoxCat(cls, prevChoices):
         return ''
 
     # @classmethod
@@ -220,18 +148,32 @@ class ToolTemplate(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        """
-        Is called when execute-button is pushed by web-user. Should print
-        output as HTML to standard out, which will be directed to a results
-        page in Galaxy history. If getOutputFormat is anything else than
-        'html', the output should be written to the file with path galaxyFn.
-        If needed, StaticFile can be used to get a path where additional
-        files can be put (cls, e.g. generated image files). choices is a list
-        of selections made by web-user in each options box.
+        #cls._setDebugModeIfSelected(choices)
+        # from config.DebugConfig import DebugConfig
+        # from config.DebugConfig import DebugModes
+        # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
 
-        Mandatory unless isRedirectTool() returns True.
-        """
-        print 'Executing...'
+
+        choices_gsuite = choices.gs
+        selected_metadata= choices.cat
+        choices_queryTrack = choices.query
+        genome = 'hg19'
+        queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
+        refTS = factory.getFlatTracksTS(genome, choices_gsuite)
+
+        categoricalTS = refTS.getSplittedByCategoryTS(selected_metadata)
+
+        fullTS = TrackStructureV2()
+        fullTS['query'] = queryTS
+        fullTS['reference'] = categoricalTS
+        spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+
+        spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
+        spec.addParameter('summaryFunc','minAndMax')
+        bins = UserBinSource('chr1','*',genome='hg19')
+        res = doAnalysis(spec, bins, fullTS)
+        ts = res.getGlobalResult()['Result']
+        print 'Results: ', ts.result
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -405,3 +347,4 @@ class ToolTemplate(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+

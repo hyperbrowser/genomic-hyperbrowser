@@ -10,6 +10,7 @@ from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, \
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
+from gold.track.TrackStructure import TrackStructure
 from gold.util import CommonConstants
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.util.CommonFunctions import prettyPrintTrackName, \
@@ -340,14 +341,23 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             # additional analysis
             stats = [SingleValueOverlapStat, CountStat,
                      CountElementStat]  # + [CountSegmentsOverlappingWithT2Stat] #takes long time
-            additionalResultsDict = runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins,
-                                                                      queryTrack=queryTrack)
+            print 'TEMPORARILY COMMENTED OUT!! '
+            #additionalResultsDict = runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins,
+            #                                                           queryTrack=queryTrack)
+            additionalResultsDict = {}
 
         core = HtmlCore()
         if analysisQuestion == cls.Q1:
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName, trackTitles)
 
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            # tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
+            ts = TrackStructure()
+            ts[TrackStructure.QUERY_KEY] = [tracks[0]]
+            ts[TrackStructure.REF_KEY] = tracks[1:]
+            ### self._addChild(GSuiteSimilarityToQueryTrackRankingsAndPValuesV2Stat(self._region, ts, **self._kwArgs))
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
+
+            # results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
             gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track'],
                                                                additionalResultsDict=additionalResultsDict,
@@ -364,6 +374,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
+            #tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
+            # ts = TrackStructure()
+            # ts[TrackStructure.QUERY_KEY] = [tracks[0]]
+            # ts[TrackStructure.REF_KEY] = tracks[1:]
+            ### self._addChild(GSuiteSimilarityToQueryTrackRankingsAndPValuesV2Stat(self._region, ts, **self._kwArgs))
+            #results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
+
+
             core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict,
                                         analysisQuestion, choices, galaxyFn, queryTrackTitle,
                                         gsuite, results, similarityStatClassName)
@@ -376,9 +394,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
     @classmethod
     def prepareQ1(cls, reverse, similarityStatClassName, trackTitles):
-        analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsWrapperStat)
+        from quick.statistic.GSuiteSimilarityToQueryTrackRankingsV2Stat import \
+            GSuiteSimilarityToQueryTrackRankingsV2Stat
+        analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsV2Stat)
         analysisSpec.addParameter('pairwiseStatistic',
-                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
+                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
         analysisSpec.addParameter('reverse', reverse)
         analysisSpec.addParameter('trackTitles', trackTitles)
         analysisSpec.addParameter('queryTracksNum', str(1))
@@ -412,10 +432,13 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
             columnInd = 1
 
-        res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(
-            results, additionalResultsDict,
-            'Similarity to query track', columnInd=columnInd)
-        core.line(res)
+        print 'TEMPORARILY COMMENTED OUT!! '
+        # res = GSuiteTracksCoincidingWithQueryTrackTool.drawPlot(
+        #     results, additionalResultsDict,
+        #     'Similarity to query track', columnInd=columnInd)
+        # core.line(res)
+        core.line(str(results))
+
         core.divEnd()
         core.divEnd()
         core.end()
@@ -425,13 +448,15 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def prepareQ2(cls, choices, similarityStatClassName, trackTitles):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
-        analysisDefString = REPLACE_TEMPLATES[
-                                '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
+        # analysisDefString = REPLACE_TEMPLATES[
+        #                         '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
+        analysisDefString = REPLACE_TEMPLATES['$MCFDR$'] + ' -> ' + \
+                            GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName]
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
         analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
-        analysisSpec.addParameter('rawStatistic',
-                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
+        # analysisSpec.addParameter('rawStatistic',
+        #                           GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
         analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
             similarityStatClassName])  # needed for call of non randomized stat for assertion
         analysisSpec.addParameter('tail', 'more')
