@@ -306,5 +306,3 @@ class FlatTracksTS(TrackStructureV2):
 
 class CategoricalTS(TrackStructureV2):
     pass
-
-# this should be branch ft_tstruct/l/randomized_ts_stat
