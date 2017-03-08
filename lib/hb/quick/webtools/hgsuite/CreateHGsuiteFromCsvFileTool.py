@@ -1,5 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.webtools.hgsuite.HGsuiteFunctions import HGsuite
+from quick.webtools.hgsuite.HGsuiteClass import HGsuiteClass
 
 class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
