@@ -56,14 +56,14 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
 
         # check if the number of lines in csv is more than in gsuite
-        # if choices.selectedFile and choices.gSuite:
-        #     hGSuite = HGsuite()
-        #     if hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite) < hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile):
-        #
-        #         info = 'You have less tracks in gsuite than attributes in csv. '
-        #         info += 'In GSuite you have: ' + str(hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite)) + ' lines. '
-        #         info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
-        #         return info
+        if choices.selectedFile and choices.gSuite:
+            hGSuite = HGsuite()
+            if hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite) != hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile):
+
+                info = 'You have different number of tracks in gsuite than attributes in csv filr. '
+                info += 'In GSuite you have: ' + str(hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite)) + ' lines. '
+                info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
+                return info
 
 
 
