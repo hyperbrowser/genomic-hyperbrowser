@@ -74,6 +74,8 @@ class HGsuite:
     @classmethod
     def parseColumnResponse(cls, selectedColumns):
 
+        #since the column number were user friendly, now we need to minus 1 everywhere
+
         cols = selectedColumns.strip().split(',')
         colNum = []
         for cc in cols:
