@@ -1,54 +1,87 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.webtools.hgsuite.HGsuiteClass import HGsuiteClass
+from quick.webtools.hgsuite.HGsuiteClass import HGsuite
+
+
 
 class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
+
+
     @classmethod
     def getToolName(cls):
 
-        return "Create hGsuite from csv file"
+        return "Create hGsuite from file"
 
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select file', 'selectedFile'),
-                ('Select columns', 'selectedColumns')]
+        return [('Select file with data', 'selectedFile'),
+                ('Select gSuite:', 'gSuite'),
+                ('Possible columns', 'possibleColumns'),
+                ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns'),
+                ]
 
     @classmethod
     def getOptionsBoxSelectedFile(cls):
         return GeneralGuiTool.getHistorySelectionElement('csv')
 
     @classmethod
-    def getOptionsBoxSelectedColumns(cls, prevChoices):
-        return ''
+    def getOptionsBoxGSuite(cls, prevChoices):
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def execute(cls, choices, galaxyFn=None, username=''):
-        """
-        Is called when execute-button is pushed by web-user. Should print
-        output as HTML to standard out, which will be directed to a results
-        page in Galaxy history. If getOutputFormat is anything else than
-        'html', the output should be written to the file with path galaxyFn.
-        If needed, StaticFile can be used to get a path where additional
-        files can be put (cls, e.g. generated image files). choices is a list
-        of selections made by web-user in each options box.
+    def getOptionsBoxPossibleColumns(cls, prevChoices):
+        if prevChoices.selectedFile:
+            hGSuite = HGsuite()
+            header = hGSuite.parseCvsFileHeader(prevChoices.selectedFile)
 
-        Mandatory unless isRedirectTool() returns True.
-        """
-        print 'Executing...'
+            tableElements = [['Column number', 'Column name']]
+            i=1
+            for h in header:
+                tableElements.append([i, h])
+                i+=1
+            return tableElements
+
+    @classmethod
+    def getOptionsBoxSelectedColumns(cls, prevChoices):
+        if prevChoices.selectedFile:
+            return ''
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        """
-        Should validate the selected input parameters. If the parameters are
-        not valid, an error text explaining the problem should be returned.
-        The GUI then shows this text to the user (if not empty) and greys
-        out the execute button (even if the text is empty). If all
-        parameters are valid, the method should return None, which enables
-        the execute button.
 
-        Optional method. Default return value if method is not defined: None
-        """
-        return None
+        if not choices.selectedFile:
+            return 'Select csv file'
+
+
+        # check if the number of lines in csv is more than in gsuite
+        # if choices.selectedFile and choices.gSuite:
+        #     hGSuite = HGsuite()
+        #     if hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite) < hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile):
+        #
+        #         info = 'You have less tracks in gsuite than attributes in csv. '
+        #         info += 'In GSuite you have: ' + str(hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite)) + ' lines. '
+        #         info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
+        #         return info
+
+
+
+        return
+
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
+
+        selectedFile = choices.selectedFile
+        selectedColumns = choices.selectedColumns
+
+        hGSuite = HGsuite()
+        selCol = hGSuite.parseColumnResponse(selectedColumns)
+
+        dataFromFile = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
+        print dataFromFile
+
+
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -180,24 +213,10 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
