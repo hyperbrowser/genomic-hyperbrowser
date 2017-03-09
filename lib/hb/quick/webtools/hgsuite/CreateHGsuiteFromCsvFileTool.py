@@ -77,6 +77,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
         hGSuite = HGsuite()
         selCol = hGSuite.parseColumnResponse(selectedColumns)
+        print selCol
 
         dataFromFile = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
         print dataFromFile

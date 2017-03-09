@@ -56,9 +56,12 @@ class HGsuite:
                         for dcp in dataCollectionPart:
                             if not dcp in separateColumnList:
                                 separateColumnList.append(dcp)
+                                print separateColumnList, i
 
                     dataCollection.append(dataCollectionPart)
                 i+=1
+
+        print separateColumnList
 
         if len(separateColumnList) == 0:
             return dataCollection
@@ -76,8 +79,8 @@ class HGsuite:
         for cc in cols:
             try:
                 c = int(cc)
-                colNum.append(c)
+                colNum.append(c-1)
             except:
-                for i in range(int(cc.split('-')[0]), int(cc.split('-')[1]) + 1):
+                for i in range(int(cc.split('-')[0]) -1 , int(cc.split('-')[1])):
                     colNum.append(i)
         return colNum
