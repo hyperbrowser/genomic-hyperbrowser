@@ -37,6 +37,7 @@ class HGsuite:
         separateColumnList = []
         dataCollection=[]
         i=0
+
         with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
             reader = csv.reader(f, delimiter=';')
             for r in reader:
@@ -56,17 +57,16 @@ class HGsuite:
                         for dcp in dataCollectionPart:
                             if not dcp in separateColumnList:
                                 separateColumnList.append(dcp)
-                                print separateColumnList, i
 
                     dataCollection.append(dataCollectionPart)
                 i+=1
 
-        print separateColumnList
 
         if len(separateColumnList) == 0:
-            return dataCollection
+            headerMod = '-'.join(header)
+            return dataCollection, headerMod
         else:
-            #do column separation
+            #do column separation and support the next category
             #return dataCollection
             pass
 

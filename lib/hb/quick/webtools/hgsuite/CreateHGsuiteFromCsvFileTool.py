@@ -74,13 +74,35 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
         selectedFile = choices.selectedFile
         selectedColumns = choices.selectedColumns
+        gSuite = choices.gSuite
 
         hGSuite = HGsuite()
-        selCol = hGSuite.parseColumnResponse(selectedColumns)
-        print selCol
 
-        dataFromFile = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
-        print dataFromFile
+        # get selected columns as a list with numbers: starting from 0
+        selCol = hGSuite.parseColumnResponse(selectedColumns)
+
+        #get the column with new atributes
+        dataFromFile, header = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
+
+
+        import quick.gsuite.GuiBasedTsFactory as factory
+        from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
+        from gold.gsuite.GSuite import GSuite
+        from quick.gsuite.GSuiteUtils import getAllTracksWithAttributes
+        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+
+        gSuite = getGSuiteFromGalaxyTN(gSuite)
+
+
+        #refTS = factory.getFlatTracksTS(genome, choices_gsuite)
+
+        for t in getAllTracksWithAttributes(gSuite):
+            singleTrackPath = t
+
+
+
+
+
 
 
 
