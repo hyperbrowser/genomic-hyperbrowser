@@ -1,0 +1,4 @@
+<tool id="hb_create_h_gsuite_from_csv_file_tool" name="Create hGsuite from file" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CreateHGsuiteFromCsvFileTool" proto_tool_class="CreateHGsuiteFromCsvFileTool">
+  <description></description>
+</tool>
