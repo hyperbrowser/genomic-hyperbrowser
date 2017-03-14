@@ -1,6 +1,6 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.HGsuiteClass import HGsuite
-
+import quick.gsuite.GuiBasedTsFactory as factory
 
 
 class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
@@ -91,13 +91,12 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         from quick.gsuite.GSuiteUtils import getAllTracksWithAttributes
         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-        gSuite = getGSuiteFromGalaxyTN(gSuite)
+        gSuiteTN = getGSuiteFromGalaxyTN(gSuite)
 
 
-        #refTS = factory.getFlatTracksTS(genome, choices_gsuite)
+        refTS = factory.getFlatTracksTS(gSuiteTN.genome, gSuite)
 
-        for t in getAllTracksWithAttributes(gSuite):
-            singleTrackPath = t
+        print refTS
 
 
 
