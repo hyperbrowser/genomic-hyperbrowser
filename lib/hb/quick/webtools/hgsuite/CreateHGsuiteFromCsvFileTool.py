@@ -92,11 +92,24 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
         gSuiteTN = getGSuiteFromGalaxyTN(gSuite)
-
-
         refTS = factory.getFlatTracksTS(gSuiteTN.genome, gSuite)
 
-        print refTS
+        outGSuite = GSuite()
+
+        for tr, it in refTS.items():
+            print tr, it
+
+            #outGSuite.addTrack(GSuiteTrack(uri, title=''.join(trackName), genome=gSuiteTN.genome))
+
+
+
+
+
+
+
+
+        #metadata
+        #categories = refTS.getMetadataFields()
 
 
 
