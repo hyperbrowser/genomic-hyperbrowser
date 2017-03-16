@@ -11,7 +11,8 @@ from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.TsWriterStat import TsWriterStat
-
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from urllib import quote
 
 class RandomizedTsWriterTool(GeneralGuiTool):
     @classmethod
@@ -253,13 +254,20 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         #TODO Lonneke: detect genome from GSuite?
         genome = 'hg19'
         ts = factory.getFlatTracksTS(genome, choices.gs)
-        tsv2 = TrackStructureV2()
-        for key, value in ts.items():
-            tsv2[key] = value
+        #tsv2 = TrackStructureV2()
+        #for key, value in ts.items():
+        #    tsv2[key] = value
+
+        for singleTrackTs in ts._getLeafNodes():
+            trackTitle = singleTrackTs.metadata['title']
+            trackFileName = GalaxyRunSpecificFile(['randomizedTrackFiles', trackTitle, trackTitle + '.bed'], galaxyFn)
+            singleTrackTs.metadata['quotedTrackFileName'] = quote(trackFileName.getDiskPath(True), safe="")
+
+            print singleTrackTs.metadata['quotedTrackFileName']
 
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
-        res = doAnalysis(spec, bins, tsv2)
+        res = doAnalysis(spec, bins, ts)
 
         print res
         print res.getGlobalResult()

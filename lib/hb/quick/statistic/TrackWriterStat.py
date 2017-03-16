@@ -13,20 +13,30 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
+from collections import defaultdict
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
-from gold.statistic.Statistic import Statistic, StatisticSumResSplittable
+from gold.statistic.Statistic import Statistic, StatisticSumResSplittable, StatisticSplittable
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 import os
+from urllib import quote, unquote
+
+from gold.util.CustomExceptions import ShouldNotOccurError
+
 
 class TrackWriterStat(MagicStatFactory):
     pass
 
 
-class TrackWriterStatSplittable(StatisticSumResSplittable): #TODO Lonneke: what kind of splittable statistic is this? it does not have to do anything, maybe make a new kind of splittable statistic?
-    pass
+class TrackWriterStatSplittable(StatisticSplittable): #TODO Lonneke: what kind of splittable statistic is this? it does not have to do anything, maybe make a new kind of splittable statistic?
+    def _combineResults(self):
+        self._result = self._childResults[0]
+        for childResult in self._childResults:
+            if childResult != self._result:
+                raise ShouldNotOccurError('All output filenames should be the same.')
 
 
 # de grote vraag die dus nog moet ingevuld worden; hoe wordt het gesplit?
@@ -36,11 +46,11 @@ class TrackWriterStatSplittable(StatisticSumResSplittable): #TODO Lonneke: what 
 # call unsplittable (track, naam, region)
 
 class TrackWriterStatUnsplittable(Statistic):
-    def _init(self, outFileName, **kwArgs):
-        self._outFileName = outFileName
+    def _init(self, quotedTrackFileName, **kwArgs):
+        self._trackFileName = unquote(quotedTrackFileName)
 
     def _compute(self):
-        f = open(self._outFileName, 'a')
+        f = open(self._trackFileName, 'a')
         #print 'FILENAME = ' + self._outFileName
 
         tv = self._children[0].getResult()
@@ -54,7 +64,8 @@ class TrackWriterStatUnsplittable(Statistic):
 
         f.close()
 
-        return self._outFileName
+        # this return is not entirely necessary, as the filenames have already been added to the trackstructure
+        return quote(self._trackFileName)
 
     def _createChildren(self):
         self._addChild(RawDataStat(self._region, self._track, TrackFormatReq()))

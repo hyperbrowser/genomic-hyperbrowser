@@ -16,7 +16,9 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.statistic.StatisticV2 import StatisticV2
 from quick.statistic.TrackWriterStat import TrackWriterStat
-
+import os
+from urllib import quote
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
 class TsWriterStat(MagicStatFactory):
     pass
@@ -36,5 +38,7 @@ class TsWriterStatUnsplittable(StatisticV2):
         for singleTrackTs in self._trackStructure._getLeafNodes():
             #TODO Lonneke: find way to make UNIQUE outfilenames, and add the names to a trackstructure
             #TODO Lonneke: where should the output file be placed? what folder?
-            outFileName = '_'.join(singleTrackTs.track.trackName) + '.bed' # possible output name, problem: what if 2 different tracks have the same name?
-            self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, outFileName=outFileName, **self._kwArgs))
+            #trackFileName = os.path.join(*singleTrackTs.track.trackName+['.randomized']) # possible output name, problem: what if 2 different tracks have the same name?
+            #print trackFileName
+
+            self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, quotedTrackFileName=singleTrackTs.metadata['quotedTrackFileName'], **self._kwArgs))
