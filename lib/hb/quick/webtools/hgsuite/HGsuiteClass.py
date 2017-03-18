@@ -43,6 +43,9 @@ class HGsuite:
             for r in reader:
                 if i==0:
                     header = r
+                    headerSelected=[]
+                    for c in colNum:
+                        headerSelected.append(header[c])
                 else:
                     dataCollectionPart=[]
                     for c in colNum:
@@ -61,9 +64,8 @@ class HGsuite:
                     dataCollection.append(dataCollectionPart)
                 i+=1
 
-
         if len(separateColumnList) == 0:
-            headerMod = '-'.join(header)
+            headerMod = ['-'.join(headerSelected)]
             return dataCollection, headerMod
         else:
             #do column separation and support the next category
