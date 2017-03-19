@@ -52,112 +52,77 @@ class HGsuite:
 
         return retrunList
 
-    @classmethod
-    def getPossibleColumnsConcatenation(cls, copyHeader, copyHeaderNumbersList):
-        groupColumn = OrderedDict()
 
-        for chNum in range(0, len(copyHeader)):
-            # check if the columnName has some value for the element
-            headerChNum = copyHeader[chNum]
-            #     print 'for which element', chNum, copyHeader[chNum]
-
-            # if sum is equal 0 it means that elemnt fits to every of the combination
-            if sum(copyHeaderNumbersList[chNum]) > 0:
-
-                if not headerChNum in groupColumn.keys():
-                    groupColumn[headerChNum] = []
-
-                for elNum1 in range(0, len(copyHeaderNumbersList)):
-                    if elNum1 == chNum:
-                        #                 print 'equal for which we count', copyHeaderNumbersList[elNum1]
-                        for elNum2 in range(0, len(copyHeaderNumbersList[elNum1])):
-                            if chNum == elNum2:
-                                groupColumn[headerChNum].append(headerChNum)
-                            else:
-                                inxEl = copyHeaderNumbersList[elNum1][elNum2]
-                                headerInxEl = copyHeader[elNum2]
-                                # element need to be equal zero
-                                if inxEl == 0:
-                                    # if the elment is not in groupColumn
-                                    if headerInxEl not in groupColumn[headerChNum]:
-                                        groupColumn[headerChNum].append(headerInxEl)
-        return groupColumn
 
     @classmethod
     def checkWhichColumnNeedToBeSplitted(cls, dataCollection, headerSelected):
 
-        print 'headerSelected=' + str(headerSelected)
-        print '<br/>','<br/>','<br/>'
-        print 'dataCollection=' + str(dataCollection)
-        print '<br/>', '<br/>', '<br/>'
+        uniqueDataCollection = [list(x) if len(x) > 1 else '' for x in
+                                set(tuple(x) for x in dataCollection)]
+        uniqueDataCollectionSingle = [list(x) if len(x) == 1 else '' for x in
+                                      set(tuple(x) for x in dataCollection)]
 
-        copyHeader = copy.copy(headerSelected)
-        copyHeaderNumbersList = cls.getUniqueCombinationOfColumns(copyHeader, dataCollection)
-        groupColumn = cls.getPossibleColumnsConcatenation(copyHeader, copyHeaderNumbersList)
+        print 'uniqueDataCollection', uniqueDataCollection
+        print 'uniqueDataCollectionSingle', uniqueDataCollectionSingle
 
-        print 'copyHeaderNumbers', copyHeaderNumbersList, '<br/>'
+        uniqueDataCollectionModified = []
+        count = 0
+        for el1 in uniqueDataCollection:
+            if el1 != '':
+                count += 1
+                e = el1
+            for el2 in uniqueDataCollection:
+                if len(el1) > 1 and len(el2) > 1:
+                    if el1 != '' and el2 != '' and el1 != el2:
+                        if len(list(set(el1).intersection(el2))) > 0:
+                            ll = list(set(el1 + el2))
+                            if not ll in uniqueDataCollectionModified:
+                                uniqueDataCollectionModified.append(ll)
+                        else:
+                            if not el1 in uniqueDataCollectionModified:
+                                uniqueDataCollectionModified.append(el1)
 
+        if count == 1:
+            uniqueDataCollectionModified.append(e)
 
+        print 'uniqueDataCollectionModified', uniqueDataCollectionModified
+        for s in uniqueDataCollectionSingle:
+            if s != '' and s[0] != None:
+                checkTF = False
+                for u in uniqueDataCollectionModified:
+                    if s[0] in u:
+                        checkTF = True
+                if checkTF == False:
+                    if not s in uniqueDataCollectionModified:
+                        uniqueDataCollectionModified.append(s)
 
+        print 'uniqueDataCollectionModified', uniqueDataCollectionModified
 
-        #response is the list - that one which have the same number need to be separate
-        #that one which have different number and it is only one then the columns can be combained
-
-
-
-
-        uniqueValue = list(set(copyHeaderNumbers))
-
-        print 'uniqueValue', '<br/>'
+        uniqueDataCollectionModifiedDesc = sorted(uniqueDataCollectionModified, key=len)
 
         groupColumn = {}
         groupColumn['different'] = []
         groupColumn['together'] = []
-        for uv in uniqueValue:
-            if uv != '*':
-                uvNum = copyHeaderNumbers.count(uv)
-                if uvNum == 1:
-                    groupColumn['together'].append(headerSelected[copyHeaderNumbers.index(uv)])
-                else:
-                    differentList = [i for i, x in enumerate(copyHeaderNumbers) if x == uv]
-                    for d in differentList:
-                        groupColumn['different'].append(headerSelected[d])
+
+        partData = []
+        for udEl in uniqueDataCollectionModifiedDesc:
+            if len(udEl) == 1:
+                partData.append(udEl[0])
             else:
-                groupColumn['different'].append(headerSelected[copyHeaderNumbers.index(uv)])
+                if len(partData) != 0:
+                    partData.append(udEl[0])
+                    groupColumn['together'].append(partData)
+                    count = 1
+                    partData = []
+                else:
+                    count = 0
+                for elN in range(count, len(udEl)):
+                    groupColumn['different'].append([udEl[elN]])
 
-        #different  - which one need to be separate
-        #together - which one can be together
-        print 'groupColumn', groupColumn, '<br/>'
-
-        exit()
+        print 'groupColumn', groupColumn
 
         return groupColumn
 
-    @classmethod
-    def getUniqueCombinationOfColumns(cls, copyHeader, dataCollection):
-
-        uniqueDataCollection = [list(x) if len(list(x)) > 1 else '' for x in
-                                set(tuple(x) for x in dataCollection)]
-        print 'set', uniqueDataCollection
-
-        copyHeaderNumbers = [0 for i in range(0, len(copyHeader))]
-        copyHeaderNumbersList = []
-
-        for ch in copyHeader:
-            copyHeaderNumbersList.append([0 for i in range(0, len(copyHeader))])
-        for acc in uniqueDataCollection:
-            i = 0
-            for a in acc:
-                if i == 0:
-                    indexA = copyHeader.index(a)
-                    copyHeaderNumbersList[indexA][indexA] += 1
-                else:
-                    indexB = copyHeader.index(a)
-                    copyHeaderNumbersList[indexA][indexB] += 1
-                    copyHeaderNumbersList[indexB][indexA] += 1
-                    copyHeaderNumbersList[indexB][indexB] += 1
-                i += 1
-        return copyHeaderNumbersList
 
     @classmethod
     def parseCvsFileBasedOnColumsNumber(cls, fileName, colNum):
@@ -176,18 +141,7 @@ class HGsuite:
 
             exit()
 
-            #all columns are splitted
-            dataCollectionModified = []
-            for dcNum in range(0, len(dataCollection)):
-                if len(dataCollection[dcNum]) == 1 and dataCollection[dcNum] == [None]:
-                    dcmList = []
-                    for hsNum in range(0, len(headerSelected)):
-                        dcmList.append(None)
-                    dataCollectionModified.append(dcmList)
-                if len(dataCollection[dcNum]) != len(headerSelected):
-                    dataCollectionModified.append(dataCollection[dcNum])
-                else:
-                    dataCollectionModified.append(cls.checkContains(headerSelected, dataCollection[dcNum]))
+
 
             return dataCollection, headerSelected
 
