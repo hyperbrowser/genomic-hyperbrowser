@@ -7,6 +7,8 @@ from collections import OrderedDict
 
 class HGsuite:
 
+    MERGED_SIGN = ' - '
+
     @classmethod
     def __init__(cls):
         pass
@@ -57,53 +59,28 @@ class HGsuite:
     @classmethod
     def checkWhichColumnNeedToBeSplitted(cls, dataCollection, headerSelected):
 
-        uniqueDataCollection = [list(x) if len(x) > 1 else '' for x in
-                                set(tuple(x) for x in dataCollection)]
-        uniqueDataCollectionSingle = [list(x) if len(x) == 1 else '' for x in
-                                      set(tuple(x) for x in dataCollection)]
-
-        print 'uniqueDataCollection', uniqueDataCollection
-        print 'uniqueDataCollectionSingle', uniqueDataCollectionSingle
-
-        uniqueDataCollectionModified = []
-        count = 0
-        for el1 in uniqueDataCollection:
-            if el1 != '':
-                count += 1
-                e = el1
-            for el2 in uniqueDataCollection:
-                if len(el1) > 1 and len(el2) > 1:
-                    if el1 != '' and el2 != '' and el1 != el2:
-                        if len(list(set(el1).intersection(el2))) > 0:
-                            ll = list(set(el1 + el2))
-                            if not ll in uniqueDataCollectionModified:
-                                uniqueDataCollectionModified.append(ll)
-                        else:
-                            if not el1 in uniqueDataCollectionModified:
-                                uniqueDataCollectionModified.append(el1)
-
-        if count == 1:
-            uniqueDataCollectionModified.append(e)
-
+        uniqueDataCollectionModified = cls.getUniqueCombinationsOfAllColumns(dataCollection)
         print 'uniqueDataCollectionModified', uniqueDataCollectionModified
-        for s in uniqueDataCollectionSingle:
-            if s != '' and s[0] != None:
-                checkTF = False
-                for u in uniqueDataCollectionModified:
-                    if s[0] in u:
-                        checkTF = True
-                if checkTF == False:
-                    if not s in uniqueDataCollectionModified:
-                        uniqueDataCollectionModified.append(s)
 
+        uniqueDataCollectionModified = cls.appendAllUniqueColumnsBySingleData(dataCollection, uniqueDataCollectionModified)
         print 'uniqueDataCollectionModified', uniqueDataCollectionModified
+
+        groupColumn = cls.buildGroupedColumn(uniqueDataCollectionModified)
+        print 'groupColumn', groupColumn
+
+
+        exit()
+
+        return groupColumn
+
+    @classmethod
+    def buildGroupedColumn(cls, uniqueDataCollectionModified):
 
         uniqueDataCollectionModifiedDesc = sorted(uniqueDataCollectionModified, key=len)
 
         groupColumn = {}
-        groupColumn['different'] = []
+        groupColumn['single'] = []
         groupColumn['together'] = []
-
         partData = []
         for udEl in uniqueDataCollectionModifiedDesc:
             if len(udEl) == 1:
@@ -117,12 +94,57 @@ class HGsuite:
                 else:
                     count = 0
                 for elN in range(count, len(udEl)):
-                    groupColumn['different'].append([udEl[elN]])
-
-        print 'groupColumn', groupColumn
+                    groupColumn['single'].append(udEl[elN])
 
         return groupColumn
 
+    @classmethod
+    def appendAllUniqueColumnsBySingleData(cls, dataCollection, uniqueDataCollectionModified):
+        uniqueDataCollectionSingle = [list(x) if len(x) == 1 else '' for x in
+                                      set(tuple(x) for x in dataCollection)]
+        for s in uniqueDataCollectionSingle:
+            if s != '' and s[0] != None:
+                checkTF = False
+                for u in uniqueDataCollectionModified:
+                    if s[0] in u:
+                        checkTF = True
+                if checkTF == False:
+                    if not s in uniqueDataCollectionModified:
+                        uniqueDataCollectionModified.append(s)
+        return uniqueDataCollectionModified
+
+    @classmethod
+    def getUniqueCombinationsOfAllColumns(cls, dataCollection):
+        uniqueDataCollection = [list(x) if len(x) > 1 else '' for x in
+                                set(tuple(x) for x in dataCollection)]
+        # print 'uniqueDataCollection', uniqueDataCollection
+        # print 'uniqueDataCollectionSingle', uniqueDataCollectionSingle
+        uniqueDataCollectionModified = []
+        for el1Num in range(0, len(uniqueDataCollection)):
+            el1 = uniqueDataCollection[el1Num]
+
+            ll = el1
+            llCount = 0
+            for el2Num in range(el1Num + 1, len(uniqueDataCollection)):
+                el2 = uniqueDataCollection[el2Num]
+                if el1 != '' and el2 != '':
+                    if len(el1) > 1 and len(el2) > 1:
+                        if len(list(set(ll).intersection(el2))) > 0:
+                            ll = list(set(ll + el2))
+                            uniqueDataCollection[el1Num] = ''
+                            uniqueDataCollection[el2Num] = ''
+                            llCount += 1
+
+            if len(ll) > 0:
+                chTF = False
+                for el in uniqueDataCollectionModified:
+                    if set(el) == set(ll):
+                        chTF = True
+
+                if chTF == False:
+                    uniqueDataCollectionModified.append(list(set(ll)))
+
+        return uniqueDataCollectionModified
 
     @classmethod
     def parseCvsFileBasedOnColumsNumber(cls, fileName, colNum):
@@ -131,19 +153,22 @@ class HGsuite:
 
         if len(separateColumnList) == 0:
             headerMod = ['-'.join(headerSelected)]
-            return dataCollection, headerMod
+
+            message = 'The selected column consist of data which are fully independent, so all column were merged successfully.'
+            return dataCollection, headerMod, message
         else:
             #do column separation and support the next category
 
             #check which column have to be splitted
             groupColumn = cls.checkWhichColumnNeedToBeSplitted(dataCollection, headerSelected)
-            cls.readCsvFileWithGroup(colNum, fileName, groupColumn)
+            headerGroup, dataCollectionGroup = cls.readCsvFileWithGroup(colNum, fileName, groupColumn)
 
-            exit()
+            headerGroupMessage = ', '.join([el for el in headerGroup])
+            message = 'The selected column consist of data which are not independent, ' \
+                      'so the following columns were merged together: ' + str(headerGroupMessage)
 
 
-
-            return dataCollection, headerSelected
+            return dataCollectionGroup, headerGroup, message
 
     @classmethod
     def readCsvFileWithGroup(cls, colNum, fileName, groupColumn):
@@ -154,46 +179,55 @@ class HGsuite:
         separateColumnList = []
         dataCollection = []
         i = 0
+
+        # groupColumn =
+        # {
+        # 'single': [['Adult'], ['Primary Immune cells'], ['Fetal']],
+        # 'together': [['ES/derived ', 'Brain']]
+        # }
+
         with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
             reader = csv.reader(f, delimiter=';')
             for r in reader:
                 if i == 0:
                     header = r
 
-                    for g in groupColumn['different']:
+                    for g in groupColumn['single']:
                         headerGroup.append(g)
                         if not g in dataCollectionGroup.keys():
                             dataCollectionGroup[g] = []
 
                     if len(groupColumn['together']) > 0:
-                        joinedPartGC = '-'.join(groupColumn['together'])
+                        for gctNum in range(0, len(groupColumn['together'])):
+                            joinedPartGC = HGsuite.MERGED_SIGN.join(groupColumn['together'][gctNum])
 
-                        headerGroup.append(joinedPartGC)
-                        if not joinedPartGC in dataCollectionGroup.keys():
-                            dataCollectionGroup[joinedPartGC] = []
+                            headerGroup.append(joinedPartGC)
+                            if not joinedPartGC in dataCollectionGroup.keys():
+                                dataCollectionGroup[joinedPartGC] = []
                 else:
-                    for g in groupColumn['different']:
+                    for g in groupColumn['single']:
                         indexG = header.index(g)
                         if r[indexG] == '':
                             dataCollectionGroup[g].append(None)
                         else:
                             dataCollectionGroup[g].append(g)
                     if len(groupColumn['together']) > 0:
-                        joinedPartGC = '-'.join(groupColumn['together'])
-                        for g in groupColumn['together']:
-                            indexG = header.index(g)
-                            if r[indexG] == '':
-                                dataCollectionGroup[joinedPartGC].append(g)
-                                wasTF = True
-                        if wasTF == False:
-                            dataCollectionGroup[joinedPartGC].append(None)
+                        for gctNum in range(0, len(groupColumn['together'])):
+                            joinedPartGC = HGsuite.MERGED_SIGN.join(groupColumn['together'][gctNum])
+                            for g in groupColumn['together'][gctNum]:
+                                indexG = header.index(g)
+                                if r[indexG] == '':
+                                    dataCollectionGroup[joinedPartGC].append(g)
+                                    wasTF = True
+                            if wasTF == False:
+                                dataCollectionGroup[joinedPartGC].append(None)
 
 
                 i += 1
 
-        for t, i in dataCollectionGroup.iteritems():
-            print t, len(i)
-        exit()
+        # for t, i in dataCollectionGroup.iteritems():
+        #     print t, len(i)
+        # exit()
 
         return headerGroup, dataCollectionGroup
 

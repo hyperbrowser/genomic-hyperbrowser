@@ -79,7 +79,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
         #######
         # TODO: check if the category with the same name exist
-        # TODO: support in 'parseCvsFileBasedOnColumsNumber' column which cannot be combined
+        # TODO (done): support in 'parseCvsFileBasedOnColumsNumber' column which cannot be combined
         #######
 
         selectedFile = choices.selectedFile
@@ -90,25 +90,39 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         # get selected columns as a list with numbers: starting from 0
         selCol = hGSuite.parseColumnResponse(selectedColumns)
         #get the column with new atributes
-        dataFromFile, header = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
+        dataFromFile, header, message = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
 
         gSuiteTN = getGSuiteFromGalaxyTN(gSuite)
+        extraGalaxyElement = cls.extraGalaxyFn['HGSuite']
 
         #refTS = factory.getFlatTracksTS(gSuiteTN.genome, gSuite)
         #iteration through refTS did not support the proper order of tracks
 
-        results = OrderedDict()
-        i=0
-        for tr in gSuiteTN.allTrackTitles():
-            results[tr] = dataFromFile[i]
-            i+=1
+        print dataFromFile, header
 
-        extraGalaxyElement = cls.extraGalaxyFn['HGSuite']
-        GSuiteStatUtils.addResultsToInputGSuite(gSuiteTN, results, header, extraGalaxyElement)
+        if len(header) == 1:
+            results = OrderedDict()
+            i=0
+            for tr in gSuiteTN.allTrackTitles():
+                results[tr] = dataFromFile[i]
+                i+=1
+
+            GSuiteStatUtils.addResultsToInputGSuite(gSuiteTN, results, header, extraGalaxyElement)
+        else:
+            for h in header:
+                results = OrderedDict()
+                i = 0
+                for tr in gSuiteTN.allTrackTitles():
+                    results[tr] = dataFromFile[h][i]
+                    i += 1
+                GSuiteStatUtils.addResultsToInputGSuite(gSuiteTN, results, [h],
+                                                        extraGalaxyElement)
+                results.clear()
 
         htmlCore = HtmlCore()
         htmlCore.begin()
-        htmlCore.line('HGsuite with new category is in the history.')
+        htmlCore.paragraph('HGsuite with new category is in the history.')
+        htmlCore.paragraph(message)
         htmlCore.end()
 
         print htmlCore
