@@ -68,7 +68,11 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
                 info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
                 return info
 
-
+        if choices.selectedFile:
+            if choices.selectedColumns != '':
+                selCol = hGSuite.parseColumnResponse(choices.selectedColumns)
+                if len(selCol) > 15:
+                    return 'Limited number of column is 15. You selected: ' + str(len(selCol)) + ' columns.'
 
         return
 
@@ -98,7 +102,6 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         #refTS = factory.getFlatTracksTS(gSuiteTN.genome, gSuite)
         #iteration through refTS did not support the proper order of tracks
 
-        print dataFromFile, header
 
         if len(header) == 1:
             results = OrderedDict()

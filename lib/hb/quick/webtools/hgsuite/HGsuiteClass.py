@@ -54,97 +54,169 @@ class HGsuite:
 
         return retrunList
 
+    @classmethod
+    def allCombinations(cls, headerSelected, includingSingleElement=False):
+        # all combination of elements in list
 
+        if includingSingleElement == False:
+            singleVal = 1
+        if includingSingleElement == True:
+            singleVal = 0
+
+        allComb = []
+        for L in range(0, len(headerSelected) + 1):
+            for subset in itertools.combinations(headerSelected, L):
+                if len(subset) > singleVal:
+                    allComb.append(list(subset))
+        return allComb
 
     @classmethod
     def checkWhichColumnNeedToBeSplitted(cls, dataCollection, headerSelected):
 
-        uniqueDataCollectionModified = cls.getUniqueCombinationsOfAllColumns(dataCollection)
-        print 'uniqueDataCollectionModified', uniqueDataCollectionModified
-
-        uniqueDataCollectionModified = cls.appendAllUniqueColumnsBySingleData(dataCollection, uniqueDataCollectionModified)
-        print 'uniqueDataCollectionModified', uniqueDataCollectionModified
-
-        groupColumn = cls.buildGroupedColumn(uniqueDataCollectionModified)
-        print 'groupColumn', groupColumn
-
-
-        exit()
+        print 'headerSelected=',headerSelected, '<br />'
+        print 'dataCollection=', dataCollection, '<br />'
+        #
+        mapOfPossibleCombinationDict = cls.getMapOfPossibleCombinations(dataCollection, headerSelected)
+        # print 'mapOfPossibleCombinationDict', mapOfPossibleCombinationDict, '<br />'
+        #
+        mapOfPossibleCombinationDescList = cls.getAllPossibilitiesForInitialData(mapOfPossibleCombinationDict, headerSelected)
+        # # print 'mapOfPossibleCombinationDescList', mapOfPossibleCombinationDescList, '<br />'
+        #
+        groupColumn = cls.buildGroupedColumn(mapOfPossibleCombinationDescList, headerSelected)
+        # # print 'groupColumn', groupColumn, '<br />'
 
         return groupColumn
 
     @classmethod
-    def buildGroupedColumn(cls, uniqueDataCollectionModified):
-
-        uniqueDataCollectionModifiedDesc = sorted(uniqueDataCollectionModified, key=len)
+    def buildGroupedColumn(cls, mapOfPossibleCombinationDescList, headerSelected):
 
         groupColumn = {}
         groupColumn['single'] = []
         groupColumn['together'] = []
-        partData = []
-        for udEl in uniqueDataCollectionModifiedDesc:
-            if len(udEl) == 1:
-                partData.append(udEl[0])
-            else:
-                if len(partData) != 0:
-                    partData.append(udEl[0])
-                    groupColumn['together'].append(partData)
-                    count = 1
-                    partData = []
-                else:
-                    count = 0
-                for elN in range(count, len(udEl)):
-                    groupColumn['single'].append(udEl[elN])
+        copyHeaderSelected = copy.copy(headerSelected)
+
+        # addFirstEl
+        elM = mapOfPossibleCombinationDescList[0]
+        if len(elM) > 1:
+            groupColumn['together'].append(elM)
+        else:
+            groupColumn['single'].append(elM)
+        whatLeft = list(set(copyHeaderSelected) - set(elM))
+        whatLeftComb = sorted(cls.allCombinations(whatLeft, includingSingleElement=True), key=len,
+                              reverse=True)
+        mapOfPossibleCombinationDescList = [el if len(el) <= len(whatLeft) else '' for el in
+                                            mapOfPossibleCombinationDescList]
+        # print 'new mapOfPossibleCombinationDescList', mapOfPossibleCombinationDescList
+
+        # groupColum - final collection of data
+        # whatLeft - which elements need to be found
+        # mapOfPossibleCombinationDescList - possible combinations of elements
+
+        #check the rest of elements
+        cls.checkRestPossibilities(groupColumn, whatLeft, whatLeftComb,
+                              mapOfPossibleCombinationDescList)
 
         return groupColumn
 
     @classmethod
-    def appendAllUniqueColumnsBySingleData(cls, dataCollection, uniqueDataCollectionModified):
-        uniqueDataCollectionSingle = [list(x) if len(x) == 1 else '' for x in
-                                      set(tuple(x) for x in dataCollection)]
-        for s in uniqueDataCollectionSingle:
-            if s != '' and s[0] != None:
-                checkTF = False
-                for u in uniqueDataCollectionModified:
-                    if s[0] in u:
-                        checkTF = True
-                if checkTF == False:
-                    if not s in uniqueDataCollectionModified:
-                        uniqueDataCollectionModified.append(s)
-        return uniqueDataCollectionModified
+    def checkRestPossibilities(cls, groupColumn, whatLeft, whatLeftComb,
+                              mapOfPossibleCombinationDescList):
+        #     print 'groupColumn', groupColumn
+        #     print 'whatLeft', whatLeft
+        #     print 'whatLeftComb', whatLeftComb
+        #     print 'mapOfPossibleCombinationDescList', mapOfPossibleCombinationDescList
+        for wl1Num in range(0, len(whatLeftComb)):
+            #         print '---', wl1Num, whatLeftComb[wl1Num], len(whatLeftComb)
+            elWL = whatLeftComb[wl1Num]
+            for wl2Num in range(0, len(mapOfPossibleCombinationDescList)):
+                elM = mapOfPossibleCombinationDescList[wl2Num]
+                if elM != '':
+                    if set(elWL) == set(elM):
+
+                        if len(elM) == 1:
+                            for elSingleNum in range(wl1Num, len(whatLeftComb)):
+                                elNM = whatLeftComb[elSingleNum]
+                                if not elNM[0] in groupColumn['single']:
+                                    groupColumn['single'].append(elNM[0])
+                        else:
+                            if len(elM) > 1:
+                                if not elM in groupColumn['together']:
+                                    groupColumn['together'].append(elM)
+
+                        whatLeft = list(set(whatLeft) - set(elM))
+
+                        if len(whatLeft) > 1:
+                            whatLeftComb = sorted(
+                                cls.allCombinations(whatLeft, includingSingleElement=True),
+                                key=len, reverse=True)
+                            mapOfPossibleCombinationDescList = [
+                                el if len(el) <= len(whatLeft) else '' for el in
+                                mapOfPossibleCombinationDescList]
+
+                            return cls.checkRestPossibilities(groupColumn, whatLeft, whatLeftComb,
+                                                         mapOfPossibleCombinationDescList)
+                        elif len(whatLeft) == 1:
+                            if not whatLeft[0] in groupColumn['single']:
+                                groupColumn['single'].append(whatLeft[0])
+
+                        else:
+                            return True
+
+
+        return groupColumn
 
     @classmethod
-    def getUniqueCombinationsOfAllColumns(cls, dataCollection):
+    def getAllPossibilitiesForInitialData(cls, mapOfPossibleCombinationDict, headerSelected):
+
+
+        mapOfPossibleCombinationList = []
+        for h in headerSelected:
+            allPossibleComb = cls.allCombinations(mapOfPossibleCombinationDict[h]['initialData'])
+            for el1Num in range(0, len(allPossibleComb)):
+                countIfTheCombIsPossible = 0
+                for el2Num in range(0, len(allPossibleComb[el1Num])):
+                    singleH = allPossibleComb[el1Num][el2Num]
+                    if singleH in mapOfPossibleCombinationDict.keys():
+                        intersectedOtherEl = mapOfPossibleCombinationDict[singleH]['initialData']
+                        wholeList = allPossibleComb[el1Num]
+                        if set(wholeList) == set(intersectedOtherEl).intersection(wholeList):
+                            countIfTheCombIsPossible += 1
+                    else:
+                        countIfTheCombIsPossible += 1
+
+                if countIfTheCombIsPossible == len(allPossibleComb[el1Num]):
+                    checkTF = False
+                    for mp in mapOfPossibleCombinationList:
+                        if set(mp) == set(allPossibleComb[el1Num]):
+                            checkTF = True
+                    if checkTF == False:
+                        mapOfPossibleCombinationList.append(list(set(allPossibleComb[el1Num])))
+
+        mapOfPossibleCombinationDescList = sorted(mapOfPossibleCombinationList, key=len,
+                                                  reverse=True) + [[h] for h in headerSelected]
+
+        return mapOfPossibleCombinationDescList
+
+    @classmethod
+    def getMapOfPossibleCombinations(cls, dataCollection, headerSelected):
         uniqueDataCollection = [list(x) if len(x) > 1 else '' for x in
                                 set(tuple(x) for x in dataCollection)]
-        # print 'uniqueDataCollection', uniqueDataCollection
-        # print 'uniqueDataCollectionSingle', uniqueDataCollectionSingle
-        uniqueDataCollectionModified = []
-        for el1Num in range(0, len(uniqueDataCollection)):
-            el1 = uniqueDataCollection[el1Num]
 
-            ll = el1
-            llCount = 0
-            for el2Num in range(el1Num + 1, len(uniqueDataCollection)):
-                el2 = uniqueDataCollection[el2Num]
-                if el1 != '' and el2 != '':
-                    if len(el1) > 1 and len(el2) > 1:
-                        if len(list(set(ll).intersection(el2))) > 0:
-                            ll = list(set(ll + el2))
-                            uniqueDataCollection[el1Num] = ''
-                            uniqueDataCollection[el2Num] = ''
-                            llCount += 1
+        mapOfPossibleCombinationDict = {}
+        for h in headerSelected:
+            mapOfPossibleCombinationDict[h] = {}
+            mapOfPossibleCombinationDict[h]['initialData'] = []
 
-            if len(ll) > 0:
-                chTF = False
-                for el in uniqueDataCollectionModified:
-                    if set(el) == set(ll):
-                        chTF = True
+            combainDataForHeaderElement = []
+            for el1Num in range(0, len(uniqueDataCollection)):
+                el1 = uniqueDataCollection[el1Num]
+                if el1 != '' and h in el1:
+                    combainDataForHeaderElement = list(set(el1 + combainDataForHeaderElement))
 
-                if chTF == False:
-                    uniqueDataCollectionModified.append(list(set(ll)))
+            mapOfPossibleCombinationDict[h]['initialData'] = [h] + list(
+                set(headerSelected) - set(combainDataForHeaderElement))
 
-        return uniqueDataCollectionModified
+        return mapOfPossibleCombinationDict
 
     @classmethod
     def parseCvsFileBasedOnColumsNumber(cls, fileName, colNum):
@@ -155,6 +227,7 @@ class HGsuite:
             headerMod = ['-'.join(headerSelected)]
 
             message = 'The selected column consist of data which are fully independent, so all column were merged successfully.'
+
             return dataCollection, headerMod, message
         else:
             #do column separation and support the next category
@@ -165,7 +238,7 @@ class HGsuite:
 
             headerGroupMessage = ', '.join([el for el in headerGroup])
             message = 'The selected column consist of data which are not independent, ' \
-                      'so the following columns were merged together: ' + str(headerGroupMessage)
+                      'so the following columns (written with " - ") were merged together: ' + str(headerGroupMessage)
 
 
             return dataCollectionGroup, headerGroup, message
@@ -185,6 +258,7 @@ class HGsuite:
         # 'single': [['Adult'], ['Primary Immune cells'], ['Fetal']],
         # 'together': [['ES/derived ', 'Brain']]
         # }
+
 
         with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
             reader = csv.reader(f, delimiter=';')
