@@ -11,6 +11,7 @@ from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from proto.hyperbrowser.HtmlCore import HtmlCore
 
+
 class TSExperimentTool(GeneralGuiTool, DebugMixin):
     @classmethod
     def getToolName(cls):
