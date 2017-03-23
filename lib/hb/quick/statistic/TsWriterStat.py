@@ -36,9 +36,4 @@ class TsWriterStatUnsplittable(StatisticV2):
 
     def _createChildren(self):
         for singleTrackTs in self._trackStructure._getLeafNodes():
-            #TODO Lonneke: find way to make UNIQUE outfilenames, and add the names to a trackstructure
-            #TODO Lonneke: where should the output file be placed? what folder?
-            #trackFileName = os.path.join(*singleTrackTs.track.trackName+['.randomized']) # possible output name, problem: what if 2 different tracks have the same name?
-            #print trackFileName
-
             self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, trackFilePath=singleTrackTs.metadata['trackFilePath'], **self._kwArgs))

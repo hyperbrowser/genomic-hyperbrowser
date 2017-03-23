@@ -32,7 +32,7 @@ class TrackWriterStat(MagicStatFactory):
     pass
 
 
-class TrackWriterStatSplittable(StatisticSplittable): #TODO Lonneke: what kind of splittable statistic is this? it does not have to do anything, maybe make a new kind of splittable statistic?
+class TrackWriterStatSplittable(StatisticSplittable):
     def _combineResults(self):
         self._result = self._childResults[0]
         for childResult in self._childResults:
@@ -40,31 +40,22 @@ class TrackWriterStatSplittable(StatisticSplittable): #TODO Lonneke: what kind o
                 raise ShouldNotOccurError('All output filenames should be the same.')
 
 
-# de grote vraag die dus nog moet ingevuld worden; hoe wordt het gesplit?
-# splitten doet de volgende dingen:
-# for region in alle genomeregions (chromosomen)
-# maak nieuwe unieke naam
-# call unsplittable (track, naam, region)
-
 class TrackWriterStatUnsplittable(Statistic):
     def _init(self, trackFilePath, **kwArgs):
         self._trackFilePath = trackFilePath
 
     def _compute(self):
         ensurePathExists(self._trackFilePath)
-        f = open(self._trackFilePath, 'a')
-        #print 'FILENAME = ' + self._outFileName
+        outputFile = open(self._trackFilePath, 'a')
 
-        tv = self._children[0].getResult()
-        starts = tv.startsAsNumpyArray()
-        ends = tv.endsAsNumpyArray()
-        #print os.path.realpath(f.name)
+        trackView = self._children[0].getResult()
+        starts = trackView.startsAsNumpyArray()
+        ends = trackView.endsAsNumpyArray()
 
         for segmentIndex in range(0, len(starts)):
-            f.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
-            #print '\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])])
+            outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
 
-        f.close()
+        outputFile.close()
 
         # this return is not entirely necessary, as the filenames have already been added to the trackstructure
         return quote(self._trackFilePath)
