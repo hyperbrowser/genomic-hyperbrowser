@@ -25,6 +25,7 @@ import os
 from urllib import quote, unquote
 
 from gold.util.CustomExceptions import ShouldNotOccurError
+from proto.CommonFunctions import ensurePathExists
 
 
 class TrackWriterStat(MagicStatFactory):
@@ -46,11 +47,12 @@ class TrackWriterStatSplittable(StatisticSplittable): #TODO Lonneke: what kind o
 # call unsplittable (track, naam, region)
 
 class TrackWriterStatUnsplittable(Statistic):
-    def _init(self, quotedTrackFileName, **kwArgs):
-        self._trackFileName = unquote(quotedTrackFileName)
+    def _init(self, trackFilePath, **kwArgs):
+        self._trackFilePath = trackFilePath
 
     def _compute(self):
-        f = open(self._trackFileName, 'a')
+        ensurePathExists(self._trackFilePath)
+        f = open(self._trackFilePath, 'a')
         #print 'FILENAME = ' + self._outFileName
 
         tv = self._children[0].getResult()
@@ -65,7 +67,7 @@ class TrackWriterStatUnsplittable(Statistic):
         f.close()
 
         # this return is not entirely necessary, as the filenames have already been added to the trackstructure
-        return quote(self._trackFileName)
+        return quote(self._trackFilePath)
 
     def _createChildren(self):
         self._addChild(RawDataStat(self._region, self._track, TrackFormatReq()))

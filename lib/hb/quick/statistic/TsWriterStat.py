@@ -41,4 +41,4 @@ class TsWriterStatUnsplittable(StatisticV2):
             #trackFileName = os.path.join(*singleTrackTs.track.trackName+['.randomized']) # possible output name, problem: what if 2 different tracks have the same name?
             #print trackFileName
 
-            self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, quotedTrackFileName=singleTrackTs.metadata['quotedTrackFileName'], **self._kwArgs))
+            self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, trackFilePath=singleTrackTs.metadata['trackFilePath'], **self._kwArgs))

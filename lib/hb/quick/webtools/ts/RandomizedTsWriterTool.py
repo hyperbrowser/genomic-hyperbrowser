@@ -1,6 +1,10 @@
+from gold.gsuite import GSuiteComposer
+from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuite import GSuite
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 from quick.application.UserBinSource import UserBinSource
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 import quick.gsuite.GuiBasedTsFactory as factory
@@ -12,12 +16,15 @@ from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.TsWriterStat import TsWriterStat
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-from urllib import quote
+from urllib import quote, unquote
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
+import os
+
 
 class RandomizedTsWriterTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        """
+        """from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
         Specifies a header of the tool, which is displayed at the top of the
         page.
 
@@ -167,7 +174,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
     #             dataset in the form [XXX, YYYY]
     #         name is the title of the history element
     #
-    #     The different parts can be extracted using the functions
+    #     The different parts can be extracted using the functionsfrom gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
     #     extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
     #     extractNameFromDatasetInfo() from the module CommonFunctions.py.
     #     """
@@ -251,26 +258,27 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         Mandatory unless isRedirectTool() returns True.
         """
         print 'Executing...'
-        #TODO Lonneke: detect genome from GSuite?
-        genome = 'hg19'
+        inputGsuite = getGSuiteFromGalaxyTN(choices.gs)
+        outputGSuite = GSuite()
+        genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
-        #tsv2 = TrackStructureV2()
-        #for key, value in ts.items():
-        #    tsv2[key] = value
 
         for singleTrackTs in ts._getLeafNodes():
-            trackTitle = singleTrackTs.metadata['title']
-            trackFileName = GalaxyRunSpecificFile(['randomizedTrackFiles', trackTitle, trackTitle + '.bed'], galaxyFn)
-            singleTrackTs.metadata['quotedTrackFileName'] = quote(trackFileName.getDiskPath(True), safe="")
-
-            print singleTrackTs.metadata['quotedTrackFileName']
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
+                                                suffix='bed')
+            gSuiteTrack = GSuiteTrack(uri)
+            outputGSuite.addTrack(gSuiteTrack)
+            singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
 
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, ts)
 
-        print res
-        print res.getGlobalResult()
+#        print res
+#        print res.getGlobalResult()
+
+        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -416,24 +424,24 @@ class RandomizedTsWriterTool(GeneralGuiTool):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        """
+        The format of the history element with the output of the tool. Note
+        that if 'html' is returned, any print statements in the execute()
+        method is printed to the output dataset. For text-based output
+        (e.g. bed) the output dataset only contains text written to the
+        galaxyFn file, while all print statements are redirected to the info
+        field of the history item box.
+
+        Note that for 'html' output, standard HTML header and footer code is
+        added to the output dataset. If one wants to write the complete HTML
+        page, use the restricted output format 'customhtml' instead.
+
+        Optional method. Default return value if method is not defined:
+        'html'
+        """
+        return 'gsuite'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
