@@ -35,10 +35,11 @@ class RandomizedTrack(Track):
     def __new__(cls, *args, **kwArgs):
         return object.__new__(cls)
 
-    def __init__(self, origTrack, origRegion, randIndex, **kwArgs):
+    def __init__(self, origTrack, randIndex, **kwArgs):
         self._origTrack = origTrack
         self.trackName = origTrack.trackName + ['Randomized', str(randIndex)]
-        self._origRegion = origRegion
+        self.trackTitle = origTrack.trackTitle
+#        self._origRegion = origRegion
         self._trackFormatReq = NeutralTrackFormatReq()
         self._cachedTV = None
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)
@@ -53,9 +54,9 @@ class RandomizedTrack(Track):
     def getTrackView(self, region):
         #print 'TEMP5: get tv for reg: ',region, ' for TrackName: ', self.trackName
         #print str(type(self._origRegion)) + " and " + str(type(region))
-        if DebugConfig.USE_SLOW_DEFENSIVE_ASSERTS:
-            assert (not isIter(self._origRegion) and self._origRegion  == region) or \
-                    (isIter(self._origRegion) and region in self._origRegion)
+#        if DebugConfig.USE_SLOW_DEFENSIVE_ASSERTS:
+#            assert (not isIter(self._origRegion) and self._origRegion  == region) or \
+#                    (isIter(self._origRegion) and region in self._origRegion)
 
         if self._minimal and not self.WORKS_WITH_MINIMAL:
             return self._origTrack.getTrackView(region)

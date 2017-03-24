@@ -1,22 +1,21 @@
 from gold.gsuite import GSuiteComposer
-from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
+from gold.track.PermutedSegsAndIntersegsTrack import PermutedSegsAndIntersegsTrack
+from gold.track.PermutedSegsAndSampledIntersegsTrack import PermutedSegsAndSampledIntersegsTrack
+from gold.track.RandomGenomeLocationTrack import RandomGenomeLocationTrack
+from gold.track.RandomizedSegsTrack import RandomizedSegsTrack
+from gold.track.SegsSampledByIntensityTrack import SegsSampledByIntensityTrack
+from gold.track.ShuffledMarksTrack import ShuffledMarksTrack
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
-from quick.application.UserBinSource import UserBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
+from quick.track.SegsSampledByDistanceToReferenceTrack import SegsSampledByDistanceToReferenceTrack
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 import quick.gsuite.GuiBasedTsFactory as factory
-from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
-from quick.statistic.StatFacades import ObservedVsExpectedStat
-from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.TsWriterStat import TsWriterStat
-from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-from urllib import quote, unquote
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 import os
 
@@ -267,16 +266,16 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                 extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
                                                 suffix='bed')
-            gSuiteTrack = GSuiteTrack(uri)
+
+            gSuiteTrack = GSuiteTrack(uri, title=singleTrackTs.track.trackTitle, fileFormat='primary', trackType='segments', genome=genome)
             outputGSuite.addTrack(gSuiteTrack)
             singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+            # of all subclasses of RandomizedTrack, so far this works with both PermutedSegsAndIntersegsTrack and PermutedSegsAndSampledIntersegsTrack
+            singleTrackTs.track = PermutedSegsAndSampledIntersegsTrack(singleTrackTs.track, 1)
 
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, ts)
-
-#        print res
-#        print res.getGlobalResult()
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
