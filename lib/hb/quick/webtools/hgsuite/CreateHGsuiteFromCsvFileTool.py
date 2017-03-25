@@ -17,58 +17,70 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select file with data', 'selectedFile'),
+        return [#('Select file with data', 'selectedFile'),
                 ('Select gSuite:', 'gSuite'),
                 ('Possible columns', 'possibleColumns'),
                 ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns'),
                 ]
 
-    @classmethod
-    def getOptionsBoxSelectedFile(cls):
-        return GeneralGuiTool.getHistorySelectionElement('csv')
+    # @classmethod
+    # def getOptionsBoxSelectedFile(cls):
+    #     return GeneralGuiTool.getHistorySelectionElement('csv')
 
     @classmethod
-    def getOptionsBoxGSuite(cls, prevChoices):
+    def getOptionsBoxGSuite(cls):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
     def getOptionsBoxPossibleColumns(cls, prevChoices):
-        if prevChoices.selectedFile:
-            hGSuite = HGsuite()
-            header = hGSuite.parseCvsFileHeader(prevChoices.selectedFile)
+
+        #for reading only from gSuite
+        if prevChoices.gSuite:
+            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gSuite)
 
             tableElements = [['Column number', 'Column name']]
             i=1
-            for h in header:
-                tableElements.append([i, h])
+            for attr in gSuiteTN.attributes:
+                tableElements.append([i, attr])
                 i+=1
             return tableElements
 
+        # if prevChoices.selectedFile:
+        #     hGSuite = HGsuite()
+        #     header = hGSuite.parseCvsFileHeader(prevChoices.selectedFile)
+        #
+        #     tableElements = [['Column number', 'Column name']]
+        #     i=1
+        #     for h in header:
+        #         tableElements.append([i, h])
+        #         i+=1
+        #     return tableElements
+
     @classmethod
     def getOptionsBoxSelectedColumns(cls, prevChoices):
-        if prevChoices.selectedFile:
+        if prevChoices.gSuite:
             return ''
 
 
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-
-        if not choices.selectedFile:
-            return 'Select csv file'
+        hGSuite = HGsuite()
+        # if not choices.selectedFile:
+        #     return 'Select csv file'
 
 
         # check if the number of lines in csv is more than in gsuite
-        if choices.selectedFile and choices.gSuite:
-            hGSuite = HGsuite()
-            if hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite) != hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile):
+        # if choices.selectedFile and choices.gSuite:
+        #     hGSuite = HGsuite()
+        #     if hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite) != hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile):
+        #
+        #         info = 'You have different number of tracks in gsuite than attributes in csv filr. '
+        #         info += 'In GSuite you have: ' + str(hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite)) + ' lines. '
+        #         info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
+        #         return info
 
-                info = 'You have different number of tracks in gsuite than attributes in csv filr. '
-                info += 'In GSuite you have: ' + str(hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite)) + ' lines. '
-                info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
-                return info
-
-        if choices.selectedFile:
+        if choices.gSuite:
             if choices.selectedColumns != '':
                 selCol = hGSuite.parseColumnResponse(choices.selectedColumns)
                 if len(selCol) > 15:
@@ -80,13 +92,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-
-        #######
-        # TODO: check if the category with the same name exist
-        # TODO (done): support in 'parseCvsFileBasedOnColumsNumber' column which cannot be combined
-        #######
-
-        selectedFile = choices.selectedFile
+        #selectedFile = choices.selectedFile
         selectedColumns = choices.selectedColumns
         gSuite = choices.gSuite
 
@@ -94,9 +100,14 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         # get selected columns as a list with numbers: starting from 0
         selCol = hGSuite.parseColumnResponse(selectedColumns)
         #get the column with new atributes
-        dataFromFile, header, message = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
 
         gSuiteTN = getGSuiteFromGalaxyTN(gSuite)
+
+
+
+        #dataFromFile, header, message = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
+        dataFromFile, header, message = hGSuite.parseGSuiteFileBasedOnColumsNumber(gSuiteTN, selCol)
+
         extraGalaxyElement = cls.extraGalaxyFn['HGSuite']
 
         #refTS = factory.getFlatTracksTS(gSuiteTN.genome, gSuite)

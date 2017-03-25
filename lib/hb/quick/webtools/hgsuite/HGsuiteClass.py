@@ -72,10 +72,7 @@ class HGsuite:
 
     @classmethod
     def checkWhichColumnNeedToBeSplitted(cls, dataCollection, headerSelected):
-
-        print 'headerSelected=',headerSelected, '<br />'
-        print 'dataCollection=', dataCollection, '<br />'
-        #
+   #
         mapOfPossibleCombinationDict = cls.getMapOfPossibleCombinations(dataCollection, headerSelected)
         # print 'mapOfPossibleCombinationDict', mapOfPossibleCombinationDict, '<br />'
         #
@@ -100,7 +97,7 @@ class HGsuite:
         if len(elM) > 1:
             groupColumn['together'].append(elM)
         else:
-            groupColumn['single'].append(elM)
+            groupColumn['single'].append(elM[0])
         whatLeft = list(set(copyHeaderSelected) - set(elM))
         whatLeftComb = sorted(cls.allCombinations(whatLeft, includingSingleElement=True), key=len,
                               reverse=True)
@@ -218,10 +215,35 @@ class HGsuite:
 
         return mapOfPossibleCombinationDict
 
-    @classmethod
-    def parseCvsFileBasedOnColumsNumber(cls, fileName, colNum):
+    # @classmethod
+    # def parseCvsFileBasedOnColumsNumber(cls, fileName, colNum):
+    #
+    #     headerSelected, dataCollection, separateColumnList = cls.readCsvFile(colNum, fileName)
+    #
+    #     if len(separateColumnList) == 0:
+    #         headerMod = ['-'.join(headerSelected)]
+    #
+    #         message = 'The selected column consist of data which are fully independent, so all column were merged successfully.'
+    #
+    #         return dataCollection, headerMod, message
+    #     else:
+    #         #do column separation and support the next category
+    #
+    #         #check which column have to be splitted
+    #         groupColumn = cls.checkWhichColumnNeedToBeSplitted(dataCollection, headerSelected)
+    #         headerGroup, dataCollectionGroup = cls.readCsvFileWithGroup(colNum, fileName, groupColumn)
+    #
+    #         headerGroupMessage = ', '.join([el for el in headerGroup])
+    #         message = 'The selected column consist of data which are not independent, ' \
+    #                   'so the following columns (written with " - ") were merged together: ' + str(headerGroupMessage)
+    #
+    #
+    #         return dataCollectionGroup, headerGroup, message
 
-        headerSelected, dataCollection, separateColumnList = cls.readCsvFile(colNum, fileName)
+    @classmethod
+    def parseGSuiteFileBasedOnColumsNumber(cls, gSuite, colNum):
+
+        headerSelected, dataCollection, separateColumnList, allData = cls.readGSuiteFile(colNum, gSuite)
 
         if len(separateColumnList) == 0:
             headerMod = ['-'.join(headerSelected)]
@@ -230,21 +252,25 @@ class HGsuite:
 
             return dataCollection, headerMod, message
         else:
-            #do column separation and support the next category
+            # do column separation and support the next category
 
-            #check which column have to be splitted
+            # check which column have to be splitted
             groupColumn = cls.checkWhichColumnNeedToBeSplitted(dataCollection, headerSelected)
-            headerGroup, dataCollectionGroup = cls.readCsvFileWithGroup(colNum, fileName, groupColumn)
+
+
+            headerGroup, dataCollectionGroup = cls.readGSuiteFileWithGroup(colNum, gSuite,
+                                                                        groupColumn, allData, headerSelected)
 
             headerGroupMessage = ', '.join([el for el in headerGroup])
             message = 'The selected column consist of data which are not independent, ' \
-                      'so the following columns (written with " - ") were merged together: ' + str(headerGroupMessage)
-
+                      'so the following columns (written with " - ") were merged together: ' + str(
+                headerGroupMessage)
 
             return dataCollectionGroup, headerGroup, message
 
+
     @classmethod
-    def readCsvFileWithGroup(cls, colNum, fileName, groupColumn):
+    def readGSuiteFileWithGroup(cls, colNum, gSuite, groupColumn, allData, headerSelected):
 
         headerGroup = []
         dataCollectionGroup = OrderedDict()
@@ -260,44 +286,42 @@ class HGsuite:
         # }
 
 
-        with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
-            reader = csv.reader(f, delimiter=';')
-            for r in reader:
-                if i == 0:
-                    header = r
 
-                    for g in groupColumn['single']:
-                        headerGroup.append(g)
-                        if not g in dataCollectionGroup.keys():
-                            dataCollectionGroup[g] = []
+        for g in groupColumn['single']:
+            headerGroup.append(g)
+            if not g in dataCollectionGroup.keys():
+                dataCollectionGroup[g] = []
 
-                    if len(groupColumn['together']) > 0:
-                        for gctNum in range(0, len(groupColumn['together'])):
-                            joinedPartGC = HGsuite.MERGED_SIGN.join(groupColumn['together'][gctNum])
+        if len(groupColumn['together']) > 0:
+            for gctNum in range(0, len(groupColumn['together'])):
+                joinedPartGC = HGsuite.MERGED_SIGN.join(
+                    groupColumn['together'][gctNum])
 
-                            headerGroup.append(joinedPartGC)
-                            if not joinedPartGC in dataCollectionGroup.keys():
-                                dataCollectionGroup[joinedPartGC] = []
+                headerGroup.append(joinedPartGC)
+                if not joinedPartGC in dataCollectionGroup.keys():
+                    dataCollectionGroup[joinedPartGC] = []
+
+
+        for r in allData:
+
+            for g in groupColumn['single']:
+                indexG = headerSelected.index(g)
+                if r[indexG] == None:
+                    dataCollectionGroup[g].append(None)
                 else:
-                    for g in groupColumn['single']:
-                        indexG = header.index(g)
-                        if r[indexG] == '':
-                            dataCollectionGroup[g].append(None)
-                        else:
-                            dataCollectionGroup[g].append(g)
-                    if len(groupColumn['together']) > 0:
-                        for gctNum in range(0, len(groupColumn['together'])):
-                            joinedPartGC = HGsuite.MERGED_SIGN.join(groupColumn['together'][gctNum])
-                            for g in groupColumn['together'][gctNum]:
-                                indexG = header.index(g)
-                                if r[indexG] == '':
-                                    dataCollectionGroup[joinedPartGC].append(g)
-                                    wasTF = True
-                            if wasTF == False:
-                                dataCollectionGroup[joinedPartGC].append(None)
+                    dataCollectionGroup[g].append(g)
+            if len(groupColumn['together']) > 0:
+                for gctNum in range(0, len(groupColumn['together'])):
+                    joinedPartGC = HGsuite.MERGED_SIGN.join(
+                        groupColumn['together'][gctNum])
+                    for g in groupColumn['together'][gctNum]:
+                        indexG = headerSelected.index(g)
+                        if r[indexG] == None:
+                            dataCollectionGroup[joinedPartGC].append(g)
+                            wasTF = True
+                    if wasTF == False:
+                        dataCollectionGroup[joinedPartGC].append(None)
 
-
-                i += 1
 
         # for t, i in dataCollectionGroup.iteritems():
         #     print t, len(i)
@@ -305,37 +329,76 @@ class HGsuite:
 
         return headerGroup, dataCollectionGroup
 
+
+
     @classmethod
-    def readCsvFile(cls, colNum, fileName):
+    def readGSuiteFile(cls, colNum, gSuite):
 
         separateColumnList = []
         dataCollection = []
         i = 0
-        with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
-            reader = csv.reader(f, delimiter=';')
-            for r in reader:
-                if i == 0:
-                    header = r
-                    headerSelected = []
-                    for c in colNum:
-                        headerSelected.append(header[c])
-                else:
-                    dataCollectionPart = []
-                    for c in colNum:
-                        if r[c] != '':
-                            dataCollectionPart.append(header[c])
 
-                    if len(dataCollectionPart) == 0:
-                        dataCollectionPart = [None]
+        allGSuiteAttributes = gSuite.attributes
+        headerSelected = [allGSuiteAttributes[c] for c in colNum]
 
-                    if len(dataCollectionPart) >= 2:
-                        for dcp in dataCollectionPart:
-                            if not dcp in separateColumnList:
-                                separateColumnList.append(dcp)
+        allAttrVal = []
+        for h in headerSelected:
+            allAttrValPart = []
+            for r in gSuite.getAttributeValueList(h):
+                allAttrValPart.append(r)
+            allAttrVal.append(allAttrValPart)
 
-                    dataCollection.append(dataCollectionPart)
-                i += 1
-        return headerSelected, dataCollection, separateColumnList
+        allData = zip(*allAttrVal)
+
+        for r in allData:
+            dataCollectionPart = []
+            for c in range(0, len(r)):
+                if r[c] != None:
+                    dataCollectionPart.append(headerSelected[c])
+
+            if len(dataCollectionPart) == 0:
+                dataCollectionPart = [None]
+
+            if len(dataCollectionPart) >= 2:
+                for dcp in dataCollectionPart:
+                    if not dcp in separateColumnList:
+                        separateColumnList.append(dcp)
+
+            dataCollection.append(dataCollectionPart)
+
+        return headerSelected, dataCollection, separateColumnList, allData
+
+    # @classmethod
+    # def readCsvFile(cls, colNum, gSuite):
+    #
+    #     separateColumnList = []
+    #     dataCollection = []
+    #     i = 0
+    #     with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
+    #         reader = csv.reader(f, delimiter=';')
+    #         for r in reader:
+    #             if i == 0:
+    #                 header = r
+    #                 headerSelected = []
+    #                 for c in colNum:
+    #                     headerSelected.append(header[c])
+    #             else:
+    #                 dataCollectionPart = []
+    #                 for c in colNum:
+    #                     if r[c] != '':
+    #                         dataCollectionPart.append(header[c])
+    #
+    #                 if len(dataCollectionPart) == 0:
+    #                     dataCollectionPart = [None]
+    #
+    #                 if len(dataCollectionPart) >= 2:
+    #                     for dcp in dataCollectionPart:
+    #                         if not dcp in separateColumnList:
+    #                             separateColumnList.append(dcp)
+    #
+    #                 dataCollection.append(dataCollectionPart)
+    #             i += 1
+    #     return headerSelected, dataCollection, separateColumnList
 
     @classmethod
     def parseColumnResponse(cls, selectedColumns):
