@@ -173,7 +173,16 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
         bins = UserBinSource('chr1','*',genome='hg19')
         res = doAnalysis(spec, bins, fullTS)
         ts = res.getGlobalResult()['Result']
-        print 'Results: ', ts.result
+        tsRes = ts.result
+
+        htmlCore = HtmlCore()
+        htmlCore.begin()
+        htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
+        for k, it in tsRes.iteritems():
+            htmlCore.tableLine([k, str("%.2f" % it[0]) + '-' + str("%.2f" % it[1])])
+        htmlCore.tableFooter()
+        htmlCore.end()
+        print htmlCore
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
