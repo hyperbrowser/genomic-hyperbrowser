@@ -9,7 +9,6 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
-from proto.hyperbrowser.HtmlCore import HtmlCore
 
 
 class TSExperimentTool(GeneralGuiTool, DebugMixin):
@@ -176,8 +175,6 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
         ts = res.getGlobalResult()['Result']
         tsRes = ts.result
 
-
-
         htmlCore = HtmlCore()
         htmlCore.begin()
         htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
@@ -186,7 +183,6 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
         htmlCore.tableFooter()
         htmlCore.end()
         print htmlCore
-
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -332,24 +328,24 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
     #     """
     #     return False
     #
-    @classmethod
-    def getOutputFormat(cls, choices):
-        """
-        The format of the history element with the output of the tool. Note
-        that if 'html' is returned, any print statements in the execute()
-        method is printed to the output dataset. For text-based output
-        (e.g. bed) the output dataset only contains text written to the
-        galaxyFn file, while all print statements are redirected to the info
-        field of the history item box.
-
-        Note that for 'html' output, standard HTML header and footer code is
-        added to the output dataset. If one wants to write the complete HTML
-        page, use the restricted output format 'customhtml' instead.
-
-        Optional method. Default return value if method is not defined:
-        'html'
-        """
-        return 'customhtml'
+    # @classmethod
+    # def getOutputFormat(cls, choices):
+    #     """
+    #     The format of the history element with the output of the tool. Note
+    #     that if 'html' is returned, any print statements in the execute()
+    #     method is printed to the output dataset. For text-based output
+    #     (e.g. bed) the output dataset only contains text written to the
+    #     galaxyFn file, while all print statements are redirected to the info
+    #     field of the history item box.
+    #
+    #     Note that for 'html' output, standard HTML header and footer code is
+    #     added to the output dataset. If one wants to write the complete HTML
+    #     page, use the restricted output format 'customhtml' instead.
+    #
+    #     Optional method. Default return value if method is not defined:
+    #     'html'
+    #     """
+    #     return 'html'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
