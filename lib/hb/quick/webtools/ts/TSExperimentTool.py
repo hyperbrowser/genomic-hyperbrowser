@@ -9,7 +9,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
-
+from proto.hyperbrowser.HtmlCore import HtmlCore
 
 class TSExperimentTool(GeneralGuiTool, DebugMixin):
     @classmethod
