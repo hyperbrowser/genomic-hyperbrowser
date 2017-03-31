@@ -136,7 +136,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
 
         spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
         spec.addParameter('summaryFunc','minAndMax')
-        bins = UserBinSource('chr1','*',genome='hg19')
+        bins = UserBinSource('chr1','*',genome=genome)
         res = doAnalysis(spec, bins, fullTS)
         ts = res.getGlobalResult()['Result']
         tsRes = ts.result
