@@ -118,7 +118,6 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         # from config.DebugConfig import DebugModes
         # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
 
-
         choices_gsuite = choices.gsuite
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
