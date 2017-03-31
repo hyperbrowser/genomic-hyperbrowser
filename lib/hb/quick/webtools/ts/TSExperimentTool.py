@@ -121,7 +121,8 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         choices_gsuite = choices.gsuite
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
-        genome = 'hg19'
+        #genome = 'hg19'
+        genome = choices_gsuite.genome
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
 
