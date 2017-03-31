@@ -17,7 +17,7 @@ def getFlatTracksTS(genome, guiSelectedGSuite):
     gsuite = getGSuiteFromGalaxyTN(guiSelectedGSuite)
     for gsTrack in gsuite.allTracks():
         track = PlainTrack(gsTrack.trackName)
-        metadata = OrderedDict(title=gsTrack.title, genome=genome)
+        metadata = OrderedDict(title=gsTrack.title, genome=str(genome))
         metadata.update(gsTrack.attributes)
         ts[gsTrack.title] = SingleTrackTS(track, metadata)
     return ts
