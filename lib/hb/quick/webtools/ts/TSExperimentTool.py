@@ -1,6 +1,7 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
-
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.application.UserBinSource import UserBinSource
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 import quick.gsuite.GuiBasedTsFactory as factory
@@ -9,9 +10,9 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
+from proto.hyperbrowser.HtmlCore import HtmlCore
 
-
-class TSExperimentTool(GeneralGuiTool, DebugMixin):
+class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
     @classmethod
     def getToolName(cls):
         """
@@ -43,65 +44,29 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select categorical GSuite of 4 tracks', 'gs'),
-                ('Select query track', 'query'),
-                ('Select category', 'cat')] + cls.getInputBoxNamesForDebug()
-
-
-    # @classmethod
-    # def getInputBoxOrder(cls):
-    #     """
-    #     Specifies the order in which the input boxes should be displayed,
-    #     as a list. The input boxes are specified by index (starting with 1)
-    #     or by key. If None, the order of the input boxes is in the order
-    #     specified by getInputBoxNames().
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getInputBoxGroups(cls, choices=None):
-    #     """
-    #     Creates a visual separation of groups of consecutive option boxes
-    #     from the rest (fieldset). Each such group has an associated label
-    #     (string), which is shown to the user. To define groups of option
-    #     boxes, return a list of BoxGroup namedtuples with the label, the key
-    #     (or index) of the first and last options boxes (inclusive).
-    #
-    #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey',
-    #                         last='secondKey')]
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+        return [('Select categorical GSuite of 4 tracks', 'gsuite')
+                ] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select query track', 'query'),
+                 ('Select category', 'cat')
+                ] + \
+               cls.getInputBoxNamesForDebug()
 
     @classmethod
-    def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
-
-        return GeneralGuiToolMixin.getHistorySelectionElement()
+    def getOptionsBoxGsuite(cls):
+        return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxQuery(cls, prevChoices):  # Alt: getOptionsBox2()
-        """
-        See getOptionsBoxFirstKey().
-
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
-        """
+    def getOptionsBoxQuery(cls, prevChoices):
         return GeneralGuiToolMixin.getHistorySelectionElement()
 
     @classmethod
     def getOptionsBoxCat(cls, prevChoices):
-        return ''
+
+        if prevChoices.gsuite:
+            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            return gSuiteTN.attributes
+
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -153,11 +118,12 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
         # from config.DebugConfig import DebugModes
         # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
 
-
-        choices_gsuite = choices.gs
+        choices_gsuite = choices.gsuite
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
-        genome = 'hg19'
+        #genome = 'hg19'
+        genome =  choices.genome
+
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
 
