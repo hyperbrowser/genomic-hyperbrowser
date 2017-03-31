@@ -43,7 +43,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select categorical GSuite of 4 tracks', 'gs'),
+        return [('Select categorical GSuite', 'gs'),
                 ('Select query track', 'query'),
                 ('Select category', 'cat')] + cls.getInputBoxNamesForDebug()
 
@@ -170,7 +170,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
 
         spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
         spec.addParameter('summaryFunc','minAndMax')
-        bins = UserBinSource('chr1','*',genome='hg19')
+        bins = UserBinSource('*','*',genome='hg19')
         res = doAnalysis(spec, bins, fullTS)
         ts = res.getGlobalResult()['Result']
         tsRes = ts.result
