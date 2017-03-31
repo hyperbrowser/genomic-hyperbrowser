@@ -40,3 +40,9 @@ def concatenateGSuites(gSuiteList):
         concatenatedGSuite.addTracks(gSuite.allTracks())
 
     return concatenatedGSuite
+
+def addColumnToGSuite(gsuite, attrName, trackTitleToColumnValueDict):
+    for gsTrack in gsuite.allTracks():
+        attrVal = trackTitleToColumnValueDict[gsTrack.title]
+        gsTrack.setAttribute(attrName, attrVal)
+        gsuite.addTrack(gsTrack)

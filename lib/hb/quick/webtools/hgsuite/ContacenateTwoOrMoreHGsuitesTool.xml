@@ -1,0 +1,4 @@
+<tool id="hb_contacenate_two_or_more_h_gsuites_tool" name="Concatenate two or more hGsuites" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ContacenateTwoOrMoreHGsuitesTool" proto_tool_class="ContacenateTwoOrMoreHGsuitesTool">
+  <description></description>
+</tool>
