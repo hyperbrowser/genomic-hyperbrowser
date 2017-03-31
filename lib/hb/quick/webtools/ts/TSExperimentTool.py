@@ -140,7 +140,6 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         ts = res.getGlobalResult()['Result']
         tsRes = ts.result
 
-
         htmlCore = HtmlCore()
         htmlCore.begin()
         htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
