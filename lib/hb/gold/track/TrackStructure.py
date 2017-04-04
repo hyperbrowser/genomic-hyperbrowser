@@ -176,10 +176,10 @@ class TrackStructureV2(dict):
             newRoot[subCategoryKey] = self._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
         return newRoot
 
-    def _getLeafNodes(self):
+    def getLeafNodes(self):
         leafNodes = []
         for subtree in self.values():
-            leafNodes += subtree._getLeafNodes()
+            leafNodes += subtree.getLeafNodes()
         return leafNodes
 
     def _getOriginalNodeName(self, originalName, usedNames):
@@ -202,7 +202,7 @@ class TrackStructureV2(dict):
         # this way all other (metadata) fields won't be removed
         newRoot = FlatTracksTS()
 
-        for leafNode in self._getLeafNodes():
+        for leafNode in self.getLeafNodes():
             # TODO Lonneke use a better, original key to represent the tracks
             newRoot[self._getOriginalNodeName(leafNode.track.trackName, newRoot.keys())] = leafNode
 
@@ -214,8 +214,8 @@ class TrackStructureV2(dict):
         # assert self.isFlat()
         # assert referenceTS.isFlat()
 
-        queryLeafNodes = self._getLeafNodes()
-        referenceLeafNodes = referenceTS._getLeafNodes()
+        queryLeafNodes = self.getLeafNodes()
+        referenceLeafNodes = referenceTS.getLeafNodes()
 
         root = TrackStructureV2()
 
@@ -227,8 +227,9 @@ class TrackStructureV2(dict):
                 root[str(query.track.trackName) + "_" + str(reference.track.trackName)] = newPair
         return root
 
-    def getRandomizedVersion(self, randTvProviderClass, randIndex, **kwargs):
-        return self._getRandomizedVersion(randTvProviderClass(self, **kwargs), randIndex)
+    # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
+    def getRandomizedVersion(self, randTvProvider, randIndex, **kwargs):
+        return self._getRandomizedVersion(randTvProvider(self, **kwargs), randIndex)
 
     def _getRandomizedVersion(self, randTvProvider, randIndex):
         newCopy = copy.copy(self)
@@ -265,12 +266,12 @@ class SingleTrackTS(TrackStructureV2):
     def _copySegregatedSubtree(self, nodeToSplitOn, keyOfSubtree):
         return self
 
-    def _getLeafNodes(self):
+    def getLeafNodes(self):
         return [self]
 
     def _getRandomizedVersion(self, randTvProvider, randIndex):
         newCopy = copy.copy(self)
-        newCopy.track = TsBasedRandomizedTrack(randTvProvider, randIndex, self.track.trackSomeUniqueID) #TODO: maybe use self.track itself as ID..
+        newCopy.track = TsBasedRandomizedTrack(self.track, randTvProvider, randIndex)
         return newCopy
 
 class FlatTracksTS(TrackStructureV2):

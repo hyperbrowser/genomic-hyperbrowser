@@ -1,4 +1,9 @@
+from gold.track.TrackFormat import NeutralTrackFormatReq
+from gold.track.TrackView import TrackView
 from gold.util.CustomExceptions import AbstractClassError
+import numpy as np
+import random as rn
+from gold.statistic.RawDataStat import RawDataStat
 
 
 class TsBasedRandomTrackViewProvider(object):
@@ -6,15 +11,15 @@ class TsBasedRandomTrackViewProvider(object):
         self._origTs = origTs
         self._elementPoolDict = {}
 
-    def getTrackView(self, region, trackTitle, randIndex):
+    def getTrackView(self, region, origTrack, randIndex):
         raise AbstractClassError
 
 
 class ShuffleElementsBetweenTracksTvProvider(TsBasedRandomTrackViewProvider):
-    def getTrackView(self, region, trackSomeUniqueID, randIndex):
+    def getTrackView(self, region, origTrack, randIndex):
         if region not in self._elementPoolDict:
             self._populatePool(region)
-        return self._elementPoolDict[region].getOneTrackFromPool(trackSomeUniqueID, randIndex)
+        return self._elementPoolDict[region].getOneTrackViewFromPool(origTrack, randIndex)
 
     def _populatePool(self, region):
         self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region)
@@ -22,19 +27,71 @@ class ShuffleElementsBetweenTracksTvProvider(TsBasedRandomTrackViewProvider):
 
 class ShuffleElementsBetweenTracksPool(object):
     def __init__(self, origTs, region):
-        self._origTs = origTs
         self._region = region
-        self._preparedTracks = {} #Double dict, where _preparedTracks[randIndex] gives a dict with trackSomeUniqueIDs as keys
+        self._randomTrackSets = {} # _randomTrackSets[randIndex] gives a double list; [[track0starts, track1starts, ..., trackNstarts],[track0ends, track1ends, ..., trackNends]
+        self._trackIdToIndexDict = {}
 
-        #TODO: trackSomeUniqueID should maybe just be mapped over to a numbers from 0..T (num tracks in origTS)
-        self._trackSomeUniqueIDToIndexDict = {}
+        origStartArrays = []
+        origEndArrays = []
 
-    def getOneTrackFromPool(self, trackSomeUniqueID, randIndex):
-        trackIndex = self._trackSomeUniqueIDToIndexDict[trackSomeUniqueID]
-        if randIndex not in self._preparedTracks:
-            self._computePreparedTracks(randIndex)
+        for index, leafNode in enumerate(origTs.getLeafNodes()):
+            track = leafNode.track
+            trackId = track.getUniqueKey('unknown')
+            self._trackIdToIndexDict[trackId] = index
 
-    def _computePreparedTracks(self, randIndex):
-        #TODO: put in Lonnekes algorithm, to take data from origTs and shuffle into self._computePreparedTracks[randIndex][i] for i in 0..numTracks
+            tv = track.getTrackView(region)
+            origStartArrays.append(tv.startsAsNumpyArray())
+            origEndArrays.append(tv.endsAsNumpyArray())
+            self._maxTrackIndex = index
+
+        self._allStarts = np.concatenate(self._origStartArrays)
+        self._allEnds = np.concatenate(self._origEndArrays)
+        self._order = self._allStarts.argsort()
+
+
+    # TODO: dangerous; trackId must always be based on unknown. to make it easier to make this consistent, the original track is passed all the way here instead of passing the trackId directly
+    def getOneTrackViewFromPool(self, origTrack, randIndex):
+        trackId = origTrack.getUniqueKey('unknown')
+        assert trackId in self._trackIdToIndexDict.keys(), 'given track should be in the original TrackStructure that was used to make this pool'
+        trackIndex = self._trackIdToIndexDict[origTrack.getUniqueKey('unknown')]
+
+        if randIndex not in self._randomTrackSets:
+            self._computeRandomTrackSet(randIndex)
+
+        newStarts = self._randomTrackSets[randIndex][0][trackIndex]
+        newEnds = self._randomTrackSets[randIndex][1][trackIndex]
+
+        rawData = RawDataStat(self._region, self._origTrack, NeutralTrackFormatReq())
+        origTV = rawData.getResult()
+
+        #TODO now this just returns a trackview with basically everything copied from the original, is that ok? should some other stuff also change?
+        return TrackView(origTV.genomeAnchor, newStarts, newEnds, origTV._valList, origTV._strandList, origTV._idList, origTV._edgesList,
+                                   origTV._weightsList, origTV.borderHandling, origTV.allowOverlaps, extraLists=origTV._extraLists)
+
+
+    def _computeRandomTrackSet(self, randIndex):
+        rn.seed(randIndex)
+
+        newStarts = [[] for track in range(0, self.maxTrackIndex + 1)]
+        newEnds = [[] for track in range(0, self.maxTrackIndex + 1)]
+
+        for index in self._order:
+            start = self._allStarts[index]
+            end = self._allEnds[index]
+            selectedTrack = rn.randint(0, self.maxTrackIndex)
+
+            try:
+                while newEnds[selectedTrack][-1] > start:
+                    selectedTrack = rn.randint(0, self.maxTrackIndex)
+            except IndexError:
+                # there is nothing in the newEnds list yet, place the current track
+                pass
+
+            newStarts[selectedTrack].append(start)
+            newEnds[selectedTrack].append(end)
+
+       # self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
+        self._randomTrackSets[randIndex] = [[newStarts], [newEnds]]
+
 
 
