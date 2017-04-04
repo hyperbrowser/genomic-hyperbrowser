@@ -13,16 +13,12 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from collections import defaultdict
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
-from gold.statistic.Statistic import Statistic, StatisticSumResSplittable, StatisticSplittable
-from gold.track.GenomeRegion import GenomeRegion
-from gold.track.Track import Track
+from gold.statistic.Statistic import Statistic, StatisticSplittable
 from gold.track.TrackFormat import TrackFormatReq
-import os
-from urllib import quote, unquote
+from urllib import quote
 
 from gold.util.CustomExceptions import ShouldNotOccurError
 from proto.CommonFunctions import ensurePathExists
