@@ -15,6 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 
+from gold.track import TsBasedRandomizedTrack
 from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 from quick.application.SignatureDevianceLogging import takes
@@ -226,6 +227,16 @@ class TrackStructureV2(dict):
                 root[str(query.track.trackName) + "_" + str(reference.track.trackName)] = newPair
         return root
 
+    def getRandomizedVersion(self, randTvProviderClass, randIndex, **kwargs):
+        return self._getRandomizedVersion(randTvProviderClass(self, **kwargs), randIndex)
+
+    def _getRandomizedVersion(self, randTvProvider, randIndex):
+        newCopy = copy.copy(self)
+        for key in self.keys():
+            newCopy[key] = newCopy[key]._getRandomizedVersion(randTvProvider, randIndex)
+        return newCopy
+
+
 class SingleTrackTS(TrackStructureV2):
     @takes(object, Track, dict)
     def __init__(self, track, metadata):
@@ -257,6 +268,10 @@ class SingleTrackTS(TrackStructureV2):
     def _getLeafNodes(self):
         return [self]
 
+    def _getRandomizedVersion(self, randTvProvider, randIndex):
+        newCopy = copy.copy(self)
+        newCopy.track = TsBasedRandomizedTrack(randTvProvider, randIndex, self.track.trackSomeUniqueID) #TODO: maybe use self.track itself as ID..
+        return newCopy
 
 class FlatTracksTS(TrackStructureV2):
     pass
