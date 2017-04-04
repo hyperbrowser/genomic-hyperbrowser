@@ -321,4 +321,3 @@ class FlatTracksTS(TrackStructureV2):
 
 class CategoricalTS(TrackStructureV2):
     pass
-
