@@ -83,9 +83,11 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
 
-        #randTvProvider = ShuffleElementsBetweenTracksTvProvider(ts)
+        randTvProvider = ShuffleElementsBetweenTracksTvProvider(ts)
 
-        pool = ShuffleElementsBetweenTracksPool(ts, GenomeRegion('chr1', 1, 249250621))
+       # pool = ShuffleElementsBetweenTracksPool(ts, GenomeRegion('chr1', 1, 249250621))
+
+        ts.getRandomizedVersion(randTvProvider, 1)
 
 
 
@@ -101,11 +103,10 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         #     # of all subclasses of RandomizedTrack, so far this works with both PermutedSegsAndIntersegsTrack and PermutedSegsAndSampledIntersegsTrack
         #     singleTrackTs.track = PermutedSegsAndSampledIntersegsTrack(singleTrackTs.track, 1)
         #
-        # bins = GlobalBinSource(genome)
-        # spec = AnalysisSpec(TsWriterStat)
-        # res = doAnalysis(spec, bins, ts)
-        #
-        # GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+        bins = GlobalBinSource(genome)
+        spec = AnalysisSpec(TsWriterStat)
+        res = doAnalysis(spec, bins, ts)
+        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
