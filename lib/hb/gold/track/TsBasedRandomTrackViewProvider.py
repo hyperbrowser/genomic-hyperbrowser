@@ -44,8 +44,8 @@ class ShuffleElementsBetweenTracksPool(object):
             origEndArrays.append(tv.endsAsNumpyArray())
             self._maxTrackIndex = index
 
-        self._allStarts = np.concatenate(self._origStartArrays)
-        self._allEnds = np.concatenate(self._origEndArrays)
+        self._allStarts = np.concatenate(origStartArrays)
+        self._allEnds = np.concatenate(origEndArrays)
         self._order = self._allStarts.argsort()
 
 
@@ -61,7 +61,10 @@ class ShuffleElementsBetweenTracksPool(object):
         newStarts = self._randomTrackSets[randIndex][0][trackIndex]
         newEnds = self._randomTrackSets[randIndex][1][trackIndex]
 
-        rawData = RawDataStat(self._region, self._origTrack, NeutralTrackFormatReq())
+        print newStarts
+        print newEnds
+
+        rawData = RawDataStat(self._region, origTrack, NeutralTrackFormatReq())
         origTV = rawData.getResult()
 
         #TODO now this just returns a trackview with basically everything copied from the original, is that ok? should some other stuff also change?
@@ -72,17 +75,17 @@ class ShuffleElementsBetweenTracksPool(object):
     def _computeRandomTrackSet(self, randIndex):
         rn.seed(randIndex)
 
-        newStarts = [[] for track in range(0, self.maxTrackIndex + 1)]
-        newEnds = [[] for track in range(0, self.maxTrackIndex + 1)]
+        newStarts = [[] for track in range(0, self._maxTrackIndex + 1)]
+        newEnds = [[] for track in range(0, self._maxTrackIndex + 1)]
 
         for index in self._order:
             start = self._allStarts[index]
             end = self._allEnds[index]
-            selectedTrack = rn.randint(0, self.maxTrackIndex)
+            selectedTrack = rn.randint(0, self._maxTrackIndex)
 
             try:
                 while newEnds[selectedTrack][-1] > start:
-                    selectedTrack = rn.randint(0, self.maxTrackIndex)
+                    selectedTrack = rn.randint(0, self._maxTrackIndex)
             except IndexError:
                 # there is nothing in the newEnds list yet, place the current track
                 pass

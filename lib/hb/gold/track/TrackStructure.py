@@ -15,7 +15,7 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 
-from gold.track import TsBasedRandomizedTrack
+from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
 from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 from quick.application.SignatureDevianceLogging import takes

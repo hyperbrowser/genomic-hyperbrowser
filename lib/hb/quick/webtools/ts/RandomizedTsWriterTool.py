@@ -83,29 +83,24 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
 
-        randTvProvider = ShuffleElementsBetweenTracksTvProvider(ts)
+        #randTvProvider = ShuffleElementsBetweenTracksTvProvider(ts)
 
        # pool = ShuffleElementsBetweenTracksPool(ts, GenomeRegion('chr1', 1, 249250621))
 
-        ts.getRandomizedVersion(randTvProvider, 1)
+        for singleTrackTs in ts.getLeafNodes():
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
+                                                suffix='bed')
 
+            gSuiteTrack = GSuiteTrack(uri, title=singleTrackTs.track.trackTitle, fileFormat='primary', trackType='segments', genome=genome)
+            outputGSuite.addTrack(gSuiteTrack)
+            singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+            # of all subclasses of RandomizedTrack, so far this works with both PermutedSegsAndIntersegsTrack and PermutedSegsAndSampledIntersegsTrack
+            #singleTrackTs.track = PermutedSegsAndSampledIntersegsTrack(singleTrackTs.track, 1)
 
-
-
-        # for singleTrackTs in ts.getLeafNodes():
-        #     uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-        #                                         extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
-        #                                         suffix='bed')
-        #
-        #     gSuiteTrack = GSuiteTrack(uri, title=singleTrackTs.track.trackTitle, fileFormat='primary', trackType='segments', genome=genome)
-        #     outputGSuite.addTrack(gSuiteTrack)
-        #     singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
-        #     # of all subclasses of RandomizedTrack, so far this works with both PermutedSegsAndIntersegsTrack and PermutedSegsAndSampledIntersegsTrack
-        #     singleTrackTs.track = PermutedSegsAndSampledIntersegsTrack(singleTrackTs.track, 1)
-        #
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
-        res = doAnalysis(spec, bins, ts)
+        res = doAnalysis(spec, bins, ts.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, 1))
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
@@ -141,5 +136,5 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined:
         'html'
         """
-        return 'html'
-       # return 'gsuite'
+       # return 'html'
+        return 'gsuite'
