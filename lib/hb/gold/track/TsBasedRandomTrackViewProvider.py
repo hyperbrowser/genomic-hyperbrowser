@@ -61,16 +61,21 @@ class ShuffleElementsBetweenTracksPool(object):
         newStarts = self._randomTrackSets[randIndex][0][trackIndex]
         newEnds = self._randomTrackSets[randIndex][1][trackIndex]
 
-        print newStarts
-        print newEnds
-
         rawData = RawDataStat(self._region, origTrack, NeutralTrackFormatReq())
         origTV = rawData.getResult()
 
-        #TODO now this just returns a trackview with basically everything copied from the original, is that ok? should some other stuff also change?
-        return TrackView(origTV.genomeAnchor, newStarts, newEnds, origTV._valList, origTV._strandList, origTV._idList, origTV._edgesList,
-                                   origTV._weightsList, origTV.borderHandling, origTV.allowOverlaps, extraLists=origTV._extraLists)
-
+        #TODO: now this just returns a trackview with basically everything copied from the original, is that ok? should some other stuff also change?
+        return TrackView(genomeAnchor=origTV.genomeAnchor,
+                         startList=newStarts,
+                         endList=newEnds,
+                         valList=[0 for i in range(0, len(newStarts))],
+                         strandList=[-1 for i in range(0, len(newStarts))],
+                         idList=None,
+                         edgesList=None,
+                         weightsList=None,
+                         borderHandling=origTV.borderHandling,
+                         allowOverlaps=False)#TODO: make this optional
+                         #extraLists=origTV._extraLists, #TODO also 'translate' this extralist?
 
     def _computeRandomTrackSet(self, randIndex):
         rn.seed(randIndex)
@@ -93,8 +98,10 @@ class ShuffleElementsBetweenTracksPool(object):
             newStarts[selectedTrack].append(start)
             newEnds[selectedTrack].append(end)
 
-       # self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
-        self._randomTrackSets[randIndex] = [[newStarts], [newEnds]]
+        self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
+
+
+
 
 
 

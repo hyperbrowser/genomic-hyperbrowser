@@ -204,7 +204,7 @@ class TrackView(object):
 
         for i, list in enumerate([self._startList, self._endList, self._valList, self._strandList, self._idList, self._edgesList, self._weightsList] \
             + [extraList for extraList in self._extraLists.values()]):
-                assert list is None or len(list) == self._numListElements, 'List (%s): ' % i + str(list) + ' (expected %s elements, found %s)' % (self._numListElements, len(list))
+            assert list is None or len(list) == self._numListElements, 'List (%s): ' % i + str(list) + ' (expected %s elements, found %s)' % (self._numListElements, len(list))
 
     def __iter__(self):
         self._trackElement._index = -1
