@@ -7,10 +7,11 @@ from gold.statistic.RawDataStat import RawDataStat
 
 
 class TsBasedRandomTrackViewProvider(object):
-    def __init__(self, origTs, allowOverlaps=False, **kwargs):
+    def __init__(self, origTs, allowOverlaps=False, preserveNumberOfSegments=False, **kwargs):
         self._origTs = origTs
         self._elementPoolDict = {}
         self._allowOverlaps = allowOverlaps
+        self._preserveNumberOfSegments = preserveNumberOfSegments
 
     def getTrackView(self, region, origTrack, randIndex):
         raise AbstractClassError
@@ -29,11 +30,11 @@ class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
         return self._elementPoolDict[region].getOneTrackViewFromPool(origTrack, randIndex)
 
     def _populatePool(self, region):
-        self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region, allowOverlaps=self._allowOverlaps)
+        self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region, allowOverlaps=self._allowOverlaps, preserveNumberOfSegments=self._preserveNumberOfSegments)
 
 
 class ShuffleElementsBetweenTracksPool(object):
-    def __init__(self, origTs, region, allowOverlaps=False):
+    def __init__(self, origTs, region, allowOverlaps=False, preserveNumberOfSegments=False, **kwArgs):
         self._region = region
         self._allowOverlaps = allowOverlaps
         self._randomTrackSets = {} # _randomTrackSets[randIndex] gives a double list; [[track0starts, track1starts, ..., trackNstarts],[track0ends, track1ends, ..., trackNends]
@@ -50,11 +51,16 @@ class ShuffleElementsBetweenTracksPool(object):
             tv = track.getTrackView(region)
             origStartArrays.append(tv.startsAsNumpyArray())
             origEndArrays.append(tv.endsAsNumpyArray())
-            self._maxTrackIndex = index
 
         self._allStarts = np.concatenate(origStartArrays)
         self._allEnds = np.concatenate(origEndArrays)
         self._order = self._allStarts.argsort()
+        self._amountTracks = len(origStartArrays)
+
+        if preserveNumberOfSegments:
+            self._probabilities = [float(len(array))/float(len(self._allStarts)) if len(self._allStarts) > 0 else 0 for array in origStartArrays ]
+        else:
+            self._probabilities = [1.0/float(self._amountTracks) for i in range(0, self._amountTracks)]
 
         if allowOverlaps:
             self._selectRandomTrackIndex = self._selectSimpleRandomTrackIndex
@@ -87,8 +93,8 @@ class ShuffleElementsBetweenTracksPool(object):
     def _computeRandomTrackSet(self, randIndex):
         rn.seed(randIndex)
 
-        newStarts = [[] for track in range(0, self._maxTrackIndex + 1)]
-        newEnds = [[] for track in range(0, self._maxTrackIndex + 1)]
+        newStarts = [[] for track in range(0, self._amountTracks)]
+        newEnds = [[] for track in range(0, self._amountTracks)]
 
         for index in self._order:
             start = self._allStarts[index]
@@ -100,7 +106,7 @@ class ShuffleElementsBetweenTracksPool(object):
         self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
 
     def _selectSimpleRandomTrackIndex(self, **kwArgs):
-        return rn.randint(0, self._maxTrackIndex)
+        return np.random.choice(range(0, self._amountTracks), p=self._probabilities)
 
     def _selectNonOverlappingRandomTrackIndex(self, newEnds, newStart, **kwArgs):
         selectedTrack = self._selectSimpleRandomTrackIndex()
