@@ -57,12 +57,17 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         """
         #return [('First header', 'firstKey'),
         #        ('Second Header', 'secondKey')]
-        return [('Select a GSuite', 'gs')]
+        return [('Select a GSuite', 'gs'),
+                ('Allow overlaps', 'allowOverlaps')]
 
     @classmethod
     def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
-        # TODO Lonneke: the options should only be GSuites? or something else?
         return GeneralGuiToolMixin.getHistorySelectionElement()
+
+    @classmethod
+    def getOptionsBoxAllowOverlaps(cls, prevChoices):   # Alt: getOptionsBox2()
+        return ['No', 'Yes']
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -82,11 +87,12 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         outputGSuite = GSuite()
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
-        randomizedTs = ts.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, 1)
 
-        #randTvProvider = ShuffleElementsBetweenTracksTvProvider(ts)
-
-       # pool = ShuffleElementsBetweenTracksPool(ts, GenomeRegion('chr1', 1, 249250621))
+        if choices.allowOverlaps == 'Yes':
+            allowOverlaps = True
+        else:
+            allowOverlaps = False
+        randomizedTs = ts.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, 1, allowOverlaps=allowOverlaps)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
@@ -102,7 +108,6 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, randomizedTs)
-
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
