@@ -59,7 +59,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         #        ('Second Header', 'secondKey')]
         return [('Select a GSuite', 'gs'),
                 ('Allow overlaps', 'allowOverlaps'),
-                ('Approximately preserve the number of segments per track', 'preserveNumberOfSegments')]
+                ('Approximately preserve', 'preservationMethod')]
 
     @classmethod
     def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
@@ -70,8 +70,8 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         return ['No', 'Yes']
 
     @classmethod
-    def getOptionsBoxPreserveNumberOfSegments(cls, prevChoices):  # Alt: getOptionsBox3()
-        return ['No', 'Yes']
+    def getOptionsBoxPreservationMethod(cls, prevChoices):  # Alt: getOptionsBox3()
+        return ['None', 'Number of segments', 'Base pair coverage']
 
 
     @classmethod
@@ -93,17 +93,10 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
 
-        if choices.allowOverlaps == 'Yes':
-            allowOverlaps = True
-        else:
-            allowOverlaps = False
+        allowOverlaps = True if choices.allowOverlaps == 'Yes' else False
+        preservationMethod = choices.preservationMethod
 
-        if choices.preserveNumberOfSegments == 'Yes':
-            preserveNumberOfSegments = True
-        else:
-            preserveNumberOfSegments = False
-
-        randomizedTs = ts.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, 1, allowOverlaps=allowOverlaps, preserveNumberOfSegments=preserveNumberOfSegments)
+        randomizedTs = ts.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, 1, allowOverlaps=allowOverlaps, preservationMethod=preservationMethod)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,

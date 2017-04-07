@@ -5,13 +5,16 @@ import numpy as np
 import random as rn
 from gold.statistic.RawDataStat import RawDataStat
 
+NUMBER_OF_SEGMENTS = 'Number of segments'
+COVERAGE = 'Base pair coverage'
+
 
 class TsBasedRandomTrackViewProvider(object):
-    def __init__(self, origTs, allowOverlaps=False, preserveNumberOfSegments=False, **kwargs):
+    def __init__(self, origTs, allowOverlaps=False, preservationMethod=None, **kwargs):
         self._origTs = origTs
         self._elementPoolDict = {}
         self._allowOverlaps = allowOverlaps
-        self._preserveNumberOfSegments = preserveNumberOfSegments
+        self._preservationMethod = preservationMethod
 
     def getTrackView(self, region, origTrack, randIndex):
         raise AbstractClassError
@@ -30,11 +33,11 @@ class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
         return self._elementPoolDict[region].getOneTrackViewFromPool(origTrack, randIndex)
 
     def _populatePool(self, region):
-        self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region, allowOverlaps=self._allowOverlaps, preserveNumberOfSegments=self._preserveNumberOfSegments)
+        self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region, allowOverlaps=self._allowOverlaps, preservationMethod=self._preservationMethod)
 
 
 class ShuffleElementsBetweenTracksPool(object):
-    def __init__(self, origTs, region, allowOverlaps=False, preserveNumberOfSegments=False, **kwArgs):
+    def __init__(self, origTs, region, allowOverlaps=False, preservationMethod=None, **kwArgs):
         self._region = region
         self._allowOverlaps = allowOverlaps
         self._randomTrackSets = {} # _randomTrackSets[randIndex] gives a double list; [[track0starts, track1starts, ..., trackNstarts],[track0ends, track1ends, ..., trackNends]
@@ -57,10 +60,17 @@ class ShuffleElementsBetweenTracksPool(object):
         self._order = self._allStarts.argsort()
         self._amountTracks = len(origStartArrays)
 
-        if preserveNumberOfSegments:
-            self._probabilities = [float(len(array))/float(len(self._allStarts)) if len(self._allStarts) > 0 else 0 for array in origStartArrays ]
+        if len(self._allStarts) == 0:
+            self._probabilities = [0 for i in range(0, self._amountTracks)]
+        elif preservationMethod == NUMBER_OF_SEGMENTS:
+            # self._probabilities = [float(len(array)) / float(len(self._allStarts)) if len(self._allStarts) > 0 else 0 for array in origStartArrays]
+            self._probabilities = [float(len(array)) / float(len(self._allStarts)) for array in origStartArrays]
+        elif preservationMethod == COVERAGE:
+            coverages = [float(sum(origEndArrays[i] - origStartArrays[i])) for i in range(0, self._amountTracks)]
+            self._probabilities = [coverage/sum(coverages) for coverage in coverages]
         else:
-            self._probabilities = [1.0/float(self._amountTracks) for i in range(0, self._amountTracks)]
+            self._probabilities = [1.0 / float(self._amountTracks) for i in range(0, self._amountTracks)]
+
 
         if allowOverlaps:
             self._selectRandomTrackIndex = self._selectSimpleRandomTrackIndex
@@ -83,7 +93,6 @@ class ShuffleElementsBetweenTracksPool(object):
         rawData = RawDataStat(self._region, origTrack, NeutralTrackFormatReq())
         origTV = rawData.getResult()
 
-        #TODO: now this just returns a trackview with basically everything copied from the original, is that ok? should some other stuff also change?
         return TrackView(genomeAnchor=origTV.genomeAnchor, startList=newStarts, endList=newEnds,
                          valList=[0 for i in range(0, len(newStarts))],
                          strandList=[-1 for i in range(0, len(newStarts))],
