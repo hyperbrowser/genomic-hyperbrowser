@@ -1,6 +1,8 @@
 from copy import copy
 from collections import OrderedDict
 from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteComposer import composeToFile
+
 
 def selectRowsFromGSuiteByIndex(gSuite, idxList):
     trackList = list(gSuite.allTracks())
@@ -41,8 +43,11 @@ def concatenateGSuites(gSuiteList):
 
     return concatenatedGSuite
 
-def addColumnToGSuite(gsuite, attrName, trackTitleToColumnValueDict):
+def addColumnToGSuite(gsuite, uri, attrName, gSuiteTitle):
+    outGSuite = GSuite()
     for gsTrack in gsuite.allTracks():
-        attrVal = trackTitleToColumnValueDict[gsTrack.title]
+        attrVal = gSuiteTitle
         gsTrack.setAttribute(attrName, attrVal)
-        gsuite.addTrack(gsTrack)
+        outGSuite.addTrack(gsTrack)
+    composeToFile(outGSuite, uri)
+    return outGSuite
