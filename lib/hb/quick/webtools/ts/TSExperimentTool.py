@@ -67,50 +67,6 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
             gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             return gSuiteTN.attributes
 
-
-    # @classmethod
-    # def getInfoForOptionsBoxKey(cls, prevChoices):
-    #     """
-    #     If not None, defines the string content of an clickable info box
-    #     beside the corresponding input box. HTML is allowed.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getDemoSelections(cls):
-    #     """
-    #     Defines a set of demo inputs to the option boxes in the
-    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
-    #     If not None, a Demo button appears in the interface. Clicking the
-    #     button fills the option boxed with the defined demo values.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return ['testChoice1', '..']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         #cls._setDebugModeIfSelected(choices)
