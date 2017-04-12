@@ -25,7 +25,10 @@ The current version of the HyperBrowser is the result of an interdisciplinary co
 - ClusTrack (available from the [main web instance](https://hyperbrowser.uio.no))
 
 # The GSuite HyperBrowser
-The Genomic HyperBrowser  has in the recent year undergone dramatic improvements focused on epigenome-wide analyses, making powerful use of user-specified suites, or collections, of related datasets. This new expansion, called the GSuite HyperBrowser (still unpublished), empowers researcher to ask questions about their genomic datasets in relation to the vast amount of datasets for different cell types/tissues or different epigenomic marks that has been made available from international projects like ENCODE or Roadmap Epigenomics. GSuite HyperBrowser contains user-friendly guides to answer common domain-specific questions and includes tools for defining suites of datasets, bulk downloading and analysis.
+The Genomic HyperBrowser  has in the recent year undergone dramatic improvements focused on epigenome-wide analyses, making powerful use of user-specified suites, or collections, of related datasets. This new expansion, called the GSuite HyperBrowser, empowers researcher to ask questions about their genomic datasets in relation to the vast amount of datasets for different cell types/tissues or different epigenomic marks that has been made available from international projects like ENCODE or Roadmap Epigenomics. GSuite HyperBrowser contains user-friendly guides to answer common domain-specific questions and includes tools for defining suites of datasets, bulk downloading and analysis.
+
+# Installation
+The installation procedure can be found in the [HB_INSTALL.md](HB_INSTALL.md) file.
 
 # Main publications
 - Sandve GK, Gundersen S, Rydbeck H, Glad IK, Holden L, Holden M, Liestøl K, Clancy T, Ferkingstad E, Johansen M, Nygaard V, Tøstesen E, Frigessi A, Hovig E. _The Genomic HyperBrowser: inferential genomics at the sequence level._ Genome Biol. 2010;11(12):R121.
