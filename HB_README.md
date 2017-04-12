@@ -8,6 +8,7 @@ _The Genomic HyperBrowser is an extension (and thus a fork) of the Galaxy framew
 # Tutorials, discussion forum and news
 Several public resources is available for the Genomic HyperBrowser project:
 
+- [A GitHub repository](https://github.com/hyperbrowser/genomic-hyperbrowser) containing the latest source code
 - [A set of analysis guides (basic mode), examples and screencasts](https://hyperbrowser.uio.no) of the newest version of the Genomic HyperBrowser, termed GSuite HyperBrowser, are available from the main HyperBrowser server.
 - [A set of tutorials with screencasts](https://sites.google.com/site/hyperbrowserhelp/discusison-forum) for the basic HyperBrowser functionality (as available in the initial 1.0 release). (Caveat: these are rather old and not updated with recent functinality)
 - [A public forum](https://groups.google.com/forum/?hl=en#!forum/the-genomic-hyperbrowser) for questions, opinions and feature requests
