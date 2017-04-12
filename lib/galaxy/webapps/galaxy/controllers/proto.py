@@ -100,6 +100,9 @@ class ProtoController( BaseUIController ):
 
     @web.expose
     def index(self, trans, mako='generictool', **kwd):
+        return self._index(trans, mako, **kwd)
+
+    def _index(self, trans, mako, **kwd):
 
         if kwd.has_key('rerun_hda_id'):
             self._import_job_params(trans, kwd['rerun_hda_id'])
