@@ -8,7 +8,7 @@ from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
 # Version information
 #
 
-HB_VERSION = 'v2.0b'
+HB_VERSION = 'v2.0b3'
 
 
 #
