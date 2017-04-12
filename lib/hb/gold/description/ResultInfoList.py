@@ -1,19 +1,3 @@
-# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
-# This file is part of The Genomic HyperBrowser.
-#
-#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-#
 AccuracyStat_cc = ('Correlation coefficient', 'Pearsons correlation coefficient between track1 and track2 represented as binary vectors (0 for uncovered base pairs, 1 for covered base pairs).')
 AccuracyStat_hammingDistance = ('Hamming distance', 'The number of base pairs (hamming distance) having different assignment of being inside or outside segments according to track1 vs track2')
 AccuracyStat_precision = ('Precision', 'Precision (TP/TP+FP), when track1 is viewed as predictions and track2 is viewed as answer')
