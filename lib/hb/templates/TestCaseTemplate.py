@@ -1,15 +1,17 @@
 import unittest
 
-class Test[[%tabstop1:SomeClass]](unittest.TestCase):
+
+class TestSomeClass(unittest.TestCase):
     def setUp(self):
         pass
     
-    def test[[%tabstop2:someFunctionality]](self):
+    def testSomeFunctionality(self):
         pass
     
     def runTest(self):
         pass
-    
+
+
 if __name__ == "__main__":
-    #Test[[%tabstop1:SomeClass]]().debug()
+    # TestSomeClass().debug()
     unittest.main()

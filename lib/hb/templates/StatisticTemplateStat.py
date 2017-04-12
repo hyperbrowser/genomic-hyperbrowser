@@ -1,17 +1,21 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
-from gold.statistic.Statistic import Statistic
+from gold.statistic.Statistic import Statistic  # , StatisticSumResSplittable
 
-class StatisticTemplateStat(MagicStatFactory):
-    "Statistic description"
+
+class XyzStat(MagicStatFactory):
+    """
+    Statistic description
+    """
     pass
 
-class StatisticTemplateStatUnsplittable(Statistic):
+
+# class XyzStatSplittable(StatisticSumResSplittable):
+#    pass
+
+
+class XyzStatUnsplittable(Statistic):
     def _compute(self):
         pass
     
     def _createChildren(self):
         pass
-
-#from gold.statistic.Statistic import StatisticSumResSplittable
-#class StatisticTemplateStatSplittable(StatisticSumResSplittable):
-#   pass
