@@ -10,7 +10,7 @@ from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, \
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
-from gold.track.TrackStructure import TrackStructure
+from gold.track.TrackStructure import TrackStructure, SingleTrackTS, TrackStructureV2
 from gold.util import CommonConstants
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.util.CommonFunctions import prettyPrintTrackName, \
@@ -327,6 +327,17 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         reverse = 'Yes' if choices.reversed else 'No'
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        from quick.gsuite.GuiBasedTsFactory import getSingleTrackTS, getFlatTracksTS
+
+        queryTS = getSingleTrackTS(genome, choices.queryTrack)
+        refTS = getFlatTracksTS(genome, choices.gsuite)
+
+        fullTS = TrackStructureV2()
+        fullTS['query'] = queryTS
+        fullTS['reference'] = refTS
+
+
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         queryTrack = Track(queryTrackNameAsList)
@@ -350,12 +361,17 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if analysisQuestion == cls.Q1:
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName, trackTitles)
 
-            # tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
-            ts = TrackStructure()
-            ts[TrackStructure.QUERY_KEY] = [tracks[0]]
-            ts[TrackStructure.REF_KEY] = tracks[1:]
+            # ts = TrackStructure()
+            # ts[TrackStructure.QUERY_KEY] = [tracks[0]]
+            # ts[TrackStructure.REF_KEY] = tracks[1:]
+
+            #qTs = SingleTrackTS(tracks[0],{}) #TODO: Need to have metadata..
+            #retTs =
+            #ts = TrackStructureV2()
+
             ### self._addChild(GSuiteSimilarityToQueryTrackRankingsAndPValuesV2Stat(self._region, ts, **self._kwArgs))
-            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
+            # results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
+            results = doAnalysis(analysisSpec, analysisBins, fullTS).getGlobalResult()
 
             # results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 

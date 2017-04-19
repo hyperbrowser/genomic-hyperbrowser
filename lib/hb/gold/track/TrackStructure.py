@@ -233,7 +233,7 @@ class SingleTrackTS(TrackStructureV2):
         assert isinstance(metadata, dict)
         for key, value in metadata.items():
             assert isinstance(key, str)
-            assert isinstance(value, str)
+            assert isinstance(value, basestring), (type(value), value)
         self.track = track
         self.metadata = metadata
 
