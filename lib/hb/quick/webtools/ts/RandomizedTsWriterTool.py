@@ -73,7 +73,6 @@ class RandomizedTsWriterTool(GeneralGuiTool):
     def getOptionsBoxPreservationMethod(cls, prevChoices):  # Alt: getOptionsBox3()
         return ['None', 'Number of segments', 'Base pair coverage']
 
-
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         """
@@ -103,7 +102,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
                                                 extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
                                                 suffix='bed')
 
-            gSuiteTrack = GSuiteTrack(uri, title=singleTrackTs.track.trackTitle, fileFormat='primary', trackType='segments', genome=genome)
+            gSuiteTrack = GSuiteTrack(uri, title=singleTrackTs.metadata['title'] + '.randomized', fileFormat='primary', trackType='segments', genome=genome)
             outputGSuite.addTrack(gSuiteTrack)
             singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
             # of all subclasses of RandomizedTrack, so far this works with both PermutedSegsAndIntersegsTrack and PermutedSegsAndSampledIntersegsTrack
@@ -113,6 +112,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, randomizedTs)
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -147,5 +147,5 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined:
         'html'
         """
-       # return 'html'
+      #  return 'html'
         return 'gsuite'

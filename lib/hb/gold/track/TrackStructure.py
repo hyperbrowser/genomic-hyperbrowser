@@ -15,11 +15,13 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 
+from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
 from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
 from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 from quick.application.SignatureDevianceLogging import takes
 import copy
+from quick.application.SignatureDevianceLogging import takes
 
 '''
 Created on Sep 23, 2015
@@ -89,7 +91,7 @@ class TrackStructureV2(dict):
     #A disadvantage is that it becomes less clear that such an attribute might exist,
     # and its existence has to be checked with hasattr(ts,'results')
 
-    #@takes(object, str, TrackStructureV2)
+    #@takes(object, str, TrackStructureV2) #TODO: how would @takes work here? TrackStructureV2 has not been defined yet!
     def __setitem__(self, key, value):
         assert isinstance(key, str)
         assert isinstance(value, TrackStructureV2)
@@ -155,6 +157,8 @@ class TrackStructureV2(dict):
         return newCopy
 
     def _copySegregatedSubtree(self, nodeToSplitOn, subCategoryKey):
+        assert isinstance(nodeToSplitOn, TrackStructureV2) # should be a subtree
+
         newCopy = copy.copy(self)
         for key, value in self.items():
             if value == nodeToSplitOn:
@@ -165,11 +169,9 @@ class TrackStructureV2(dict):
 
 
     def makeTreeSegregatedByCategory(self, nodeToSplitOn):
-        # TODO Lonneke: what if root is given, how to split?
-
+        assert isinstance(nodeToSplitOn, TrackStructureV2) # should be a subtree
         assert len(nodeToSplitOn.items()) > 0
-        #if self == nodeToSplitOn:
-        #    return self._copyTreeStructure()
+        assert nodeToSplitOn != self
 
         newRoot = TrackStructureV2()
         for subCategoryKey, subtree in nodeToSplitOn.items():
@@ -182,7 +184,8 @@ class TrackStructureV2(dict):
             leafNodes += subtree.getLeafNodes()
         return leafNodes
 
-    def _getOriginalNodeName(self, originalName, usedNames):
+    @takes(object, str, str)
+    def _getUniqueNodeKey(self, originalName, usedNames):
         nodeName = str(originalName)
 
         counter = 2
@@ -204,15 +207,13 @@ class TrackStructureV2(dict):
 
         for leafNode in self.getLeafNodes():
             # TODO Lonneke use a better, original key to represent the tracks
-            newRoot[self._getOriginalNodeName(leafNode.track.trackName, newRoot.keys())] = leafNode
+            newRoot[self._getUniqueNodeKey(leafNode.track.trackName, newRoot.keys())] = leafNode
 
         return newRoot
 
 
     def makePairwiseCombinations(self, referenceTS):
-        # Not necessary? See Trello
-        # assert self.isFlat()
-        # assert referenceTS.isFlat()
+        assert isinstance(referenceTS, TrackStructureV2)
 
         queryLeafNodes = self.getLeafNodes()
         referenceLeafNodes = referenceTS.getLeafNodes()
@@ -228,9 +229,11 @@ class TrackStructureV2(dict):
         return root
 
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
+   # @takes(object, TsBasedRandomTrackViewProvider, int)
     def getRandomizedVersion(self, randTvProvider, randIndex, **kwargs):
         return self._getRandomizedVersion(randTvProvider(self, **kwargs), randIndex)
 
+    @takes(object, TsBasedRandomTrackViewProvider, int)
     def _getRandomizedVersion(self, randTvProvider, randIndex):
         newCopy = copy.copy(self)
         for key in self.keys():
@@ -263,12 +266,14 @@ class SingleTrackTS(TrackStructureV2):
     def _copyTreeStructure(self):
         return self
 
+    @takes(object, TrackStructureV2, str)
     def _copySegregatedSubtree(self, nodeToSplitOn, keyOfSubtree):
         return self
 
     def getLeafNodes(self):
         return [self]
 
+    @takes(object, TsBasedRandomTrackViewProvider, int)
     def _getRandomizedVersion(self, randTvProvider, randIndex):
         newCopy = copy.copy(self)
         newCopy.track = TsBasedRandomizedTrack(self.track, randTvProvider, randIndex)
@@ -294,12 +299,14 @@ class FlatTracksTS(TrackStructureV2):
 
         return allMetadataFields.keys()
 
+    @takes(object, basestring)
     def getAllValuesForMetadataField(self, metadataField):
         return set([str(ts.metadata.get(metadataField)) for ts in self.values() if metadataField in ts.metadata.keys()])
 
 
+    @takes(object, basestring, basestring)
     def getTrackSubsetTS(self, metadataField, selectedValue):
-        assert isinstance(metadataField, (str,unicode)), (metadataField, type(metadataField))
+       # assert isinstance(metadataField, (str,unicode)), (metadataField, type(metadataField))
 
         subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():
@@ -308,17 +315,14 @@ class FlatTracksTS(TrackStructureV2):
                 subsetTS[key] = ts
         return subsetTS
 
+    @takes(object, basestring)
     def getSplittedByCategoryTS(self, metadataField):
         '''
         Returns a categorical TS, containing a separate MultipleTracksTS per value in selected
         metadata field. Nodes that do not contain the given metadata field are not returned.
         '''
-        categoricalTS = CategoricalTS()
+        catTS = TrackStructureV2()
         catValues = self.getAllValuesForMetadataField(metadataField)
         for cat in catValues:
-            categoricalTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
-        return categoricalTS
-
-
-class CategoricalTS(TrackStructureV2):
-    pass
+            catTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
+        return catTS

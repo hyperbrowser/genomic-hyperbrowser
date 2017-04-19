@@ -11,7 +11,6 @@ from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.TrackStructure import SingleTrackTS
 from gold.track.TrackStructure import FlatTracksTS
-from gold.track.TrackStructure import CategoricalTS
 
 
 
@@ -131,7 +130,7 @@ class TestTrackStructure(unittest.TestCase):
         self._assertEqualTrackStructure(getFlattenedTsResult, self.splittedOnNodeB.getFlattenedTS())
 
     def testGetSplittedByCategoryTS(self):
-        splitByField1 = CategoricalTS()
+        splitByField1 = TrackStructureV2()
         field1value1 = FlatTracksTS()
         field1value2 = FlatTracksTS()
         splitByField1['value 1'] = field1value1
@@ -141,19 +140,19 @@ class TestTrackStructure(unittest.TestCase):
         splitByField1['value 2']['C'] = self.t3
         self._assertEqualTrackStructure(splitByField1, self.flatTrackStructure.getSplittedByCategoryTS('field 1'))
 
-        splitByField2 = CategoricalTS()
+        splitByField2 = TrackStructureV2()
         field2val6 = FlatTracksTS()
         splitByField2['6'] = field2val6
         splitByField2['6']['B'] = self.t2
         self._assertEqualTrackStructure(splitByField2, self.flatTrackStructure.getSplittedByCategoryTS('field 2'))
 
-        splitByField3 = CategoricalTS()
+        splitByField3 = TrackStructureV2()
         field3None = FlatTracksTS()
         splitByField3['None'] = field3None
         splitByField3['None']['C'] = self.t3
         self._assertEqualTrackStructure(splitByField3, self.flatTrackStructure.getSplittedByCategoryTS("field 3"))
 
-        empty = CategoricalTS()
+        empty = TrackStructureV2()
         self._assertEqualTrackStructure(empty, self.flatTrackStructure.getSplittedByCategoryTS('field does not exist'))
 
     def testGetTrackSubsetTS(self):

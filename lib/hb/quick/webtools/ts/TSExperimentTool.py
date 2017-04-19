@@ -4,7 +4,7 @@ from quick.application.UserBinSource import UserBinSource
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 import quick.gsuite.GuiBasedTsFactory as factory
-from gold.track.TrackStructure import CategoricalTS, TrackStructureV2
+from gold.track.TrackStructure import TrackStructureV2
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from quick.statistic.StatFacades import ObservedVsExpectedStat
