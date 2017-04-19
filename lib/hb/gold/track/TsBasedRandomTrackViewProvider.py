@@ -129,10 +129,3 @@ class ShuffleElementsBetweenTracksPool(object):
                 pass
 
         return selectedTrack
-
-
-
-
-
-
-
