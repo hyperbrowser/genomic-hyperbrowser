@@ -22,7 +22,7 @@ from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 import copy
 from quick.application.SignatureDevianceLogging import takes
-from third_party.typecheck import anything, dict_of, list_of
+from third_party.typecheck import anything, dict_of, list_of, optional
 
 '''
 Created on Sep 23, 2015
@@ -231,8 +231,9 @@ class TrackStructureV2(dict):
         return root
 
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
-    @takes('TrackStructureV2', type, int)
+    @takes('TrackStructureV2', type, int, optional('anything'))
     def getRandomizedVersion(self, randTvProvider, randIndex, **kwargs):
+        print 'before scary stuff booany'
         return self._getRandomizedVersion(randTvProvider(self, **kwargs), randIndex)
 
     @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)

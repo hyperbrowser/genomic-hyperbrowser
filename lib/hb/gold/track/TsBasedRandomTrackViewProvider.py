@@ -1,9 +1,12 @@
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackView import TrackView
+from gold.track.Track import Track
 from gold.util.CustomExceptions import AbstractClassError
 import numpy as np
 import random as rn
 from gold.statistic.RawDataStat import RawDataStat
+from quick.application.SignatureDevianceLogging import takes
+from third_party.typecheck import optional, list_of, anything
 
 NUMBER_OF_SEGMENTS = 'Number of segments'
 COVERAGE = 'Base pair coverage'
@@ -11,11 +14,13 @@ COVERAGE = 'Base pair coverage'
 
 class TsBasedRandomTrackViewProvider(object):
     def __init__(self, origTs, allowOverlaps=False, preservationMethod=None, **kwargs):
+        print 'both  takes'
         self._origTs = origTs
         self._elementPoolDict = {}
         self._allowOverlaps = allowOverlaps
         self._preservationMethod = preservationMethod
 
+    @takes('TsBasedRandomTrackViewProvider', 'GenomeRegion', Track, int)
     def getTrackView(self, region, origTrack, randIndex):
         raise AbstractClassError
 
@@ -27,16 +32,19 @@ class WithinTrackRandomTvProvider(TsBasedRandomTrackViewProvider):
 
 
 class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
+    @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion', Track, int)
     def getTrackView(self, region, origTrack, randIndex):
         if region not in self._elementPoolDict:
             self._populatePool(region)
         return self._elementPoolDict[region].getOneTrackViewFromPool(origTrack, randIndex)
 
+    @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion')
     def _populatePool(self, region):
         self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region, allowOverlaps=self._allowOverlaps, preservationMethod=self._preservationMethod)
 
 
 class ShuffleElementsBetweenTracksPool(object):
+    @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', 'GenomeRegion', allowOverlaps=optional(bool), preservationMethod=optional(str))
     def __init__(self, origTs, region, allowOverlaps=False, preservationMethod=None, **kwArgs):
         self._region = region
         self._allowOverlaps = allowOverlaps
@@ -79,6 +87,7 @@ class ShuffleElementsBetweenTracksPool(object):
 
 
     # TODO: dangerous; trackId must always be based on unknown. to make it easier to make this consistent, the original track is passed all the way here instead of passing the trackId directly
+    @takes('ShuffleElementsBetweenTracksPool', Track, int)
     def getOneTrackViewFromPool(self, origTrack, randIndex):
         trackId = origTrack.getUniqueKey('unknown')
         assert trackId in self._trackIdToIndexDict.keys(), 'given track should be in the original TrackStructure that was used to make this pool'
@@ -99,6 +108,7 @@ class ShuffleElementsBetweenTracksPool(object):
                          idList=None, edgesList=None, weightsList=None, borderHandling=origTV.borderHandling, allowOverlaps=self._allowOverlaps)
                          #extraLists=origTV._extraLists, #TODO also 'translate' this extralist? (length needs to be the same)
 
+    @takes('ShuffleElementsBetweenTracksPool', int)
     def _computeRandomTrackSet(self, randIndex):
         rn.seed(randIndex)
 
@@ -114,9 +124,11 @@ class ShuffleElementsBetweenTracksPool(object):
 
         self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
 
+    @takes('ShuffleElementsBetweenTracksPool', optional(anything))
     def _selectSimpleRandomTrackIndex(self, **kwArgs):
         return np.random.choice(range(0, self._amountTracks), p=self._probabilities)
 
+    @takes('ShuffleElementsBetweenTracksPool', list_of(list_of(int)), list_of(list_of(int)), optional(anything))
     def _selectNonOverlappingRandomTrackIndex(self, newEnds, newStart, **kwArgs):
         selectedTrack = self._selectSimpleRandomTrackIndex()
 
