@@ -147,5 +147,5 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined:
         'html'
         """
-      #  return 'html'
+       # return 'html'
         return 'gsuite'

@@ -233,7 +233,6 @@ class TrackStructureV2(dict):
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
     @takes('TrackStructureV2', type, int, optional('anything'))
     def getRandomizedVersion(self, randTvProvider, randIndex, **kwargs):
-        print 'before scary stuff booany'
         return self._getRandomizedVersion(randTvProvider(self, **kwargs), randIndex)
 
     @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)
