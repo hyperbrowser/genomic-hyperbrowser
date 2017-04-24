@@ -14,7 +14,6 @@ COVERAGE = 'Base pair coverage'
 
 class TsBasedRandomTrackViewProvider(object):
     def __init__(self, origTs, allowOverlaps=False, preservationMethod=None, **kwargs):
-        print 'both  takes'
         self._origTs = origTs
         self._elementPoolDict = {}
         self._allowOverlaps = allowOverlaps
