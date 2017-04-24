@@ -13,7 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-
+from gold.statistic.MCSamplingStat import MCSamplingStatUnsplittable
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.util.McEvaluators import computeNumMoreExtreme, computePurePseudoPvalue
 from quick.statistic.StatisticV2 import StatisticV2
@@ -27,7 +27,7 @@ class SequentialMcSamplingV2Stat(MagicStatFactory):
     '''
     pass
 
-class SequentialMcSamplingV2StatUnsplittable(StatisticV2):
+class SequentialMcSamplingV2StatUnsplittable(MCSamplingStatUnsplittable):
     def _init(self, rawStatistic, tail, mThreshold, maxSamples, numSamplesPerChunk, **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)
         self._tail = tail

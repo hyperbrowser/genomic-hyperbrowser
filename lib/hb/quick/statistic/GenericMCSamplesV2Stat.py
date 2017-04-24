@@ -15,6 +15,8 @@
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
+from gold.statistic.Statistic import Statistic
+from quick.application.SignatureDevianceLogging import takes
 from quick.util.RandomizationUtils import getRandTrackClassList, createRandomizedTrackStructureStat,\
     getRandTrackClass
 from quick.statistic.StatisticV2 import StatisticV2
@@ -38,7 +40,9 @@ class GenericMCSamplesV2Stat(MagicStatFactory):
 class GenericMCSamplesV2StatUnsplittable(StatisticV2):    
     IS_MEMOIZABLE = False #as it should return new random samples each time it is called
 
-    def _init(self, rawStatistic, randTrackStructureClassDict=None, assumptions=None, numMcSamples=1, **kwArgs):
+    #tvProvider should be a subclass of TsBasedRandomTrackViewProvider
+    @takes('GenericMCSamplesV2StatUnsplittable',Statistic,type,int)
+    def _init(self, rawStatistic, tvProviderClass=None, numMcSamples=1, **kwArgs):
     #def _init(self, rawStatistic, randTrackClassList, numMcSamples, **kwArgs):
         '''
             Randomization strategies are specified per track list in the track structure.
@@ -70,11 +74,13 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
     
     def _createRandomizedStat(self, i):
         #Refactor the first argument after a better track input handling is in place..
-        return createRandomizedTrackStructureStat(self._trackStructure, self._randTrackStructureClassDict, self._rawStatistic, self._region, self._kwArgs, i)
+        randomizedTrackStructure = self._trackStructure.getRandomizedVersion(self._tvProviderClass, i)
+        return self._rawStatistic(self._region, randomizedTrackStructure, **self._kwArgs)
+        # return createRandomizedTrackStructureStat(self._trackStructure, self._randTrackStructureClassDict, self._rawStatistic, self._region, self._kwArgs, i)
         
     def _compute(self):
         #print 'TEMP1: computing %i samples' % self._numMcSamples
-        return [self._createRandomizedStat(i).getResult() for i in range(self._numMcSamples)]                    
+        return [self._createRandomizedStat(i).getResult() for i in range(self._numMcSamples)]
     
     def _createChildren(self):
         #Actually just ignored the way it is now. Also consider future simplification.

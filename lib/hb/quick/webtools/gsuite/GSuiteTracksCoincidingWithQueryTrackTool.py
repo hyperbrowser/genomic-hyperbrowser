@@ -10,7 +10,7 @@ from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, \
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
-from gold.track.TrackStructure import TrackStructure
+from gold.track.TrackStructure import TrackStructure, TrackStructureV2
 from gold.util import CommonConstants
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.util.CommonFunctions import prettyPrintTrackName, \
@@ -331,6 +331,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         queryTrack = Track(queryTrackNameAsList)
         tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
+
+        ts = TrackStructureV2()
+        ts['query'] = [tracks[0]]
+        ts['reference'] = tracks[1:]
+
         queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
             [quote(queryTrackTitle)] + [quote(x.title, safe='') for x in gsuite.allTracks()])
@@ -351,9 +356,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName, trackTitles)
 
             # tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
-            ts = TrackStructure()
-            ts[TrackStructure.QUERY_KEY] = [tracks[0]]
-            ts[TrackStructure.REF_KEY] = tracks[1:]
+            # ts = TrackStructure()
+            # ts[TrackStructure.QUERY_KEY] = [tracks[0]]
+            # ts[TrackStructure.REF_KEY] = tracks[1:]
             ### self._addChild(GSuiteSimilarityToQueryTrackRankingsAndPValuesV2Stat(self._region, ts, **self._kwArgs))
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
 
@@ -387,7 +392,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                         gsuite, results, similarityStatClassName)
         else:  # Q3
             analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc)
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
             core = cls.generateQ3output(analysisQuestion, queryTrackTitle, results, similarityStatClassName)
 
         print str(core)
@@ -520,8 +525,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+        # analysisDefString = REPLACE_TEMPLATES[
+        #                         '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
         analysisDefString = REPLACE_TEMPLATES[
-                                '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
+                                '$MCFDRv3$'] + ' -> RandomizationManagerV3Stat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
         analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')

@@ -24,11 +24,17 @@ from config.Config import DebugConfig
 from gold.application.LogSetup import logging, logMessage
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.statistic.Statistic import Statistic, StatisticSplittable
+from gold.track.GenomeRegion import GenomeRegion
+from gold.track.TrackStructure import TrackStructureV2, TrackStructure
 from gold.util.CommonFunctions import getClassName, isIter
 from gold.util.CustomExceptions import ShouldNotOccurError, CentromerError, NoneResultError
+from quick.application.SignatureDevianceLogging import takes
+from third_party.typecheck import one_of
+
 
 class StatisticV2(Statistic):
-    
+    # @takes("StatisticV2",GenomeRegion, one_of(TrackStructure,TrackStructureV2) ) #TODO: Remove one_of(TrackStructure when bw compatibility fixed
+    @takes("StatisticV2",GenomeRegion, TrackStructureV2)
     def __init__(self, region, trackStructure, *args, **kwArgs):
         from config.Config import IS_EXPERIMENTAL_INSTALLATION  # @UnresolvedImport
         if 'isExperimental' in kwArgs:

@@ -46,19 +46,19 @@ def createRandomizedStat(tracks, randomizationStrategies, rawStatistic, region, 
 
     return rawStatistic(region, randomizedTracks[0], randomizedTracks[1] if len(randomizedTracks)>1 else None, extraTracks='^'.join(randomizedTracks[2:]), **kwArgs)
 
-def createRandomizedTrackStructureStat(trackStructure, randTrackClassDict, rawStatistic, region, kwArgs, i):
-    randomizedTrackStructure = TrackStructure()
-    for key in trackStructure:
-        randTrackClassStr = randTrackClassDict[key] if key in randTrackClassDict else None
-        if randTrackClassStr:
-            randTrackClass = globals()[randTrackClassStr] if type(randTrackClassStr) is str else randTrackClassStr
-            if issubclass(randTrackClass, RandomizedTrack):
-                randomizedTrackStructure[key] = [randTrackClass(track, region, i, **kwArgs) for track in trackStructure[key]]
-            else: #randomize whole collection
-                pass
-        else:
-            randomizedTrackStructure[key] = trackStructure[key]                
-    return rawStatistic(region, randomizedTrackStructure, **kwArgs)
+# def createRandomizedTrackStructureStat(trackStructure, randTrackClassDict, rawStatistic, region, kwArgs, i):
+#     randomizedTrackStructure = TrackStructure()
+#     for key in trackStructure:
+#         randTrackClassStr = randTrackClassDict[key] if key in randTrackClassDict else None
+#         if randTrackClassStr:
+#             randTrackClass = globals()[randTrackClassStr] if type(randTrackClassStr) is str else randTrackClassStr
+#             if issubclass(randTrackClass, RandomizedTrack):
+#                 randomizedTrackStructure[key] = [randTrackClass(track, region, i, **kwArgs) for track in trackStructure[key]]
+#             else: #randomize whole collection
+#                 pass
+#         else:
+#             randomizedTrackStructure[key] = trackStructure[key]
+#     return rawStatistic(region, randomizedTrackStructure, **kwArgs)
 
 
 

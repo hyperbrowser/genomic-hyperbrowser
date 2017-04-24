@@ -74,8 +74,8 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         fullTs = TrackStructureV2()
         for i,pairTS in enumerate(listOfPairTSs):
             fullTs[str(i)] = pairTS
-        #rawResults = [ts.results for ts in listOfPairTSs]
-        rawResults = fullTs.result.values()
+        rawResults = [ts.result for ts in listOfPairTSs]
+        # rawResults = fullTs.result.values()
         if self._summaryFunction == 'RawResults':
             fullTs.result = rawResults
         else:

@@ -1,9 +1,11 @@
+from gold.util.CustomExceptions import ShouldNotOccurError
 from third_party.typecheck import Checker, getargspec, type_name
 from gold.application.LogSetup import SIGNATURE_DEVIANCE_LOGGER, logMessageOnce
 
 NO_CHECK = False
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
-
+RAISE_DEVIANCES = IS_EXPERIMENTAL_INSTALLATION
+RAISE_DEVIANCES = True #TODO: remove after handling IS_EXPERIMENTAL_INSTALLATION
 #def takes_strict():
 #    pass
 
@@ -16,8 +18,8 @@ def takes(*args, **kwargs):
     for i, arg in enumerate(args):
         checker = Checker.create(arg)
         if checker is None:
-            if IS_EXPERIMENTAL_INSTALLATION:
-                raise TypeError("@takes decorator got parameter %d of unsupported "
+            if RAISE_DEVIANCES:
+                raise ShouldNotOccurError("@takes decorator got parameter %d of unsupported "
                             "type %s" % (i + 1, type_name(arg)))
             else:
                 logMessageOnce("@takes decorator got parameter %d of unsupported " +
@@ -28,8 +30,8 @@ def takes(*args, **kwargs):
     for kwname, kwarg in kwargs.iteritems():
         checker = Checker.create(kwarg)
         if checker is None:
-            if IS_EXPERIMENTAL_INSTALLATION:
-                raise TypeError("@takes decorator got parameter %s of unsupported "
+            if RAISE_DEVIANCES:
+                raise ShouldNotOccurError("@takes decorator got parameter %s of unsupported "
                             "type %s" % (kwname, type_name(kwarg)))
             else:
                 logMessageOnce("@takes decorator got parameter %s of unsupported " +
