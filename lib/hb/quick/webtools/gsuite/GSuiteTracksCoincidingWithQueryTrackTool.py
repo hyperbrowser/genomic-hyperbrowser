@@ -211,7 +211,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
         if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
-            analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$'])
+            analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$'])
             return analysisSpec.getOptionsAsText().values()[0]
 
     @classmethod
@@ -315,7 +315,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         :param galaxyFn:
         :param username:
         """
-
+        choices_queryTrack = choices.queryTrack
+        choices_gsuite = choices.gsuite
         cls._setDebugModeIfSelected(choices)
         genome = choices.genome
         queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
@@ -332,9 +333,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         queryTrack = Track(queryTrackNameAsList)
         tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
 
+        import quick.gsuite.GuiBasedTsFactory as factory
         ts = TrackStructureV2()
-        ts['query'] = [tracks[0]]
-        ts['reference'] = tracks[1:]
+        ts['query'] = factory.getSingleTrackTS(genome, choices_queryTrack)
+        ts['reference'] = factory.getFlatTracksTS(genome, choices_gsuite)
 
         queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
@@ -452,10 +454,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @classmethod
     def prepareQ2(cls, choices, similarityStatClassName, trackTitles):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0][0]
         # analysisDefString = REPLACE_TEMPLATES[
-        #                         '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
-        analysisDefString = REPLACE_TEMPLATES['$MCFDR$'] + ' -> ' + \
+        #                         '$MCFDRv4$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv4$'] + ' -> ' + \
                             GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName]
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
@@ -524,11 +526,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @classmethod
     def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0][0]
         # analysisDefString = REPLACE_TEMPLATES[
         #                         '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
         analysisDefString = REPLACE_TEMPLATES[
-                                '$MCFDRv3$'] + ' -> RandomizationManagerV3Stat'
+                                '$MCFDRv4$'] + ' -> RandomizationManagerV3Stat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
         analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')

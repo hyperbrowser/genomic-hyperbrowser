@@ -17,8 +17,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from quick.application.SignatureDevianceLogging import takes
-from quick.util.RandomizationUtils import getRandTrackClassList, createRandomizedTrackStructureStat,\
-    getRandTrackClass
+from quick.util.RandomizationUtils import getRandTrackClassList, getRandTrackClass
 from quick.statistic.StatisticV2 import StatisticV2
 from collections import OrderedDict
 from gold.track.TrackStructure import TrackStructure
