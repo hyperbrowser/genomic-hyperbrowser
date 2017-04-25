@@ -1,6 +1,8 @@
 from gold.util.CustomExceptions import ShouldNotOccurError
-from third_party.typecheck import Checker, getargspec, type_name, InputParameterError
+from third_party.typecheck import Checker, getargspec, type_name, InputParameterError, \
+    one_of, anything, nothing, list_of, tuple_of, dict_of, optional
 from gold.application.LogSetup import SIGNATURE_DEVIANCE_LOGGER, logMessageOnce
+from functools import partial
 
 NO_CHECK = False
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
@@ -8,6 +10,15 @@ RAISE_DEVIANCES = IS_EXPERIMENTAL_INSTALLATION
 RAISE_DEVIANCES = True #TODO: remove after handling IS_EXPERIMENTAL_INSTALLATION
 #def takes_strict():
 #    pass
+
+def customIsSubclass(queryClass, refClasses):
+    try:
+        return issubclass(queryClass, refClasses)
+    except BaseException:
+        return False
+
+def subClass(refClasses):
+    return partial(customIsSubclass, refClasses=refClasses)
 
 def takes(*args, **kwargs):
     "Method signature checking decorator"
