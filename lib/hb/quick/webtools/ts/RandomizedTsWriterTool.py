@@ -8,7 +8,8 @@ from gold.track.RandomizedSegsTrack import RandomizedSegsTrack
 from gold.track.SegsSampledByIntensityTrack import SegsSampledByIntensityTrack
 from gold.track.ShuffledMarksTrack import ShuffledMarksTrack
 from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider, \
-    ShuffleElementsBetweenTracksPool
+    ShuffleElementsBetweenTracksPool, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider, \
+    CoveragePreservedShuffleElementsBetweenTracksTvProvider
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -93,9 +94,15 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         ts = factory.getFlatTracksTS(genome, choices.gs)
 
         allowOverlaps = True if choices.allowOverlaps == 'Yes' else False
-        preservationMethod = choices.preservationMethod
 
-        randomizedTs = ts.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, 1, allowOverlaps=allowOverlaps, preservationMethod=preservationMethod)
+        if choices.preservationMethod == 'Number of segments':
+            tvProvider = SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
+        elif choices.preservationMethod == 'Base pair coverage':
+            tvProvider = CoveragePreservedShuffleElementsBetweenTracksTvProvider
+        else:
+            tvProvider = ShuffleElementsBetweenTracksTvProvider
+
+        randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, 1)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
@@ -110,7 +117,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
-        res = doAnalysis(spec, bins, randomizedTs)
+       # res = doAnalysis(spec, bins, randomizedTs)
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
 
