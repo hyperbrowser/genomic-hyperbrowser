@@ -233,15 +233,10 @@ class TrackStructureV2(dict):
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
     @takes('TrackStructureV2', type, bool, int)
     def getRandomizedVersion(self, randTvProvider, allowOverlaps, randIndex):
-        print 'in randomizedtssss'
-        print 'name'
-        print 'providername = ' + str(randTvProvider)[1:-1]
-        print 'provider'
         return self._getRandomizedVersion(randTvProvider(self, allowOverlaps), randIndex)
 
     @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)
     def _getRandomizedVersion(self, randTvProvider, randIndex):
-        print 'inside _getrandomizedversion of ts'
         newCopy = copy.copy(self)
         for key in self.keys():
             newCopy[key] = newCopy[key]._getRandomizedVersion(randTvProvider, randIndex)
@@ -277,7 +272,6 @@ class SingleTrackTS(TrackStructureV2):
 
     @takes('SingleTrackTS', 'TsBasedRandomTrackViewProvider', int)
     def _getRandomizedVersion(self, randTvProvider, randIndex):
-        print 'inside _getrandomizedversion of sts'
         newCopy = copy.copy(self)
         newCopy.track = TsBasedRandomizedTrack(self.track, randTvProvider, randIndex)
         return newCopy
