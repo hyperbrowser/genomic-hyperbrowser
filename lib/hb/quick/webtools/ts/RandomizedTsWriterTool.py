@@ -117,7 +117,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
-       # res = doAnalysis(spec, bins, randomizedTs)
+        res = doAnalysis(spec, bins, randomizedTs)
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
 
