@@ -123,6 +123,46 @@ REPLACE_TEMPLATES['$MCFDRv3$']=\
  [evaluatorFunc:=evaluatePvalueAndNullDistribution:]
 '''
 
+REPLACE_TEMPLATES['$MCFDRv4$']=\
+'''
+ [setup:_MCFDR sampling depth=quick:Quick and rough indication/mediumGlobal:Moderate resolution of global p-value/mediumLocal:Moderate resolution of global and local p-values/robust:Fixed 10 000 samples (slow)/scratch:Fixed 3 samples (unstable indication)]
+ [mcSamplerClass:<setup--quick>=McFdrSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--quick>=10:]
+ [maxSamples:<setup--quick>=150:]
+ [mThreshold:<setup--quick>=10:]
+ [globalPvalThreshold:<setup--quick>=0.05:]
+ [fdrThreshold:<setup--quick>=1.0:]
+
+ [mcSamplerClass:<setup--mediumGlobal>=McFdrSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--mediumGlobal>=50:]
+ [maxSamples:<setup--mediumGlobal>=2000:]
+ [mThreshold:<setup--mediumGlobal>=20:]
+ [globalPvalThreshold:<setup--mediumGlobal>=0.005:]
+ [fdrThreshold:<setup--mediumGlobal>=1.0:]
+
+ [mcSamplerClass:<setup--mediumLocal>=McFdrSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--mediumLocal>=50:]
+ [maxSamples:<setup--mediumLocal>=2000:]
+ [mThreshold:<setup--mediumLocal>=20:]
+ [globalPvalThreshold:<setup--mediumLocal>=0.005:]
+ [fdrThreshold:<setup--mediumLocal>=0.01:]
+
+ [mcSamplerClass:<setup--scratch>=NaiveMCSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--scratch>=3:]
+ [maxSamples:<setup--scratch>=3:]
+ [mThreshold:<setup--scratch>=1:]
+ [globalPvalThreshold:<setup--scratch>=1.0:]
+ [fdrThreshold:<setup--scratch>=1.0:]
+
+ [mcSamplerClass:<setup--robust>=NaiveMCSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--robust>=10000:]
+ [maxSamples:<setup--robust>=10000:]
+ [mThreshold:<setup--robust>=1:]
+ [globalPvalThreshold:<setup--robust>=1.0:]
+ [fdrThreshold:<setup--robust>=1.0:]
+
+ [evaluatorFunc:=evaluatePvalueAndNullDistribution:]
+'''
 #REPLACE_TEMPLATES['$MCFDR$']=\
 #'''
 # [numResamplings:_Minimal number of MC samples=%s100/1000/10000/50000]

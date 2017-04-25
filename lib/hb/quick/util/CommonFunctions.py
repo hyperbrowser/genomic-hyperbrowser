@@ -33,6 +33,7 @@ from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
 from proto.CommonFunctions import *
+from third_party.typecheck import list_of
 
 
 def createDirPath(trackName, genome, chr=None, allowOverlaps=False, basePath=PROCESSED_DATA_PATH):
@@ -62,7 +63,7 @@ def createMemoPath(region, statId, configHash, track1Hash, track2Hash):
                         [str(configHash), chr] ).replace('-','_') #replace('-','_') because hashes can be minus, and minus sign makes problems with file handling
 
 
-@takes(str,(list,tuple),(str,type(None)))
+@takes(basestring, list_of(basestring),(basestring,type(None)))
 def createOrigPath(genome, trackName, fn=None):
     #print 'genome:',genome
     #print 'trackName:',trackName
@@ -79,7 +80,7 @@ def createParsingErrorPath(genome, trackName, fn=None):
     return os.sep.join([PARSING_ERROR_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
 
-@takes(str)
+@takes(basestring)
 def getFileSuffix(fn):
     from gold.application.DataTypes import getSupportedFileSuffixes
     for suffix in getSupportedFileSuffixes():

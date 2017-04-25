@@ -1,5 +1,5 @@
 from gold.util.CustomExceptions import ShouldNotOccurError
-from third_party.typecheck import Checker, getargspec, type_name
+from third_party.typecheck import Checker, getargspec, type_name, InputParameterError
 from gold.application.LogSetup import SIGNATURE_DEVIANCE_LOGGER, logMessageOnce
 
 NO_CHECK = False
@@ -61,23 +61,27 @@ def takes(*args, **kwargs):
 
                 for i, (arg, checker) in enumerate(zip(args, checkers)):
                     if not checker.check(arg):
-                        #raise InputParameterError("%s() got invalid parameter "
-                                                  #"%d of type %s" %
-                                                  #(method.__name__, i + 1, 
-                                                   #type_name(arg)))
-                        mainMessage = "%s() got invalid parameter %d of type %s" %\
+                        if RAISE_DEVIANCES:
+                            raise InputParameterError("%s() got invalid parameter "
+                                                      "%d of type %s" %
+                                                      (method.__name__, i + 1,
+                                                       type_name(arg)))
+                        else:
+                            mainMessage = "%s() got invalid parameter %d of type %s" %\
                                                   (method.__name__, i + 1, 
                                                    type_name(arg))                        
-                        logMessageOnce(mainMessage, level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
+                            logMessageOnce(mainMessage, level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
                         
 
                 for kwname, checker in kwcheckers.iteritems():
                     if not checker.check(kwargs.get(kwname, None)):
-                        #raise InputParameterError("%s() got invalid parameter "
-                                                  #"%s of type %s" %
-                                                  #(method.__name__, kwname, 
-                                                   #type_name(kwargs.get(kwname, None))))
-                        logMessageOnce("%s() got invalid parameter " 
+                        if RAISE_DEVIANCES:
+                            raise InputParameterError("%s() got invalid parameter "
+                                                  "%s of type %s" %
+                                                  (method.__name__, kwname,
+                                                   type_name(kwargs.get(kwname, None))))
+                        else:
+                            logMessageOnce("%s() got invalid parameter "
                                                   "%s of type %s" %
                                                   (method.__name__, kwname, 
                                                    type_name(kwargs.get(kwname, None))), level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
