@@ -12,6 +12,15 @@
         ## relative href for site root
         <link rel="index" href="${ h.url_for( '/' ) }"/>
         <link href="${h.url_for('/static/hyperbrowser/state/styles.css')}" rel="stylesheet" type="text/css" >
+        ## HyperBrowser favicon setup
+        <link rel="apple-touch-icon" sizes="180x180" href="${h.url_for('/static/apple-touch-icon.png')}">
+        <link rel="icon" type="image/png" href="${h.url_for('/static/favicon-32x32.png')}" sizes="32x32">
+        <link rel="icon" type="image/png" href="${h.url_for('/static/favicon-16x16.png')}" sizes="16x16">
+        <link rel="manifest" href="${h.url_for('/static/manifest.json')}">
+        <link rel="mask-icon" href="${h.url_for('/static/safari-pinned-tab.svg')}" color="#5bbad5">
+        <link rel="shortcut icon" href="${h.url_for('/static/favicon.ico')}">
+        <meta name="msapplication-config" content="${h.url_for('/static/browserconfig.xml')}">
+        <meta name="theme-color" content="#ffffff">
         ## TODO: use loaders to move everything but the essentials below the fold
         ${ h.css(
             'jquery.rating',
