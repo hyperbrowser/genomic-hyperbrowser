@@ -1182,17 +1182,19 @@ class TrackSearchTool(GeneralGuiTool):
             #raise cls.exception
             return str(cls.exception)
 
-        try:# The list will be 'None' when the page is initially loaded
-            if not (len(cls.ATTRIBUTES) > 1 and getattr(choices, 'attributeList0')
-                    in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']):
-                #Return all rows in this case
-                selected_attrs = cls._getNumSelectedAttrs(choices)
-    
-                if selected_attrs == 0:
-                   return 'You need to select at least one attribute value filter'#+str(selected_attrs)+'--'+str(len(cls.ATTRIBUTES))
-            else: raise Exception
-        except Exception as e:
-            return str(e) + 'You need to select at least one attribute'
+        if choices.search == 'Yes':
+            try:# The list will be 'None' when the page is initially loaded
+                if not (len(cls.ATTRIBUTES) > 1 and getattr(choices, 'attributeList0')
+                        in [None, cls.NONE_CHOICE, cls.SELECT_CHOICE, '']):
+                    #Return all rows in this case
+                    selected_attrs = cls._getNumSelectedAttrs(choices)
+
+                    if selected_attrs == 0:
+                        return 'You need to select at least one attribute value filter' #+str(selected_attrs)+'--'+str(len(cls.ATTRIBUTES))
+                else:
+                    raise Exception
+            except Exception as e:
+                return str(e) + 'You need to select at least one attribute'
 
     @classmethod
     def _getAttrSelectionDescription(cls, choices):
