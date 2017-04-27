@@ -13,6 +13,8 @@ from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructure, SingleTrackTS, TrackStructureV2
 from gold.util import CommonConstants
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.result.model.ResultUtils import getTrackTitleToResultDictFromTrackStructure
+from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.util.CommonFunctions import prettyPrintTrackName, \
     strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -371,7 +373,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
             ### self._addChild(GSuiteSimilarityToQueryTrackRankingsAndPValuesV2Stat(self._region, ts, **self._kwArgs))
             # results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
-            results = doAnalysis(analysisSpec, analysisBins, fullTS).getGlobalResult()
+            resTrackStruct = doAnalysis(analysisSpec, analysisBins, fullTS).getGlobalResult()['Result']
+
+            results = getTrackTitleToResultDictFromTrackStructure(resTrackStruct)
 
             # results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
@@ -412,12 +416,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def prepareQ1(cls, reverse, similarityStatClassName, trackTitles):
         from quick.statistic.GSuiteSimilarityToQueryTrackRankingsV2Stat import \
             GSuiteSimilarityToQueryTrackRankingsV2Stat
-        analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsV2Stat)
+        # analysisSpec = AnalysisSpec(GSuiteSimilarityToQueryTrackRankingsV2Stat)
+        analysisSpec = AnalysisSpec(SummarizedInteractionWithOtherTracksV2Stat)
         analysisSpec.addParameter('pairwiseStatistic',
                                    GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
         analysisSpec.addParameter('reverse', reverse)
-        analysisSpec.addParameter('trackTitles', trackTitles)
-        analysisSpec.addParameter('queryTracksNum', str(1))
+        # analysisSpec.addParameter('trackTitles', trackTitles)
+        # analysisSpec.addParameter('queryTracksNum', str(1))
+        analysisSpec.addParameter("summaryFunc", 'raw')
         return analysisSpec
 
     @classmethod
