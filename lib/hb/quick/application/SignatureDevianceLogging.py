@@ -17,7 +17,7 @@ def customIsSubclass(queryClass, refClasses):
     except BaseException:
         return False
 
-def subClass(refClasses):
+def classType(refClasses):
     return partial(customIsSubclass, refClasses=refClasses)
 
 def takes(*args, **kwargs):

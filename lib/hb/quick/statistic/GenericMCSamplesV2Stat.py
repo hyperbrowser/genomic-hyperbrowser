@@ -16,7 +16,8 @@
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
-from quick.application.SignatureDevianceLogging import takes
+from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
+from quick.application.SignatureDevianceLogging import takes, classType
 from quick.util.RandomizationUtils import getRandTrackClassList, getRandTrackClass
 from quick.statistic.StatisticV2 import StatisticV2
 from collections import OrderedDict
@@ -40,7 +41,7 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
     IS_MEMOIZABLE = False #as it should return new random samples each time it is called
 
     #tvProvider should be a subclass of TsBasedRandomTrackViewProvider
-    @takes('GenericMCSamplesV2StatUnsplittable',Statistic,type,int)
+    @takes('GenericMCSamplesV2StatUnsplittable', Statistic, classType(TsBasedRandomTrackViewProvider), int)
     def _init(self, rawStatistic, tvProviderClass=None, numMcSamples=1, **kwArgs):
     #def _init(self, rawStatistic, randTrackClassList, numMcSamples, **kwArgs):
         '''
