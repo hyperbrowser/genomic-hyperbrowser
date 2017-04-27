@@ -1,12 +1,9 @@
 from collections import OrderedDict
 
 
-def getTrackTitleToResultDictFromTrackStructure(resultTrackStructure):
+def getTrackTitleToResultDictFromFlatPairedTrackStructure(resultTrackStructure):
     resDict = OrderedDict()
     for childTS in resultTrackStructure.values():
         assert childTS.isPairedTs(), "This method expects all second level nodes in the track structure to be of type PairedTS"
-        trackTitle = childTS['reference'].metadata['title']
-        result = childTS.result
-        resDict[trackTitle] = result
-
+        resDict[childTS['reference'].metadata['title']] = childTS.result
     return resDict

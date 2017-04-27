@@ -13,7 +13,7 @@ from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructure, SingleTrackTS, TrackStructureV2
 from gold.util import CommonConstants
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
-from quick.result.model.ResultUtils import getTrackTitleToResultDictFromTrackStructure
+from quick.result.model.ResultUtils import getTrackTitleToResultDictFromFlatPairedTrackStructure
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.util.CommonFunctions import prettyPrintTrackName, \
     strWithNatLangFormatting
@@ -375,7 +375,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             # results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
             resTrackStruct = doAnalysis(analysisSpec, analysisBins, fullTS).getGlobalResult()['Result']
 
-            results = getTrackTitleToResultDictFromTrackStructure(resTrackStruct)
+            results = getTrackTitleToResultDictFromFlatPairedTrackStructure(resTrackStruct)
 
             # results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
