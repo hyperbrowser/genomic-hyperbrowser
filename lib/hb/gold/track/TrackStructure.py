@@ -81,7 +81,7 @@ class TrackStructureV2(dict):
             return self._inferResult()
 
     def _inferResult(self):
-        return dict([(cat,self[cat].result) for cat in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+        return dict([(childTSKey, self[childTSKey].result) for childTSKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
 
     def _setResult(self, value):
         self._result = value
