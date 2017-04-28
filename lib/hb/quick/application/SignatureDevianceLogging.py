@@ -1,6 +1,6 @@
 from gold.util.CustomExceptions import ShouldNotOccurError
 from third_party.typecheck import Checker, getargspec, type_name, InputParameterError, \
-    one_of, anything, nothing, list_of, tuple_of, dict_of, optional
+    one_of, anything, nothing, list_of, tuple_of, dict_of, optional, ReturnValueError
 from gold.application.LogSetup import SIGNATURE_DEVIANCE_LOGGER, logMessageOnce
 from functools import partial
 
@@ -111,9 +111,11 @@ def returns(sometype):
 
     checker = Checker.create(sometype)
     if checker is None:
-        #raise TypeError("@returns decorator got parameter of unsupported "
-        #                "type %s" % type_name(sometype))
-        logMessageOnce("@returns decorator got parameter of unsupported "
+        if RAISE_DEVIANCES:
+            raise ShouldNotOccurError("@returns decorator got parameter of unsupported "
+                        "type %s" % type_name(sometype))
+        else:
+            logMessageOnce("@returns decorator got parameter of unsupported "
                         "type %s" % type_name(sometype), level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
 
     if NO_CHECK: # no type checking is performed, return decorated method itself
@@ -130,10 +132,12 @@ def returns(sometype):
                 result = method(*args, **kwargs)
                 
                 if not checker.check(result):
-                    #raise ReturnValueError("%s() has returned an invalid "
-                    #                       "value of type %s" % 
-                    #                       (method.__name__, type_name(result)))
-                    logMessageOnce("%s() has returned an invalid "
+                    if RAISE_DEVIANCES:
+                        raise ReturnValueError("%s() has returned an invalid "
+                                          "value of type %s" %
+                                          (method.__name__, type_name(result)))
+                    else:
+                        logMessageOnce("%s() has returned an invalid "
                                            "value of type %s" % 
                                            (method.__name__, type_name(result)), level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
 
