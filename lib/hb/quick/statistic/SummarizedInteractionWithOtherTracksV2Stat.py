@@ -9,7 +9,7 @@ from quick.statistic.StatisticV2 import StatisticV2
 from gold.util.CustomExceptions import ShouldNotOccurError, InvalidStatArgumentError
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.track.TrackStructure import TrackStructureV2
-from quick.util.CommonFunctions import minAndMax
+from quick.util.CommonFunctions import minAndMax, minLqMedUqMax
 
 
 class SummarizedInteractionWithOtherTracksV2Stat(MagicStatFactory):
@@ -36,7 +36,8 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                     'max': max,
                     'min': min,
                     'minAndMax': minAndMax,
-                    'raw': 'RawResults'
+                    'raw': 'RawResults',
+                    'minLqMedUqMax': minLqMedUqMax
                     }
     
     def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):

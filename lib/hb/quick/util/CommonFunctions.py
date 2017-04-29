@@ -213,6 +213,9 @@ def smartMin(li, ignoreNans=False):
 def minAndMax(li):
     return ( min(li), max(li) )
 
+def minLqMedUqMax(li):
+    return (min(li), numpy.percentile(li, 25), numpy.percentile(li, 50), numpy.percentile(li, 75), max(li))
+
 def isIter(obj):
     from numpy import memmap
     if isinstance(obj, memmap):
