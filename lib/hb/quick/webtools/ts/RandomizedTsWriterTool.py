@@ -7,6 +7,7 @@ from gold.track.RandomGenomeLocationTrack import RandomGenomeLocationTrack
 from gold.track.RandomizedSegsTrack import RandomizedSegsTrack
 from gold.track.SegsSampledByIntensityTrack import SegsSampledByIntensityTrack
 from gold.track.ShuffledMarksTrack import ShuffledMarksTrack
+from gold.track.TrackStructure import TrackStructureV2
 from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider, \
     ShuffleElementsBetweenTracksPool, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider, \
     CoveragePreservedShuffleElementsBetweenTracksTvProvider
@@ -60,7 +61,8 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         #        ('Second Header', 'secondKey')]
         return [('Select a GSuite', 'gs'),
                 ('Allow overlaps', 'allowOverlaps'),
-                ('Approximately preserve', 'preservationMethod')]
+                ('Approximately preserve', 'preservationMethod'),
+                ('Randomize within category (set to \'None\' in order to randomize between all tracks in the GSuite)', 'category')]
 
     @classmethod
     def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
@@ -73,6 +75,16 @@ class RandomizedTsWriterTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxPreservationMethod(cls, prevChoices):  # Alt: getOptionsBox3()
         return ['None', 'Number of segments', 'Base pair coverage']
+
+    @classmethod
+    def getOptionsBoxCategory(cls, prevChoices):  # Alt: getOptionsBox4()
+        try:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gs)
+            return [None] + gSuite.attributes
+        except TypeError:
+            return [None]
+
+        #return ['None', 'Number of segments', 'Base pair coverage']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -102,7 +114,14 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         else:
             tvProvider = ShuffleElementsBetweenTracksTvProvider
 
-        randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, 1)
+        if choices.category != None:
+            ts = ts.getSplittedByCategoryTS(choices.category)
+            randomizedTs = TrackStructureV2()
+            for subTsKey, subTs in ts.items():
+                randomizedTs[subTsKey] = subTs.getRandomizedVersion(tvProvider, allowOverlaps, 1)
+            randomizedTs = randomizedTs.getFlattenedTS()
+        else:
+            randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, 1)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
