@@ -10,7 +10,8 @@ from gold.track.ShuffledMarksTrack import ShuffledMarksTrack
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider, \
     ShuffleElementsBetweenTracksPool, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider, \
-    CoveragePreservedShuffleElementsBetweenTracksTvProvider
+    CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
+    PermutedSegsAndSampledIntersegsTrackViewProvider
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

@@ -1,4 +1,6 @@
 from gold.track.GenomeRegion import GenomeRegion
+from gold.track.PermutedSegsAndIntersegsTrack import PermutedSegsAndIntersegsTrack
+from gold.track.PermutedSegsAndSampledIntersegsTrack import PermutedSegsAndSampledIntersegsTrack
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackView import TrackView
 from gold.track.Track import Track
@@ -24,10 +26,28 @@ class TsBasedRandomTrackViewProvider(object):
         raise AbstractClassError
 
 class BetweenTrackRandomTvProvider(TsBasedRandomTrackViewProvider):
-    pass
+    def __init__(self, *args, **kwArgs):
+        raise AbstractClassError
 
 class WithinTrackRandomTvProvider(TsBasedRandomTrackViewProvider):
-    pass
+    def __init__(self, *args, **kwArgs):
+        raise AbstractClassError
+
+class PermutedSegsAndIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
+    def __init__(self, *args, **kwArgs):
+        pass
+
+    @takes('PermutedSegsAndIntersegsTrackViewProvider', GenomeRegion, Track, int)
+    def getTrackView(self, region, origTrack, randIndex):
+        return PermutedSegsAndIntersegsTrack(origTrack, randIndex).getTrackView(region)
+
+class PermutedSegsAndSampledIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
+    def __init__(self, *args, **kwArgs):
+        pass
+
+    @takes('PermutedSegsAndSampledIntersegsTrackViewProvider', GenomeRegion, Track, int)
+    def getTrackView(self, region, origTrack, randIndex):
+        return PermutedSegsAndSampledIntersegsTrack(origTrack, randIndex).getTrackView(region)
 
 
 class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
@@ -35,7 +55,7 @@ class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
     def __init__(self, origTs, allowOverlaps):
         self._elementPoolDict = {}
         self._preservationMethod = None
-        BetweenTrackRandomTvProvider.__init__(self, origTs, allowOverlaps)
+        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps)
 
     @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion', Track, int)
     def getTrackView(self, region, origTrack, randIndex):

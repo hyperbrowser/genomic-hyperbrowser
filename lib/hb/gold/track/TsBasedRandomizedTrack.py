@@ -6,9 +6,6 @@ class TsBasedRandomizedTrack(RandomizedTrack):
         self._origTrack = origTrack
         self._randTvProvider = randTvProvider
         self._randIndex = randIndex
-        #self._trackSomeUniqueID = trackSomeUniqueID#TODO: correct naming, Name, Title, ID, the Track object itself ??
-        #TODO should the __init__ of the superclass be called?
-
         super(TsBasedRandomizedTrack, self).__init__(origTrack, randIndex, **kwArgs)
 
     def getTrackView(self, region):
