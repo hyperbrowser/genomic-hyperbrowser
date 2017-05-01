@@ -61,31 +61,58 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         #return [('First header', 'firstKey'),
         #        ('Second Header', 'secondKey')]
         return [('Select a GSuite', 'gs'),
+                ('Type of randomization', 'randType'),
+                ('Randomization algorithm', 'randAlg'),
                 ('Allow overlaps', 'allowOverlaps'),
-                ('Approximately preserve', 'preservationMethod'),
-                ('Randomize within category (set to \'None\' in order to randomize between all tracks in the GSuite)', 'category')]
+                ('Category to randomize within (set to \'None\' in order to randomize between all tracks in the GSuite)', 'category')]
+
+    @staticmethod
+    def isPublic():
+        '''
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as defined in
+        LocalOSConfig.py.
+        '''
+        return True
 
     @classmethod
     def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
-        return GeneralGuiToolMixin.getHistorySelectionElement()
+        return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxAllowOverlaps(cls, prevChoices):   # Alt: getOptionsBox2()
-        return ['No', 'Yes']
+    def getOptionsBoxRandType(cls, prevChoices):
+        return ['--- Select ---', 'between tracks', 'within tracks']
 
     @classmethod
-    def getOptionsBoxPreservationMethod(cls, prevChoices):  # Alt: getOptionsBox3()
-        return ['None', 'Number of segments', 'Base pair coverage']
+    def getOptionsBoxRandAlg(cls, prevChoices):
+        if prevChoices.randType == 'between tracks':
+            return ['Shuffle between tracks',
+                    'Shuffle between tracks, preserve number of segments per track',
+                    'Shuffle between tracks, preserve base pair coverage per track']
+        elif prevChoices.randType == 'within tracks':
+            return ['Permute segments and inter-segment regions',
+                    'Permute segments and sampled inter-segment regions']
+        else:
+            return '__hidden__', None
+
+    @classmethod
+    def getOptionsBoxAllowOverlaps(cls, prevChoices):
+        if prevChoices.randType == 'between tracks':
+            return ['No', 'Yes']
+        else:
+            return '__hidden__', None
 
     @classmethod
     def getOptionsBoxCategory(cls, prevChoices):  # Alt: getOptionsBox4()
-        try:
-            gSuite = getGSuiteFromGalaxyTN(prevChoices.gs)
-            return [None] + gSuite.attributes
-        except TypeError:
-            return [None]
+        if prevChoices.randType == 'between tracks':
+            try:
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.gs)
+                if len(gSuite.attributes) > 0:
+                    return [None] + gSuite.attributes
+            except:
+                return '__hidden__', None
+        return '__hidden__', None
 
-        #return ['None', 'Number of segments', 'Base pair coverage']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -155,7 +182,9 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+        for requiredParameter in (choices.gs, choices.randType, choices.randAlg):
+            if requiredParameter in [None, '', '--- Select ---']:
+                return ''
 
     @classmethod
     def getOutputFormat(cls, choices):
