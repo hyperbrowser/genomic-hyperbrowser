@@ -160,7 +160,8 @@ class RandomizedTsWriterTool(GeneralGuiTool):
                                                 extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
                                                 suffix='bed')
 
-            gSuiteTrack = GSuiteTrack(uri, title=singleTrackTs.metadata['title'] + '.randomized', fileFormat='primary', trackType='segments', genome=genome)
+            title = singleTrackTs.metadata.pop('title')
+            gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
             outputGSuite.addTrack(gSuiteTrack)
             singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
 
