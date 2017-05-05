@@ -79,16 +79,15 @@ class CoveragePreservedShuffleElementsBetweenTracksTvProvider(ShuffleElementsBet
         ShuffleElementsBetweenTracksTvProvider.__init__(self, origTs, allowOverlaps)
         self._preservationMethod = COVERAGE
 
+
 class ShuffleElementsBetweenTracksPool(object):
     @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', GenomeRegion, bool, one_of(str, None))
     def __init__(self, origTs, region, allowOverlaps, preservationMethod):
         self._region = region
         self._allowOverlaps = allowOverlaps
-        self._randomTrackSets = {} # _randomTrackSets[randIndex] gives a double list; [[track0starts, track1starts, ..., trackNstarts],[track0ends, track1ends, ..., trackNends]
-        self._trackIdToIndexDict = {}
 
-        origStartArrays = []
-        origEndArrays = []
+        self._trackIdToIndexDict = {}
+        self.origArrays = {'starts':[], 'ends':[], 'vals':[], 'strands':[], 'ids':[], 'edges':[], 'weights':[]}
 
         for index, leafNode in enumerate(origTs.getLeafNodes()):
             track = leafNode.track
@@ -96,133 +95,27 @@ class ShuffleElementsBetweenTracksPool(object):
             self._trackIdToIndexDict[trackId] = index
 
             tv = track.getTrackView(region)
-            origStartArrays.append(tv.startsAsNumpyArray())
-            origEndArrays.append(tv.endsAsNumpyArray())
+            self.origArrays['starts'].append(tv.startsAsNumpyArray())
+            self.origArrays['ends'].append(tv.endsAsNumpyArray())
+            self.origArrays['vals'].append(tv.valsAsNumpyArray())
+            self.origArrays['strands'].append(tv.strandsAsNumpyArray())
+            self.origArrays['ids'].append(tv.idsAsNumpyArray())
+            self.origArrays['edges'].append(tv.edgesAsNumpyArray())
+            self.origArrays['weights'].append(tv.weightsAsNumpyArray())
 
-        self._allStarts = np.concatenate(origStartArrays)
-        self._allEnds = np.concatenate(origEndArrays)
-        self._order = self._allStarts.argsort()
-        self._amountTracks = len(origStartArrays)
+        self._amountTracks = index + 1
+        self._probabilities = self._getProbabilities(preservationMethod, self.origArrays['starts'], self.origArrays['ends'])
 
-        if len(self._allStarts) == 0:
-            self._probabilities = [0 for i in range(0, self._amountTracks)]
-        elif preservationMethod == NUMBER_OF_SEGMENTS:
-            self._probabilities = [float(len(array)) / float(len(self._allStarts)) for array in origStartArrays]
-        elif preservationMethod == COVERAGE:
-            coverages = [float(sum(origEndArrays[i] - origStartArrays[i])) for i in range(0, self._amountTracks)]
-            self._probabilities = [coverage/sum(coverages) for coverage in coverages]
-        else:
-            self._probabilities = [1.0 / float(self._amountTracks) for i in range(0, self._amountTracks)]
-
-
-        if allowOverlaps:
-            self._selectRandomTrackIndex = self._selectSimpleRandomTrackIndex
-        else:
-            self._selectRandomTrackIndex = self._selectNonOverlappingRandomTrackIndex
-
-
-    # TODO: dangerous; trackId must always be based on unknown. to make it easier to make this consistent, the original track is passed all the way here instead of passing the trackId directly
-    @takes('ShuffleElementsBetweenTracksPool', Track, int)
-    def getOneTrackViewFromPool(self, origTrack, randIndex):
-        trackId = origTrack.getUniqueKey('unknown')
-        assert trackId in self._trackIdToIndexDict.keys(), 'given track should be in the original TrackStructure that was used to make this pool'
-        trackIndex = self._trackIdToIndexDict[origTrack.getUniqueKey('unknown')]
-
-        if randIndex not in self._randomTrackSets:
-            self._computeRandomTrackSet(randIndex)
-
-        newStarts = self._randomTrackSets[randIndex][0][trackIndex]
-        newEnds = self._randomTrackSets[randIndex][1][trackIndex]
-
-        rawData = RawDataStat(self._region, origTrack, NeutralTrackFormatReq())
-        origTV = rawData.getResult()
-
-        return TrackView(genomeAnchor=origTV.genomeAnchor, startList=newStarts, endList=newEnds,
-                         valList=[0 for i in range(0, len(newStarts))],
-                         strandList=[-1 for i in range(0, len(newStarts))],
-                         idList=None, edgesList=None, weightsList=None, borderHandling=origTV.borderHandling, allowOverlaps=self._allowOverlaps)
-                         #extraLists=origTV._extraLists, #TODO also 'translate' this extralist? (length needs to be the same)
-
-    @takes('ShuffleElementsBetweenTracksPool', int)
-    def _computeRandomTrackSet(self, randIndex):
-        rn.seed(randIndex)
-
-        newStarts = [[] for track in range(0, self._amountTracks)]
-        newEnds = [[] for track in range(0, self._amountTracks)]
-
-        for index in self._order:
-            start = self._allStarts[index]
-            end = self._allEnds[index]
-            selectedTrack = self._selectRandomTrackIndex(newEnds=newEnds, newStart=start)
-            newStarts[selectedTrack].append(start)
-            newEnds[selectedTrack].append(end)
-
-        self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
-
-    @takes('ShuffleElementsBetweenTracksPool', optional(anything))
-    def _selectSimpleRandomTrackIndex(self, **kwArgs):
-        return np.random.choice(range(0, self._amountTracks), p=self._probabilities)
-
-    @takes('ShuffleElementsBetweenTracksPool', list_of(list_of(int)), list_of(list_of(int)), optional(anything))
-    def _selectNonOverlappingRandomTrackIndex(self, newEnds, newStart, **kwArgs):
-        selectedTrack = self._selectSimpleRandomTrackIndex()
-
-        if not self._allowOverlaps:
+        for tvParam in self.origArrays.keys():
             try:
-                while newEnds[selectedTrack][-1] > newStart:
-                    selectedTrack = self._selectSimpleRandomTrackIndex()
-            except IndexError:
-                # there is nothing in the newEnds list yet, place the current track
-                pass
+                self.origArrays[tvParam] = np.concatenate(self.origArrays[tvParam])
+            except ValueError: # this happens when one of the arrays is None
+                self.origArrays.pop(tvParam)
 
-        return selectedTrack
+        self._randomTrackSets = {'starts': {}, 'ends': {}, 'vals': {}, 'strands': {}, 'ids': {},
+                                 'edges': {}, 'weights': {}}
 
-
-class ShuffleElementsBetweenTracksPoolV2(object):
-    # IMPORTANT: READ THIS!!!
-    # this is a new version of ShuffleElementsBetweenTracksPool, which takes into account that when providing the new trackviews
-    # they should contain more than just starts and ends, but also vals, strands, ids, edges and weights (extralists have not been added yet)
-    # this is a more complete implementation, however, it is slower than the original and might not always be necessary (only if using certain statistics)
-    # also the code works but looks clumpsy now and should be refactored before this is set to the real 'ShuffleElementsBetweenTracksPool'
-    @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', GenomeRegion, bool, one_of(str, None))
-    def __init__(self, origTs, region, allowOverlaps, preservationMethod):
-        self._region = region
-        self._allowOverlaps = allowOverlaps
-        self._randomTrackSets = {'starts':{}, 'ends':{}, 'vals':{}, 'strands':{}, 'ids':{}, 'edges':{}, 'weights':{}}
-        self._trackIdToIndexDict = {}
-
-        origStartArrays = []
-        origEndArrays = []
-        origValArrays = []
-        origStrandArrays = []
-        origIdArrays = []
-        origEdgeArrays = []
-        origWeightArrays = []
-
-        for index, leafNode in enumerate(origTs.getLeafNodes()):
-            track = leafNode.track
-            trackId = track.getUniqueKey('unknown')
-            self._trackIdToIndexDict[trackId] = index
-
-            tv = track.getTrackView(region)
-            origStartArrays.append(tv.startsAsNumpyArray())
-            origEndArrays.append(tv.endsAsNumpyArray())
-            origValArrays.append(tv.valsAsNumpyArray())
-            origStrandArrays.append(tv.strandsAsNumpyArray())
-            origIdArrays.append(tv.idsAsNumpyArray())
-            origEdgeArrays.append(tv.edgesAsNumpyArray())
-            origWeightArrays.append(tv.weightsAsNumpyArray())
-
-        self._allStarts = np.concatenate(origStartArrays)
-        self._allEnds = np.concatenate(origEndArrays)
-        self._allVals = np.concatenate(origValArrays)
-        self._allStrands = np.concatenate(origStrandArrays)
-        self._allIds = np.concatenate(origIdArrays)
-        self._allEdges = np.concatenate(origEdgeArrays)
-        self._allWeights = np.concatenate(origWeightArrays)
-        self._order = self._allStarts.argsort()
-        self._amountTracks = len(origStartArrays)
-        self.self._probabilities = self._getProbabilities(preservationMethod, origStartArrays, origEndArrays)
+        self._order = self.origArrays['starts'].argsort()
 
         if allowOverlaps:
             self._selectRandomTrackIndex = self._selectSimpleRandomTrackIndex
@@ -230,10 +123,11 @@ class ShuffleElementsBetweenTracksPoolV2(object):
             self._selectRandomTrackIndex = self._selectNonOverlappingRandomTrackIndex
 
     def _getProbabilities(self, preservationMethod, origStartArrays, origEndArrays):
-        if len(self._allStarts) == 0:
+        allItemsLength = len(np.concatenate(origStartArrays))
+        if allItemsLength == 0:
             return [0 for i in range(0, self._amountTracks)]
         elif preservationMethod == NUMBER_OF_SEGMENTS:
-            return [float(len(array)) / float(len(self._allStarts)) for array in origStartArrays]
+            return [float(len(array)) / float(allItemsLength) for array in origStartArrays]
         elif preservationMethod == COVERAGE:
             coverages = [float(sum(origEndArrays[i] - origStartArrays[i])) for i in range(0, self._amountTracks)]
             return [coverage / sum(coverages) for coverage in coverages]
@@ -253,6 +147,14 @@ class ShuffleElementsBetweenTracksPoolV2(object):
 
         origTV = RawDataStat(self._region, origTrack, NeutralTrackFormatReq()).getResult()
 
+
+        for tvParam in self._randomTrackSets:
+            try:
+                self._randomTrackSets[tvParam][randIndex][trackIndex]
+            except KeyError: # if the parameter does not exist, set it to None
+                self._randomTrackSets[tvParam][randIndex] = {}
+                self._randomTrackSets[tvParam][randIndex][trackIndex] = None
+
         return TrackView(genomeAnchor=origTV.genomeAnchor,
                          startList=self._randomTrackSets['starts'][randIndex][trackIndex],
                          endList=self._randomTrackSets['ends'][randIndex][trackIndex],
@@ -268,34 +170,23 @@ class ShuffleElementsBetweenTracksPoolV2(object):
     def _computeRandomTrackSet(self, randIndex):
         rn.seed(randIndex)
 
-        newStarts = [[] for track in range(0, self._amountTracks)]
-        newEnds = [[] for track in range(0, self._amountTracks)]
-        newVals = [[] for track in range(0, self._amountTracks)]
-        newStrands = [[] for track in range(0, self._amountTracks)]
-        newIds = [[] for track in range(0, self._amountTracks)]
-        newEdges = [[] for track in range(0, self._amountTracks)]
-        newWeights = [[] for track in range(0, self._amountTracks)]
+        newTrackValues = {}
+
+        for tvParam in self.origArrays.keys():
+            newTrackValues[tvParam] = [[] for track in range(0, self._amountTracks)]
 
         for index in self._order:
-            start = self._allStarts[index]
-            end = self._allEnds[index]
-            selectedTrack = self._selectRandomTrackIndex(newEnds=newEnds, newStart=start)
-            newStarts[selectedTrack].append(start)
-            newEnds[selectedTrack].append(end)
-            newVals[selectedTrack].append(self._allVals[index])
-            newStrands[selectedTrack].append(self._allStrands[index])
-            newIds[selectedTrack].append(self._allIds[index])
-            newEdges[selectedTrack].append(self._allEdges[index])
-            newWeights[selectedTrack].append(self._allWeights[index])
+            start = self.origArrays['starts'][index]
+            end = self.origArrays['ends'][index]
+            selectedTrack = self._selectRandomTrackIndex(newEnds=newTrackValues['ends'], newStart=start)
 
-        #self._randomTrackSets[randIndex] = [[np.array(track) for track in newStarts], [np.array(track) for track in newEnds]]
-        self._randomTrackSets['starts'][randIndex] = [np.array(track) for track in newStarts]
-        self._randomTrackSets['ends'][randIndex] = [np.array(track) for track in newEnds]
-        self._randomTrackSets['vals'][randIndex] = [np.array(track) for track in newVals]
-        self._randomTrackSets['strands'][randIndex] = [np.array(track) for track in newStrands]
-        self._randomTrackSets['ids'][randIndex] = [np.array(track) for track in newIds]
-        self._randomTrackSets['edges'][randIndex] = [np.array(track) for track in newEdges]
-        self._randomTrackSets['weights'][randIndex] = [np.array(track) for track in newWeights]
+            for tvParam in self.origArrays.keys():
+                newTrackValues[tvParam][selectedTrack].append(self.origArrays[tvParam][index])
+
+
+        for tvParam in self.origArrays.keys():
+            self._randomTrackSets[tvParam][randIndex] = [np.array(track) for track in newTrackValues[tvParam]]
+
 
     @takes('ShuffleElementsBetweenTracksPool', optional(anything))
     def _selectSimpleRandomTrackIndex(self, **kwArgs):
@@ -314,5 +205,7 @@ class ShuffleElementsBetweenTracksPoolV2(object):
                 pass
 
         return selectedTrack
+
+
 
 
