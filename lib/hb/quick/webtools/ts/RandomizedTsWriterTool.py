@@ -154,11 +154,10 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         else:
             randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, 1)
 
-
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                 extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
-                                                suffix='bed')
+                                                suffix='gtrack')
 
             title = singleTrackTs.metadata.pop('title')
             gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)

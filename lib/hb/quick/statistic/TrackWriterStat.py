@@ -43,21 +43,21 @@ class TrackWriterStatUnsplittable(Statistic):
 
     def _compute(self):
         #TODO: fix this new implementation, it doesn't seem to write the lines yet
-        #tvGeSource = TrackViewGenomeElementSource('hg19', self._children[0].getResult(), self._track.trackName)
-        #StdGtrackComposer(tvGeSource).composeToFile(self._trackFilePath)
+        tvGeSource = TrackViewGenomeElementSource('hg19', self._children[0].getResult(), self._track.trackName)
+        StdGtrackComposer(tvGeSource).composeToFile(self._trackFilePath)
 
 
-        ensurePathExists(self._trackFilePath)
-        outputFile = open(self._trackFilePath, 'a')
-
-        trackView = self._children[0].getResult()
-        starts = trackView.startsAsNumpyArray()
-        ends = trackView.endsAsNumpyArray()
-
-        for segmentIndex in range(0, len(starts)):
-            outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
-
-        outputFile.close()
+        # ensurePathExists(self._trackFilePath)
+        # outputFile = open(self._trackFilePath, 'a')
+        #
+        # trackView = self._children[0].getResult()
+        # starts = trackView.startsAsNumpyArray()
+        # ends = trackView.endsAsNumpyArray()
+        #
+        # for segmentIndex in range(0, len(starts)):
+        #     outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
+        #
+        # outputFile.close()
 
         # this return is not entirely necessary, as the filenames have already been added to the trackstructure
         return quote(self._trackFilePath)
