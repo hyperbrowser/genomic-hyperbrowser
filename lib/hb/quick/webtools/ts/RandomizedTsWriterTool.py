@@ -1,5 +1,7 @@
 from collections import OrderedDict
+from pymol.setting import self
 
+from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.track.GenomeRegion import GenomeRegion
@@ -15,6 +17,7 @@ from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTrac
     CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
     PermutedSegsAndSampledIntersegsTrackViewProvider, PermutedSegsAndIntersegsTrackViewProvider
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+from quick.application.ExternalTrackManager import ExternalTrackManager
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.track.SegsSampledByDistanceToReferenceTrack import SegsSampledByDistanceToReferenceTrack
@@ -24,7 +27,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.TsWriterStat import TsWriterStat
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack, HbGSuiteTrack
 import os
 
 
@@ -140,6 +143,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         outputGSuite = GSuite()
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
+        randIndex = 1
 
         allowOverlaps = True if choices.allowOverlaps == 'Yes' else False
 
@@ -149,10 +153,10 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             ts = ts.getSplittedByCategoryTS(choices.category)
             randomizedTs = TrackStructureV2()
             for subTsKey, subTs in ts.items():
-                randomizedTs[subTsKey] = subTs.getRandomizedVersion(tvProvider, allowOverlaps, 1)
+                randomizedTs[subTsKey] = subTs.getRandomizedVersion(tvProvider, allowOverlaps, randIndex)
             randomizedTs = randomizedTs.getFlattenedTS()
         else:
-            randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, 1)
+            randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, randIndex)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
@@ -163,6 +167,27 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
             outputGSuite.addTrack(gSuiteTrack)
             singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+
+        # for singleTrackTs in randomizedTs.getLeafNodes():
+        #     # uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+        #     #                                     extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
+        #     #                                     suffix='gtrack')
+        #     #
+        #     # title = singleTrackTs.metadata.pop('title')
+        #     # gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
+        #     # outputGSuite.addTrack(gSuiteTrack)
+        #     # singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+        #     newTrackName = singleTrackTs.track.trackName + ['randomized', str(randIndex)]
+        #
+        #     #ExternalTrackManager.createStdTrackName(self._id, os.name)
+        #
+        #     uri = HbGSuiteTrack.generateURI(newTrackName)
+        #     title = singleTrackTs.metadata.pop('title')
+        #     gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized.'+str(randIndex), trackType=TrackInfo(genome, newTrackName).trackFormatName.lower(), genome=genome, attributes=singleTrackTs.metadata)
+        #     outputGSuite.addTrack(gSuiteTrack)
+        #     singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+        #     singleTrackTs.metadata['randomizedTrackName'] = newTrackName
+
 
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)

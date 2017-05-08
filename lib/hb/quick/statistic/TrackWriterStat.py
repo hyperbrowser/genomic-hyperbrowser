@@ -14,6 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from gold.origdata.GtrackComposer import StdGtrackComposer
+from gold.origdata.PreProcessTracksJob import PreProcessCustomTrackJob
 from gold.origdata.TrackGenomeElementSource import TrackViewGenomeElementSource
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
@@ -23,6 +24,7 @@ from urllib import quote
 
 from gold.util.CustomExceptions import ShouldNotOccurError
 from proto.CommonFunctions import ensurePathExists
+from quick.application.ExternalTrackManager import ExternalTrackManager
 
 
 class TrackWriterStat(MagicStatFactory):
@@ -40,26 +42,40 @@ class TrackWriterStatSplittable(StatisticSplittable):
 class TrackWriterStatUnsplittable(Statistic):
     def _init(self, trackFilePath, **kwArgs):
         self._trackFilePath = trackFilePath
+        #self._newTrackName = newTrackName
+
+   # def _getGESource(self, genome, trackName, region):
+   #     trackView = self._children[0].getResult()
+   #     return TrackViewGenomeElementSource(genome, trackView, trackName)
 
     def _compute(self):
-        #TODO: fix this new implementation, it doesn't seem to write the lines yet
-        tvGeSource = TrackViewGenomeElementSource('hg19', self._children[0].getResult(), self._track.trackName)
-        StdGtrackComposer(tvGeSource).composeToFile(self._trackFilePath)
-
-
-        # ensurePathExists(self._trackFilePath)
-        # outputFile = open(self._trackFilePath, 'a')
+        # trackName = ExternalTrackManager.createStdTrackName(self._id, os.name)
         #
-        # trackView = self._children[0].getResult()
-        # starts = trackView.startsAsNumpyArray()
-        # ends = trackView.endsAsNumpyArray()
+        # job = PreProcessCustomTrackJob(self._region.genome, trackName, [self._region], \
+        #                                self._getGESource, preProcess=True, finalize=False)
+        # job.process()
         #
-        # for segmentIndex in range(0, len(starts)):
-        #     outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
         #
-        # outputFile.close()
+        # return self.trackFilePath #TODO: remove trackfilepath, niet nodig
 
-        # this return is not entirely necessary, as the filenames have already been added to the trackstructure
+        # #TODO: fix this new implementation, it doesn't seem to write the lines yet
+        # # tvGeSource = TrackViewGenomeElementSource('hg19', self._children[0].getResult(), self._track.trackName)
+        # # StdGtrackComposer(tvGeSource).composeToFile(self._trackFilePath)
+        # #
+        #
+        ensurePathExists(self._trackFilePath)
+        outputFile = open(self._trackFilePath, 'a')
+
+        trackView = self._children[0].getResult()
+        starts = trackView.startsAsNumpyArray()
+        ends = trackView.endsAsNumpyArray()
+
+        for segmentIndex in range(0, len(starts)):
+            outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
+
+        outputFile.close()
+
+        #this return is not entirely necessary, as the filenames have already been added to the trackstructure
         return quote(self._trackFilePath)
 
     def _createChildren(self):
