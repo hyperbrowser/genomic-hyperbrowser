@@ -1,7 +1,5 @@
 from collections import OrderedDict
-from pymol.setting import self
 
-from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.track.GenomeRegion import GenomeRegion
@@ -17,7 +15,6 @@ from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTrac
     CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
     PermutedSegsAndSampledIntersegsTrackViewProvider, PermutedSegsAndIntersegsTrackViewProvider
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
-from quick.application.ExternalTrackManager import ExternalTrackManager
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.track.SegsSampledByDistanceToReferenceTrack import SegsSampledByDistanceToReferenceTrack
@@ -27,7 +24,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.TsWriterStat import TsWriterStat
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack, HbGSuiteTrack
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 import os
 
 
@@ -161,7 +158,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                 extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
-                                                suffix='gtrack')
+                                                suffix='bed')
 
             title = singleTrackTs.metadata.pop('title')
             gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
