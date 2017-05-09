@@ -27,6 +27,9 @@ from gold.track.TrackStructure import TrackStructure
 from quick.util.debug import DebugUtil
 from __builtin__ import str
 
+from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
+
+
 class GenericMCSamplesV2Stat(MagicStatFactory):
     '''
     Takes in a null model (randomization class), a test statistic (rawStatistic) and a desired number of MC samples (numMcSamples),
@@ -58,10 +61,11 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)
         self._numMcSamples = int(numMcSamples)
         self._tvProviderClass = tvProviderClass
-        if type(self._tvProviderClass) is basestring:
-            self._tvProviderClass = ShuffleElementsBetweenTracksTvProvider
-            #TODO: Definetly change this!!!
-            print 'AD HOC SETTING PROVIDER'
+        if isinstance(self._tvProviderClass, basestring):
+            #TODO should within tracks also be supported?
+            nameToClassDict = {repr(subclass): subclass for subclass in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Between tracks'].values()}
+            self._tvProviderClass = nameToClassDict[self._tvProviderClass]
+
 
 
 
@@ -80,7 +84,7 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         # randClassListLen = len(self._randTrackStructureClassDict)
         # assert origTSLen >= randClassListLen , 'There are %i randomization classes specified, and only %i track collections in the original track structure' % (randClassListLen, origTSLen)
 
-    
+
     def _createRandomizedStat(self, i):
         #Refactor the first argument after a better track input handling is in place..
         randomizedTrackStructure = self._trackStructure.getRandomizedVersion(self._tvProviderClass, False, i) #TODO: Handle AllowOverlaps
