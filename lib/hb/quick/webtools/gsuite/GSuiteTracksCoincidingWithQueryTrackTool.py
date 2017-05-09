@@ -11,6 +11,7 @@ from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructure, TrackStructureV2
+from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider
 from gold.util import CommonConstants
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.util.CommonFunctions import prettyPrintTrackName, \
@@ -541,6 +542,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
         analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tvProviderClass',ShuffleElementsBetweenTracksTvProvider)
         return analysisSpec
 
     @classmethod

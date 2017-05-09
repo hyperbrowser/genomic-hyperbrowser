@@ -55,11 +55,14 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                     'raw': 'RawResults'
                     }
     
-    def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
+    def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', rawStatistic=None,**kwArgs):
+        #NB! Any received parameter termed rawStatistic is ignored, as pairwiseStatistic will take this role in children
         self._rawStatistic = self.getRawStatisticClass(pairwiseStatistic)
+
         self._summaryFunction = self._resolveFunction(summaryFunc)
         #self._summaryFunction = self[summaryFunc] #TODO: Should we replace the whole _resolveFunction with this one. Is such an error not clear enough?
         self._reversed = reverse
+        self._kwArgs = kwArgs
     
     def _resolveFunction(self, summaryFunc):
         if summaryFunc not in self.functionDict:

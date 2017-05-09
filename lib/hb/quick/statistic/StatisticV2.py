@@ -54,8 +54,12 @@ class StatisticV2(Statistic):
         
         #TODO:boris 20150924, Code for checking if query and reference (track and track2) are the same track.
         #We should decide if we will allow this in the future.
-        
+
+        #TODO: This should probably instead happen in the default _init method, so that when this is
+        # overridden, one needs to explicitly store kwArgs if desired.
+        #As it is now, parameters will be handled explicitly in _init while still becoming part of self_kwArgs
         self._kwArgs = kwArgs
+
         self._init(**kwArgs)
 
         self._trace('__init__')
