@@ -63,6 +63,7 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         self._tvProviderClass = tvProviderClass
         if isinstance(self._tvProviderClass, basestring):
             #TODO should within tracks also be supported?
+            #TODO: nameToClassDict should probably be moved to a more generic place, from where it can be imported to wherever needed..
             nameToClassDict = {repr(subclass): subclass for subclass in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Between tracks'].values()}
             self._tvProviderClass = nameToClassDict[self._tvProviderClass]
 
