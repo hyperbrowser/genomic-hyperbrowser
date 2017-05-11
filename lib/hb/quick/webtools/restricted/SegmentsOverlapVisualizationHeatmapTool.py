@@ -1,3 +1,4 @@
+
 from gold.gsuite import GSuiteConstants
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -208,7 +209,51 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         htmlCore.line(vp._addGuidelineV1())
 
         htmlCore.line(vp.addJSlibsHeatmap())
-        
+
+        print results
+        print yAxisNameOverMouse
+        print rowLabel
+
+        from config.Config import DATA_FILES_PATH
+        print 'path to florian to put file tehre', DATA_FILES_PATH
+
+        from proto.StaticFile import StaticFile, GalaxyRunSpecificFile
+
+        print galaxyFn
+
+        sf = GalaxyRunSpecificFile(['result.txt'], galaxyFn)
+        outFile = sf.getDiskPath(ensurePath=True)
+
+        writeFile = open(outFile, 'w')
+        i = 0
+
+        writeFile('' + '\t' + '\t'.join(rowLabel))
+        for rList in results:
+            writeFile.write(yAxisNameOverMouse[i] + '\t' + '\t'.join(rList))
+
+
+        print outFile
+        print sf.getURL()
+
+
+
+        min = 1000000000
+        max = -1000000000
+        for rList in results:
+            for r in rList:
+                if min < r:
+                    min = r
+                if max > r:
+                    max = r
+
+        print min, max
+
+
+
+
+
+
+
         
         hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
                                                 results,

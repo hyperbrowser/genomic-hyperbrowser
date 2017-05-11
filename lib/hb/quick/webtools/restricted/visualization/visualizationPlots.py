@@ -78,7 +78,7 @@ def addJSlibsHeatmap():
     
 
 def axaddJSlibsOverMouseAxisisPopup():
-    return '<script src="https://raw.github.com/briancray/tooltipsy/master/tooltipsy.min.js"></script>'
+    return '<script src="https://hyperbrowser.uio.no/dianadom_dev/static/proto/files/visualization/tooltipsy.min.js"></script>'
 
 def addJSlibsExport():
     #http://www.highcharts.com/component/content/article/2-news/52-serverside-generated-charts
