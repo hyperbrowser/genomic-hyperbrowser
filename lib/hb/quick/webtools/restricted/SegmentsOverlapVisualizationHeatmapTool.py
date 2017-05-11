@@ -106,8 +106,8 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxColorMapSelectList(prevChoices): # Alternatively: getOptionsBox1()
         return colorMaps.keys()
 
-    @staticmethod
-    def execute(choices, galaxyFn=None, username=''):
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
         genome = choices.genome
          
 
@@ -210,30 +210,29 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
 
         htmlCore.line(vp.addJSlibsHeatmap())
 
-        print results
-        print yAxisNameOverMouse
-        print rowLabel
-
         from config.Config import DATA_FILES_PATH
-        print 'path to florian to put file tehre', DATA_FILES_PATH
 
         from proto.StaticFile import StaticFile, GalaxyRunSpecificFile
 
-        print galaxyFn
+        #sf = GalaxyRunSpecificFile(['result.txt'], galaxyFn)
+        #outFile = sf.getDiskPath(ensurePath=True)
 
-        sf = GalaxyRunSpecificFile(['result.txt'], galaxyFn)
-        outFile = sf.getDiskPath(ensurePath=True)
+        htmlCore.divBegin()
+        writeFile = open(
+            cls.makeHistElement(galaxyExt='tabular',
+                                title='result'), 'w')
+        # htmlCore.link('Get all results', sf.getURL())
+        htmlCore.divEnd()
 
-        writeFile = open(outFile, 'w')
         i = 0
 
-        writeFile('' + '\t' + '\t'.join(rowLabel))
+        writeFile.write('Track' + '\t' + '\t'.join(rowLabel)+ '\n')
         for rList in results:
-            writeFile.write(yAxisNameOverMouse[i] + '\t' + '\t'.join(rList))
+            writeFile.write(str(yAxisNameOverMouse[i]) + '\t' + '\t'.join([str(r) for r in rList]) + '\n')
+            i+=1
 
 
-        print outFile
-        print sf.getURL()
+
 
 
 
@@ -241,24 +240,26 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         max = -1000000000
         for rList in results:
             for r in rList:
-                if min < r:
+                if min > r:
                     min = r
-                if max > r:
+                if max < r:
                     max = r
 
-        print min, max
 
-
-
-
+        resultNormalised = []
+        for rList in results:
+            resultNormalisedPart = []
+            for r in rList:
+                resultNormalisedPart.append((r-min)/(max-min))
+            resultNormalised.append(resultNormalisedPart)
 
 
 
         
         hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
-                                                results,
+                                                resultNormalised,
                                                 colorMaps[choices.colorMapSelectList],
-                                                label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion: <b>'" + ' + this.point.value + ' + "'</b>'",
+                                                label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion (normalised to [0, 1]): <b>'" + ' + this.point.value + ' + "'</b>'",
                                                 yAxisTitle= 'Reference tracks',
                                                 categories=rowLabel,
                                                 tickInterval=1,
