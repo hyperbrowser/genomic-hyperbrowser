@@ -137,7 +137,7 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         
         results = []
         for refTrack in refTrackNameList:
-            analysisDef = '-> ProportionCountStat'
+            analysisDef = '-> ProportionCountStat' #ProportionCountStat #CountStat
             res = GalaxyInterface.runManual([refTrack], analysisDef, regSpec, binSpec, genome, username=username, galaxyFn=galaxyFn, printRunDescription=False, printResults=False, printProgress=False)
             segCoverageProp = [res[seg]['Result'] for seg in res.getAllRegionKeys()]
             results.append(segCoverageProp)
@@ -245,13 +245,18 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
                 if max < r:
                     max = r
 
+        if max-min != 0:
+            resultNormalised = []
+            for rList in results:
+                resultNormalisedPart = []
+                for r in rList:
+                    resultNormalisedPart.append((r-min)/(max-min))
+                resultNormalised.append(resultNormalisedPart)
 
-        resultNormalised = []
-        for rList in results:
-            resultNormalisedPart = []
-            for r in rList:
-                resultNormalisedPart.append((r-min)/(max-min))
-            resultNormalised.append(resultNormalisedPart)
+            addText = '(normalised to [0, 1])'
+        else:
+            resultNormalised = results
+            addText = ''
 
 
 
@@ -259,7 +264,7 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
                                                 resultNormalised,
                                                 colorMaps[choices.colorMapSelectList],
-                                                label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion (normalised to [0, 1]): <b>'" + ' + this.point.value + ' + "'</b>'",
+                                                label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion" + str(addText) + ": <b>'" + ' + this.point.value + ' + "'</b>'",
                                                 yAxisTitle= 'Reference tracks',
                                                 categories=rowLabel,
                                                 tickInterval=1,
