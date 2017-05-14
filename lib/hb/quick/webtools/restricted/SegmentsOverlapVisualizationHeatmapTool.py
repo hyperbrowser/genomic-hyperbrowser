@@ -259,50 +259,54 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
             addText = ''
 
 
+        rscript
 
-        
-        hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
-                                                resultNormalised,
-                                                colorMaps[choices.colorMapSelectList],
-                                                label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion" + str(addText) + ": <b>'" + ' + this.point.value + ' + "'</b>'",
-                                                yAxisTitle= 'Reference tracks',
-                                                categories=rowLabel,
-                                                tickInterval=1,
-                                                plotNumber=3,
-                                                interaction=True,
-                                                otherPlotNumber=1,
-                                                titleText='Overlap with reference tracks for each local region',
-                                                otherPlotData=[startEnd, startEndInterval],
-                                                overMouseAxisX=True,
-                                                overMouseAxisY=True,
-                                                yAxisNameOverMouse=yAxisNameOverMouse,
-                                                overMouseLabelY=" + 'Track: '" + ' + this.value + ' + "' '" + ' + yAxisNameOverMouse[this.value] + ',
-                                                overMouseLabelX = ' + this.value.substring(0, 20) +',
-                                                extrOp = staticFile
-                                                )
-        htmlCore.line(hm)
-        htmlCore.line(vp.drawChartInteractionWithHeatmap(
-            [startEndInterval, startEnd],
-            tickInterval=1,
-            type='line',
-            categories=[rowLabel, rowLabel],
-            seriesType=['line', 'column'],
-            minWidth=300,
-            height=500,
-            lineWidth=3,
-            titleText=['Lengths of segments (local regions)','Gaps between consecutive segments'],
-            label=['<b>Length: </b>{point.y}<br/>', '<b>Gap length: </b>{point.y}<br/>'],
-            subtitleText=['',''],
-            yAxisTitle=['Lengths','Gap lengths'],
-            seriesName=['Lengths','Gap lengths'],
-            xAxisRotation=90,
-            legend=False,
-            extraXAxis=extraXAxis,
-            heatmapPlot=heatmapPlot,
-            heatmapPlotNumber=heatmapPlotNumber,
-            overMouseAxisX=True,
-            overMouseLabelX = ' + this.value.substring(0, 20) +'
-            ))
+
+        #
+        #
+        #
+        # hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
+        #                                         resultNormalised,
+        #                                         colorMaps[choices.colorMapSelectList],
+        #                                         label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion" + str(addText) + ": <b>'" + ' + this.point.value + ' + "'</b>'",
+        #                                         yAxisTitle= 'Reference tracks',
+        #                                         categories=rowLabel,
+        #                                         tickInterval=1,
+        #                                         plotNumber=3,
+        #                                         interaction=True,
+        #                                         otherPlotNumber=1,
+        #                                         titleText='Overlap with reference tracks for each local region',
+        #                                         otherPlotData=[startEnd, startEndInterval],
+        #                                         overMouseAxisX=True,
+        #                                         overMouseAxisY=True,
+        #                                         yAxisNameOverMouse=yAxisNameOverMouse,
+        #                                         overMouseLabelY=" + 'Track: '" + ' + this.value + ' + "' '" + ' + yAxisNameOverMouse[this.value] + ',
+        #                                         overMouseLabelX = ' + this.value.substring(0, 20) +',
+        #                                         extrOp = staticFile
+        #                                         )
+        # htmlCore.line(hm)
+        # htmlCore.line(vp.drawChartInteractionWithHeatmap(
+        #     [startEndInterval, startEnd],
+        #     tickInterval=1,
+        #     type='line',
+        #     categories=[rowLabel, rowLabel],
+        #     seriesType=['line', 'column'],
+        #     minWidth=300,
+        #     height=500,
+        #     lineWidth=3,
+        #     titleText=['Lengths of segments (local regions)','Gaps between consecutive segments'],
+        #     label=['<b>Length: </b>{point.y}<br/>', '<b>Gap length: </b>{point.y}<br/>'],
+        #     subtitleText=['',''],
+        #     yAxisTitle=['Lengths','Gap lengths'],
+        #     seriesName=['Lengths','Gap lengths'],
+        #     xAxisRotation=90,
+        #     legend=False,
+        #     extraXAxis=extraXAxis,
+        #     heatmapPlot=heatmapPlot,
+        #     heatmapPlotNumber=heatmapPlotNumber,
+        #     overMouseAxisX=True,
+        #     overMouseLabelX = ' + this.value.substring(0, 20) +'
+        #     ))
         htmlCore.divEnd()
         htmlCore.divEnd()
         htmlCore.divEnd()
@@ -317,6 +321,48 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         #tmp = tempfile.NamedTemporaryFile(delete = False, suffix='.png')
         #plt.savefig(tmp.name)
         #os.rename(tmp.name,galaxyFn)
+
+
+    @classmethod
+    def generateStaticRPlot(cls):
+        script = """
+
+        dt <- read.table("Galaxy71-[Generate_a_heatmap_based_on_overlap_of_segments_from_a_query_track_with_reference_tracks_in_a_GSuite_(result)].tabular", header=T, sep="\t",row.names=c(1))
+        #dt <- read.table("test.tabular", header=T, sep="\t",row.names=c(1))
+        #non_zero_cols <- apply(dt,2,function(x)any(x>nrow(dt)*0.01))
+        #non_zero_cols <- apply(dt,2,function(x)sum(x)>nrow(dt)*0.01)
+        #dt <- dt[,non_zero_cols]
+        #specific_cols <- apply(dt,2,function(x)sum(x)<nrow(dt)*0.5)
+        #dt <- dt[,specific_cols]
+
+        library(gplots)
+        hscale=2+0.09*nrow(dt)
+        pdf("/tmp/heatmap.pdf", width=10, height=hscale)
+
+        rownames(dt) <- sapply(rownames(dt), function(x) gsub("wgEncodeUwDnase","",x))
+        rownames(dt) <- sapply(rownames(dt), function(x) gsub("\\.bed","",x))
+
+        # color by category
+        tcats <- read.table("encode_tissues_cat-blood_pk.txt")
+        colnames(tcats) <- c("filename", "fileid", "celltype", "category")
+        dm_cellids <- sapply(seq_along(rownames(dt)), function(x){gsub("PkRep.*","", rownames(dt)[x])})
+        groupCodes <- lapply(dm_cellids, function(x,t){as.character(tcats[which(tcats$fileid==x),]$category[1])}, tcats)
+        groupCodes <- unlist(groupCodes)
+        groupCodes[which(is.na(groupCodes))] <- "other"
+        colorCodes <-  c("gray",rainbow(length(unique(groupCodes))-1))
+        names(colorCodes) <- unique(unique(groupCodes))
+
+        heatmap.2(as.matrix(dt),Colv=NA,labCol=NA,margins=c(2,18),
+          xlab="SNPs",ylab="DNase",trace="none",dendrogram="row", key=F,
+          cexRow=0.4 + 1/log10(nrow(dt)), lhei=c(0.01,0.99)
+          ,colRow=colorCodes[groupCodes]
+          )
+        legend("topleft", c(names(colorCodes)),
+                lwd = c(rep(2, length(colorCodes))), bg = "#FFFFFFD0",
+                col = colorCodes, cex=0.6)
+        dev.off()
+
+        """
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
