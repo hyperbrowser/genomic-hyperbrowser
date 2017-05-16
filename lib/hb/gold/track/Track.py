@@ -104,7 +104,7 @@ class PlainTrack(Track):
     tracks outside of the statistics running modules.
     '''
     def __new__(cls, trackName, trackTitle=None):
-        if len(trackName) == 0 or trackName is None:
+        if trackName is None or len(trackName) == 0:
             return None
         else:
             if ExternalTrackManager.isVirtualTrack(trackName):

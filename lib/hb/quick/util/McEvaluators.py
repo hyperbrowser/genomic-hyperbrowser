@@ -1,14 +1,25 @@
+from gold.track.TrackStructure import TrackStructureV2
 from gold.util.CustomExceptions import ArgumentValueError
 from collections import OrderedDict
+
+from quick.application.SignatureDevianceLogging import takes
+
 PVAL_KEY = 'P-value'
 M_KEY = 'NumMoreExtremeThanObs'
 NUM_SAMPLES_KEY = 'NumResamplings'
 
 from numpy import isnan,array, median
 
+@takes(tuple, str, basestring)
 def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
     observation = observedAndMcSamplesTuple[0]
     mcSamples = observedAndMcSamplesTuple[1]
+    if isinstance(observation, TrackStructureV2):
+        observation = observation.result
+        mcSamples = [ts.result for ts in mcSamples]
+    assert isinstance(observation, (int, float, long))
+    assert all([isinstance(mcSample, (int, float, long)) for mcSample in mcSamples])
+
     numResamplings = len(mcSamples)
     
     numpyRandResults = array(mcSamples)        

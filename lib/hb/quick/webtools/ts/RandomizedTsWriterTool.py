@@ -135,6 +135,8 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
+        #TODO: add functionality for single gtrack within-track randomization
+
         print 'Executing...'
         inputGsuite = getGSuiteFromGalaxyTN(choices.gs)
         outputGSuite = GSuite()

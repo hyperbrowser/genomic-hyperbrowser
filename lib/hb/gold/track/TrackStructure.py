@@ -104,7 +104,7 @@ class TrackStructureV2(dict):
             return self._inferResult()
 
     def _inferResult(self):
-        return dict([(cat,self[cat].result) for cat in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+        return dict([(childKey,self[childKey].result) for childKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
 
     @takes('TrackStructureV2', anything)
     def _setResult(self, value):
