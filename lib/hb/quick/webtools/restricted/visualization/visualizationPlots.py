@@ -78,7 +78,13 @@ def addJSlibsHeatmap():
     
 
 def axaddJSlibsOverMouseAxisisPopup():
-    return '<script src="https://raw.github.com/briancray/tooltipsy/master/tooltipsy.min.js"></script>'
+    from config.Config import DATA_FILES_PATH, STATIC_PATH, STATIC_REL_PATH
+
+    import os
+    relPath = os.path.join('data', 'visualization', 'tooltipsy.min.js')
+    url = '/'.join([STATIC_REL_PATH, relPath])
+
+    return '<script src="' + str(url) + '"></script>'
 
 def addJSlibsExport():
     #http://www.highcharts.com/component/content/article/2-news/52-serverside-generated-charts
