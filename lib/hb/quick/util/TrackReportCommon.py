@@ -363,8 +363,12 @@ def addHistogramVisualization(tableData, tableHeader, plotType):
 
             #labels, values = zip(*Counter(data).items())
 
+            try:
+                counts = list(simpleHist.rx2('counts'))
+            except:
+                counts = [simpleHist.rx2('counts')]
 
-            res = vg.drawColumnChart(list(simpleHist.rx2('counts')), categories=list(simpleHist.rx2('breaks')), titleText=tableHeader[1], showInLegend=False, histogram=True, xAxisRotation=90)
+            res = vg.drawColumnChart(counts, categories=list(simpleHist.rx2('breaks')), titleText=tableHeader[1], showInLegend=False, histogram=True, xAxisRotation=90)
         elif plotType =='pieChart':
             seriesName, categories, data = dT.changeDictIntoList()
             res = vg.drawPieChart(data, seriesName=categories, titleText=tableHeader[1],
