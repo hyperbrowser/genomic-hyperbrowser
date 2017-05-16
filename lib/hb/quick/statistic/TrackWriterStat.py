@@ -13,9 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-from gold.origdata.GtrackComposer import StdGtrackComposer
-from gold.origdata.PreProcessTracksJob import PreProcessCustomTrackJob
-from gold.origdata.TrackGenomeElementSource import TrackViewGenomeElementSource
+
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
 from gold.statistic.Statistic import Statistic, StatisticSplittable
@@ -24,7 +22,6 @@ from urllib import quote
 
 from gold.util.CustomExceptions import ShouldNotOccurError
 from proto.CommonFunctions import ensurePathExists
-from quick.application.ExternalTrackManager import ExternalTrackManager
 
 
 class TrackWriterStat(MagicStatFactory):
@@ -42,27 +39,8 @@ class TrackWriterStatSplittable(StatisticSplittable):
 class TrackWriterStatUnsplittable(Statistic):
     def _init(self, trackFilePath, **kwArgs):
         self._trackFilePath = trackFilePath
-        #self._newTrackName = newTrackName
-
-   # def _getGESource(self, genome, trackName, region):
-   #     trackView = self._children[0].getResult()
-   #     return TrackViewGenomeElementSource(genome, trackView, trackName)
 
     def _compute(self):
-        # trackName = ExternalTrackManager.createStdTrackName(self._id, os.name)
-        #
-        # job = PreProcessCustomTrackJob(self._region.genome, trackName, [self._region], \
-        #                                self._getGESource, preProcess=True, finalize=False)
-        # job.process()
-        #
-        #
-        # return self.trackFilePath #TODO: remove trackfilepath, niet nodig
-
-        # #TODO: fix this new implementation, it doesn't seem to write the lines yet
-        # # tvGeSource = TrackViewGenomeElementSource('hg19', self._children[0].getResult(), self._track.trackName)
-        # # StdGtrackComposer(tvGeSource).composeToFile(self._trackFilePath)
-        # #
-        #
         ensurePathExists(self._trackFilePath)
         outputFile = open(self._trackFilePath, 'a')
 
@@ -75,7 +53,7 @@ class TrackWriterStatUnsplittable(Statistic):
 
         outputFile.close()
 
-        #this return is not entirely necessary, as the filenames have already been added to the trackstructure
+        # this return is not entirely necessary, as the filenames have already been added to the trackstructure
         return quote(self._trackFilePath)
 
     def _createChildren(self):

@@ -36,5 +36,4 @@ class TsWriterStatUnsplittable(StatisticV2):
 
     def _createChildren(self):
         for singleTrackTs in self._trackStructure.getLeafNodes():
-            #self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, trackFilePath=singleTrackTs.metadata['trackFilePath'], newTrackName=singleTrackTs.metadata['newTrackName'], **self._kwArgs))
             self._addChild(TrackWriterStat(region=self._region, track=singleTrackTs.track, trackFilePath=singleTrackTs.metadata['trackFilePath'], **self._kwArgs))
