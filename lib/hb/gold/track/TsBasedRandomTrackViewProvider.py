@@ -81,8 +81,9 @@ class CoveragePreservedShuffleElementsBetweenTracksTvProvider(ShuffleElementsBet
 
 
 class ShuffleElementsBetweenTracksPool(object):
-    @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', GenomeRegion, bool, one_of(str, None))
+    @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', GenomeRegion, bool, one_of(None, COVERAGE, NUMBER_OF_SEGMENTS))
     def __init__(self, origTs, region, allowOverlaps, preservationMethod):
+        print 'NIEUWE VERSIE ZOU MOETEN WERKEN'
         self._region = region
         self._allowOverlaps = allowOverlaps
 
