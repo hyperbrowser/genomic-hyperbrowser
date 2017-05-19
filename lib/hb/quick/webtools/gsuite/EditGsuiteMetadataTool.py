@@ -1,4 +1,3 @@
-from ast import literal_eval
 from functools import partial
 
 from gold.gsuite import GSuiteComposer
@@ -8,8 +7,11 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
+# This is a template prototyping GUI that comes together with a corresponding
+# web page.
+
 class EditGsuiteMetadataTool(GeneralGuiTool):
-    #Defines the maximum number of dynamically generated boxes
+    #Defines the maximum number og dynamically generated boxes
     MAX_NUM_OF_TRACKS = 100
 
     @staticmethod
@@ -41,13 +43,11 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         #Creates a drop-down list where you can choose the GSuite that you want to work with
         #Creates a drop-down list of the attributes available in the GSuite
         #Creates the MAX_NUM_OF_TRACKS amount of selectAttribute functions, here without any header
-        return [('', 'basicQuestionId'),
-                ('Select GSuite', 'gsuite'),
-                ('Select meta-data column to edit', 'attrName'),
-                ('', 'gsuiteTitles'),
-                ('', 'gsuiteAttributeValues')] + \
-               [('', 'selectAttribute%s' % i) for i
-                in range((cls.MAX_NUM_OF_TRACKS*2))]
+        return [('', 'basicQuestionId'), \
+                ('Select GSuite', 'gsuite'), \
+                ('Select meta-data column to edit','attrName')] +\
+                [('', 'selectAttribute%s' % i) for i \
+                 in range((cls.MAX_NUM_OF_TRACKS))]
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -112,7 +112,7 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         - Returns: OrderedDict from key to selection status (bool).
         '''
         return '__history__', 'gsuite'
-
+    
     #Generates a drop-down with a list of attributes from the Gsuite selected in getOptionsBoxGsuite()
     @classmethod
     def getOptionsBoxAttrName(cls, prevChoices): # Alternatively: getOptionsBox2()
@@ -120,39 +120,13 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
             return
 
         gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-
-        return [TITLE_COL] + gSuite.attributes
-
-    # Temp storage of track titles
-    @classmethod
-    def getOptionsBoxGsuiteTitles(cls, prevChoices):
-        if prevChoices.gsuite:
-            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return '__hidden__', gSuite.allTrackTitles()
-
-    @classmethod
-    def _getGsuiteTitles(cls, prevChoices):
-        gsuiteTitles = prevChoices.gsuiteTitles
-        if isinstance(gsuiteTitles, basestring):
-            gsuiteTitles = literal_eval(gsuiteTitles)
-        return gsuiteTitles
-
-    # Temp storage of values for selected attribute in each track
-    @classmethod
-    def getOptionsBoxGsuiteAttributeValues(cls, prevChoices):
-        if prevChoices.gsuite:
-            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return '__hidden__', [track.getAttribute(prevChoices.attrName)
-                                  for track in gSuite.allTracks()]
-
-    @classmethod
-    def _getGsuiteAttributeValues(cls, prevChoices):
-        gsuiteAttributeValues = prevChoices.gsuiteAttributeValues
-        if isinstance(gsuiteAttributeValues, basestring):
-            gsuiteAttributeValues = literal_eval(gsuiteAttributeValues)
-        return gsuiteAttributeValues
-
-    #Generates the labels for the editable input boxes by getting the titles from the GSuite chosen in getOptionsBoxGsuite()
+                
+        attributeList = gSuite.attributes
+        
+        return [TITLE_COL] + attributeList
+        
+    
+    #Generates the labels for the editable input boxes by getting the titles from the GSuite chosen in getOptionsBoxGsuite() 
     @classmethod
     def _getOptionsBoxLabel(cls, prevChoices, index):
         
@@ -161,11 +135,12 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         if not prevChoices.gsuite or not prevChoices.attrName:
             return
         
-        gSuiteTitles = cls._getGsuiteTitles(prevChoices)
-
+        #Create a GSuite form the prevChoices
+        gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                        
         #Makes sure the index will not direct to outside of the length of the list.
-        if index < len(gSuiteTitles)*2:
-            return '__rawstr__', '<b>Edit value for track nr. %s with title "%s":</b>' % ((index/2)+1, gSuiteTitles[index/2])
+        if(index < len(gSuite)*2):
+            return '__rawstr__', '<b>Edit value for track nr. %s with title "%s":</b>' % ((index/2)+1, gSuite.getTrackFromIndex(index/2).title)
         
         #return '__rawstr__', 'pony'
 
@@ -179,17 +154,16 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         if not prevChoices.gsuite or not prevChoices.attrName:
             return
 
-        gSuiteTitles = cls._getGsuiteTitles(prevChoices)
-        gSuiteAttributeValues = cls._getGsuiteAttributeValues(prevChoices)
+        gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
         
         attrName = prevChoices.attrName
         
         #Makes sure the index will not direct to outside of the length of the list.
-        if index < len(gSuiteTitles)*2:
-            if attrName == TITLE_COL:
-                attrValue = gSuiteTitles[index/2]
+        if(index < len(gSuite)*2):
+            if(attrName == TITLE_COL):
+                attrValue = gSuite.getTrackFromIndex(int(index/2)).title
             else:
-                attrValue = gSuiteAttributeValues[index/2]
+                attrValue = gSuite.getTrackFromIndex(int(index/2)).getAttribute(attrName)
             return str(attrValue)
 
 
@@ -223,8 +197,8 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
                 setattr(cls, 'getOptionsBoxSelectAttribute%s' % i, partial(cls._getOptionsBoxForSelectAttribute, index=i))
 
     #Writes the information that has been changed in the input boxes to a new GSuite file
-    @classmethod
-    def execute(cls, choices, galaxyFn=None, username=''):
+    @staticmethod
+    def execute(choices, galaxyFn=None, username=''):
 
         '''
         Is called when execute-button is pushed by web-user. Should print
@@ -243,12 +217,11 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
              
         #Writes the information that has been changed to a new track but jumps over all the empty strings   
         for i, track in enumerate(gSuite.allTracks()):
-            if i < cls.MAX_NUM_OF_TRACKS:
-                newAttrValue = getattr(choices, 'selectAttribute%s' % ((i*2)+1))
-                if(attrName == TITLE_COL):
-                    track.title = newAttrValue
-                else:
-                    track.setAttribute(attrName, newAttrValue)
+            newAttrValue = getattr(choices, 'selectAttribute%s' % ((i*2)+1))
+            if(attrName == TITLE_COL):
+                track.title = newAttrValue
+            else:
+                track.setAttribute(attrName, newAttrValue)
             outputGSuite.addTrack(track)
          
         #Creates the new GSuite      
@@ -356,8 +329,8 @@ class EditGsuiteMetadataTool(GeneralGuiTool):
         from proto.hyperbrowser.HtmlCore import HtmlCore
 
         core = HtmlCore()
-        core.paragraph('This tool provides the option of editing contents of medatata '
-                       'columns in a GSuite file where the user can edit the titles '
+        core.paragraph('This tool provides the option of editing contents of medatata'
+                       'columns in a GSuite file where the user can edit the titles'
                        'in the file.')
         core.divider()
         core.paragraph('To filter a GSuite file, please follow these steps: ')

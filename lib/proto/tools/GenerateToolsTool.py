@@ -85,8 +85,8 @@ class GenerateToolsTool(GeneralGuiTool):
             selectedDir = os.path.sep.join([cls.TOOL_DIR] +
                                            cls._getSelectedDirs(prevChoices, index))
             try:
-                subDirs = sorted([x for x in os.listdir(selectedDir) if
-                           os.path.isdir(os.sep.join([selectedDir, x]))])
+                subDirs = [x for x in os.listdir(selectedDir) if
+                           os.path.isdir(os.sep.join([selectedDir, x]))]
             except:
                 subDirs = []
             return [cls.NO_SELECTION] + subDirs + [cls.NEW_DIR]
