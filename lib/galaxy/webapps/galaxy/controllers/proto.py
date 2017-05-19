@@ -110,7 +110,7 @@ class ProtoController( BaseUIController ):
         if isinstance(mako, list):
             mako = mako[0]
 
-        timeout = 60
+        timeout = 30
         retry = 3
         while retry > 0:
             retry -= 1
