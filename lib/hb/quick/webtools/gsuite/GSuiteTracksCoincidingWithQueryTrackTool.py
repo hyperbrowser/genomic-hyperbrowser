@@ -23,7 +23,7 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
 from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks, runMultipleSingleValPairwiseStats, \
-    runMultipleSingleValSingleTrackStats
+    runMultipleSingleValSingleTrackStats, prettifyKeysInDict
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
@@ -368,6 +368,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                 additionalResultsDict[pairedTS["reference"].metadata["title"]].update(pairedTS.result)
             for trackTitle, sTS in additionalSingleTrackResults.iteritems():
                 additionalResultsDict[trackTitle].update(sTS.result)
+
+            additionalResultsDict = prettifyKeysInDict(additionalResultsDict,
+                                                       CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT)
 
         if analysisQuestion == cls.Q1:
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName)

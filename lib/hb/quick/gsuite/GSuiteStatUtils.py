@@ -73,11 +73,14 @@ def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=No
 
     return resultsDict
 
+
 def runMultipleSingleValPairwiseStats(trackStructure, stats, analysisBins):
     return _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, MultipleSingleValStatPerPairInQueryRefTsStat)
 
+
 def runMultipleSingleValSingleTrackStats(trackStructure, stats, analysisBins):
     return _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, MultipleSingleTrackStatsForTsStat)
+
 
 def _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, stat):
     assert stats is not None, 'stats argument not defined'
@@ -89,6 +92,20 @@ def _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, stat):
 
     additionalAnalysisSpec.addParameter('rawStatistics', statsParam)  # use ^ separator to add additional stat classes.
     return doAnalysis(additionalAnalysisSpec, analysisBins, trackStructure).getGlobalResult()["Result"]
+
+
+def prettifyKeysInDict(sourceDict, prettyDict):
+    def _prettify(val):
+        return prettyDict[val] if val in prettyDict else val
+
+    prettifiedDict = OrderedDict()
+    for k, v in sourceDict.iteritems():
+        if isinstance(v, dict):
+            prettifiedDict[_prettify(k)] = prettifyKeysInDict(v, prettyDict=prettyDict)
+        else:
+            prettifiedDict[_prettify(k)] = v
+
+    return prettifiedDict
 
 
 def addResultsToInputGSuite(gsuite, results, attrNames, outputGSuiteFN):
