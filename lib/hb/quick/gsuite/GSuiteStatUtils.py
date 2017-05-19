@@ -6,6 +6,8 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.track.Track import Track
 from gold.util import CommonConstants
+from quick.statistic.MultipleSingleTrackStatsForTsStat import MultipleSingleTrackStatsForTsStat
+from quick.statistic.MultipleSingleValStatPerPairInQueryRefTsStat import MultipleSingleValStatPerPairInQueryRefTsStat
 
 T1_RATIO_OF_SECOND_INSIDE_FIRST = 'Proportion of the query track base-pairs coinciding with base-pairs from the reference track'
 T2_RATIO_OF_SECOND_INSIDE_UNION = 'Proportion of the union of base-pairs of the two tracks that are covered by the reference track'
@@ -70,6 +72,40 @@ def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=No
             resultsDict[refTrack.title][statPrettyName] = res
 
     return resultsDict
+
+
+def runMultipleSingleValPairwiseStats(trackStructure, stats, analysisBins):
+    return _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, MultipleSingleValStatPerPairInQueryRefTsStat)
+
+
+def runMultipleSingleValSingleTrackStats(trackStructure, stats, analysisBins):
+    return _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, MultipleSingleTrackStatsForTsStat)
+
+
+def _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, stat):
+    assert stats is not None, 'stats argument not defined'
+    assert type(stats) in [str, list], '''stats argument must be a list of statistics
+                                         or ^-separated string of statistic names'''
+    additionalAnalysisSpec = AnalysisSpec(stat)
+
+    statsParam = stats if isinstance(stats, basestring) else "^".join([x.__name__ for x in stats])
+
+    additionalAnalysisSpec.addParameter('rawStatistics', statsParam)  # use ^ separator to add additional stat classes.
+    return doAnalysis(additionalAnalysisSpec, analysisBins, trackStructure).getGlobalResult()["Result"]
+
+
+def prettifyKeysInDict(sourceDict, prettyDict):
+    def _prettify(val):
+        return prettyDict[val] if val in prettyDict else val
+
+    prettifiedDict = OrderedDict()
+    for k, v in sourceDict.iteritems():
+        if isinstance(v, dict):
+            prettifiedDict[_prettify(k)] = prettifyKeysInDict(v, prettyDict=prettyDict)
+        else:
+            prettifiedDict[_prettify(k)] = v
+
+    return prettifiedDict
 
 
 def addResultsToInputGSuite(gsuite, results, attrNames, outputGSuiteFN):
