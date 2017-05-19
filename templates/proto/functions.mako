@@ -16,7 +16,7 @@ import proto.hyper_gui as gui
 </%def>
 
 <%def name="select(name, opts, value, label = None, info = None)">
-    <p><label>${label if label else name}
+    <p><label>${label if label is not None else name}
     <select name="${name}" onchange="reloadForm(form, this)">
         %for o in range(len(opts)):
             <option value="${opts[o]}" ${'selected' if value == opts[o] else ''}>${opts[o]}</option>
@@ -28,7 +28,7 @@ import proto.hyper_gui as gui
 </%def>
 
 <%def name="history_select(control, name, opts, value, label = None, info = None)">
-    <p><label>${label if label else name}
+    <p><label>${label if label is not None else name}
     <select name="${name}" onchange="reloadForm(form, this)">
         ${opts[0]}
     </select>
@@ -66,7 +66,7 @@ import proto.hyper_gui as gui
 </%def>
 
 <%def name="text(name, value = '', label = None, rows = 5, readonly = False, reload = False, info = None)">
-    <div style="margin: 1em 0px"><label>${label if label else name}<br>
+    <div style="margin: 1em 0px"><label>${label if label is not None else name} ${'<br>' if label else ''}
         %if rows > 1:
             <textarea ${"onchange=\"reloadForm(form, this)\"" if reload else ''} rows="${rows}" name="${name}" id="${name}" wrap="off"
                 style="max-width:100%;width:100%;overflow:auto;" ${"readonly=\"readonly\"" if readonly else ""}>${value}</textarea>
@@ -82,7 +82,7 @@ import proto.hyper_gui as gui
 <!-- <textarea ${"" if not value else "onchange=\"reloadForm(form, this)\""} rows="${rows}" name="${name}" id="${name}" wrap="off" -->
 
 <%def name="password(name, value='', label=None, reload=False, info = None)">
-    <p><label>${label if label else name}<br>
+    <p><label>${label if label is not None else name} ${'<br>' if label else ''}
         <input type="password" name="${name}" value="${value}" autocomplete="off" style="max-width:100%;width:100%" ${"onchange=\"reloadForm(form, this)\"" if reload else ''}>
     </label></p>
 </%def>
