@@ -1040,9 +1040,17 @@ class visualizationGraphs(object):
         
         
         return str(table)
-        
-            
-    
+
+    def _parseDataBoxPlot(self, dataY, seriesName):
+
+        legendSizeExtra = 0
+        legendSize = ''
+        dataYdepth = self._depth(dataY)
+        if dataYdepth == 2:
+                data = "name: '" + str(seriesName) + "', " + 'data: ' + str(dataY) + ', '
+
+        return data, legendSize, legendSizeExtra
+
     def _parseData(self, dataY, type, seriesType, seriesName, multiYAxis, visible, yAxisMulti, multiXAxis, xAxisMulti, markerRadius):
         
         
@@ -1275,9 +1283,70 @@ class visualizationGraphs(object):
         dataList += '\n</pre>'
         
         return dataList
-    
 
-    
+    def _parseData5(self, dataY, type, seriesType, seriesName, markerRadius, colorExtraList):
+
+            dataYdepth = self._depth(dataY)
+            # default: there are the same type of charts on one char
+            if seriesType is None:
+                    if dataYdepth == 1:
+                            seriesType = [type]
+                    else:
+                            seriesType = [type for dY in dataY]
+
+            legendSizeExtra = 0
+            legendSize = ''
+            if seriesName is None:
+                    seriesName = ''
+            else:
+                    if isinstance(seriesName, basestring):
+                            legendSize = len(max(str(seriesName), key=len)) + 10
+                            legendSizeExtra = len(str(seriesName))
+                            legendSizeExtra = legendSizeExtra / (int(1000 / (legendSize * 6))) * 12
+                    else:
+                            legendSize = len(max(str(seriesName), key=len)) + 10
+                            legendSizeExtra = len(str(seriesName))
+                            legendSizeExtra = 15
+
+            marker = ''
+            if markerRadius != None:
+                    marker += ', marker: { '
+                    if markerRadius != None:
+                            marker += 'radius: ' + str(markerRadius) + ', '
+                            marker += "symbol: 'circle'" + ', '
+                    marker += '}'
+
+            data = ''
+            if isinstance(dataY[0], list) == False:
+                    for eldY in range(0, len(dataY)):
+
+                            if colorExtraList != None:
+                                    ifColor = ", color: '" + str(colorExtraList[eldY]) + "'"
+                            else:
+                                    ifColor = ''
+
+                            sN = ''
+                            if seriesName == '':
+                                    sN = "''"
+                            else:
+                                    sN = "'" + str(seriesName[eldY]) + "'"
+
+                            d = dataY[eldY]
+                            try:
+                                    d = json.dumps(dataY[eldY]).replace('"', "")
+                            except Exception, e:
+                                    d = float(dataY[eldY])
+
+                            data += " name: " + str(sN) + ", data: [" + str(d) + "]" + (
+                            ifColor) + str(marker)
+
+                            if len(dataY) - 1 != eldY:
+                                    data += "} , { "
+                            else:
+                                    data += "}"
+
+            return data, legendSize, legendSizeExtra
+
     def _useAttribute1(self, att, attName):
         if att is None:
             att= attName + ": '',"
@@ -1352,7 +1421,7 @@ class visualizationGraphs(object):
         #print self._interactionNumberStart
         #print self._interactionNumberEnd
         
-        if type!='bubble':
+        if type!='bubble' and type!='scatter':
             minX = 'min:0,'
         else:
             minX=''
@@ -1516,19 +1585,25 @@ class visualizationGraphs(object):
                         leftVal = 'left:' + str(leftVal) + ', offset:0,' + 'width: 100,'
 
                     xAxis += """
-                         {
-                         """ + str(minX) + str(plotLines) + str(leftVal) + """
-                         title: {
-                         """ + self._useAttribute1(xAxisTitle, "text") + """
-                         },
-                         """ + self._useAttribute2(tickInterval, "tickInterval") + self._useAttribute4(tickMinValue,
-                                                                                                       "min") + categories + self._useAttribute1(
-                        typeAxisXScale, "type") + """
-                         labels: {
-                             """ + self._useAttribute1(xAxisRotation, "rotation") + """
-                         }
-                         """ + labelX + ",},"
-                    wel+=2
+                                             {
+                                             """ + str(minX) + str(plotLines) + str(leftVal) + """
+                                             title: {
+                                             """ + self._useAttribute1(xAxisTitle, "text") + """
+                                             },
+                                             """ + self._useAttribute2(tickInterval,
+                                                                       "tickInterval")
+
+                    xAxis += self._useAttribute4(tickMinValue, "min")
+
+                    xAxis += categories + self._useAttribute1(
+                            typeAxisXScale, "type") + """
+                                             labels: {
+                                                 """ + self._useAttribute1(xAxisRotation,
+                                                                           "rotation") + """
+                                             }
+                                             """ + labelX + ",},"
+
+                    wel += 2
                 xAxis += """],"""
 
             else:
@@ -1728,7 +1803,7 @@ class visualizationGraphs(object):
                 isZoomed:false,
                 """ + self._useAttribute5(zoomType, 'zoomType') + self._useAttribute3(polar, 'polar', 'true') +  self._useAttribute5(marginTop, 'marginTop') + """
             """
-        if type == 'pie' or type=='scatter' or type=='heatmap':
+        if type == 'pie' or type=='scatter' or type=='heatmap' or type == 'boxplot':
             chart += "type: '" + str(type) + "',"
         if type=='largeHeatmap':
             chart += "type: 'heatmap',"
@@ -1809,7 +1884,8 @@ class visualizationGraphs(object):
                     },
                     """
 
-
+        if type == 'boxplot':
+                return ""
         
         if type=='heatmap' or type =='largeHeatmap':
             return """
@@ -2322,7 +2398,11 @@ class visualizationGraphs(object):
             
                 
         if type!='heatmap' and type != 'largeHeatmap':
-            functionJS2 = """ ] } """ + inter  + """    );"""+ sortableAccordingToTable +  extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
+            if type == 'boxplot':
+                functionJS2 = """ } ] } """ + inter + """    );""" + sortableAccordingToTable + extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
+            else:
+                functionJS2 = """ ] } """ + inter + """    );""" + sortableAccordingToTable + extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
+            #functionJS2 = """ ] } """ + inter  + """    );"""+ sortableAccordingToTable +  extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
         else:
             if type == 'largeHeatmap':
                 functionJS2 = """
@@ -2363,6 +2443,9 @@ class visualizationGraphs(object):
         
         if type=='largeHeatmap':
             return '{0}{1}{2}{3}{4}'.format(button, jsCodeShowChartClickOnLink, container, functionJS1, functionJS2)
+        elif type == 'boxplot':
+            return '{0}{1}{2}{3}{4}{5}'.format(button, jsCodeShowChartClickOnLink, container,
+                                                   functionJS1, dataY, functionJS2)
         else:
             return '{0}{1}{2}{3}{4}{5}'.format(button, jsCodeShowChartClickOnLink, container, functionJS1, dataY, functionJS2)
 
@@ -3074,6 +3157,113 @@ class visualizationGraphs(object):
                                )
             
         return graph
+
+    def drawBoxPlotChart(self,
+                         dataY,
+                         height=None,
+                         addOptions=None,
+                         tickInterval=None,
+                         label='{point.y}',
+                         lineWidth=1,
+                         titleText=None,
+                         subtitleText=None,
+                         xAxisTitle=None,
+                         yAxisTitle=None,
+                         categories=None,
+                         seriesType=None,
+                         seriesName=None,
+                         legend=None,
+                         xAxisRotation=0,
+                         dataLabels=True,
+                         shared=True,
+                         overMouseAxisX=False,
+                         overMouseLabelX=' + this.value + ',
+                         showChartClickOnLink=False,
+                         typeAxisXScale=None,
+                         pointStartLog=None,
+                         zoomType='x',
+                         marginTop=60,
+                         interaction=False,
+                         extraArg=None,
+                         allowDecimals=None,
+                         maxY=None,
+                         yAxisType=None,
+                         extraScriptButton=None,
+                         visible=None,
+                         addTable=None,
+                         showInLegend=None,
+                         histogram=None,
+                         sortableAccordingToTable=None,
+                         sortableAccordingToTableDataY=None,
+                         tableName=None,
+                         sortableAccordingToTableIndexWithTrackTitle=0,
+                         plotOptions=None,
+                         minY=None,
+                         plotLines=None,
+                         plotLinesName=None,
+                         plotBands=None,
+                         plotBandsColor=None,
+                         stacking=None
+                         ):
+
+            type = 'boxplot'
+            graph = ''
+
+            if len(dataY) > 0:
+                    tooltipVal = None
+
+                    data, legendSize, legendSizeExtra = self._parseDataBoxPlot(dataY=dataY,
+                                                                               seriesName=seriesName)
+
+                    graph += self._draw(
+                            data, legendSize, legendSizeExtra,
+                            type=type,
+                            height=height,
+                            addOptions=addOptions,
+                            tickInterval=tickInterval,
+                            tickMinValue=None,
+                            label=label,
+                            lineWidth=lineWidth,
+                            titleText=titleText,
+                            subtitleText=subtitleText,
+                            xAxisTitle=xAxisTitle,
+                            yAxisTitle=yAxisTitle,
+                            categories=categories,
+                            legend=legend,
+                            xAxisRotation=xAxisRotation,
+                            dataLabels=dataLabels,
+                            polar=None,
+                            stacking=stacking,
+                            shared=shared,
+                            overMouseAxisX=overMouseAxisX,
+                            overMouseLabelX=overMouseLabelX,
+                            showChartClickOnLink=showChartClickOnLink,
+                            typeAxisXScale=typeAxisXScale,
+                            pointStartLog=pointStartLog,
+                            zoomType=zoomType,
+                            marginTop=marginTop,
+                            interaction=interaction,
+                            multiYAxis=False, multiXAxis=False, xAxisMulti=None,
+                            showInLegend=showInLegend,
+                            extraArg=extraArg,
+                            allowDecimals=allowDecimals,
+                            maxY=maxY,
+                            yAxisType=yAxisType,
+                            extraScriptButton=extraScriptButton,
+                            addTable=addTable,
+                            histogram=histogram,
+                            sortableAccordingToTable=sortableAccordingToTable,
+                            sortableAccordingToTableDataY=sortableAccordingToTableDataY,
+                            tableName=tableName,
+                            sortableAccordingToTableIndexWithTrackTitle=sortableAccordingToTableIndexWithTrackTitle,
+                            plotOptions=plotOptions,
+                            tooltipVal=tooltipVal, reversed=None, minY=minY, plotLines=plotLines,
+                            categoriesY=None, plotLinesName=plotLinesName,
+                            plotBands=plotBands,
+                            plotBandsColor=plotBandsColor
+                    )
+
+            return graph
     
     def drawScatterChart(self, 
                       dataY, 
@@ -3178,6 +3368,114 @@ class visualizationGraphs(object):
                            )
         
         return graph
+
+    def drawScatterType2Chart(self,
+                              dataY,
+                              height=None,
+                              addOptions=None,
+                              tickInterval=None,
+                              label='<b>{series.name}: </b>{point.y} <br \>',
+                              lineWidth=1,
+                              titleText=None,
+                              subtitleText=None,
+                              xAxisTitle=None,
+                              yAxisTitle=None,
+                              categories=None,
+                              seriesType=None,
+                              seriesName=None,
+                              legend=None,
+                              xAxisRotation=0,
+                              dataLabels=True,
+                              shared=True,
+                              overMouseAxisX=False,
+                              overMouseLabelX=' + this.value + ',
+                              showChartClickOnLink=False,
+                              typeAxisXScale=None,
+                              pointStartLog=None,
+                              zoomType='x',
+                              marginTop=60,
+                              interaction=False,
+                              extraArg=None,
+                              allowDecimals=None,
+                              maxY=None,
+                              yAxisType=None,
+                              extraScriptButton=None,
+                              visible=None,
+                              addTable=None,
+                              markerRadius=None,
+                              minY=None,
+                              plotLines=None,
+                              plotLinesName=None,
+                              plotBands=None,
+                              plotBandsColor=None,
+                              colorExtraList=None
+                              ):
+
+            type = 'scatter'
+
+            graph = ''
+
+            if len(dataY) > 0:
+                    tooltipVal = None
+
+                    data, legendSize, legendSizeExtra = self._parseData5(dataY=dataY,
+                                                                         type=type,
+                                                                         seriesType=seriesType,
+                                                                         seriesName=seriesName,
+                                                                         markerRadius=markerRadius,
+                                                                         colorExtraList=colorExtraList)
+
+                    # print 'data' + str(data)
+
+                    graph = self._draw(
+                            data, legendSize, legendSizeExtra,
+                            type=type,
+                            height=height,
+                            addOptions=addOptions,
+                            tickInterval=tickInterval,
+                            tickMinValue=None,
+                            label=label,
+                            lineWidth=lineWidth,
+                            titleText=titleText,
+                            subtitleText=subtitleText,
+                            xAxisTitle=xAxisTitle,
+                            yAxisTitle=yAxisTitle,
+                            categories=categories,
+                            legend=legend,
+                            xAxisRotation=xAxisRotation,
+                            dataLabels=dataLabels,
+                            polar=None,
+                            stacking=None,
+                            shared=shared,
+                            overMouseAxisX=overMouseAxisX,
+                            overMouseLabelX=overMouseLabelX,
+                            showChartClickOnLink=showChartClickOnLink,
+                            typeAxisXScale=typeAxisXScale,
+                            pointStartLog=pointStartLog,
+                            zoomType=zoomType,
+                            marginTop=marginTop,
+                            interaction=interaction,
+                            multiYAxis=False, multiXAxis=False, xAxisMulti=None,
+                            showInLegend=None,
+                            extraArg=extraArg,
+                            allowDecimals=allowDecimals,
+                            maxY=maxY,
+                            yAxisType=yAxisType,
+                            extraScriptButton=extraScriptButton,
+                            addTable=addTable,
+                            histogram=None,
+                            sortableAccordingToTable=None,
+                            sortableAccordingToTableDataY=None,
+                            tableName=None,
+                            sortableAccordingToTableIndexWithTrackTitle=None,
+                            plotOptions=None,
+                            tooltipVal=tooltipVal, reversed=None, minY=minY, plotLines=plotLines,
+                            categoriesY=None, plotLinesName=plotLinesName,
+                            plotBands=plotBands,
+                            plotBandsColor=plotBandsColor
+                    )
+
+            return graph
     
     def drawBubbleChart(self, 
                       dataY, 
