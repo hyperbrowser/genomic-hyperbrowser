@@ -81,7 +81,7 @@ class TrackStructureV2(dict):
             return self._inferResult()
 
     def _inferResult(self):
-        return dict([(cat,self[cat].result) for cat in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+        return dict([(childTSKey, self[childTSKey].result) for childTSKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
 
     def _setResult(self, value):
         self._result = value
@@ -125,6 +125,9 @@ class TrackStructureV2(dict):
         return self.keys() == ['query', 'reference'] \
                and isinstance(self['query'], SingleTrackTS) \
                and isinstance(self['reference'], SingleTrackTS)
+
+    def isSingleTs(self):
+        return isinstance(self, SingleTrackTS)
 
     def _copyTreeStructure(self):
         newCopy = copy.copy(self)
@@ -212,7 +215,7 @@ class SingleTrackTS(TrackStructureV2):
         assert isinstance(metadata, dict)
         for key, value in metadata.items():
             assert isinstance(key, str)
-            assert isinstance(value, str)
+            assert isinstance(value, basestring), (type(value), value)
         self.track = track
         self.metadata = metadata
 
