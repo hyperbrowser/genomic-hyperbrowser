@@ -44,4 +44,4 @@ class PairedTSStatUnsplittable(StatisticV2):
         assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure?
         t1 = self._trackStructure['query'].track
         t2 = self._trackStructure['reference'].track
-        self._addChild(self._rawStatistic(self._region, t1, t2))
+        self._addChild(self._rawStatistic(self._region, t1, t2, **self._kwArgs))
