@@ -1,6 +1,7 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
-
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.application.UserBinSource import UserBinSource
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 import quick.gsuite.GuiBasedTsFactory as factory
@@ -11,7 +12,7 @@ from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from proto.hyperbrowser.HtmlCore import HtmlCore
 
-class TSExperimentTool(GeneralGuiTool, DebugMixin):
+class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
     @classmethod
     def getToolName(cls):
         """
@@ -43,108 +44,28 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select categorical GSuite', 'gs'),
-                ('Select query track', 'query'),
-                ('Select category', 'cat')] + cls.getInputBoxNamesForDebug()
-
-
-    # @classmethod
-    # def getInputBoxOrder(cls):
-    #     """
-    #     Specifies the order in which the input boxes should be displayed,
-    #     as a list. The input boxes are specified by index (starting with 1)
-    #     or by key. If None, the order of the input boxes is in the order
-    #     specified by getInputBoxNames().
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getInputBoxGroups(cls, choices=None):
-    #     """
-    #     Creates a visual separation of groups of consecutive option boxes
-    #     from the rest (fieldset). Each such group has an associated label
-    #     (string), which is shown to the user. To define groups of option
-    #     boxes, return a list of BoxGroup namedtuples with the label, the key
-    #     (or index) of the first and last options boxes (inclusive).
-    #
-    #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey',
-    #                         last='secondKey')]
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+        return [('Select categorical GSuite of 4 tracks', 'gsuite')
+                ] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select query track', 'query'),
+                 ('Select category', 'cat')
+                ] + \
+               cls.getInputBoxNamesForDebug()
 
     @classmethod
-    def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
-
-        return GeneralGuiToolMixin.getHistorySelectionElement()
+    def getOptionsBoxGsuite(cls):
+        return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxQuery(cls, prevChoices):  # Alt: getOptionsBox2()
-        """
-        See getOptionsBoxFirstKey().
-
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
-        """
+    def getOptionsBoxQuery(cls, prevChoices):
         return GeneralGuiToolMixin.getHistorySelectionElement()
 
     @classmethod
     def getOptionsBoxCat(cls, prevChoices):
-        return ''
 
-    # @classmethod
-    # def getInfoForOptionsBoxKey(cls, prevChoices):
-    #     """
-    #     If not None, defines the string content of an clickable info box
-    #     beside the corresponding input box. HTML is allowed.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getDemoSelections(cls):
-    #     """
-    #     Defines a set of demo inputs to the option boxes in the
-    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
-    #     If not None, a Demo button appears in the interface. Clicking the
-    #     button fills the option boxed with the defined demo values.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return ['testChoice1', '..']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+        if prevChoices.gsuite:
+            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            return gSuiteTN.attributes
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -153,11 +74,12 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
         # from config.DebugConfig import DebugModes
         # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
 
-
-        choices_gsuite = choices.gs
+        choices_gsuite = choices.gsuite
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
-        genome = 'hg19'
+        #genome = 'hg19'
+        genome =  choices.genome
+
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
 
@@ -168,19 +90,38 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
         fullTS['reference'] = categoricalTS
         spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
 
+        parameter = 'minLqMedUqMax'
+
         spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
-        spec.addParameter('summaryFunc','minAndMax')
-        bins = UserBinSource('*','*',genome='hg19')
+        spec.addParameter('summaryFunc',parameter)
+        bins = UserBinSource('chr1','*',genome=genome)
         res = doAnalysis(spec, bins, fullTS)
         ts = res.getGlobalResult()['Result']
         tsRes = ts.result
 
         htmlCore = HtmlCore()
         htmlCore.begin()
-        htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
-        for k, it in tsRes.iteritems():
-            htmlCore.tableLine([k, str("%.2f" % it[0]) + '-' + str("%.2f" % it[1])])
-        htmlCore.tableFooter()
+
+        if parameter == 'minAndMax':
+            htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
+            for k, it in tsRes.iteritems():
+                htmlCore.tableLine([k, str("%.2f" % it[0]) + '-' + str("%.2f" % it[1])])
+            htmlCore.tableFooter()
+
+        if parameter == 'minLqMedUqMax':
+
+            dataList = []
+            categories = []
+            for keyE, itE in tsRes.iteritems():
+                categories.append(keyE)
+                dataList.append(list(itE))
+
+            from quick.webtools.restricted.visualization.visualizationGraphs import \
+                visualizationGraphs
+            vg = visualizationGraphs()
+            res = vg.drawBoxPlotChart(dataList, categories=categories, seriesName=selected_metadata)
+            htmlCore.line(res)
+
         htmlCore.end()
         print htmlCore
 
@@ -328,24 +269,9 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

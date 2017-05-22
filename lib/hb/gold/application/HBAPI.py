@@ -1,13 +1,16 @@
 #For doAnalysis
+import collections
 import logging
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.application.StatRunner import AnalysisDefJob, StatJob
 
 #For getTrackData
+from gold.origdata.GESourceWrapper import GESourceWrapper
 from gold.track.Track import Track, PlainTrack
 from gold.track.GenomeRegion import GenomeRegion
 
 #Include these in this name space, to allow them to be imported from this API module
+from gold.track.TrackStructure import TrackStructureV2
 from quick.application.UserBinSource import RegionIter, GlobalBinSource,\
     BinSource
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
@@ -20,7 +23,7 @@ from gold.application.StatRunnerV2 import StatJobV2
 from urllib import quote
 from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings, wrapClass
 
-
+@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable, TrackStructureV2)
 def doAnalysis(analysisSpec, analysisBins, trackStructure):
     '''Performs an analysis,
     as specified by analysisSpec object,
@@ -65,26 +68,6 @@ def doAnalysis(analysisSpec, analysisBins, trackStructure):
     res = job.run(printProgress=False)  # printProgress should be optional?
     return res
 
-
-#@takes(AnalysisSpec, BinSource, tuple(Track) )
-#@returns(Results)
-def doAnalysisV2(analysisSpec, analysisBins, trackStructure):
-    '''Performs an analysis,
-    as specified by analysisSpec object,
-    in each bin specified by analysisBins,
-    on data sets specified in tracks.
-
-    Typical usage:
-    analysisSpec = AnalysisSpec(AvgSegLenStat)
-    analysisSpec.addParameter("withOverlaps","no")
-    analysisBins = GlobalBinSource('hg18')
-    tracks = [ PlainTrack(['Genes and gene subsets','Genes','Refseq']) ]
-    results = doAnalysis(analysisSpec, analysisBins, tracks)
-    '''
-    setupDebugModeAndLogging()  #in an API setting, exceptions should not generally be hidden. Maybe this should be optional.
-    job = StatJobV2(analysisBins, trackStructure, analysisSpec._statClassList[0], galaxyFn=None)
-    res = job.run(printProgress=False) #Maybe printProgress should be optional
-    return res
 
 # @sdl.takes(Track, GenomeRegion)
 # @sdl.returns(TrackView)

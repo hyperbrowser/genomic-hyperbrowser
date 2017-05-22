@@ -1,18 +1,3 @@
-# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
-# This file is part of The Genomic HyperBrowser.
-#
-#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 
 from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider, \
@@ -23,12 +8,6 @@ from gold.util.CustomExceptions import LackingTsResultsError
 import copy
 from quick.application.SignatureDevianceLogging import takes
 from third_party.typecheck import anything, dict_of, list_of, optional
-
-'''
-Created on Sep 23, 2015
-
-@author: boris
-'''
 
 class TrackStructure(dict):
     '''
@@ -104,7 +83,7 @@ class TrackStructureV2(dict):
             return self._inferResult()
 
     def _inferResult(self):
-        return dict([(childKey,self[childKey].result) for childKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+        return dict([(childTSKey, self[childTSKey].result) for childTSKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
 
     @takes('TrackStructureV2', anything)
     def _setResult(self, value):
@@ -150,6 +129,9 @@ class TrackStructureV2(dict):
         return self.keys() == ['query', 'reference'] \
                and isinstance(self['query'], SingleTrackTS) \
                and isinstance(self['reference'], SingleTrackTS)
+
+    def isSingleTs(self):
+        return isinstance(self, SingleTrackTS)
 
     def _copyTreeStructure(self):
         newCopy = copy.copy(self)
