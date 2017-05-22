@@ -5,12 +5,10 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
-from gold.gsuite.GSuiteConstants import GSUITE_SUFFIX, \
-    GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
-from gold.track.TrackStructure import TrackStructure, SingleTrackTS, TrackStructureV2
+from gold.track.TrackStructure import TrackStructureV2
 from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider
 from gold.util import CommonConstants
 from gold.util.CommonClasses import OrderedDefaultDict
@@ -23,16 +21,13 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
-from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks, runMultipleSingleValPairwiseStats, \
+from quick.gsuite.GSuiteStatUtils import runMultipleSingleValPairwiseStats, \
     runMultipleSingleValSingleTrackStats, prettifyKeysInDict
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
-from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
-    GSuiteSimilarityToQueryTrackRankingsWrapperStat
+
 from quick.statistic.SingleValueOverlapStat import SingleValueOverlapStat
-from quick.util import CommonFunctions
-from quick.util.debug import DebugUtil
-from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -335,20 +330,27 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        from quick.gsuite.GuiBasedTsFactory import getSingleTrackTS, getFlatTracksTS
-
-        queryTS = getSingleTrackTS(genome, choices.queryTrack)
-        refTS = getFlatTracksTS(genome, choices.gsuite)
-
-        fullTS = TrackStructureV2()
-        fullTS['query'] = queryTS
-        fullTS['reference'] = refTS
+        # from quick.gsuite.GuiBasedTsFactory import getSingleTrackTS, getFlatTracksTS
+        #
+        # queryTS = getSingleTrackTS(genome, choices.queryTrack)
+        # refTS = getFlatTracksTS(genome, choices.gsuite)
+        #
+        # fullTS = TrackStructureV2()
+        # fullTS['query'] = queryTS
+        # fullTS['reference'] = refTS
 
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         queryTrack = Track(queryTrackNameAsList)
         tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
+
+        import quick.gsuite.GuiBasedTsFactory as factory
+        ts = TrackStructureV2()
+        ts['query'] = factory.getSingleTrackTS(genome, choices_queryTrack)
+        refTS = factory.getFlatTracksTS(genome, choices_gsuite)
+        ts['reference'] = refTS
+
         queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
             [quote(queryTrackTitle)] + [quote(x.title, safe='') for x in gsuite.allTracks()])
@@ -358,12 +360,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if analysisQuestion in [cls.Q1, cls.Q2]:
             additionalAttributesDict = cls.getSelectedAttributesForEachTrackDict(choices.additionalAttributes, gsuite)
             # additional analysis
-            stats = [SingleValueOverlapStat, CountStat,
-                     CountElementStat]  # + [CountSegmentsOverlappingWithT2Stat] #takes long time
-
             additionalSingleTrackStats = [CountStat, CountElementStat]
             additionalPairwiseStats = [SingleValueOverlapStat]
-            additionalPairwiseResults = runMultipleSingleValPairwiseStats(fullTS, additionalPairwiseStats, analysisBins)
+            additionalPairwiseResults = runMultipleSingleValPairwiseStats(ts, additionalPairwiseStats, analysisBins)
             additionalSingleTrackResults = runMultipleSingleValSingleTrackStats(refTS, additionalSingleTrackStats, analysisBins)
 
             for trackTitle, pairedTS in additionalPairwiseResults.iteritems():
@@ -376,7 +375,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         if analysisQuestion == cls.Q1:
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName)
-            resTrackStruct = doAnalysis(analysisSpec, analysisBins, fullTS).getGlobalResult()['Result']
+            resTrackStruct = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             results = getTrackTitleToResultDictFromFlatPairedTrackStructure(resTrackStruct)
             gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track'],
                                                                additionalResultsDict=additionalResultsDict,
