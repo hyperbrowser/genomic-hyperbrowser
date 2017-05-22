@@ -1,9 +1,11 @@
 #For doAnalysis
+import collections
 import logging
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.application.StatRunner import AnalysisDefJob, StatJob
 
 #For getTrackData
+from gold.origdata.GESourceWrapper import GESourceWrapper
 from gold.track.Track import Track, PlainTrack
 from gold.track.GenomeRegion import GenomeRegion
 
@@ -21,7 +23,7 @@ from gold.application.StatRunnerV2 import StatJobV2
 from urllib import quote
 from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings, wrapClass
 
-@takes(str, BinSource, TrackStructureV2)
+@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable, TrackStructureV2)
 def doAnalysis(analysisSpec, analysisBins, trackStructure):
     '''Performs an analysis,
     as specified by analysisSpec object,
