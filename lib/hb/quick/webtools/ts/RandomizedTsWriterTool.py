@@ -48,7 +48,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         Mandatory method for all ProTo tools.
         """
-        return "Randomized TS writer"
+        return "Create a randomized version of a GSuite"
 
     @classmethod
     def getInputBoxNames(cls):
