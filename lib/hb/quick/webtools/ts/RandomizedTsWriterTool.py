@@ -32,8 +32,8 @@ class RandomizedTsWriterTool(GeneralGuiTool):
     # IMPORTANT: if extra algorithms are added to this dict, add them after the existing algorithms!
     RANDOMIZATION_ALGORITHM_DICT = OrderedDict([
                                     ('Within tracks', OrderedDict([
-                                        ('Permute segments and inter-segment regions', PermutedSegsAndIntersegsTrackViewProvider),
-                                        ('Permute segments and sampled inter-segment regions', PermutedSegsAndSampledIntersegsTrackViewProvider)])),
+                                        ('Permute segments and inter-segment regions (size of inter-segment regions remains constant)', PermutedSegsAndIntersegsTrackViewProvider),
+                                        ('Permute segments and sampled inter-segment regions (size of inter-segment regions is random)', PermutedSegsAndSampledIntersegsTrackViewProvider)])),
                                     ('Between tracks', OrderedDict([
                                         ('Shuffle between tracks', ShuffleElementsBetweenTracksTvProvider),
                                         ('Shuffle between tracks, preserve number of segments per track', SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider),
