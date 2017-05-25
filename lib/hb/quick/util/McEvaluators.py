@@ -42,6 +42,14 @@ def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatis
                           ('MedianOfNullDistr', medianOfNullDistr), ('SdNullDistr', sdOfNullDistr), ('DiffFromMean', diffObsMean), (NUM_SAMPLES_KEY, numResamplings), \
                             ('NumSamplesNotNan', numberOfNonNanRandResults), (M_KEY,numMoreExtreme) ])
 
+
+def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTupleList, tail, rawStatisticMainClassName):
+    resultList = []
+    for observedAndMcSamplesTuple in observedAndMcSamplesTupleList:
+        resultList.append(evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatisticMainClassName))
+    return resultList
+
+
 def evaluatePurePseudoPvalue(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
     observation = observedAndMcSamplesTuple[0]
     mcSamples = observedAndMcSamplesTuple[1]
