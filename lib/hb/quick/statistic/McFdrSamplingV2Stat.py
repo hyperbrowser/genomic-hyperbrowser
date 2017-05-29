@@ -35,6 +35,7 @@ class McFdrSamplingV2StatUnsplittable(SequentialMcSamplingV2StatUnsplittable):
         
     @classmethod
     def validateAndPossiblyResetLocalResults(cls, localSamplingObjects):
+        #TODO: boris, why is this a class method? ask GK.
         #to load r libraries for McFdr:
         McFdr._initMcFdr()
 

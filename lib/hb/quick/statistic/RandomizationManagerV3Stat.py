@@ -26,7 +26,7 @@ class RandomizationManagerV3Stat(MagicStatFactory):
 class RandomizationManagerV3StatUnsplittable(StatisticV2):    
     IS_MEMOIZABLE = False
 
-    @takes("RandomizationManagerV3StatUnsplittable", callable, one_of(basestring,type),basestring, one_of(basestring,Statistic))
+    @takes("RandomizationManagerV3StatUnsplittable", one_of(callable, basestring), one_of(basestring,type),basestring, one_of(basestring,Statistic))
     def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, **kwArgs):
         if type(evaluatorFunc) is str:
             evaluatorFunc = globals()[evaluatorFunc]
