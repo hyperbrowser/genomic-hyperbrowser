@@ -1,7 +1,7 @@
-from gold.track.GenomeRegion import GenomeRegion
 from gold.track.PermutedSegsAndIntersegsTrack import PermutedSegsAndIntersegsTrack
 from gold.track.PermutedSegsAndSampledIntersegsTrack import PermutedSegsAndSampledIntersegsTrack
 from gold.track.TrackFormat import NeutralTrackFormatReq
+
 from gold.track.TrackView import TrackView
 from gold.track.Track import Track
 from gold.util.CustomExceptions import AbstractClassError
@@ -9,6 +9,8 @@ import numpy as np
 import random as rn
 from gold.statistic.RawDataStat import RawDataStat
 from quick.application.SignatureDevianceLogging import takes
+from test.gold.track.common.SampleTrack import SampleTrack
+from test.gold.track.common.SampleTrack import SampleTrack
 from third_party.typecheck import optional, list_of, anything, one_of
 
 NUMBER_OF_SEGMENTS = 'Number of segments'
@@ -21,7 +23,7 @@ class TsBasedRandomTrackViewProvider(object):
         self._origTs = origTs
         self._allowOverlaps = allowOverlaps
 
-    @takes('TsBasedRandomTrackViewProvider', GenomeRegion, Track, int)
+    @takes('TsBasedRandomTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
         raise AbstractClassError
 
@@ -37,7 +39,7 @@ class PermutedSegsAndIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
     def __init__(self, *args, **kwArgs):
         pass
 
-    @takes('PermutedSegsAndIntersegsTrackViewProvider', GenomeRegion, Track, int)
+    @takes('PermutedSegsAndIntersegsTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
         return PermutedSegsAndIntersegsTrack(origTrack, randIndex).getTrackView(region)
 
@@ -45,7 +47,7 @@ class PermutedSegsAndSampledIntersegsTrackViewProvider(WithinTrackRandomTvProvid
     def __init__(self, *args, **kwArgs):
         pass
 
-    @takes('PermutedSegsAndSampledIntersegsTrackViewProvider', GenomeRegion, Track, int)
+    @takes('PermutedSegsAndSampledIntersegsTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
         return PermutedSegsAndSampledIntersegsTrack(origTrack, randIndex).getTrackView(region)
 
@@ -57,7 +59,7 @@ class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
         self._preservationMethod = None
         TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps)
 
-    @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion', Track, int)
+    @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
         if region not in self._elementPoolDict:
             self._populatePool(region)
@@ -81,7 +83,7 @@ class CoveragePreservedShuffleElementsBetweenTracksTvProvider(ShuffleElementsBet
 
 
 class ShuffleElementsBetweenTracksPool(object):
-    @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', GenomeRegion, bool, one_of(None, COVERAGE, NUMBER_OF_SEGMENTS))
+    @takes('ShuffleElementsBetweenTracksPool', 'TrackStructureV2', 'GenomeRegion', bool, one_of(None, COVERAGE, NUMBER_OF_SEGMENTS))
     def __init__(self, origTs, region, allowOverlaps, preservationMethod):
         self._region = region
         self._allowOverlaps = allowOverlaps
@@ -136,7 +138,7 @@ class ShuffleElementsBetweenTracksPool(object):
 
 
     # TODO: dangerous; trackId must always be based on unknown. to make it easier to make this consistent, the original track is passed all the way here instead of passing the trackId directly
-    @takes('ShuffleElementsBetweenTracksPool', Track, int)
+    @takes('ShuffleElementsBetweenTracksPool', (Track, SampleTrack), int)
     def getOneTrackViewFromPool(self, origTrack, randIndex):
         trackId = origTrack.getUniqueKey('unknown')
         assert trackId in self._trackIdToIndexDict.keys(), 'given track should be in the original TrackStructure that was used to make this pool'
@@ -168,7 +170,6 @@ class ShuffleElementsBetweenTracksPool(object):
 
     @takes('ShuffleElementsBetweenTracksPool', int)
     def _computeRandomTrackSet(self, randIndex):
-        rn.seed(randIndex)
 
         newTrackValues = {}
 
@@ -205,7 +206,3 @@ class ShuffleElementsBetweenTracksPool(object):
                 pass
 
         return selectedTrack
-
-
-
-

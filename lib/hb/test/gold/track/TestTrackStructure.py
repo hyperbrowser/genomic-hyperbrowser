@@ -58,7 +58,6 @@ class TestTrackStructure(unittest.TestCase):
         self.splittedOnNodeB['E']['B'] = self.t3
 
         self.pairwiseCombinations = TrackStructureV2()
-        # TODO Lonneke better names to represent the tracks!
         self.pairwiseCombinations["['t1']_['t2']"] = TrackStructureV2()
         self.pairwiseCombinations["['t1']_['t2']"]['query'] = self.t1
         self.pairwiseCombinations["['t1']_['t2']"]['reference'] = self.t2

@@ -1,12 +1,10 @@
 from collections import OrderedDict
-
-from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider, \
-    ShuffleElementsBetweenTracksTvProvider
 from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
 from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 import copy
 from quick.application.SignatureDevianceLogging import takes
+from test.gold.track.common.SampleTrack import SampleTrack
 from third_party.typecheck import anything, dict_of, list_of, optional
 
 class TrackStructure(dict):
@@ -226,7 +224,7 @@ class TrackStructureV2(dict):
 
 
 class SingleTrackTS(TrackStructureV2):
-    @takes('SingleTrackTS', Track, dict_of(basestring, basestring))
+    @takes('SingleTrackTS', (Track, SampleTrack), dict_of(basestring, basestring))
     def __init__(self, track, metadata):
         self.track = track
         self.metadata = metadata
