@@ -147,6 +147,26 @@ REPLACE_TEMPLATES['$MCFDRv4$']=\
 
  [evaluatorFunc:=evaluatePvalueAndNullDistribution:]
 '''
+
+REPLACE_TEMPLATES['$MCFDRv5$']=\
+'''
+ [setup:_MCFDR sampling depth=robust:Fixed 10 000 samples (slow)/scratch:Fixed 3 samples (unstable indication)]
+
+ [mcSamplerClass:<setup--scratch>=NaiveMCSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--scratch>=3:]
+ [maxSamples:<setup--scratch>=3:]
+ [mThreshold:<setup--scratch>=1:]
+ [globalPvalThreshold:<setup--scratch>=1.0:]
+ [fdrThreshold:<setup--scratch>=1.0:]
+
+ [mcSamplerClass:<setup--robust>=NaiveMCSamplingV2Stat:]
+ [numSamplesPerChunk:<setup--robust>=10000:]
+ [maxSamples:<setup--robust>=10000:]
+ [mThreshold:<setup--robust>=1:]
+ [globalPvalThreshold:<setup--robust>=1.0:]
+ [fdrThreshold:<setup--robust>=1.0:]
+'''
+
 #REPLACE_TEMPLATES['$MCFDR$']=\
 #'''
 # [numResamplings:_Minimal number of MC samples=%s100/1000/10000/50000]

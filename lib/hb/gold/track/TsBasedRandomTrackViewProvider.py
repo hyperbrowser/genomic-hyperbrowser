@@ -105,7 +105,7 @@ class ShuffleElementsBetweenTracksPool(object):
             self.origArrays['edges'].append(tv.edgesAsNumpyArray())
             self.origArrays['weights'].append(tv.weightsAsNumpyArray())
 
-        self._amountTracks = index + 1
+        self._amountTracks = index + 1 #TODO: len(self.origArrays['starts'])?
         self._probabilities = self._getProbabilities(preservationMethod, self.origArrays['starts'], self.origArrays['ends'])
 
         for tvParam in self.origArrays.keys():

@@ -15,6 +15,7 @@ from gold.util.CommonClasses import OrderedDefaultDict
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.result.model.ResultUtils import getTrackTitleToResultDictFromFlatPairedTrackStructure
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
+from quick.util import McEvaluators
 from quick.util.CommonFunctions import prettyPrintTrackName, \
     strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -211,9 +212,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
-        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
-            analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$'])
-            return analysisSpec.getOptionsAsText().values()[0]
+        if not prevChoices.isBasic:
+            if prevChoices.analysisQName == cls.Q2:
+                return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+            elif prevChoices.analysisQName == cls.Q3:
+                return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0]
 
     @classmethod
     def getOptionsBoxResultsExplanation(cls, prevChoices):
@@ -225,37 +228,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxAdditionalAttributes(cls, prevChoices):
         if prevChoices.gsuite and prevChoices.analysisQName in [cls.Q1, cls.Q2]:
             return GSuiteResultsTableMixin.getOptionsBoxAdditionalAttributes(prevChoices)
-            #             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            #             if gsuite.attributes:
-            #                 return OrderedDict(zip(gsuite.attributes, [False]*len(gsuite.attributes)))
 
     @classmethod
     def getOptionsBoxLeadAttribute(cls, prevChoices):
         if prevChoices.gsuite and prevChoices.analysisQName in [cls.Q1, cls.Q2]:
             return GSuiteResultsTableMixin.getOptionsBoxLeadAttribute(prevChoices)
-            #             if prevChoices.additionalAttributes and any(prevChoices.additionalAttributes.values()):
-            #                 return [GSuiteConstants.TITLE_COL] + [key for key, val in prevChoices.additionalAttributes.iteritems() if val]
-            #
-
-    # @staticmethod
-    # def getOptionsBox3(prevChoices):
-    #    return ['']
-
-    # @staticmethod
-    # def getOptionsBox4(prevChoices):
-    #    return ['']
-
-    # @staticmethod
-    # def getInfoForOptionsBoxKey(prevChoices):
-    #    '''
-    #    If not None, defines the string content of an clickable info box beside
-    #    the corresponding input box. HTML is allowed.
-    #    '''
-    #    return None
-
-    # @staticmethod
-    # def getDemoSelections():
-    #    return ['testChoice1','..']
 
     @staticmethod
     def drawPlot(results, additionalResultsDict, title, columnInd=0):
@@ -280,8 +257,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         categories = []
         for i in range(0, len(res)):
             categories.append(categoriesPart)
-
-        # table1 = generateHistogram('elementCount', ['Track', 'Histogram'], tableData1, plotType='columnChart')
 
         from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
         vg = visualizationGraphs()
@@ -316,6 +291,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         :param galaxyFn:
         :param username:
         """
+
         choices_queryTrack = choices.queryTrack
         choices_gsuite = choices.gsuite
         cls._setDebugModeIfSelected(choices)
@@ -330,20 +306,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        # from quick.gsuite.GuiBasedTsFactory import getSingleTrackTS, getFlatTracksTS
-        #
-        # queryTS = getSingleTrackTS(genome, choices.queryTrack)
-        # refTS = getFlatTracksTS(genome, choices.gsuite)
-        #
-        # fullTS = TrackStructureV2()
-        # fullTS['query'] = queryTS
-        # fullTS['reference'] = refTS
-
-
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         queryTrack = Track(queryTrackNameAsList)
-        tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
 
         import quick.gsuite.GuiBasedTsFactory as factory
         ts = TrackStructureV2()
@@ -352,8 +317,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         ts['reference'] = refTS
 
         queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
-        trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
-            [quote(queryTrackTitle)] + [quote(x.title, safe='') for x in gsuite.allTracks()])
 
         additionalResultsDict = OrderedDefaultDict(OrderedDict)
         additionalAttributesDict = OrderedDict()
@@ -387,21 +350,18 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core = cls.generateQ1output(additionalResultsDict, analysisQuestion, choices, galaxyFn, gsPerTrackResults,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
-            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles)
+            analysisSpec = cls.prepareQ2(choices, similarityStatClassName)
 
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
 
-            #tracks = [queryTrack] + [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
-            # ts = TrackStructure()
-            # ts[TrackStructure.QUERY_KEY] = [tracks[0]]
-            # ts[TrackStructure.REF_KEY] = tracks[1:]
-            ### self._addChild(GSuiteSimilarityToQueryTrackRankingsAndPValuesV2Stat(self._region, ts, **self._kwArgs))
-            #results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
-
+            transformedResultsDict = OrderedDefaultDict(list)
+            for trackTitle, res in results.iteritems():
+                transformedResultsDict[trackTitle].append(res['TSMC_SummarizedInteractionWithOtherTracksV2Stat'])
+                transformedResultsDict[trackTitle].append(res[McEvaluators.PVAL_KEY])
 
             core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict,
                                         analysisQuestion, choices, galaxyFn, queryTrackTitle,
-                                        gsuite, results, similarityStatClassName)
+                                        gsuite, transformedResultsDict, similarityStatClassName)
         else:  # Q3
             analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc)
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
@@ -458,23 +418,19 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ2(cls, choices, similarityStatClassName, trackTitles):
+    def prepareQ2(cls, choices, similarityStatClassName):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0][0]
-        # analysisDefString = REPLACE_TEMPLATES[
-        #                         '$MCFDRv4$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
-        analysisDefString = REPLACE_TEMPLATES['$MCFDRv4$'] + ' -> ' + \
-                            GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName]
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> RandomizationManagerV3Stat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
-        # analysisSpec.addParameter('rawStatistic',
-        #                           GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
+        analysisSpec.addParameter('rawStatistic', "SummarizedInteractionWithOtherTracksV2Stat")
         analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
             similarityStatClassName])  # needed for call of non randomized stat for assertion
-        analysisSpec.addParameter('tail', 'more')
-        analysisSpec.addParameter('trackTitles', trackTitles)
-        analysisSpec.addParameter('queryTracksNum', str(1))
+        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('summaryFunc', 'raw')
+        analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistributionList')
+        analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksTvProvider)
         return analysisSpec
 
     @classmethod
@@ -533,13 +489,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0][0]
-        # analysisDefString = REPLACE_TEMPLATES[
-        #                         '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDRv4$'] + ' -> RandomizationManagerV3Stat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
         analysisSpec.addParameter('rawStatistic', 'SummarizedInteractionWithOtherTracksV2Stat')
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
