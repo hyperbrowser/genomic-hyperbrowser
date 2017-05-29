@@ -4,7 +4,7 @@ from gold.track.TrackFormat import NeutralTrackFormatReq
 
 from gold.track.TrackView import TrackView
 from gold.track.Track import Track
-from gold.util.CustomExceptions import AbstractClassError
+from gold.util.CustomExceptions import AbstractClassError, NotSupportedError
 import numpy as np
 import random as rn
 from gold.statistic.RawDataStat import RawDataStat
@@ -36,16 +36,20 @@ class WithinTrackRandomTvProvider(TsBasedRandomTrackViewProvider):
         raise AbstractClassError
 
 class PermutedSegsAndIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
-    def __init__(self, *args, **kwArgs):
-        pass
+    def __init__(self, origTs, allowOverlaps):
+        if allowOverlaps == True:
+            raise NotSupportedError('Overlaps are not supported in this type of randomization')
+        TsBasedRandomTrackViewProvider.__init__(self, origTs, False)
 
     @takes('PermutedSegsAndIntersegsTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
         return PermutedSegsAndIntersegsTrack(origTrack, randIndex).getTrackView(region)
 
 class PermutedSegsAndSampledIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
-    def __init__(self, *args, **kwArgs):
-        pass
+    def __init__(self, origTs, allowOverlaps):
+        if allowOverlaps == True:
+            raise NotSupportedError('Overlaps are not supported in this type of randomization')
+        TsBasedRandomTrackViewProvider.__init__(self, origTs, False)
 
     @takes('PermutedSegsAndSampledIntersegsTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
@@ -127,7 +131,7 @@ class ShuffleElementsBetweenTracksPool(object):
     def _getProbabilities(self, preservationMethod, origStartArrays, origEndArrays):
         allItemsLength = len(np.concatenate(origStartArrays))
         if allItemsLength == 0:
-            return [0 for i in range(0, self._amountTracks)]
+            return [1.0 / float(self._amountTracks) for i in range(0, self._amountTracks)]
         elif preservationMethod == NUMBER_OF_SEGMENTS:
             return [float(len(array)) / float(allItemsLength) for array in origStartArrays]
         elif preservationMethod == COVERAGE:
@@ -193,7 +197,7 @@ class ShuffleElementsBetweenTracksPool(object):
     def _selectSimpleRandomTrackIndex(self, **kwArgs):
         return np.random.choice(range(0, self._amountTracks), p=self._probabilities)
 
-    @takes('ShuffleElementsBetweenTracksPool', list_of(list_of(int)), list_of(list_of(int)), optional(anything))
+    @takes('ShuffleElementsBetweenTracksPool', list_of(list_of(int)), int, optional(anything))
     def _selectNonOverlappingRandomTrackIndex(self, newEnds, newStart, **kwArgs):
         selectedTrack = self._selectSimpleRandomTrackIndex()
 
