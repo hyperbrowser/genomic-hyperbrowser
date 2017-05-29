@@ -163,12 +163,10 @@ class TestTrackStructure(unittest.TestCase):
 
         subsetField2val6 = FlatTracksTS()
         subsetField2val6['B'] = self.t2
-        self._assertEqualTrackStructure(subsetField2val6, self.flatTrackStructure.getTrackSubsetTS('field 2', 6))
         self._assertEqualTrackStructure(subsetField2val6, self.flatTrackStructure.getTrackSubsetTS('field 2', '6'))
 
         subsetField3None = FlatTracksTS()
         subsetField3None['C'] = self.t3
-        self._assertEqualTrackStructure(subsetField3None, self.flatTrackStructure.getTrackSubsetTS('field 3', None))
         self._assertEqualTrackStructure(subsetField3None, self.flatTrackStructure.getTrackSubsetTS('field 3', 'None'))
 
         empty = FlatTracksTS()
