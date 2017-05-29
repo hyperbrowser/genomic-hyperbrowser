@@ -1718,8 +1718,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         #return text.split(':')[-1]
 
     @staticmethod
-    @takes(str, list)
-    @returns(str)
+    @takes(basestring, list)
+    @returns(basestring)
     def getTrackInfo(genome, trackName):
         #genome ='hg18'
         #return 'further info on ' + ':'.join(trackName) + ' will come..'
@@ -1734,8 +1734,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         #    return str(e.__class__) + str(e) + str(trackName) + str(genome)
 
     @staticmethod
-    @takes(str)
-    @returns(str)
+    @takes(basestring)
+    @returns(basestring)
     def getGenomeInfo(genome):
         #return GenomeInfo(genome).allInfo().decode('ascii','ignore')
         if genome:
