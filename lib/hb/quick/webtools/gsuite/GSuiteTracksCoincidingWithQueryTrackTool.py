@@ -1,6 +1,4 @@
 from collections import OrderedDict
-from urllib import quote
-
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -9,8 +7,7 @@ from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructureV2
-from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider
-from gold.util import CommonConstants
+from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider
 from gold.util.CommonClasses import OrderedDefaultDict
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.result.model.ResultUtils import getTrackTitleToResultDictFromFlatPairedTrackStructure
@@ -26,7 +23,6 @@ from quick.gsuite.GSuiteStatUtils import runMultipleSingleValPairwiseStats, \
     runMultipleSingleValSingleTrackStats, prettifyKeysInDict
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
-
 from quick.statistic.SingleValueOverlapStat import SingleValueOverlapStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin

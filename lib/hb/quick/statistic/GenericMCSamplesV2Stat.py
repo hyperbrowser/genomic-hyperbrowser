@@ -1,7 +1,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
-from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider, \
-    ShuffleElementsBetweenTracksTvProvider
+from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
+
 from quick.application.SignatureDevianceLogging import takes, classType
 from quick.util.CommonFunctions import getClassName
 from quick.util.RandomizationUtils import getRandTrackClassList, getRandTrackClass

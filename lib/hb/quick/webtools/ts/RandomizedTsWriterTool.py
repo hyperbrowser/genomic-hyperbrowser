@@ -1,31 +1,21 @@
+import os
 from collections import OrderedDict
-
-from gold.gsuite import GSuiteComposer
-from gold.gsuite.GSuite import GSuite
-from gold.track.GenomeRegion import GenomeRegion
-from gold.track.PermutedSegsAndIntersegsTrack import PermutedSegsAndIntersegsTrack
-from gold.track.PermutedSegsAndSampledIntersegsTrack import PermutedSegsAndSampledIntersegsTrack
-from gold.track.RandomGenomeLocationTrack import RandomGenomeLocationTrack
-from gold.track.RandomizedSegsTrack import RandomizedSegsTrack
-from gold.track.SegsSampledByIntensityTrack import SegsSampledByIntensityTrack
-from gold.track.ShuffledMarksTrack import ShuffledMarksTrack
-from gold.track.TrackStructure import TrackStructureV2
-from gold.track.TsBasedRandomTrackViewProvider import ShuffleElementsBetweenTracksTvProvider, \
-    ShuffleElementsBetweenTracksPool, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider, \
-    CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
-    PermutedSegsAndSampledIntersegsTrackViewProvider, PermutedSegsAndIntersegsTrackViewProvider
-from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
-
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.track.SegsSampledByDistanceToReferenceTrack import SegsSampledByDistanceToReferenceTrack
-from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 import quick.gsuite.GuiBasedTsFactory as factory
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
-from quick.application.UserBinSource import GlobalBinSource
-from quick.statistic.TsWriterStat import TsWriterStat
+from gold.gsuite import GSuiteComposer
+from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-import os
+from gold.track.RandomizedSegsTvProvider import PermutedSegsAndIntersegsTrackViewProvider, PermutedSegsAndSampledIntersegsTrackViewProvider
+from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider, \
+    CoveragePreservedShuffleElementsBetweenTracksTvProvider, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
+from gold.track.TrackStructure import TrackStructureV2
+from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+from quick.application.UserBinSource import GlobalBinSource
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.TsWriterStat import TsWriterStat
+from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
 
 
 class RandomizedTsWriterTool(GeneralGuiTool):
@@ -38,6 +28,12 @@ class RandomizedTsWriterTool(GeneralGuiTool):
                                         ('Shuffle between tracks', ShuffleElementsBetweenTracksTvProvider),
                                         ('Shuffle between tracks, preserve number of segments per track', SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider),
                                         ('Shuffle between tracks, preserve base pair coverage per track', CoveragePreservedShuffleElementsBetweenTracksTvProvider)]))])
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
+    GSUITE_DISALLOWED_GENOMES = []
 
 
     @classmethod
@@ -167,27 +163,6 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             outputGSuite.addTrack(gSuiteTrack)
             singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
 
-        # for singleTrackTs in randomizedTs.getLeafNodes():
-        #     # uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-        #     #                                     extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
-        #     #                                     suffix='gtrack')
-        #     #
-        #     # title = singleTrackTs.metadata.pop('title')
-        #     # gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
-        #     # outputGSuite.addTrack(gSuiteTrack)
-        #     # singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
-        #     newTrackName = singleTrackTs.track.trackName + ['randomized', str(randIndex)]
-        #
-        #     #ExternalTrackManager.createStdTrackName(self._id, os.name)
-        #
-        #     uri = HbGSuiteTrack.generateURI(newTrackName)
-        #     title = singleTrackTs.metadata.pop('title')
-        #     gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized.'+str(randIndex), trackType=TrackInfo(genome, newTrackName).trackFormatName.lower(), genome=genome, attributes=singleTrackTs.metadata)
-        #     outputGSuite.addTrack(gSuiteTrack)
-        #     singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
-        #     singleTrackTs.metadata['randomizedTrackName'] = newTrackName
-
-
         bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, randomizedTs)
@@ -208,7 +183,27 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        for requiredParameter in (choices.gs, choices.randType, choices.randAlg):
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gs)
+        if errorString:
+            return errorString
+
+        gsuite = getGSuiteFromGalaxyTN(choices.gs)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gsuite,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = GeneralGuiTool._checkGSuiteTrackListSize(gsuite)
+        if errorString:
+            return errorString
+
+        for requiredParameter in (choices.randType, choices.randAlg):
             if requiredParameter in [None, '', '--- Select ---']:
                 return ''
 
