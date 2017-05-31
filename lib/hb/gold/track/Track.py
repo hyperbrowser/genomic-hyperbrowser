@@ -67,16 +67,30 @@ class Track(object):
             self.formatConverters = [getFormatConverterByName(converterClassName)]
 
     def getUniqueKey(self, genome):
-        assert self.formatConverters is not None and len(self.formatConverters) == 1, 'FC: '+str(self.formatConverters)
-        assert( not None in [self._trackFormatReq.allowOverlaps(), \
-                             self._trackFormatReq.borderHandling()] )
+        # assert self.formatConverters is not None and len(self.formatConverters) == 1, 'FC: '+str(self.formatConverters)
+        # assert( not None in [self._trackFormatReq.allowOverlaps(), \
+        #                      self._trackFormatReq.borderHandling()] )
+        #
+        # if not self._trackId:
+        #     self._trackId = TrackInfo(genome, self.trackName).id
+        #
+        # return hash((tuple(self.trackName), self._trackId, getClassName(self.formatConverters[0]), \
+        #              self.formatConverters[0].VERSION, self._trackFormatReq.allowOverlaps(), \
+        #              self._trackFormatReq.borderHandling()))
+
+        # assert self.formatConverters is not None and len(self.formatConverters) == 1, 'FC: '+str(self.formatConverters)
+        # assert( not None in [self._trackFormatReq.allowOverlaps(), \
+        #                      self._trackFormatReq.borderHandling()] )
 
         if not self._trackId:
             self._trackId = TrackInfo(genome, self.trackName).id
 
-        return hash((tuple(self.trackName), self._trackId, getClassName(self.formatConverters[0]), \
-                     self.formatConverters[0].VERSION, self._trackFormatReq.allowOverlaps(), \
-                     self._trackFormatReq.borderHandling()))
+        return hash((tuple(self.trackName),
+                     self._trackId,
+                     getClassName(self.formatConverters[0]) if self.formatConverters else '',
+                     self.formatConverters[0].VERSION if self.formatConverters else '',
+                     self._trackFormatReq.allowOverlaps() if self._trackFormatReq.allowOverlaps() else '',
+                     self._trackFormatReq.borderHandling() if self._trackFormatReq.borderHandling() else ''))
 
     def resetTrackSource(self):
         self._trackSource = TrackSource()

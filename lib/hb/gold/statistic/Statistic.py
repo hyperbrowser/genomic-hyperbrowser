@@ -17,6 +17,7 @@ from math import ceil
 from test.gold.track.common.SampleTrack import SampleTrack
 from _collections import defaultdict
 
+
 class Statistic(object):
     VERSION = '1.0'
     IS_MEMOIZABLE = True
@@ -59,11 +60,11 @@ class Statistic(object):
         self._region = region
         self._track = track
         if track2 not in [None, []]:
-            if track.trackName == track2.trackName:
-                #if not kwArgs.get('allowIdenticalTracks') in [True,'True']: #Does not work, as all kwArgs are not sent further down in createChildren, meaning that a base statistic like RawDataStat would not find allowIdenticalTracks and throw exception..
-                #if not IS_EXPERIMENTAL_INSTALLATION: #does not work either, as results in: gold.util.CustomExceptions.IncompatibleTracksError: Track 'Unmarked segments (Sample tracks)'was created, but not touched by statistic
-                from gold.util.CustomExceptions import IdenticalTrackNamesError
-                raise IdenticalTrackNamesError("Track names are identical. Track name = " + ':'.join(track.trackName))
+            # if track.trackName == track2.trackName:
+            #     #if not kwArgs.get('allowIdenticalTracks') in [True,'True']: #Does not work, as all kwArgs are not sent further down in createChildren, meaning that a base statistic like RawDataStat would not find allowIdenticalTracks and throw exception..
+            #     #if not IS_EXPERIMENTAL_INSTALLATION: #does not work either, as results in: gold.util.CustomExceptions.IncompatibleTracksError: Track 'Unmarked segments (Sample tracks)'was created, but not touched by statistic
+            #     from gold.util.CustomExceptions import IdenticalTrackNamesError
+            #     raise IdenticalTrackNamesError("Track names are identical. Track name = " + ':'.join(track.trackName))
             self._track2 = track2
         self._kwArgs = kwArgs
         self._init(**kwArgs)
@@ -296,14 +297,26 @@ class Statistic(object):
         reg = id(region) if isIter(region) else region
 
         #logMessage('%s, %s, %s, %s, %s' % (str(cls), Statistic._constructConfigKey(kwArgs), (str([str(x) for x in reg]) if hasattr(reg, '__iter__') else str(reg)), tuple(track.trackName), tuple(track2.trackName) if track2 != None else ''))
-        return (hash(str(cls)), Statistic._constructConfigKey(kwArgs), hash(reg), tuple(track.trackName), tuple(track2.trackName) if track2 != None else '')
+        # return (hash(str(cls)), Statistic._constructConfigKey(kwArgs), hash(reg), tuple(track.trackName), tuple(track2.trackName) if track2 != None else '')
+
+        genome = Statistic._getGenome(region)
+        return (hash(str(cls)),
+                Statistic._constructConfigKey(kwArgs),
+                hash(reg),
+                track.getUniqueKey(genome),
+                track2.getUniqueKey(genome) if track2 is not None else '')
 
     def getGenome(self):
-        if any(isinstance(self._region, x) for x in [GenomeRegion, PairedGenomeRegion]):
-            return self._region.genome
+        return Statistic._getGenome(self._region)
+
+    @staticmethod
+    def _getGenome(region):
+        if any(isinstance(region, x) for x in [GenomeRegion, PairedGenomeRegion]):
+            return region.genome
         else:
-            for reg in self._region:
+            for reg in region:
                 return reg.genome
+
 
     @classmethod
     def validateAndPossiblyResetLocalResults(cls, stats):
