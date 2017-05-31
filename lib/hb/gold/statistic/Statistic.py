@@ -19,7 +19,7 @@ from _collections import defaultdict
 
 class Statistic(object):
     VERSION = '1.0'
-    IS_MEMOIZABLE = False
+    IS_MEMOIZABLE = True
 
     def _trace(self, methodName):
 
