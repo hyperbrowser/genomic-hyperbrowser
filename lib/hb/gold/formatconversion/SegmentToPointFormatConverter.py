@@ -63,7 +63,7 @@ class VirtualStartFromIntervalEnd(VirtualStartFromInterval):
     #        return self._startArray[key]
 
     def _asNumpyArray(self):
-        if self._strandArray == None:
+        if self._strandArray is None:
             return self._endArray - 1
         else:
             return numpy.where(self._strandArray, self._endArray-1, self._startArray)
