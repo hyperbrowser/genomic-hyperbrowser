@@ -86,7 +86,7 @@ class Track(object):
             self._trackId = TrackInfo(genome, self.trackName).id
 
         return hash((tuple(self.trackName),
-                     self._trackId,
+                     self._trackId if self._trackId else '',
                      getClassName(self.formatConverters[0]) if self.formatConverters else '',
                      self.formatConverters[0].VERSION if self.formatConverters else '',
                      self._trackFormatReq.allowOverlaps() if self._trackFormatReq.allowOverlaps() else '',

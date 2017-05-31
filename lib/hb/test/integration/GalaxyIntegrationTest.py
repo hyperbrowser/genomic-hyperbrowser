@@ -46,20 +46,9 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
             print 'Result: ', resList
 
         self.assertListsOrDicts(target, resList)
-    
-    def _assertRunEqual(self, target, *args, **kwArgs):
-        if self.VERBOSE:
-            DebugConfig.PASS_ON_COMPUTE_EXCEPTIONS = True
-            print '\n***\n' + str(self.id()) + '\n***'
-        
-        args = list(args)
-        analysisDef = [x.strip() for x in args[2].split('->')]
-        if len(analysisDef) == 1:
-            analysisDef.append(analysisDef[0])
-        analysisDef[0] += ' [randomSeed:=0:]'
-        
-        args[2] = analysisDef[0] + " -> " + analysisDef[1]
-        
+
+    @staticmethod
+    def _runTypeGenerator():
         for runType in ['full', 'compBin', 'loadMemo']:
             # Needs to set in config.Config due to GalaxyInterface._tempAnalysisDefHacks()
             config.Config.ALLOW_COMP_BIN_SPLITTING = False if runType == 'full' else True
@@ -73,6 +62,22 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
             print "---------------------"
             print
 
+            yield runType
+
+    def _assertRunEqual(self, target, *args, **kwArgs):
+        if self.VERBOSE:
+            DebugConfig.PASS_ON_COMPUTE_EXCEPTIONS = True
+            print '\n***\n' + str(self.id()) + '\n***'
+        
+        args = list(args)
+        analysisDef = [x.strip() for x in args[2].split('->')]
+        if len(analysisDef) == 1:
+            analysisDef.append(analysisDef[0])
+        analysisDef[0] += ' [randomSeed:=0:]'
+        
+        args[2] = analysisDef[0] + " -> " + analysisDef[1]
+        
+        for runType in self._runTypeGenerator():
             if self._usesProfiling():
                 DebugConfig.USE_PROFILING = True
                 
@@ -86,8 +91,7 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
             #     self._storeProfile(diskMemo)
     
     def _assertBatchEqual(self, target, *args):
-        for diskMemo in [False, True]:
-            gold.statistic.ResultsMemoizer.LOAD_DISK_MEMOIZATION = diskMemo
+        for runType in self._runTypeGenerator():
             batchRes = GalaxyInterface.runBatchLines(*args)
             for i in range(len(batchRes)):
                 self._assertEqualResults(target[i], batchRes[i])

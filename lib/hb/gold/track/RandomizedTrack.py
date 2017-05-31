@@ -28,8 +28,8 @@ class RandomizedTrack(Track):
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)
 
         from gold.formatconversion.FormatConverter import TrivialFormatConverter
-        #self.formatConverters = [TrivialFormatConverter] #To allow construction of uniqueID
-        #self._trackId = None #To allow construction of uniqueID
+        self.formatConverters = [TrivialFormatConverter] #To allow construction of uniqueID
+        self._trackId = None #To allow construction of uniqueID
 
     def _checkTrackFormat(self, origTV):
         pass
