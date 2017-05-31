@@ -60,11 +60,6 @@ class Statistic(object):
         self._region = region
         self._track = track
         if track2 not in [None, []]:
-            # if track.trackName == track2.trackName:
-            #     #if not kwArgs.get('allowIdenticalTracks') in [True,'True']: #Does not work, as all kwArgs are not sent further down in createChildren, meaning that a base statistic like RawDataStat would not find allowIdenticalTracks and throw exception..
-            #     #if not IS_EXPERIMENTAL_INSTALLATION: #does not work either, as results in: gold.util.CustomExceptions.IncompatibleTracksError: Track 'Unmarked segments (Sample tracks)'was created, but not touched by statistic
-            #     from gold.util.CustomExceptions import IdenticalTrackNamesError
-            #     raise IdenticalTrackNamesError("Track names are identical. Track name = " + ':'.join(track.trackName))
             self._track2 = track2
         self._kwArgs = kwArgs
         self._init(**kwArgs)
@@ -295,9 +290,6 @@ class Statistic(object):
             track2 = None
 
         reg = id(region) if isIter(region) else region
-
-        #logMessage('%s, %s, %s, %s, %s' % (str(cls), Statistic._constructConfigKey(kwArgs), (str([str(x) for x in reg]) if hasattr(reg, '__iter__') else str(reg)), tuple(track.trackName), tuple(track2.trackName) if track2 != None else ''))
-        # return (hash(str(cls)), Statistic._constructConfigKey(kwArgs), hash(reg), tuple(track.trackName), tuple(track2.trackName) if track2 != None else '')
 
         genome = Statistic._getGenome(region)
         return (hash(str(cls)),
