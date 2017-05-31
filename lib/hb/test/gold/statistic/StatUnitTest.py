@@ -2,9 +2,9 @@ import numpy
 from collections import OrderedDict
 
 import config.Config
-import gold.statistic.ResultsMemoizer as ResultsMemoizer
 import gold.util.CompBinManager
 
+from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.TrackView import TrackView
 from gold.util.CompBinManager import CompBinManager
