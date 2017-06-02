@@ -17,6 +17,7 @@ class DebugMixin(object):
                     DebugModes.UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE,
                     DebugModes.UNCHANGED_LOGIC_FULL_TRACE_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE,
+                    DebugModes.RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]

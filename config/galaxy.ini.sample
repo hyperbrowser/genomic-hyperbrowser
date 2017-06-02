@@ -1243,6 +1243,9 @@ use_interactive = True
 #    RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE
 #    # Debug by raising hidden exceptions
 #
+#    RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE
+#    # Debug by raising hidden exceptions (verbose)
+#
 #    RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE
 #    # Debug by raising hidden exceptions (tracing statistic creation and
 #    #                                     compute, verbose)

@@ -46,8 +46,9 @@ class AnalysisManager:
                 if analysis.isValid():
                    return analysis, reversed
         except Exception, e:
-            if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
+            if DebugConfig.VERBOSE:
                 logException(e)
+            if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                 raise
         return None, False
 

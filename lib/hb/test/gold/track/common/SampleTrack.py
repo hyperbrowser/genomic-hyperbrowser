@@ -16,3 +16,7 @@ class SampleTrack(object):
     def addFormatReq(self, requestedTrackFormat):
         if not self._ignoreTrackFormat and requestedTrackFormat != None and not requestedTrackFormat.isCompatibleWith(self._tv.trackFormat):
             raise IncompatibleTracksError(str(requestedTrackFormat) + ' not compatible with ' + str(self._tv.trackFormat))
+
+    def getUniqueKey(self, genome):
+        return hash((tuple(self.trackName), genome))
+

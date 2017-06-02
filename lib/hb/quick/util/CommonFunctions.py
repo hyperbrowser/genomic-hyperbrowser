@@ -4,6 +4,8 @@ import re
 import urllib
 import contextlib
 import traceback
+
+import itertools
 import numpy
 import functools
 import operator
@@ -399,6 +401,16 @@ def flattenList(list):
         return list
     else:
         return flattenList(reduce(lambda x, y: x + y, list))
+
+
+def allElementsVersusRest(inList):
+    """
+    :return: list of tuples, where first element of each tuple is each element in inList in turn,
+             while the second element of the tuple is a tuple of the rest of the elements of
+             inList. Example: inList = [1,2,3] ->  returns [(1, (2, 3)), (2, (1, 3), (3, (1, 2))]
+    """
+    return zip([inList[x] for x in range(len(inList))],
+               reversed(list(itertools.combinations(inList, len(inList)-1))))
 
 
 def listStartsWith(a, b):
