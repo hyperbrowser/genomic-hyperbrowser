@@ -356,6 +356,7 @@ def addHistogramVisualization(tableData, tableHeader, plotType):
 
             from proto.RSetup import r, robjects
             # count histogram
+
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
             dd=robjects.FloatVector(data)
             simpleHist = r(rCode)(dd)
