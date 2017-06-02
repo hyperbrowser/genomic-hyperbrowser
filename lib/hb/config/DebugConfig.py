@@ -7,15 +7,15 @@ class DebugModes(object):
 
     - If one is debugging a statistic and UNCHANGED_LOGIC_VERBOSE does not provide usable debug
     information, one could try RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE or
-    RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE. Note that these does not work well for debugging from
-    the main HyperBrowser analysis tool, as this would raise an exception only for the first
+    RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE. Note that these do not work well for debugging from
+    the main HyperBrowser analysis tool, as they would raise an exception only for the first
     analysis in an analysis category and may thus hide the exception of interest if the erroneous
     analysis is not the first analysis in its category that raises an exception.
 
     - Tracing options are typically only used to trace issues in the complexities of statistic
     object creation and computation, and is typically only needed in special cases.
 
-    - Including NoneResultExceptions is typically also only needed only in very special cases.
+    - Including NoneResultExceptions is typically also only needed in very special cases.
 
     - Profiling is useful to improve efficiency by fixing performance bottlenecks.
     """
