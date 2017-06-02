@@ -1,4 +1,25 @@
 class DebugModes(object):
+    """
+    Various debug modes. Usage notes:
+
+    - The most natural first mode to try is UNCHANGED_LOGIC_VERBOSE, although this mode does not
+    support remote debugging, as the mode only logs to the detailed.log file.
+
+    - If one is debugging a statistic and UNCHANGED_LOGIC_VERBOSE does not provide usable debug
+    information, one could try RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE or
+    RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE. Note that these does not work well for debugging from
+    the main HyperBrowser analysis tool, as this would raise an exception only for the first
+    analysis in an analysis category and may thus hide the exception of interest if the erroneous
+    analysis is not the first analysis in its category that raises an exception.
+
+    - Tracing options are typically only used to trace issues in the complexities of statistic
+    object creation and computation, and is typically only needed in special cases.
+
+    - Including NoneResultExceptions is typically also only needed only in very special cases.
+
+    - Profiling is useful to improve efficiency by fixing performance bottlenecks.
+    """
+
     NO_DEBUG = 'No debugging'
     PROFILING = 'Profiling with call graphs'
     UNCHANGED_LOGIC_VERBOSE = 'Debug without changing logic (verbose)'
@@ -6,6 +27,7 @@ class DebugModes(object):
     UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE = 'Debug without changing logic (tracing statistic compute, verbose)'
     UNCHANGED_LOGIC_FULL_TRACE_VERBOSE = 'Debug without changing logic (tracing statistic creation and compute, verbose)'
     RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE = 'Debug by raising hidden exceptions'
+    RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE = 'Debug by raising hidden exceptions (verbose)'
     RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE = 'Debug by raising hidden exceptions (tracing statistic creation and compute, verbose)'
     RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE = 'Debug by raising hidden exceptions incl. stats returning None (only in special cases, verbose)'
     RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE = 'Debug by raising hidden exceptions incl. stats returning None (special cases, full trace, verbose)'
@@ -80,6 +102,7 @@ class DebugConfig(object):
             cls.USE_CALLGRAPH = True
 
         if debugMode in [DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE,
+                         DebugModes.RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE,
                          DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
                          DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
                          DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:

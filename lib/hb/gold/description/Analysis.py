@@ -72,7 +72,7 @@ class Analysis(AnalysisDefHandler):
         return self._statClassList
     
     def isValid(self):
-        return len(self._analysisParts) > 0 and self.getStat() is not None 
+        return len(self._analysisParts) > 0 and self.getStat() is not None
     
     #def getStat(self):
     #    #assert( len(self._statClassList) >= 1 )
@@ -142,7 +142,7 @@ class Analysis(AnalysisDefHandler):
 
             #for reversed, trackA, trackB in [(False, self._track, self._track2), (True, self._track2, self._track) ]:
             for trackA, trackB in [[self._track, self._track2]]:
-                if trackA == None:
+                if trackA is None:
                     continue
 
                 try:
@@ -155,43 +155,36 @@ class Analysis(AnalysisDefHandler):
                                                           'was created, but not touched by statistic')
                     
                 except IncompatibleTracksError, e:
+                    if DebugConfig.VERBOSE:
+                        logException(e, level=logging.DEBUG,
+                                     message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
                     if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                         raise
-                    if DebugConfig.VERBOSE:
-                        logException(e, level=logging.DEBUG, message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
-                    #if VERBOSE:
-                    #    print 'Incompatible tracks: ', \
-                    #          statClass.__name__ + ': ' + e.__class__.__name__ + ': ' + str(e)
-                    #    print 'Incompatible: ', e
                 except (AssertionError, IncompatibleAssumptionsError, IdenticalTrackNamesError), e:
+                    if DebugConfig.VERBOSE:
+                        logException(e, level=logging.DEBUG,
+                                     message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
                     if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                         raise
-                    if DebugConfig.VERBOSE:
-                        logException(e, level=logging.DEBUG, message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
-                    #if VERBOSE:
-                    #    print 'Warning: exception in getStat: ', \
-                    #        statClass.__name__ + ': ' + e.__class__.__name__ + ': ' + str(e)
-                    #    traceback.print_exc(file=sys.stdout)
                 except OSError, e:
+                    if DebugConfig.VERBOSE:
+                        logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
                     if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                         raise
                     elif not 'withOverlaps' in str(e):
                         raise
-                        #logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
+
 
                 except Exception, e:
-                    if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
-                        raise
                     if getClassName(e) == 'AttributeError' and \
-                        any(x in str(e) for x in ["has no attribute '_track2'","'NoneType' object has no attribute"]):
+                            any(x in str(e) for x in ["has no attribute '_track2'", "'NoneType' object has no attribute"]):
                         if DebugConfig.VERBOSE:
                             logException(e, level=logging.DEBUG, message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
                     else:
                         logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
-                        #if VERBOSE:
-                        #    print 'Warning: exception in getStat: ', \
-                        #        statClass.__name__ + ': ' + e.__class__.__name__ + ': ' + str(e)
-                        #    traceback.print_exc(file=sys.stdout)
+                    if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
+                        raise
+
                 else:
                     #self._reversed = reversed
                     #self._conversionsUsed = len(trackA.conversionsUsed) > 0 or \

@@ -23,7 +23,6 @@ class Statistic(object):
     IS_MEMOIZABLE = True
 
     def _trace(self, methodName):
-
         if DebugConfig.TRACE_STAT[methodName]:
             if not hasattr(Statistic, 'objAddresses'):
                 Statistic.objAddresses = {}
@@ -39,7 +38,8 @@ class Statistic(object):
                   + ( ( ' (' + str(self._track.trackName) \
                   + (',' + str(self._track2.trackName) if hasattr(self,'_track2') else '') \
                   + ')' ) if DebugConfig.TRACE_PRINT_TRACK_NAMES else '')
-            #logMessage( message)
+
+            logMessage(message)
             print message, '<br>'
 
     def __init__(self, region, track, track2=None, *args, **kwArgs):
