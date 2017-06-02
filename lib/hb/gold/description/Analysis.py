@@ -141,77 +141,80 @@ class Analysis(AnalysisDefHandler):
 #                print statClass.__name__ + ': Trying (' + self.getDefAfterChoices() + ')'
 
             #for reversed, trackA, trackB in [(False, self._track, self._track2), (True, self._track2, self._track) ]:
-            for trackA, trackB in [[self._track, self._track2]]:
-                if trackA is None:
-                    continue
+            tracks = (self._track, self._track2)
+            trackUniqueKeys = [tr.getUniqueKey(self._genome) for tr in tracks if tr is not None]
 
-                try:
-                    StatJob(dummyGESource, trackA, trackB, statClass, minimal=True, **self.getChoices(filterByActivation=True)).run(False)
-                    #In order not to mess up integration tests
-                    initSeed()
+            trackA, trackB = tracks
+            if trackA is None:
+                continue
 
-                    tracks = [trackA, trackB]
-                    for track, restTracks in allElementsVersusRest(tracks):
-                        if track is not None and track.formatConverters is None:
-                            uniqueKeyForRestTracks = \
-                                set([track.getUniqueKey(self._genome) for _ in tracks])
+            try:
+                StatJob(dummyGESource, trackA, trackB, statClass, minimal=True, **self.getChoices(filterByActivation=True)).run(False)
+                #In order not to mess up integration tests
+                initSeed()
 
-                            # If several tracks are the same, memory memoization will only result
-                            # in one RawDataStat being created, for one Track object. This is a
-                            # wanted optimization. In other cases, something is probably wrong if
-                            # a track has not been touched. However, this rule may be revisited
-                            # when track structure functionality is implemented.
-                            if track.getUniqueKey(self._genome) not in uniqueKeyForRestTracks:
-                                raise IncompatibleTracksError(
-                                    'Track ' + prettyPrintTrackName(track.trackName) +
-                                    ' was created, but not touched by statistic')
-                    
-                except IncompatibleTracksError, e:
+                for trackIndex, restTrackIndexes in allElementsVersusRest(xrange(len(tracks))):
+                    track = tracks[trackIndex]
+                    if track is not None and track.formatConverters is None:
+                        uniqueKeyForRestTracks = \
+                            set(trackUniqueKeys[i] for i in restTrackIndexes)
+
+                        # If several tracks are the same, memory memoization will only result
+                        # in one RawDataStat being created, for one Track object. This is a
+                        # wanted optimization. In other cases, something is probably wrong if
+                        # a track has not been touched. However, this rule may be revisited
+                        # when track structure functionality is implemented.
+                        if trackUniqueKeys[trackIndex] not in uniqueKeyForRestTracks:
+                            raise IncompatibleTracksError(
+                                'Track ' + prettyPrintTrackName(track.trackName) +
+                                ' was created, but not touched by statistic')
+
+            except IncompatibleTracksError, e:
+                if DebugConfig.VERBOSE:
+                    logException(e, level=logging.DEBUG,
+                                 message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
+                if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
+                    raise
+            except (AssertionError, IncompatibleAssumptionsError, IdenticalTrackNamesError), e:
+                if DebugConfig.VERBOSE:
+                    logException(e, level=logging.DEBUG,
+                                 message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
+                if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
+                    raise
+            except OSError, e:
+                if DebugConfig.VERBOSE:
+                    logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
+                if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
+                    raise
+                elif not 'withOverlaps' in str(e):
+                    raise
+
+
+            except Exception, e:
+                if getClassName(e) == 'AttributeError' and \
+                        any(x in str(e) for x in ["has no attribute '_track2'", "'NoneType' object has no attribute"]):
                     if DebugConfig.VERBOSE:
-                        logException(e, level=logging.DEBUG,
-                                     message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
-                    if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
-                        raise
-                except (AssertionError, IncompatibleAssumptionsError, IdenticalTrackNamesError), e:
-                    if DebugConfig.VERBOSE:
-                        logException(e, level=logging.DEBUG,
-                                     message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
-                    if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
-                        raise
-                except OSError, e:
-                    if DebugConfig.VERBOSE:
-                        logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
-                    if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
-                        raise
-                    elif not 'withOverlaps' in str(e):
-                        raise
-
-
-                except Exception, e:
-                    if getClassName(e) == 'AttributeError' and \
-                            any(x in str(e) for x in ["has no attribute '_track2'", "'NoneType' object has no attribute"]):
-                        if DebugConfig.VERBOSE:
-                            logException(e, level=logging.DEBUG, message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
-                    else:
-                        logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
-                    if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
-                        raise
-
+                        logException(e, level=logging.DEBUG, message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
                 else:
-                    #self._reversed = reversed
-                    #self._conversionsUsed = len(trackA.conversionsUsed) > 0 or \
-                    #    ((trackB is not None) and len(trackB.conversionsUsed) > 0)
-                    ##self._validStatClass = functools.partial(statClass, **self.getChoices())
-                    #functools.update_wrapper(self._validStatClass, statClass)
-                    validStatClass = wrapClass(statClass, keywords=self.getChoices(filterByActivation=True) ) #fixme: Perhaps return validStatClass, self.getChoices() instead?
-                    #self.setConverters( self._track.formatConverters, self._track2.formatConverters if self._track2 is not None else None)
-                    #self._updateOptions()
-                    if DebugConfig.VERBOSE:
-                        logMessage(statClass.__name__ + ': OK')
+                    logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
+                if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
+                    raise
+
+            else:
+                #self._reversed = reversed
+                #self._conversionsUsed = len(trackA.conversionsUsed) > 0 or \
+                #    ((trackB is not None) and len(trackB.conversionsUsed) > 0)
+                ##self._validStatClass = functools.partial(statClass, **self.getChoices())
+                #functools.update_wrapper(self._validStatClass, statClass)
+                validStatClass = wrapClass(statClass, keywords=self.getChoices(filterByActivation=True) ) #fixme: Perhaps return validStatClass, self.getChoices() instead?
+                #self.setConverters( self._track.formatConverters, self._track2.formatConverters if self._track2 is not None else None)
+                #self._updateOptions()
+                if DebugConfig.VERBOSE:
+                    logMessage(statClass.__name__ + ': OK')
 #                        print statClass.__name__ + ': OK'
-                    return validStatClass
-                finally:
-                    self.resetTracks()
+                return validStatClass
+            finally:
+                self.resetTracks()
         
         return None
     
