@@ -10,7 +10,7 @@ from gold.util.RandomUtil import initSeed
 from gold.application.StatRunner import StatJob
 from gold.description.TrackInfo import TrackInfo
 from quick.application.UserBinSource import MinimalBinSource
-from quick.util.CommonFunctions import wrapClass
+from quick.util.CommonFunctions import wrapClass, allElementsVersusRest
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.AnalysisOption import AnalysisOption
 from gold.application.LogSetup import logging, HB_LOGGER, logException, logMessage
@@ -149,10 +149,22 @@ class Analysis(AnalysisDefHandler):
                     StatJob(dummyGESource, trackA, trackB, statClass, minimal=True, **self.getChoices(filterByActivation=True)).run(False)
                     #In order not to mess up integration tests
                     initSeed()
-                    for track in [trackA, trackB]:
+
+                    tracks = [trackA, trackB]
+                    for track, restTracks in allElementsVersusRest(tracks):
                         if track is not None and track.formatConverters is None:
-                            raise IncompatibleTracksError('Track ' + prettyPrintTrackName(track.trackName) +\
-                                                          'was created, but not touched by statistic')
+                            uniqueKeyForRestTracks = \
+                                set([track.getUniqueKey(self._genome) for _ in tracks])
+
+                            # If several tracks are the same, memory memoization will only result
+                            # in one RawDataStat being created, for one Track object. This is a
+                            # wanted optimization. In other cases, something is probably wrong if
+                            # a track has not been touched. However, this rule may be revisited
+                            # when track structure functionality is implemented.
+                            if track.getUniqueKey(self._genome) not in uniqueKeyForRestTracks:
+                                raise IncompatibleTracksError(
+                                    'Track ' + prettyPrintTrackName(track.trackName) +
+                                    ' was created, but not touched by statistic')
                     
                 except IncompatibleTracksError, e:
                     if DebugConfig.VERBOSE:
@@ -205,6 +217,10 @@ class Analysis(AnalysisDefHandler):
     
     def _appendConverterOptions(self, track, labelKey):
         if track is None:
+            return
+
+        if track.formatConverters is None:
+            # May happen in the second track object if one analyses a track versus itself
             return
         
         if self.getChoice(labelKey) is not None:
