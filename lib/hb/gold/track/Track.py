@@ -26,6 +26,7 @@ class Track(object):
         self._trackFormatReq = NeutralTrackFormatReq()
         self.formatConverters = None
         self._trackId = None
+        self._randIndex = None
 
     def _getRawTrackView(self, region, borderHandling, allowOverlaps):
         trackData = self._trackSource.getTrackData(self.trackName, region.genome, region.chr, allowOverlaps)
@@ -76,10 +77,14 @@ class Track(object):
 
         return hash((tuple(self.trackName), self._trackId, getClassName(self.formatConverters[0]), \
                      self.formatConverters[0].VERSION, self._trackFormatReq.allowOverlaps(), \
-                     self._trackFormatReq.borderHandling()))
+                     self._trackFormatReq.borderHandling(),
+                     self._randIndex if self._randIndex else ""))
 
     def resetTrackSource(self):
         self._trackSource = TrackSource()
+
+    def setRandIndex(self, randIndex):
+        pass #used only by TsBasedRandomTrack
 
 class PlainTrack(Track):
     '''

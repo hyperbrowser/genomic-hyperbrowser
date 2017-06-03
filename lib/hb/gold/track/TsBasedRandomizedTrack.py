@@ -13,4 +13,7 @@ class TsBasedRandomizedTrack(RandomizedTrack):
 
     #TODO: Add other overridden methods..
 
+    def setRandIndex(self, randIndex):
+        self._randIndex = randIndex
+
 

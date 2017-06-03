@@ -222,6 +222,12 @@ class TrackStructureV2(dict):
             newCopy[key] = newCopy[key]._getRandomizedVersion(randTvProvider, randIndex)
         return newCopy
 
+    @takes('TrackStructureV2', int)
+    def updateRandIndex(self, randIndex):
+        for sts in self.getLeafNodes():
+            sts.track.setRandIndex(randIndex)
+
+
 
 class SingleTrackTS(TrackStructureV2):
     @takes('SingleTrackTS', (Track, SampleTrack), dict_of(basestring, basestring))
@@ -302,3 +308,6 @@ class FlatTracksTS(TrackStructureV2):
         for cat in catValues:
             catTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
         return catTS
+
+class MultipleHypothesisTrackStructure(TrackStructureV2):
+    pass

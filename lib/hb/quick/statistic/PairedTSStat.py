@@ -32,8 +32,8 @@ class PairedTSStat(MagicStatFactory):
 
 
 class PairedTSStatUnsplittable(StatisticV2):
-    def _init(self, rawStatistic, **kwArgs):
-        self._rawStatistic = self.getRawStatisticClass(rawStatistic)
+    def _init(self, pairedTsRawStatistic, **kwArgs):
+        self._rawStatistic = self.getRawStatisticClass(pairedTsRawStatistic)
 
     def _compute(self):
         ts = self._trackStructure._copyTreeStructure()

@@ -32,4 +32,4 @@ class MultipleSingleValStatPerPairInQueryRefTsStatUnsplittable(StatisticV2):
         #make sure to handle this in the results
         pairedTS = self._trackStructure['query'].makePairwiseCombinations(self._trackStructure['reference'])
         for pairTSKey in pairedTS:
-            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], rawStatistic=GenericResultsCombinerStat, **self._kwArgs))
+            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=GenericResultsCombinerStat, **self._kwArgs))

@@ -80,4 +80,4 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
             raise InvalidStatArgumentError('reverse must be one of "Yes" or "No"')
 
         for pairTSKey in pairedTS:
-            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], rawStatistic=self._rawStatistic, **self._kwArgs))
+            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._rawStatistic, **self._kwArgs))
