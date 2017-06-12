@@ -64,7 +64,7 @@ class WelcomePageHtmlFunctions():
 
         #always tab with Project list
         projectListsNum = howManyExtraTabs
-        tabs = cls.createElementOfTab(projectListsNum, tabs, "Project's list")
+        tabs = cls.createElementOfTab(projectListsNum, tabs, "List of other projects")
         # always tab with About
         projectAbout = howManyExtraTabs + 1
         tabs = cls.createElementOfTab(projectAbout, tabs, "About")
