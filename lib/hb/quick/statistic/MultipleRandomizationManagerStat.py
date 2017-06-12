@@ -38,7 +38,7 @@ class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
 
         self._kwArgs = kwArgs
 
-    def compute(self):
+    def _compute(self):
 
         mcSamplersDict = self._computeSamples()
         for hypothesisKey, hypothesisTS in self._trackStructure.iteritems():
@@ -69,5 +69,5 @@ class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
                 currentSampler.computeAdditionalRandomResult()
         return mcSamplersDict
 
-    def createChildren(self):
+    def _createChildren(self):
         pass

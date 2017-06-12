@@ -315,9 +315,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
-        ts = TrackStructureV2()
-        ts['query'] = queryTS
-        ts['reference'] = refTS
+        ts = TrackStructureV2([("query", queryTS), ("reference", refTS)])
 
         queryTrackTitle = prettyPrintTrackName(queryTrack.trackName).replace('/', '_')
 
@@ -354,45 +352,37 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
 
-            #TODO: RandMan,
-            #1. Transform the TS into a Q and randomized Ref
-            #
-
-            q2TS = TrackStructureV2()
-            randQueryTS = queryTS
-            randRefTS = refTS.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, False, 0)
-            hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
-            for hypothesisKey in hypothesisKeyList:
-                realTS = TrackStructureV2()
-                realTS["query"] = queryTS
-                realTS["reference"] = refTS[hypothesisKey]
-                randTS = TrackStructureV2()
-                randTS["query"] = randQueryTS
-                randTS["reference"] = randRefTS[hypothesisKey]
-                hypothesisTS = TrackStructureV2()
-                hypothesisTS["real"] = realTS
-                hypothesisTS["rand"] = randTS
-                q2TS[hypothesisKey] = hypothesisTS
-
+            q2TS = cls.prepareQ2TrackStructure(queryTS, refTS)
             analysisSpec = cls.prepareQ2(choices, similarityStatClassName)
-
-            results = doAnalysis(analysisSpec, analysisBins, q2TS).getResult()
-
-            transformedResultsDict = OrderedDefaultDict(list)
-            for trackTitle, res in results.iteritems():
-                transformedResultsDict[trackTitle].append(res['TSMC_' + GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
-            similarityStatClassName]])
-                transformedResultsDict[trackTitle].append(res[McEvaluators.PVAL_KEY])
-
+            results = doAnalysis(analysisSpec, analysisBins, q2TS).getGlobalResult()["Result"]
             core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict,
                                         analysisQuestion, choices, galaxyFn, queryTrackTitle,
-                                        gsuite, transformedResultsDict, similarityStatClassName)
+                                        gsuite, results, similarityStatClassName)
         else:  # Q3
             analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc)
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
             core = cls.generateQ3output(analysisQuestion, queryTrackTitle, results, similarityStatClassName)
 
         print str(core)
+
+    @classmethod
+    def prepareQ2TrackStructure(cls, queryTS, refTS):
+        q2TS = TrackStructureV2()
+        randQueryTS = queryTS
+        randRefTS = refTS.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, False, 0)
+        hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
+        for hypothesisKey in hypothesisKeyList:
+            realTS = TrackStructureV2()
+            realTS["query"] = queryTS
+            realTS["reference"] = refTS[hypothesisKey]
+            randTS = TrackStructureV2()
+            randTS["query"] = randQueryTS
+            randTS["reference"] = randRefTS[hypothesisKey]
+            hypothesisTS = TrackStructureV2()
+            hypothesisTS["real"] = realTS
+            hypothesisTS["rand"] = randTS
+            q2TS[hypothesisKey] = hypothesisTS
+        return q2TS
 
     @classmethod
     def prepareQ1(cls, reverse, similarityStatClassName):
@@ -459,7 +449,13 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @classmethod
     def generateQ2Output(cls, additionalAttributesDict, additionalResultsDict, analysisQuestion, choices,
                          galaxyFn, queryTrackTitle, gsuite, results, similarityStatClassName):
-        gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track', 'P-value'],
+
+        transformedResultsDict = OrderedDefaultDict(list)
+        for trackTitle, res in results.iteritems():
+            transformedResultsDict[trackTitle].append(res.result['TSMC_' + PairedTSStat.__name__])
+            transformedResultsDict[trackTitle].append(res.result[McEvaluators.PVAL_KEY])
+
+        gsPerTrackResultsModel = GSuitePerTrackResultModel(transformedResultsDict, ['Similarity to query track', 'P-value'],
                                                            additionalResultsDict=additionalResultsDict,
                                                            additionalAttributesDict=additionalAttributesDict)
         if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
@@ -471,16 +467,16 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         core.divBegin(divId='results-page')
         core.divBegin(divClass='results-section')
         core.header(analysisQuestion)
-        topTrackTitle = results.keys()[0]
+        topTrackTitle = transformedResultsDict.keys()[0]
         core.paragraph('''
                 The track "%s" has the lowest P-value of %s corresponding to %s  similarity to the query track "%s"
                 as measured by "%s" track similarity measure.
-            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
-                   strWithNatLangFormatting(results[topTrackTitle][0]), queryTrackTitle, similarityStatClassName))
+            ''' % (topTrackTitle, strWithNatLangFormatting(transformedResultsDict[topTrackTitle][1]),
+                   strWithNatLangFormatting(transformedResultsDict[topTrackTitle][0]), queryTrackTitle, similarityStatClassName))
 
         addTableWithTabularAndGsuiteImportButtons(
             core, choices, galaxyFn, cls.Q2_SHORT, tableDict=gsPerTrackResults[1],
-            columnNames=gsPerTrackResults[0], gsuite=gsuite, results=results,
+            columnNames=gsPerTrackResults[0], gsuite=gsuite, results=transformedResultsDict,
             gsuiteAppendAttrs=['similarity_score', 'p_value'], sortable=True)
 
         columnInd = 0
@@ -490,7 +486,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         resultsSeparateListPart = OrderedDict()
         additionalResultsDictIncludePartFromResults = OrderedDict()
 
-        for k, v in results.iteritems():
+        for k, v in transformedResultsDict.iteritems():
             if k not in resultsSeparateListPart.keys():
                 resultsSeparateListPart[k] = v[0]
             if k not in additionalResultsDictIncludePartFromResults.keys():
@@ -719,7 +715,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         """
         Specifies whether debug messages are printed.
         """
-        return True
+        return False
 
     @staticmethod
     def getOutputFormat(choices):
