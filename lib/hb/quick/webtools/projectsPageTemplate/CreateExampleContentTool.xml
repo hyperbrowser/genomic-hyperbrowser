@@ -1,0 +1,4 @@
+<tool id="hb_create_example_content_tool" name="Create content for welcome page" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.projectsPageTemplate.CreateContentForWelcomePageTool" proto_tool_class="CreateExampleContentTool">
+  <description></description>
+</tool>
