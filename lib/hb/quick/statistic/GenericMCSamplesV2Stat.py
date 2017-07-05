@@ -48,7 +48,7 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         if isinstance(self._tvProviderClass, basestring):
             #TODO should within tracks also be supported?
             #TODO: nameToClassDict should probably be moved to a more generic place, from where it can be imported to wherever needed..
-            nameToClassDict = {repr(subclass): subclass for subclass in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Between tracks'].values()}
+            nameToClassDict = {repr(subclass): subclass for subclass in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Between tracks'].values() + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Within tracks'].values()}
             self._tvProviderClass = nameToClassDict[self._tvProviderClass]
 
 
@@ -69,13 +69,13 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         # randClassListLen = len(self._randTrackStructureClassDict)
         # assert origTSLen >= randClassListLen , 'There are %i randomization classes specified, and only %i track collections in the original track structure' % (randClassListLen, origTSLen)
 
-
     def _createRandomizedStat(self, i):
-        #Refactor the first argument after a better track input handling is in place..
-        randomizedTrackStructure = self._trackStructure.getRandomizedVersion(self._tvProviderClass, False, i) #TODO: Handle AllowOverlaps
+        # Refactor the first argument after a better track input handling is in place..
+        randomizedTrackStructure = self._trackStructure
+        randomizedTrackStructure['reference'] = randomizedTrackStructure['reference'].getRandomizedVersion(self._tvProviderClass, False,i)  # TODO: Handle AllowOverlaps
         return self._rawStatistic(self._region, randomizedTrackStructure, **self._kwArgs)
         # return createRandomizedTrackStructureStat(self._trackStructure, self._randTrackStructureClassDict, self._rawStatistic, self._region, self._kwArgs, i)
-        
+
     def _compute(self):
         #print 'TEMP1: computing %i samples' % self._numMcSamples
         return [self._createRandomizedStat(i).getResult() for i in range(self._numMcSamples)]
@@ -84,3 +84,4 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         #Actually just ignored the way it is now. Also consider future simplification.
         #pass
         self._addChild( self._createRandomizedStat(0) )
+

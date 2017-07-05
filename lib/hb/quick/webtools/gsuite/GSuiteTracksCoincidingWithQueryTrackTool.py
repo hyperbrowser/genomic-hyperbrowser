@@ -38,6 +38,9 @@ from quick.application.UserBinManager import UserBinSourceRegistryForDescriptive
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
+from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
+
+
 class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                                GenomeMixin, GSuiteResultsTableMixin,
                                                DebugMixin):
@@ -99,7 +102,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Select track to track similarity/distance measure', 'similarityFunc'),
              ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
-             ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+             ('Select MCFDR sampling depth', 'mcfdrDepth'),
+             ('Type of randomization', 'randType'),
+             ('Randomization algorithm', 'randAlg')] + \
             cls.getInputBoxNamesForAttributesSelection() + \
             cls.getInputBoxNamesForUserBinSelection() + \
             cls.getInputBoxNamesForDebug()
@@ -216,6 +221,19 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                 return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
             elif prevChoices.analysisQName == cls.Q3:
                 return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0]
+
+    @classmethod
+    def getOptionsBoxRandType(cls, prevChoices):
+        if prevChoices.analysisQName == cls.Q2:
+            return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys()
+
+    @classmethod
+    def getOptionsBoxRandAlg(cls, prevChoices):
+        if prevChoices.analysisQName == cls.Q2:
+            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+                if prevChoices.randType == definedRandType:
+                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
+            return '__hidden__', None
 
     @classmethod
     def getOptionsBoxResultsExplanation(cls, prevChoices):
@@ -443,7 +461,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('pairedTsRawStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
             similarityStatClassName])
         analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('summaryFunc', 'raw')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+        analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         return analysisSpec
 
     @classmethod

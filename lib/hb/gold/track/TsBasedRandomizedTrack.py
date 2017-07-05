@@ -12,6 +12,8 @@ class TsBasedRandomizedTrack(RandomizedTrack):
         return self._randTvProvider.getTrackView(region, self._origTrack, self._randIndex)
 
     #TODO: Add other overridden methods..
+    #TODO: Add check that trackFormatReq fits with the provided trackView
+    # (especially allowOverlaps)
 
     def setRandIndex(self, randIndex):
         self._randIndex = randIndex
