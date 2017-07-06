@@ -434,15 +434,18 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
                         with open(pathToFileName, 'r') as f:
                             pr = f.readlines()[1].strip().split('\t')
                             project = ''
-                            project += "<div style='padding:10px;border-radius: 4px; background-color:" + str(pr[3]) + ";'>"
+                            project += "<div style='padding:10px;border-radius: 4px; border: 5px double " + str(
+                                pr[3]) + ";'>"
                             project += "<h2>"
                             project += pr[0]
                             project += "</h3>"
                             project += "<p>"
                             project += pr[1]
                             project += "</p>"
-                            project += "<p>"
-                            project += "<a target='_blank' href = 'https://hyperbrowser.uio.no/" + str(pr[2]) + "' > Click here </a>"
+                            project += "<p style='padding: 5px; text-align:center; background-color:" + str(
+                                pr[3]) + "'>"
+                            project += "<a target='_blank' href = 'https://hyperbrowser.uio.no/" + str(
+                                pr[2]) + "' > Click here </a>"
                             project += "</p>"
                             project += "</div>"
                         prList += project
