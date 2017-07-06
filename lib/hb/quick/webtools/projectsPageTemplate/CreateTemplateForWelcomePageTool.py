@@ -1,12 +1,16 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.projectsPageTemplate.WelcomePageHtmlFunctions import WelcomePageHtmlFunctions, RgbColors, NecessaryInforForWelcomePage, CreateCss
-from config.Config import GALAXY_STATIC_PATH, HB_SOURCE_DATA_BASE_DIR, DATA_FILES_PATH
+from config.Config import GALAXY_BASE_DIR, HB_SOURCE_DATA_BASE_DIR, DATA_FILES_PATH
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import StaticFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from collections import OrderedDict
 import os, errno
 
 class CreateTemplateForWelcomePageTool(GeneralGuiTool):
+
+    GALAXY_STATIC_PATH = GALAXY_BASE_DIR + '/static'
+
     @classmethod
     def getToolName(cls):
         return "Create template for welcome page"
@@ -109,7 +113,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxSelectRowTemplate1(cls, prevChoices):
         if int(prevChoices.tabsNum) >= 1:
-            return ['1', '2', '3']
+            return ['0', '1', '2', '3']
 
     # row1
     @classmethod
@@ -245,7 +249,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxSelectRowTemplate2(cls, prevChoices):
         if int(prevChoices.tabsNum) >= 2:
-            return ['1', '2', '3']
+            return ['0', '1', '2', '3']
 
     #row 1
     @classmethod
@@ -396,7 +400,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
                                         tabsNum, prInstance, optionForSavingResult)
 
         cls.addProjectIntoProjectsList(colorProject, prDesc, prInstance, projectTitle)
-
+        cls.combineAllProjects()
         cls.buildCssProjectFile(colorProject)
 
         nifwp = NecessaryInforForWelcomePage()
@@ -407,11 +411,50 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         print htmlCore
 
     @classmethod
+    def combineAllProjects(cls):
+        allProjects = StaticFile(['files', 'projects'])
+        allProjectsPath = allProjects.getDiskPath()
+
+        listOfOtherProjectInstances = []
+        for fileName in os.listdir(allProjectsPath):
+            if 'welcome_project_' in fileName:
+                listOfOtherProjectInstances.append(fileName)
+
+        for fn in listOfOtherProjectInstances:
+            fnInstance = fn.replace('welcome_project_','')
+            prList=''
+            for fileName in os.listdir(allProjectsPath):
+                if fileName != fn and fileName in listOfOtherProjectInstances:
+                    pathToFileName = os.path.join(allProjectsPath, fileName)
+                    if os.path.isfile(pathToFileName):
+                        with open(pathToFileName, 'r') as f:
+                            pr = f.readlines()[1].strip().split('\t')
+                            project = ''
+                            project += "<div style='padding:10px; background-color:" + str(pr[3]) + ";'>"
+                            project += "<h2>"
+                            project += pr[0]
+                            project += "</h3>"
+                            project += "<p>"
+                            project += pr[1]
+                            project += "</p>"
+                            project += "<p>"
+                            project += "<a target='_blank' href = 'https://hyperbrowser.uio.no/" + str(pr[2]) + "' > Click here </a>"
+                            project += "</p>"
+                            project += "</div>"
+                        prList += project
+
+            fnInstanceProjectFile = StaticFile(['files', 'projects', 'projects_' + fnInstance])
+            allProjectsCombinedPath = fnInstanceProjectFile.getDiskPath()
+            if os.path.isfile(allProjectsCombinedPath):
+                os.remove(allProjectsCombinedPath)
+            open(allProjectsCombinedPath, 'w').write(prList)
+
+    @classmethod
     def buildCssProjectFile(cls, colorProject):
         colorProjectShade, colorProjectTint = cls.getTintAndShadeColor(colorProject)
         cc = CreateCss(colorProject, colorProjectTint, colorProjectShade)
         pageCss = cc.addCss()
-        pathToCssWelcomeProjectFile = GALAXY_STATIC_PATH + '/welcome_project.css'
+        pathToCssWelcomeProjectFile = cls.GALAXY_STATIC_PATH + '/welcome_project.css'
         with open(pathToCssWelcomeProjectFile, 'w') as f:
             f.write(pageCss)
         f.close()
@@ -421,29 +464,22 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
 
         if prInstance != '':
 
-            pathToWelcomeProjectDescFile = HB_SOURCE_DATA_BASE_DIR + '/' + 'welcome_project_' + str(
-                prInstance) + '.txt'
+            fileProject = StaticFile(
+                ['files', 'projects', 'welcome_project_' + str(prInstance) + '.txt'])
+            fileProjectPath = fileProject.getDiskPath()
+
+            try:
+                os.remove(fileProjectPath)
+            except:
+                pass
 
             header = ['Title', 'Description', 'Instance', 'Color']
             desc = [str(projectTitle), str(prDesc), str(prInstance), str(colorProject)]
-            with open(pathToWelcomeProjectDescFile, 'w') as f:
+            with open(fileProjectPath, 'w') as f:
                 f.write('\t'.join(header) + '\n')
                 f.write('\t'.join(desc) + '\n')
             f.close()
 
-
-
-            #create a link to welcome_project_PAGE
-            file1 = pathToWelcomeProjectDescFile
-            file2 = os.path.join(DATA_FILES_PATH, 'projects', 'welcome_project_' + str(
-                prInstance) + '.txt')
-
-            try:
-                os.symlink(file1, file2)
-            except OSError, e:
-                if e.errno == errno.EEXIST:
-                    os.remove(file2)
-                    os.symlink(file1, file2)
 
     @classmethod
     def fillTabsAndBuildWelcomeHTML(cls, choices, projectContact, projectDesc, projectTitle,
@@ -453,10 +489,10 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
             projectDesc = cls.openAndReadFile(projectDesc)
         if projectContact != '':
             projectContact = cls.openAndReadFile(projectContact)
-        prList = cls.getAllProjects(prInstance)
+
 
         wphf = WelcomePageHtmlFunctions(selectTemplateRow, projectTitle, projectDesc,
-                                        projectContact, prList)
+                                        projectContact, prInstance)
         page = ''
         page += wphf.pageHeader('welcome_project.css')
         page += wphf.pageBodyStart()
@@ -464,7 +500,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         page += wphf.pageBodyAndHtmlEnd()
 
         if optionForSavingResult == True:
-            pathToWelcomeProjectFile = GALAXY_STATIC_PATH + '/welcome_project.html'
+            pathToWelcomeProjectFile = cls.GALAXY_STATIC_PATH + '/welcome_project.html'
             with open(pathToWelcomeProjectFile, 'w') as f:
                 f.write(page)
             f.close()
@@ -522,35 +558,22 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
 
     @classmethod
     def checkIfSomeoneUsedThatColorBefore(cls, yourColor, prInstance):
-        allPath = os.path.join(DATA_FILES_PATH, 'projects')
 
+        allProjects = StaticFile(['files', 'projects'])
+        allProjectsPath = allProjects.getDiskPath()
 
-        #code to show project list need to be in JavaScript
-
-        for fileName in os.listdir(allPath):
-            if fileName != 'welcome_project_' + str(
-                    prInstance) + '.txt' and fileName != 'welcome_project_.txt':
-                pathToFileName = os.path.join(allPath, fileName)
-                with open(pathToFileName, 'r') as f:
-                    line = f.readlines()[1].strip().split('\t')
-                    usedColor = line[-1]
-                    if usedColor == yourColor:
-                        return True
+        for fileName in os.listdir(allProjectsPath):
+            if 'welcome_project_' in fileName and prInstance not in fileName:
+                pathToFileName = os.path.join(allProjectsPath, fileName)
+                if os.path.isfile(pathToFileName):
+                    with open(pathToFileName, 'r') as f:
+                        pr = f.readlines()[1].strip().split('\t')
+                        usedColor = pr[3].upper()
+                        if usedColor == yourColor.upper():
+                            return True
 
         return False
 
-
-    @classmethod
-    def getAllProjects(cls, prInstance):
-        # get all data which are used in list project
-        allPath = os.path.join(DATA_FILES_PATH, 'projects')
-        prList = []
-        for fileName in os.listdir(allPath):
-            if fileName != 'welcome_project_' + str(prInstance) + '.txt' and fileName != 'welcome_project_.txt':
-                pathToFileName = os.path.join(allPath, fileName)
-                with open(pathToFileName, 'r') as f:
-                    prList.append(f.readlines()[1].strip().split('\t'))
-        return prList
 
     @classmethod
     def openAndReadFile(cls, fileName):
@@ -624,12 +647,17 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
+        if not choices.projectTitle or not choices.projectDesc or not choices.projectContact or not choices.prInstance or not choices.color or not choices.tabTitle1 and not choices.prDesc:
+            return 'Title, project description, project contact, project description which will appear in the tab called: List of other projects instance, color and first tab title need to be selected.'
+
         if choices.color and choices.prInstance:
             yourColor = choices.color
+            if not '#' in yourColor:
+                return 'Write color in hex, starting from #'
             prInstance = choices.prInstance
             response = cls.checkIfSomeoneUsedThatColorBefore(yourColor, prInstance)
             if response == True:
-                return 'Somoene else is using that color, you need to choose another one'
+                return 'Someone else is using this color, you need to choose another one.'
 
 
         return None

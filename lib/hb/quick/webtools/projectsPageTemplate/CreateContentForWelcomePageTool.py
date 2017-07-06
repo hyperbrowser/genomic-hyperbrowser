@@ -32,7 +32,8 @@ class CreateExampleContentTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxExampleTitle(cls, prevChoices):
-        return ''
+        if prevChoices.elementType != 'project description':
+            return ''
 
     @classmethod
     def getOptionsBoxElementDesc(cls, prevChoices):

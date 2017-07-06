@@ -1,5 +1,8 @@
 from collections import OrderedDict
 
+from proto.hyperbrowser.StaticFile import StaticFile
+
+
 class WelcomePageHtmlFunctions():
 
     def __init__(self, selectTemplateRow, projectTitle, projectDesc, projectContact, prList):
@@ -472,7 +475,6 @@ class CreateCss():
             .contactInfo p
             {
                 border:none;
-                font-weight: bold;
             }
             .contactInfo a
             {
@@ -664,33 +666,23 @@ class CreateStaticContentForPages():
 
     def createContentForProjectPage(self):
 
-        project =  """
+        pathToFolder = StaticFile(['files', 'projects', 'projects_' + self.prList + '.txt'])
+        pathToFolderUrl = pathToFolder.getURL()
+
+        project =  '''
 
             <div class="container">
-                    <div class="rowSpecial">
-                          <div class="colAllProjectList">
-            """
+                <div class="rowSpecial">
+                    <div class="colAllProjectList">
 
-
-        if len(self.prList) > 0:
-
-            for pr in self.prList:
-                project += "<div style='border: 1px dotted " + str(pr[3]) + ";'>"
-                project += "<h2>"
-                project += pr[0]
-                project += "</h3>"
-                project += "<p>"
-                project += pr[1]
-                project += "</p>"
-                project += "<p>"
-                project += "<a href = '" + str(pr[2]) + "' > Click here </a>"
-                project += "</p>"
-                project += "</div>"
-
-        else:
-            project += "<div> List of the projects will be announced soon. </div>"
-
-        project +=  """</div> </div> </div>"""
+                          <div id ='content'></div>
+                                <script>
+                                $("#content").load("''' + str(pathToFolderUrl) + '''");
+                                </script>
+                    </div>
+                </div>
+            </div>
+            '''
 
         return project
 
