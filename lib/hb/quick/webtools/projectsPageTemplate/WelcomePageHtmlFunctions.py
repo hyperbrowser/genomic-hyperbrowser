@@ -664,10 +664,15 @@ class CreateStaticContentForPages():
     def __init__(self, prList):
         self.prList = prList
 
+
     def createContentForProjectPage(self):
 
         pathToFolder = StaticFile(['files', 'projects', 'projects_' + self.prList + '.txt'])
         pathToFolderUrl = pathToFolder.getURL()
+
+        #tempSolution
+        pathToFolderUrl = '/dianadom_dev/static/hyperbrowser/files/projects/'+'projects_' + self.prList + '.txt'
+
 
         project =  '''
 

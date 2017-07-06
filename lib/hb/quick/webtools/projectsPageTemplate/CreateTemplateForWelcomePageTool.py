@@ -382,6 +382,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+
         projectTitle = choices.projectTitle
         projectDesc = choices.projectDesc
         prDesc = choices.prDesc
@@ -415,6 +416,9 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         allProjects = StaticFile(['files', 'projects'])
         allProjectsPath = allProjects.getDiskPath()
 
+        allProjectsPath = cls.tempSoultionWithFiles(allProjectsPath)
+
+
         listOfOtherProjectInstances = []
         for fileName in os.listdir(allProjectsPath):
             if 'welcome_project_' in fileName:
@@ -424,13 +428,13 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
             fnInstance = fn.replace('welcome_project_','')
             prList=''
             for fileName in os.listdir(allProjectsPath):
-                if fileName != fn and fileName in listOfOtherProjectInstances:
+                if fileName in listOfOtherProjectInstances and fn not in fileName:
                     pathToFileName = os.path.join(allProjectsPath, fileName)
                     if os.path.isfile(pathToFileName):
                         with open(pathToFileName, 'r') as f:
                             pr = f.readlines()[1].strip().split('\t')
                             project = ''
-                            project += "<div style='padding:10px; background-color:" + str(pr[3]) + ";'>"
+                            project += "<div style='padding:10px;border-radius: 4px; background-color:" + str(pr[3]) + ";'>"
                             project += "<h2>"
                             project += pr[0]
                             project += "</h3>"
@@ -460,6 +464,15 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         f.close()
 
     @classmethod
+    def tempSoultionWithFiles(cls, fileProjectPath):
+        # temp solution
+        # file need to be shared through all instances not only my personal one
+        all = fileProjectPath.split('/')
+        all[4] = 'dianadom'
+        fileProjectPath = '/'.join(all)
+        return fileProjectPath
+
+    @classmethod
     def addProjectIntoProjectsList(cls, colorProject, prDesc, prInstance, projectTitle):
 
         if prInstance != '':
@@ -467,6 +480,8 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
             fileProject = StaticFile(
                 ['files', 'projects', 'welcome_project_' + str(prInstance) + '.txt'])
             fileProjectPath = fileProject.getDiskPath()
+
+            fileProjectPath = cls.tempSoultionWithFiles(fileProjectPath)
 
             try:
                 os.remove(fileProjectPath)
@@ -561,6 +576,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
 
         allProjects = StaticFile(['files', 'projects'])
         allProjectsPath = allProjects.getDiskPath()
+        allProjectsPath = cls.tempSoultionWithFiles(allProjectsPath)
 
         for fileName in os.listdir(allProjectsPath):
             if 'welcome_project_' in fileName and prInstance not in fileName:
@@ -657,7 +673,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
             prInstance = choices.prInstance
             response = cls.checkIfSomeoneUsedThatColorBefore(yourColor, prInstance)
             if response == True:
-                return 'Someone else is using this color, you need to choose another one.'
+                return 'Somoene else is using that color, you need to choose another one.'
 
 
         return None
