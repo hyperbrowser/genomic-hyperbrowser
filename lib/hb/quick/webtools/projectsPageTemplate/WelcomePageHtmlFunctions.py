@@ -670,6 +670,7 @@ class CreateStaticContentForPages():
         pathToFolder = StaticFile(['files', 'projects', 'projects_' + self.prList + '.txt'])
         pathToFolderUrl = pathToFolder.getURL()
 
+
         #tempSolution
         pathToFolderUrl = '/dianadom_dev/static/hyperbrowser/files/projects/'+'projects_' + self.prList + '.txt'
 

@@ -17,13 +17,15 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Project title', 'projectTitle'),
-                ('Project description', 'projectDesc'),
-                ('Project contact information', 'projectContact'),
-                ("Project description which will be in the project's list", 'prDesc'),
-                ("Project's instance name", 'prInstance'),
+        return [("Instance name", 'prInstance'),
+                ('Title (a main title in the first tab)', 'projectTitle'),
+                ('Description (text below title in the first tab)', 'projectDesc'),
+                ("Contact information (last row in the first tab)", 'projectContact'),
+                ("Are you ready  to add project to the: List of the other projects", 'projectList'),
+                ("Description", 'prDesc'),
+                ("Image (full url)", 'imageUrl'),
                 ('Color of template (look below)', 'color'),
-                ('Do you want to overwrite content of html code in welcome page (default: yes)', 'saveWelcomePageToHtml'),
+                ('Do you want to overwrite content of welocome_project.html page (default: yes)', 'saveWelcomePageToHtml'),
                 (
                 'How many extra tabs do you want to have (you have always 2: Projects lists and About, max 2)',
                 'tabsNum'),
@@ -62,7 +64,11 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
                 ]
 
     @classmethod
-    def getOptionsBoxProjectTitle(cls):
+    def getOptionsBoxPrInstance(cls):
+        return ''
+
+    @classmethod
+    def getOptionsBoxProjectTitle(cls, prevChoices):
         return ''
 
     @classmethod
@@ -74,12 +80,18 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
-    def getOptionsBoxPrDesc(cls, prevChoices):
-        return ''
+    def getOptionsBoxProjectList(cls, prevChoices):
+        return ['no', 'yes']
 
     @classmethod
-    def getOptionsBoxPrInstance(cls, prevChoices):
-        return ''
+    def getOptionsBoxPrDesc(cls, prevChoices):
+        if prevChoices.projectList == 'yes':
+            return ''
+
+    @classmethod
+    def getOptionsBoxImageUrl(cls, prevChoices):
+        if prevChoices.projectList == 'yes':
+            return ''
 
     @classmethod
     def getOptionsBoxColor(cls, prevChoices):
@@ -390,6 +402,11 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         tabsNum = int(choices.tabsNum)
         colorProject = choices.color
         projectContact = choices.projectContact
+        imageUrl = choices.imageUrl
+        projectList = choices.projectList
+        if imageUrl == '':
+            imageUrl = None
+
 
         if choices.saveWelcomePageToHtml == 'yes':
             optionForSavingResult = True
@@ -400,7 +417,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         cls.fillTabsAndBuildWelcomeHTML(choices, projectContact, projectDesc, projectTitle,
                                         tabsNum, prInstance, optionForSavingResult)
 
-        cls.addProjectIntoProjectsList(colorProject, prDesc, prInstance, projectTitle)
+        cls.addProjectIntoProjectsList(colorProject, prDesc, prInstance, projectTitle, imageUrl, projectList)
         cls.combineAllProjects()
         cls.buildCssProjectFile(colorProject)
 
@@ -429,24 +446,34 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
             prList=''
             for fileName in os.listdir(allProjectsPath):
                 if fileName in listOfOtherProjectInstances and fn not in fileName:
+                    # print 'fn', fn, 'fileName', fileName
                     pathToFileName = os.path.join(allProjectsPath, fileName)
                     if os.path.isfile(pathToFileName):
                         with open(pathToFileName, 'r') as f:
                             pr = f.readlines()[1].strip().split('\t')
                             project = ''
-                            project += "<div style='padding:10px;border-radius: 4px; border: 5px double " + str(
-                                pr[3]) + ";'>"
+                            project += "<div style='padding:10px;border-radius: 4px; border: 5px double " + str(pr[3]) + ";'>"
+                            if pr[4] != 'None':
+                                project += "<div>"
+                                project += "<div style='float:left;width: 70%'>"
                             project += "<h2>"
                             project += pr[0]
-                            project += "</h3>"
-                            project += "<p>"
+                            project += "</h2>"
+                            if pr[4] != 'None':
+                                project += "</div>"
+                                project += "<div style='float:right;width:30%;border:1px dotted " + str(pr[3]) + ";border-radius: 4px;'>"
+                                project += "<img style='width:100%' src= '" + str(pr[4]) + "' alt='" + str(pr[0]) + "'  \>"
+                                project += "</div>"
+                                project += "</div>"
+                            project += "<div>"
                             project += pr[1]
-                            project += "</p>"
+                            project += "</div>"
+                            project += "<a target='_blank' href = 'https://hyperbrowser.uio.no/" + str(pr[2]) + "' > "
                             project += "<p style='padding: 5px; text-align:center; background-color:" + str(
                                 pr[3]) + "'>"
-                            project += "<a target='_blank' href = 'https://hyperbrowser.uio.no/" + str(
-                                pr[2]) + "' > Click here </a>"
+                            project += "Click here"
                             project += "</p>"
+                            project += ' </a>'
                             project += "</div>"
                         prList += project
 
@@ -476,9 +503,9 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
         return fileProjectPath
 
     @classmethod
-    def addProjectIntoProjectsList(cls, colorProject, prDesc, prInstance, projectTitle):
+    def addProjectIntoProjectsList(cls, colorProject, prDesc, prInstance, projectTitle, imageUrl, projectList):
 
-        if prInstance != '':
+        if prInstance != '' and projectList == 'yes':
 
             fileProject = StaticFile(
                 ['files', 'projects', 'welcome_project_' + str(prInstance) + '.txt'])
@@ -491,8 +518,8 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
             except:
                 pass
 
-            header = ['Title', 'Description', 'Instance', 'Color']
-            desc = [str(projectTitle), str(prDesc), str(prInstance), str(colorProject)]
+            header = ['Title', 'Description', 'Instance', 'Color', 'Image']
+            desc = [str(projectTitle), str(prDesc), str(prInstance), str(colorProject), str(imageUrl)]
             with open(fileProjectPath, 'w') as f:
                 f.write('\t'.join(header) + '\n')
                 f.write('\t'.join(desc) + '\n')
@@ -586,6 +613,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
                 pathToFileName = os.path.join(allProjectsPath, fileName)
                 if os.path.isfile(pathToFileName):
                     with open(pathToFileName, 'r') as f:
+                        return False
                         pr = f.readlines()[1].strip().split('\t')
                         usedColor = pr[3].upper()
                         if usedColor == yourColor.upper():
@@ -666,8 +694,13 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
-        if not choices.projectTitle or not choices.projectDesc or not choices.projectContact or not choices.prInstance or not choices.color or not choices.tabTitle1 and not choices.prDesc:
-            return 'Title, project description, project contact, project description which will appear in the tab called: List of other projects instance, color and first tab title need to be selected.'
+
+        if choices.projectList == 'no':
+            if not choices.projectTitle or not choices.projectDesc or not choices.projectContact or not choices.prInstance or not choices.color or not choices.tabTitle1:
+                return 'Title, project description, project contact, instance color and tab title need to be selected.'
+        else:
+            if not choices.projectTitle or not choices.projectDesc or not choices.projectContact or not choices.prInstance or not choices.color or not choices.tabTitle1 or not choices.prDesc:
+                return 'Title, project description, project contact, instance color and tab title need to be selected. Also, project description which appear in the: List of the other project need to be selected.'
 
         if choices.color and choices.prInstance:
             yourColor = choices.color
