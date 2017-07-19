@@ -87,8 +87,6 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
                                                     extraFileName=fileName,
                                                     suffix=fi.suffix)
-                print 'fileName', fileName, '<br>'
-                print 'title', title, '<br>'
 
                 gSuiteTrack = GSuiteTrack(uri, title=title,
                                           genome=genome, attributes=attributes)
@@ -101,8 +99,6 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                     asOriginal=fi.asOriginal,
                     allowOverlaps=fi.allowOverlaps)
 
-                print gSuiteTrack.path, '<br>'
-                print uri
 
                 command = """
                 bedtools shuffle -i """ + str(gSuiteTrack.path) + """ -g """ + str(rfPath)
@@ -112,11 +108,11 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
                 results, errors = process.communicate()
 
-                print results, errors
+                print results
 
-                # wr = open(gSuiteTrack.path, 'w')
-                # wr.write(results)
-                # wr.close()
+                wr = open(gSuiteTrack.path, 'w')
+                wr.write(results)
+                wr.close()
 
                 outGSuite.addTrack(gSuiteTrack)
                 # progressViewer.update()
