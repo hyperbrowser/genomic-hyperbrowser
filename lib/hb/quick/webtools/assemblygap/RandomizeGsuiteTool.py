@@ -161,11 +161,13 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        allTracksLen = gSuite.numTracks()
 
-        if int(choices.trackNumber) > allTracksLen:
-            return 'Max number of tracks is: ' + str(allTracksLen)
+        if choices.gsuite:
+            gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            allTracksLen = gSuite.numTracks()
+
+            if int(choices.trackNumber) > allTracksLen:
+                return 'Max number of tracks is: ' + str(allTracksLen)
 
         return None
 
