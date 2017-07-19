@@ -64,7 +64,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         rf = open(rfPath, 'w')
         gen = GenomeInfo.getStdChrLengthDict('hg19')
         for keyG, itG in gen.items():
-            rf.write(keyG + '\t' + itG + '\n')
+            rf.write(str(keyG) + '\t' + str(itG) + '\n')
         rf.close()
 
 
