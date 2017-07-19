@@ -48,11 +48,11 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxTrackNumber(cls, prevChoices):
-        return '1'
+        return '10'
 
     @classmethod
     def getOptionsBoxVarTracks(cls, prevChoices):
-        return '3'
+        return '100'
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -97,14 +97,14 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
         randTracks = random.sample(xrange(allTracksLen), trackNumber)
 
-        print 'randTracks', randTracks, '<br>'
+        # print 'randTracks', randTracks, '<br>'
 
         fileNameSet = set()
         r = 0
         for track in gSuite.allTracks():
             if r in randTracks:
                 for nt in range(0, varTracks):
-                    print 'r', r, 'nt', nt, '<br>'
+                    # print 'r', r, 'nt', nt, '<br>'
                     variants = '---' + str(nt)
                     fileName = cls._getUniqueFileName(fileNameSet, track.trackName, variants)
                     title = track.title
@@ -127,7 +127,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                         asOriginal=fi.asOriginal,
                         allowOverlaps=fi.allowOverlaps)
 
-                    print 'gSuiteTrack.path', gSuiteTrack.path, '<br>'
+                    # print 'gSuiteTrack.path', gSuiteTrack.path, '<br>'
 
                     if choices.excl == 'no':
                         command = """bedtools shuffle -i """ + str(
