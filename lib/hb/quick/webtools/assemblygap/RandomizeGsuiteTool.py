@@ -131,6 +131,21 @@ class RandomizeGsuiteTool(GeneralGuiTool):
     def validateAndReturnErrors(cls, choices):
         return None
 
+    @staticmethod
+    def _getUniqueFileName(fileNameSet, trackName):
+        from gold.gsuite.GSuiteFunctions import \
+            renameBaseFileNameWithDuplicateIdx
+
+        candFileName = trackName[-1].replace(' ','')
+        duplicateIdx = 1
+
+        while candFileName in fileNameSet:
+            duplicateIdx += 1
+            candFileName = renameBaseFileNameWithDuplicateIdx(candFileName,
+                                                              duplicateIdx)
+        fileNameSet.add(candFileName)
+        return candFileName
+
     @classmethod
     def _getFileFormatInfo(cls, genome, track):
 
