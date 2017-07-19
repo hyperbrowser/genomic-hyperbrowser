@@ -1,0 +1,4 @@
+<tool id="hb_randomize_gsuite_tool" name="Randomize gsuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.RandomizeGsuiteTool" proto_tool_class="RandomizeGsuiteTool">
+  <description>Randomize tool for assembly gap project</description>
+</tool>
