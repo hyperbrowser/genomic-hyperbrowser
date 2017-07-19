@@ -164,8 +164,8 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         allTracksLen = gSuite.numTracks()
 
-        if choices.trackNumber > allTracksLen:
-            return 'Max number of tracks is ' + str(allTracksLen)
+        if int(choices.trackNumber) > allTracksLen:
+            return 'Max number of tracks is: ' + str(allTracksLen)
 
         return None
 
