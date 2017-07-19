@@ -1,6 +1,8 @@
 import os
 import subprocess
 from collections import OrderedDict
+
+from gold.util.RandomUtil import random
 from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
 from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteConstants
@@ -90,7 +92,8 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
         allTracksLen = gSuite.numTracks()
         from random import randint
-        randTracks = [randint(0, trackNumber-1) for p in range(0, allTracksLen)]
+
+        randTracks = random.sample(xrange(allTracksLen), trackNumber)
 
         print 'randTracks', randTracks, '<br>'
 
