@@ -28,7 +28,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                 ('With exclusion', 'excl'),
                 ('Select track', 'track'),
                 ('Number of tracks from gsuite which you want to randomise ', 'trackNumber'),
-                ('Number of randomised variants', 'randTracks')]
+                ('Number of randomised variants', 'varTracks')]
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -48,7 +48,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         return '1'
 
     @classmethod
-    def getOptionsBoxRandTracks(cls, prevChoices):
+    def getOptionsBoxVarTracks(cls, prevChoices):
         return '3'
 
     @classmethod
@@ -61,8 +61,8 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         from quick.extra.ProgressViewer import ProgressViewer
         from quick.extra.TrackExtractor import TrackExtractor
 
-        trackNumber = choices.trackNumber
-        randTracks = choices.randTracks
+        trackNumber = int(choices.trackNumber)
+        varTracks = int(choices.varTracks)
 
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         genome = gSuite.genome
@@ -100,7 +100,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         for track in gSuite.allTracks():
             if r in randTracks:
                 print 'r', r
-                for nt in range(0, randTracks):
+                for nt in range(0, varTracks):
                     print 'nt', nt
                     variants = '---' + str(nt)
                     fileName = cls._getUniqueFileName(fileNameSet, track.trackName, variants)
