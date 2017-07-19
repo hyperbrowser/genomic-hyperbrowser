@@ -86,6 +86,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
                                                     extraFileName=fileName,
                                                     suffix=fi.suffix)
+                print 'title', title, '<br>'
 
                 gSuiteTrack = GSuiteTrack(uri, title=title,
                                           genome=genome, attributes=attributes)
