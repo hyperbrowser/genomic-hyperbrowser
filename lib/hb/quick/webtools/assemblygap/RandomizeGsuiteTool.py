@@ -3,6 +3,7 @@ import subprocess
 from collections import OrderedDict
 
 from gold.util.RandomUtil import random
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
 from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteConstants
@@ -55,6 +56,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        #http://bedtools.readthedocs.io/en/latest/content/tools/shuffle.html
 
         import gold.gsuite.GSuiteComposer as GSuiteComposer
         from gold.gsuite.GSuite import GSuite
@@ -127,7 +129,15 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
                     print 'gSuiteTrack.path', gSuiteTrack.path, '<br>'
 
-                    command = """bedtools shuffle -i """ + str(gSuiteTrack.path) + """ -g """ + str(rfPath)
+                    if choices.excl == 'no':
+                        command = """bedtools shuffle -i """ + str(
+                            gSuiteTrack.path) + """ -g """ + str(rfPath)
+                    else:
+                        bedFile = ExternalTrackManager.extractFnFromGalaxyTN(choices.track.split(':'))
+                        command = """bedtools shuffle -i """ + str(
+                            gSuiteTrack.path) + """ -g """ + str(
+                            rfPath) + """ -excl """ + str(bedFile)
+
                     process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
                                                stdout=subprocess.PIPE,
                                                stderr=subprocess.PIPE)
@@ -151,6 +161,12 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        allTracksLen = gSuite.numTracks()
+
+        if choices.trackNumber > allTracksLen:
+            return 'Max number of tracks is ' + str(allTracksLen)
+
         return None
 
     @staticmethod
