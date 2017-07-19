@@ -78,8 +78,9 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         r = 0
         for track in gSuite.allTracks():
             if r in randTracks:
-                fileName = GSuiteConvertFromPreprocessedToPrimaryTool._getUniqueFileName(fileNameSet, track.trackName)
+                fileName = cls._getUniqueFileName(fileNameSet, track.trackName)
                 title = track.title
+                title = title.replace(' ','')
                 attributes = track.attributes
                 fi = cls._getFileFormatInfo(genome, track)
 
