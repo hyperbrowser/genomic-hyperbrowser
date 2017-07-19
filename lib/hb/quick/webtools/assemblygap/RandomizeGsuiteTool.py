@@ -80,8 +80,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         rfPath = resFile.getDiskPath()
         ensurePathExists(rfPath)
 
-        print rfPath
-
+        #genome
         rf = open(rfPath, 'w')
         gen = GenomeInfo.getStdChrLengthDict('hg19')
         for keyG, itG in gen.items():
@@ -91,7 +90,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
         allTracksLen = gSuite.numTracks()
         from random import randint
-        randTracks = [randint(0, trackNumber) for p in range(0, allTracksLen)]
+        randTracks = [randint(0, trackNumber-1) for p in range(0, allTracksLen)]
 
         print 'randTracks', randTracks, '<br>'
 
@@ -99,9 +98,8 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         r = 0
         for track in gSuite.allTracks():
             if r in randTracks:
-                print 'r', r
                 for nt in range(0, varTracks):
-                    print 'nt', nt
+                    print 'r', r, 'nt', nt, '<br>'
                     variants = '---' + str(nt)
                     fileName = cls._getUniqueFileName(fileNameSet, track.trackName, variants)
                     title = track.title
@@ -124,6 +122,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                         asOriginal=fi.asOriginal,
                         allowOverlaps=fi.allowOverlaps)
 
+                    print 'gSuiteTrack.path', gSuiteTrack.path, '<br>'
 
                     command = """bedtools shuffle -i """ + str(gSuiteTrack.path) + """ -g """ + str(rfPath)
                     process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
