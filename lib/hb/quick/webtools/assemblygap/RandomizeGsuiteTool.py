@@ -112,7 +112,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                                                         suffix=fi.suffix)
 
                     gSuiteTrack = GSuiteTrack(uri, title=title,
-                                              genome=genome, attributes=attributes)
+                                              genome=genome, attributes={'orginalTrack': track.title})
 
                     TrackExtractor.extractOneTrackManyRegsToOneFile(
                         track.trackName, fullGenomeBins,
