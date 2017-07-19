@@ -57,9 +57,11 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         hiddenStorageFn = cls.extraGalaxyFn[
             getGSuiteHistoryOutputName('storage', datasetInfo=choices.gsuite)]
 
-        resFile = GalaxyRunSpecificFile(['workflow', 'genomeSize.bed'], galaxyFn)
+        resFile = GalaxyRunSpecificFile(['genomeSize.bed'], galaxyFn)
         rfPath = resFile.getDiskPath()
         ensurePathExists(rfPath)
+
+        print rfPath
 
         rf = open(rfPath, 'w')
         gen = GenomeInfo.getStdChrLengthDict('hg19')
