@@ -25,15 +25,31 @@ class RandomizeGsuiteTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
         return [('Select a GSuite', 'gsuite'),
-                ('Select track', 'track')]
+                ('With exclusion', 'excl'),
+                ('Select track', 'track'),
+                ('Number of tracks from gsuite which you want to randomise ', 'trackNumber'),
+                ('Number of randomised variants', 'randTracks')]
 
     @classmethod
     def getOptionsBoxGsuite(cls):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
+    def getOptionsBoxExcl(cls, prevChoices):
+        return ['yes', 'no']
+
+    @classmethod
     def getOptionsBoxTrack(cls, prevChoices):
-        return GeneralGuiToolMixin.getHistorySelectionElement('bed')
+        if prevChoices.excl == 'yes':
+            return GeneralGuiToolMixin.getHistorySelectionElement('bed')
+
+    @classmethod
+    def getOptionsBoxTrackNumber(cls, prevChoices):
+        return '1'
+
+    @classmethod
+    def getOptionsBoxRandTracks(cls, prevChoices):
+        return '3'
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -44,6 +60,9 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         from quick.application.UserBinSource import GlobalBinSource
         from quick.extra.ProgressViewer import ProgressViewer
         from quick.extra.TrackExtractor import TrackExtractor
+
+        trackNumber = choices.trackNumber
+        randTracks = choices.randTracks
 
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         genome = gSuite.genome
@@ -72,50 +91,53 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
         allTracksLen = gSuite.numTracks()
         from random import randint
-        randTracks = [randint(0,1) for p in range(0, allTracksLen)]
+        randTracks = [randint(0, trackNumber) for p in range(0, allTracksLen)]
+
+        print 'randTracks', randTracks, '<br>'
 
         fileNameSet = set()
         r = 0
         for track in gSuite.allTracks():
             if r in randTracks:
-                fileName = cls._getUniqueFileName(fileNameSet, track.trackName)
-                title = track.title
-                title = title.replace(' ','')
-                attributes = track.attributes
-                fi = cls._getFileFormatInfo(genome, track)
+                print 'r', r
+                for nt in range(0, randTracks):
+                    print 'nt', nt
+                    variants = '---' + str(nt)
+                    fileName = cls._getUniqueFileName(fileNameSet, track.trackName, variants)
+                    title = track.title
+                    title = title.replace(' ','') + variants
+                    attributes = track.attributes
+                    fi = cls._getFileFormatInfo(genome, track)
 
-                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
-                                                    extraFileName=fileName,
-                                                    suffix=fi.suffix)
+                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
+                                                        extraFileName=fileName,
+                                                        suffix=fi.suffix)
 
-                gSuiteTrack = GSuiteTrack(uri, title=title,
-                                          genome=genome, attributes=attributes)
+                    gSuiteTrack = GSuiteTrack(uri, title=title,
+                                              genome=genome, attributes=attributes)
 
-                TrackExtractor.extractOneTrackManyRegsToOneFile(
-                    track.trackName, fullGenomeBins,
-                    gSuiteTrack.path,
-                    fileFormatName=fi.fileFormatName,
-                    globalCoords=True,
-                    asOriginal=fi.asOriginal,
-                    allowOverlaps=fi.allowOverlaps)
+                    TrackExtractor.extractOneTrackManyRegsToOneFile(
+                        track.trackName, fullGenomeBins,
+                        gSuiteTrack.path,
+                        fileFormatName=fi.fileFormatName,
+                        globalCoords=True,
+                        asOriginal=fi.asOriginal,
+                        allowOverlaps=fi.allowOverlaps)
 
 
-                command = """
-                bedtools shuffle -i """ + str(gSuiteTrack.path) + """ -g """ + str(rfPath)
-                process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.PIPE)
+                    command = """bedtools shuffle -i """ + str(gSuiteTrack.path) + """ -g """ + str(rfPath)
+                    process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.PIPE)
 
-                results, errors = process.communicate()
+                    results, errors = process.communicate()
 
-                print results
+                    wr = open(gSuiteTrack.path, 'w')
+                    wr.write(results)
+                    wr.close()
 
-                wr = open(gSuiteTrack.path, 'w')
-                wr.write(results)
-                wr.close()
-
-                outGSuite.addTrack(gSuiteTrack)
-                # progressViewer.update()
+                    outGSuite.addTrack(gSuiteTrack)
+                    # progressViewer.update()
             r = r+1
 
         primaryFn = cls.extraGalaxyFn[
@@ -130,11 +152,11 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         return None
 
     @staticmethod
-    def _getUniqueFileName(fileNameSet, trackName):
+    def _getUniqueFileName(fileNameSet, trackName, variants):
         from gold.gsuite.GSuiteFunctions import \
             renameBaseFileNameWithDuplicateIdx
 
-        candFileName = trackName[-1].replace(' ','')
+        candFileName = trackName[-1].replace(' ','') + variants
         duplicateIdx = 1
 
         while candFileName in fileNameSet:
