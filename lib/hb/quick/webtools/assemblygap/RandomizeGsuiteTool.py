@@ -165,7 +165,6 @@ class RandomizeGsuiteTool(GeneralGuiTool):
 
             if int(choices.trackNumber) > allTracksLen:
                 return 'Max number of tracks is: ' + str(allTracksLen)
-
         return None
 
     @staticmethod
