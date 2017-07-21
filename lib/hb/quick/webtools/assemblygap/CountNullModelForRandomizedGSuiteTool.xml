@@ -1,0 +1,4 @@
+<tool id="hb_count_null_model_for_randomized_g_suite_tool" name="Count null model for randomized gSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.CountNullModelForRandomizedGSuiteTool" proto_tool_class="CountNullModelForRandomizedGSuiteTool">
+  <description></description>
+</tool>

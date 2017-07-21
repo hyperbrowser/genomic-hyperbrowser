@@ -352,8 +352,8 @@ class GSuiteConvertFromPreprocessedToPrimaryTool(GeneralGuiTool, GenomeMixin):
                                   allowOverlaps,
                                   suffix)
         else:
-            outputFormatDict = cls._getOutputFormatDict(gSuite, genome)
-            return outputFormatDict[choices.outputFormat]
+                outputFormatDict = cls._getOutputFormatDict(gSuite, genome)
+                return outputFormatDict[choices.outputFormat]
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

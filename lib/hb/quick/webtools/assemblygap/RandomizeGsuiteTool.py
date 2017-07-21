@@ -156,9 +156,6 @@ class RandomizeGsuiteTool(GeneralGuiTool):
             getGSuiteHistoryOutputName('primary', datasetInfo=choices.gsuite)]
         GSuiteComposer.composeToFile(outGSuite, primaryFn)
 
-
-
-
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
