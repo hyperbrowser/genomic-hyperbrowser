@@ -110,7 +110,7 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                     title = track.title
                     title = title.replace(' ','') + variants
                     attributes = track.attributes
-                    fi = cls._getFileFormatInfo(genome, track)
+                    fi = cls._getFileFormatInfo(gSuite, genome, track)
 
                     uri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
                                                         extraFileName=fileName,
@@ -187,17 +187,11 @@ class RandomizeGsuiteTool(GeneralGuiTool):
         return candFileName
 
     @classmethod
-    def _getFileFormatInfo(cls, genome, track):
+    def _getFileFormatInfo(cls, gSuite, genome, track):
 
-        suffix = TrackInfo(genome, track.trackName).fileType
-        fileFormatName = 'BED'
-        asOriginal = True
-        allowOverlaps = True
+        outputFormatDict = GSuiteConvertFromPreprocessedToPrimaryTool._getOutputFormatDict(gSuite, genome)
+        return outputFormatDict['BED (any overlaps merged)']
 
-        return FileFormatInfo(fileFormatName,
-                                  asOriginal,
-                                  allowOverlaps,
-                                  suffix)
 
     @classmethod
     def getExtraHistElements(cls, choices):
