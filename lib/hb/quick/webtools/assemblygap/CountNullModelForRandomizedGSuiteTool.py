@@ -1,8 +1,20 @@
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.track.Track import Track
+from gold.util import CommonConstants
+from gold.util.RandomUtil import random
+from quick.gsuite import GSuiteStatUtils
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, GeneralGuiToolMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.application.GalaxyInterface import GalaxyInterface
+from urllib import quote
 
+class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
+    ALLOW_UNKNOWN_GENOME = False
 
-class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
         return "Count null model for randomized gSuite"
@@ -11,9 +23,10 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         return [('Select orginal gSuite', 'orgGsuite'),
                 ('Select column from orginal gSuite', 'orgCol'),
-                ('Second randomized gSuite', 'randGsuite'),
-                ('Second column from randomized gSuite', 'randCol')]
-
+                ('Second randomized gSuite', 'gsuite')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Second column from randomized gSuite', 'randCol')] + \
+                cls.getInputBoxNamesForUserBinSelection()
 
     @classmethod
     def getOptionsBoxOrgGsuite(cls):
@@ -29,13 +42,13 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool):
             return
 
     @classmethod
-    def getOptionsBoxRandGsuite(cls, prevChoices):
+    def getOptionsBoxGsuite(cls, prevChoices):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
     def getOptionsBoxRandCol(cls, prevChoices):
-        if prevChoices.randGsuite:
-            first = getGSuiteFromGalaxyTN(prevChoices.randGsuite)
+        if prevChoices.gsuite:
+            first = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             attributeList = ['title'] + first.attributes
             return attributeList
         else:
@@ -43,7 +56,69 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        print 'Executing...'
+        orgGsuite = choices.orgGsuite
+        randGsuite = choices.gsuite
+        orgCol = choices.orgCol
+        randCol = choices.randCol
+
+        orginalgSuite = getGSuiteFromGalaxyTN(orgGsuite)
+        randomGsuite = getGSuiteFromGalaxyTN(randGsuite)
+
+        if randCol == 'title':
+            randAttributesList = randomGsuite.allTrackTitles()
+        else:
+            randAttributesList = randomGsuite.getAttributeValueList(randCol)
+
+        randAttributesListNotDuplicates = list(set(randAttributesList))
+        numRandAttributesList = len(list(set(randAttributesListNotDuplicates)))
+
+        if orgCol == 'title':
+            orgAttributesList = orginalgSuite.allTrackTitles()
+        else:
+            orgAttributesList = orginalgSuite.getAttributeValueList(orgCol)
+
+        orgAttributesListNotDuplicates = list(set(orgAttributesList) - set(randAttributesList))
+        numOrgAttributesListNotDuplicates = len(orgAttributesListNotDuplicates)
+
+        randOrginalTracks = random.sample(xrange(numOrgAttributesListNotDuplicates), numRandAttributesList)
+
+        print randOrginalTracks
+
+        oTr = 0
+        rTr = 0
+        for oTrack1 in orginalgSuite.allTracks():
+            if oTr in randOrginalTracks:
+
+                #first analysis
+                #one random track from gsuite1 - T1
+                #second random track from gsuite - T2
+
+                oTrackName1 = oTrack1.trackName
+                oTrack2 = orginalgSuite.getTrackFromTitle(randAttributesListNotDuplicates[rTr])
+
+                regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+                analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=orginalgSuite.genome)
+
+
+
+
+
+                resultsObj = doAnalysis(analysisSpec, analysisBins, queryTrackList + refTrackList)
+                results = resultsObj.getGlobalResult()
+
+                print results
+
+
+
+                rTr += 1
+            oTr += 1
+
+
+
+        #check random number of tracks
+
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
