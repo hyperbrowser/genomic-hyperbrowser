@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.track.Track import Track
@@ -72,6 +74,9 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         randAttributesListNotDuplicates = list(set(randAttributesList))
         numRandAttributesList = len(list(set(randAttributesListNotDuplicates)))
 
+        print 'randAttributesListNotDuplicates', randAttributesListNotDuplicates, '<br>'
+        print 'numRandAttributesList', numRandAttributesList, '<br>'
+
         if orgCol == 'title':
             orgAttributesList = orginalgSuite.allTrackTitles()
         else:
@@ -80,9 +85,16 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         orgAttributesListNotDuplicates = list(set(orgAttributesList) - set(randAttributesList))
         numOrgAttributesListNotDuplicates = len(orgAttributesListNotDuplicates)
 
+        print 'orgAttributesListNotDuplicates', orgAttributesListNotDuplicates, '<br>'
+        print 'numOrgAttributesListNotDuplicates', numOrgAttributesListNotDuplicates,'<br>'
+
+
+        #random tracks just for having analysis real to real
         randOrginalTracks = random.sample(xrange(numOrgAttributesListNotDuplicates), numRandAttributesList)
 
-        print randOrginalTracks
+        print 'randOrginalTracks', randOrginalTracks, '<br>'
+
+        resultsDict = OrderedDict()
 
         oTr = 0
         rTr = 0
@@ -94,31 +106,93 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                 #second random track from gsuite - T2
 
                 oTrackName1 = oTrack1.trackName
+                oTrackTitle1 = oTrackName1[-1]
+
                 oTrack2 = orginalgSuite.getTrackFromTitle(randAttributesListNotDuplicates[rTr])
+                oTrackTitle2 = randAttributesListNotDuplicates[rTr]
 
-                regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-                analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=orginalgSuite.genome)
-
-
-
-
-
-                resultsObj = doAnalysis(analysisSpec, analysisBins, queryTrackList + refTrackList)
-                results = resultsObj.getGlobalResult()
-
-                print results
+                if not oTrackTitle2 in resultsDict.keys():
+                    print 'oTrackTitle1', oTrackTitle1, '<br>'
+                    print 'oTrackTitle2', oTrackTitle2, '<br>'
+                    resultsDict[oTrackTitle2] = OrderedDict()
+                    resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = 0
+                    resultsDict[oTrackTitle2]['firstRealToRandomLessCountedValues'] = 0
+                    resultsDict[oTrackTitle2]['firstRealToRandomMoreOrEqualCountedValues'] = 0
 
 
+                analysis1 = cls.countNullModelMethod(choices, oTrack1, oTrack2, orginalgSuite)
+
+                print 'analysis1', analysis1, '<br>'
+                print 'resultsDict', resultsDict, '<br>'
+
+                for key0, val0 in analysis1.iteritems():
+                    print 'key0, val0', key0, val0, '<br>'
+                    for key1, val1 in val0.iteritems():
+                        print 'key1, val1', key1, val1, '<br>'
+                        resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = float(val1)
 
                 rTr += 1
             oTr += 1
 
+        print resultsDict
+
+        # check random number of tracks
+        for nrRTrack1, rTrack1 in enumerate(randomGsuite.allTracks()):
+            rTrackName1 = rTrack1.trackName
+            attrRtrack1 = randAttributesList[nrRTrack1]
+
+            oTrack1 = orginalgSuite.getTrackFromTitle(attrRtrack1)
+            oTrackName1 = oTrack1.trackName
+            oTrackTitle1 = oTrackName1[-1]
+
+            analysis1 = cls.countNullModelMethod(choices, oTrack1, rTrack1, orginalgSuite)
+
+            val = resultsDict[oTrackTitle1]['firstRealToSecondRealValue']
+            for key0, val0 in analysis1.iteritems():
+                print 'key0, val0', key0, val0, '<br>'
+                for key1, val1 in val0.iteritems():
+                    print 'key1, val1', key1, val1, '<br>'
+                    if float(val1) < val:
+                        resultsDict[oTrackTitle1]['firstRealToRandomLessCountedValues'] += 1
+                    else:
+                        resultsDict[oTrackTitle1]['firstRealToRandomMoreOrEqualCountedValues'] += 1
+
+        print resultsDict
+
+        pValueList = []
+        for key0, it0 in resultsDict.iteritems():
+            pValue = it0['firstRealToRandomMoreOrEqualCountedValues']/float(float(len(randAttributesList))/numRandAttributesList)
+            pValueList.append(pValue)
 
 
-        #check random number of tracks
+        print pValueList
 
 
-
+    @classmethod
+    def countNullModelMethod(cls, choices, oTrack1, oTrack2, orginalgSuite):
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
+                                                         genome=orginalgSuite.genome)
+        queryTrackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
+            [quote(oTrack1.title, safe='')])
+        refTrackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join(
+            [quote(oTrack2.title, safe='')])
+        queryTrackList = [Track(oTrack1.trackName, oTrack1.title)]
+        refTrackList = [Track(oTrack2.trackName, oTrack2.title)]
+        print queryTrackTitles, '<br>'
+        print refTrackTitles, '<br>'
+        analysisSpec = AnalysisSpec(GSuiteVsGSuiteWrapperStat)
+        analysisSpec.addParameter('queryTracksNum', str(len(queryTrackList)))
+        analysisSpec.addParameter('refTracksNum', str(len(refTrackList)))
+        analysisSpec.addParameter('queryTrackTitleList', queryTrackTitles)
+        analysisSpec.addParameter('refTrackTitleList', refTrackTitles)
+        stat = GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
+        analysisSpec.addParameter('similarityStatClassName',
+                                  str(GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[stat]))
+        resultsObj = doAnalysis(analysisSpec, analysisBins, queryTrackList + refTrackList)
+        results = resultsObj.getGlobalResult()
+        analysis1 = results['Similarity_score_table']
+        return analysis1
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
