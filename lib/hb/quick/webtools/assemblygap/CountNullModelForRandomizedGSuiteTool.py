@@ -5,6 +5,7 @@ from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.track.Track import Track
 from gold.util import CommonConstants
 from gold.util.RandomUtil import random
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.gsuite import GSuiteStatUtils
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat
@@ -13,6 +14,9 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.application.GalaxyInterface import GalaxyInterface
 from urllib import quote
+
+from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
+
 
 class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     ALLOW_UNKNOWN_GENOME = False
@@ -166,6 +170,23 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
 
 
         print pValueList
+
+        vg = visualizationGraphs()
+        res = vg.drawScatterChart(
+            pValueList,
+            seriesName=['p-values'],
+            label='<b>{series.name}</b>: {point.y}',
+            height=300,
+            markerRadius=1,
+            yAxisTitle='p-values',
+            marginTop=30
+        )
+        htmlCore = HtmlCore()
+        htmlCore.begin()
+        htmlCore.line(res)
+        htmlCore.end()
+        htmlCore.hideToggle(styleClass='debug')
+        print htmlCore
 
 
     @classmethod

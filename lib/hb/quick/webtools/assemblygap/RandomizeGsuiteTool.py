@@ -4,12 +4,8 @@ from collections import OrderedDict
 
 from gold.util.RandomUtil import random
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.util.CommonFunctions import ensurePathExists, silenceRWarnings
-from gold.description.TrackInfo import TrackInfo
+from quick.util.CommonFunctions import ensurePathExists
 from gold.gsuite import GSuiteConstants
-from gold.gsuite.GSuite import GSuite
-from gold.origdata.FileFormatComposer import getComposerClsFromFileSuffix
-from gold.track.Track import PlainTrack
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -110,14 +106,18 @@ class RandomizeGsuiteTool(GeneralGuiTool):
                     title = track.title
                     title = title.replace(' ','') + variants
                     attributes = track.attributes
-                    fi = cls._getFileFormatInfo(gSuite, genome, track)
+                    #fi = cls._getFileFormatInfo(gSuite, genome, track)
+
+
+
+                    fi = FileFormatInfo(fileFormatName='BED', asOriginal=False, allowOverlaps=False,
+                                   suffix='bed')
 
                     uri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
                                                         extraFileName=fileName,
                                                         suffix=fi.suffix)
 
                     gSuiteTrack = GSuiteTrack(uri,
-                                              fileFormat='bed',
                                               title=title,
                                               genome=genome,
                                               attributes={'orginalTrack': track.title})
@@ -189,6 +189,9 @@ class RandomizeGsuiteTool(GeneralGuiTool):
     def _getFileFormatInfo(cls, gSuite, genome, track):
 
         outputFormatDict = GSuiteConvertFromPreprocessedToPrimaryTool._getOutputFormatDict(gSuite, genome)
+
+        #FileFormatInfo(fileFormatName='BED', asOriginal=False, allowOverlaps=False, suffix='bed')
+
         return outputFormatDict['BED (any overlaps merged)']
 
 
