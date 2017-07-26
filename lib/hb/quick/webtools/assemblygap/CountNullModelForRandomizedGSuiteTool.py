@@ -186,7 +186,7 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         htmlCore.line(res)
         htmlCore.end()
 
-
+        print 'Results'
         print htmlCore
         print pValueList
 
