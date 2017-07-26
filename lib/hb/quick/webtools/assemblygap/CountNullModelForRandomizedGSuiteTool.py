@@ -78,8 +78,8 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         randAttributesListNotDuplicates = list(set(randAttributesList))
         numRandAttributesList = len(list(set(randAttributesListNotDuplicates)))
 
-        print 'randAttributesListNotDuplicates', randAttributesListNotDuplicates, '<br>'
-        print 'numRandAttributesList', numRandAttributesList, '<br>'
+        # print 'randAttributesListNotDuplicates', randAttributesListNotDuplicates, '<br>'
+        # print 'numRandAttributesList', numRandAttributesList, '<br>'
 
         if orgCol == 'title':
             orgAttributesList = orginalgSuite.allTrackTitles()
@@ -89,14 +89,14 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         orgAttributesListNotDuplicates = list(set(orgAttributesList) - set(randAttributesList))
         numOrgAttributesListNotDuplicates = len(orgAttributesListNotDuplicates)
 
-        print 'orgAttributesListNotDuplicates', orgAttributesListNotDuplicates, '<br>'
-        print 'numOrgAttributesListNotDuplicates', numOrgAttributesListNotDuplicates,'<br>'
+        # print 'orgAttributesListNotDuplicates', orgAttributesListNotDuplicates, '<br>'
+        # print 'numOrgAttributesListNotDuplicates', numOrgAttributesListNotDuplicates,'<br>'
 
 
         #random tracks just for having analysis real to real
         randOrginalTracks = random.sample(xrange(numOrgAttributesListNotDuplicates), numRandAttributesList)
 
-        print 'randOrginalTracks', randOrginalTracks, '<br>'
+        # print 'randOrginalTracks', randOrginalTracks, '<br>'
 
         resultsDict = OrderedDict()
 
@@ -116,8 +116,8 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                 oTrackTitle2 = randAttributesListNotDuplicates[rTr]
 
                 if not oTrackTitle2 in resultsDict.keys():
-                    print 'oTrackTitle1', oTrackTitle1, '<br>'
-                    print 'oTrackTitle2', oTrackTitle2, '<br>'
+                    # print 'oTrackTitle1', oTrackTitle1, '<br>'
+                    # print 'oTrackTitle2', oTrackTitle2, '<br>'
                     resultsDict[oTrackTitle2] = OrderedDict()
                     resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = 0
                     resultsDict[oTrackTitle2]['firstRealToRandomLessCountedValues'] = 0
@@ -126,19 +126,19 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
 
                 analysis1 = cls.countNullModelMethod(choices, oTrack1, oTrack2, orginalgSuite)
 
-                print 'analysis1', analysis1, '<br>'
-                print 'resultsDict', resultsDict, '<br>'
+                # print 'analysis1', analysis1, '<br>'
+                # print 'resultsDict', resultsDict, '<br>'
 
                 for key0, val0 in analysis1.iteritems():
-                    print 'key0, val0', key0, val0, '<br>'
+                    # print 'key0, val0', key0, val0, '<br>'
                     for key1, val1 in val0.iteritems():
-                        print 'key1, val1', key1, val1, '<br>'
+                        # print 'key1, val1', key1, val1, '<br>'
                         resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = float(val1)
 
                 rTr += 1
             oTr += 1
 
-        print resultsDict
+        # print resultsDict
 
         # check random number of tracks
         for nrRTrack1, rTrack1 in enumerate(randomGsuite.allTracks()):
@@ -153,15 +153,15 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
 
             val = resultsDict[oTrackTitle1]['firstRealToSecondRealValue']
             for key0, val0 in analysis1.iteritems():
-                print 'key0, val0', key0, val0, '<br>'
+                # print 'key0, val0', key0, val0, '<br>'
                 for key1, val1 in val0.iteritems():
-                    print 'key1, val1', key1, val1, '<br>'
+                    # print 'key1, val1', key1, val1, '<br>'
                     if float(val1) < val:
                         resultsDict[oTrackTitle1]['firstRealToRandomLessCountedValues'] += 1
                     else:
                         resultsDict[oTrackTitle1]['firstRealToRandomMoreOrEqualCountedValues'] += 1
 
-        print resultsDict
+        # print resultsDict
 
         pValueList = []
         for key0, it0 in resultsDict.iteritems():
@@ -169,7 +169,7 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
             pValueList.append(pValue)
 
 
-        print pValueList
+        # print pValueList
 
         vg = visualizationGraphs()
         res = vg.drawScatterChart(
@@ -177,16 +177,18 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
             seriesName=['p-values'],
             label='<b>{series.name}</b>: {point.y}',
             height=300,
-            markerRadius=1,
             yAxisTitle='p-values',
             marginTop=30
         )
+
         htmlCore = HtmlCore()
         htmlCore.begin()
         htmlCore.line(res)
         htmlCore.end()
-        htmlCore.hideToggle(styleClass='debug')
+
+
         print htmlCore
+        print pValueList
 
 
     @classmethod
@@ -200,8 +202,8 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
             [quote(oTrack2.title, safe='')])
         queryTrackList = [Track(oTrack1.trackName, oTrack1.title)]
         refTrackList = [Track(oTrack2.trackName, oTrack2.title)]
-        print queryTrackTitles, '<br>'
-        print refTrackTitles, '<br>'
+        # print queryTrackTitles, '<br>'
+        # print refTrackTitles, '<br>'
         analysisSpec = AnalysisSpec(GSuiteVsGSuiteWrapperStat)
         analysisSpec.addParameter('queryTracksNum', str(len(queryTrackList)))
         analysisSpec.addParameter('refTracksNum', str(len(refTrackList)))
@@ -267,9 +269,9 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
     # def isDebugMode(cls):
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
