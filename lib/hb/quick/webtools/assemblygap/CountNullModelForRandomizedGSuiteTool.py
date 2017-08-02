@@ -31,7 +31,9 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                 ('Select column from orginal gSuite', 'orgCol'),
                 ('Second randomized gSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
-                [('Second column from randomized gSuite', 'randCol')] + \
+                [('Second column from randomized gSuite', 'randCol'),
+                 ('Select method', 'method')
+                 ] + \
                 cls.getInputBoxNamesForUserBinSelection()
 
     @classmethod
@@ -61,11 +63,16 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
             return
 
     @classmethod
+    def getOptionsBoxMethod(cls):
+        return ['1', '2']
+
+    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         orgGsuite = choices.orgGsuite
         randGsuite = choices.gsuite
         orgCol = choices.orgCol
         randCol = choices.randCol
+        method = choices.method
 
         orginalgSuite = getGSuiteFromGalaxyTN(orgGsuite)
         randomGsuite = getGSuiteFromGalaxyTN(randGsuite)
@@ -115,25 +122,30 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                 oTrack2 = orginalgSuite.getTrackFromTitle(randAttributesListNotDuplicates[rTr])
                 oTrackTitle2 = randAttributesListNotDuplicates[rTr]
 
-                if not oTrackTitle2 in resultsDict.keys():
-                    # print 'oTrackTitle1', oTrackTitle1, '<br>'
-                    # print 'oTrackTitle2', oTrackTitle2, '<br>'
+                if method == '1':
+                    if not oTrackTitle2 in resultsDict.keys():
+                        # print 'oTrackTitle1', oTrackTitle1, '<br>'
+                        # print 'oTrackTitle2', oTrackTitle2, '<br>'
+                        resultsDict[oTrackTitle2] = OrderedDict()
+                        resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = 0
+                        resultsDict[oTrackTitle2]['firstRealToRandomLessCountedValues'] = 0
+                        resultsDict[oTrackTitle2]['firstRealToRandomMoreOrEqualCountedValues'] = 0
+
+
+                    analysis1 = cls.countNullModelMethod(choices, oTrack1, oTrack2, orginalgSuite)
+
+                    # print 'analysis1', analysis1, '<br>'
+                    # print 'resultsDict', resultsDict, '<br>'
+
+                    for key0, val0 in analysis1.iteritems():
+                        # print 'key0, val0', key0, val0, '<br>'
+                        for key1, val1 in val0.iteritems():
+                            # print 'key1, val1', key1, val1, '<br>'
+                            resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = float(val1)
+
+                if method == '2':
                     resultsDict[oTrackTitle2] = OrderedDict()
-                    resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = 0
-                    resultsDict[oTrackTitle2]['firstRealToRandomLessCountedValues'] = 0
-                    resultsDict[oTrackTitle2]['firstRealToRandomMoreOrEqualCountedValues'] = 0
-
-
-                analysis1 = cls.countNullModelMethod(choices, oTrack1, oTrack2, orginalgSuite)
-
-                # print 'analysis1', analysis1, '<br>'
-                # print 'resultsDict', resultsDict, '<br>'
-
-                for key0, val0 in analysis1.iteritems():
-                    # print 'key0, val0', key0, val0, '<br>'
-                    for key1, val1 in val0.iteritems():
-                        # print 'key1, val1', key1, val1, '<br>'
-                        resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = float(val1)
+                    resultsDict[oTrackTitle2]['values'] = []
 
                 rTr += 1
             oTr += 1
@@ -151,35 +163,43 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
 
             analysis1 = cls.countNullModelMethod(choices, oTrack1, rTrack1, orginalgSuite)
 
-            val = resultsDict[oTrackTitle1]['firstRealToSecondRealValue']
-            for key0, val0 in analysis1.iteritems():
-                # print 'key0, val0', key0, val0, '<br>'
-                for key1, val1 in val0.iteritems():
-                    # print 'key1, val1', key1, val1, '<br>'
-                    if float(val1) < val:
-                        resultsDict[oTrackTitle1]['firstRealToRandomLessCountedValues'] += 1
-                    else:
-                        resultsDict[oTrackTitle1]['firstRealToRandomMoreOrEqualCountedValues'] += 1
+            if method == '1':
+                val = resultsDict[oTrackTitle1]['firstRealToSecondRealValue']
+                for key0, val0 in analysis1.iteritems():
+                    # print 'key0, val0', key0, val0, '<br>'
+                    for key1, val1 in val0.iteritems():
+                        # print 'key1, val1', key1, val1, '<br>'
+                        if float(val1) < val:
+                            resultsDict[oTrackTitle1]['firstRealToRandomLessCountedValues'] += 1
+                        else:
+                            resultsDict[oTrackTitle1]['firstRealToRandomMoreOrEqualCountedValues'] += 1
+            if method == '2':
+                for key0, val0 in analysis1.iteritems():
+                    for key1, val1 in val0.iteritems():
+                        resultsDict[oTrackTitle1]['firstRealToSecondRealValue'].append(val1)
 
         # print resultsDict
 
-        pValueList = []
-        for key0, it0 in resultsDict.iteritems():
-            pValue = it0['firstRealToRandomMoreOrEqualCountedValues']/float(float(len(randAttributesList))/numRandAttributesList)
-            pValueList.append(pValue)
+        if method == '1':
+            pValueList = []
+            for key0, it0 in resultsDict.iteritems():
+                pValue = it0['firstRealToRandomMoreOrEqualCountedValues']/float(float(len(randAttributesList))/numRandAttributesList)
+                pValueList.append(pValue)
 
 
-        # print pValueList
+            # print pValueList
 
-        vg = visualizationGraphs()
-        res = vg.drawScatterChart(
-            pValueList,
-            seriesName=['p-values'],
-            label='<b>{series.name}</b>: {point.y}',
-            height=300,
-            yAxisTitle='p-values',
-            marginTop=30
-        )
+            vg = visualizationGraphs()
+            res = vg.drawScatterChart(
+                pValueList,
+                seriesName=['p-values'],
+                label='<b>{series.name}</b>: {point.y}',
+                height=300,
+                yAxisTitle='p-values',
+                marginTop=30
+            )
+        if method == '2':
+            ss
 
         htmlCore = HtmlCore()
         htmlCore.begin()
