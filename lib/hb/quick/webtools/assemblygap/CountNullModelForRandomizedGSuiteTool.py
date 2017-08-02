@@ -32,10 +32,10 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                 ('Select column from orginal gSuite', 'orgCol'),
                 ('Select additional orginal gSuite', 'addGsuite'),
                 ('Second randomized gSuite', 'gsuite')] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
-                [('Second column from randomized gSuite', 'randCol'),
-                 ('Select method', 'method')] + \
-                cls.getInputBoxNamesForUserBinSelection()
+               cls.getInputBoxNamesForGenomeSelection() + \
+               [('Second column from randomized gSuite', 'randCol'),
+                ('Select method', 'method')] + \
+               cls.getInputBoxNamesForUserBinSelection()
 
     @classmethod
     def getOptionsBoxOrgGsuite(cls):
@@ -55,13 +55,11 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         if prevChoices.orgCol == cls.OPTION:
             return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
-
     @classmethod
     def getOptionsBoxGsuite(cls, prevChoices):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
-
-    #options: random mean that two gsuites does not have any common column
+    # options: random mean that two gsuites does not have any common column
 
     @classmethod
     def getOptionsBoxRandCol(cls, prevChoices):
@@ -84,6 +82,8 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         randCol = choices.randCol
         method = choices.method
 
+        printing = False
+
         if orgCol == cls.OPTION:
             addGsuite = choices.addGsuite
             additiionalgSuite = getGSuiteFromGalaxyTN(addGsuite)
@@ -100,7 +100,7 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         randAttributesListNotDuplicates = list(set(randAttributesList))
         numRandAttributesList = len(list(set(randAttributesListNotDuplicates)))
 
-        howManyTimesWasEveryTracksRandomize = len(randAttributesList)/numRandAttributesList
+        howManyTimesWasEveryTracksRandomize = len(randAttributesList) / numRandAttributesList
 
         #
         # print 'randAttributesListNotDuplicates', randAttributesListNotDuplicates, '<br>'
@@ -118,21 +118,22 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         # print 'numOrgAttributesListNotDuplicates', numOrgAttributesListNotDuplicates,'<br>'
 
 
-        #random tracks just for having analysis real to real
+        # random tracks just for having analysis real to real
         if orgCol != cls.OPTION:
-            randOrginalTracks = random.sample(xrange(numOrgAttributesListNotDuplicates), numRandAttributesList)
+            randOrginalTracks = random.sample(xrange(numOrgAttributesListNotDuplicates),
+                                              numRandAttributesList)
         else:
             randTracksForTwoOrginalDatasets = random.sample(xrange(len(addAttributesList)),
-                                              numRandAttributesList)
+                                                            numRandAttributesList)
             addOrginalTracks = randTracksForTwoOrginalDatasets[0:numRandAttributesList]
 
             randOrginalTracks = random.sample(xrange(numOrgAttributesListNotDuplicates),
                                               numRandAttributesList)
+            if printing == True:
+                print 'addOrginalTracks', addOrginalTracks, len(addOrginalTracks), '<br>'
 
-            print 'addOrginalTracks', addOrginalTracks, len(addOrginalTracks), '<br>'
-
-
-        print 'randOrginalTracks', randOrginalTracks, '<br>'
+        if printing == True:
+            print 'randOrginalTracks', randOrginalTracks, '<br>'
 
         resultsDict = OrderedDict()
 
@@ -143,15 +144,15 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         for oTrack1 in orginalgSuite.allTracks():
             if oTr in randOrginalTracks:
 
-                #first analysis
-                #one random track from gsuite1 - T1
-                #second random track from gsuite - T2
+                # first analysis
+                # one random track from gsuite1 - T1
+                # second random track from gsuite - T2
 
                 # T1
                 oTrackName1 = oTrack1.trackName
                 oTrackTitle1 = oTrackName1[-1]
 
-                #T2 - random tracks to comapare
+                # T2 - random tracks to comapare
                 if orgCol == cls.OPTION:
                     oTrack2 = additiionalgSuite.getTrackFromIndex(addOrginalTracks[rTr])
                     oTrackName2 = oTrack2.trackName
@@ -160,23 +161,24 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                     oTrack2 = orginalgSuite.getTrackFromTitle(randAttributesListNotDuplicates[rTr])
                     oTrackTitle2 = randAttributesListNotDuplicates[rTr]
 
-                if method == '1':
-
                     if not oTrackTitle2 in originalTracksVSRandTracks.keys():
                         originalTracksVSRandTracks[oTrackTitle2] = oTrackTitle1
 
+                if method == '1':
                     if not oTrackTitle2 in resultsDict.keys():
                         resultsDict[oTrackTitle2] = OrderedDict()
                         resultsDict[oTrackTitle2]['firstRealToSecondRealValue'] = 0
                         resultsDict[oTrackTitle2]['firstRealToRandomLessCountedValues'] = 0
                         resultsDict[oTrackTitle2]['firstRealToRandomMoreOrEqualCountedValues'] = 0
 
-                    print 'oTrackTitle1', oTrackTitle1, '<br>'
-                    print 'oTrackTitle2', oTrackTitle2, '<br>'
+                    if printing == True:
+                        print 'oTrackTitle1', oTrackTitle1, '<br>'
+                        print 'oTrackTitle2', oTrackTitle2, '<br>'
                     analysis1 = cls.countNullModelMethod(choices, oTrack1, oTrack2, orginalgSuite)
 
-                    print 'analysis1', analysis1, '<br>'
-                    print 'resultsDict', resultsDict, '<br>'
+                    if printing == True:
+                        print 'analysis1', analysis1, '<br>'
+                        print 'resultsDict', resultsDict, '<br>'
 
                     for key0, val0 in analysis1.iteritems():
                         for key1, val1 in val0.iteritems():
@@ -189,12 +191,13 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                 rTr += 1
             oTr += 1
 
-        print '<br><br><br><br><br>'
+        if printing == True:
+            print '<br><br><br><br><br>'
 
-        print 'originalTracksVSRandTracks',originalTracksVSRandTracks, '<br>'
-        print 'resultsDict', resultsDict, '<br>'
+            print 'originalTracksVSRandTracks', originalTracksVSRandTracks, '<br>'
+            print 'resultsDict', resultsDict, '<br>'
 
-        print '<br><br><br><br><br>'
+            print '<br><br><br><br><br>'
 
         # check random number of tracks
         numForEveryTracksRandomize = 0
@@ -202,61 +205,76 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
             rTrackName1 = rTrack1.trackName
             attrRtrack1 = randAttributesList[nrRTrack1]
 
-            print 'attrRtrack1', attrRtrack1, '<br>'
+            if printing == True:
+                print 'attrRtrack1', attrRtrack1, '<br>'
             if orgCol != cls.OPTION:
                 oTrack1 = orginalgSuite.getTrackFromTitle(originalTracksVSRandTracks[attrRtrack1])
                 oTrackName1 = oTrack1.trackName
                 oTrackTitle1 = oTrackName1[-1]
             else:
-                if nrRTrack1!=0 and nrRTrack1%(howManyTimesWasEveryTracksRandomize) == 0:
-                    numForEveryTracksRandomize+=1
+                if nrRTrack1 != 0 and nrRTrack1 % (howManyTimesWasEveryTracksRandomize) == 0:
+                    numForEveryTracksRandomize += 1
 
-                oTrack1 = additiionalgSuite.getTrackFromIndex(addOrginalTracks[numForEveryTracksRandomize])
+                oTrack1 = additiionalgSuite.getTrackFromIndex(
+                    addOrginalTracks[numForEveryTracksRandomize])
                 oTrackName1 = oTrack1.trackName
                 oTrackTitle1 = oTrackName1[-1]
                 attrRtrack1 = oTrackTitle1
-                print 'attrRtrack1', attrRtrack1, '<br>'
 
+                if printing == True:
+                    print 'attrRtrack1', attrRtrack1, '<br>'
 
-            print 'oTrackTitle1', oTrackTitle1, '<br>'
-            print 'rTrackName1', rTrackName1, '<br>'
+            if printing == True:
+                print 'oTrackTitle1', oTrackTitle1, '<br>'
+                print 'rTrackName1', rTrackName1, '<br>'
 
             analysis1 = cls.countNullModelMethod(choices, oTrack1, rTrack1, orginalgSuite)
-            print 'analysis1', analysis1, '<br>'
+
+            if printing == True:
+                print 'analysis1', analysis1, '<br>'
 
             if method == '1':
                 val = resultsDict[attrRtrack1]['firstRealToSecondRealValue']
                 for key0, val0 in analysis1.iteritems():
                     for key1, val1 in val0.iteritems():
-                        print 'val, val1', val, val1, '<br>'
+                        if printing == True:
+                            print 'val, val1', val, val1, '<br>'
                         if float(val1) < val:
                             resultsDict[attrRtrack1]['firstRealToRandomLessCountedValues'] += 1
                         else:
-                            resultsDict[attrRtrack1]['firstRealToRandomMoreOrEqualCountedValues'] += 1
+                            resultsDict[attrRtrack1][
+                                'firstRealToRandomMoreOrEqualCountedValues'] += 1
             if method == '2':
                 for key0, val0 in analysis1.iteritems():
                     for key1, val1 in val0.iteritems():
-                        resultsDict[oTrackTitle1]['values'].append(val1)
+                        resultsDict[attrRtrack1]['values'].append(val1)
 
-        print '<br><br><br><br><br>'
-        print 'resultsDict', resultsDict, '<br>'
-        print '<br><br><br><br><br>'
+        if printing == True:
+            print '<br><br><br><br><br>'
+            print 'resultsDict', resultsDict, '<br>'
+            print '<br><br><br><br><br>'
+
+        vg = visualizationGraphs()
 
         if method == '1':
 
             pValueList = []
             for key0, it0 in resultsDict.iteritems():
-                print key0, it0, '<br>'
-                print 'len(randAttributesList)',len(randAttributesList), 'numRandAttributesList', numRandAttributesList, '<br>'
-                print 'float(float(len(randAttributesList))/numRandAttributesList)', float(float(len(randAttributesList))/numRandAttributesList), '<br>'
-                pValue = float(it0['firstRealToRandomMoreOrEqualCountedValues'])/float(float(len(randAttributesList))/numRandAttributesList)
-                print pValue, '<br>'
+                if printing == True:
+                    print key0, it0, '<br>'
+                    print 'len(randAttributesList)', len(
+                        randAttributesList), 'numRandAttributesList', numRandAttributesList, '<br>'
+                    print 'float(float(len(randAttributesList))/numRandAttributesList)', float(
+                        float(len(randAttributesList)) / numRandAttributesList), '<br>'
+                pValue = float(it0['firstRealToRandomMoreOrEqualCountedValues']) / float(
+                    float(len(randAttributesList)) / numRandAttributesList)
+                if printing == True:
+                    print pValue, '<br>'
                 pValueList.append(pValue)
-
 
             # print pValueList
 
-            vg = visualizationGraphs()
+
             res = vg.drawScatterChart(
                 pValueList,
                 seriesName=['p-values'],
@@ -269,7 +287,10 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
 
             pValueList = []
             for key0, it0 in resultsDict.iteritems():
-                pValueList.append(it0['values'])
+                pValueList += it0['values']
+
+            if printing == True:
+                print 'pValueList', pValueList, '<br>'
 
             from proto.RSetup import robjects, r
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
@@ -287,7 +308,6 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
                                      height=400
                                      )
 
-
         htmlCore = HtmlCore()
         htmlCore.begin()
         htmlCore.line(res)
@@ -295,8 +315,6 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
 
         print 'Results'
         print htmlCore
-        print pValueList
-
 
     @classmethod
     def countNullModelMethod(cls, choices, oTrack1, oTrack2, orginalgSuite):
@@ -379,7 +397,7 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
-    #
-    # @classmethod
-    # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
+        #
+        # @classmethod
+        # def getOutputName(cls, choices=None):
+        #     return cls.getToolSelectionName()
