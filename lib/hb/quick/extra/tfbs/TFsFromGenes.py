@@ -9,6 +9,7 @@ from quick.application.GalaxyInterface import GalaxyInterface
 from quick.extra.tfbs.TfInfo import TfInfo
 from quick.util.CommonFunctions import extractIdFromGalaxyFn
 from quick.util.GenomeInfo import GenomeInfo
+import third_party.safeshelve as safeshelve
 
 
 class TFsFromRegions(object):
@@ -117,7 +118,6 @@ class TFsFromRegions(object):
 
         tfNames = res.getResDictKeys()
         #print 'RES: ', res.getGlobalResult()[tfNames[0]], type(res.getGlobalResult()[tfNames[0]])
-        import third_party.safeshelve as safeshelve
         pwm2tfids = safeshelve.open(os.sep.join([HB_SOURCE_CODE_BASE_DIR,'data','pwm2TFids.shelf']), 'r')
         tf2class = safeshelve.open(os.sep.join([HB_SOURCE_CODE_BASE_DIR,'data','TfId2Class.shelf']), 'r')
         pwmName2id= safeshelve.open(os.sep.join([HB_SOURCE_CODE_BASE_DIR,'data','pwmName2id.shelf']), 'r')
@@ -160,35 +160,35 @@ class TFsFromGenes(TFsFromRegions):
         uniqueWebPath = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
 
         assert genome == 'hg18'
-        
+
         tfTrackNameMappings = TfInfo.getTfTrackNameMappings(genome)
         tfTrackName = tfTrackNameMappings[tfSource]
-        
-        
+
+
         #Get gene track
         assert geneSource == 'Ensembl'
         targetGeneRegsTempFn = uniqueWebPath + os.sep + 'geneRegs.bed'
         geneRegsTrackName = GenomeInfo.getStdGeneRegsTn(genome)
         geneRegsFn = getOrigFn(genome, geneRegsTrackName, '.category.bed')
         GalaxyInterface.getGeneTrackFromGeneList(genome, geneRegsTrackName, ensembleGeneIdList, targetGeneRegsTempFn )
-        
+
         assert upFlankSize == downFlankSize == 0 #Should instead extend regions to include flanks
-        
+
         tcGeneRegsTempFn = uniqueWebPath + os.sep + 'tcGeneRegs.targetcontrol.bedgraph'
         #Think this will be okay, subtraction not necessary as targets are put first:
         controlGeneRegsTempFn = geneRegsFn
         #print targetGeneRegsTempFn, controlGeneRegsTempFn, tcGeneRegsTempFn
         GalaxyInterface.combineToTargetControl(targetGeneRegsTempFn, controlGeneRegsTempFn, tcGeneRegsTempFn)
-        
+
         #tcGeneRegsExternalTN = ['external'] +galaxyId +  [tcGeneRegsTempFn]
         tcGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId, 'tempTc')
-        
+
         #tcGeneRegsExternalTN = ['external'] +targetGalaxyId +  [tcGeneRegsTempFn]
         #tcGeneRegsExternalTN = ['galaxy', externalId, tcGeneRegsTempFn]
-        
+
         targetGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId, 'tempTc', '1')
         controlGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId, 'tempTc', '0')
-        
+
         #pre-process
         print 'Pre-processing file: %s, with trackname: %s ' % (tcGeneRegsTempFn, tcGeneRegsExternalTN)
         ExternalTrackManager.preProcess(tcGeneRegsTempFn, tcGeneRegsExternalTN, 'targetcontrol.bedgraph',genome)
@@ -196,19 +196,19 @@ class TFsFromGenes(TFsFromRegions):
         ExternalTrackManager.preProcess(targetGeneRegsTempFn, targetGeneRegsExternalTN, 'bed',genome)
         print 'Pre-processing TN: ', controlGeneRegsExternalTN
         ExternalTrackManager.preProcess(controlGeneRegsTempFn, controlGeneRegsExternalTN, 'bed',genome)
-        
+
         #print tcGeneRegsExternalTN
         trackName1, trackName2 = tfTrackName, tcGeneRegsExternalTN
-        
+
         analysisDef = 'Categories differentially located in targets?: Which categories of track1-points fall more inside case than control track2-segments? [rawStatistic:=PointCountInsideSegsStat:]' +\
                   '[tf1:=SegmentToStartPointFormatConverter:] [tf2:=TrivialFormatConverter:]' +\
                   '-> DivergentRowsInCategoryMatrixStat'
         regSpec, binSpec = '*','*'
-        
+
         #print 'skipping preproc!!'
         #ExternalTrackManager.preProcess(tcGeneRegsExternalTN[-1], tcGeneRegsExternalTN, 'targetcontrol.bedgraph', genome)
         #ExternalTrackManager.preProcess(targetGeneRegsTempFn, targetGeneRegsExternalTN, 'bed', genome)
-        
+
         GalaxyInterface.runManual([trackName1, trackName2], analysisDef, regSpec, binSpec, genome, printResults=True, printHtmlWarningMsgs=False)
         #userBinSource, fullRunArgs = GalaxyInterface._prepareRun(trackName1, trackName2, analysisDef, regSpec, binSpec, genome)
         ##userBinSource = GERegionBoundaryFilter(userBinSource, GlobalBinSource(genome))
@@ -216,7 +216,6 @@ class TFsFromGenes(TFsFromRegions):
         #GalaxyInterface._viewResults([res], galaxyFn)
         #GalaxyInterface.run(tfTrackName, tcGeneRegsExternalTN, analysisDef, regSpec, binSpec, genome, galaxyFn)
         #GalaxyInterface.run(':'.join(tfTrackName), ':'.join(tcGeneRegsExternalTN), analysisDef, regSpec, binSpec, genome, galaxyFn)
-
 
     @classmethod
     def findTFsTargetingGenes(cls, genome, tfSource, ensembleGeneIdList,upFlankSize, downFlankSize, geneSource, galaxyFn):
@@ -238,11 +237,10 @@ class TFsFromGenes(TFsFromRegions):
         #geneRegsTrackName = GenomeInfo.getStdGeneRegsTn(genome)
         #geneRegsFn = getOrigFn(genome, geneRegsTrackName, '.category.bed')
         #GalaxyInterface.getGeneTrackFromGeneList(genome, geneRegsTrackName, ensembleGeneIdList, targetGeneRegsTempFn )
-        
-        if not (upFlankSize == downFlankSize == 0):            
+
+        if not (upFlankSize == downFlankSize == 0):
             unflankedGeneRegsTempFn = uniqueWebPath + os.sep + '_geneRegs.bed'
             #flankedGeneRegsTempFn  = uniqueWebPath + os.sep + 'flankedGeneRegs.bed'
-            from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
             flankedGeneRegsTempStaticFile = GalaxyRunSpecificFile(['flankedGeneRegs.bed'], galaxyFn)
             flankedGeneRegsTempFn = flankedGeneRegsTempStaticFile.getDiskPath()
             geneRegsTrackName = GenomeInfo.getStdGeneRegsTn(genome)
@@ -301,4 +299,3 @@ class TFsFromGenes(TFsFromRegions):
         
         #GalaxyInterface.run(tfTrackName, tcGeneRegsExternalTN, analysisDef, regSpec, binSpec, genome, galaxyFn)
         #GalaxyInterface.run(':'.join(tfTrackName), ':'.join(tcGeneRegsExternalTN), analysisDef, regSpec, binSpec, genome, galaxyFn)
-                
