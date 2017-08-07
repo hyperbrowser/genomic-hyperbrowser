@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.statistic import BpOverlapPValOneTrackFixedStat
 from gold.track.Track import Track
 from gold.util import CommonConstants
 from gold.util.RandomUtil import random
@@ -341,6 +342,8 @@ class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool, UserBinMixin, Genome
         results = resultsObj.getGlobalResult()
         analysis1 = results['Similarity_score_table']
         return analysis1
+
+    analysis = AnalysisSpec(BpOverlapPValOneTrackFixedStat)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
