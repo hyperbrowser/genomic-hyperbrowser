@@ -103,7 +103,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxTabsNum(cls, prevChoices):
-        return ['1', '2', '3']
+        return ['1', '2']
 
     @classmethod
     def getOptionsBoxTabTitle1(cls, prevChoices):
