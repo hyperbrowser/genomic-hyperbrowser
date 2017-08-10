@@ -246,9 +246,9 @@ class TFsFromGenes(TFsFromRegions):
             geneRegsTrackName = GenomeInfo.getStdGeneRegsTn(genome)
             #geneRegsFn = getOrigFn(genome, geneRegsTrackName, '.category.bed')
             GalaxyInterface.getGeneTrackFromGeneList(genome, geneRegsTrackName, ensembleGeneIdList, unflankedGeneRegsTempFn )
-            GalaxyInterface.expandBedSegments(unflankedGeneRegsTempFn, flankedGeneRegsTempFn, genome, upFlankSize, downFlankSize)
+            GalaxyInterface.expandBedSegments(unflankedGeneRegsTempFn, flankedGeneRegsTempFn, genome, upFlankSize, downFlankSize, suffix='category.bed')
             #flankedGeneRegsExternalTN = ['external'] +galaxyId +  [flankedGeneRegsTempFn]
-            regSpec, binSpec = 'file', flankedGeneRegsTempFn
+            regSpec, binSpec = 'category.bed', flankedGeneRegsTempFn
         else:
             regSpec, binSpec = '__genes__', ','.join(ensembleGeneIdList)
 
