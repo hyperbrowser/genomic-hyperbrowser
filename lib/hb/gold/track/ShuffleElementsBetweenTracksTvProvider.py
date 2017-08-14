@@ -111,6 +111,7 @@ class ShuffleElementsBetweenTracksPool(object):
             self._computeRandomTrackSet(randIndex)
 
         origTV = RawDataStat(self._region, origTrack, NeutralTrackFormatReq()).getResult()
+        #TODO: use origTV = origTrack.getTrackView(self._region) instead? Ask SG first.
 
         for tvParam in self._randomTrackSets:
             try:
