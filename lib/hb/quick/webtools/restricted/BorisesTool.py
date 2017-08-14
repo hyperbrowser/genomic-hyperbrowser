@@ -38,6 +38,8 @@ from quick.util.TrackReportCommon import generatePilotPageOneParagraphs, \
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool,\
     HistElement
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 class BorisesTool(MultiGeneralGuiTool):
@@ -67,7 +69,7 @@ class BorisesTool(MultiGeneralGuiTool):
                 GBTestTool, CreateKmersTool, FilterOutSeqsFromFasta, \
                 ExtractTrackFromRepositoryFromBinsDefinedByGSuiteTool, \
                 FindMonomerRepeatsForFastaGSuite, \
-                TestHyperGuiTool]
+                TestHyperGuiTool, TestGSuiteTool]
 
 
 class ChromatinCatalogDownloader(GeneralGuiTool):
