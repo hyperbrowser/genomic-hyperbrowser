@@ -41,7 +41,7 @@ class TestTsBasedRandomTrackViewProvider(unittest.TestCase):
                                 CoveragePreservedShuffleElementsBetweenTracksTvProvider,
                                 PermutedSegsAndIntersegsTrackViewProvider,
                                 PermutedSegsAndSampledIntersegsTrackViewProvider]:
-            self.assertEqual(self.ts.keys(), self.ts.getRandomizedVersion(tvProviderClass, False, 1).keys())
+            self.assertEqual(self.ts.keys(), self.ts.getRandomizedVersion(tvProviderClass, allowOverlaps=False, randIndex=1).keys())
 
     def testOverlapsNotAllowed(self):
         '''For these within-track randomizers randomization with overlaps is not supported.'''
