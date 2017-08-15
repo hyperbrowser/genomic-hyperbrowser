@@ -8,6 +8,7 @@ from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 from gold.track.RandomizedSegsTvProvider import PermutedSegsAndIntersegsTrackViewProvider, PermutedSegsAndSampledIntersegsTrackViewProvider
+from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider, \
     CoveragePreservedShuffleElementsBetweenTracksTvProvider, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
 from gold.track.TrackStructure import TrackStructureV2
@@ -27,7 +28,8 @@ class RandomizedTsWriterTool(GeneralGuiTool):
                                     ('Between tracks', OrderedDict([
                                         ('Shuffle between tracks', ShuffleElementsBetweenTracksTvProvider),
                                         ('Shuffle between tracks, preserve number of segments per track', SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider),
-                                        ('Shuffle between tracks, preserve base pair coverage per track', CoveragePreservedShuffleElementsBetweenTracksTvProvider)]))])
+                                        ('Shuffle between tracks, preserve base pair coverage per track', CoveragePreservedShuffleElementsBetweenTracksTvProvider),
+                                        ('Randomize between tracks and bins', ShuffleElementsBetweenTracksAndBinsTvProvider)]))])
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
@@ -73,6 +75,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
                 ('Type of randomization', 'randType'),
                 ('Randomization algorithm', 'randAlg'),
                 ('Allow overlaps', 'allowOverlaps'),
+                ('Excluded regions track', 'excludedRegions'),
                 ('Category to randomize within (set to \'None\' in order to randomize between all tracks in the GSuite)', 'category')]
 
     @staticmethod
@@ -107,6 +110,11 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             return '__hidden__', 'No'
 
     @classmethod
+    def getOptionsBoxExcludedRegions(cls, prevChoices):
+        if prevChoices.randAlg in ["Randomize between tracks and bins"]:
+            return GeneralGuiTool.getHistorySelectionElement()
+
+    @classmethod
     def getOptionsBoxCategory(cls, prevChoices):  # Alt: getOptionsBox4()
         if prevChoices.randType == cls.RANDOMIZATION_ALGORITHM_DICT.keys()[1]:
             try:
@@ -139,8 +147,13 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
         randIndex = 1
+        bins = GlobalBinSource(genome)
 
         allowOverlaps = True if choices.allowOverlaps == 'Yes' else False
+
+        excludedTs = None
+        if choices.excludedRegions:
+            excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
         tvProvider = cls.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg]
 
@@ -148,10 +161,10 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             ts = ts.getSplittedByCategoryTS(choices.category)
             randomizedTs = TrackStructureV2()
             for subTsKey, subTs in ts.items():
-                randomizedTs[subTsKey] = subTs.getRandomizedVersion(tvProvider, allowOverlaps, randIndex)
+                randomizedTs[subTsKey] = subTs.getRandomizedVersion(tvProvider, binSource=bins, excludedTs=excludedTs, allowOverlaps=allowOverlaps, randIndex=randIndex)
             randomizedTs = randomizedTs.getFlattenedTS()
         else:
-            randomizedTs = ts.getRandomizedVersion(tvProvider, allowOverlaps, randIndex)
+            randomizedTs = ts.getRandomizedVersion(tvProvider, binSource=bins, excludedTs=excludedTs, allowOverlaps=allowOverlaps, randIndex=randIndex)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
@@ -163,7 +176,6 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             outputGSuite.addTrack(gSuiteTrack)
             singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
 
-        bins = GlobalBinSource(genome)
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, randomizedTs)
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)

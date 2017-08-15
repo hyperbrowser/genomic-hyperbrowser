@@ -1,3 +1,4 @@
+from gold.origdata.GESourceWrapper import GESourceWrapper
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackView import TrackView
 from gold.track.Track import Track
@@ -8,6 +9,7 @@ from gold.track.TsBasedRandomTrackViewProvider import COVERAGE
 from gold.track.TsBasedRandomTrackViewProvider import NUMBER_OF_SEGMENTS
 from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
 from quick.application.SignatureDevianceLogging import takes
+from quick.application.UserBinSource import BinSource
 from test.gold.track.common.SampleTrack import SampleTrack
 from third_party.typecheck import optional, list_of, anything, one_of
 
@@ -17,11 +19,11 @@ from third_party.typecheck import optional, list_of, anything, one_of
 GENOME_FOR_UNIQUE_KEY = 'unknown'
 
 class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
-    @takes('ShuffleElementsBetweenTracksTvProvider', 'TrackStructureV2', bool)
-    def __init__(self, origTs, allowOverlaps):
+    # @takes('ShuffleElementsBetweenTracksTvProvider', 'TrackStructureV2', one_of(None, GESourceWrapper, BinSource), one_of(None, 'TrackStructureV2'), bool)
+    def __init__(self, origTs, binSource=None, excludedTs=None, allowOverlaps=False):
         self._elementPoolDict = {}
         self._preservationMethod = None
-        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps)
+        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps=allowOverlaps)
 
     @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
@@ -34,15 +36,15 @@ class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
         self._elementPoolDict[region] = ShuffleElementsBetweenTracksPool(self._origTs, region, self._allowOverlaps, self._preservationMethod)
 
 class SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider(ShuffleElementsBetweenTracksTvProvider):
-    @takes('SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider', 'TrackStructureV2', bool)
-    def __init__(self, origTs, allowOverlaps):
-        ShuffleElementsBetweenTracksTvProvider.__init__(self, origTs, allowOverlaps)
+    # @takes('SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider', 'TrackStructureV2', one_of(None, GESourceWrapper, BinSource), one_of(None, 'TrackStructureV2'), bool)
+    def __init__(self, origTs, binSource=None, excludedTs=None, allowOverlaps=False):
+        ShuffleElementsBetweenTracksTvProvider.__init__(self, origTs, allowOverlaps=allowOverlaps)
         self._preservationMethod = NUMBER_OF_SEGMENTS
 
 class CoveragePreservedShuffleElementsBetweenTracksTvProvider(ShuffleElementsBetweenTracksTvProvider):
-    @takes('CoveragePreservedShuffleElementsBetweenTracksTvProvider', 'TrackStructureV2', bool)
-    def __init__(self, origTs, allowOverlaps):
-        ShuffleElementsBetweenTracksTvProvider.__init__(self, origTs, allowOverlaps)
+    # @takes('CoveragePreservedShuffleElementsBetweenTracksTvProvider', 'TrackStructureV2', one_of(None, GESourceWrapper, BinSource), one_of(None, 'TrackStructureV2'), bool)
+    def __init__(self, origTs, binSource=None, excludedTs=None, allowOverlaps=False):
+        ShuffleElementsBetweenTracksTvProvider.__init__(self, origTs, allowOverlaps=allowOverlaps)
         self._preservationMethod = COVERAGE
 
 

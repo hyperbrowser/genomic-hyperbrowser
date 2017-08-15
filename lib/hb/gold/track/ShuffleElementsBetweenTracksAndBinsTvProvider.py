@@ -18,7 +18,6 @@ class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider
         self._binSource = binSource
 
 
-
     def getTrackView(self, region, origTrack, randIndex):
         if randIndex not in self._poolDict:
             self._poolDict[randIndex] = ShuffleElementsBetweenTracksAndBinsPool(self._origTs, self._binSource, self._allowOverlaps, self._excludedTs)
@@ -206,7 +205,6 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         weights = None #np.array([]) #same
 
         origTV = origTrack.getTrackView(region)
-        print "Working..."
         return TrackView(genomeAnchor=origTV.genomeAnchor,
                          startList=starts,
                          endList=ends,

@@ -4,6 +4,7 @@ from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 import copy
 from quick.application.SignatureDevianceLogging import takes
+from quick.application.UserBinSource import BinSource
 from test.gold.track.common.SampleTrack import SampleTrack
 from third_party.typecheck import anything, dict_of, list_of, optional
 
@@ -211,9 +212,9 @@ class TrackStructureV2(dict):
         return root
 
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
-    @takes('TrackStructureV2', type, bool, int)
-    def getRandomizedVersion(self, randTvProvider, allowOverlaps, randIndex):
-        return self._getRandomizedVersion(randTvProvider(self, allowOverlaps), randIndex)
+    # @takes('TrackStructureV2', type, anything, 'TrackStructureV2', bool, int)
+    def getRandomizedVersion(self, randTvProvider, binSource=None, excludedTs=None, allowOverlaps=False, randIndex=0):
+        return self._getRandomizedVersion(randTvProvider(self, binSource=binSource, excludedTs=excludedTs, allowOverlaps=allowOverlaps), randIndex)
 
     @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)
     def _getRandomizedVersion(self, randTvProvider, randIndex):

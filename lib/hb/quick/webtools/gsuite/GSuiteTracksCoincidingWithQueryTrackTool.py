@@ -104,7 +104,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
              ('Select MCFDR sampling depth', 'mcfdrDepth'),
              ('Type of randomization', 'randType'),
-             ('Randomization algorithm', 'randAlg')] + \
+             ('Randomization algorithm', 'randAlg'),
+             ('Select the excluded regions track', 'excludedRegions')] + \
             cls.getInputBoxNamesForAttributesSelection() + \
             cls.getInputBoxNamesForUserBinSelection() + \
             cls.getInputBoxNamesForDebug()
@@ -236,6 +237,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             return '__hidden__', None
 
     @classmethod
+    def getOptionsBoxExcludedRegions(cls, prevChoices):
+        if prevChoices.randAlg in ["Randomize between tracks and bins"]:
+            return GeneralGuiTool.getHistorySelectionElement()
+
+    @classmethod
     def getOptionsBoxResultsExplanation(cls, prevChoices):
 
         if prevChoices.gsuite and prevChoices.analysisQName in [cls.Q1, cls.Q2]:
@@ -319,6 +325,11 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
                                                                                      printErrors=False,
                                                                                      printProgress=False)
+        excludedTs=None
+        import quick.gsuite.GuiBasedTsFactory as factory
+        if choices.excludedRegions:
+            excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
+
         analysisQuestion = choices.analysisQName
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
@@ -330,7 +341,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
         queryTrack = Track(queryTrackNameAsList)
 
-        import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
         ts = TrackStructureV2([("query", queryTS), ("reference", refTS)])
@@ -370,7 +380,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
 
-            q2TS = cls.prepareQ2TrackStructure(queryTS, refTS)
+            q2TS = cls.prepareQ2TrackStructure(queryTS, refTS, choices.randType, choices.randAlg, analysisBins, excludedTs)
             analysisSpec = cls.prepareQ2(choices, similarityStatClassName)
             results = doAnalysis(analysisSpec, analysisBins, q2TS).getGlobalResult()["Result"]
             core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict,
@@ -384,10 +394,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         print str(core)
 
     @classmethod
-    def prepareQ2TrackStructure(cls, queryTS, refTS):
+    def prepareQ2TrackStructure(cls, queryTS, refTS, randType, randAlg, analysisBins, excludedTs):
         q2TS = TrackStructureV2()
         randQueryTS = queryTS
-        randRefTS = refTS.getRandomizedVersion(ShuffleElementsBetweenTracksTvProvider, False, 0)
+        randRefTS = refTS.getRandomizedVersion( RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg], binSource=analysisBins, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
         hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
         for hypothesisKey in hypothesisKeyList:
             realTS = TrackStructureV2()
