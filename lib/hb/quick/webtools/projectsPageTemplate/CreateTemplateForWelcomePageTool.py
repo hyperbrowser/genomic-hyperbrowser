@@ -463,7 +463,7 @@ class CreateTemplateForWelcomePageTool(GeneralGuiTool):
                                 project += "</div>"
                                 project += "<div style='float:right;width:30%;border:1px dotted " + str(pr[3]) + ";border-radius: 4px;'>"
                                 project += "<img style='width:100%' src= '" + str(pr[4]) + "' alt='" + str(pr[0]) + "'  \>"
-                                project += "</div>"
+                                project += "</div><p style='clear:both'></p>"
                                 project += "</div>"
                             project += "<div>"
                             project += pr[1]
