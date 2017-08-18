@@ -621,7 +621,7 @@ def generatePilotPageOneParagraphs(gSuite, galaxyFn, regSpec='*', binSpec='*', u
 
     if gSuite.genome == 'hg19':
         exonsRawAndDerivedOverlap, intronsRawAndDerivedOverlap, genesRawAndDerivedOvelap = \
-            getExonIntronGenesRawAndDerivedOvelapData(gSuite, analysisBins=userBin)
+            getExonIntronGenesRawAndDerivedOverlapData(gSuite, analysisBins=userBin)
         #not very readable, but hey...
         avgExonsOverlap, exonOverlapTableLink, minExonsOverlap, maxExonsOverlap, \
         avgExonsEnrichment, exonEnrichmentTableLink, minExonsEnrihment, maxExonsEnrichment \
@@ -887,7 +887,7 @@ def getGSuiteOverviewHtmlCore(overviewData, expandable=False, visibleRows=6):
     return htmlCore
 
 
-def getExonIntronGenesRawAndDerivedOvelapData(gSuite, analysisBins=None):
+def getExonIntronGenesRawAndDerivedOverlapData(gSuite, analysisBins=None):
     '''
     Get raw and derived overlap data for tracks in gSuite against the exons and introns tracks from hg19 genome
     '''
