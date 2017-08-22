@@ -1,4 +1,21 @@
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
+from gold.description.AnalysisList import REPLACE_TEMPLATES
+from gold.gsuite import GSuiteConstants
+from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.TrackStructure import TrackStructureV2
+from gold.util.CommonClasses import OrderedDefaultDict
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.MultiplePairedTSStat import MultiplePairedTSStat
+from quick.statistic.PairedTSStat import PairedTSStat
+from quick.statistic.StatFacades import ObservedVsExpectedStat
+from quick.util import McEvaluators
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
@@ -51,10 +68,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         Optional method. Default return value if method is not defined: []
         """
         return [('Select first GSuite', 'firstGSuite'),
-                ('Select second GSuite', 'secondGSuite'),
-                ('Select analysis', 'analysis'),
-                ('Select excluded regions track', 'excludedRegions')] + \
+                ('Select second GSuite', 'secondGSuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select analysis', 'analysis'),
+                ('Select excluded regions track', 'excludedRegions'),
+                 ('Select MCFDR sampling depth', 'mcfdrDepth')] +\
                 cls.getInputBoxNamesForUserBinSelection()
 
     # @classmethod
@@ -202,7 +220,13 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
 
     @classmethod
     def getOptionsBoxExcludedRegions(cls, prevChoices):
-        return GeneralGuiTool.getHistorySelectionElement()
+        if prevChoices.analysis in ['Forbes with a p-val']:
+            return GeneralGuiTool.getHistorySelectionElement()
+
+    @classmethod
+    def getOptionsBoxMcfdrDepth(cls, prevChoices):
+        if prevChoices.analysis in ['Forbes with a p-val']:
+            return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -261,18 +285,96 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         Mandatory unless isRedirectTool() returns True.
         """
         genome = choices.genome
-        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
-        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
-
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
 
-        excludedTs = None
         import quick.gsuite.GuiBasedTsFactory as factory
+
+        firstTs = factory.getFlatTracksTS(genome, choices.firstGSuite)
+        secondTs = factory.getFlatTracksTS(genome, choices.secondGSuite)
+
+        excludedTs = None
         if choices.excludedRegions:
             excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId='results-page')
+        core.divBegin(divClass='results-section')
 
+        if choices.analysis == "Forbes":
+            ts = cls._prepareTs(firstTs, secondTs)
+            analysisSpec = cls._prepareAnalysis(choices)
+            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            transformedResultsDict = OrderedDefaultDict(list)
+            for cat, res in result.iteritems():
+                transformedResultsDict[cat].append(res.result)
+            addTableWithTabularAndGsuiteImportButtons(
+                core, choices, galaxyFn, choices.analysis,
+                tableDict=transformedResultsDict,
+                columnNames=["Category", "Forbes similarity"]
+            )
+        else:
+            ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
+            analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
+            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            transformedResultsDict = OrderedDefaultDict(list)
+            for cat, res in result.iteritems():
+                transformedResultsDict[cat].append(res.result['TSMC_' + PairedTSStat.__name__])
+                transformedResultsDict[cat].append(res.result[McEvaluators.PVAL_KEY])
+            # print transformedResultsDict
+            addTableWithTabularAndGsuiteImportButtons(
+                core, choices, galaxyFn, choices.analysis,
+                tableDict=transformedResultsDict,
+                columnNames=["Category", "Forbes similarity", "P-value"]
+            )
+
+        core.divEnd()
+        core.divEnd()
+        core.end()
+        print core
+
+
+    @classmethod
+    def _prepareTs(cls, firstTs, secondTs):
+        ts = TrackStructureV2()
+        for sts1 in firstTs.getLeafNodes():
+            assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
+            cat1 = sts1.metadata['category']
+            for sts2 in secondTs.getLeafNodes():
+                assert 'category' in sts2.metadata, "The GSuites must contain a category column/attribute named 'category'"
+                cat2 = sts2.metadata['category']
+                if cat1 == cat2:
+                    realTs = TrackStructureV2()
+                    realTs["query"] = sts1
+                    realTs["reference"] = sts2
+                    ts[cat1] = realTs
+        return ts
+
+
+    @classmethod
+    def _prepareRandomizedTs(cls, firstTs, secondTs, binSource, excludedTs=None):
+        ts = TrackStructureV2()
+        for sts1 in firstTs.getLeafNodes():
+            assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
+            cat1 = sts1.metadata['category']
+            for sts2 in secondTs.getLeafNodes():
+                assert 'category' in sts2.metadata, "The GSuites must contain a category column/attribute named 'category'"
+                cat2 = sts2.metadata['category']
+                if cat1 == cat2:
+                    assert cat1 not in ts, "Multiple tracks from category %s" % cat1
+                    realTs = TrackStructureV2()
+                    realTs["query"] = sts1
+                    realTs["reference"] = sts2
+                    randTs = TrackStructureV2()
+                    randTs["query"] = sts1
+                    randTs["reference"] = sts2.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider, binSource=binSource, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
+                    hypothesisTS = TrackStructureV2()
+                    hypothesisTS["real"] = realTs
+                    hypothesisTS["rand"] = randTs
+                    ts[cat1] = hypothesisTS
+
+        return ts
 
 
 
@@ -420,24 +522,24 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        """
+        The format of the history element with the output of the tool. Note
+        that if 'html' is returned, any print statements in the execute()
+        method is printed to the output dataset. For text-based output
+        (e.g. bed) the output dataset only contains text written to the
+        galaxyFn file, while all print statements are redirected to the info
+        field of the history item box.
+
+        Note that for 'html' output, standard HTML header and footer code is
+        added to the output dataset. If one wants to write the complete HTML
+        page, use the restricted output format 'customhtml' instead.
+
+        Optional method. Default return value if method is not defined:
+        'html'
+        """
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
@@ -448,3 +550,24 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+
+    @classmethod
+    def _prepareAnalysis(cls, choices):
+        analysisSpec = AnalysisSpec(MultiplePairedTSStat)
+        analysisSpec.addParameter("pairedTsRawStatistic", ObservedVsExpectedStat.__name__)
+        return analysisSpec
+
+    @classmethod
+    def _prepareAnalysisWithHypothesisTests(cls, choices):
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisSpec.addParameter('rawStatistic', PairedTSStat.__name__)
+        analysisSpec.addParameter('pairedTsRawStatistic', ObservedVsExpectedStat.__name__)
+        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+        analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
+        return analysisSpec
+

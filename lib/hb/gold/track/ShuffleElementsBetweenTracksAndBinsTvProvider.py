@@ -92,7 +92,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         self._trackElementLists[trackId][binId].append(autonomousTrackElement)
 
     @staticmethod
-    def _selectRandomValidStartPosition(segLen, targetGenomeRegion, excludedRegions, maxSampleCount=3):
+    def _selectRandomValidStartPosition(segLen, targetGenomeRegion, excludedRegions, maxSampleCount=25):
         '''
         Randomly select a start position.
         For it to be valid, it must not overlap any of the excluded regions.
