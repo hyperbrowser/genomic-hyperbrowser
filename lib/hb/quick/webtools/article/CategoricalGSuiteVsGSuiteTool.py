@@ -13,12 +13,14 @@ from quick.statistic.MultiplePairedTSStat import MultiplePairedTSStat
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util import McEvaluators
+from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
+class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
@@ -72,8 +74,9 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
                 cls.getInputBoxNamesForGenomeSelection() + \
                 [('Select analysis', 'analysis'),
                 ('Select excluded regions track', 'excludedRegions'),
-                 ('Select MCFDR sampling depth', 'mcfdrDepth')] +\
-                cls.getInputBoxNamesForUserBinSelection()
+                 ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+                cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -284,6 +287,10 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
 
         Mandatory unless isRedirectTool() returns True.
         """
+        cls._setDebugModeIfSelected(choices)
+
+        DebugUtil.insertBreakPoint()
+
         genome = choices.genome
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
@@ -302,6 +309,15 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         core.divBegin(divId='results-page')
         core.divBegin(divClass='results-section')
 
+######################################
+#PROFILING
+        # import cProfile
+        # ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
+        # analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
+        # result = cProfile.runctx("doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']", globals(), locals())
+        # print result
+#######################################
+
         if choices.analysis == "Forbes":
             ts = cls._prepareTs(firstTs, secondTs)
             analysisSpec = cls._prepareAnalysis(choices)
@@ -317,6 +333,16 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
+            # from gold.util.Profiler import Profiler
+            # prflr = Profiler()
+            # rDict={}
+            # prflr.run("rDict[0] = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']", globals(), locals())
+            # result = rDict[0]
+            # core.divBegin()
+            # core.header('Profiling')
+            # prflr.printLinkToCallGraph(["test"], galaxyFn)
+            # prflr.printStats()
+            # core.divEnd()
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
             for cat, res in result.iteritems():
@@ -511,17 +537,17 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
     @classmethod
     def getOutputFormat(cls, choices):
         """
@@ -539,7 +565,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         Optional method. Default return value if method is not defined:
         'html'
         """
-        return 'customhtml'
+        return 'html'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
