@@ -2,6 +2,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuiteConstants import TITLE_COL
 from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.track.TrackStructure import TrackStructureV2
 from gold.util.CommonClasses import OrderedDefaultDict
@@ -68,9 +69,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         Optional method. Default return value if method is not defined: []
         """
         return [('Select first GSuite', 'firstGSuite'),
+                ('Select category for first GSuite', 'firstGSuiteCat'),
                 ('Select second GSuite', 'secondGSuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
-                [('Select analysis', 'analysis'),
+                [('Select category for second GSuite', 'secondGSuiteCat'),
+                 ('Select analysis', 'analysis'),
                 ('Select excluded regions track', 'excludedRegions'),
                  ('Select MCFDR sampling depth', 'mcfdrDepth')] +\
                 cls.getInputBoxNamesForUserBinSelection()
@@ -198,6 +201,15 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         """
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
+
+    @classmethod
+    def getOptionsBoxFirstGSuiteCat(cls, prevChoices):
+        if prevChoices.firstGSuite:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.firstGSuite)
+            attributeList = gSuite.attributes
+            attributeList = [TITLE_COL] + attributeList
+            return attributeList
+
     @classmethod
     def getOptionsBoxSecondGSuite(cls, prevChoices):  # Alt: getOptionsBox2()
         """
@@ -213,6 +225,14 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         getInputBoxNames(), if any.
         """
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+    @classmethod
+    def getOptionsBoxSecondGSuiteCat(cls, prevChoices):
+        if prevChoices.secondGSuite:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+            attributeList = gSuite.attributes
+            attributeList = [TITLE_COL] + attributeList
+            return attributeList
 
     @classmethod
     def getOptionsBoxAnalysis(cls, prevChoices):
@@ -284,6 +304,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
 
         Mandatory unless isRedirectTool() returns True.
         """
+        firstGSuiteCat = choices.firstGSuiteCat
+        firstGSuiteCat = firstGSuiteCat.encode("utf-8")
+        secondGSuiteCat = choices.secondGSuiteCat
+        secondGSuiteCat = secondGSuiteCat.encode("utf-8")
+
         genome = choices.genome
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
@@ -303,7 +328,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         core.divBegin(divClass='results-section')
 
         if choices.analysis == "Forbes":
-            ts = cls._prepareTs(firstTs, secondTs)
+            ts = cls._prepareTs(firstTs, secondTs, firstGSuiteCat, secondGSuiteCat)
             analysisSpec = cls._prepareAnalysis(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
@@ -315,7 +340,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
                 columnNames=["Category", "Forbes similarity"]
             )
         else:
-            ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
+            ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
@@ -336,14 +361,16 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
 
 
     @classmethod
-    def _prepareTs(cls, firstTs, secondTs):
+    def _prepareTs(cls, firstTs, secondTs, firstGSuiteCat, secondGSuiteCat):
         ts = TrackStructureV2()
         for sts1 in firstTs.getLeafNodes():
-            assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
-            cat1 = sts1.metadata['category']
+            #assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
+            #cat1 = sts1.metadata['category']
+            cat1 = sts1.metadata[firstGSuiteCat]
             for sts2 in secondTs.getLeafNodes():
-                assert 'category' in sts2.metadata, "The GSuites must contain a category column/attribute named 'category'"
-                cat2 = sts2.metadata['category']
+                #assert 'category' in sts2.metadata, "The GSuites must contain a category column/attribute named 'category'"
+                # cat2 = sts2.metadata['category']
+                cat2 = sts2.metadata[secondGSuiteCat]
                 if cat1 == cat2:
                     realTs = TrackStructureV2()
                     realTs["query"] = sts1
@@ -353,14 +380,16 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
 
 
     @classmethod
-    def _prepareRandomizedTs(cls, firstTs, secondTs, binSource, excludedTs=None):
+    def _prepareRandomizedTs(cls, firstTs, secondTs, binSource,  firstGSuiteCat, secondGSuiteCat, excludedTs=None):
         ts = TrackStructureV2()
         for sts1 in firstTs.getLeafNodes():
-            assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
-            cat1 = sts1.metadata['category']
+            #assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
+            # cat1 = sts1.metadata['category']
+            cat1 = sts1.metadata[firstGSuiteCat]
             for sts2 in secondTs.getLeafNodes():
-                assert 'category' in sts2.metadata, "The GSuites must contain a category column/attribute named 'category'"
-                cat2 = sts2.metadata['category']
+                # assert 'category' in sts2.metadata, "The GSuites must contain a category column/attribute named 'category'"
+                # cat2 = sts2.metadata['category']
+                cat2 = sts2.metadata[secondGSuiteCat]
                 if cat1 == cat2:
                     assert cat1 not in ts, "Multiple tracks from category %s" % cat1
                     realTs = TrackStructureV2()
