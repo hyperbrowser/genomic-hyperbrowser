@@ -1,3 +1,5 @@
+from proto.RSetup import r, robjects
+
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -17,6 +19,8 @@ from quick.util import McEvaluators
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.restricted.DianasTool import geneExpression
+from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 
 
 class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
@@ -332,21 +336,32 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
             analysisSpec = cls._prepareAnalysis(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
+            data = []
             for cat, res in result.iteritems():
                 transformedResultsDict[cat].append(res.result)
+                data.append(res.result)
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
                 tableDict=transformedResultsDict,
                 columnNames=["Category", "Forbes similarity"]
             )
+
+            cls.drawHist(core, data)
+
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
+            data = []
+            data1 = []
             for cat, res in result.iteritems():
                 transformedResultsDict[cat].append(res.result['TSMC_' + PairedTSStat.__name__])
                 transformedResultsDict[cat].append(res.result[McEvaluators.PVAL_KEY])
+                data.append(res.result['TSMC_' + PairedTSStat.__name__])
+                data.append(res.result[McEvaluators.PVAL_KEY])
+
+
             # print transformedResultsDict
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
@@ -354,11 +369,38 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
                 columnNames=["Category", "Forbes similarity", "P-value"]
             )
 
+            cls.drawHist(core, data)
+            cls.drawHist(core, data1, breaks=[0,0.2, 0.4, 0.6, 0.8, 1.0])
+
         core.divEnd()
         core.divEnd()
         core.end()
         print core
 
+    @classmethod
+    def drawHist(cls, core, data, breaks = None):
+
+        if breaks == None:
+            rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
+            data = robjects.FloatVector(data)
+            dataFromRPois = r(rCode)(data)
+        else:
+            rCode = 'ourHist <- function(vec) {hist(vec[0], breaks=vec[1], plot=FALSE)}'
+            data = robjects.FloatVector([data, breaks])
+            dataFromRPois = r(rCode)(data)
+
+        breaks = list(dataFromRPois.rx2('breaks'))
+        counts = list(dataFromRPois.rx2('density'))
+        vg = visualizationGraphs()
+        res = vg.drawColumnChart(counts,
+                                 xAxisRotation=90,
+                                 categories=breaks,
+                                 showInLegend=False,
+                                 titleText='Histogram Forbes',
+                                 histogram=True,
+                                 height=400
+                                 )
+        core.line(res)
 
     @classmethod
     def _prepareTs(cls, firstTs, secondTs, firstGSuiteCat, secondGSuiteCat):
