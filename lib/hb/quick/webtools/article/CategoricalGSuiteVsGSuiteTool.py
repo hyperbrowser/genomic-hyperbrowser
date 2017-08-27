@@ -289,7 +289,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         """
         cls._setDebugModeIfSelected(choices)
 
-        DebugUtil.insertBreakPoint()
+        # DebugUtil.insertBreakPoint()
 
         genome = choices.genome
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
@@ -304,10 +304,10 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         if choices.excludedRegions:
             excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
-        core = HtmlCore()
-        core.begin()
-        core.divBegin(divId='results-page')
-        core.divBegin(divClass='results-section')
+        # core = HtmlCore()
+        # core.begin()
+        # core.divBegin(divId='results-page')
+        # core.divBegin(divClass='results-section')
 
 ######################################
 #PROFILING
@@ -325,40 +325,40 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             transformedResultsDict = OrderedDefaultDict(list)
             for cat, res in result.iteritems():
                 transformedResultsDict[cat].append(res.result)
-            addTableWithTabularAndGsuiteImportButtons(
-                core, choices, galaxyFn, choices.analysis,
-                tableDict=transformedResultsDict,
-                columnNames=["Category", "Forbes similarity"]
-            )
+            # addTableWithTabularAndGsuiteImportButtons(
+            #     core, choices, galaxyFn, choices.analysis,
+            #     tableDict=transformedResultsDict,
+            #     columnNames=["Category", "Forbes similarity"]
+            # )
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
-            # from gold.util.Profiler import Profiler
-            # prflr = Profiler()
-            # rDict={}
-            # prflr.run("rDict[0] = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']", globals(), locals())
-            # result = rDict[0]
+            from gold.util.Profiler import Profiler
+            prflr = Profiler()
+            rDict={}
+            prflr.run("rDict[0] = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']", globals(), locals())
+            result = rDict[0]
             # core.divBegin()
             # core.header('Profiling')
-            # prflr.printLinkToCallGraph(["test"], galaxyFn)
-            # prflr.printStats()
+            prflr.printLinkToCallGraph(["test"], galaxyFn)
+            prflr.printStats()
             # core.divEnd()
-            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            # result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
             for cat, res in result.iteritems():
                 transformedResultsDict[cat].append(res.result['TSMC_' + PairedTSStat.__name__])
                 transformedResultsDict[cat].append(res.result[McEvaluators.PVAL_KEY])
             # print transformedResultsDict
-            addTableWithTabularAndGsuiteImportButtons(
-                core, choices, galaxyFn, choices.analysis,
-                tableDict=transformedResultsDict,
-                columnNames=["Category", "Forbes similarity", "P-value"]
-            )
+            # addTableWithTabularAndGsuiteImportButtons(
+            #     core, choices, galaxyFn, choices.analysis,
+            #     tableDict=transformedResultsDict,
+            #     columnNames=["Category", "Forbes similarity", "P-value"]
+            # )
 
-        core.divEnd()
-        core.divEnd()
-        core.end()
-        print core
+        # core.divEnd()
+        # core.divEnd()
+        # core.end()
+        # print core
 
 
     @classmethod
