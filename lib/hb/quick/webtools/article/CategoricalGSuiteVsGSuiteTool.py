@@ -356,10 +356,12 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
             data = []
             data1 = []
             for cat, res in result.iteritems():
-                transformedResultsDict[cat].append(res.result['TSMC_' + PairedTSStat.__name__])
-                transformedResultsDict[cat].append(res.result[McEvaluators.PVAL_KEY])
-                data.append(res.result['TSMC_' + PairedTSStat.__name__])
-                data.append(res.result[McEvaluators.PVAL_KEY])
+                forbes = res.result['TSMC_' + PairedTSStat.__name__]
+                pVal = res.result[McEvaluators.PVAL_KEY]
+                transformedResultsDict[cat].append(forbes)
+                transformedResultsDict[cat].append(pVal)
+                data.append(forbes)
+                data1.append(pVal)
 
 
             # print transformedResultsDict
@@ -370,7 +372,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
             )
 
             cls.drawHist(core, data)
-            cls.drawHist(core, data1, breaks=[0,0.2, 0.4, 0.6, 0.8, 1.0])
+            cls.drawHist(core, data1, breaks = True)
 
         core.divEnd()
         core.divEnd()
@@ -378,16 +380,20 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
         print core
 
     @classmethod
-    def drawHist(cls, core, data, breaks = None):
+    def drawHist(cls, core, data, breaks = False):
 
-        if breaks == None:
+        if breaks == False:
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
             data = robjects.FloatVector(data)
             dataFromRPois = r(rCode)(data)
+            textTitle = 'Histogram Forbes'
+            # print '1', data
         else:
-            rCode = 'ourHist <- function(vec) {hist(vec[0], breaks=vec[1], plot=FALSE)}'
-            data = robjects.FloatVector([data, breaks])
+            # print '2', data
+            rCode = 'ourHist <- function(vec) {hist(vec, breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), plot=FALSE)}'
+            data = robjects.FloatVector(data)
             dataFromRPois = r(rCode)(data)
+            textTitle = 'Histogram p-values'
 
         breaks = list(dataFromRPois.rx2('breaks'))
         counts = list(dataFromRPois.rx2('density'))
@@ -396,7 +402,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
                                  xAxisRotation=90,
                                  categories=breaks,
                                  showInLegend=False,
-                                 titleText='Histogram Forbes',
+                                 titleText=textTitle,
                                  histogram=True,
                                  height=400
                                  )
