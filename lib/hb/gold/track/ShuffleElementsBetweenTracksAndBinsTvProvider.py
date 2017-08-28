@@ -170,9 +170,9 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
             if startPos:
                 endPos = startPos + segLen #-1
                 # self._addSegment(trackId, binId, startPos, endPos)
+                if not self._allowOverlaps:
+                    excludedRegions.addi(startPos, endPos)
                 self._addTrackElement(trackElement, startPos, endPos, binId, trackId)
-
-
             else:
                 discardedElements.append(trackElement)
 
