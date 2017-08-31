@@ -6,6 +6,7 @@ from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2
 from gold.track.TrackView import AutonomousTrackElement, TrackView
 from gold.track.TsBasedRandomTrackViewProvider import BetweenTrackRandomTvProvider, TsBasedRandomTrackViewProvider
 
+from bx.intervals.intersection import IntervalTree
 
 class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider):
 
@@ -47,7 +48,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         self._origTs = origTs
         self._binSource = binSource
         self._allowOverlaps = allowOverlaps
-        self._excludedRegions = self._generateExcludedRegions(excludedTs, binSource)
+        self._excludedTs = excludedTs
         self._trackIdToExcludedRegions = defaultdict(dict)
         self._binList = list(binSource)
         self._binDict = dict([(hash(x), x) for x in binSource])
@@ -107,11 +108,13 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
         candidateEndPos = candidateStartPos + segLen #-1?
         cnt = 0
-        while excludedRegions.overlaps(candidateStartPos, candidateEndPos) and cnt < maxSampleCount:
+        # while excludedRegions.overlaps(candidateStartPos, candidateEndPos) and cnt < maxSampleCount:
+        while excludedRegions.find(candidateStartPos, candidateEndPos) and cnt < maxSampleCount:
             candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end)
             candidateEndPos = candidateStartPos + segLen  # -1?
             cnt += 1
-        if excludedRegions.overlaps(candidateStartPos, candidateEndPos):
+        # if excludedRegions.overlaps(candidateStartPos, candidateEndPos):
+        if excludedRegions.find(candidateStartPos, candidateEndPos):
             return None
         else:
             return candidateStartPos
@@ -123,23 +126,25 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         binSource: a GenomeRegion iterator
         The exclusion track is saved in a dict of IntervalTree objects, one for each region.'''
 
-        from intervaltree import IntervalTree
         excludedRegions = {} #region -> IntervalTree
+        for region in binSource:
+            excludedRegions[region] = self._generateExcludedRegion(excludedTs, region)
+        return excludedRegions
 
+    def _generateExcludedRegion(self, excludedTs, region):
+        excludedRegion = IntervalTree()
         if excludedTs is None:
-            for region in binSource:
-                excludedRegions[region] = IntervalTree()
-            return excludedRegions
-        #for now we only support a single exclusion track
+            return excludedRegion
+        # for now we only support a single exclusion track
         assert isinstance(excludedTs, SingleTrackTS), "Only Single track TS supported for exclusion track."
         excludedTrack = excludedTs.track
+        excludedTV = RawDataStat(region, excludedTrack, NeutralTrackFormatReq()).getResult()
+        for x in zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray()):
+            excludedRegion.insert(*x)
+            # excludedRegions[region] = IntervalTree.from_tuples(
+            #     zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray()))
 
-        for region in binSource:
-            excludedTV = RawDataStat(region, excludedTrack, NeutralTrackFormatReq()).getResult()
-            excludedRegions[region] = IntervalTree.from_tuples(
-                zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray()))
-
-        return excludedRegions
+        return excludedRegion
 
     def _populatePool(self):
 
@@ -157,28 +162,38 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         trackIdToRandomTrackArraysDict = dict()
 
         discardedElements = list()
+        getStartEndFromInterval = lambda x: (x.start, x.end)
         for trackElement in allTrackElements:
             trackId = self._selectRandomTrackId()
             binId = self._selectRandomBin()
 
             segLen = len(trackElement)
             if binId not in self._trackIdToExcludedRegions[trackId]:
-                self._trackIdToExcludedRegions[trackId][binId] = self._excludedRegions[binId].copy()
+                # self._trackIdToExcludedRegions[trackId][binId] = self._excludedRegions[binId].copy()
+                self._trackIdToExcludedRegions[trackId][binId] = self._generateExcludedRegion(self._excludedTs, binId)
             excludedRegions = self._trackIdToExcludedRegions[trackId][binId]
             # gRegion = self._binDict[binId]
             startPos = self._selectRandomValidStartPosition(segLen, binId, excludedRegions)
             if startPos:
                 endPos = startPos + segLen #-1
                 if not self._allowOverlaps:
-                    excludedRegions.addi(startPos, endPos)
+                    excludedRegions.add(startPos, endPos)
+
+                    # excludedRegions.addi(startPos, endPos)
                 self._addTrackElement(trackElement, startPos, endPos, binId, trackId)
-
-
+                assert len(excludedRegions.find(startPos, endPos)) == 1, "Overlapping segments!"
             else:
                 discardedElements.append(trackElement)
 
         print "Discarded %i elements" % len(discardedElements)
-
+    #     for trackId, val in self._trackIdToExcludedRegions.iteritems():
+    #         print "Track: %s" % str(trackId)
+    #         for binId, iTree in val.iteritems():
+    #             print "Bin ID: %s" % str(binId)
+    #             iTree.traverse(self.printIntervalNode)
+    #
+    # def printIntervalNode(self, x):
+    #     print "(%s, %s)" % (x.start, x.end)
 
     def _selectRandomTrackId(self):
         from random import randint
