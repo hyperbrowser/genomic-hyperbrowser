@@ -82,7 +82,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         :return:
         '''
 
-        if targetGenomeRegion - targetGenomeRegion.start < segLen:
+        if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
             return None
         from random import randint
         candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
@@ -120,9 +120,11 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
 
     def _populatePool(self):
 
-        from random import shuffle
         discardedElements = list()
-        for trackElement in shuffle(self._getAllTrackElementsFromTS(self._origTs, self._binSource)):
+        allTrackElements = self._getAllTrackElementsFromTS(self._origTs, self._binSource)
+        from random import shuffle
+        shuffle(allTrackElements)
+        for trackElement in allTrackElements:
             trackId = self._selectRandomTrackId()
             binId = self._selectRandomBin()
             segLen = len(trackElement)
