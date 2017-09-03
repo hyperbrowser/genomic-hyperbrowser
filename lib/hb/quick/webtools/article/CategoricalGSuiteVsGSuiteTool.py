@@ -11,6 +11,7 @@ from gold.util.CommonClasses import OrderedDefaultDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.MultiplePairedTSStat import MultiplePairedTSStat
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
