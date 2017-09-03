@@ -8,12 +8,10 @@ from gold.util.CommonClasses import OrderedDefaultDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.MultiplePairedTSStat import MultiplePairedTSStat
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util import McEvaluators
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -289,8 +287,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         """
         cls._setDebugModeIfSelected(choices)
 
-        # DebugUtil.insertBreakPoint()
-
         genome = choices.genome
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
@@ -304,19 +300,10 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         if choices.excludedRegions:
             excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
-        # core = HtmlCore()
-        # core.begin()
-        # core.divBegin(divId='results-page')
-        # core.divBegin(divClass='results-section')
-
-######################################
-#PROFILING
-        # import cProfile
-        # ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
-        # analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
-        # result = cProfile.runctx("doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']", globals(), locals())
-        # print result
-#######################################
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId='results-page')
+        core.divBegin(divClass='results-section')
 
         if choices.analysis == "Forbes":
             ts = cls._prepareTs(firstTs, secondTs)
@@ -325,40 +312,29 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             transformedResultsDict = OrderedDefaultDict(list)
             for cat, res in result.iteritems():
                 transformedResultsDict[cat].append(res.result)
-            # addTableWithTabularAndGsuiteImportButtons(
-            #     core, choices, galaxyFn, choices.analysis,
-            #     tableDict=transformedResultsDict,
-            #     columnNames=["Category", "Forbes similarity"]
-            # )
+            addTableWithTabularAndGsuiteImportButtons(
+                core, choices, galaxyFn, choices.analysis,
+                tableDict=transformedResultsDict,
+                columnNames=["Category", "Forbes similarity"]
+            )
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
-            from gold.util.Profiler import Profiler
-            prflr = Profiler()
-            rDict={}
-            prflr.run("rDict[0] = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']", globals(), locals())
-            result = rDict[0]
-            # core.divBegin()
-            # core.header('Profiling')
-            prflr.printLinkToCallGraph(["test"], galaxyFn)
-            prflr.printStats()
-            # core.divEnd()
-            # result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             transformedResultsDict = OrderedDefaultDict(list)
             for cat, res in result.iteritems():
                 transformedResultsDict[cat].append(res.result['TSMC_' + PairedTSStat.__name__])
                 transformedResultsDict[cat].append(res.result[McEvaluators.PVAL_KEY])
-            # print transformedResultsDict
-            # addTableWithTabularAndGsuiteImportButtons(
-            #     core, choices, galaxyFn, choices.analysis,
-            #     tableDict=transformedResultsDict,
-            #     columnNames=["Category", "Forbes similarity", "P-value"]
-            # )
+            addTableWithTabularAndGsuiteImportButtons(
+                core, choices, galaxyFn, choices.analysis,
+                tableDict=transformedResultsDict,
+                columnNames=["Category", "Forbes similarity", "P-value"]
+            )
 
-        # core.divEnd()
-        # core.divEnd()
-        # core.end()
-        # print core
+        core.divEnd()
+        core.divEnd()
+        core.end()
+        print core
 
 
     @classmethod
