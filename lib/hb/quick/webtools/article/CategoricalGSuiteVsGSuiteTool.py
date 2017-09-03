@@ -360,8 +360,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             data = []
             data1 = []
             for cat, res in result.iteritems():
-                transformedResultsDict[cat].append(res.result['TSMC_' + PairedTSStat.__name__])
-                transformedResultsDict[cat].append(res.result[McEvaluators.PVAL_KEY])
                 forbes = res.result['TSMC_' + PairedTSStat.__name__]
                 pVal = res.result[McEvaluators.PVAL_KEY]
                 transformedResultsDict[cat].append(forbes)
