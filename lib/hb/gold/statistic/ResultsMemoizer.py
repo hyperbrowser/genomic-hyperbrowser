@@ -1,7 +1,8 @@
 from gold.statistic.MemoDataCollection import MemoDataCollection
 from gold.util.CommonFunctions import createMemoPath, getClassName
 from gold.util.CompBinManager import CompBinManager
-from config.Config import LOAD_DISK_MEMOIZATION, STORE_DISK_MEMOIZATION, MEMOIZED_DATA_PATH
+from config.Config import LOAD_DISK_MEMOIZATION as CFG_LOAD_DISK_MEMOIZATION, \
+    STORE_DISK_MEMOIZATION as CFG_STORE_DISK_MEMOIZATION
 #from quick.util.CommonFunctions import ensurePathExists
 
 #import third_party.safeshelve as safeshelve
@@ -9,6 +10,8 @@ from config.Config import LOAD_DISK_MEMOIZATION, STORE_DISK_MEMOIZATION, MEMOIZE
 import os
 
 class ResultsMemoizer(object):
+    LOAD_DISK_MEMOIZATION = CFG_LOAD_DISK_MEMOIZATION
+    STORE_DISK_MEMOIZATION = CFG_STORE_DISK_MEMOIZATION
 #    TEMP_ONE_MEMODICT_PER_CHR_TR1 = True
 
     memoDataCollection = MemoDataCollection()
@@ -20,14 +23,14 @@ class ResultsMemoizer(object):
     #                             'XYPairStatUnsplittable', 'DataComparisonStatUnsplittable',\
     #                             'ListCollapserStatUnsplittable', 'SingleValExtractorStatUnsplittable']
 
-    #fixme: Only temporarily. One path with chromosome length and track1 hash
-    @classmethod
-    def _createShortMemoPath(cls, stat):
-        return os.sep.join([MEMOIZED_DATA_PATH, str(len(stat._region)),  str(stat._track.getUniqueKey(stat._region.genome))])
+    # #fixme: Only temporarily. One path with chromosome length and track1 hash
+    # @classmethod
+    # def _createShortMemoPath(cls, stat):
+    #     return os.sep.join([MEMOIZED_DATA_PATH, str(len(stat._region)),  str(stat._track.getUniqueKey(stat._region.genome))])
     
     @classmethod
     def storeResult(cls, stat):
-        if not STORE_DISK_MEMOIZATION or stat.resultLoadedFromDisk or not ResultsMemoizer.isMemoizable(stat):
+        if not cls.STORE_DISK_MEMOIZATION or stat.resultLoadedFromDisk or not ResultsMemoizer.isMemoizable(stat):
             return
 
         memoPath = cls._createMemoPath(stat)
@@ -46,10 +49,10 @@ class ResultsMemoizer(object):
         
         #cls.writeShelves[memoPath]
         cls.memoDataCollection[memoPath][posIndex] = stat._result
-        
+
     @classmethod
     def loadResult(cls, stat):
-        if not LOAD_DISK_MEMOIZATION or not ResultsMemoizer.isMemoizable(stat):
+        if not cls.LOAD_DISK_MEMOIZATION or not ResultsMemoizer.isMemoizable(stat):
             return
         
         memoPath = cls._createMemoPath(stat)
@@ -76,10 +79,10 @@ class ResultsMemoizer(object):
         #    #cls._openShelf(memoPath, memoFn)
         #    
         res = cls.memoDataCollection[memoPath].get(posIndex)
-        if res is not None:
+        # if res is not None:
         #if posIndex in cls.readShelves[memoPath]:
             #print 'using res for posIndex: ', posIndex
-            stat.setMemoizedResult( res )
+        stat.setMemoizedResult( res )
         #else:
             #print 'did not find res for posIndex: ', posIndex
         
