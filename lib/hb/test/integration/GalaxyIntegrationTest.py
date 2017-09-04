@@ -4,11 +4,12 @@ import functools
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
 import config.Config
+
 LOG_PATH = HB_SOURCE_CODE_BASE_DIR + os.sep + '.testlogs'
 
 import gold.statistic.Statistic
-import gold.statistic.ResultsMemoizer
 import gold.application.StatRunner
+from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.application.GalaxyInterface import GalaxyInterface
 
 import gold.description.Analysis
@@ -45,7 +46,24 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
             print 'Result: ', resList
 
         self.assertListsOrDicts(target, resList)
-    
+
+    @staticmethod
+    def _runTypeGenerator():
+        for runType in ['full', 'compBin', 'loadMemo']:
+            # Needs to set in config.Config due to GalaxyInterface._tempAnalysisDefHacks()
+            config.Config.ALLOW_COMP_BIN_SPLITTING = False if runType == 'full' else True
+
+            ResultsMemoizer.STORE_DISK_MEMOIZATION = True if runType == 'compBin' else False
+            ResultsMemoizer.LOAD_DISK_MEMOIZATION = True if runType == 'loadMemo' else False
+
+            print
+            print "---------------------"
+            print "Run type: " + runType
+            print "---------------------"
+            print
+
+            yield runType
+
     def _assertRunEqual(self, target, *args, **kwArgs):
         if self.VERBOSE:
             DebugConfig.PASS_ON_COMPUTE_EXCEPTIONS = True
@@ -59,9 +77,7 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
         
         args[2] = analysisDef[0] + " -> " + analysisDef[1]
         
-        for diskMemo in [False, True]:
-            gold.statistic.ResultsMemoizer.LOAD_DISK_MEMOIZATION = diskMemo
-
+        for runType in self._runTypeGenerator():
             if self._usesProfiling():
                 DebugConfig.USE_PROFILING = True
                 
@@ -71,12 +87,11 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
             if kwArgs.get('globalTarget') != None:
                 self._assertEqualGlobalResults(kwArgs['globalTarget'], res)
                 
-            if self._usesProfiling():
-                self._storeProfile(diskMemo)
+            # if self._usesProfiling():
+            #     self._storeProfile(diskMemo)
     
     def _assertBatchEqual(self, target, *args):
-        for diskMemo in [False, True]:
-            gold.statistic.ResultsMemoizer.LOAD_DISK_MEMOIZATION = diskMemo
+        for runType in self._runTypeGenerator():
             batchRes = GalaxyInterface.runBatchLines(*args)
             for i in range(len(batchRes)):
                 self._assertEqualResults(target[i], batchRes[i])
