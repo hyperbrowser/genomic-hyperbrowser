@@ -20,7 +20,7 @@ from quick.webtools.gsuite.GSuiteConvertFromPreprocessedToPrimaryTool import GSu
     FileFormatInfo
 
 
-class CountNullModelForRandomizedGSuiteTool(GeneralGuiTool):
+class RandomizeTracksInGsuiteTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
         return "Randomize gSuite"
