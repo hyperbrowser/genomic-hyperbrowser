@@ -75,3 +75,9 @@ class OutsideBoundingRegionError(Exception):
     
 class BoundingRegionsNotAvailableError(Exception):
     pass
+
+class LackingTsResultsError(Exception):
+    pass
+
+class InvalidStatArgumentError(Exception):
+    pass

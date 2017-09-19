@@ -26,6 +26,7 @@ class Track(object):
         self._trackFormatReq = NeutralTrackFormatReq()
         self.formatConverters = None
         self._trackId = None
+        self._randIndex = None
 
     def _getRawTrackView(self, region, borderHandling, allowOverlaps):
         trackData = self._trackSource.getTrackData(self.trackName, region.genome, region.chr, allowOverlaps)
@@ -75,10 +76,14 @@ class Track(object):
                      getClassName(self.formatConverters[0]) if self.formatConverters else '',
                      self.formatConverters[0].VERSION if self.formatConverters else '',
                      self._trackFormatReq.allowOverlaps() if self._trackFormatReq.allowOverlaps() else '',
-                     self._trackFormatReq.borderHandling() if self._trackFormatReq.borderHandling() else ''))
+                     self._trackFormatReq.borderHandling() if self._trackFormatReq.borderHandling() else '',
+                     self._randIndex if self._randIndex else ""))
 
     def resetTrackSource(self):
         self._trackSource = TrackSource()
+
+    def setRandIndex(self, randIndex):
+        pass #used only by TsBasedRandomTrack
 
 class PlainTrack(Track):
     '''
@@ -87,7 +92,7 @@ class PlainTrack(Track):
     tracks outside of the statistics running modules.
     '''
     def __new__(cls, trackName, trackTitle=None):
-        if len(trackName) == 0 or trackName is None:
+        if trackName is None or len(trackName) == 0:
             return None
         else:
             if ExternalTrackManager.isVirtualTrack(trackName):

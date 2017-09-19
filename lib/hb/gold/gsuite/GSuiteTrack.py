@@ -239,11 +239,11 @@ class GSuiteTrack(object):
                     val = unquote(val)
                 self._attributes[key] = val
 
-    @takes(str, str)
+    @takes('GSuiteTrack', str, str)
     def setAttribute(self, attrName, attrVal):
         self._attributes[attrName] = attrVal
 
-    @takes(str)
+    @takes('GSuiteTrack', str)
     @returns(str)
     def getAttribute(self, attrName):
         if attrName in self._attributes:
