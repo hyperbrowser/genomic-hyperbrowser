@@ -2,11 +2,11 @@
 <toolbox monitor="true">
 
 
-  <label text="Project" id="project_tools" />
-
-  <section name="Assembly gap" id="assembly_gap" >
+  <label text="Assembly gap" id="assembly_gap_project_tools" />
+  <section name="Randomization tool" id="rand_assembly_gap" >
     <tool file="proto/hyperbrowser/article/CategoricalGSuiteVsGSuiteTool.xml" />
   </section>
+
 
 
   <label text="GSuite HyperBrowser tools" id="hb_gsuite_tools" />
