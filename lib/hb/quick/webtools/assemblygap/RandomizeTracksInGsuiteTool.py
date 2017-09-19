@@ -5,9 +5,11 @@ from collections import OrderedDict
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.statistic.CountElementStat import CountElementStat
+from gold.track.TrackStructure import SingleTrackTS
 from gold.util.RandomUtil import random
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.statistic.AvgSegLenStat import AvgSegLenStat
+from quick.statistic.SingleTSStat import SingleTSStat
 from quick.util.CommonFunctions import ensurePathExists
 from gold.gsuite import GSuiteConstants
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
@@ -18,9 +20,10 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool, GeneralGuiToolMixin
 from gold.track.Track import Track, PlainTrack
 from quick.webtools.gsuite.GSuiteConvertFromPreprocessedToPrimaryTool import GSuiteConvertFromPreprocessedToPrimaryTool, \
     FileFormatInfo
+from quick.webtools.mixin.DebugMixin import DebugMixin
 
 
-class RandomizeTracksInGsuiteTool(GeneralGuiTool):
+class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
     @classmethod
     def getToolName(cls):
         return "Randomize gSuite"
@@ -31,7 +34,8 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
                 ('With exclusion', 'excl'),
                 ('Select track', 'track'),
                 ('Number of randomised variants', 'varTracks'),
-                ('Randomize with (yes - average length and elements number of gsuite) and (no - length and elements number of gsuite)', 'option')]
+                ('Randomize with (yes - average length and elements number of gsuite) and (no - length and elements number of gsuite)', 'option')]+ \
+               cls.getInputBoxNamesForDebug()
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -57,6 +61,8 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         #http://bedtools.readthedocs.io/en/latest/content/tools/shuffle.html
+
+        cls._setDebugModeIfSelected(choices)
 
         import gold.gsuite.GSuiteComposer as GSuiteComposer
         from gold.gsuite.GSuite import GSuite
@@ -88,8 +94,11 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
 
         allTracksLen = gSuite.numTracks()
         analysisBins = GlobalBinSource(genome)
-        analysis1 = AnalysisSpec(AvgSegLenStat)
-        analysis2 = AnalysisSpec(CountElementStat)
+        analysis1 = AnalysisSpec(SingleTSStat)
+        analysis1.addParameter('rawStatistic', AvgSegLenStat.__name__)
+        # analysis1 = AnalysisSpec(AvgSegLenStat)
+        analysis2 = AnalysisSpec(SingleTSStat)
+        analysis2.addParameter('rawStatistic', CountElementStat.__name__)
 
         analysisDict = OrderedDict()
         avgLength = 0
@@ -102,12 +111,16 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
                 analysisDict[title]['length'] = 0
                 analysisDict[title]['number'] = 0
 
-            resultsAvgSegLen = doAnalysis(analysis1, analysisBins, [PlainTrack(track.trackName)])
-            analysisDict[title]['length'] = resultsAvgSegLen.getGlobalResult()['Result']
+            sts = SingleTrackTS(PlainTrack(track.trackName), OrderedDict(title=track.title, genome=str(genome)))
+
+            # resultsAvgSegLen = doAnalysis(analysis1, analysisBins, [PlainTrack(track.trackName)])
+            resultsAvgSegLen = doAnalysis(analysis1, analysisBins, sts)
+            analysisDict[title]['length'] = resultsAvgSegLen.getGlobalResult()['Result'].result
             avgLength += analysisDict[title]['length']
 
-            resultsCountElement = doAnalysis(analysis2, analysisBins, [PlainTrack(track.trackName)])
-            analysisDict[title]['number'] = resultsCountElement.getGlobalResult()['Result']
+            # resultsCountElement = doAnalysis(analysis2, analysisBins, [PlainTrack(track.trackName)])
+            resultsCountElement = doAnalysis(analysis2, analysisBins, sts)
+            analysisDict[title]['number'] = resultsCountElement.getGlobalResult()['Result'].result
             avgNumber += analysisDict[title]['number']
 
         avgLength = float(avgLength/allTracksLen)
@@ -293,10 +306,10 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
     # def getFullExampleURL(cls):
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     return False
-    #
+    @classmethod
+    def isDebugMode(cls):
+        return True
+
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
