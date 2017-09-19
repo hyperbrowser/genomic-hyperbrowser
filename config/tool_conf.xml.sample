@@ -4,6 +4,8 @@
 
   <label text="Assembly gap" id="assembly_gap_project_tools" />
   <section name="Randomization tool" id="rand_assembly_gap" >
+    <tool file="proto/hyperbrowser/assemblygap/RandomTracksFromGsuiteTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/RandomizeTracksInGsuiteTool.xml" />
     <tool file="proto/hyperbrowser/article/CategoricalGSuiteVsGSuiteTool.xml" />
   </section>
 
