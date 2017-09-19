@@ -23,7 +23,8 @@ from quick.webtools.gsuite.GSuiteConvertFromPreprocessedToPrimaryTool import GSu
 from quick.webtools.mixin.DebugMixin import DebugMixin
 
 
-class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
+#class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
+class RandomizeTracksInGsuiteTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
         return "Randomize gSuite"
@@ -34,8 +35,9 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
                 ('With exclusion', 'excl'),
                 ('Select track', 'track'),
                 ('Number of randomised variants', 'varTracks'),
-                ('Randomize with (yes - average length and elements number of gsuite) and (no - length and elements number of gsuite)', 'option')]+ \
-               cls.getInputBoxNamesForDebug()
+                ('Randomize with (yes - average length and elements number of GSuite) and (no - length and elements number of each track in GSuite)', 'option')]\
+               # + \
+               # cls.getInputBoxNamesForDebug()
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -52,7 +54,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
 
     @classmethod
     def getOptionsBoxVarTracks(cls, prevChoices):
-        return '100'
+        return '1'
 
     @classmethod
     def getOptionsBoxOption(cls, prevChoices):
@@ -62,7 +64,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
     def execute(cls, choices, galaxyFn=None, username=''):
         #http://bedtools.readthedocs.io/en/latest/content/tools/shuffle.html
 
-        cls._setDebugModeIfSelected(choices)
+        # cls._setDebugModeIfSelected(choices)
 
         import gold.gsuite.GSuiteComposer as GSuiteComposer
         from gold.gsuite.GSuite import GSuite
@@ -222,6 +224,17 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
+
+        if not choices.gsuite:
+            return 'You need to specify GSuite'
+
+        if choices.excl == 'yes' and not choices.track:
+            return 'You need to specify track'
+
+        if not choices.varTracks:
+            return 'You need to specify number of randomised variants'
+
+
         return None
 
     @staticmethod
@@ -306,9 +319,9 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
     # def getFullExampleURL(cls):
     #     return None
     #
-    @classmethod
-    def isDebugMode(cls):
-        return True
+    # @classmethod
+    # def isDebugMode(cls):
+    #     return True
 
     @classmethod
     def getOutputFormat(cls, choices):

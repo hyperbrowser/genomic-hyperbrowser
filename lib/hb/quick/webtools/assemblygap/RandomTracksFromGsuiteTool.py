@@ -64,6 +64,10 @@ class RandomTracksFromGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
+
+        if choices.gsuite:
+            return 'You need to specify GSuite'
+
         return None
 
     @classmethod
