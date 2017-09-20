@@ -65,7 +65,6 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
         #http://bedtools.readthedocs.io/en/latest/content/tools/shuffle.html
 
         # cls._setDebugModeIfSelected(choices)
-
         import gold.gsuite.GSuiteComposer as GSuiteComposer
         from gold.gsuite.GSuite import GSuite
         from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
