@@ -39,6 +39,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
                # + \
                # cls.getInputBoxNamesForDebug()
 
+
     @classmethod
     def getOptionsBoxGsuite(cls):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
