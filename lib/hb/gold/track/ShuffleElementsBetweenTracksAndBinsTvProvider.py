@@ -19,6 +19,8 @@ class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider
 
     def getTrackView(self, region, origTrack, randIndex):
         if randIndex not in self._poolDict:
+            #remove all previous samples, we assume they are not needed
+            self._poolDict = OrderedDict()
             self._poolDict[randIndex] = ShuffleElementsBetweenTracksAndBinsPool(self._origTs, self._binSource, self._allowOverlaps, self._excludedTs)
         return self._poolDict[randIndex].getTrackView(region, origTrack)
 
@@ -138,7 +140,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
             else:
                 discardedElements.append(trackElement)
 
-        print "Discarded %i elements" % len(discardedElements)
+        print "Discarded %i elements out of %i possible." % (len(discardedElements), len(allTrackElements))
 
     def _addElementAndUpdateExcludedRegions(self, startPos, segLen, trackElement, trackId, binId, excludedRegions):
         endPos = startPos + segLen  # -1
