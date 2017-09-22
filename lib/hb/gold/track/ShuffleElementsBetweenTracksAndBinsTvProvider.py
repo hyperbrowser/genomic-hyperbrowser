@@ -1,5 +1,7 @@
 from collections import OrderedDict, defaultdict
 
+import numpy
+
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackStructure import SingleTrackTS
@@ -12,35 +14,153 @@ class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider
 
     def __init__(self, origTs, excludedTs, binSource, allowOverlaps):
         TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps)
-        self._poolDict = OrderedDict() #rand_index -> trackId -> binId -> list of TrackElements
+        # self._poolDict = OrderedDict() #rand_index -> trackId -> binId -> list of TrackElements
         self._excludedTs = excludedTs
         self._binSource = binSource
+        self._curRandIndex = -1
+        self._pool = None
 
 
     def getTrackView(self, region, origTrack, randIndex):
-        if randIndex not in self._poolDict:
-            self._poolDict[randIndex] = ShuffleElementsBetweenTracksAndBinsPool(self._origTs, self._binSource, self._allowOverlaps, self._excludedTs)
-        return self._poolDict[randIndex].getTrackView(region, origTrack)
+        assert randIndex >= 0
+        assert randIndex in [self._curRandIndex, self._curRandIndex + 1]
+        if self._curRandIndex == -1:
+            self._pool = RandomizeAcrossRegionsPool(self._origTs, self._binSource, self._allowOverlaps, self._excludedTs)
+        if randIndex == self._curRandIndex + 1:
+            self._pool.randomize()
+            self._curRandIndex = randIndex
+        return self._pool.getTrackView(region, origTrack)
 
 
-class ShuffleElementsBetweenTracksAndBinsPool(object):
+class RandomizedTrackDataStorage(object):
+    def __init__(self, trackList, binSource, trackColsToRead):
+        self._trackList = trackList
+
+class RandomizationExcludedRegions(object):
+    def __init__(self, excludedTS, binSource):
+        self._excludedTS = excludedTS
+        self._binSource = binSource
+        self._regions = dict()
+
+class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(object):
+    MISSING_EL = -1
+
+    def __init__(self, excludedTs=None, maxSampleCount=25):
+        self._excludedTs = excludedTs
+        # self._trackIdToExcludedRegions = defaultdict(dict)
+        self._maxSampleCount = maxSampleCount
+        self._excludedRegions = None
+
+    def getReadFromDiskTrackColumns(self):
+        return ['lengths']
+
+    def getInitTrackColumns(self):
+        return ['starts']
+
+    def needsMask(self):
+        return True
+
+    def randomize(self, trackDataStorage, excludedRegions):
+        trackDataStorage.shuffle()
+        for trackIndex in trackDataStorage.getTrackIndices():
+            for binIndex in trackDataStorage.getBinIndices():
+                if not self._excludedRegions:
+                    self._generateExcludedRegions()
+                trackDataStorageView = trackDataStorage.getView(trackIndex, binIndex)
+
+                startsArray = self._generateStartsArray(trackDataStorageView.getTrackColumnData('lengths'),
+                                                        excludedRegions)
+                trackDataStorageView.setTrackColumnData('starts', startsArray)
+
+                maskArray = generateMaskArray(startsArray, self.MISSING_EL)
+                trackDataStorageView.setMaskColumn(maskArray)
+
+                trackDataStorageView.sort('starts')
+
+        return trackDataStorage
+
+    def _generateExcludedRegions(self, excludedTs, binSource):
+
+        '''
+        excludedTs: the single track TS that holds the exclusion track
+        binSource: a GenomeRegion iterator
+        The exclusion track is saved in a dict of IntervalTree objects, one for each region.'''
+
+        excludedRegions = {} #region -> IntervalTree
+        for region in binSource:
+            excludedRegions[region] = self._generateExcludedRegion(excludedTs, region)
+        return excludedRegions
+
+    def _generateExcludedRegion(self, excludedTs, region):
+        excludedRegion = IntervalTree()
+        if excludedTs is None:
+            return excludedRegion
+        # for now we only support a single exclusion track
+        assert isinstance(excludedTs, SingleTrackTS), "Only Single track TS supported for exclusion track."
+        excludedTV = RawDataStat(region, excludedTs.track, NeutralTrackFormatReq()).getResult()
+        for x in zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray()):
+            excludedRegion.insert(*x)
+        return excludedRegion
+
+    def _generateStartsArray(self, lengthsArray, targetGenomeRegion):
+        startsArray = numpy.zeros(len(lengthsArray), dtype='int32')
+        for i, segLen in enumerate(lengthsArray):
+            startsArray[i] = self._selectRandomValidStartPosition(segLen, targetGenomeRegion)
+        return startsArray
+
+    def _selectRandomValidStartPosition(self, segLen, targetGenomeRegion):
+        '''
+        Randomly select a start position.
+        For it to be valid, it must not overlap any of the excluded regions.
+        If no valid position is found after maxSampleCount attempts, None is returned
+        :param segLen: The length of the track element
+        :param targetGenomeRegion: The genome region to sample
+        :param excludedRegions: IntervalTree object containing all intervals that must be avoided
+        :param maxSampleCount: Nr of times the sampling is done if no valid position is selected.
+        :return:
+        '''
+
+        if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
+            return self.MISSING_EL
+        from random import randint
+        candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
+        cnt = 0
+
+        excludedRegions = self._blabla.getExcludedRegions(targetGenomeRegion)
+        while excludedRegions.find(candidateStartPos, candidateStartPos + segLen) and cnt < self._maxSampleCount:
+            candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
+            cnt += 1
+        if cnt==self._maxSampleCount and excludedRegions.find(candidateStartPos, candidateStartPos + segLen):
+            return self.MISSING_EL
+        else:
+            return candidateStartPos
+
+
+
+class RandomizeAcrossRegionsPool(object):
 
     UNKNOWN_GENOME = 'unknown' #used for unique ID generation
 
-    def __init__(self, origTs, binSource, allowOverlaps=False, excludedTs=None):
-        self._trackElementLists = defaultdict(lambda: defaultdict(list))
+    def __init__(self, randAlgorithm, origTs, binSource, allowOverlaps=False):
+        # self._trackElementLists = defaultdict(lambda: defaultdict(list))
+        self._randAlgorithm = randAlgorithm
         self._origTs = origTs
         self._binSource = binSource
         self._allowOverlaps = allowOverlaps
-        self._excludedTs = excludedTs
-        self._trackIdToExcludedRegions = defaultdict(dict)
-        self._binList = list(binSource)
-        self._trackIdList = [sts.track.getUniqueKey(
-            self._binSource.genome if self._binSource.genome else self.UNKNOWN_GENOME) \
-            for sts in self._origTs.getLeafNodes()]
-        self._isSorted = False
-        self._populatePool()
+        # self._trackIdToExcludedRegions = defaultdict(dict)
+        # self._binList = list(binSource)
+        # self._trackIdList = [sts.track.getUniqueKey(
+        #     self._binSource.genome if self._binSource.genome else self.UNKNOWN_GENOME) \
+        #     for sts in self._origTs.getLeafNodes()]
+        # self._isSorted = False
+        # self._populatePool()
+        self._trackDataStorage = self._initTrackDataStorage(origTs)
 
+    def _initTrackDataStorage(self, origTs):
+        return RandomizedTrackDataStorage()
+
+    def randomize(self):
+        self._trackDataStorage = self._randAlgorithm.randomize(self._trackDataStorage)
 
     @staticmethod
     def _getAllTrackElementsFromTS(ts, binSource):
@@ -69,31 +189,6 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         autonomousTrackElement._end = newEndPos
         self._trackElementLists[trackId][binId].append(autonomousTrackElement)
 
-    @staticmethod
-    def _selectRandomValidStartPosition(segLen, targetGenomeRegion, excludedRegions, maxSampleCount=25):
-        '''
-        Randomly select a start position.
-        For it to be valid, it must not overlap any of the excluded regions.
-        If no valid position is found after maxSampleCount attempts, None is returned
-        :param segLen: The length of the track element
-        :param targetGenomeRegion: The genome region to sample
-        :param excludedRegions: IntervalTree object containing all intervals that must be avoided
-        :param maxSampleCount: Nr of times the sampling is done if no valid position is selected.
-        :return:
-        '''
-
-        if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
-            return None
-        from random import randint
-        candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
-        cnt = 0
-        while excludedRegions.find(candidateStartPos, candidateStartPos + segLen) and cnt < maxSampleCount:
-            candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
-            cnt += 1
-        if cnt==maxSampleCount and excludedRegions.find(candidateStartPos, candidateStartPos + segLen):
-            return None
-        else:
-            return candidateStartPos
 
     def _generateExcludedRegions(self, excludedTs, binSource):
 
