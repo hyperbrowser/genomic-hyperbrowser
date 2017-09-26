@@ -140,7 +140,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
             else:
                 discardedElements.append(trackElement)
 
-        print "Discarded %i elements out of %i possible." % (len(discardedElements), len(allTrackElements))
+        #print "Discarded %i elements out of %i possible." % (len(discardedElements), len(allTrackElements))
 
     def _addElementAndUpdateExcludedRegions(self, startPos, segLen, trackElement, trackId, binId, excludedRegions):
         endPos = startPos + segLen  # -1
