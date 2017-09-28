@@ -1,8 +1,9 @@
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, namedtuple
 
-import numpy
+import numpy as np
 
 from gold.statistic.RawDataStat import RawDataStat
+from gold.track.NumpyDataFrame import NumpyDataFrame
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackStructure import SingleTrackTS
 from gold.track.TrackView import AutonomousTrackElement, TrackView
@@ -102,7 +103,7 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
     def getReadFromDiskTrackColumns(self):
         return ['lengths']
 
-    def getInitTrackColumns(self):
+    def getGeneratedTrackColumns(self):
         return ['starts']
 
     def needsMask(self):
@@ -126,7 +127,7 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         return trackDataStorage
 
     def _generateStartsArray(self, lengthsArray, targetGenomeRegion):
-        startsArray = numpy.zeros(len(lengthsArray), dtype='int32')
+        startsArray = np.zeros(len(lengthsArray), dtype='int32')
         overlapDetector = self._overlapDetectorCls(
             self._excludedSegmentsStorage.getExcludedSegmentsIter(targetGenomeRegion))
 
@@ -184,16 +185,66 @@ class IntervalTreeOverlapDetector(OverlapDetector):
         self._intervalTree.add(start, end)
 
 
-class RandomizedTrackDataStorage(object):
-    def __init__(self, tracks, bins):
-        import xarray
+TrackBinTuple = namedtuple('TrackBinTuple', ('track', 'bin'))
 
+
+class RandomizedTrackDataStorage(object):
+    # For the joint consecutive index defined from the double for loop over all tracks and bins
+    ORIG_TRACK_BIN_INDEX_KEY = 'origTrackBinIndex'
+    LENGTH_KEY = 'lengths'
+
+    def __init__(self, tracks, bins, generatedTrackColumns, readFromDiskTrackColumns, needsMask):
         self._tracks = tracks
         self._bins = bins
+        self._generatedTrackColumns = generatedTrackColumns
+        self._readFromDiskTrackColumns = readFromDiskTrackColumns
+        self._needsMask = needsMask
 
-        xarray
+        self.dataFrame = NumpyDataFrame()
+        self._origTrackBinIndexToTrackAndBinDict = {}
 
+        assert len(self._tracks) > 0
+        assert len(self._bins) > 0
 
+        listOfColToArrayDicts = []
+
+        origTrackBinIndex = 0
+        for track in self._tracks:
+            for curBin in self._bins():
+                trackView = track.getTrackView(curBin)
+                colToArrayDict = {}
+                for col in readFromDiskTrackColumns:
+                    if col == self.LENGTH_KEY:
+                        colToArrayDict[col] = trackView.endsAsNumpyArray() - trackView.startsAsNumpyArray()
+                    else:
+                        colToArrayDict[col] = trackView.getNumpyArrayFromPrefix(col)
+                for col in generatedTrackColumns:
+                    if col == self.LENGTH_KEY:
+                        numpyArray = trackView.startsAsNumpyArray()
+                    else:
+                        numpyArray = trackView.getNumpyArrayFromPrefix(col)
+                    colToArrayDict[col] = np.zeros(len(numpyArray), dtype=numpyArray.dtype)
+                listOfColToArrayDicts.append(colToArrayDict)
+
+                self._origTrackBinIndexToTrackAndBinDict[origTrackBinIndex] = TrackBinTuple(track=track, bin=curBin)
+                origTrackBinIndex += 1
+
+        for col in readFromDiskTrackColumns + generatedTrackColumns:
+            allColArrays = [colToArrayDict[col] for colToArrayDict in listOfColToArrayDicts]
+            fullColArray = np.concatenate(allColArrays)
+
+            if not self.dataFrame.hasArray(self.ORIG_TRACK_BIN_INDEX_KEY):
+                origTrackBinIndexArrays = [np.ones(len(colArray), dtype='int32') for colArray in allColArrays]
+                fullOrigTrackBinIndexArray = np.concatenate([array * i for i, array in enumerate(origTrackBinIndexArrays)])
+                self.dataFrame.addArray(self.ORIG_TRACK_BIN_INDEX_KEY, fullOrigTrackBinIndexArray)
+
+            self.dataFrame.addArray(col, fullColArray)
+
+        if needsMask:
+            self.dataFrame.mask = np.zeros(len(self.dataFrame), dtype=bool)
+
+    def shuffle(self):
+        np.random.shuffle(self.dataFrame)
 
 class RandomizeBetweenTracksAndBinsPool(object):
 
@@ -212,10 +263,16 @@ class RandomizeBetweenTracksAndBinsPool(object):
         #     for sts in self._origTs.getLeafNodes()]
         # self._isSorted = False
         # self._populatePool()
-        self._trackDataStorage = self._initTrackDataStorage(origTs)
+        self._trackDataStorage = self._initTrackDataStorage()
 
-    def _initTrackDataStorage(self, origTs):
-        return RandomizedTrackDataStorage()
+    def _initTrackDataStorage(self):
+        tracks = [leaf.track for leaf in self._origTs.getLeafNodes()]
+        bins = list(self._binSource)
+        generatedTrackColumns = self._randAlgorithm.getGeneratedTrackColumns()
+        readFromDiskTrackColumns = self._randAlgorithm.getReadFromDiskTrackColumns()
+        needsMask = self._randAlgorithm.needsMask()
+
+        return RandomizedTrackDataStorage(tracks, bins, generatedTrackColumns, readFromDiskTrackColumns, needsMask)
 
     def randomize(self):
         self._trackDataStorage = self._randAlgorithm.randomize(self._trackDataStorage)

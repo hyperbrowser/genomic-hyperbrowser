@@ -423,6 +423,14 @@ class TrackView(object):
     def hasExtra(self, key):
         return key in self._extraLists
 
+    def getNumpyArrayFromPrefix(self, prefix):
+        asNumpyArrayMethodName = prefix + 'AsNumpyArray'
+        if hasattr(self, asNumpyArrayMethodName):
+            return getattr(self, asNumpyArrayMethodName)()
+        else:
+            return self.extrasAsNumpyArray(prefix)
+
+
 class TrackViewSlider(object):
     def __init__(self, fullTV):
         self._fullTV = fullTV
