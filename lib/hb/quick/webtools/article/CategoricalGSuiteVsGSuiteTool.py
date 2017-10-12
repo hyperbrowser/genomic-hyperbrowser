@@ -16,6 +16,7 @@ from quick.statistic.MultiplePairedTSStat import MultiplePairedTSStat
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util import McEvaluators
+from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -311,6 +312,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         Mandatory unless isRedirectTool() returns True.
         """
         cls._setDebugModeIfSelected(choices)
+
+        DebugUtil.insertBreakPoint()
 
         firstGSuiteCat = choices.firstGSuiteCat
         firstGSuiteCat = firstGSuiteCat.encode("utf-8")
@@ -650,5 +653,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
+        analysisSpec.addParameter('runLocalAnalysis', "No")
         return analysisSpec
 
