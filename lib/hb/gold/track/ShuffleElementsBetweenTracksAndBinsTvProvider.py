@@ -42,6 +42,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
             self._binSource.genome if self._binSource.genome else self.UNKNOWN_GENOME) \
             for sts in self._origTs.getLeafNodes()]
         self._isSorted = False
+        self._binProbabilities = self._getBinProbabilites()
         self._populatePool()
 
 
@@ -158,8 +159,9 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
 
 
     def _selectRandomBin(self):
-        from random import randint
-        return self._binList[randint(0, len(self._binList)-1)]
+        import numpy as np
+        selectedBinId = np.random.choice(range(0, len(self._binList)), p=self._binProbabilities)
+        return self._binList[selectedBinId]
 
     def getTrackView(self, region, origTrack):
 
@@ -188,3 +190,6 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
 
         self._isSorted = True
 
+    def _getBinProbabilites(self):
+        binsLen = sum([(x.end - x.start) for x in self._binList])
+        return [float(x.end - x.start)/binsLen for x in self._binList]
