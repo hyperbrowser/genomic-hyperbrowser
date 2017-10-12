@@ -1,5 +1,6 @@
 from collections import OrderedDict, defaultdict
 
+from gold.application.LogSetup import logMessage, logging
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackStructure import SingleTrackTS
@@ -139,6 +140,8 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
                                                          excludedRegions)
             else:
                 discardedElements.append(trackElement)
+
+        logMessage("Discarded %i elements out of %i possible." % (len(discardedElements), len(allTrackElements)), level=logging.WARN)
 
         #print "Discarded %i elements out of %i possible." % (len(discardedElements), len(allTrackElements))
 
