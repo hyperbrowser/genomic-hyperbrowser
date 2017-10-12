@@ -30,7 +30,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
 
     UNKNOWN_GENOME = 'unknown' #used for unique ID generation
 
-    def __init__(self, origTs, binSource, allowOverlaps=False, excludedTs=None):
+    def __init__(self, origTs, binSource, allowOverlaps=False, excludedTs=None, maxSampleCount=25):
         self._trackElementLists = defaultdict(lambda: defaultdict(list))
         self._origTs = origTs
         self._binSource = binSource
@@ -42,6 +42,7 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
             self._binSource.genome if self._binSource.genome else self.UNKNOWN_GENOME) \
             for sts in self._origTs.getLeafNodes()]
         self._isSorted = False
+        self._maxSampleCount = maxSampleCount
         self._binProbabilities = self._getBinProbabilites()
         self._populatePool()
 
@@ -74,27 +75,21 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         self._trackElementLists[trackId][binId].append(autonomousTrackElement)
 
     @staticmethod
-    def _selectRandomValidStartPosition(segLen, targetGenomeRegion, excludedRegions, maxSampleCount=25):
+    def _selectRandomValidStartPosition(segLen, targetGenomeRegion, excludedRegions):
         '''
         Randomly select a start position.
         For it to be valid, it must not overlap any of the excluded regions.
-        If no valid position is found after maxSampleCount attempts, None is returned
         :param segLen: The length of the track element
         :param targetGenomeRegion: The genome region to sample
         :param excludedRegions: IntervalTree object containing all intervals that must be avoided
-        :param maxSampleCount: Nr of times the sampling is done if no valid position is selected.
-        :return:
+        :return: valid start position for target genome region or None
         '''
 
         if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
             return None
         from random import randint
         candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
-        cnt = 0
-        while excludedRegions.find(candidateStartPos, candidateStartPos + segLen) and cnt < maxSampleCount:
-            candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end-segLen)
-            cnt += 1
-        if cnt==maxSampleCount and excludedRegions.find(candidateStartPos, candidateStartPos + segLen):
+        if excludedRegions.find(candidateStartPos, candidateStartPos + segLen):
             return None
         else:
             return candidateStartPos
@@ -129,13 +124,17 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
         from random import shuffle
         shuffle(allTrackElements)
         for trackElement in allTrackElements:
-            trackId = self._selectRandomTrackId()
-            binId = self._selectRandomBin()
-            segLen = len(trackElement)
-            if binId not in self._trackIdToExcludedRegions[trackId]:
-                self._trackIdToExcludedRegions[trackId][binId] = self._generateExcludedRegion(self._excludedTs, binId)
-            excludedRegions = self._trackIdToExcludedRegions[trackId][binId]
-            startPos = self._selectRandomValidStartPosition(segLen, binId, excludedRegions)
+            cnt = 0
+            startPos = None
+            while startPos is None and cnt < self._maxSampleCount:
+                trackId = self._selectRandomTrackId()
+                binId = self._selectRandomBin()
+                segLen = len(trackElement)
+                if binId not in self._trackIdToExcludedRegions[trackId]:
+                    self._trackIdToExcludedRegions[trackId][binId] = self._generateExcludedRegion(self._excludedTs, binId)
+                excludedRegions = self._trackIdToExcludedRegions[trackId][binId]
+                startPos = self._selectRandomValidStartPosition(segLen, binId, excludedRegions)
+                cnt += 1
             if startPos:
                 self._addElementAndUpdateExcludedRegions(startPos, segLen, trackElement, trackId, binId,
                                                          excludedRegions)
