@@ -148,9 +148,26 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
     def _addElementAndUpdateExcludedRegions(self, startPos, segLen, trackElement, trackId, binId, excludedRegions):
         endPos = startPos + segLen  # -1
         if not self._allowOverlaps:
-            excludedRegions.add(startPos, endPos)
+            self._addElementHandleBxPythonZeroDivisionException(startPos, endPos, excludedRegions, 10)
             assert len(excludedRegions.find(startPos, endPos)) == 1, "Overlapping segments!"  # sanity check
         self._addTrackElement(trackElement, startPos, endPos, binId, trackId)
+
+    def _addElementHandleBxPythonZeroDivisionException(self, startPos, endPos, excludedRegions, nrTries=10):
+        """DivisionByZero error is caused by a bug in the bx-python library.
+        It happens rarely, so we just execute the add command again up to nrTries times
+        when it does. If it pops up more than 10 times, we assume something else is wrong and raise."""
+        cnt = 0
+        while True:
+            cnt += 1
+            try:
+                excludedRegions.add(startPos, endPos)
+            except Exception as e:
+                logMessage("Try nr %i. %s" % (cnt, str(e)), level=logging.WARN)
+                if cnt > nrTries:
+                    raise e
+                continue
+            else:
+                break
 
     def _selectRandomTrackId(self):
         from random import randint
