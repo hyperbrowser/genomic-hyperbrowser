@@ -11,7 +11,7 @@ NUM_SAMPLES_KEY = 'NumResamplings'
 
 from numpy import isnan,array, median
 
-@takes(tuple, str, basestring)
+@takes(tuple, basestring, basestring)
 def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
     observation = observedAndMcSamplesTuple[0]
     mcSamples = observedAndMcSamplesTuple[1]
@@ -45,7 +45,7 @@ def _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisti
          (NUM_SAMPLES_KEY, numResamplings), \
          ('NumSamplesNotNan', numberOfNonNanRandResults), (M_KEY, numMoreExtreme)])
 
-@takes(tuple, str, basestring)
+@takes(tuple, basestring, basestring)
 def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
     resultsDict = OrderedDict()
     #TODO: What is received is not a list of tuples, it is a tuple of the real result which is a
