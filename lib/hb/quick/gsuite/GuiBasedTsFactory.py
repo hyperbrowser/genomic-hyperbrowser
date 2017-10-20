@@ -6,9 +6,9 @@ from gold.track.TrackStructure import SingleTrackTS, FlatTracksTS
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 
-def getSingleTrackTS(genome, guiSelectedTrack, title='Dummy'):
+def getSingleTrackTS(genome, guiSelectedTrack, title='Dummy', printProgress = False):
 
-    trackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, guiSelectedTrack)
+    trackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, guiSelectedTrack, printProgress=printProgress)
 
     return SingleTrackTS(PlainTrack(trackName), {'title':title})
 
