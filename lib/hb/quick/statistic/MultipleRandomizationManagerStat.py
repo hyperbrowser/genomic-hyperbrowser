@@ -21,8 +21,8 @@ class MultipleRandomizationManagerStat(MagicStatFactory):
 class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
 
     def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, maxSamples, **kwArgs):
-        if type(evaluatorFunc) is str:
-            evaluatorFunc = globals()[evaluatorFunc]
+        if isinstance(evaluatorFunc, basestring):
+            evaluatorFunc = globals()[str(evaluatorFunc)]
         self._evaluatorFunc = evaluatorFunc
 
         if isinstance(mcSamplerClass, basestring):
