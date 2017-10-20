@@ -1,7 +1,40 @@
+from collections import OrderedDict
+
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
+from gold.description.AnalysisList import REPLACE_TEMPLATES
+from gold.track.TrackStructure import TrackStructureV2
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.statistic.SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat import \
+    SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat
+from quick.statistic.SummarizedTrackVsCategoricalSuiteV2Stat import SummarizedTrackVsCategoricalSuiteV2Stat
+from quick.util import McEvaluators
+from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
-class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
+class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
+
+    # ALLOW_UNKNOWN_GENOME = False
+    # ALLOW_GENOME_OVERRIDE = False
+    # WHAT_GENOME_IS_USED_FOR = 'the analysis'
+    #
+    # GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    # GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    # GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
+    #                               GSuiteConstants.VALUED_POINTS,
+    #                               GSuiteConstants.SEGMENTS,
+    #                               GSuiteConstants.VALUED_SEGMENTS]
+    #
+    # GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
+    #                              GSuiteConstants.MULTIPLE]
+
     @classmethod
     def getToolName(cls):
         """
@@ -33,8 +66,16 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('First header', 'firstKey'),
-                ('Second Header', 'secondKey')]
+        return [('Select query track from history', 'queryTrack'),
+                ('Select reference GSuite', 'gsuite'),
+                ('Select category column', 'categoryName'),
+                 ('Select primary group category value', 'categoryVal'),
+                ('Select MCFDR sampling depth', 'mcfdrDepth'),
+                ('Type of randomization', 'randType'),
+                ('Randomization algorithm', 'randAlg')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                cls.getInputBoxNamesForUserBinSelection() + \
+                cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -66,8 +107,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
     #     """
     #     return None
 
-    @classmethod
-    def getOptionsBoxFirstKey(cls):  # Alt: getOptionsBox1()
+    @staticmethod
+    def getOptionsBoxQueryTrack():
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -157,10 +198,10 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return ['testChoice1', 'testChoice2', '...']
+        return GeneralGuiTool.getHistorySelectionElement()
 
-    @classmethod
-    def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    @staticmethod
+    def getOptionsBoxGsuite(prevChoices):  # Alternatively: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -169,11 +210,37 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
         in this case). The elements can accessed either by index, e.g.
         prevChoices[0] for the result of input box 1, or by key, e.g.
         prevChoices.key (case 2).
-
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
+        :param prevChoices:
         """
-        return ''
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+    @staticmethod
+    def getOptionsBoxCategoryName(prevChoices):
+        if prevChoices.gsuite:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            return gsuite.attributes
+
+    @staticmethod
+    def getOptionsBoxCategoryVal(prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
+
+    @staticmethod
+    def getOptionsBoxMcfdrDepth(prevChoices):
+        return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+
+    @staticmethod
+    def getOptionsBoxRandType(prevChoices):
+        return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys()
+
+    @staticmethod
+    def getOptionsBoxRandAlg(prevChoices):
+        for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+            if prevChoices.randType == definedRandType:
+                return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -231,7 +298,46 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        # DebugUtil.insertBreakPoint()
+
+        cls._setDebugModeIfSelected(choices)
+
+        genome = choices.genome
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
+        import quick.gsuite.GuiBasedTsFactory as factory
+        queryTS = factory.getSingleTrackTS(genome, choices.queryTrack)
+        refTS = factory.getFlatTracksTS(genome, choices.gsuite)
+        catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
+        assert choices.categoryVal in catTS
+        ts = cls.prepareTrackStructure(queryTS, catTS)
+        analysisSpec = cls.prepareAnalysis()
+        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins, choices.categoryVal)
+        analysisSpecMC = cls.prepareMCAnalysis(choices)
+        resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
+        resultsMC = resultsMC['Result']
+
+        core = HtmlCore()
+        core.begin()
+        core.divBegin()
+        resTableDict = OrderedDict()
+        for key, val in results.iteritems():
+            resTableDict[key] = val.result
+
+        resTableDict ["P-val for category %s: " % choices.categoryVal] = str(resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
+        core.tableFromDictionary(resTableDict, columnNames=["Category", "Forbes similarity"])
+        core.divEnd()
+        core.end()
+
+        print str(core)
+
+    @classmethod
+    def prepareAnalysis(cls):
+        analysisSpec = AnalysisSpec(SummarizedTrackVsCategoricalSuiteV2Stat)
+        analysisSpec.addParameter("pairwiseStatistic", "ObservedVsExpectedStat")
+        analysisSpec.addParameter("summaryFunc", "avg")
+        return analysisSpec
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -246,6 +352,39 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: None
         """
         return None
+
+    @classmethod
+    def prepareMCTrackStructure(cls, queryTS, catTS, randType, randAlg, analysisBins, categoryVal):
+        randCatTS = catTS.getRandomizedVersion(RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg], binSource=analysisBins)
+        realTS = cls.prepareTrackStructure(queryTS, catTS)
+        randTS = cls.prepareTrackStructure(queryTS, randCatTS)
+        hypothesisTS = TrackStructureV2()
+        hypothesisTS["real"] = realTS
+        hypothesisTS["rand"] = randTS
+        return TrackStructureV2({categoryVal: hypothesisTS})
+
+    @classmethod
+    def prepareMCAnalysis(cls, choices):
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisSpec.addParameter('rawStatistic', SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat.__name__)
+        analysisSpec.addParameter("pairwiseStatistic", "ObservedVsExpectedStat")
+        analysisSpec.addParameter("summaryFunc", "avg")
+        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+        analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
+        analysisSpec.addParameter('selectedCategory', choices.categoryVal)
+        return analysisSpec
+
+    @classmethod
+    def prepareTrackStructure(cls, queryTS, catTS):
+        ts = TrackStructureV2()
+        for cat, refTS in catTS.iteritems():
+            ts[cat] = TrackStructureV2(dict([("query", queryTS), ("reference", refTS)]))
+        return ts
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -268,7 +407,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
     #
     #     Optional method. Default return value if method is not defined: False
     #     """
-    #     return False
+    #     return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -366,35 +505,35 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
+    @classmethod
+    def getOutputFormat(cls, choices):
+        """
+        The format of the history element with the output of the tool. Note
+        that if 'html' is returned, any print statements in the execute()
+        method is printed to the output dataset. For text-based output
+        (e.g. bed) the output dataset only contains text written to the
+        galaxyFn file, while all print statements are redirected to the info
+        field of the history item box.
+
+        Note that for 'html' output, standard HTML header and footer code is
+        added to the output dataset. If one wants to write the complete HTML
+        page, use the restricted output format 'customhtml' instead.
+
+        Optional method. Default return value if method is not defined:
+        'html'
+        """
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
