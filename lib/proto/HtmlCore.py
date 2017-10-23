@@ -13,7 +13,7 @@ class HtmlCore(object):
 <html>
 <head>
 <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/sorttable.js"></script>
+<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/proto/sorttable.js"></script>
 '''
         for javaScriptFn in extraJavaScriptFns:
             if re.match('https?://', javaScriptFn):

@@ -297,17 +297,6 @@ class ToolTemplate(GeneralGuiTool):
     #     return True
     #
     # @classmethod
-    # def isBatchTool(cls):
-    #     """
-    #     Specifies if this tool could be run from batch using the batch. The
-    #     batch run line can be fetched from the info box at the bottom of the
-    #     tool.
-    #
-    #     Deprecated method, will be removed.
-    #     """
-    #     return cls.isHistoryTool()
-    #
-    # @classmethod
     # def isDynamic(cls):
     #     """
     #     Specifies whether changing the content of textboxes causes the page

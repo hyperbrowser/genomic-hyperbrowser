@@ -18,6 +18,7 @@ FETCH_WHEELS=1
 CREATE_VENV=1
 REPLACE_PIP=$SET_VENV
 COPY_SAMPLE_FILES=1
+INSTALL_R_PACKAGES=1
 
 for arg in "$@"; do
     [ "$arg" = "--skip-eggs" ] && FETCH_WHEELS=0
@@ -26,7 +27,7 @@ for arg in "$@"; do
     [ "$arg" = "--no-create-venv" ] && CREATE_VENV=0
     [ "$arg" = "--no-replace-pip" ] && REPLACE_PIP=0
     [ "$arg" = "--replace-pip" ] && REPLACE_PIP=1
-    [ "$arg" = "--stop-daemon" ] && FETCH_WHEELS=0
+    [ "$arg" = "--stop-daemon" ] && FETCH_WHEELS=0 && INSTALL_R_PACKAGES=0
     [ "$arg" = "--skip-samples" ] && COPY_SAMPLE_FILES=0
 done
 
@@ -126,7 +127,7 @@ if [ $SET_VENV -eq 1 ]; then
         then
             printf "Setting up R in virtualenv at $GALAXY_VIRTUAL_ENV\n"
 
-            echo 'export R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
+            echo '\nexport R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
             for LIB in $GALAXY_VIRTUAL_ENV/lib/python*
             do
                 echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py
@@ -208,10 +209,13 @@ if [ $FETCH_WHEELS -eq 1 ]; then
     pip install -r proto-requirements.txt || echo "Failed to install rpy2. R code will not work"
 fi
 
-python ./scripts/R_install_packages.py
-if [ $? -eq 0 ]; then
-    echo "R library loading successful."
-else
-    echo "R library loading failed."
-    exit 0
+if [ $INSTALL_R_PACKAGES -eq 1 ]; then
+    python ./scripts/R_install_packages.py
+    if [ $? -eq 0 ]; then
+        echo "R library loading successful."
+    else
+        echo "R library loading failed."
+    fi
 fi
+
+exit 0
