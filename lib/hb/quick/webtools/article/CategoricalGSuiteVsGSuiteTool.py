@@ -1,13 +1,13 @@
-from proto.RSetup import r, robjects
-
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteConstants import TITLE_COL
-from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
+    ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.util.CommonClasses import OrderedDefaultDict
+from proto.RSetup import r, robjects
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
@@ -20,7 +20,6 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
-from quick.webtools.restricted.DianasTool import geneExpression
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 
 

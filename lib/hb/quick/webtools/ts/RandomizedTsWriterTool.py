@@ -1,5 +1,8 @@
 import os
 from collections import OrderedDict
+
+from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+
 import quick.gsuite.GuiBasedTsFactory as factory
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
@@ -7,12 +10,14 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-from gold.track.RandomizedSegsTvProvider import PermutedSegsAndIntersegsTrackViewProvider, PermutedSegsAndSampledIntersegsTrackViewProvider
-from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.RandomizedSegsTvProvider import PermutedSegsAndIntersegsTrackViewProvider, \
+    PermutedSegsAndSampledIntersegsTrackViewProvider
 from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider, \
-    CoveragePreservedShuffleElementsBetweenTracksTvProvider, SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
+    CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
+    SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
 from gold.track.TrackStructure import TrackStructureV2
-from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
+    ShuffleElementsBetweenTracksAndBinsTvProvider
 from quick.application.UserBinSource import GlobalBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.TsWriterStat import TsWriterStat

@@ -1,7 +1,6 @@
-from gold.statistic.RawDataStat import RawDataStat
-from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
-from gold.track.Track import Track
-from gold.track.TrackFormat import NeutralTrackFormatReq
+from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
+    ShuffleElementsBetweenTracksAndBinsTvProvider
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

@@ -1,20 +1,16 @@
-from collections import OrderedDict, defaultdict, namedtuple
-
-import numpy as np
+from collections import defaultdict
 
 from gold.statistic.RawDataStat import RawDataStat
-from gold.track.NumpyDataFrame import NumpyDataFrame
 from gold.track.TrackFormat import NeutralTrackFormatReq
 from gold.track.TrackStructure import SingleTrackTS
 from gold.track.TrackView import AutonomousTrackElement, TrackView
 from gold.track.TsBasedRandomTrackViewProvider import BetweenTrackRandomTvProvider, TsBasedRandomTrackViewProvider
-
-from gold.util.CustomExceptions import AbstractClassError
+from gold.track.trackstructure.random.RandomizeBetweenTracksAndBinsPool import RandomizeBetweenTracksAndBinsPool
 
 
 class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider):
     def __init__(self, randAlgorithm, origTs, binSource, allowOverlaps):
-        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps)
+        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps=allowOverlaps)
         # self._poolDict = OrderedDict() #rand_index -> trackId -> binId -> list of TrackElements
         self._randAlgorithm = randAlgorithm
         self._binSource = binSource
@@ -47,215 +43,6 @@ class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider
     def _updateCurIndex(self, randIndex):
         self._curRandIndex = randIndex
 
-
-class ExcludedSegmentsStorage(object):
-    # TODO: Could be improved to use less memory
-    def __init__(self, excludedTS, binSource):
-        self._excludedTS = excludedTS
-        self._binSource = binSource
-        self._excludedSegmentsDict = None
-
-    def _initExcludedRegions(self):
-        # for now we only support a single exclusion track
-        assert isinstance(self._excludedTs, SingleTrackTS), "Only Single track TS supported for exclusion track."
-        self._excludedSegmentsDict = dict()
-
-        for region in self._binSource:
-            excludedTV = self._excludedTs.track.getTrackView(region)
-            self._excludedSegmentsDict[region] = zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray())
-
-    def getExcludedSegmentsIter(self, region):
-        if not self._excludedSegmentsDict:
-            self._initExcludedRegions()
-
-        assert region in self._excludedSegmentsDict, "Not a valid region %s" % str(region)
-        return self._excludedSegmentsDict[region]
-
-
-def generateMaskArray(numpyArray, maskVal):
-    return numpyArray == maskVal
-
-
-class TrackDataStorageRandAlgorithm(object):
-    def getReadFromDiskTrackColumns(self):
-        raise AbstractClassError()
-
-    def getInitTrackColumns(self):
-        raise AbstractClassError()
-
-    def needsMask(self):
-        raise AbstractClassError()
-
-    def randomize(self, trackDataStorage):
-        raise AbstractClassError()
-
-
-class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm):
-    MISSING_EL = -1
-
-    def __init__(self, excludedSegmentsStorage=None, maxSampleCount=25, overlapDetectorCls=IntervalTreeOverlapDetector):
-        self._excludedSegmentsStorage = excludedSegmentsStorage
-        # self._trackIdToExcludedRegions = defaultdict(dict)
-        self._maxSampleCount = maxSampleCount
-        # self._excludedRegions = None
-        self._overlapDetectorCls = overlapDetectorCls
-        self._newTrackBinIndexToOverlapDetectorDict = {}
-
-    def getReadFromDiskTrackColumns(self):
-        return ['lengths']
-
-    def getGeneratedTrackColumns(self):
-        return ['starts']
-
-    def needsMask(self):
-        return True
-
-    def randomize(self, trackDataStorage):
-        trackDataStorage.shuffle()
-        for trackBinIndex in trackDataStorage.allTrackBinIndexes():
-            trackBinTuple = trackDataStorage.getTrackAndBinForTrackBinIndex(trackBinIndex)
-            trackDataStorageView = trackDataStorage.getView(trackBinTuple.track, trackBinTuple.bin)
-
-            startsArray = self._generateRandomStartsArray(trackDataStorageView.getTrackColumnData('lengths'),
-                                                          region)
-            trackDataStorageView.setTrackColumnData('starts', startsArray)
-
-            maskArray = generateMaskArray(startsArray, self.MISSING_EL)
-            trackDataStorageView.setMaskColumn(maskArray)
-
-            trackDataStorageView.sort('starts')
-
-        return trackDataStorage
-
-    def _generateStartsArray(self, lengthsArray, targetGenomeRegion):
-        startsArray = np.zeros(len(lengthsArray), dtype='int32')
-        overlapDetector = self._overlapDetectorCls(
-            self._excludedSegmentsStorage.getExcludedSegmentsIter(targetGenomeRegion))
-
-        for i, segLen in enumerate(lengthsArray):
-            # Find random track and bin. Find overlapdetector for new tracktrackBinIndex, or create it if is not there (or use defaultdict)
-            # Update probabilities of track and bin after each element is added, in order to, as closely as possible, have the same probabilty of filling each base pair. Discuss
-            #
-            # Another algorithm might be to first bucket the segments into bins according to the contuniously updated probabilities (free bps in region/free bps in track)
-            # Then you shuffle the segments in each bin and distribute the free bps as gaps according to some distribution
-            # When using exclusion track, one could simply handle redefine the bins accordingly. In this way IntervalTrees should not
-            # be needed. Also, the probability of a bps being filled should be even (except perhaps start/end of bins).
-            startsArray[i] = self._selectRandomValidStartPosition(overlapDetector, segLen, targetGenomeRegion)
-        return startsArray
-
-    def _selectRandomValidStartPosition(self, overlapDetector, segLen, targetGenomeRegion):
-        '''
-        Randomly select a start position.
-        For it to be valid, it must not overlap any of the excluded regions.
-        If no valid position is found after maxSampleCount attempts, None is returned
-        :param segLen: The length of the track element
-        :param targetGenomeRegion: The genome region to sample
-        :param excludedRegions: IntervalTree object containing all intervals that must be avoided
-        :param maxSampleCount: Nr of times the sampling is done if no valid position is selected.
-        :return:
-        '''
-
-        from random import randint
-
-        if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
-            return self.MISSING_EL
-
-        for count in xrange(self._maxSampleCount):
-            candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end - segLen)
-            if not overlapDetector.overlaps(candidateStartPos, candidateStartPos + segLen):
-                return candidateStartPos
-
-        return self.MISSING_EL
-
-
-class OverlapDetector(object):
-    def __init__(self, excludedSegments):
-        raise AbstractClassError()
-
-    def overlaps(self, start, end):
-        raise AbstractClassError()
-
-    def addSegment(self, start, end):
-        raise AbstractClassError()
-
-
-class IntervalTreeOverlapDetector(OverlapDetector):
-    def __init__(self, excludedSegments):
-        from bx.intervals.intersection import IntervalTree
-        self._intervalTree = IntervalTree()
-        for start, end in excludedSegments:
-            self._intervalTree.add(start, end)
-
-    def overlaps(self, start, end):
-        return bool(self._intervalTree.find(start, end))
-
-    def addSegment(self, start, end):
-        self._intervalTree.add(start, end)
-
-
-TrackBinTuple = namedtuple('TrackBinTuple', ('track', 'bin'))
-
-
-class RandomizedTrackDataStorage(object):
-    # For the joint consecutive index defined from the double for loop over all tracks and bins
-    ORIG_TRACK_BIN_INDEX_KEY = 'origTrackBinIndex'
-    LENGTH_KEY = 'lengths'
-
-    def __init__(self, tracks, bins, generatedTrackColumns, readFromDiskTrackColumns, needsMask):
-        self._tracks = tracks
-        self._bins = bins
-        self._generatedTrackColumns = generatedTrackColumns
-        self._readFromDiskTrackColumns = readFromDiskTrackColumns
-        self._needsMask = needsMask
-
-        self.dataFrame = NumpyDataFrame()
-        self._origTrackBinIndexToTrackAndBinDict = {}
-
-        assert len(self._tracks) > 0
-        assert len(self._bins) > 0
-
-        listOfColToArrayDicts = []
-
-        origTrackBinIndex = 0
-        for track in self._tracks:
-            for curBin in self._bins():
-                trackView = track.getTrackView(curBin)
-                colToArrayDict = {}
-                for col in readFromDiskTrackColumns:
-                    if col == self.LENGTH_KEY:
-                        colToArrayDict[col] = trackView.endsAsNumpyArray() - trackView.startsAsNumpyArray()
-                    else:
-                        colToArrayDict[col] = trackView.getNumpyArrayFromPrefix(col)
-                for col in generatedTrackColumns:
-                    if col == self.LENGTH_KEY:
-                        numpyArray = trackView.startsAsNumpyArray()
-                    else:
-                        numpyArray = trackView.getNumpyArrayFromPrefix(col)
-                    colToArrayDict[col] = np.zeros(len(numpyArray), dtype=numpyArray.dtype)
-                listOfColToArrayDicts.append(colToArrayDict)
-
-                self._origTrackBinIndexToTrackAndBinDict[origTrackBinIndex] = TrackBinTuple(track=track, bin=curBin)
-                origTrackBinIndex += 1
-
-        for col in readFromDiskTrackColumns + generatedTrackColumns:
-            allColArrays = [colToArrayDict[col] for colToArrayDict in listOfColToArrayDicts]
-            fullColArray = np.concatenate(allColArrays)
-
-            if not self.dataFrame.hasArray(self.ORIG_TRACK_BIN_INDEX_KEY):
-                origTrackBinIndexArrays = [np.ones(len(colArray), dtype='int32') for colArray in allColArrays]
-                fullOrigTrackBinIndexArray = np.concatenate([array * i for i, array in enumerate(origTrackBinIndexArrays)])
-                self.dataFrame.addArray(self.ORIG_TRACK_BIN_INDEX_KEY, fullOrigTrackBinIndexArray)
-
-            self.dataFrame.addArray(col, fullColArray)
-
-        if needsMask:
-            self.dataFrame.mask = np.zeros(len(self.dataFrame), dtype=bool)
-
-    def getTrackAndBinForTrackBinIndex(self, trackBinIndex):
-        return self._origTrackBinIndexToTrackAndBinDict[trackBinIndex]
-
-    def shuffle(self):
-        np.random.shuffle(self.dataFrame)
 
 # Newer
 class ShuffleElementsBetweenTracksAndBinsPool(object):
