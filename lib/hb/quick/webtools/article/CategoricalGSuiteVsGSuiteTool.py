@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from proto.RSetup import r, robjects
 
 from gold.application.HBAPI import doAnalysis
@@ -9,6 +11,7 @@ from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElem
 from gold.track.TrackStructure import TrackStructureV2
 from gold.util.CommonClasses import OrderedDefaultDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -339,14 +342,14 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             ts = cls._prepareTs(firstTs, secondTs, firstGSuiteCat, secondGSuiteCat)
             analysisSpec = cls._prepareAnalysis(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
-            transformedResultsDict = OrderedDefaultDict(list)
+            resultsDict = OrderedDefaultDict(list)
             data = []
             for cat, res in result.iteritems():
-                transformedResultsDict[cat].append(res.result)
+                resultsDict[cat].append(res.result)
                 data.append(res.result)
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
-                tableDict=transformedResultsDict,
+                tableDict=resultsDict,
                 columnNames=["Category", "Forbes similarity"]
             )
 
@@ -356,24 +359,30 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
-            transformedResultsDict = OrderedDefaultDict(list)
+            resultsDict = OrderedDefaultDict(list)
             data = []
             data1 = []
             for cat, res in result.iteritems():
                 forbes = res.result['TSMC_' + PairedTSStat.__name__]
                 pVal = res.result[McEvaluators.PVAL_KEY]
-                transformedResultsDict[cat].append(forbes)
-                transformedResultsDict[cat].append(pVal)
+                avgNullForbes = res.result[McEvaluators.MEAN_OF_NULL_DIST_KEY]
+                sdNullForbes = res.result[McEvaluators.SD_OF_NULL_DIST_KEY]
+                resultsDict[cat].append(forbes)
+                resultsDict[cat].append(avgNullForbes)
+                resultsDict[cat].append(sdNullForbes)
+                resultsDict[cat].append(pVal)
                 data.append(forbes)
                 data1.append(pVal)
 
+            rawNDResultsFile = cls._getRawNullDistResultsFile(galaxyFn, result)
 
             # print transformedResultsDict
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
-                tableDict=transformedResultsDict,
-                columnNames=["Category", "Forbes similarity", "P-value"]
+                tableDict=resultsDict,
+                columnNames=["Category", "Forbes score", "Avg Forbes score from null", "SD of Forbes score from null", "P-value"]
             )
+            core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
             cls.drawHist(core, data)
             cls.drawHist(core, data1, breaks = True)
@@ -382,6 +391,20 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         core.divEnd()
         core.end()
         print core
+
+    @classmethod
+    def _getRawNullDistResultsFile(cls, galaxyFn, result):
+        nullResultsTable = OrderedDict()
+        for cat, res in result.iteritems():
+            nullRawResults = res.result[McEvaluators.RAND_RESULTS_KEY]
+            nullResultsTable[cat] = nullRawResults
+        tableFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
+        with tableFile.getFile() as f:
+            for cat, resArray in nullResultsTable.iteritems():
+                line = "\t".join([cat] + [str(_) for _ in resArray]) + "\n"
+                f.write(line)
+
+        return tableFile
 
     @classmethod
     def drawHist(cls, core, data, breaks = False):
