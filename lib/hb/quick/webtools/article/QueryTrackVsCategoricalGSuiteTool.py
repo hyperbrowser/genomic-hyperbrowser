@@ -3,6 +3,7 @@ from collections import OrderedDict
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
+from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -17,23 +18,24 @@ from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
+import quick.gsuite.GuiBasedTsFactory as factory
 
 
 class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
 
-    # ALLOW_UNKNOWN_GENOME = False
-    # ALLOW_GENOME_OVERRIDE = False
-    # WHAT_GENOME_IS_USED_FOR = 'the analysis'
-    #
-    # GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
-    # GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
-    # GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
-    #                               GSuiteConstants.VALUED_POINTS,
-    #                               GSuiteConstants.SEGMENTS,
-    #                               GSuiteConstants.VALUED_SEGMENTS]
-    #
-    # GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
-    #                              GSuiteConstants.MULTIPLE]
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
+                                  GSuiteConstants.VALUED_POINTS,
+                                  GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
+
+    GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
+                                 GSuiteConstants.MULTIPLE]
 
     @classmethod
     def getToolName(cls):
@@ -302,34 +304,48 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         cls._setDebugModeIfSelected(choices)
 
-        genome = choices.genome
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
-        import quick.gsuite.GuiBasedTsFactory as factory
-        queryTS = factory.getSingleTrackTS(genome, choices.queryTrack)
-        refTS = factory.getFlatTracksTS(genome, choices.gsuite)
+        analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
+                                                         genome=choices.genome)
+
+        queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
+        refTS = factory.getFlatTracksTS(choices.genome, choices.gsuite)
         catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
         assert choices.categoryVal in catTS
+
+        results = cls._getResults(queryTS, catTS, analysisBins)
+        resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices)
+
+        cls._printResultsHtml(choices, results, resultsMC)
+
+    @classmethod
+    def _getResults(cls, queryTS, catTS, analysisBins):
         ts = cls.prepareTrackStructure(queryTS, catTS)
         analysisSpec = cls.prepareAnalysis()
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins, choices.categoryVal)
+        return results
+
+    @classmethod
+    def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
+        tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
+                                           choices.categoryVal)
         analysisSpecMC = cls.prepareMCAnalysis(choices)
         resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
         resultsMC = resultsMC['Result']
+        return resultsMC
 
+    @classmethod
+    def _printResultsHtml(cls, choices, results, resultsMC):
         core = HtmlCore()
         core.begin()
         core.divBegin()
         resTableDict = OrderedDict()
         for key, val in results.iteritems():
             resTableDict[key] = val.result
-
-        resTableDict ["P-val for category %s: " % choices.categoryVal] = str(resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
+        resTableDict["P-val for category %s: " % choices.categoryVal] = str(
+            resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
         core.tableFromDictionary(resTableDict, columnNames=["Category", "Forbes similarity"])
         core.divEnd()
         core.end()
-
         print str(core)
 
     @classmethod
