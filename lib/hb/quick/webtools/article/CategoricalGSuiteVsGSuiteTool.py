@@ -385,9 +385,14 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             )
             core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
-            breaksGeneral, countsAF = cls.countHist(dataAvgRandomForbes+dataForbes)
+            print 'dataAvgRandomForbes+dataForbes', dataAvgRandomForbes+dataForbes
+
+            breaksGeneral, countsGeneral = cls.countHist(dataAvgRandomForbes+dataForbes)
+            print 'breaksGeneral', breaksGeneral
             breaksAF, countsAF = cls.countHist(dataAvgRandomForbes, breaksGeneral)
+            print 'dataAvgRandomForbes', dataAvgRandomForbes, 'breaksAF, countsAF', breaksAF, countsAF
             breaksF, countsF = cls.countHist(dataForbes, breaksGeneral)
+            print 'dataForbes', dataForbes, 'breaksF, countsF ', breaksF, countsF
             textTitle = 'Histogram Forbes'
 
             cls.drawHist(core,
