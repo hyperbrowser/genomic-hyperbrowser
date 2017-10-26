@@ -385,8 +385,10 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             )
             core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
-            breaksF, countsF, textTitle = cls.countHist(dataForbes)
-            breaksAF, countsAF, textTitle = cls.countHist(dataAvgRandomForbes)
+            breaksGeneral, countsAF = cls.countHist(dataAvgRandomForbes+dataForbes)
+            breaksAF, countsAF = cls.countHist(dataAvgRandomForbes, breaksGeneral)
+            breaksF, countsF = cls.countHist(dataForbes, breaksGeneral)
+            textTitle = 'Histogram Forbes'
 
             cls.drawHist(core,
                          textTitle,
@@ -394,7 +396,9 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                          breaks=breaksF,
                          seriesName=['Forbes', 'Avg Forbes'])
 
-            breakspVal, countspVal, textTitle = cls.countHist(datapVal, breaks=True)
+            textTitle = 'Histogram p-values'
+            breaks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+            breakspVal, countspVal = cls.countHist(datapVal, breaks=breaks)
             cls.drawHist(core,
                          textTitle,
                          countspVal,
@@ -437,24 +441,23 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
 
     @classmethod
-    def countHist(cls, data, breaks = False):
+    def countHist(cls, data, breaks = ''):
 
-        if breaks == False:
+        if breaks == '':
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
             data = robjects.FloatVector(data)
             dataFromRPois = r(rCode)(data)
-            textTitle = 'Histogram Forbes'
             # print '1', data
         else:
-            rCode = 'ourHist <- function(vec) {hist(vec, breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), plot=FALSE)}'
+            rCode = 'ourHist <- function(data, breaks) {hist(data, breaks=breaks, plot=FALSE)}'
             data = robjects.FloatVector(data)
-            dataFromRPois = r(rCode)(data)
-            textTitle = 'Histogram p-values'
+            breaks = robjects.FloatVector(breaks)
+            dataFromRPois = r(rCode)(data, breaks)
 
         breaks = list(dataFromRPois.rx2('breaks'))
         counts = list(dataFromRPois.rx2('density'))
 
-        return breaks, counts, textTitle
+        return breaks, counts
 
 
 
