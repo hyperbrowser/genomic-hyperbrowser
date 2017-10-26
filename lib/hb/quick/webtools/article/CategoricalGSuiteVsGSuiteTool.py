@@ -353,15 +353,15 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                 columnNames=["Category", "Forbes similarity"]
             )
 
-            cls.drawHist(core, data)
 
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
             result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             resultsDict = OrderedDefaultDict(list)
-            data = []
-            data1 = []
+            dataForbes = []
+            datapVal = []
+            dataAvgRandomForbes = []
             for cat, res in result.iteritems():
                 forbes = res.result['TSMC_' + PairedTSStat.__name__]
                 pVal = res.result[McEvaluators.PVAL_KEY]
@@ -371,8 +371,9 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                 resultsDict[cat].append(avgNullForbes)
                 resultsDict[cat].append(sdNullForbes)
                 resultsDict[cat].append(pVal)
-                data.append(forbes)
-                data1.append(pVal)
+                dataForbes.append(forbes)
+                dataAvgRandomForbes.append(avgNullForbes)
+                datapVal.append(pVal)
 
             rawNDResultsFile = cls._getRawNullDistResultsFile(galaxyFn, result)
 
@@ -384,8 +385,19 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             )
             core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
-            cls.drawHist(core, data)
-            cls.drawHist(core, data1, breaks=True)
+            breaksF, countsF = cls.countHist(dataForbes)
+            breaksAF, countsAF = cls.countHist(dataAvgRandomForbes)
+
+            cls.drawHist(core,
+                         [countsF, countsAF],
+                         breaks=breaksF,
+                         seriesName=['Forbes', 'Avg Forbes'])
+
+            breakspVal, countspVal = cls.countHist(datapVal, breaks=True)
+            cls.drawHist(core,
+                         countspVal,
+                         breakspVal)
+
 
         core.divEnd()
         core.divEnd()
@@ -407,7 +419,23 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         return tableFile
 
     @classmethod
-    def drawHist(cls, core, data, breaks = False):
+    def drawHist(cls, core, counts, breaks, seriesName=''):
+
+        vg = visualizationGraphs()
+        res = vg.drawColumnChart(counts,
+                                 xAxisRotation=90,
+                                 categories=breaks,
+                                 showInLegend=False,
+                                 titleText=textTitle,
+                                 histogram=True,
+                                 seriesName = seriesName
+                                 height=400
+                                 )
+        core.line(res)
+
+
+    @classmethod
+    def countHist(cls, data, breaks = False):
 
         if breaks == False:
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
@@ -416,7 +444,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             textTitle = 'Histogram Forbes'
             # print '1', data
         else:
-            # print '2', data
             rCode = 'ourHist <- function(vec) {hist(vec, breaks=c(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), plot=FALSE)}'
             data = robjects.FloatVector(data)
             dataFromRPois = r(rCode)(data)
@@ -424,16 +451,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
         breaks = list(dataFromRPois.rx2('breaks'))
         counts = list(dataFromRPois.rx2('density'))
-        vg = visualizationGraphs()
-        res = vg.drawColumnChart(counts,
-                                 xAxisRotation=90,
-                                 categories=breaks,
-                                 showInLegend=False,
-                                 titleText=textTitle,
-                                 histogram=True,
-                                 height=400
-                                 )
-        core.line(res)
+
+        return breaks, counts
+
+
+
 
     @classmethod
     def _prepareTs(cls, firstTs, secondTs, firstGSuiteCat, secondGSuiteCat):
