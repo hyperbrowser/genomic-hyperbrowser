@@ -313,8 +313,15 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         assert choices.categoryVal in catTS
 
         results = cls._getResults(queryTS, catTS, analysisBins)
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId="progress-output")
+        print str(core)
         resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices)
-
+        core = HtmlCore()
+        core.divEnd()
+        core.hideToggle(styleId="progress-output")
+        print str(core)
         cls._printResultsHtml(choices, results, resultsMC)
 
     @classmethod
@@ -325,10 +332,26 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return results
 
     @classmethod
+    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices):
+        n = len(queryTS.getLeafNodes())
+        m = len(catTS.getLeafNodes())
+        k = len(list(analysisBins))
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
+        aDChoicec = analysisDef.getChoices(filterByActivation=True)
+        maxSamples = int(aDChoicec['maxSamples'])
+        return n*m*k*maxSamples
+
+    @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
         tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
                                            choices.categoryVal)
-        analysisSpecMC = cls.prepareMCAnalysis(choices)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices)
+        analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount)
         resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
         resultsMC = resultsMC['Result']
         return resultsMC
@@ -336,7 +359,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     @classmethod
     def _printResultsHtml(cls, choices, results, resultsMC):
         core = HtmlCore()
-        core.begin()
+        # core.begin()
         core.divBegin()
         resTableDict = OrderedDict()
         for key, val in results.iteritems():
@@ -380,7 +403,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return TrackStructureV2({categoryVal: hypothesisTS})
 
     @classmethod
-    def prepareMCAnalysis(cls, choices):
+    def prepareMCAnalysis(cls, choices, opCount):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
@@ -393,6 +416,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
+        analysisSpec.addParameter('progressPoints', opCount)
         return analysisSpec
 
     @classmethod
