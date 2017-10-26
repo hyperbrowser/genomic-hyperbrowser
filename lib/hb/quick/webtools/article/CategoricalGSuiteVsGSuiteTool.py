@@ -419,7 +419,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         return tableFile
 
     @classmethod
-    def drawHist(cls, core, counts, breaks, seriesName=''):
+    def drawHist(cls, core, counts, breaks, seriesName=None):
 
         vg = visualizationGraphs()
         res = vg.drawColumnChart(counts,
@@ -428,7 +428,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                                  showInLegend=False,
                                  titleText=textTitle,
                                  histogram=True,
-                                 seriesName = seriesName
+                                 seriesName = seriesName,
                                  height=400
                                  )
         core.line(res)
