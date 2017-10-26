@@ -440,6 +440,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                                  titleText=textTitle,
                                  histogram=True,
                                  seriesName = seriesName,
+                                 yAxisTitle='Density',
                                  height=400
                                  )
         core.line(res)
