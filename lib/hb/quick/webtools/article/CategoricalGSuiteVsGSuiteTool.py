@@ -385,16 +385,18 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             )
             core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
-            breaksF, countsF = cls.countHist(dataForbes)
-            breaksAF, countsAF = cls.countHist(dataAvgRandomForbes)
+            breaksF, countsF, textTitle = cls.countHist(dataForbes)
+            breaksAF, countsAF, textTitle = cls.countHist(dataAvgRandomForbes)
 
             cls.drawHist(core,
+                         textTitle,
                          [countsF, countsAF],
                          breaks=breaksF,
                          seriesName=['Forbes', 'Avg Forbes'])
 
-            breakspVal, countspVal = cls.countHist(datapVal, breaks=True)
+            breakspVal, countspVal, textTitle = cls.countHist(datapVal, breaks=True)
             cls.drawHist(core,
+                         textTitle,
                          countspVal,
                          breakspVal)
 
@@ -419,7 +421,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         return tableFile
 
     @classmethod
-    def drawHist(cls, core, counts, breaks, seriesName=None):
+    def drawHist(cls, core, textTitle, counts, breaks, seriesName=None):
 
         vg = visualizationGraphs()
         res = vg.drawColumnChart(counts,
@@ -452,7 +454,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         breaks = list(dataFromRPois.rx2('breaks'))
         counts = list(dataFromRPois.rx2('density'))
 
-        return breaks, counts
+        return breaks, counts, textTitle
 
 
 
