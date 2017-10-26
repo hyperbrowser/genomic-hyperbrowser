@@ -335,6 +335,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices):
         n = len(queryTS.getLeafNodes())
         m = len(catTS.getLeafNodes())
+        cat_m = len(catTS[choices.categoryVal].getLeafNodes())
         k = len(list(analysisBins))
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
@@ -344,7 +345,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         aDChoicec = analysisDef.getChoices(filterByActivation=True)
         maxSamples = int(aDChoicec['maxSamples'])
-        return n*m*k*maxSamples
+        return n*cat_m*(k+1)*maxSamples + n*(m-cat_m)*(k+1)
 
     @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
