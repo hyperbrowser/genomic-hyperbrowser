@@ -135,6 +135,60 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
 
         self.assertRaises(ValueError, npDataFrame.__setslice__, 1, 3, 'a')
 
+    def testUpdateArray(self):
+        npDataFrame = self._createTestDataFrame()
+
+        npDataFrame.updateArray('floats', npDataFrame.getArray('floats')[::-1])
+        self.assertListsOrDicts(npDataFrame.getArray('floats'),
+                                np.array([4.0, 3.0, 2.0, 1.0, 0.0]))
+
+        npDataFrame.updateArray('strs', npDataFrame.getArray('strs')[::-1])
+        self.assertListsOrDicts(npDataFrame.getArray('strs'),
+                                np.array(['j', 'hi', 'efg', 'cd', 'ab']))
+
+        npDataFrame.updateArray('tuples', npDataFrame.getArray('tuples')[::-1])
+        self.assertListsOrDicts(npDataFrame.getArray('tuples'),
+                                np.array([(9, 10), (7, 8), (5, 6), (3, 4), (1, 2)]))
+
+        self.assertRaises(ValueError, npDataFrame.updateArray, 'floats', np.arange(4))
+
+    def testSliceAndUpdateArray(self):
+        npDataFrame = self._createTestDataFrame()
+
+        slicedDataFrame = npDataFrame[1:4]
+        slicedDataFrame.updateArray('floats', np.array([3.0 ,2.0, 1.0]))
+        self.assertListsOrDicts(npDataFrame.getArray('floats'),
+                                np.array([0.0, 3.0, 2.0, 1.0, 4.0]))
+
+    def testSort(self):
+        npDataFrame = NumpyDataFrame(dict(a=[2,3,2], b=[3,1,1], c=['c', 'b', 'a']))
+
+        npDataFrame.sort(order=['c'])
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([2,3,2]))
+        self.assertListsOrDicts(npDataFrame.getArray('b'), np.array([1,1,3]))
+        self.assertListsOrDicts(npDataFrame.getArray('c'), np.array(['a', 'b', 'c']))
+
+        npDataFrame = NumpyDataFrame(dict(a=[2, 3, 2], b=[3, 1, 1], c=['c', 'b', 'a']))
+        npDataFrame.sort(order=['a'])
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([2,2,3]))
+        self.assertListsOrDicts(npDataFrame.getArray('b'), np.array([3,1,1]))
+        self.assertListsOrDicts(npDataFrame.getArray('c'), np.array(['c', 'a', 'b']))
+
+        npDataFrame = NumpyDataFrame(dict(a=[2, 3, 2], b=[3, 1, 1], c=['c', 'b', 'a']))
+        npDataFrame.sort(order=['b'])
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([3,2,2]))
+        self.assertListsOrDicts(npDataFrame.getArray('b'), np.array([1,1,3]))
+        self.assertListsOrDicts(npDataFrame.getArray('c'), np.array(['b', 'a', 'c']))
+
+        npDataFrame = NumpyDataFrame(dict(a=[2, 3, 2], b=[3, 1, 1], c=['c', 'b', 'a']))
+        npDataFrame.sort(order=['b', 'a'])
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([2,3,2]))
+        self.assertListsOrDicts(npDataFrame.getArray('b'), np.array([1,1,3]))
+        self.assertListsOrDicts(npDataFrame.getArray('c'), np.array(['a', 'b', 'c']))
+
+        self.assertRaises(AssertionError, npDataFrame.sort, order=[])
+        self.assertRaises(AssertionError, npDataFrame.sort, order=['a', 'd'])
+
     def testNumpyMethods(self):
         npDataFrame = self._createTestDataFrame()
 

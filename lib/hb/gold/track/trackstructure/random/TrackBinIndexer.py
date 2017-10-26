@@ -48,11 +48,11 @@ class SimpleTrackBinIndexer(TrackBinIndexer):
         for i in xrange(len(self._tracks)*len(self._bins)):
             yield i
 
-    # def allBins(self):
-    #     raise AbstractClassError()
-    #
-    # def allTracks(self):
-    #     raise AbstractClassError()
+    def allBins(self):
+        return self._bins
+
+    def allTracks(self):
+        return self._tracks
 
     def getTrackBinIndexForTrackBinPair(self, trackBinPair):
         return self._origTrackBinPairToTrackBinIndexDict[trackBinPair]

@@ -3,10 +3,9 @@ from gold.track.trackstructure.random.TrackBinIndexer import TrackBinPair
 
 
 class RandomizeBetweenTracksAndBinsPool(object):
-    def __init__(self, randAlgorithm, origTs, binSource, allowOverlaps):
+    def __init__(self, randAlgorithm, origTs, binSource):
         self._randAlgorithm = randAlgorithm
         self._randAlgorithm.initTrackBinIndexer(origTs, binSource)
-        self._allowOverlaps = allowOverlaps
         self._trackDataStorage = RandomizedTrackDataStorage(self._randAlgorithm.getTrackBinIndexer(),
                                                             self._randAlgorithm.getReadFromDiskTrackColumns(),
                                                             self._randAlgorithm.getInitTrackColumns(),

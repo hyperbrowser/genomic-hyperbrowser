@@ -9,9 +9,10 @@ from gold.track.trackstructure.random.RandomizeBetweenTracksAndBinsPool import R
 
 
 class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider):
-    def __init__(self, randAlgorithm, origTs, binSource, allowOverlaps):
-        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps=allowOverlaps)
-        # self._poolDict = OrderedDict() #rand_index -> trackId -> binId -> list of TrackElements
+    def __init__(self, randAlgorithm, origTs, binSource):
+        # TODO: allowOverlaps is provided to the randAlgorithm, so it is really not needed here.
+        # The only reason it is still here is that the superclass init needs it. Refactor?
+        TsBasedRandomTrackViewProvider.__init__(self, origTs, allowOverlaps=randAlgorithm._allowOverlaps)
         self._randAlgorithm = randAlgorithm
         self._binSource = binSource
         self._curRandIndex = -1
@@ -21,8 +22,7 @@ class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTrackRandomTvProvider
         self._assertConsecutiveRandIndex(randIndex)
 
         if self._isFirstIteration():
-            self._pool = RandomizeBetweenTracksAndBinsPool(self._randAlgorithm, self._origTs, self._binSource,
-                                                           self._allowOverlaps)
+            self._pool = RandomizeBetweenTracksAndBinsPool(self._randAlgorithm, self._origTs, self._binSource)
 
         if self._isNewIteration(randIndex):
             self._pool.randomize()

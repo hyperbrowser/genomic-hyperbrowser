@@ -19,9 +19,13 @@ class NumpyDataFrame(object):
         return self._arrayDict.keys()
 
     def addArray(self, key, iterable):
-        newArray = np.array(iterable)
+        newArray = np.array(iterable) if not isinstance(iterable, np.ndarray) else iterable
         self._assertValidShape(newArray)
         self._arrayDict[key] = newArray
+
+    def updateArray(self, key, iterable):
+        newArray = np.array(iterable) if not isinstance(iterable, np.ndarray) else iterable
+        self._arrayDict[key][:] = newArray
 
     def _assertValidShape(self, newArray):
         if newArray.shape == ():
@@ -57,6 +61,19 @@ class NumpyDataFrame(object):
             maskArray = np.array(mask, dtype=bool)
             self._assertValidShape(maskArray)
             self._mask = maskArray
+
+    def sort(self, order):
+        '''
+        Sorts the NumpyDataFrame in place according to multiple arrays.
+        :param order: The keys of the arrays to use in sorting, in order (primary key first)
+        :return: None
+        '''
+        assert len(order) > 0
+        assert all(key in self._arrayDict for key in order)
+        # In lexsort, the last key is the primary key, so we here reverse the key order
+        indices = np.lexsort([self._arrayDict[key] for key in reversed(order)])
+        for array in self._arrayDict.values():
+            array[:] = array[indices]
 
     def __len__(self):
         if len(self._arrayDict) > 0:
