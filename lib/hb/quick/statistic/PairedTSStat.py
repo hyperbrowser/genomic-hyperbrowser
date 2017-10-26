@@ -32,12 +32,31 @@ class PairedTSStat(MagicStatFactory):
 
 
 class PairedTSStatUnsplittable(StatisticV2):
-    def _init(self, pairedTsRawStatistic, **kwArgs):
+
+    PROGRESS_COUNT = 1
+
+    def _init(self, pairedTsRawStatistic, progressPoints=None, progressStyle='html', **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(pairedTsRawStatistic)
+        self._progressPoints = progressPoints
+        self._progressStyle = progressStyle
 
     def _compute(self):
         ts = self._trackStructure._copyTreeStructure()
         ts.result = self._children[0].getResult()
+        if self._progressPoints:
+            if PairedTSStatUnsplittable.PROGRESS_COUNT == 1:
+                if self._progressStyle == 'html':
+                    print '<br>'
+                    print "<p>Progress output (expected points: %s)</p>" % self._progressPoints
+                else:
+                    print
+                    print "Progress output (expected points: %s)" % self._progressPoints
+            print ".",
+            if PairedTSStatUnsplittable.PROGRESS_COUNT % 100 == 0:
+                print PairedTSStatUnsplittable.PROGRESS_COUNT
+                if self._progressStyle == 'html':
+                    print '<br>'
+            PairedTSStatUnsplittable.PROGRESS_COUNT += 1
         return ts
 
     def _createChildren(self):
