@@ -385,7 +385,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
             cls.drawHist(core, data)
-            cls.drawHist(core, data1, breaks = True)
+            cls.drawHist(core, data1, breaks=True)
 
         core.divEnd()
         core.divEnd()
