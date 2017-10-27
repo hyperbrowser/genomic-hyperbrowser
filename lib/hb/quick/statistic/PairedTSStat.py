@@ -43,6 +43,10 @@ class PairedTSStatUnsplittable(StatisticV2):
     def _compute(self):
         ts = self._trackStructure._copyTreeStructure()
         ts.result = self._children[0].getResult()
+        self._printProgress()
+        return ts
+
+    def _printProgress(self):
         if self._progressPoints:
             if PairedTSStatUnsplittable.PROGRESS_COUNT == 1:
                 if self._progressStyle == 'html':
@@ -57,7 +61,6 @@ class PairedTSStatUnsplittable(StatisticV2):
                 if self._progressStyle == 'html':
                     print '<br>'
             PairedTSStatUnsplittable.PROGRESS_COUNT += 1
-        return ts
 
     def _createChildren(self):
         assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure?
