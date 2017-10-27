@@ -8,6 +8,10 @@ from quick.application.SignatureDevianceLogging import takes
 PVAL_KEY = 'P-value'
 M_KEY = 'NumMoreExtremeThanObs'
 NUM_SAMPLES_KEY = 'NumResamplings'
+MEAN_OF_NULL_DIST_KEY = 'MeanOfNullDistr'
+SD_OF_NULL_DIST_KEY = 'SdNullDistr'
+NON_NAN_RAND_RESULTS_KEY = 'nonNanRandRes'
+RAND_RESULTS_KEY = 'randRes'
 
 from numpy import isnan,array, median
 
@@ -40,10 +44,11 @@ def _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisti
     numMoreExtreme = computeNumMoreExtreme(observation, mcSamples, tail)
     pval = computePurePseudoPvalue(observation, mcSamples, tail)
     return OrderedDict(
-        [(PVAL_KEY, pval), ('TSMC_' + rawStatisticMainClassName, observation), ('MeanOfNullDistr', meanOfNullDistr), \
-         ('MedianOfNullDistr', medianOfNullDistr), ('SdNullDistr', sdOfNullDistr), ('DiffFromMean', diffObsMean),
+        [(PVAL_KEY, pval), ('TSMC_' + rawStatisticMainClassName, observation), (MEAN_OF_NULL_DIST_KEY, meanOfNullDistr), \
+         ('MedianOfNullDistr', medianOfNullDistr), (SD_OF_NULL_DIST_KEY, sdOfNullDistr), ('DiffFromMean', diffObsMean),
          (NUM_SAMPLES_KEY, numResamplings), \
-         ('NumSamplesNotNan', numberOfNonNanRandResults), (M_KEY, numMoreExtreme)])
+         ('NumSamplesNotNan', numberOfNonNanRandResults), (M_KEY, numMoreExtreme),
+         (RAND_RESULTS_KEY, numpyRandResults), (NON_NAN_RAND_RESULTS_KEY, nonNanNumpyRandResults)])
 
 @takes(tuple, str, basestring)
 def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
