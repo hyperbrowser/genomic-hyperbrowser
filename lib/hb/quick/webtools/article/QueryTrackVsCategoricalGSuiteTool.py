@@ -5,6 +5,7 @@ from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
+from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -322,7 +323,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         core.divEnd()
         core.hideToggle(styleId="progress-output")
         print str(core)
-        cls._printResultsHtml(choices, results, resultsMC)
+        cls._printResultsHtml(choices, results, resultsMC, galaxyFn)
 
     @classmethod
     def _getResults(cls, queryTS, catTS, analysisBins):
@@ -358,19 +359,43 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return resultsMC
 
     @classmethod
-    def _printResultsHtml(cls, choices, results, resultsMC):
+    def _printResultsHtml(cls, choices, results, resultsMC, galaxyFn):
         core = HtmlCore()
         # core.begin()
         core.divBegin()
         resTableDict = OrderedDict()
         for key, val in results.iteritems():
-            resTableDict[key] = val.result
-        resTableDict["P-val for category %s: " % choices.categoryVal] = str(
-            resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
-        core.tableFromDictionary(resTableDict, columnNames=["Category", "Forbes similarity"])
+            resTableDict[key] = [val.result]
+            if key == choices.categoryVal:
+                resTableDict[key].append(resultsMC[key].result[McEvaluators.PVAL_KEY])
+                resTableDict[key].append(resultsMC[key].result[McEvaluators.MEAN_OF_NULL_DIST_KEY])
+                resTableDict[key].append(resultsMC[key].result[McEvaluators.SD_OF_NULL_DIST_KEY])
+            else:
+                resTableDict[key].append("NA")
+                resTableDict[key].append("NA")
+                resTableDict[key].append("NA")
+        # resTableDict["P-val for category %s: " % choices.categoryVal] = str(
+        #     resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
+        core.tableFromDictionary(resTableDict, columnNames=["Group", "Similarity score", "P-value",
+                                                            "Mean score for null distribution",
+                                                            "Std. deviation of score for null distribution"])
+
+        rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
+        core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
+            "null distribution table") + ".")
+
         core.divEnd()
         core.end()
         print str(core)
+
+    @classmethod
+    def _getNullDistributionFile(cls, choices, galaxyFn, resultsMC):
+        nullRawResults = resultsMC[choices.categoryVal].result[McEvaluators.RAND_RESULTS_KEY]
+        rawNDResultsFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
+        with rawNDResultsFile.getFile() as f:
+            line = "\t".join([str(_) for _ in nullRawResults]) + "\n"
+            f.write(line)
+        return rawNDResultsFile
 
     @classmethod
     def prepareAnalysis(cls):
