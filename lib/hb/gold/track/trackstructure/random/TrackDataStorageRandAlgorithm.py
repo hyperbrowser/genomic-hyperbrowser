@@ -44,7 +44,7 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
     def getReadFromDiskTrackColumns(self):
         return ['lengths']
 
-    def getGeneratedTrackColumns(self):
+    def getInitTrackColumns(self):
         return ['starts']
 
     def needsMask(self):
