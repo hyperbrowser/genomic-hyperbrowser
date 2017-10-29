@@ -80,7 +80,7 @@ class TrackBinPair(object):
         self.bin = bin
 
     def __hash__(self):
-        return hash(self.track.getUniqueKey(self.bin.genome), self.bin)
+        return hash((self.track.getUniqueKey(self.bin.genome), self.bin))
 
     def getTrackView(self):
         return self.track.getTrackView(self.bin)
