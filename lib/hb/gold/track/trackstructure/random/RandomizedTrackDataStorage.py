@@ -28,7 +28,7 @@ class RandomizedTrackDataStorage(object):
         arrayLengths = self._addConcatenatedTrackBinArraysToDataFrame(dataFrame, listOfColNameToTrackBinArrayDicts)
         self._addMandatoryArraysToDataFrame(dataFrame, arrayLengths)
         if self._needsMask:
-            dataFrame.mask = np.zeros(len(self.dataFrame), dtype=bool)
+            dataFrame.mask = np.zeros(len(self._dataFrame), dtype=bool)
 
         return dataFrame
 
@@ -47,7 +47,7 @@ class RandomizedTrackDataStorage(object):
         return listOfColToArrayDicts
 
     def _generateArraysAndUpdateDict(self, colToArrayDict, trackView):
-        for col in self._generatedTrackColumns:
+        for col in self._generatedTrackColNames:
             if col == self.LENGTH_KEY:
                 numpyArray = trackView.startsAsNumpyArray()
             else:
@@ -55,7 +55,7 @@ class RandomizedTrackDataStorage(object):
             colToArrayDict[col] = np.zeros(len(numpyArray), dtype=numpyArray.dtype)
 
     def _readArraysFromDiskAndUpdateDict(self, colToArrayDict, trackView):
-        for col in self._readFromDiskTrackColumns:
+        for col in self._readFromDiskTrackColNames:
             if col == self.LENGTH_KEY:
                 colToArrayDict[col] = trackView.endsAsNumpyArray() - trackView.startsAsNumpyArray()
             else:
@@ -93,7 +93,7 @@ class RandomizedTrackDataStorage(object):
         dataFrame.addArray(self.NEW_TRACK_BIN_INDEX_KEY, np.zeros(sum(arrayLengths), dtype='int32'))
 
     def shuffle(self):
-        np.random.shuffle(self.dataFrame)
+        np.random.shuffle(self._dataFrame)
 
     def getTrackStorageView(self, origTrackBinIndex):
         pass
