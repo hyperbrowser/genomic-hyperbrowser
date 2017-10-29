@@ -40,7 +40,7 @@ class SimpleTrackBinIndexer(TrackBinIndexer):
                 trackBinIndex += 1
 
     def _getTrackAndBinIndexFromTrackBinIndex(self, trackBinIndex):
-        trackIndex = trackBinIndex / len(self._tracks)
+        trackIndex = trackBinIndex / len(self._bins)
         binIndex = trackBinIndex % len(self._bins)
         return trackIndex, binIndex
 
