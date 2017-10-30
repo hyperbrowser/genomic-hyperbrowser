@@ -28,7 +28,8 @@ class RandomizedTrackDataStorage(object):
         arrayLengths = self._addConcatenatedTrackBinArraysToDataFrame(dataFrame, listOfColNameToTrackBinArrayDicts)
         self._addMandatoryArraysToDataFrame(dataFrame, arrayLengths)
         if self._needsMask:
-            dataFrame.mask = np.zeros(len(self._dataFrame), dtype=bool)
+            #TODO: is len(dataFrame) safe? Can a member array be multidimensional?
+            dataFrame.mask = np.zeros(len(dataFrame), dtype=bool)
 
         return dataFrame
 
