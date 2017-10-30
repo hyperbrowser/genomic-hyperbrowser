@@ -4,8 +4,11 @@ from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteConstants import TITLE_COL
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.random.ExcludedSegmentsStorage import ExcludedSegmentsStorage
 from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
     ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.trackstructure.random.TrackDataStorageRandAlgorithm import \
+    ShuffleElementsBetweenTracksAndBinsRandAlgorithm
 from gold.util.CommonClasses import OrderedDefaultDict
 from proto.RSetup import r, robjects
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -16,6 +19,7 @@ from quick.statistic.MultiplePairedTSStat import MultiplePairedTSStat
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util import McEvaluators
+from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -431,7 +435,9 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
 
     @classmethod
-    def _prepareRandomizedTs(cls, firstTs, secondTs, binSource,  firstGSuiteCat, secondGSuiteCat, excludedTs=None):
+    def _prepareRandomizedTs(cls, firstTs, secondTs, binSource,  firstGSuiteCat, secondGSuiteCat,
+                             excludedTs=None, allowOverlaps=False):
+        DebugUtil.insertBreakPoint()
         ts = TrackStructureV2()
         for sts1 in firstTs.getLeafNodes():
             #assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
@@ -448,7 +454,14 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                     realTs["reference"] = sts2
                     randTs = TrackStructureV2()
                     randTs["query"] = sts1
-                    randTs["reference"] = sts2.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider, binSource=binSource, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
+                    excludedSegments = ExcludedSegmentsStorage(excludedTS=excludedTs, binSource=binSource)
+                    randAlg = ShuffleElementsBetweenTracksAndBinsRandAlgorithm(allowOverlaps,
+                                                                               excludedSegmentsStorage=excludedSegments)
+                    randTvProvider = ShuffleElementsBetweenTracksAndBinsTvProvider(randAlgorithm=randAlg,
+                                                                                   origTs=sts2,
+                                                                                   binSource=binSource)
+                    randTs["reference"] = sts2._getRandomizedVersion(randTvProvider, 0)
+                    # randTs["reference"] = sts2.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider, binSource=binSource, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
                     hypothesisTS = TrackStructureV2()
                     hypothesisTS["real"] = realTs
                     hypothesisTS["rand"] = randTs
