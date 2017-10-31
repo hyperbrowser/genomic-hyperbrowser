@@ -121,6 +121,11 @@ class StatJob(object):
         startLocal = time.time()
         
         while True:
+            stats = []
+            if hasattr(self._statClass, 'keywords'):
+                runLocal = self._statClass.keywords.get('runLocalAnalysis') if 'runLocalAnalysis' in self._statClass.keywords else None
+                if runLocal == "No":
+                    break
             stats = self._doLocalAnalysis(results, stats=[])
             #stats[0] is used to call class method
             if self._kwArgs.get('minimal') == True:
