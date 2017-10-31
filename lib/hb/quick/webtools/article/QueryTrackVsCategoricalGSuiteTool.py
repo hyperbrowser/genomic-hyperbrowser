@@ -337,7 +337,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         n = len(queryTS.getLeafNodes())
         m = len(catTS.getLeafNodes())
         cat_m = len(catTS[choices.categoryVal].getLeafNodes())
-        k = len(list(analysisBins))
+        k = 1 #len(list(analysisBins)) + 1 #currently local analysis is turned of
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
@@ -346,7 +346,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         aDChoicec = analysisDef.getChoices(filterByActivation=True)
         maxSamples = int(aDChoicec['maxSamples'])
-        return n*cat_m*(k+1)*maxSamples + n*(m-cat_m)*(k+1)
+        return n*cat_m*k*maxSamples + n*(m-cat_m)*k
 
     @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
@@ -443,6 +443,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         analysisSpec.addParameter('progressPoints', opCount)
+        analysisSpec.addParameter('runLocalAnalysis', "No")
         return analysisSpec
 
     @classmethod
