@@ -9,6 +9,7 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GSuiteStatUtils
 from quick.statistic.SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat import \
     SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat
 from quick.statistic.SummarizedTrackVsCategoricalSuiteV2Stat import SummarizedTrackVsCategoricalSuiteV2Stat
@@ -73,6 +74,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 ('Select reference GSuite', 'gsuite'),
                 ('Select category column', 'categoryName'),
                  ('Select primary group category value', 'categoryVal'),
+                ('Select track to track similarity/distance measure', 'similarityFunc'),
+                ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Type of randomization', 'randType'),
                 ('Randomization algorithm', 'randAlg')] + \
@@ -232,6 +235,14 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
 
     @staticmethod
+    def getOptionsBoxSimilarityFunc(prevChoices):
+        return GSuiteStatUtils.PAIRWISE_STAT_LABELS
+
+    @staticmethod
+    def getOptionsBoxSummaryFunc(prevChoices):
+        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
+
+    @staticmethod
     def getOptionsBoxMcfdrDepth(prevChoices):
         return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
 
@@ -313,7 +324,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
         assert choices.categoryVal in catTS
 
-        results = cls._getResults(queryTS, catTS, analysisBins)
+        results = cls._getResults(queryTS, catTS, analysisBins, choices)
         core = HtmlCore()
         core.begin()
         core.divBegin(divId="progress-output")
@@ -326,9 +337,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         cls._printResultsHtml(choices, results, resultsMC, galaxyFn)
 
     @classmethod
-    def _getResults(cls, queryTS, catTS, analysisBins):
+    def _getResults(cls, queryTS, catTS, analysisBins, choices):
         ts = cls.prepareTrackStructure(queryTS, catTS)
-        analysisSpec = cls.prepareAnalysis()
+        analysisSpec = cls.prepareAnalysis(choices)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
         return results
 
@@ -376,8 +387,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 resTableDict[key].append("NA")
         # resTableDict["P-val for category %s: " % choices.categoryVal] = str(
         #     resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
-        core.tableFromDictionary(resTableDict, columnNames=["Group", "Similarity score", "P-value",
-                                                            "Mean score for null distribution",
+        core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (choices.summaryFunc, choices.similarityFunc))
+        core.tableFromDictionary(resTableDict, columnNames=["Group", "Similarity score",
+                                                            "P-value", "Mean score for null distribution",
                                                             "Std. deviation of score for null distribution"])
 
         rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
@@ -398,10 +410,13 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return rawNDResultsFile
 
     @classmethod
-    def prepareAnalysis(cls):
+    def prepareAnalysis(cls, choices):
         analysisSpec = AnalysisSpec(SummarizedTrackVsCategoricalSuiteV2Stat)
-        analysisSpec.addParameter("pairwiseStatistic", "ObservedVsExpectedStat")
-        analysisSpec.addParameter("summaryFunc", "avg")
+        analysisSpec.addParameter('pairwiseStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                      choices.similarityFunc])
+        analysisSpec.addParameter('summaryFunc',
+                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         return analysisSpec
 
     @classmethod
@@ -436,14 +451,17 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
         analysisSpec.addParameter('rawStatistic', SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat.__name__)
-        analysisSpec.addParameter("pairwiseStatistic", "ObservedVsExpectedStat")
-        analysisSpec.addParameter("summaryFunc", "avg")
+        analysisSpec.addParameter('pairwiseStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                      choices.similarityFunc])
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('summaryFunc',
+                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         return analysisSpec
 
     @classmethod
