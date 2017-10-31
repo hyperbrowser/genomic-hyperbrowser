@@ -29,7 +29,10 @@ class ShuffleElementsBetweenTracksTvProvider(BetweenTrackRandomTvProvider):
     def getTrackView(self, region, origTrack, randIndex):
         if region not in self._elementPoolDict:
             self._populatePool(region)
-        return self._elementPoolDict[region].getOneTrackViewFromPool(origTrack, randIndex)
+        randTrackView = self._elementPoolDict[region].getOneTrackViewFromPool(origTrack, randIndex)
+        #TODO: this a temporary solution, must be used only when local analysis is turned off.
+        self._elementPoolDict[region].cleanUpData(randIndex)
+        return randTrackView
 
     @takes('ShuffleElementsBetweenTracksTvProvider', 'GenomeRegion')
     def _populatePool(self, region):
@@ -101,6 +104,22 @@ class ShuffleElementsBetweenTracksPool(object):
             return [coverage / sum(coverages) for coverage in coverages]
         else:
             return [1.0 / float(self._amountTracks) for i in range(0, self._amountTracks)]
+
+
+    def cleanUpData(self, randIndex):
+        '''Clean up previous data, not for this randIndex'''
+        indexToDelete = set()
+        keyToDelete = set()
+        for key, val in self._randomTrackSets.iteritems():
+            for currIndex in val:
+                if currIndex != randIndex:
+                    keyToDelete.add(key)
+                    indexToDelete.add(currIndex)
+
+        for key in keyToDelete:
+            for index in indexToDelete:
+                del self._randomTrackSets[key][index]
+
 
 
     @takes('ShuffleElementsBetweenTracksPool', (Track, SampleTrack), int)
