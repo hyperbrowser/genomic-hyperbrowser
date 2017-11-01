@@ -454,6 +454,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                     realTs["reference"] = sts2
                     randTs = TrackStructureV2()
                     randTs["query"] = sts1
+                    #TODO: handle randomization of sub-trackstructures better
                     excludedSegments = ExcludedSegmentsStorage(excludedTS=excludedTs, binSource=binSource)
                     randAlg = ShuffleElementsBetweenTracksAndBinsRandAlgorithm(allowOverlaps,
                                                                                excludedSegmentsStorage=excludedSegments)
