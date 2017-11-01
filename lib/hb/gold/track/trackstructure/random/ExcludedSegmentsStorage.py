@@ -10,11 +10,11 @@ class ExcludedSegmentsStorage(object):
 
     def _initExcludedRegions(self):
         # for now we only support a single exclusion track
-        assert isinstance(self._excludedTs, SingleTrackTS), "Only Single track TS supported for exclusion track."
+        assert isinstance(self._excludedTS, SingleTrackTS), "Only Single track TS supported for exclusion track."
         self._excludedSegmentsDict = dict()
 
         for region in self._binSource:
-            excludedTV = self._excludedTs.track.getTrackView(region)
+            excludedTV = self._excludedTS.track.getTrackView(region)
             self._excludedSegmentsDict[region] = zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray())
 
     def getExcludedSegmentsIter(self, region):

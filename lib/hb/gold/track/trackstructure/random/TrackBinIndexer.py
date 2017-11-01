@@ -82,5 +82,11 @@ class TrackBinPair(object):
     def __hash__(self):
         return hash((self.track.getUniqueKey(self.bin.genome), self.bin))
 
+    def __eq__(self, other):
+        return self.track == other.track and self.bin == other.bin
+
+    def __ne__(self, other):
+        return not(self == other)
+
     def getTrackView(self):
         return self.track.getTrackView(self.bin)

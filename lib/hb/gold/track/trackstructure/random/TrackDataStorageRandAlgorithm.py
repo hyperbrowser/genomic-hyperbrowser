@@ -63,23 +63,24 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
 
         trackDataStorage.shuffle()
 
-        for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
-            trackDataStorageView = trackDataStorage.getView(trackBinIndex)
+        # for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
+        #     trackDataStorageView = trackDataStorage.getView(trackBinIndex)
 
-            lengthsArray = trackDataStorageView.getArray('lengths')
-            startsArray, newTrackBinIndexArray = \
-                self._generateRandomArrays(lengthsArray, trackProbabilities, binProbabilities)
+        lengthsArray = trackDataStorage.getArray('lengths')
+        startsArray, newTrackBinIndexArray = \
+            self._generateRandomArrays(lengthsArray, trackProbabilities, binProbabilities)
 
-            trackDataStorageView.updateArray('starts', startsArray)
-            trackDataStorageView.updateArray(self.NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
+        trackDataStorage.updateArray('starts', startsArray)
+        trackDataStorage.updateArray(self.NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
 
         maskArray = generateMaskArray(trackDataStorage.getArray('starts'), self.MISSING_EL)
-        trackDataStorage.setMaskColumn(maskArray)
+        trackDataStorage.setMask(maskArray)
 
         trackDataStorage.sort(['starts', self.NEW_TRACK_BIN_INDEX_KEY])
 
         from gold.application.LogSetup import logMessage, logging
-        logMessage("Discarded %i elements out of %i possible." % (trackDataStorage.mask.sum(), len(trackDataStorage)),
+        logMessage("Discarded %i elements out of %i possible." %
+                   (trackDataStorage.getMask().sum(), len(trackDataStorage)),
                    level=logging.WARN)
 
     def _getTrackProbabilites(self, numTracks):
@@ -107,8 +108,7 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
             for sampleCount in xrange(self._maxSampleCount):
                 newTrackBinPair = TrackBinPair(self._trackBinIndexer.selectRandomTrack(trackProbabilities),
                                             self._trackBinIndexer.selectRandomBin(binProbabilities))
-                newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
-                overlapDetector = self._getOverlapDetectorForTrackBinIndex(newTrackBinIndex)
+                overlapDetector = self._getOverlapDetectorForTrackBinPair(newTrackBinPair)
 
                 try:
                     newStartPos = self._selectRandomValidStartPosition(overlapDetector, segLen, newTrackBinPair.bin)
@@ -119,14 +119,16 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
                     newStartPos = self.MISSING_EL
 
             startsArray[i] = newStartPos
+            newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
             newTrackBinIndexArray[i] = newTrackBinIndex if newStartPos != self.MISSING_EL else self.MISSING_EL
 
         return startsArray, newTrackBinIndexArray
 
-    def _getOverlapDetectorForTrackBinIndex(self, newTrackBinIndex):
+    def _getOverlapDetectorForTrackBinPair(self, newTrackBinPair):
+        newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
         if newTrackBinIndex not in self._newTrackBinIndexToOverlapDetectorDict:
             self._newTrackBinIndexToOverlapDetectorDict[newTrackBinIndex] = self._overlapDetectorCls(
-                self._excludedSegmentsStorage.getExcludedSegmentsIter(newTrackBinIndex.bin))
+                self._excludedSegmentsStorage.getExcludedSegmentsIter(newTrackBinPair.bin))
 
         overlapDetector = self._newTrackBinIndexToOverlapDetectorDict[newTrackBinIndex]
         return overlapDetector

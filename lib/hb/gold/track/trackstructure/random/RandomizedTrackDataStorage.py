@@ -1,6 +1,7 @@
 import numpy as np
 
 from gold.track.NumpyDataFrame import NumpyDataFrame
+from gold.track.TrackSource import TrackSource
 
 
 class RandomizedTrackDataStorage(object):
@@ -39,6 +40,11 @@ class RandomizedTrackDataStorage(object):
         for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
             trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
             trackView = trackBinPair.getTrackView()
+
+            #TODO: get all valid columns for all tracks
+            # TrackSource()
+
+            # colList = TrackViewGenomeElementSource(trackBinPair.bin.genome, trackView, trackName=None).getPrefixList()
 
             colToArrayDict = {}
             self._readArraysFromDiskAndUpdateDict(colToArrayDict, trackView)
@@ -94,11 +100,36 @@ class RandomizedTrackDataStorage(object):
         dataFrame.addArray(self.NEW_TRACK_BIN_INDEX_KEY, np.zeros(sum(arrayLengths), dtype='int32'))
 
     def shuffle(self):
-        np.random.shuffle(self._dataFrame)
+        indexArray = np.arange(len(self._dataFrame))
+        np.random.shuffle(indexArray)
+        self._dataFrame = self._dataFrame[indexArray]
+        # np.random.shuffle(self._dataFrame)
 
-    def getTrackStorageView(self, origTrackBinIndex):
-        pass
+    def getArray(self, key):
+        return self._dataFrame.getArray(key)
 
-    def getTrackView(self, origTrackBinIndex):
-        # Provides a TrackView with a VirtualNumpyArray for all columns that are found in all tracks (intersection of set of columns per track)
+    def updateArray(self, key, iterable):
+        self._dataFrame.updateArray(key, iterable)
+
+    def setMask(self, maskArray):
+        self._dataFrame.mask = maskArray
+
+    def getMask(self):
+        return self._dataFrame.mask
+
+    def sort(self, order):
+        self._dataFrame.sort(order)
+
+    def __len__(self):
+        return len(self._dataFrame)
+
+    # def getDataFrame(self):
+    #     return self._dataFrame
+
+    # def getDataFrameView(self, trackBinIndex):
+    #     pass
+
+    def getTrackView(self, trackBinIndex):
+        # Provides a TrackView with a VirtualNumpyArray for all columns that are found in all tracks
+        # (intersection of set of columns per track)
         pass
