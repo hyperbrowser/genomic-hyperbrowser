@@ -34,6 +34,7 @@ class PairedTSStat(MagicStatFactory):
 class PairedTSStatUnsplittable(StatisticV2):
 
     PROGRESS_COUNT = 1
+    PROGRESS_START_TIME = None
 
     def _init(self, pairedTsRawStatistic, progressPoints=None, progressStyle='html', **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(pairedTsRawStatistic)
@@ -48,7 +49,9 @@ class PairedTSStatUnsplittable(StatisticV2):
 
     def _printProgress(self):
         if self._progressPoints:
+            import time
             if PairedTSStatUnsplittable.PROGRESS_COUNT == 1:
+                PairedTSStatUnsplittable.PROGRESS_START_TIME = time.time()
                 if self._progressStyle == 'html':
                     print '<br>'
                     print "<p>Progress output (expected points: %s)</p>" % self._progressPoints
@@ -57,7 +60,12 @@ class PairedTSStatUnsplittable(StatisticV2):
                     print "Progress output (expected points: %s)" % self._progressPoints
             print ".",
             if PairedTSStatUnsplittable.PROGRESS_COUNT % 100 == 0:
-                print PairedTSStatUnsplittable.PROGRESS_COUNT
+                print PairedTSStatUnsplittable.PROGRESS_COUNT,
+                elapsed = time.time() - PairedTSStatUnsplittable.PROGRESS_START_TIME
+                # PairedTSStatUnsplittable.PROGRESS_START_TIME = time.time()
+                m, s = divmod(elapsed, 60)
+                h, m = divmod(m, 60)
+                print " (%d:%02d:%02d)" % (h, m, s)
                 if self._progressStyle == 'html':
                     print '<br>'
             PairedTSStatUnsplittable.PROGRESS_COUNT += 1
