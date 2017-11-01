@@ -357,7 +357,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         aDChoicec = analysisDef.getChoices(filterByActivation=True)
         maxSamples = int(aDChoicec['maxSamples'])
-        return n*cat_m*k*maxSamples + n*(m-cat_m)*k
+        return n*cat_m*k*(maxSamples+1)
 
     @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
