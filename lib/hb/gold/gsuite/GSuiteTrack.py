@@ -244,7 +244,7 @@ class GSuiteTrack(object):
         self._attributes[attrName] = attrVal
 
     @takes('GSuiteTrack', basestring)
-    @returns(basestring)
+    #TODO: what about missing values, NoneType is returned @returns(basestring)
     def getAttribute(self, attrName):
         if attrName in self._attributes:
             return self._attributes[attrName]
