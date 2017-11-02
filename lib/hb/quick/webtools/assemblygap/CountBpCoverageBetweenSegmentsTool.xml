@@ -1,0 +1,4 @@
+<tool id="hb_count_bp_coverage_between_segments_tool" name="Count Bp coverage between segments" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.CountBpCoverageBetweenSegmentsTool" proto_tool_class="CountBpCoverageBetweenSegmentsTool">
+  <description></description>
+</tool>

@@ -1,0 +1,4 @@
+<tool id="hb_create_box_plot_for_file_tool" name="Create box plot for file" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.CreateBoxPlotForFileTool" proto_tool_class="CreateBoxPlotForFileTool">
+  <description></description>
+</tool>

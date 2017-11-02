@@ -1,0 +1,4 @@
+<tool id="hb_join_two_tabular_files_by_specific_field_tool" name="Join two tabular files" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.JoinTwoTabularFilesBySpecificFieldTool" proto_tool_class="JoinTwoTabularFilesBySpecificFieldTool">
+  <description></description>
+</tool>

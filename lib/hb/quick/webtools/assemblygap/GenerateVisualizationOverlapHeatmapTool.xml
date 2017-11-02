@@ -1,0 +1,4 @@
+<tool id="hb_generate_visualization_overlap_heatmap_tool" name="Count bp coverage in a bin (region) between tracks in GSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.GenerateVisualizationOverlapHeatmapTool" proto_tool_class="GenerateVisualizationOverlapHeatmapTool">
+  <description></description>
+</tool>
