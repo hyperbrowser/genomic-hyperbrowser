@@ -128,6 +128,10 @@ class PilotPageCombinedOverviewOfTracksTool(GeneralGuiTool, UserBinMixin,
         errorString = cls.validateUserBins(choices)
         if errorString:
             return errorString
+
+        errorString = cls._checkGSuiteTrackListSize(gSuite=gSuite, minSize=2)
+        if errorString:
+            return errorString
         
     @staticmethod
     def getOutputFormat(choices=None):
