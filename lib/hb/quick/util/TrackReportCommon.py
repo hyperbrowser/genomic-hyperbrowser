@@ -620,8 +620,8 @@ def generatePilotPageOneParagraphs(gSuite, galaxyFn, regSpec='*', binSpec='*', u
     # Exons, introns overlap
 
     if gSuite.genome == 'hg19':
-        exonsRawAndDerivedOverlap, intronsRawAndDerivedOverlap = \
-            getExonIntronRawAndDerivedOvelapData(gSuite, analysisBins=userBin)
+        exonsRawAndDerivedOverlap, intronsRawAndDerivedOverlap, genesRawAndDerivedOvelap = \
+            getExonIntronGenesRawAndDerivedOverlapData(gSuite, analysisBins=userBin)
         #not very readable, but hey...
         avgExonsOverlap, exonOverlapTableLink, minExonsOverlap, maxExonsOverlap, \
         avgExonsEnrichment, exonEnrichmentTableLink, minExonsEnrihment, maxExonsEnrichment \
@@ -634,7 +634,7 @@ def generatePilotPageOneParagraphs(gSuite, galaxyFn, regSpec='*', binSpec='*', u
             exonsOverlap = exonsRawAndDerivedOverlap[trackName]['raw'].getGlobalResult()['Both']
             intronsOverlap = intronsRawAndDerivedOverlap[trackName]['raw'].getGlobalResult()['Both']
             #intergenic = coverage - (exonsOverlap + intronOverlap) = Only2(from exon overlap) - intronOverlap
-            intergenicOverlap = exonsRawAndDerivedOverlap[trackName]['raw'].getGlobalResult()['Only2'] - intronsOverlap
+            intergenicOverlap = genesRawAndDerivedOvelap[trackName]['raw'].getGlobalResult()['Only2']
             overlapTableData[trackName] = [exonsOverlap, intronsOverlap, intergenicOverlap]
         overlapTableLink = generateTableURLFromDataDict(
             galaxyFn, 'Overlap',
@@ -887,7 +887,7 @@ def getGSuiteOverviewHtmlCore(overviewData, expandable=False, visibleRows=6):
     return htmlCore
 
 
-def getExonIntronRawAndDerivedOvelapData(gSuite, analysisBins=None):
+def getExonIntronGenesRawAndDerivedOverlapData(gSuite, analysisBins=None):
     '''
     Get raw and derived overlap data for tracks in gSuite against the exons and introns tracks from hg19 genome
     '''
@@ -904,7 +904,11 @@ def getExonIntronRawAndDerivedOvelapData(gSuite, analysisBins=None):
     intronsOverlap = getRawAndDerivedOverlapResultsForTrackVsCollection(
         'hg19', intronsEnsemblTrack, gSuite, analysisBins=analysisBins)
 
-    return exonsOverlap, intronsOverlap
+    genesEnsemblTrack = ['Genes and gene subsets', 'Genes', 'Ensembl']
+    genesOverlap = getRawAndDerivedOverlapResultsForTrackVsCollection(
+        'hg19', genesEnsemblTrack, gSuite, analysisBins=analysisBins)
+
+    return exonsOverlap, intronsOverlap, genesOverlap
 
 
 def getCommonRepeatsRawAndDerivedOverlapData(gSuite, analysisBins=None):
