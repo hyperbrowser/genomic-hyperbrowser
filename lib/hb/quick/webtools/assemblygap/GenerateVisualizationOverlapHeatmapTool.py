@@ -16,7 +16,7 @@ from collections import OrderedDict
 from gold.track.TrackStructure import SingleTrackTS
 from proto.hyperbrowser.HtmlCore import HtmlCore
 # Author: Diana Domanska
-
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 '''
 Input:
@@ -42,7 +42,7 @@ colorMaps = {
 }
 
 
-class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, GenomeMixin, DebugMixin):
+class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
 
@@ -65,21 +65,20 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, GenomeMixin, Debug
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select track file from history', 'targetTrack'),
-                ('Select GSuite file from history', 'gsuite'), \
+        return [('Select GSuite file from history', 'gsuite'), \
                 ('Select metadata from GSuite', 'selectColumns')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
                    ('Select a color map:', 'colorMapSelectList')
-               ]
+               ] + cls.getInputBoxNamesForUserBinSelection()
 
 
-    @staticmethod
-    def getOptionsBoxTargetTrack():  # refTrack
-        return GeneralGuiTool.getHistorySelectionElement('bed', 'gtrack')
+    # @staticmethod
+    # def getOptionsBoxTargetTrack():  # refTrack
+    #     return GeneralGuiTool.getHistorySelectionElement('bed', 'gtrack')
 
-    @staticmethod
-    def getOptionsBoxGsuite(prevChoices):
+    @classmethod
+    def getOptionsBoxGsuite(cls):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
@@ -112,15 +111,17 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, GenomeMixin, Debug
         #cls._setDebugModeIfSelected(choices)
         genome = choices.genome
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        queryTrackName = ExternalTrackManager.extractFnFromGalaxyTN(choices.targetTrack)
+        #queryTrackName = ExternalTrackManager.extractFnFromGalaxyTN(choices.targetTrack)
 
         from gold.gsuite.GSuiteConstants import TITLE_COL
         staticFile = []
 
         analysisSpec = AnalysisSpec(SingleTSStat)
         analysisSpec.addParameter('rawStatistic', ProportionCountStat.__name__)
-        regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.targetTrack, False)
-        binSpec = queryTrackName
+        # regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.targetTrack, False)
+        # binSpec = queryTrackName
+
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
                                                          binSpec,
                                                          choices.genome)
@@ -440,10 +441,6 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, GenomeMixin, Debug
             return errorString
 
         errorString = cls._validateGenome(choices)
-        if errorString:
-            return errorString
-
-        errorString = GeneralGuiTool._checkTrack(choices, 'targetTrack', 'genome')
         if errorString:
             return errorString
 

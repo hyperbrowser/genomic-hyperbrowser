@@ -60,12 +60,12 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        analysisBins, analysisSpec1, analysisSpec2, genome, option, queryTrack, sumStat, tracksList, tracksNameList, sharedRegions = cls.getAllPreprocessedChoices(
+        analysisBins, analysisSpec1, analysisSpec2, genome, option, queryTrack, sumStat, tracksList, tracksNameList, sharedRegions, gSuite = cls.getAllPreprocessedChoices(
             choices)
 
         bpTrackSize, regions, resultsDict = cls.countAllStat(analysisBins, analysisSpec1,
                                                              analysisSpec2, genome, option,
-                                                             queryTrack, tracksList)
+                                                             queryTrack, tracksList, gSuite)
 
         cls.addBedFileWithAllSharedRegions(regions, resultsDict, sharedRegions)
 
@@ -233,7 +233,7 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
 
     @classmethod
     def countAllStat(cls, analysisBins, analysisSpec1, analysisSpec2, genome, option, queryTrack,
-                     tracksList):
+                     tracksList, gSuite):
         bpTrackSize = []
         resultsDict = {}
         regions = []
@@ -242,10 +242,10 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
         gtNT = queryTrack[-1]
         queryTrack = Track(queryTrack)
 
-        for i, track in enumerate(tracksList):
+        for i, track in enumerate(gSuite.allTracks()):
             #tracks = [track] + [queryTrack]
 
-            sts = SingleTrackTS(PlainTrack(track.trackName), OrderedDict(title=track.trackTitle, genome=str(genome)))
+            sts = SingleTrackTS(PlainTrack(track.trackName), OrderedDict(title=track.title, genome=str(genome)))
             qt = SingleTrackTS(PlainTrack(gtNT), OrderedDict(title=gtNT, genome=str(genome)))
 
 
@@ -308,11 +308,12 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=gSuite.genome)
 
+
         tracksList = [Track(x.trackName, trackTitle=x.title) for x in gSuite.allTracks()]
         tracksNameList = [x.title for x in gSuite.allTracks()]
 
 
-        return analysisBins, analysisSpec1, analysisSpec2, genome, option, queryTrack, sumStat, tracksList, tracksNameList, sharedRegions
+        return analysisBins, analysisSpec1, analysisSpec2, genome, option, queryTrack, sumStat, tracksList, tracksNameList, sharedRegions, gSuite
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
