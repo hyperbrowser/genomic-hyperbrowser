@@ -65,7 +65,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, GenomeMixin, Debug
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select tarck file from history', 'targetTrack'),
+        return [('Select track file from history', 'targetTrack'),
                 ('Select GSuite file from history', 'gsuite'), \
                 ('Select metadata from GSuite', 'selectColumns')] + \
                cls.getInputBoxNamesForGenomeSelection() + \

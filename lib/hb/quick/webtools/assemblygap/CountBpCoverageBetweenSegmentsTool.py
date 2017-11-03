@@ -3,7 +3,8 @@ from collections import OrderedDict
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.statistic.CountSegmentStat import CountSegmentStat
-from gold.track.Track import Track
+from gold.track.Track import Track, PlainTrack
+from gold.track.TrackStructure import SingleTrackTS, FlatTracksTS
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -11,6 +12,7 @@ from quick.application.UserBinSource import GlobalBinSource, UserBinSource
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.BpCoveragePerT2SegStat import BpCoveragePerT2SegStat
+from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -23,7 +25,7 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
 
     @classmethod
     def getToolName(cls):
-        return "Count Bp coverage between segments"
+        return "Count coverage between segments"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -235,14 +237,26 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
         bpTrackSize = []
         resultsDict = {}
         regions = []
-        for i, track in enumerate(tracksList):
-            tracks = [track] + [queryTrack]
-            results = doAnalysis(analysisSpec1, analysisBins, tracks)
-            resultsStatPerBin = doAnalysis(analysisSpec2, UserBinSource('*', '*', genome=genome),
-                                           [track])
 
-            resLocal = results.getAllValuesForResDictKey('Result')
-            bpTrackSize.append(resultsStatPerBin.getGlobalResult()['Result'])
+
+        gtNT = queryTrack[-1]
+        queryTrack = Track(queryTrack)
+
+        for i, track in enumerate(tracksList):
+            #tracks = [track] + [queryTrack]
+
+            sts = SingleTrackTS(PlainTrack(track.trackName), OrderedDict(title=track.trackTitle, genome=str(genome)))
+            qt = SingleTrackTS(PlainTrack(gtNT), OrderedDict(title=gtNT, genome=str(genome)))
+
+
+            results = doAnalysis(analysisSpec1, analysisBins, [sts]+[qt])
+            resultsStatPerBin = doAnalysis(analysisSpec2, UserBinSource('*', '*', genome=genome), sts)
+
+
+            print results.getAllValuesForResDictKey('Result')
+
+            resLocal = results.getAllValuesForResDictKey('Result').result
+            bpTrackSize.append(resultsStatPerBin.getGlobalResult()['Result'].result)
 
             if i == 0:
                 regions = []
@@ -280,13 +294,24 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
                                                                              selFile,
                                                                              printErrors=False,
                                                                              printProgress=False)
-        queryTrack = Track(selFileTrack)
-        analysisSpec1 = AnalysisSpec(BpCoveragePerT2SegStat)
-        analysisSpec2 = AnalysisSpec(CountSegmentStat)
+        # queryTrack = Track(selFileTrack)
+        # analysisSpec1 = AnalysisSpec(BpCoveragePerT2SegStat)
+        # analysisSpec2 = AnalysisSpec(CountSegmentStat)
+
+        queryTrack = selFileTrack
+        analysisSpec1 = AnalysisSpec(SingleTSStat)
+        analysisSpec1.addParameter('rawStatistic', BpCoveragePerT2SegStat.__name__)
+
+        analysisSpec2 = AnalysisSpec(SingleTSStat)
+        analysisSpec2.addParameter('rawStatistic', CountSegmentStat.__name__)
+
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=gSuite.genome)
+
         tracksList = [Track(x.trackName, trackTitle=x.title) for x in gSuite.allTracks()]
         tracksNameList = [x.title for x in gSuite.allTracks()]
+
+
         return analysisBins, analysisSpec1, analysisSpec2, genome, option, queryTrack, sumStat, tracksList, tracksNameList, sharedRegions
 
     @classmethod

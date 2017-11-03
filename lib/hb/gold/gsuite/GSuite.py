@@ -102,8 +102,8 @@ class GSuite(object):
         return any(track.title != track.uri for track in self.allTracks())
 
     def addTrack(self, track, allowDuplicateTitles=True):
-        if track.uri in self._uriToTrackDict:
-            raise InvalidFormatError('Multiple tracks with same URI is not allowed: ' + track.uri)
+        # if track.uri in self._uriToTrackDict:
+        #     raise InvalidFormatError('Multiple tracks with same URI is not allowed: ' + track.uri)
 
         if track.title in self._titleToTrackDict:
             if allowDuplicateTitles:
