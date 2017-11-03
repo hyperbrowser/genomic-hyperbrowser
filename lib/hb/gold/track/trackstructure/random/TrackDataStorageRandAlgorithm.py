@@ -42,10 +42,10 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         self._newTrackBinIndexToOverlapDetectorDict = {}
 
     def getReadFromDiskTrackColumns(self):
-        return ['lengths']
+        return [RandomizedTrackDataStorage.LENGTH_KEY]
 
     def getInitTrackColumns(self):
-        return ['starts']
+        return [RandomizedTrackDataStorage.START_KEY]
 
     def needsMask(self):
         return True
@@ -66,17 +66,17 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         # for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
         #     trackDataStorageView = trackDataStorage.getView(trackBinIndex)
 
-        lengthsArray = trackDataStorage.getArray('lengths')
+        lengthsArray = trackDataStorage.getArray(RandomizedTrackDataStorage.LENGTH_KEY)
         startsArray, newTrackBinIndexArray = \
             self._generateRandomArrays(lengthsArray, trackProbabilities, binProbabilities)
 
-        trackDataStorage.updateArray('starts', startsArray)
+        trackDataStorage.updateArray(RandomizedTrackDataStorage.START_KEY, startsArray)
         trackDataStorage.updateArray(self.NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
 
-        maskArray = generateMaskArray(trackDataStorage.getArray('starts'), self.MISSING_EL)
+        maskArray = generateMaskArray(trackDataStorage.getArray(RandomizedTrackDataStorage.START_KEY), self.MISSING_EL)
         trackDataStorage.setMask(maskArray)
 
-        trackDataStorage.sort(['starts', self.NEW_TRACK_BIN_INDEX_KEY])
+        trackDataStorage.sort([RandomizedTrackDataStorage.START_KEY, self.NEW_TRACK_BIN_INDEX_KEY])
 
         from gold.application.LogSetup import logMessage, logging
         logMessage("Discarded %i elements out of %i possible." %

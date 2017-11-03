@@ -424,7 +424,11 @@ class TrackView(object):
         return key in self._extraLists
 
     def getNumpyArrayFromPrefix(self, prefix):
-        asNumpyArrayMethodName = prefix + 'AsNumpyArray'
+        if prefix not in ['edges', 'weights']:
+            asNumpyArrayMethodName = prefix + 'sAsNumpyArray'
+        else:
+            asNumpyArrayMethodName = prefix + 'AsNumpyArray'
+
         if hasattr(self, asNumpyArrayMethodName):
             return getattr(self, asNumpyArrayMethodName)()
         else:

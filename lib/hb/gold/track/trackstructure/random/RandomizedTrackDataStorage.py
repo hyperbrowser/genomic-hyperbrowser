@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import numpy as np
 
 from gold.track.NumpyDataFrame import NumpyDataFrame
@@ -10,7 +12,17 @@ class RandomizedTrackDataStorage(object):
 
     ORIG_TRACK_EL_INDEX_IN_BIN = 'origTrackElIndexInBin'
     NEW_TRACK_BIN_INDEX_KEY = 'newTrackBinIndex'
-    LENGTH_KEY = 'lengths'
+
+    START_KEY = 'start'
+    LENGTH_KEY = 'length'
+    END_KEY = 'end'
+    VAL_KEY = 'val'
+    STRAND_KEY = 'strand'
+    ID_KEY = 'id'
+    EDGES_KEY = 'edges'
+    WEIGHTS_KEY = 'weights'
+    LEFTINDEX_KEY = 'leftIndex'
+    RIGHTINDEX_KEY = 'rightIndex'
 
     def __init__(self, trackBinIndexer, readFromDiskTrackColNames, generatedTrackColNames, needsMask):
         self._trackBinIndexer = trackBinIndexer
@@ -20,6 +32,7 @@ class RandomizedTrackDataStorage(object):
 
         assert len(self._readFromDiskTrackColNames) > 0
 
+        self._columnInfo = ColumnInfoStorage()
         self._dataFrame = self._initDataFrame()
 
     def _initDataFrame(self):
@@ -41,10 +54,7 @@ class RandomizedTrackDataStorage(object):
             trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
             trackView = trackBinPair.getTrackView()
 
-            #TODO: get all valid columns for all tracks
-            # TrackSource()
-
-            # colList = TrackViewGenomeElementSource(trackBinPair.bin.genome, trackView, trackName=None).getPrefixList()
+            self._columnInfo.updateInfoForTrackView(trackBinPair, trackView)
 
             colToArrayDict = {}
             self._readArraysFromDiskAndUpdateDict(colToArrayDict, trackView)
@@ -133,3 +143,55 @@ class RandomizedTrackDataStorage(object):
         # Provides a TrackView with a VirtualNumpyArray for all columns that are found in all tracks
         # (intersection of set of columns per track)
         pass
+
+
+ColumnInfo = namedtuple('ColumnInfo', ('dtype', 'shape'))
+
+
+class ColumnInfoStorage(object):
+    IGNORE_PREFIXES = [RandomizedTrackDataStorage.START_KEY,
+                       RandomizedTrackDataStorage.END_KEY,
+                       RandomizedTrackDataStorage.RIGHTINDEX_KEY,
+                       RandomizedTrackDataStorage.LEFTINDEX_KEY]
+
+    def __init__(self):
+        self._columnInfoDict = {}
+        self._initialized = False
+
+    def updateInfoForTrackView(self, trackBinPair, trackView):
+        track = trackBinPair.track
+        curBin = trackBinPair.bin
+
+        trackData = TrackSource().getTrackData(track.trackName, curBin.genome, curBin.chr, trackView.allowOverlaps)
+        prefixList = [_ for _ in trackData.keys() if _ not in self.IGNORE_PREFIXES]
+
+        if self._initialized:
+            self._removeMissingPrefixesFromStorage(prefixList)
+
+        for prefix in prefixList:
+            columnInfo = self._getColumnInfo(trackData[prefix])
+            if not self._initialized:
+                self._columnInfoDict[prefix] = columnInfo
+            else:
+                self._updateInfoForPrefix(prefix, columnInfo)
+
+    def _getColumnInfo(self, numpyArray):
+        assert isinstance(numpyArray, np.ndarray)
+        return ColumnInfo(dtype=numpyArray.dtype, shape=numpyArray.shape)
+
+    def _updateInfoForPrefix(self, prefix, columnInfo):
+        if prefix in self._columnInfoDict:
+
+            newDtype = columnInfo.dtype.type
+            oldDtype = self._columnInfoDict[prefix].dtype
+            if newDtype != oldDtype:
+                if all(dtype in ['int32', 'int64', 'float32', 'float64', 'float128'] for dtype in [newDtype, oldDtype]):
+
+
+
+    def _removeMissingPrefixesFromStorage(self, prefixList):
+        missingPrefixes = set(self._columnInfoDict.keys()) - set(prefixList)
+        for prefix in missingPrefixes:
+            del self._columnInfoDict[prefix]
+
+
