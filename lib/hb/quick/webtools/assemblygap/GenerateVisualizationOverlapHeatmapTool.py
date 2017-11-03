@@ -212,7 +212,6 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
         htmlCore = HtmlCore()
         htmlCore.begin()
-        htmlCore.divBegin(divId='results-page')
         from config.Config import DATA_FILES_PATH
 
 
@@ -220,12 +219,12 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         # sf = GalaxyRunSpecificFile(['result.txt'], galaxyFn)
         # outFile = sf.getDiskPath(ensurePath=True)
 
-        htmlCore.divBegin()
+
         writeFile = open(
             cls.makeHistElement(galaxyExt='tabular',
                                 title='result'), 'w')
         # htmlCore.link('Get all results', sf.getURL())
-        htmlCore.divEnd()
+
 
         i = 0
 
@@ -247,85 +246,11 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                                 colorMaps[choices.colorMapSelectList],
                                 fileOutput.getDiskPath(), fileOutputPdf.getDiskPath())
 
-        htmlCore.divBegin(divId='heatmap', style="padding: 10px 0 px 10 px 0px;margin: 10px 0 px 10 px 0px")
+        htmlCore.divBegin()
         htmlCore.link('Download heatmap image', fileOutputPdf.getURL())
         htmlCore.divEnd()
-
-        #if len(results) * len(results[1]) >= 10000:
+        htmlCore.divBegin()
         htmlCore.image(fileOutput.getURL())
-
-        #
-        # else:
-        #
-        #     min = 1000000000
-        #     max = -1000000000
-        #     for rList in results:
-        #         for r in rList:
-        #             if min > r:
-        #                 min = r
-        #             if max < r:
-        #                 max = r
-        #
-        #     if max - min != 0:
-        #         resultNormalised = []
-        #         for rList in results:
-        #             resultNormalisedPart = []
-        #             for r in rList:
-        #                 resultNormalisedPart.append((r - min) / (max - min))
-        #             resultNormalised.append(resultNormalisedPart)
-        #
-        #         addText = '(normalised to [0, 1])'
-        #     else:
-        #         resultNormalised = results
-        #         addText = ''
-        #
-        #     hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
-        #         resultNormalised,
-        #         colorMaps[choices.colorMapSelectList],
-        #         label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion" + str(
-        #             addText) + ": <b>'" + ' + this.point.value + ' + "'</b>'",
-        #         yAxisTitle='Reference tracks',
-        #         categories=rowLabel,
-        #         tickInterval=1,
-        #         plotNumber=3,
-        #         interaction=True,
-        #         otherPlotNumber=1,
-        #         titleText='Overlap with reference tracks for each local region',
-        #         otherPlotData=[startEnd, startEndInterval],
-        #         overMouseAxisX=True,
-        #         overMouseAxisY=True,
-        #         yAxisNameOverMouse=yAxisNameOverMouse,
-        #         overMouseLabelY=" + 'Track: '" + ' + this.value + ' + "' '" + ' + yAxisNameOverMouse[this.value] + ',
-        #         overMouseLabelX=' + this.value.substring(0, 20) +',
-        #         extrOp=staticFile
-        #     )
-        #
-        #     htmlCore.line(hm)
-        #     htmlCore.line(vp.drawChartInteractionWithHeatmap(
-        #         [startEndInterval, startEnd],
-        #         tickInterval=1,
-        #         type='line',
-        #         categories=[rowLabel, rowLabel],
-        #         seriesType=['line', 'column'],
-        #         minWidth=300,
-        #         height=500,
-        #         lineWidth=3,
-        #         titleText=['Lengths of segments (local regions)',
-        #                    'Gaps between consecutive segments'],
-        #         label=['<b>Length: </b>{point.y}<br/>', '<b>Gap length: </b>{point.y}<br/>'],
-        #         subtitleText=['', ''],
-        #         yAxisTitle=['Lengths', 'Gap lengths'],
-        #         seriesName=['Lengths', 'Gap lengths'],
-        #         xAxisRotation=90,
-        #         legend=False,
-        #         extraXAxis=extraXAxis,
-        #         heatmapPlot=heatmapPlot,
-        #         heatmapPlotNumber=heatmapPlotNumber,
-        #         overMouseAxisX=True,
-        #         overMouseLabelX=' + this.value.substring(0, 20) +'
-        #     ))
-
-
         htmlCore.divEnd()
         htmlCore.end()
 
@@ -492,7 +417,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         core.paragraph('This tool computes the proportions of overlap between the segments '
                        'of a query track against each track in a collection of reference tracks '
                        'described in a GSuite file. The overlap proportions are output in an '
-                       'interactive heatmap, where each cell is colored according to the '
+                       'heatmap, where each cell is colored according to the '
                        'overlap between each query segment (column) with each reference '
                        'track (row).')
 
@@ -500,9 +425,9 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         core.paragraph('To carry out the analysis, please follow these steps:')
         core.orderedList(['Select a genome build. Both the query track and the reference tracks'
                           'need to use the same genome build.',
-                          'Select a query track from the HyperBrowser repository',
                           'Select a reference track collection as a GSuite file from history',
                           'Select the color map, going from no overlap to full overlap.',
+                          'Select region and scale',
                           'Click "Execute"'])
 
         core.divider()
@@ -563,9 +488,9 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
     #    '''
     #    return cls.isHistoryTool()
     #
-    # @staticmethod
-    # def isDebugMode():
-    #    return True
+    @staticmethod
+    def isDebugMode():
+       return False
 
     @staticmethod
     def getOutputFormat(choices=None):
