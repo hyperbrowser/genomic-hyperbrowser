@@ -8,7 +8,8 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 def getSingleTrackTS(genome, guiSelectedTrack, title='Dummy'):
 
-    trackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, guiSelectedTrack)
+    trackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, guiSelectedTrack, printErrors=False, printProgress=False,
+            renameExistingTracksIfNeeded=False)
 
     return SingleTrackTS(PlainTrack(trackName), {'title':title})
 
