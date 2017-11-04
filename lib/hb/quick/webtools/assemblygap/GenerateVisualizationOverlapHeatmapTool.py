@@ -487,7 +487,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
     #    tool.
     #    '''
     #    return cls.isHistoryTool()
-
+    #
     @staticmethod
     def isDebugMode():
        return False
