@@ -3,6 +3,7 @@ from collections import namedtuple
 import numpy as np
 
 from gold.track.NumpyDataFrame import NumpyDataFrame
+from gold.track.SmartMemmap import SmartMemmap
 from gold.track.TrackSource import TrackSource
 
 
@@ -176,7 +177,7 @@ class ColumnInfoStorage(object):
                 self._updateInfoForPrefix(prefix, columnInfo)
 
     def _getColumnInfo(self, numpyArray):
-        assert isinstance(numpyArray, np.ndarray)
+        assert isinstance(numpyArray, (SmartMemmap, np.ndarray))
         return ColumnInfo(dtype=numpyArray.dtype, shape=numpyArray.shape)
 
     def _updateInfoForPrefix(self, prefix, columnInfo):
@@ -186,6 +187,7 @@ class ColumnInfoStorage(object):
             oldDtype = self._columnInfoDict[prefix].dtype
             if newDtype != oldDtype:
                 if all(dtype in ['int32', 'int64', 'float32', 'float64', 'float128'] for dtype in [newDtype, oldDtype]):
+                    pass
 
 
 

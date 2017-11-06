@@ -437,7 +437,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
     @classmethod
     def _prepareRandomizedTs(cls, firstTs, secondTs, binSource,  firstGSuiteCat, secondGSuiteCat,
                              excludedTs=None, allowOverlaps=False):
-        DebugUtil.insertBreakPoint()
         ts = TrackStructureV2()
         for sts1 in firstTs.getLeafNodes():
             #assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
