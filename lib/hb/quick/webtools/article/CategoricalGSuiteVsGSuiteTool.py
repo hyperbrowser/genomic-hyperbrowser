@@ -1,3 +1,4 @@
+from config.DebugConfig import DebugConfig
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -334,7 +335,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
         core = HtmlCore()
-        core.begin()
+        # core.begin()
         core.divBegin(divId='results-page')
         core.divBegin(divClass='results-section')
 
@@ -358,7 +359,20 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
-            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            if DebugConfig.USE_PROFILING:
+                from gold.util.Profiler import Profiler
+                profiler = Profiler()
+                resDict = {}
+                profiler.run('resDict[0] = doAnalysis(analysisSpec, analysisBins, ts)', globals(), locals())
+                res = resDict[0]
+                result = res.getGlobalResult()['Result']
+                profiler.printStats()
+                if DebugConfig.USE_CALLGRAPH and galaxyFn:
+                    profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+            else:
+                result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+
+
             transformedResultsDict = OrderedDefaultDict(list)
             data = []
             data1 = []
@@ -383,7 +397,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
         core.divEnd()
         core.divEnd()
-        core.end()
+        # core.end()
         print core
 
     @classmethod
