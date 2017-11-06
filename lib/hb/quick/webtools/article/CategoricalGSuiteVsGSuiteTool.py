@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from config.DebugConfig import DebugConfig
 from proto.RSetup import r, robjects
 
 from gold.application.HBAPI import doAnalysis
@@ -357,7 +358,19 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         else:
             ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
-            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            if DebugConfig.USE_PROFILING:
+                from gold.util.Profiler import Profiler
+                profiler = Profiler()
+                resDict = {}
+                profiler.run('resDict[0] = doAnalysis(analysisSpec, analysisBins, ts)', globals(), locals())
+                res = resDict[0]
+                result = res.getGlobalResult()['Result']
+                profiler.printStats()
+                if DebugConfig.USE_CALLGRAPH and galaxyFn:
+                    profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+            else:
+                result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            # result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             resultsDict = OrderedDefaultDict(list)
             dataForbes = []
             datapVal = []
