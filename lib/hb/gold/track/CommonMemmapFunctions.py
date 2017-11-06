@@ -19,11 +19,15 @@ def parseMemmapFileFn(fn):
 def calcShape(fn, elementDim, dtypeDim, dtype):
     dTypeSize = numpy.dtype(dtype).itemsize
     elementSize = dTypeSize * (elementDim if elementDim is not None else 1) * dtypeDim
-    shape = [(os.path.getsize(fn) / elementSize)] + \
-             ([elementDim] if elementDim is not None else []) + \
-             ([dtypeDim] if dtypeDim > 1 else [])
+    numElements = (os.path.getsize(fn) / elementSize)
+    shape = createShape(numElements, elementDim, dtypeDim)
     return shape
-    
+
+def createShape(numElements, elementDim, dtypeDim):
+    return tuple([numElements] + \
+                 ([elementDim] if elementDim is not None else []) + \
+                 ([dtypeDim] if dtypeDim > 1 else []))
+
 def calcShapeFromMemmapFileFn(fn):
     prefix, elementDim, dtypeDim, dtype = parseMemmapFileFn(fn)
     return calcShape(fn, elementDim, dtypeDim, dtype)
