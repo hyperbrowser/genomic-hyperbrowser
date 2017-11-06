@@ -5,16 +5,16 @@ import numpy as np
 from gold.track.CommonMemmapFunctions import parseMemmapFileFn
 from gold.track.SmartMemmap import SmartMemmap
 from gold.track.TrackSource import TrackSource
-from gold.track.trackstructure.random.RandomizedTrackDataStorage import RandomizedTrackDataStorage
+from gold.track.trackstructure.random.Constants import START_KEY, END_KEY, RIGHTINDEX_KEY, LEFTINDEX_KEY
 
 ArrayInfo = namedtuple('ArrayInfo', ('numElements', 'elementDim', 'dtypeDim', 'dtypeStr'))
 
 
 class ArrayInfoStorage(object):
-    IGNORE_PREFIXES = [RandomizedTrackDataStorage.START_KEY,
-                       RandomizedTrackDataStorage.END_KEY,
-                       RandomizedTrackDataStorage.RIGHTINDEX_KEY,
-                       RandomizedTrackDataStorage.LEFTINDEX_KEY]
+    IGNORE_PREFIXES = [START_KEY,
+                       END_KEY,
+                       RIGHTINDEX_KEY,
+                       LEFTINDEX_KEY]
 
     def __init__(self):
         self._arrayInfoDict = {}

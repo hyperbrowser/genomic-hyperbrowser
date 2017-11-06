@@ -1,5 +1,6 @@
 import numpy as np
 
+from gold.track.trackstructure.random.Constants import LENGTH_KEY, START_KEY, NEW_TRACK_BIN_INDEX_KEY
 from gold.track.trackstructure.random.OverlapDetector import IntervalTreeOverlapDetector
 from gold.track.trackstructure.random.RandomizedTrackDataStorage import RandomizedTrackDataStorage
 from gold.track.trackstructure.random.TrackBinIndexer import TrackBinPair, SimpleTrackBinIndexer
@@ -29,7 +30,6 @@ class TrackDataStorageRandAlgorithm(object):
 
 class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm):
     MISSING_EL = -1
-    NEW_TRACK_BIN_INDEX_KEY = RandomizedTrackDataStorage.NEW_TRACK_BIN_INDEX_KEY
 
     def __init__(self, allowOverlaps, excludedSegmentsStorage=None, maxSampleCount=25, overlapDetectorCls=IntervalTreeOverlapDetector):
         self._allowOverlaps = allowOverlaps
@@ -45,10 +45,10 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         return self._allowOverlaps
 
     def getReadFromDiskTrackColumns(self):
-        return [RandomizedTrackDataStorage.LENGTH_KEY]
+        return [LENGTH_KEY]
 
     def getInitTrackColumns(self):
-        return [RandomizedTrackDataStorage.START_KEY]
+        return [START_KEY]
 
     def needsMask(self):
         return True
@@ -69,14 +69,14 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         # for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
         #     trackDataStorageView = trackDataStorage.getView(trackBinIndex)
 
-        lengthsArray = trackDataStorage.getArray(RandomizedTrackDataStorage.LENGTH_KEY)
+        lengthsArray = trackDataStorage.getArray(LENGTH_KEY)
         startsArray, newTrackBinIndexArray = \
             self._generateRandomArrays(lengthsArray, trackProbabilities, binProbabilities)
 
-        trackDataStorage.updateArray(RandomizedTrackDataStorage.START_KEY, startsArray)
-        trackDataStorage.updateArray(self.NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
+        trackDataStorage.updateArray(START_KEY, startsArray)
+        trackDataStorage.updateArray(NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
 
-        maskArray = generateMaskArray(trackDataStorage.getArray(RandomizedTrackDataStorage.START_KEY), self.MISSING_EL)
+        maskArray = generateMaskArray(trackDataStorage.getArray(START_KEY), self.MISSING_EL)
         trackDataStorage.setMask(maskArray)
 
         # trackDataStorage.sort([RandomizedTrackDataStorage.START_KEY, self.NEW_TRACK_BIN_INDEX_KEY])

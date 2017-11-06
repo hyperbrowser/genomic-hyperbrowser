@@ -3,25 +3,11 @@ import numpy as np
 from gold.track.NumpyDataFrame import NumpyDataFrame
 from gold.track.TrackView import TrackView
 from gold.track.trackstructure.random.ArrayInfoStorage import ArrayInfoStorage
+from gold.track.trackstructure.random.Constants import LENGTH_KEY, ORIG_TRACK_BIN_INDEX_KEY, ORIG_TRACK_EL_INDEX_IN_BIN, \
+    NEW_TRACK_BIN_INDEX_KEY, START_KEY, END_KEY
 
 
 class RandomizedTrackDataStorage(object):
-    # For the joint consecutive index defined from the double for loop over all tracks and bins
-    ORIG_TRACK_BIN_INDEX_KEY = 'origTrackBinIndex'
-
-    ORIG_TRACK_EL_INDEX_IN_BIN = 'origTrackElIndexInBin'
-    NEW_TRACK_BIN_INDEX_KEY = 'newTrackBinIndex'
-
-    START_KEY = 'start'
-    LENGTH_KEY = 'length'
-    END_KEY = 'end'
-    VAL_KEY = 'val'
-    STRAND_KEY = 'strand'
-    ID_KEY = 'id'
-    EDGES_KEY = 'edges'
-    WEIGHTS_KEY = 'weights'
-    LEFTINDEX_KEY = 'leftIndex'
-    RIGHTINDEX_KEY = 'rightIndex'
 
     def __init__(self, trackBinIndexer, readFromDiskTrackColNames, generatedTrackColNames, needsMask):
         self._trackBinIndexer = trackBinIndexer
@@ -64,7 +50,7 @@ class RandomizedTrackDataStorage(object):
 
     def _generateArraysAndUpdateDict(self, colToArrayDict, trackView):
         for col in self._generatedTrackColNames:
-            if col == self.LENGTH_KEY:
+            if col == LENGTH_KEY:
                 numpyArray = trackView.startsAsNumpyArray()
             else:
                 numpyArray = trackView.getNumpyArrayFromPrefix(col)
@@ -72,7 +58,7 @@ class RandomizedTrackDataStorage(object):
 
     def _readArraysFromDiskAndUpdateDict(self, colToArrayDict, trackView):
         for col in self._readFromDiskTrackColNames:
-            if col == self.LENGTH_KEY:
+            if col == LENGTH_KEY:
                 colToArrayDict[col] = trackView.endsAsNumpyArray() - trackView.startsAsNumpyArray()
             else:
                 colToArrayDict[col] = trackView.getNumpyArrayFromPrefix(col)
@@ -98,15 +84,15 @@ class RandomizedTrackDataStorage(object):
     def _addOrigTrackBinIndexArray(self, dataFrame, arrayLengths):
         origTrackBinIndexArrays = [np.ones(length, dtype='int32') for length in arrayLengths]
         fullOrigTrackBinIndexArray = np.concatenate([array * i for i, array in enumerate(origTrackBinIndexArrays)])
-        dataFrame.addArray(self.ORIG_TRACK_BIN_INDEX_KEY, fullOrigTrackBinIndexArray)
+        dataFrame.addArray(ORIG_TRACK_BIN_INDEX_KEY, fullOrigTrackBinIndexArray)
 
     def _addOrigTrackElIndexInBinArray(self, dataFrame, arrayLengths):
         origTrackElIndexInBinArrays = [np.arange(length, dtype='int32') for length in arrayLengths]
         fullOrigTrackElIndexInBinArray = np.concatenate([array for array in origTrackElIndexInBinArrays])
-        dataFrame.addArray(self.ORIG_TRACK_EL_INDEX_IN_BIN, fullOrigTrackElIndexInBinArray)
+        dataFrame.addArray(ORIG_TRACK_EL_INDEX_IN_BIN, fullOrigTrackElIndexInBinArray)
 
     def _addNewTrackBinIndexArray(self, dataFrame, arrayLengths):
-        dataFrame.addArray(self.NEW_TRACK_BIN_INDEX_KEY, np.zeros(sum(arrayLengths), dtype='int32'))
+        dataFrame.addArray(NEW_TRACK_BIN_INDEX_KEY, np.zeros(sum(arrayLengths), dtype='int32'))
 
     def shuffle(self):
         indexArray = np.arange(len(self._dataFrame))
@@ -136,10 +122,10 @@ class RandomizedTrackDataStorage(object):
     #     return self._dataFrame
 
     def _getDataFrameView(self, trackBinIndex):
-        indices = self._dataFrame.getArray(self.NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
+        indices = self._dataFrame.getArray(NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
 
-        sortOrder = [self.START_KEY] if self._dataFrame.hasArray(self.START_KEY) else [] + \
-            [self.END_KEY] if self._dataFrame.hasArray(self.END_KEY) else []
+        sortOrder = [START_KEY] if self._dataFrame.hasArray(START_KEY) else [] + \
+            [END_KEY] if self._dataFrame.hasArray(END_KEY) else []
         if sortOrder:
             self._dataFrame.sort(sortOrder)
         # if no start or end key is present, we assume that the data is in sorted order already
@@ -149,9 +135,9 @@ class RandomizedTrackDataStorage(object):
     def getTrackView(self, trackBinIndex, allowOverlaps):
         trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
         trackStorageView = self._getDataFrameView(trackBinIndex)
-        starts = trackStorageView.getArray(self.START_KEY)
-        lengths = trackStorageView.getArray(self.LENGTH_KEY)
+        starts = trackStorageView.getArray(START_KEY)
+        lengths = trackStorageView.getArray(LENGTH_KEY)
         ends = starts + lengths
-        return TrackView(trackBinPair.bin, starts, ends, allowOverlaps=allowOverlaps)
+        return TrackView(trackBinPair.bin, starts, ends, None, None, None, None, None, borderHandling='crop', allowOverlaps=allowOverlaps)
 
 
