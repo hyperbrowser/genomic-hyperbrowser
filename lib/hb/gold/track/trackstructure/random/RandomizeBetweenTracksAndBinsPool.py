@@ -17,4 +17,5 @@ class RandomizeBetweenTracksAndBinsPool(object):
     def getTrackView(self, region, origTrack):
         trackBinIndexer = self._randAlgorithm.getTrackBinIndexer()
         origTrackBinIndex = trackBinIndexer.getTrackBinIndexForTrackBinPair(TrackBinPair(origTrack, region))
-        return self._trackDataStorage.getTrackView(origTrackBinIndex)
+        allowOverlaps = self._randAlgorithm.allowOverlaps()
+        return self._trackDataStorage.getTrackView(origTrackBinIndex, allowOverlaps)

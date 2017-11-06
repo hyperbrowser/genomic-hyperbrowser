@@ -1,10 +1,8 @@
-from collections import namedtuple
-
 import numpy as np
 
 from gold.track.NumpyDataFrame import NumpyDataFrame
-from gold.track.SmartMemmap import SmartMemmap
-from gold.track.TrackSource import TrackSource
+from gold.track.TrackView import TrackView
+from gold.track.trackstructure.random.ArrayInfoStorage import ArrayInfoStorage
 
 
 class RandomizedTrackDataStorage(object):
@@ -33,7 +31,7 @@ class RandomizedTrackDataStorage(object):
 
         assert len(self._readFromDiskTrackColNames) > 0
 
-        self._columnInfo = ColumnInfoStorage()
+        self._arrayInfoStorage = ArrayInfoStorage()
         self._dataFrame = self._initDataFrame()
 
     def _initDataFrame(self):
@@ -55,7 +53,7 @@ class RandomizedTrackDataStorage(object):
             trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
             trackView = trackBinPair.getTrackView()
 
-            self._columnInfo.updateInfoForTrackView(trackBinPair, trackView)
+            self._arrayInfoStorage.updateInfoForTrackView(trackBinPair, trackView)
 
             colToArrayDict = {}
             self._readArraysFromDiskAndUpdateDict(colToArrayDict, trackView)
@@ -137,63 +135,23 @@ class RandomizedTrackDataStorage(object):
     # def getDataFrame(self):
     #     return self._dataFrame
 
-    # def getDataFrameView(self, trackBinIndex):
-    #     pass
+    def _getDataFrameView(self, trackBinIndex):
+        indices = self._dataFrame.getArray(self.NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
 
-    def getTrackView(self, trackBinIndex):
-        # Provides a TrackView with a VirtualNumpyArray for all columns that are found in all tracks
-        # (intersection of set of columns per track)
-        pass
+        sortOrder = [self.START_KEY] if self._dataFrame.hasArray(self.START_KEY) else [] + \
+            [self.END_KEY] if self._dataFrame.hasArray(self.END_KEY) else []
+        if sortOrder:
+            self._dataFrame.sort(sortOrder)
+        # if no start or end key is present, we assume that the data is in sorted order already
 
+        return self._dataFrame[indices]
 
-ColumnInfo = namedtuple('ColumnInfo', ('dtype', 'shape'))
-
-
-class ColumnInfoStorage(object):
-    IGNORE_PREFIXES = [RandomizedTrackDataStorage.START_KEY,
-                       RandomizedTrackDataStorage.END_KEY,
-                       RandomizedTrackDataStorage.RIGHTINDEX_KEY,
-                       RandomizedTrackDataStorage.LEFTINDEX_KEY]
-
-    def __init__(self):
-        self._columnInfoDict = {}
-        self._initialized = False
-
-    def updateInfoForTrackView(self, trackBinPair, trackView):
-        track = trackBinPair.track
-        curBin = trackBinPair.bin
-
-        trackData = TrackSource().getTrackData(track.trackName, curBin.genome, curBin.chr, trackView.allowOverlaps)
-        prefixList = [_ for _ in trackData.keys() if _ not in self.IGNORE_PREFIXES]
-
-        if self._initialized:
-            self._removeMissingPrefixesFromStorage(prefixList)
-
-        for prefix in prefixList:
-            columnInfo = self._getColumnInfo(trackData[prefix])
-            if not self._initialized:
-                self._columnInfoDict[prefix] = columnInfo
-            else:
-                self._updateInfoForPrefix(prefix, columnInfo)
-
-    def _getColumnInfo(self, numpyArray):
-        assert isinstance(numpyArray, (SmartMemmap, np.ndarray))
-        return ColumnInfo(dtype=numpyArray.dtype, shape=numpyArray.shape)
-
-    def _updateInfoForPrefix(self, prefix, columnInfo):
-        if prefix in self._columnInfoDict:
-
-            newDtype = columnInfo.dtype.type
-            oldDtype = self._columnInfoDict[prefix].dtype
-            if newDtype != oldDtype:
-                if all(dtype in ['int32', 'int64', 'float32', 'float64', 'float128'] for dtype in [newDtype, oldDtype]):
-                    pass
-
-
-
-    def _removeMissingPrefixesFromStorage(self, prefixList):
-        missingPrefixes = set(self._columnInfoDict.keys()) - set(prefixList)
-        for prefix in missingPrefixes:
-            del self._columnInfoDict[prefix]
+    def getTrackView(self, trackBinIndex, allowOverlaps):
+        trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
+        trackStorageView = self._getDataFrameView(trackBinIndex)
+        starts = trackStorageView.getArray(self.START_KEY)
+        lengths = trackStorageView.getArray(self.LENGTH_KEY)
+        ends = starts + lengths
+        return TrackView(trackBinPair.bin, starts, ends, allowOverlaps=allowOverlaps)
 
 

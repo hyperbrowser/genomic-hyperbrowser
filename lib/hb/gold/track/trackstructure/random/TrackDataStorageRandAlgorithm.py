@@ -41,6 +41,9 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         self._trackBinIndexer = None
         self._newTrackBinIndexToOverlapDetectorDict = {}
 
+    def allowOverlaps(self):
+        return self._allowOverlaps
+
     def getReadFromDiskTrackColumns(self):
         return [RandomizedTrackDataStorage.LENGTH_KEY]
 
@@ -76,7 +79,7 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         maskArray = generateMaskArray(trackDataStorage.getArray(RandomizedTrackDataStorage.START_KEY), self.MISSING_EL)
         trackDataStorage.setMask(maskArray)
 
-        trackDataStorage.sort([RandomizedTrackDataStorage.START_KEY, self.NEW_TRACK_BIN_INDEX_KEY])
+        # trackDataStorage.sort([RandomizedTrackDataStorage.START_KEY, self.NEW_TRACK_BIN_INDEX_KEY])
 
         from gold.application.LogSetup import logMessage, logging
         logMessage("Discarded %i elements out of %i possible." %
