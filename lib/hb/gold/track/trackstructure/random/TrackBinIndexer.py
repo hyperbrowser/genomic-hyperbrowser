@@ -64,12 +64,14 @@ class SimpleTrackBinIndexer(TrackBinIndexer):
     def selectRandomTrack(self, trackProbabilities):
         import numpy as np
         assert len(self._tracks) == len(trackProbabilities)
+        # TODO: Should be refactored to provide all the choices at once using the param 'size'
         selectedTrackIndex = np.random.choice(np.arange(0, len(self._tracks)), p=trackProbabilities)
         return self._tracks[selectedTrackIndex]
 
     def selectRandomBin(self, binProbabilities):
         import numpy as np
         assert len(self._bins) == len(binProbabilities)
+        # TODO: Should be refactored to provide all the choices at once using the param 'size'
         selectedBinIndex = np.random.choice(np.arange(0, len(self._bins)), p=binProbabilities)
         return self._bins[selectedBinIndex]
 
