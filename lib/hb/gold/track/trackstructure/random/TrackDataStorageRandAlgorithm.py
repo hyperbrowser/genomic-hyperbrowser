@@ -1,3 +1,5 @@
+from random import randint
+
 import numpy as np
 
 from gold.track.trackstructure.random.Constants import LENGTH_KEY, START_KEY, NEW_TRACK_BIN_INDEX_KEY
@@ -151,7 +153,6 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
             raise InvalidPositionException('Segment is larger than bin')
 
-        from random import randint
         candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end - segLen)
         if overlapDetector.overlaps(candidateStartPos, candidateStartPos + segLen):
             raise InvalidPositionException('New segment overlaps with existing segment')
