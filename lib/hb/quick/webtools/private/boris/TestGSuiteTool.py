@@ -1,13 +1,8 @@
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
+from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.track.TrackStructure import TrackStructureV2
-from gold.track.trackstructure.random.ExcludedSegmentsStorage import ExcludedSegmentsStorage
-from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
-from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
-    ShuffleElementsBetweenTracksAndBinsTvProvider
-from gold.track.trackstructure.random.TrackDataStorageRandAlgorithm import \
-    ShuffleElementsBetweenTracksAndBinsRandAlgorithm
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -86,13 +81,10 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         realTS["query"] = queryTS
         realTS["reference"] = refTS
         randQueryTS = queryTS
-        excludedSegments = ExcludedSegmentsStorage(excludedTS=excludedTs, binSource=analysisBins)
-        randAlg = ShuffleElementsBetweenTracksAndBinsRandAlgorithm(
-            False, excludedSegmentsStorage=excludedSegments)
-        randTvProvider = ShuffleElementsBetweenTracksAndBinsTvProvider(randAlgorithm=randAlg,
-                                                                       origTs=refTS,
-                                                                       binSource=analysisBins)
-        randRefTS = refTS._getRandomizedVersion(randTvProvider, 0)
+        randRefTS = refTS.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider,
+                                               binSource=analysisBins,
+                                               excludedTs=excludedTs,
+                                               allowOverlaps=False, randIndex=0)
         hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
         for hypothesisKey in hypothesisKeyList:
             realTS = TrackStructureV2()
@@ -128,6 +120,7 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
+        analysisSpec.addParameter("runLocalAnalysis", "No")
         return analysisSpec
 
     @staticmethod
