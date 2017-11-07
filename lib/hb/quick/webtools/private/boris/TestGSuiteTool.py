@@ -1,3 +1,4 @@
+from config.DebugConfig import DebugConfig
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
