@@ -11,11 +11,12 @@ from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
+class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
         """
@@ -34,7 +35,8 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
             cls.getInputBoxNamesForGenomeSelection() + \
             [('Select excluded regions track', 'excludedRegions'),
             ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
-            cls.getInputBoxNamesForUserBinSelection()
+            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxGsuite():
@@ -57,6 +59,7 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     def execute(cls, choices, galaxyFn=None, username=''):
 
         # DebugUtil.insertBreakPoint()
+        cls._setDebugModeIfSelected(choices)
 
         choices_queryTrack = choices.queryTrack
         choices_gsuite = choices.gsuite
@@ -134,6 +137,17 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
         analysisSpec.addParameter("runLocalAnalysis", "No")
         return analysisSpec
+
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
 
     @staticmethod
     def getOutputFormat(choices=None):
