@@ -415,7 +415,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         core = HtmlCore()
 
         core.paragraph('This tool computes the proportions of overlap between the segments '
-                       'of a query track against each track in a collection of reference tracks '
+                       'of selected bin against each track in a collection of reference tracks '
                        'described in a GSuite file. The overlap proportions are output in an '
                        'heatmap, where each cell is colored according to the '
                        'overlap between each query segment (column) with each reference '
@@ -425,9 +425,8 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         core.paragraph('To carry out the analysis, please follow these steps:')
         core.orderedList(['Select a genome build. Both the query track and the reference tracks'
                           'need to use the same genome build.',
-                          'Select a reference track collection as a GSuite file from history',
                           'Select the color map, going from no overlap to full overlap.',
-                          'Select region and scale',
+                          'Select region and scale (bin)',
                           'Click "Execute"'])
 
         core.divider()
