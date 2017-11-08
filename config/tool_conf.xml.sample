@@ -2,14 +2,20 @@
 <toolbox monitor="true">
 
 
-  <label text="Assembly gap" id="assembly_gap_project_tools" />
-  <section name="Randomization tool" id="rand_assembly_gap" >
-    <tool file="proto/hyperbrowser/assemblygap/RandomTracksFromGsuiteTool.xml" />
+  <section name="Assembly gap" id="assembly_gap" >
+    <label text="Statistical testing" id="ranodmizationAG"/>
     <tool file="proto/hyperbrowser/assemblygap/RandomizeTracksInGsuiteTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/RandomTracksFromGsuiteTool.xml" />
     <tool file="proto/hyperbrowser/article/CategoricalGSuiteVsGSuiteTool.xml" />
+    <label text="Descriptive analysis" id="descriptiveAG"/>
+    <tool file="proto/hyperbrowser/assemblygap/GenerateVisualizationOverlapHeatmapTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/CountBpCoverageBetweenSegmentsTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/CreateBoxPlotForFileTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/CreateHistogramTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/JoinTwoTabularFilesBySpecificFieldTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/PlotMetadataValuesOfTabularFileTool.xml" />
+    <tool file="proto/hyperbrowser/assemblygap/SplitBedFileTool.xml" />
   </section>
-
-
 
   <label text="GSuite HyperBrowser tools" id="hb_gsuite_tools" />
 
