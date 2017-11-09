@@ -247,12 +247,16 @@ class SingleTrackTS(TrackStructureV2):
         # when a new track is created you can only be sure a name and title have been provided
         return hash((hash(tuple(self.track.trackName)), hash(self.track.trackTitle)))
 
+    def _getNewCopy(self):
+        import copy
+        return SingleTrackTS(self.track, copy.copy(self.metadata))
+
     def _copyTreeStructure(self):
-        return self
+        return self._getNewCopy()
 
     @takes('SingleTrackTS', 'TrackStructureV2', basestring)
     def _copySegregatedSubtree(self, nodeToSplitOn, keyOfSubtree):
-        return self
+        return self._getNewCopy()
 
     def getLeafNodes(self):
         return [self]
