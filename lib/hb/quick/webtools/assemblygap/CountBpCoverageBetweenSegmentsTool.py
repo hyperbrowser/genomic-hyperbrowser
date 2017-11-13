@@ -252,9 +252,6 @@ class CountBpCoverageBetweenSegmentsTool(GeneralGuiTool, UserBinMixin, GenomeMix
             results = doAnalysis(analysisSpec1, analysisBins, [sts]+[qt])
             resultsStatPerBin = doAnalysis(analysisSpec2, UserBinSource('*', '*', genome=genome), sts)
 
-
-            print results.getAllValuesForResDictKey('Result')
-
             resLocal = results.getAllValuesForResDictKey('Result').result
             bpTrackSize.append(resultsStatPerBin.getGlobalResult()['Result'].result)
 

@@ -168,13 +168,6 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                     metadataAll.append(metadata)
 
         colorListForYAxisNameOverMouse = []
-        if len(metadataAll) > 0:
-            import quick.webtools.restricted.visualization.visualizationGraphs as vg
-            cList = vg.colorList().fullColorList()
-            uniqueCList = list(set(metadataAll))
-
-            for m in metadataAll:
-                colorListForYAxisNameOverMouse.append(cList[uniqueCList.index(m)])
 
         # startEnd - order in res
         startEndInterval = []
@@ -199,32 +192,12 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
             end = ch.end
             i += 1
 
-
-        # extraXAxis = 'plotLines: [ '
-        # extraXAxis = extraXAxis + ",".join(extraX)
-        # extraXAxis = extraXAxis + """ ],  """
-        #
-        # # rowLabel = res.getAllRegionKeys()
-        # # rowLabel = [str(x) for x in rowLabel]
-
-
-        import quick.webtools.restricted.visualization.visualizationPlots as vp
-
         htmlCore = HtmlCore()
         htmlCore.begin()
-        from config.Config import DATA_FILES_PATH
-
-
-
-        # sf = GalaxyRunSpecificFile(['result.txt'], galaxyFn)
-        # outFile = sf.getDiskPath(ensurePath=True)
-
 
         writeFile = open(
             cls.makeHistElement(galaxyExt='tabular',
                                 title='result'), 'w')
-        # htmlCore.link('Get all results', sf.getURL())
-
 
         i = 0
 
@@ -302,26 +275,44 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
             colorListForYAxisNameOverMouseBlack <- rep("#000000", nrow(dt))
          }
 
+        
+          heatmap.2(dt,
+            Colv=NA,
+            margins=c(20,24),
+            xlab="",
+            ylab="",
+            trace="none",
+            dendrogram="row",
+            key.title=NA,
+            keysize=0.6,
+            cexRow=0.4 + 1/log2(nrow(dt)),
+            cexCol=0.4 + 1/log2(ncol(dt)),
+            colRow=colorListForYAxisNameOverMouseBlack,
+            RowSideColors=colorListForYAxisNameOverMouseWhite,
+            symm=F,
+            col=my_palette,
+            symkey=F,
+            symbreaks=T,
+        )
+        
 
-
-        heatmap.2(
-          dt,
-          Colv=NA,
-          margins=c(20,30),
-          xlab="SNPs",
-          ylab="DNase",
-          trace="none",
-          labCol=NA,
-          keysize=0.6,
-          key.title=NA, # no title
-          key.xlab=NA,  # no xlab
-          dendrogram="row",
-          col=my_palette,
-          cexRow=0.4 + 1/log2(nrow(dt)),
-          cexCol=0.4 + 1/log2(ncol(dt)),
-          RowSideColors=colorListForYAxisNameOverMouseWhite,
-          colRow=colorListForYAxisNameOverMouseBlack,
-          )
+        # heatmap.2(
+        #   dt,
+        #   Colv=NA,
+        #   margins=c(20,24),
+        #   xlab="",
+        #   ylab="",
+        #   trace="none",
+        #   keysize=0.6,
+        #   key.title=NA, # no title
+        #   key.xlab=NA,  # no xlab
+        #   dendrogram="row",
+        #   col=my_palette,
+        #   cexRow=0.4 + 1/log2(nrow(dt)),
+        #   cexCol=0.4 + 1/log2(ncol(dt)),
+        #   RowSideColors=colorListForYAxisNameOverMouseWhite,
+        #   colRow=colorListForYAxisNameOverMouseBlack,
+        #   )
 
         dev.off()
 
@@ -331,19 +322,21 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         heatmap.2(
           dt,
           Colv=NA,
-          margins=c(20,30),
-          xlab="SNPs",
-          ylab="DNase",
-          trace="none",
-          keysize=0.6,
-          key.title=NA, # no title
-          key.xlab=NA,  # no xlab
-          dendrogram="row",
-          col=my_palette,
-          cexRow=0.4 + 1/log2(nrow(dt)),
-          cexCol=0.4 + 1/log2(ncol(dt)),
-          RowSideColors=colorListForYAxisNameOverMouseWhite,
-          colRow=colorListForYAxisNameOverMouseBlack,
+          margins=c(20,24),
+          xlab="",
+            ylab="",
+            trace="none",
+            dendrogram="row",
+            key.title=NA,
+            keysize=0.6,
+            cexRow=0.4 + 1/log2(nrow(dt)),
+            cexCol=0.4 + 1/log2(ncol(dt)),
+            colRow=colorListForYAxisNameOverMouseBlack,
+            RowSideColors=colorListForYAxisNameOverMouseWhite,
+            symm=F,
+            col=my_palette,
+            symkey=F,
+            symbreaks=T,
           )
 
 
