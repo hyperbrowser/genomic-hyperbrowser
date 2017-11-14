@@ -282,7 +282,10 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
                     for ny, y in enumerate(data):
                         N = len(y)
-                        x = [float(c) for c in categories]
+                        if categories != None:
+                            x = [float(c) for c in categories]
+                        else:
+                            x = xrange(N)
                         B = (sum(x[i] * y[i] for i in xrange(N)) - 1. / N * sum(x) * sum(y)) / (
                         sum(x[i] ** 2 for i in xrange(N)) - 1. / N * sum(x) ** 2)
 
@@ -291,9 +294,10 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         dataTrendNameAll.append(seriesName[ny] + ' - trend')
                         dataTrend = []
 
-                        for y1 in y:
-                            dataTrend.append(A+B*y1)
+                        for x1 in x:
+                            dataTrend.append(A+B*x1)
                         dataTrendAll.append(dataTrend)
+
 
 
                     data = data + dataTrendAll
