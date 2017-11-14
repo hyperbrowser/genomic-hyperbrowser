@@ -9,6 +9,7 @@ from gold.statistic.CountSegmentStat import CountSegmentStat
 from gold.statistic.ProportionCountStat import ProportionCountStat
 from gold.track.Track import PlainTrack
 from gold.track.TrackStructure import SingleTrackTS
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -104,18 +105,40 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
             res2 = doAnalysis(analysisSpec2, analysisBins2, sts)
             bpOverlapPerTrack = res2.getGlobalResult()['Result'].result
 
-            results.append([tt, str(avgSegLenPerTrack), str(bpOverlapPerTrack/genomeCoveragePerTrack)])
+            results.append([tt, avgSegLenPerTrack, bpOverlapPerTrack/genomeCoveragePerTrack])
 
         sortedRes = sorted(results, key=itemgetter(1))
+        zipSorted = zip(*sortedRes)
+        zipSorted = [list(i) for i in zipSorted]
+
+        writeFile = open(
+            cls.makeHistElement(galaxyExt='tabular',
+                                title='Result for average segment length according to bp overlap values'), 'w')
 
         header = ['Track name', 'AvgSegLen', 'RatioBpOverlapWithinTrackAndGenome']
         output = '\t'.join(header) + '\n'
         for sr in sortedRes:
-            output += '\t'.join(sr) + '\n'
+            output += '\t'.join([str(s) for s in sr]) + '\n'
 
-        open(galaxyFn, 'w').write(output)
+        writeFile.write(output)
+        writeFile.close()
 
+        htmlCore = HtmlCore()
+        htmlCore.begin()
+        htmlCore.tableHeader(['Column name', 'Minimum', 'Maximum', 'Average', 'Median'])
+        htmlCore.tableLine(['AvgSegLen', zipSorted[1][0], zipSorted[1][len(zipSorted[1])-1], sum(zipSorted[1])/len(zipSorted[1]), cls.median(zipSorted[1])])
+        htmlCore.tableLine(['RatioBpOverlapWithinTrackAndGenome', zipSorted[2][0], zipSorted[2][len(zipSorted[2])-1], sum(zipSorted[2]) / len(zipSorted[2]), cls.median(zipSorted[2])])
+        htmlCore.end()
 
+        print htmlCore
+
+    @classmethod
+    def median(cls, x):
+        if len(x) % 2 != 0:
+            return sorted(x)[len(x) / 2]
+        else:
+            midavg = (sorted(x)[len(x) / 2] + sorted(x)[len(x) / 2 - 1]) / 2.0
+            return midavg
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -256,7 +279,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
     #
     @classmethod
     def getOutputFormat(cls, choices):
-        return 'tabular'
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
