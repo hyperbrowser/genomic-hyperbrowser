@@ -285,10 +285,12 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         x = range(N)
                         B = (sum(x[i] * y[i] for i in xrange(N)) - 1. / N * sum(x) * sum(y)) / (
                         sum(x[i] ** 2 for i in xrange(N)) - 1. / N * sum(x) ** 2)
+
                         A = 1. * sum(y) / N - B * 1. * sum(x) / N
 
-                        dataTrendNameAll.append(seriesName[ny] + ' -trend')
+                        dataTrendNameAll.append(seriesName[ny] + ' - trend')
                         dataTrend = []
+
                         for y1 in y:
                             dataTrend.append(A+B*y1)
                         dataTrendAll.append(dataTrend)
@@ -306,8 +308,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         height=500,
                         seriesName=seriesName,
                         label=label,
-                        seriesType = st,
-                        minY=minFromList
+                        seriesType = st
                         #                      titleText = 'Plot',
                     )
 
