@@ -8,6 +8,7 @@
     <tool file="proto/hyperbrowser/assemblygap/RandomTracksFromGsuiteTool.xml" />
     <tool file="proto/hyperbrowser/article/CategoricalGSuiteVsGSuiteTool.xml" />
     <label text="Descriptive analysis" id="descriptiveAG"/>
+    <tool file="proto/hyperbrowser/assemblygap/CountAvgSegmentLengthAndBpOverlapTool.xml" />
     <tool file="proto/hyperbrowser/assemblygap/GenerateVisualizationOverlapHeatmapTool.xml" />
     <tool file="proto/hyperbrowser/assemblygap/CountBpCoverageBetweenSegmentsTool.xml" />
     <tool file="proto/hyperbrowser/assemblygap/CreateBoxPlotForFileTool.xml" />
