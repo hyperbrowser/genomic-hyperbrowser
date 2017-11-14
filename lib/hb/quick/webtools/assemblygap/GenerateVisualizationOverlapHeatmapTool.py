@@ -61,7 +61,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
     @staticmethod
     def getToolName():
-        return "Count bp coverage in a bin (region) between tracks in GSuite"
+        return "Count coverage for tracks in GSuite within every bin (region)"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -70,13 +70,10 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                 ('Select metadata from GSuite', 'selectColumns')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
+                   ('Show result as ', 'outputRes'),
                    ('Select a color map:', 'colorMapSelectList')
+
                ] + cls.getInputBoxNamesForUserBinSelection()
-
-
-    # @staticmethod
-    # def getOptionsBoxTargetTrack():  # refTrack
-    #     return GeneralGuiTool.getHistorySelectionElement('bed', 'gtrack')
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -102,8 +99,12 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         return cols
 
     @staticmethod
-    def getOptionsBoxColorMapSelectList(prevChoices):  # Alternatively: getOptionsBox1()
+    def getOptionsBoxColorMapSelectList(prevChoices):
         return colorMaps.keys()
+
+    @staticmethod
+    def getOptionsBoxOutputRes(prevChoices):
+        return ['value (bp)', 'proportion (%)']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -119,8 +120,10 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
         analysisSpec = AnalysisSpec(SingleTSStat)
 
-        analysisSpec.addParameter('rawStatistic', CountSegmentStat.__name__)
-        #analysisSpec.addParameter('rawStatistic', ProportionCountStat.__name__)
+        if choices.outputRes == 'value (bp)':
+            analysisSpec.addParameter('rawStatistic', CountSegmentStat.__name__)
+        else:
+            analysisSpec.addParameter('rawStatistic', ProportionCountStat.__name__)
         # regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.targetTrack, False)
         # binSpec = queryTrackName
 
@@ -223,7 +226,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                                 fileOutput.getDiskPath(), fileOutputPdf.getDiskPath())
 
         htmlCore.divBegin()
-        htmlCore.link('Download heatmap of bp coverage in a bin (region)', fileOutputPdf.getURL())
+        htmlCore.link('Download heatmap of coverage in a bin (region) as ' + str(choices.outputRes), fileOutputPdf.getURL())
         htmlCore.divEnd()
         # htmlCore.divBegin()
         # htmlCore.image(fileOutput.getURL())
@@ -393,9 +396,9 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
         core = HtmlCore()
 
-        core.paragraph('This tool computes the bp overlap between the segments '
+        core.paragraph('This tool computes the overlap between the segments '
                        'of selected bin against each track in a collection of reference tracks '
-                       'described in a GSuite file. The overlap bp are output in an '
+                       'described in a GSuite file. The overlap are output in an '
                        'heatmap, where each cell is colored according to the '
                        'overlap between each query segment (column) with each reference '
                        'track (row).')
