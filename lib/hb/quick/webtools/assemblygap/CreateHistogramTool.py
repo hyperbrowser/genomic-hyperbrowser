@@ -9,7 +9,7 @@ from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 class CreateHistogramTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Create descriptive results for file"
+        return "Create descriptive results"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -111,6 +111,27 @@ class CreateHistogramTool(GeneralGuiTool):
             xAxisRotation=90
         )
 
+        import operator
+        sortedData = sorted(data.items(), key=operator.itemgetter(1), reverse=True)
+
+
+        text = '<br> The regions with the highest (' + str(choices.resStat) + ') coverage are: <br>'
+        if len(sortedData) >= 3:
+            for sd in range(0, 3):
+                text += str(sortedData[sd][0]) + ' with value equal ' + str(sortedData[sd][1])
+                if sd != 2:
+                    text += ', '
+                else:
+                    text += '.'
+        else:
+            for sd in range(0, len(sortedData)):
+                text += str(sortedData[sd][0]) + ' with value equal ' + str(sortedData[sd][1])
+                if sd != len(sortedData)-1:
+                    text += ', '
+                else:
+                    text += '.'
+
+
         from proto.RSetup import robjects, r
         rCode = 'ourHist <- function(vec) {hist(vec, breaks=' + str(breaksNumber) + ', plot=FALSE)}'
         dd=robjects.FloatVector(itSum)
@@ -130,18 +151,15 @@ class CreateHistogramTool(GeneralGuiTool):
 
         core = HtmlCore()
         core.begin()
-
-
         prettyResults = {}
         prettyResults[resStat] = itSum
         shortQuestion = 'results'
 
-
-        core.line('Cover of the tracks per SNPs (sum)')
+        core.line('Cover of the tracks per SNPs (' + choices.resStat + ')')
         core.line(plot)
-        core.line('Histogram (based on sum)')
+        core.line('Histogram (based on ' + choices.resStat + ')')
         core.line(res)
-        core.line('Results')
+        core.line('Results for: ' + 'Cover of the tracks per SNPs (' + choices.resStat + ')')
         addTableWithTabularAndGsuiteImportButtons(
             core,
             choices,
@@ -150,6 +168,7 @@ class CreateHistogramTool(GeneralGuiTool):
             tableDict=prettyResults,
             columnNames=['Measure'] + keySum
         )
+        core.line(text)
 
         core.paragraph('Summary results')
         core.divBegin()
