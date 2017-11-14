@@ -282,7 +282,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
                     for ny, y in enumerate(data):
                         N = len(y)
-                        x = range(N)
+                        x = [float(c) for c in categories]
                         B = (sum(x[i] * y[i] for i in xrange(N)) - 1. / N * sum(x) * sum(y)) / (
                         sum(x[i] ** 2 for i in xrange(N)) - 1. / N * sum(x) ** 2)
 
