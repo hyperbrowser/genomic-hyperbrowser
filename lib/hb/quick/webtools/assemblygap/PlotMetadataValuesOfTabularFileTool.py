@@ -35,6 +35,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
             ('Select type of scale for x-Axis', 'axesScaleX'),
             ('Select value for y-Axis', 'columnY'),
             ('Select type of scale for y-Axis', 'axesScaleY'),
+            ('Add trend', 'trend'),
             # ('Select results of plotting', 'plotRes'),
         ]
 
@@ -105,6 +106,12 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
         #             if columnX in columnY.keys():
         #                 return ['separate', 'combine']
         #
+
+    @classmethod
+    def getOptionsBoxTrend(cls, prevChoices):
+        if prevChoices.plotType == 'Scatter' and prevChoices.plotSeries == 'Single':
+            return ['yes', 'no']
+
 
     @staticmethod
     def execute(choices, galaxyFn=None, username=''):
@@ -264,19 +271,60 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
         res = ''
         if plotSeries == 'Single':
             if plotType == 'Scatter':
-                res += vg.drawScatterChart(
-                    data,
-                    categories=categories,
-                    xAxisRotation=90,
-                    marginTop=30,
-                    xAxisTitle=xAxisTitle,
-                    yAxisTitle=yAxisTitle,
-                    height=500,
-                    seriesName=seriesName,
-                    label=label,
-                    minY=minFromList
-                    #                      titleText = 'Plot',
-                )
+
+
+                if choices.trend == 'yes':
+
+                    dataTrendAll = []
+                    dataTrendNameAll = []
+
+                    st = ['scatter' for l in data] + ['line' for l in data]
+
+                    for ny, y in enumerate(data):
+                        N = len(y)
+                        x = range(N)
+                        B = (sum(x[i] * y[i] for i in xrange(N)) - 1. / N * sum(x) * sum(y)) / (
+                        sum(x[i] ** 2 for i in xrange(N)) - 1. / N * sum(x) ** 2)
+                        A = 1. * sum(y) / N - B * 1. * sum(x) / N
+
+                        dataTrendNameAll.append(seriesName[ny] + ' -trend')
+                        dataTrend = []
+                        for y1 in y:
+                            dataTrend.append(A+B*y1)
+                        dataTrendAll.append(dataTrend)
+
+
+                    data = data + dataTrendAll
+                    seriesName = seriesName + dataTrendNameAll
+                    res += vg.drawMultiTypeChart(
+                        data,
+                        categories=categories,
+                        xAxisRotation=90,
+                        marginTop=30,
+                        xAxisTitle=xAxisTitle,
+                        yAxisTitle=yAxisTitle,
+                        height=500,
+                        seriesName=seriesName,
+                        label=label,
+                        seriesType = st,
+                        minY=minFromList
+                        #                      titleText = 'Plot',
+                    )
+
+                else:
+                    res += vg.drawScatterChart(
+                        data,
+                        categories=categories,
+                        xAxisRotation=90,
+                        marginTop=30,
+                        xAxisTitle=xAxisTitle,
+                        yAxisTitle=yAxisTitle,
+                        height=500,
+                        seriesName=seriesName,
+                        label=label,
+                        minY=minFromList
+                        #                      titleText = 'Plot',
+                    )
 
 
             if plotType == 'Pie':

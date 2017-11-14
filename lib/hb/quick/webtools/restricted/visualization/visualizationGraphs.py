@@ -1819,8 +1819,8 @@ class visualizationGraphs(object):
             showInLegend='showInLegend: false, '
         else:
             showInLegend=''
-        
-        
+
+
         if type == 'scatter':
             return """
             plotOptions: {
@@ -1829,7 +1829,7 @@ class visualizationGraphs(object):
                     }
                 },
             """
-        
+
         if histogram == True:
             histogram = """
                         pointPadding: 0,
@@ -1839,7 +1839,7 @@ class visualizationGraphs(object):
                         """
         else:
             histogram = ""
-            
+
         if plotOptions is None:
             plotOptions = ''
         else:
@@ -1849,7 +1849,7 @@ class visualizationGraphs(object):
             """
 
 
-        if extraArg is None: 
+        if extraArg is None:
             return """
             plotOptions: {
                     """ + type + """: { 
@@ -1870,7 +1870,7 @@ class visualizationGraphs(object):
              }
                 },
             """
-        
+
     def _useToolTip(self, label, shared, extraArg, tooltipVal, histogram, extraScriptButton, type):
 
 
@@ -2092,7 +2092,7 @@ class visualizationGraphs(object):
 
 
 
-        if type != 'bubble' and type !='heatmap':
+        if type != 'bubble' and type !='heatmap' and type !='multi':
             functionJS1 += str(self._usePlotOptions(type, stacking, lineWidth, dataLabels, showInLegend, extraArg, histogram, plotOptions)) 
         functionJS1 += str(self._useToolTip(label, shared, extraArg, tooltipVal, histogram, extraScriptButton, type))
         functionJS1 += legend 
@@ -3368,6 +3368,117 @@ class visualizationGraphs(object):
                            )
         
         return graph
+
+    def drawMultiTypeChart(self,
+                         dataY,
+                         height=None,
+                         addOptions=None,
+                         tickInterval=None,
+                         label='<b>{series.name}: </b>{point.y} <br \>',
+                         lineWidth=1,
+                         titleText=None,
+                         subtitleText=None,
+                         xAxisTitle=None,
+                         yAxisTitle=None,
+                         categories=None,
+                         seriesType=None,
+                         seriesName=None,
+                         legend=None,
+                         xAxisRotation=0,
+                         dataLabels=True,
+                         shared=True,
+                         overMouseAxisX=False,
+                         overMouseLabelX=' + this.value + ',
+                         showChartClickOnLink=False,
+                         typeAxisXScale=None,
+                         pointStartLog=None,
+                         zoomType='x',
+                         marginTop=60,
+                         interaction=False,
+                         extraArg=None,
+                         allowDecimals=None,
+                         maxY=None,
+                         yAxisType=None,
+                         extraScriptButton=None,
+                         visible=None,
+                         addTable=None,
+                         markerRadius=None,
+                         minY=None,
+                         plotLines=None,
+                         plotLinesName=None,
+                         plotBands=None,
+                         plotBandsColor=None
+                         ):
+
+
+            graph = ''
+
+            type = 'multi'
+
+            if len(dataY) > 0:
+                    tooltipVal = None
+
+                    data, legendSize, legendSizeExtra = self._parseData(dataY=dataY, type=type,
+                                                                        seriesType=seriesType,
+                                                                        seriesName=seriesName,
+                                                                        multiYAxis=False,
+                                                                        visible=visible,
+                                                                        yAxisMulti=None,
+                                                                        multiXAxis=False,
+                                                                        xAxisMulti=None,
+                                                                        markerRadius=markerRadius)
+
+                    # print 'data' + str(data)
+
+                    graph = self._draw(
+                            data, legendSize, legendSizeExtra,
+                            type=type,
+                            height=height,
+                            addOptions=addOptions,
+                            tickInterval=tickInterval,
+                            tickMinValue=None,
+                            label=label,
+                            lineWidth=lineWidth,
+                            titleText=titleText,
+                            subtitleText=subtitleText,
+                            xAxisTitle=xAxisTitle,
+                            yAxisTitle=yAxisTitle,
+                            categories=categories,
+                            legend=legend,
+                            xAxisRotation=xAxisRotation,
+                            dataLabels=dataLabels,
+                            polar=None,
+                            stacking=None,
+                            shared=shared,
+                            overMouseAxisX=overMouseAxisX,
+                            overMouseLabelX=overMouseLabelX,
+                            showChartClickOnLink=showChartClickOnLink,
+                            typeAxisXScale=typeAxisXScale,
+                            pointStartLog=pointStartLog,
+                            zoomType=zoomType,
+                            marginTop=marginTop,
+                            interaction=interaction,
+                            multiYAxis=False, multiXAxis=False, xAxisMulti=None,
+                            showInLegend=None,
+                            extraArg=extraArg,
+                            allowDecimals=allowDecimals,
+                            maxY=maxY,
+                            yAxisType=yAxisType,
+                            extraScriptButton=extraScriptButton,
+                            addTable=addTable,
+                            histogram=None,
+                            sortableAccordingToTable=None,
+                            sortableAccordingToTableDataY=None,
+                            tableName=None,
+                            sortableAccordingToTableIndexWithTrackTitle=None,
+                            plotOptions=None,
+                            tooltipVal=tooltipVal, reversed=None, minY=minY, plotLines=plotLines,
+                            categoriesY=None, plotLinesName=plotLinesName,
+                            plotBands=plotBands,
+                            plotBandsColor=plotBandsColor
+                    )
+
+            return graph
 
     def drawScatterType2Chart(self,
                               dataY,
