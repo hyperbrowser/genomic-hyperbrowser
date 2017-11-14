@@ -131,7 +131,6 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
                                                          binSpec,
                                                          choices.genome)
-        # analysisBins = GlobalBinSource(genome)
         segmentsList=[]
         results = []
         trackTitles = []
@@ -139,7 +138,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
             tt = track.title
             sts = SingleTrackTS(PlainTrack(track.trackName),OrderedDict(title=tt, genome=str(genome)))
             trackTitles.append(tt)
-            #resultsAvgSegLen
+
             res = doAnalysis(analysisSpec, analysisBins, sts)
 
             segCoverageProp = [res[seg]['Result'].result for seg in res.getAllRegionKeys()]
