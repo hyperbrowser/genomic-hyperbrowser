@@ -218,15 +218,17 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         fileOutputPdf = GalaxyRunSpecificFile(['heatmap.pdf'],galaxyFn)
         ensurePathExists(fileOutputPdf.getDiskPath())
 
-
-        cls.generateStaticRPlot(results, colorListForYAxisNameOverMouse, rowLabel,
+        if sum([sum(s) for s in results]) > 0:
+            cls.generateStaticRPlot(results, colorListForYAxisNameOverMouse, rowLabel,
                                 yAxisNameOverMouse,
                                 colorMaps[choices.colorMapSelectList],
                                 fileOutput.getDiskPath(), fileOutputPdf.getDiskPath())
 
-        htmlCore.divBegin()
-        htmlCore.link('Download heatmap of coverage in a bin (region) as ' + str(choices.outputRes), fileOutputPdf.getURL())
-        htmlCore.divEnd()
+            htmlCore.divBegin()
+            htmlCore.link('Download heatmap of coverage in a bin (region) as ' + str(choices.outputRes), fileOutputPdf.getURL())
+            htmlCore.divEnd()
+        else:
+            htmlCore.line('The heatmap can not be printed because all values are equal 0')
         # htmlCore.divBegin()
         # htmlCore.image(fileOutput.getURL())
         # htmlCore.divEnd()
