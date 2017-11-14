@@ -104,7 +104,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
     @staticmethod
     def getOptionsBoxOutputRes(prevChoices):
-        return ['value (bp)', 'proportion (%)']
+        return ['value (bp)', 'proportion (ratio of values within region)']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
