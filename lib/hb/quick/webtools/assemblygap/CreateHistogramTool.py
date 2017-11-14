@@ -155,11 +155,11 @@ class CreateHistogramTool(GeneralGuiTool):
         prettyResults[resStat] = itSum
         shortQuestion = 'results'
 
-        core.line('Cover of the tracks per SNPs (' + choices.resStat + ')')
+        core.line('Cover of the tracks per region (' + choices.resStat + ')')
         core.line(plot)
         core.line('Histogram (based on ' + choices.resStat + ')')
         core.line(res)
-        core.line('Results for: ' + 'Cover of the tracks per SNPs (' + choices.resStat + ')')
+        core.line('Results for: ' + 'Cover of the tracks per region (' + choices.resStat + ')')
         addTableWithTabularAndGsuiteImportButtons(
             core,
             choices,

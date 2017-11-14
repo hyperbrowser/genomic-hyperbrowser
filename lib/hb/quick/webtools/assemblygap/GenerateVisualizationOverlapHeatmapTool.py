@@ -1,6 +1,7 @@
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
+from gold.statistic.CountSegmentStat import CountSegmentStat
 from gold.statistic.ProportionCountStat import ProportionCountStat
 from gold.track.Track import PlainTrack, Track
 from quick.statistic.SingleTSStat import SingleTSStat
@@ -117,7 +118,9 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         staticFile = []
 
         analysisSpec = AnalysisSpec(SingleTSStat)
-        analysisSpec.addParameter('rawStatistic', ProportionCountStat.__name__)
+
+        analysisSpec.addParameter('rawStatistic', CountSegmentStat.__name__)
+        #analysisSpec.addParameter('rawStatistic', ProportionCountStat.__name__)
         # regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.targetTrack, False)
         # binSpec = queryTrackName
 
@@ -220,11 +223,11 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                                 fileOutput.getDiskPath(), fileOutputPdf.getDiskPath())
 
         htmlCore.divBegin()
-        htmlCore.link('Download heatmap image', fileOutputPdf.getURL())
+        htmlCore.link('Download heatmap of bp coverage in a bin (region)', fileOutputPdf.getURL())
         htmlCore.divEnd()
-        htmlCore.divBegin()
-        htmlCore.image(fileOutput.getURL())
-        htmlCore.divEnd()
+        # htmlCore.divBegin()
+        # htmlCore.image(fileOutput.getURL())
+        # htmlCore.divEnd()
         htmlCore.end()
 
         print htmlCore
@@ -264,7 +267,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
          my_palette <- colorRampPalette(colorList)
 
-         png(pathOutput, width=1000, height=max(hscale*100, 1000))
+         #png(pathOutput, width=1000, height=max(hscale*100, 1000))
 
 
          colorListForYAxisNameOverMouseWhite <- colorListForYAxisNameOverMouse
@@ -276,45 +279,28 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
          }
 
         
-          heatmap.2(dt,
-            Colv=NA,
-            margins=c(20,24),
-            xlab="",
-            ylab="",
-            trace="none",
-            dendrogram="row",
-            key.title=NA,
-            keysize=0.6,
-            cexRow=0.4 + 1/log2(nrow(dt)),
-            cexCol=0.4 + 1/log2(ncol(dt)),
-            colRow=colorListForYAxisNameOverMouseBlack,
-            RowSideColors=colorListForYAxisNameOverMouseWhite,
-            symm=F,
-            col=my_palette,
-            symkey=F,
-            symbreaks=T,
-        )
-        
-
-        # heatmap.2(
-        #   dt,
-        #   Colv=NA,
-        #   margins=c(20,24),
-        #   xlab="",
-        #   ylab="",
-        #   trace="none",
-        #   keysize=0.6,
-        #   key.title=NA, # no title
-        #   key.xlab=NA,  # no xlab
-        #   dendrogram="row",
-        #   col=my_palette,
-        #   cexRow=0.4 + 1/log2(nrow(dt)),
-        #   cexCol=0.4 + 1/log2(ncol(dt)),
-        #   RowSideColors=colorListForYAxisNameOverMouseWhite,
-        #   colRow=colorListForYAxisNameOverMouseBlack,
-        #   )
-
-        dev.off()
+        #   heatmap.2(dt,
+        #     Colv=NA,
+        #     margins=c(20,24),
+        #     xlab="",
+        #     ylab="",
+        #     trace="none",
+        #     dendrogram="row",
+        #     key.title=NA,
+        #     keysize=0.6,
+        #     cexRow=0.4 + 1/log2(nrow(dt)),
+        #     cexCol=0.4 + 1/log2(ncol(dt)),
+        #     colRow=colorListForYAxisNameOverMouseBlack,
+        #     RowSideColors=colorListForYAxisNameOverMouseWhite,
+        #     symm=F,
+        #     col=my_palette,
+        #     symkey=F,
+        #     symbreaks=T,
+        # )
+        # 
+        # 
+        # 
+        # dev.off()
 
         pdf(pathOutputPdf, width=max(wscale, 10), height=max(hscale,10))
 
@@ -407,9 +393,9 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
         core = HtmlCore()
 
-        core.paragraph('This tool computes the proportions of overlap between the segments '
+        core.paragraph('This tool computes the bp overlap between the segments '
                        'of selected bin against each track in a collection of reference tracks '
-                       'described in a GSuite file. The overlap proportions are output in an '
+                       'described in a GSuite file. The overlap bp are output in an '
                        'heatmap, where each cell is colored according to the '
                        'overlap between each query segment (column) with each reference '
                        'track (row).')
