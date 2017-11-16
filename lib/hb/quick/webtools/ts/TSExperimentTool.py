@@ -1,4 +1,6 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+
+from quick.util.debug import DebugUtil
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.application.UserBinSource import UserBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -73,6 +75,8 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         # from config.DebugConfig import DebugConfig
         # from config.DebugConfig import DebugModes
         # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
+
+        # DebugUtil.insertBreakPoint(60002)
 
         choices_gsuite = choices.gsuite
         selected_metadata= choices.cat
