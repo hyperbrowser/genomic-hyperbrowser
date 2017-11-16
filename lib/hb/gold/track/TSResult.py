@@ -16,5 +16,5 @@ class TSResult(dict):
     @takes('TSResult', basestring, 'TSResult')
     def __setitem__(self, key, value):
         assert key in self._ts.keys(), (key, self._ts.keys())
-        assert value._ts in self._ts.values(), 'Intention is to control that rts hierarchy is corresponding to ts hierarchy, but maybe not always the case, e.g. in MC (then remove..)'
+        # assert value._ts in self._ts.values(), 'Intention is to control that rts hierarchy is corresponding to ts hierarchy, but maybe not always the case, e.g. in MC (then remove..)'
         dict.__setitem__(self, key, value)
