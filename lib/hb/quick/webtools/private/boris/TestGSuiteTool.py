@@ -1,10 +1,13 @@
-from gold.statistic.RawDataStat import RawDataStat
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisDefHandler
+from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
-from gold.track.Track import Track
-from gold.track.TrackFormat import NeutralTrackFormatReq
+from gold.track.TrackStructure import TrackStructureV2
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.PairedTSStat import PairedTSStat
+from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -28,6 +31,8 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
             ('Select GSuite', 'gsuite'),
             ('Avoidance track', 'queryTrack')] + \
             cls.getInputBoxNamesForGenomeSelection() + \
+            [('Select excluded regions track', 'excludedRegions'),
+            ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
             cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
@@ -38,35 +43,86 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     def getOptionsBoxQueryTrack(prevChoices):
         return GeneralGuiTool.getHistorySelectionElement()
 
-    @staticmethod
-    def execute(choices, galaxyFn=None, username=''):
+    @classmethod
+    def getOptionsBoxExcludedRegions(cls, prevChoices):
+        return GeneralGuiTool.getHistorySelectionElement()
 
-        DebugUtil.insertBreakPoint()
+    @classmethod
+    def getOptionsBoxMcfdrDepth(cls, prevChoices):
+        return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+
+
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
+
+        # DebugUtil.insertBreakPoint()
 
         choices_queryTrack = choices.queryTrack
         choices_gsuite = choices.gsuite
         genome = choices.genome
-        queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
-                                                                                     printErrors=False,
-                                                                                     printProgress=False)
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        # queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
+        #                                                                              printErrors=False,
+        #                                                                              printProgress=False)
+        # gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
-        queryTrack = Track(queryTrackNameAsList)
 
         import quick.gsuite.GuiBasedTsFactory as factory
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
         refTS = factory.getFlatTracksTS(genome, choices_gsuite)
 
-        tvProvider = ShuffleElementsBetweenTracksAndBinsTvProvider(refTS, queryTS, binSource=analysisBins, allowOverlaps=False)
-        for region in analysisBins:
-            tv = tvProvider.getTrackView(region, refTS.getLeafNodes()[0].track, 0)
-            print tv
+        excludedTs = None
+        if choices.excludedRegions:
+            excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
+
+        ts = TrackStructureV2()
+        realTS = TrackStructureV2()
+        realTS["query"] = queryTS
+        realTS["reference"] = refTS
+        randQueryTS = queryTS
+        randRefTS = refTS.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider,
+                                               binSource=analysisBins,
+                                               excludedTs=excludedTs,
+                                               allowOverlaps=False, randIndex=0)
+        hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
+        for hypothesisKey in hypothesisKeyList:
+            realTS = TrackStructureV2()
+            realTS["query"] = queryTS
+            realTS["reference"] = refTS[hypothesisKey]
+            randTS = TrackStructureV2()
+            randTS["query"] = randQueryTS
+            randTS["reference"] = randRefTS[hypothesisKey]
+            hypothesisTS = TrackStructureV2()
+            hypothesisTS["real"] = realTS
+            hypothesisTS["rand"] = randTS
+            ts[hypothesisKey] = hypothesisTS
+        analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
+        result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+        print "Result", result
+
+
+        # tvProvider = ShuffleElementsBetweenTracksAndBinsTvProvider(refTS, queryTS, binSource=analysisBins, allowOverlaps=False)
+        # for region in analysisBins:
+        #     tv = tvProvider.getTrackView(region, refTS.getLeafNodes()[0].track, 0)
+        #     print tv
         # tvProvider._populatePool()
 
+    @classmethod
+    def _prepareAnalysisWithHypothesisTests(cls, choices):
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisSpec.addParameter('rawStatistic', PairedTSStat.__name__)
+        analysisSpec.addParameter('pairedTsRawStatistic', ObservedVsExpectedStat.__name__)
+        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+        analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
+        analysisSpec.addParameter("runLocalAnalysis", "No")
+        return analysisSpec
 
-
-        @staticmethod
-        def getOutputFormat(choices=None):
-            return 'customhtml'
+    @staticmethod
+    def getOutputFormat(choices=None):
+        return 'customhtml'

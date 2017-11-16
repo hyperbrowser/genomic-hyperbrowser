@@ -5,21 +5,14 @@ import datetime
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.util.CustomExceptions import SplittableStatNotAvailableError
 from gold.result.Results import Results
-from config.Config import PRINT_PROGRESS, MAX_LOCAL_RESULTS_IN_TABLE, MAX_NUM_USER_BINS, USE_PARALLEL, DebugConfig
+from config.Config import PRINT_PROGRESS, MAX_NUM_USER_BINS, USE_PARALLEL, DebugConfig
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
-from quick.application.UserBinSource import UserBinSource
-from gold.origdata.GenomeElementSource import GenomeElementSource
-from gold.origdata.GECategoryFilter import GECategoryFilter
 from gold.util.CustomExceptions import CentromerError, NoneResultError, InvalidFormatError
 from quick.util.GenomeInfo import GenomeInfo
 from gold.statistic.AssemblyGapCoverageStat import AssemblyGapCoverageStat
-#from quick.statistic.CountPointBothTracksStat import CountPointBothTracksStat
-from gold.statistic.Statistic import Statistic
-from gold.track.Track import PlainTrack, Track
+from gold.track.Track import PlainTrack
 from gold.application.LogSetup import logException, logMessage, logging
 from gold.util.CommonFunctions import getClassName
-from quick.application.SignatureDevianceLogging import takes,returns
-from gold.statistic.RandomizationManagerStat import RandomizationManagerStat
 
 class StatJob(object):
     GENERAL_RESDICTKEY = 'Result'

@@ -1,20 +1,10 @@
-'''
-Created on Sep 24, 2015
-
-@author: boris
-'''
-
-
-from config.Config import DebugConfig
 from gold.application.LogSetup import logging, logMessage
-from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.statistic.Statistic import Statistic, StatisticSplittable
 from gold.track.GenomeRegion import GenomeRegion
-from gold.track.TrackStructure import TrackStructureV2, TrackStructure
+from gold.track.TrackStructure import TrackStructureV2
 from gold.util.CommonFunctions import getClassName, isIter
-from gold.util.CustomExceptions import ShouldNotOccurError, CentromerError, NoneResultError
+from gold.util.CustomExceptions import ShouldNotOccurError
 from quick.application.SignatureDevianceLogging import takes
-from third_party.typecheck import one_of, anything
 
 
 class StatisticV2(Statistic):
@@ -70,25 +60,6 @@ class StatisticV2(Statistic):
         
         #TODO: boris 20150924, check if the caching works with this
         return (hash(str(cls)), Statistic._constructConfigKey(kwArgs), hash(reg), hash(trackStructure))
-    
-    def _getSingleResult(self, region):
-        #print 'Kw Here: ', self._kwArgs, 'args here: ', self._args
-        
-        stat = self._statClass(region, self._trackStructure, *self._args, **self._kwArgs)
-        try:
-            res = stat.getResult()
-        except (CentromerError, NoneResultError):
-            res = None
-            if DebugConfig.PASS_ON_NONERESULT_EXCEPTIONS:  # @UndefinedVariable
-                raise
-            
-        #if not isinstance(res, dict):
-        if not getClassName(res) in ['dict', 'OrderedDict']:
-            res = {} if res is None else {self.GENERAL_RESDICTKEY : res}
-            #res = {self.GENERAL_RESDICTKEY : res}
-
-        ResultsMemoizer.flushStoredResults()
-        return res, stat
 
     
 class StatisticV2Splittable(StatisticV2, StatisticSplittable):
