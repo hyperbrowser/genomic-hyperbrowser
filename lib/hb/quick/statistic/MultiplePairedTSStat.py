@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from gold.track.TSResult import TSResult
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatisticV2 import StatisticV2
 from gold.statistic.MagicStatFactory import MagicStatFactory
@@ -19,11 +20,11 @@ class MultiplePairedTSStatUnsplittable(StatisticV2):
 
     def _compute(self):
 
-        ts = self._trackStructure._copyTreeStructure()
-        for key, pairedTS in ts.iteritems():
-            pairedTS.result = self._childrenDict[key].getResult().result
+        res = TSResult(self._trackStructure)
+        for key, pairedTSR in self._childrenDict.iteritems():
+            res[key] = pairedTSR.getResult()
 
-        return ts
+        return res
 
     def _createChildren(self):
         self._childrenDict = OrderedDict()
