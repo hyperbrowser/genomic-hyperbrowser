@@ -346,8 +346,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             resultsDict = OrderedDefaultDict(list)
             data = []
             for cat, res in result.iteritems():
-                resultsDict[cat].append(res.result)
-                data.append(res.result)
+                resultsDict[cat].append(res.getResult())
+                data.append(res.getResult())
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
                 tableDict=resultsDict,
