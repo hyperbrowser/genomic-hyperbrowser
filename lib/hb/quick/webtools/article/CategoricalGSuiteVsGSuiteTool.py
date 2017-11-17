@@ -376,10 +376,10 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             datapVal = []
             dataAvgRandomForbes = []
             for cat, res in result.iteritems():
-                forbes = res.result['TSMC_' + PairedTSStat.__name__]
-                pVal = res.result[McEvaluators.PVAL_KEY]
-                avgNullForbes = res.result[McEvaluators.MEAN_OF_NULL_DIST_KEY]
-                sdNullForbes = res.result[McEvaluators.SD_OF_NULL_DIST_KEY]
+                forbes = res.getResult()['TSMC_' + PairedTSStat.__name__]
+                pVal = res.getResult()[McEvaluators.PVAL_KEY]
+                avgNullForbes = res.getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY]
+                sdNullForbes = res.getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
                 resultsDict[cat].append(forbes)
                 resultsDict[cat].append(avgNullForbes)
                 resultsDict[cat].append(sdNullForbes)
@@ -427,7 +427,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
     def _getRawNullDistResultsFile(cls, galaxyFn, result):
         nullResultsTable = OrderedDict()
         for cat, res in result.iteritems():
-            nullRawResults = res.result[McEvaluators.RAND_RESULTS_KEY]
+            nullRawResults = res.getResult()[McEvaluators.RAND_RESULTS_KEY]
             nullResultsTable[cat] = nullRawResults
         tableFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
         with tableFile.getFile() as f:
