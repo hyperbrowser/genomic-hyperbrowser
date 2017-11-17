@@ -1,3 +1,4 @@
+from gold.track.TSResult import TSResult
 from gold.track.TrackStructure import TrackStructureV2
 from gold.util.CommonClasses import OrderedDefaultDict
 from gold.util.CustomExceptions import ArgumentValueError
@@ -19,6 +20,9 @@ from numpy import isnan,array, median
 def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
     observation = observedAndMcSamplesTuple[0]
     mcSamples = observedAndMcSamplesTuple[1]
+    if isinstance(observation, TSResult):
+        observation = observation.getResult()
+        mcSamples = [tsr.getResult() for tsr in mcSamples]
     if isinstance(observation, TrackStructureV2):
         observation = observation.result
         mcSamples = [ts.result for ts in mcSamples]
