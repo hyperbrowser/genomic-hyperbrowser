@@ -248,8 +248,7 @@ class SingleTrackTS(TrackStructureV2):
         return hash((hash(tuple(self.track.trackName)), hash(self.track.trackTitle)))
 
     def _getNewCopy(self):
-        import copy
-        return SingleTrackTS(self.track, copy.copy(self.metadata))
+        return self
 
     def _copyTreeStructure(self):
         return self._getNewCopy()
