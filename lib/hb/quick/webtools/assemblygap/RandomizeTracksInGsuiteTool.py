@@ -117,12 +117,12 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
 
             # resultsAvgSegLen = doAnalysis(analysis1, analysisBins, [PlainTrack(track.trackName)])
             resultsAvgSegLen = doAnalysis(analysis1, analysisBins, sts)
-            analysisDict[title]['length'] = resultsAvgSegLen.getGlobalResult()['Result'].result
+            analysisDict[title]['length'] = resultsAvgSegLen.getGlobalResult()['Result'].getResult()
             avgLength += analysisDict[title]['length']
 
             # resultsCountElement = doAnalysis(analysis2, analysisBins, [PlainTrack(track.trackName)])
             resultsCountElement = doAnalysis(analysis2, analysisBins, sts)
-            analysisDict[title]['number'] = resultsCountElement.getGlobalResult()['Result'].result
+            analysisDict[title]['number'] = resultsCountElement.getGlobalResult()['Result'].getResult()
             avgNumber += analysisDict[title]['number']
 
         avgLength = float(avgLength/allTracksLen)
