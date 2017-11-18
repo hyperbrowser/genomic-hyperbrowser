@@ -141,7 +141,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
             res = doAnalysis(analysisSpec, analysisBins, sts)
 
-            segCoverageProp = [res[seg]['Result'].result for seg in res.getAllRegionKeys()]
+            segCoverageProp = [res[seg]['Result'].getResult() for seg in res.getAllRegionKeys()]
             results.append(segCoverageProp)
 
 
