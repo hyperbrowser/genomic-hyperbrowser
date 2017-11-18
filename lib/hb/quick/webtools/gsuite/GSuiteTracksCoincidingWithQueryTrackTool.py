@@ -318,7 +318,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         cls._setDebugModeIfSelected(choices)
 
-        DebugUtil.insertBreakPoint(port=5678)
+        # DebugUtil.insertBreakPoint(port=5678)
 
         choices_queryTrack = choices.queryTrack
         choices_gsuite = choices.gsuite
@@ -368,8 +368,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         if analysisQuestion == cls.Q1:
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName)
-            # resTrackStruct = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
-            # results = getTrackTitleToResultDictFromFlatPairedTrackStructure(resTrackStruct)
             tsRes = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
             results = getTrackTitleToResultDictFromPairedTrackStructureResult(tsRes)
             gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track'],
