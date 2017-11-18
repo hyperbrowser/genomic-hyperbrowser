@@ -454,7 +454,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             results, additionalResultsDict,
             'Similarity to query track', columnInd=columnInd)
         core.line(res)
-        core.line(str(results))
+        # core.line(str(results))
 
         core.divEnd()
         core.divEnd()
