@@ -22,9 +22,8 @@ class MultipleSingleTrackStatsForTsStatUnsplittable(StatisticV2):
 
     def _compute(self):
         res = TSResult(self._trackStructure)
-        for key, child in self._childrenDict.iteritems():
-            childRes = child.getResult()
-            res[key] = TSResult(self._trackStructure[key], childRes)
+        for title, child in self._childrenDict.iteritems():
+            res[title] = child.getResult()
         return res
 
     def _createChildren(self):

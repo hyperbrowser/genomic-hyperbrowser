@@ -13,6 +13,9 @@ class TSResult(dict):
     def getResult(self):
         return self._result
 
+    def getTrackStructure(self):
+        return self._ts
+
     @takes('TSResult', basestring, 'TSResult')
     def __setitem__(self, key, value):
         assert key in self._ts.keys(), (key, self._ts.keys())
