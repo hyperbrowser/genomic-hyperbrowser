@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from gold.track.TSResult import TSResult
 from gold.track.TrackStructure import TrackStructureV2
 from quick.statistic.GenericResultsCombinerStat import GenericResultsCombinerStat
 from quick.statistic.SingleTSStat import SingleTSStat
@@ -20,13 +21,14 @@ class MultipleSingleTrackStatsForTsStat(MagicStatFactory):
 class MultipleSingleTrackStatsForTsStatUnsplittable(StatisticV2):
 
     def _compute(self):
-        ts = TrackStructureV2()
-        for title, child in self._childrenDict.iteritems():
-            ts[title] = child.getResult()
-        return ts
+        res = TSResult(self._trackStructure)
+        for key, child in self._childrenDict.iteritems():
+            childRes = child.getResult()
+            res[key] = TSResult(self._trackStructure[key], childRes)
+        return res
 
     def _createChildren(self):
         self._childrenDict = OrderedDict()
-        for sTS in self._trackStructure.values():
-            self._childrenDict[sTS.metadata['title']] = self._addChild(SingleTSStat(
+        for key, sTS in self._trackStructure.iteritems():
+            self._childrenDict[key] = self._addChild(SingleTSStat(
                 self._region, sTS, rawStatistic=GenericResultsCombinerStat, **self._kwArgs))

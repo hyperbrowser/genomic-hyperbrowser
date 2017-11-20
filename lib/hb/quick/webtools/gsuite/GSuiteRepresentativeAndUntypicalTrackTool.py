@@ -12,6 +12,7 @@ from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
+from gold.util.TSResultUtil import dictifyTSResult
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -25,6 +26,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import \
     GSuiteRepresentativenessOfTracksRankingsWrapperStat
+from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2Stat
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
 from quick.webtools.gsuite.GSuiteTracksCoincidingWithQueryTrackTool import GSuiteTracksCoincidingWithQueryTrackTool
@@ -233,7 +235,8 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         import numpy
         numpy.seterr(all='raise')
         cls._setDebugModeIfSelected(choices)
-        # DebugUtil.insertBreakPoint(username=username, currentUser='boris.simovski@gmail.com')
+        # from quick.util.debug import DebugUtil
+        # DebugUtil.insertBreakPoint(port=5678)
         genome = choices.genome
         analysisQuestion = choices.analysisName
         similaryStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
@@ -246,22 +249,26 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         tracks = [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join([quote(x.title, safe='') for x in gsuite.allTracks()])
 
+        import quick.gsuite.GuiBasedTsFactory as factory
+        ts = factory.getFlatTracksTS(genome=genome, guiSelectedGSuite=choices.gsuite)
+
         additionalResultsDict = OrderedDict()
         additionalAttributesDict = OrderedDict()
         if analysisQuestion in [cls.Q1, cls.Q2, cls.Q3]:
             additionalAttributesDict = cls.getSelectedAttributesForEachTrackDict(choices.additionalAttributes, gsuite)
             #additional analysis
             stats = [CountStat, CountElementStat]
-            additionalResultsDict = runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None)
+            additionalResultsDict = runMultipleSingleValStatsOnTracks(ts, stats, analysisBins)
 
         if analysisQuestion == cls.Q1:
-            analysisSpec = AnalysisSpec(GSuiteRepresentativenessOfTracksRankingsWrapperStat)
+            analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionV2Stat)
+            analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             analysisSpec.addParameter('reverse', reverse)
             analysisSpec.addParameter('ascending', 'No')
             analysisSpec.addParameter('trackTitles', trackTitles)
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            results = dictifyTSResult(doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result'])
 
             gsPerTrackResultsModel = GSuitePerTrackResultModel(
                 results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc],
