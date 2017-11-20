@@ -56,7 +56,7 @@ def runMultipleSingleValStatsOnTracks(ts, stats, analysisBins):
 
     res = runMultipleSingleValSingleTrackStats(ts, stats, analysisBins)
     for k, v in res.iteritems():
-        for statClassName, res in v.getResult().getResult().iteritems():
+        for statClassName, res in v.getResult().iteritems():
             statPrettyName = CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT[
                 statClassName] if statClassName in CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT else statClassName
             if k not in resultsDict:
