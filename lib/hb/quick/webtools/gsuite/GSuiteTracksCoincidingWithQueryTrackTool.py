@@ -11,7 +11,8 @@ from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBet
 from gold.util import CommonConstants
 from gold.util.CommonClasses import OrderedDefaultDict
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
-from quick.result.model.ResultUtils import getTrackTitleToResultDictFromFlatPairedTrackStructure
+from quick.result.model.ResultUtils import getTrackTitleToResultDictFromFlatPairedTrackStructure, \
+    getTrackTitleToResultDictFromPairedTrackStructureResult
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.util import McEvaluators
@@ -317,7 +318,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         cls._setDebugModeIfSelected(choices)
 
-        # DebugUtil.insertBreakPoint()
+        # DebugUtil.insertBreakPoint(port=5678)
 
         choices_queryTrack = choices.queryTrack
         choices_gsuite = choices.gsuite
@@ -357,18 +358,18 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             additionalPairwiseResults = runMultipleSingleValPairwiseStats(ts, additionalPairwiseStats, analysisBins)
             additionalSingleTrackResults = runMultipleSingleValSingleTrackStats(refTS, additionalSingleTrackStats, analysisBins)
 
-            for trackTitle, pairedTS in additionalPairwiseResults.iteritems():
-                additionalResultsDict[pairedTS["reference"].metadata["title"]].update(pairedTS.result)
+            for trackTitles, pairedTSR in additionalPairwiseResults.iteritems():
+                additionalResultsDict[pairedTSR.getTrackStructure()["reference"].metadata["title"]].update(pairedTSR.getResult())
             for trackTitle, sTS in additionalSingleTrackResults.iteritems():
-                additionalResultsDict[trackTitle].update(sTS.result)
+                additionalResultsDict[trackTitle].update(sTS.getResult())
 
             additionalResultsDict = prettifyKeysInDict(additionalResultsDict,
                                                        CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT)
 
         if analysisQuestion == cls.Q1:
             analysisSpec = cls.prepareQ1(reverse, similarityStatClassName)
-            resTrackStruct = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
-            results = getTrackTitleToResultDictFromFlatPairedTrackStructure(resTrackStruct)
+            tsRes = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+            results = getTrackTitleToResultDictFromPairedTrackStructureResult(tsRes)
             gsPerTrackResultsModel = GSuitePerTrackResultModel(results, ['Similarity to query track'],
                                                                additionalResultsDict=additionalResultsDict,
                                                                additionalAttributesDict=additionalAttributesDict)
@@ -453,7 +454,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             results, additionalResultsDict,
             'Similarity to query track', columnInd=columnInd)
         core.line(res)
-        core.line(str(results))
+        # core.line(str(results))
 
         core.divEnd()
         core.divEnd()
@@ -482,8 +483,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         transformedResultsDict = OrderedDefaultDict(list)
         for trackTitle, res in results.iteritems():
-            transformedResultsDict[trackTitle].append(res.result['TSMC_' + PairedTSStat.__name__])
-            transformedResultsDict[trackTitle].append(res.result[McEvaluators.PVAL_KEY])
+            transformedResultsDict[trackTitle].append(res.getResult()['TSMC_' + PairedTSStat.__name__])
+            transformedResultsDict[trackTitle].append(res.getResult()[McEvaluators.PVAL_KEY])
 
         gsPerTrackResultsModel = GSuitePerTrackResultModel(transformedResultsDict, ['Similarity to query track', 'P-value'],
                                                            additionalResultsDict=additionalResultsDict,
