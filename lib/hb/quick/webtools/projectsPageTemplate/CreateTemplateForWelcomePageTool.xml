@@ -1,0 +1,4 @@
+<tool id="hb_create_template_for_welcome_page_tool" name="Create template for welcome page" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.projectsPageTemplate.CreateTemplateForWelcomePageTool" proto_tool_class="CreateTemplateForWelcomePageTool">
+  <description></description>
+</tool>
