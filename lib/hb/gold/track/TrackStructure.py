@@ -4,9 +4,8 @@ from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 import copy
 from quick.application.SignatureDevianceLogging import takes
-from quick.application.UserBinSource import BinSource
 from test.gold.track.common.SampleTrack import SampleTrack
-from third_party.typecheck import anything, dict_of, list_of, optional
+from third_party.typecheck import anything, dict_of, list_of
 
 class TrackStructure(dict):
     '''
@@ -264,7 +263,7 @@ class SingleTrackTS(TrackStructureV2):
         return newCopy
 
 class FlatTracksTS(TrackStructureV2):
-    pass
+#    pass
     # def __init__(self):
     #     pass
 
