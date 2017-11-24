@@ -41,9 +41,9 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
                     'minLqMedUqMax': minLqMedUqMax
                     }
     
-    def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', rawStatistic=None,**kwArgs):
+    def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
         #NB! Any received parameter termed rawStatistic is ignored, as pairwiseStatistic will take this role in children
-        self._rawStatistic = self.getRawStatisticClass(pairwiseStatistic)
+        self._pairwiseStatistic = self.getRawStatisticClass(pairwiseStatistic)
 
         self._summaryFunction = self._resolveFunction(summaryFunc)
         #self._summaryFunction = self[summaryFunc] #TODO: Should we replace the whole _resolveFunction with this one. Is such an error not clear enough?
@@ -85,6 +85,6 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
 
         self._childrenDict = {}
         for pairTSKey in pairedTS:
-            self._childrenDict[pairTSKey] = self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._rawStatistic, **self._kwArgs))
+            self._childrenDict[pairTSKey] = self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._pairwiseStatistic, **self._kwArgs))
 
         self._computeTrackStructure = pairedTS
