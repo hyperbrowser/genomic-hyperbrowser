@@ -37,7 +37,7 @@ SUMMARY_FUNCTIONS_MAPPER = OrderedDict([('average', 'avg'), ('maximum', 'max'), 
 SUMMARY_FUNCTIONS_LABELS = SUMMARY_FUNCTIONS_MAPPER.keys()
 
 
-def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None):
+def runMultipleSingleValStatsOnTracks(ts, stats, analysisBins):
     '''
     gsuite: The gsuite of tracks
     stats: List of statistics
@@ -49,28 +49,19 @@ def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=No
                                     Stat name -> single value'''
 
     assert stats is not None, 'stats argument not defined'
-    assert type(stats) in [str, list], '''stats argument must be a list of statistics
+    assert type(stats) in [basestring, list], '''stats argument must be a list of statistics
                                          or ^-separated string of statistic names'''
 
     resultsDict = OrderedDict()
 
-    from quick.statistic.GenericResultsCombinerStat import GenericResultsCombinerStat
-    additionalAnalysisSpec = AnalysisSpec(GenericResultsCombinerStat)
-
-    statsParam = stats if isinstance(stats, basestring) else "^".join([x.__name__ for x in stats])
-
-    additionalAnalysisSpec.addParameter('rawStatistics', statsParam)  #use ^ separator to add additional stat classes.
-    for refTrack in gsuite.allTracks():
-        if refTrack.title not in resultsDict:
-            resultsDict[refTrack.title] = OrderedDict()
-        tracks = [Track(refTrack.trackName), queryTrack] if queryTrack else [Track(refTrack.trackName)]
-        additionalResult = doAnalysis(additionalAnalysisSpec,
-                                      analysisBins, tracks).getGlobalResult()
-        for statClassName, res in additionalResult.iteritems():
+    res = runMultipleSingleValSingleTrackStats(ts, stats, analysisBins)
+    for k, v in res.iteritems():
+        for statClassName, res in v.getResult().iteritems():
             statPrettyName = CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT[
                 statClassName] if statClassName in CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT else statClassName
-            resultsDict[refTrack.title][statPrettyName] = res
-
+            if k not in resultsDict:
+                resultsDict[k] = OrderedDict()
+            resultsDict[k][statPrettyName] = res
     return resultsDict
 
 

@@ -239,7 +239,7 @@ class GSuiteTrack(object):
                     val = unquote(val)
                 self._attributes[key] = val
 
-    @takes('GSuiteTrack', basestring, basestring) #TODO: commit separately
+    @takes('GSuiteTrack', basestring, basestring)
     def setAttribute(self, attrName, attrVal):
         self._attributes[attrName] = attrVal
 

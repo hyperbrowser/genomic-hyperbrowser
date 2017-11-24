@@ -4,9 +4,8 @@ from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
 import copy
 from quick.application.SignatureDevianceLogging import takes
-from quick.application.UserBinSource import BinSource
 from test.gold.track.common.SampleTrack import SampleTrack
-from third_party.typecheck import anything, dict_of, list_of, optional
+from third_party.typecheck import anything, dict_of, list_of
 
 class TrackStructure(dict):
     '''
@@ -69,6 +68,8 @@ class TrackStructureV2(dict):
     #An advantage of this is that it distinguished lack of result from a result that has value None (if that might be relevant)
     #A disadvantage is that it becomes less clear that such an attribute might exist,
     # and its existence has to be checked with hasattr(ts,'results')
+
+    TRACK_NAME_SEPARATOR = "#&&#"
 
     @takes('TrackStructureV2', basestring, 'TrackStructureV2')
     def __setitem__(self, key, value):
@@ -208,7 +209,7 @@ class TrackStructureV2(dict):
                 newPair = TrackStructureV2()
                 newPair['query'] = query
                 newPair['reference'] = reference
-                root[str(query.track.trackName) + "_" + str(reference.track.trackName)] = newPair
+                root[str(query.track.trackName) + self.TRACK_NAME_SEPARATOR + str(reference.track.trackName)] = newPair
         return root
 
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
@@ -264,7 +265,7 @@ class SingleTrackTS(TrackStructureV2):
         return newCopy
 
 class FlatTracksTS(TrackStructureV2):
-    pass
+#    pass
     # def __init__(self):
     #     pass
 

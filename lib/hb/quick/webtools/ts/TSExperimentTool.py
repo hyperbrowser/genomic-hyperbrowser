@@ -1,4 +1,6 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+
+from quick.util.debug import DebugUtil
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.application.UserBinSource import UserBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -74,6 +76,8 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         # from config.DebugConfig import DebugModes
         # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
 
+        # DebugUtil.insertBreakPoint(5678, suspend=False)
+
         choices_gsuite = choices.gsuite
         selected_metadata= choices.cat
         choices_queryTrack = choices.query
@@ -96,8 +100,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         spec.addParameter('summaryFunc',parameter)
         bins = UserBinSource('chr1','*',genome=genome)
         res = doAnalysis(spec, bins, fullTS)
-        ts = res.getGlobalResult()['Result']
-        tsRes = ts.result
+        tsRes = res.getGlobalResult()['Result']
 
         htmlCore = HtmlCore()
         htmlCore.begin()
@@ -105,7 +108,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
         if parameter == 'minAndMax':
             htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
             for k, it in tsRes.iteritems():
-                htmlCore.tableLine([k, str("%.2f" % it[0]) + '-' + str("%.2f" % it[1])])
+                htmlCore.tableLine([k, str("%.2f" % it.getResult()[0]) + '-' + str("%.2f" % it.getResult()[1])])
             htmlCore.tableFooter()
 
         if parameter == 'minLqMedUqMax':
@@ -114,7 +117,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
             categories = []
             for keyE, itE in tsRes.iteritems():
                 categories.append(keyE)
-                dataList.append(list(itE))
+                dataList.append(list(itE.getResult()))
 
             from quick.webtools.restricted.visualization.visualizationGraphs import \
                 visualizationGraphs

@@ -1,7 +1,10 @@
+from collections import OrderedDict
+
+from gold.track.TSResult import TSResult
 from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from gold.util.CustomExceptions import ShouldNotOccurError
 from numpy import mean
-from gold.track.TrackStructure import TrackStructure
+from gold.track.TrackStructure import TrackStructure, TrackStructureV2
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 '''
 Created on Nov 9, 2015
@@ -51,23 +54,43 @@ class MultitrackSummarizedInteractionV2StatUnsplittable(StatisticV2):
         self._multitrackSummaryFunc = self._resolveFunction(multitrackSummaryFunc)
        
     def _compute(self):
+
+        tsResult = TSResult(self._computeTrackStructure)
+        rawResults = []
+        for key, child in self._childrenDict.iteritems():
+            childRes = child.getResult()
+            tsResult[key] = childRes
+            rawResults.append(childRes.getResult())
+
         if self._multitrackSummaryFunc:
-            res = [child.getResult() for child in self._children]
             if self._multitrackSummaryFunc == 'RawResults':
-                return res
+                tsResult.setResult(rawResults)
             else:
-                return self._multitrackSummaryFunc(res)
+                tsResult.setResult(self._multitrackSummaryFunc(rawResults))
         else:
             raise ShouldNotOccurError('The summary function is not defined')
+
+        return tsResult
     
     def _createChildren(self):
-        trackList = self._trackStructure[TrackStructure.QUERY_KEY]
-        for i, track in enumerate(trackList):
-            ts = TrackStructure({TrackStructure.QUERY_KEY : [track], TrackStructure.REF_KEY : trackList[:i]+trackList[i+1:]})
+        # trackList = self._trackStructure[TrackStructure.QUERY_KEY]
+        # for i, track in enumerate(trackList):
+        #     ts = TrackStructure({TrackStructure.QUERY_KEY : [track], TrackStructure.REF_KEY : trackList[:i]+trackList[i+1:]})
 #             print ts
 #             for key, val in ts.iteritems():
 #                 print key
 #                 for t in val:
 #                     print t.trackName
-            self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, ts, **self._kwArgs))
+        self._childrenDict = OrderedDict()
+        self._computeTrackStructure = TrackStructureV2()
+        tsLeafNodes = self._trackStructure.getLeafNodes()
+        for i, sts in enumerate(tsLeafNodes):
+            queryTS = sts
+            refTS = TrackStructureV2()
+            for currentSts in tsLeafNodes[:i] + tsLeafNodes[i+1:]:
+                refTS[currentSts.metadata['title']] = currentSts
+            currentTS = TrackStructureV2({TrackStructure.QUERY_KEY:queryTS, TrackStructure.REF_KEY:refTS})
+            queryTrackTitle = queryTS.metadata['title']
+            self._childrenDict[queryTrackTitle] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, currentTS, **self._kwArgs))
+            self._computeTrackStructure[queryTrackTitle] = currentTS
             

@@ -1,3 +1,4 @@
+from gold.track.TSResult import TSResult
 from quick.statistic.StatisticV2 import StatisticV2
 from gold.statistic.MagicStatFactory import MagicStatFactory
 
@@ -17,9 +18,12 @@ class SingleTSStatUnsplittable(StatisticV2):
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)
 
     def _compute(self):
-        ts = self._trackStructure._copyTreeStructure()
-        ts.result = self._children[0].getResult()
-        return ts
+        # ts = self._trackStructure._copyTreeStructure()
+        # ts.result = self._children[0].getResult()
+        # return ts
+        #ALT1: return self._children[0].getResult()
+        tsRes = TSResult(self._trackStructure, self._children[0].getResult())
+        return tsRes
 
     def _createChildren(self):
         assert self._trackStructure.isSingleTs(), "SingleTS expected, got %s" % str(type(self._trackStructure))
