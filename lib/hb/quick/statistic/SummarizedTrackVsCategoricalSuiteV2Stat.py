@@ -1,3 +1,4 @@
+from gold.track.TSResult import TSResult
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 from quick.statistic.StatisticV2 import StatisticV2
 from gold.statistic.MagicStatFactory import MagicStatFactory
@@ -16,10 +17,10 @@ class SummarizedTrackVsCategoricalSuiteV2Stat(MagicStatFactory):
 class SummarizedTrackVsCategoricalSuiteV2StatUnsplittable(StatisticV2):
 
     def _compute(self):
-        ts = self._trackStructure._copyTreeStructure()
-        for cat, catTS in ts.iteritems():
-            catTS.result = self._catResults[cat].getResult().result
-        return ts
+        tsResult = TSResult(self._trackStructure)
+        for cat, catTS in self._catResults.iteritems():
+            tsResult[cat] = catTS.getResult()
+        return tsResult
 
 
     def _createChildren(self):
