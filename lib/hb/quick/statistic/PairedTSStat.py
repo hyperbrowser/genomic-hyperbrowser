@@ -46,7 +46,9 @@ class PairedTSStatUnsplittable(StatisticV2):
         #ts = self._trackStructure._copyTreeStructure()
         #ts.result = self._children[0].getResult()
         #return ts
-        return TSResult(self._trackStructure, self._children[0].getResult())
+        tsResult = TSResult(self._trackStructure, self._children[0].getResult())
+        self._printProgress()
+        return tsResult
 
 
     def _printProgress(self):
