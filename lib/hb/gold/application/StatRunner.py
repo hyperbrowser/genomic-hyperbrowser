@@ -180,7 +180,6 @@ class StatJob(object):
         
     def _getSingleResult(self, region):
         #print 'Kw Here: ', self._kwArgs, 'args here: ', self._args
-        print self._statClass
         stat = self._statClass(region, self._trackStructure, *self._args, **self._kwArgs)
         try:
             res = stat.getResult()
