@@ -219,6 +219,10 @@ def minAndMax(li):
 def minLqMedUqMax(li):
     return (min(li), numpy.percentile(li, 25), numpy.percentile(li, 50), numpy.percentile(li, 75), max(li))
 
+def smartDiff(li):
+    assert len(li) == 2, "Difference defined over two operands only. %s" % str(li)
+    return smartSum([li[0], -li[1]])
+
 def isIter(obj):
     from numpy import memmap
     if isinstance(obj, memmap):
