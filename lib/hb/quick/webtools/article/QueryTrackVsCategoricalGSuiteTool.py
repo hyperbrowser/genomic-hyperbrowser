@@ -7,11 +7,11 @@ from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
 from quick.statistic.SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat import \
-    SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat
+    SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat, \
+    SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2StatUnsplittable
 from quick.statistic.SummarizedTrackVsCategoricalSuiteV2Stat import SummarizedTrackVsCategoricalSuiteV2Stat
 from quick.util import McEvaluators
 from quick.util.debug import DebugUtil
@@ -76,6 +76,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                  ('Select primary group category value', 'categoryVal'),
                 ('Select track to track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
+                ('Select summary function groups', 'catSummaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Type of randomization', 'randType'),
                 ('Randomization algorithm', 'randAlg')] + \
@@ -240,7 +241,11 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @staticmethod
     def getOptionsBoxSummaryFunc(prevChoices):
-        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
+        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS    \
+
+    @staticmethod
+    def getOptionsBoxCatSummaryFunc(prevChoices):
+        return SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2StatUnsplittable.functionDict.keys()
 
     @staticmethod
     def getOptionsBoxMcfdrDepth(prevChoices):
@@ -357,7 +362,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         aDChoicec = analysisDef.getChoices(filterByActivation=True)
         maxSamples = int(aDChoicec['maxSamples'])
-        return n*cat_m*k*(maxSamples+1)
+        return n*m*k*(maxSamples+1)
 
     @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
@@ -365,34 +370,30 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                            choices.categoryVal)
         operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices)
         analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount)
-        resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
-        resultsMC = resultsMC['Result']
+        resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()['Result']
         return resultsMC
 
     @classmethod
     def _printResultsHtml(cls, choices, results, resultsMC, galaxyFn):
-        core = HtmlCore()
-        # core.begin()
-        core.divBegin()
         resTableDict = OrderedDict()
         for key, val in results.iteritems():
-            resTableDict[key] = [val.result]
-            if key == choices.categoryVal:
-                resTableDict[key].append(resultsMC[key].result[McEvaluators.PVAL_KEY])
-                resTableDict[key].append(resultsMC[key].result[McEvaluators.MEAN_OF_NULL_DIST_KEY])
-                resTableDict[key].append(resultsMC[key].result[McEvaluators.SD_OF_NULL_DIST_KEY])
-            else:
-                resTableDict[key].append("NA")
-                resTableDict[key].append("NA")
-                resTableDict[key].append("NA")
-        # resTableDict["P-val for category %s: " % choices.categoryVal] = str(
-        #     resultsMC[choices.categoryVal].result[McEvaluators.PVAL_KEY])
+            resTableDict[key] = [val.getResult()]
+            resTableDict[key].append("NA")
+            resTableDict[key].append("NA")
+            resTableDict[key].append("NA")
+        resTableDict[choices.catSummaryFunc] = [resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat.__name__],
+                                                resultsMC[choices.categoryVal].getResult()[McEvaluators.PVAL_KEY],
+                                                resultsMC[choices.categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
+                                                resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
+                                                ]
+        rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
+        core = HtmlCore()
+        core.divBegin()
         core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (choices.summaryFunc, choices.similarityFunc))
         core.tableFromDictionary(resTableDict, columnNames=["Group", "Similarity score",
                                                             "P-value", "Mean score for null distribution",
                                                             "Std. deviation of score for null distribution"])
 
-        rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
         core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
             "null distribution table") + ".")
 
@@ -402,7 +403,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def _getNullDistributionFile(cls, choices, galaxyFn, resultsMC):
-        nullRawResults = resultsMC[choices.categoryVal].result[McEvaluators.RAND_RESULTS_KEY]
+        nullRawResults = resultsMC[choices.categoryVal].getResult()[McEvaluators.RAND_RESULTS_KEY]
         rawNDResultsFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
         with rawNDResultsFile.getFile() as f:
             line = "\t".join([str(_) for _ in nullRawResults]) + "\n"
@@ -456,12 +457,14 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                       choices.similarityFunc])
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
-        analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
+        # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+        analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+
         return analysisSpec
 
     @classmethod
