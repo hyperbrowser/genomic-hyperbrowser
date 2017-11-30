@@ -16,6 +16,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.AvgSegLenStat import AvgSegLenStat
 from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
@@ -41,7 +42,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite file from history', 'gsuite')] + \
+        return [('Select GSuite from history', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
                    ('Select track from history', 'track')
@@ -77,16 +78,16 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
                                                          binSpec,
                                                          choices.genome)
 
-        analysisSpec1 = AnalysisSpec(SingleTSStat)
-        analysisSpec1.addParameter('rawStatistic', CountSegmentStat.__name__)
-
-        analysisSpec2 = AnalysisSpec(SingleTSStat)
-        analysisSpec2.addParameter('rawStatistic', ProportionCountStat.__name__)
-        regSpec2 = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.track, False)
-        binSpec2 = ExternalTrackManager.extractFnFromGalaxyTN(choices.track)
-        analysisBins2 = GalaxyInterface._getUserBinSource(regSpec2,
-                                                         binSpec2,
-                                                         choices.genome)
+        # analysisSpec1 = AnalysisSpec(SingleTSStat)
+        # analysisSpec1.addParameter('rawStatistic', CountSegmentStat.__name__)
+        #
+        # analysisSpec2 = AnalysisSpec(SingleTSStat)
+        # analysisSpec2.addParameter('rawStatistic', ProportionCountStat.__name__)
+        # regSpec2 = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.track, False)
+        # binSpec2 = ExternalTrackManager.extractFnFromGalaxyTN(choices.track)
+        # analysisBins2 = GalaxyInterface._getUserBinSource(regSpec2,
+        #                                                  binSpec2,
+        #                                                  choices.genome)
 
 
         results = []
@@ -99,13 +100,13 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
             res = doAnalysis(analysisSpec, analysisBins, sts)
             avgSegLenPerTrack = res.getGlobalResult()['Result'].result
 
-            res1 = doAnalysis(analysisSpec1, analysisBins, sts)
-            genomeCoveragePerTrack = res1.getGlobalResult()['Result'].result
+            # res1 = doAnalysis(analysisSpec1, analysisBins, sts)
+            # genomeCoveragePerTrack = res1.getGlobalResult()['Result'].result
 
-            res2 = doAnalysis(analysisSpec2, analysisBins2, sts)
-            bpOverlapPerTrack = res2.getGlobalResult()['Result'].result
+            # res2 = doAnalysis(analysisSpec2, analysisBins2, sts)
+            # bpOverlapPerTrack = res2.getGlobalResult()['Result'].result
 
-            results.append([tt, avgSegLenPerTrack, bpOverlapPerTrack/genomeCoveragePerTrack])
+            results.append([tt, avgSegLenPerTrack]) #, bpOverlapPerTrack/genomeCoveragePerTrack])
 
         sortedRes = sorted(results, key=itemgetter(1))
         zipSorted = zip(*sortedRes)
@@ -127,7 +128,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
         htmlCore.begin()
         htmlCore.tableHeader(['Column name', 'Minimum', 'Maximum', 'Average', 'Median'])
         htmlCore.tableLine(['AvgSegLen', zipSorted[1][0], zipSorted[1][len(zipSorted[1])-1], sum(zipSorted[1])/len(zipSorted[1]), cls.median(zipSorted[1])])
-        htmlCore.tableLine(['RatioBpOverlapWithinTrackAndGenome', zipSorted[2][0], zipSorted[2][len(zipSorted[2])-1], sum(zipSorted[2]) / len(zipSorted[2]), cls.median(zipSorted[2])])
+        #htmlCore.tableLine(['RatioBpOverlapWithinTrackAndGenome', zipSorted[2][0], zipSorted[2][len(zipSorted[2])-1], sum(zipSorted[2]) / len(zipSorted[2]), cls.median(zipSorted[2])])
         htmlCore.end()
 
         print htmlCore
@@ -234,14 +235,22 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool allow to count average segment length according to bp overlap values.'
+
+        stepsToRunTool = ['Select GSuite from history',
+                          'Select track from history,'
+                          'Region and scale (deafult option: chromosomes)']
+
+        toolResult = 'The results are presented a table with two information: AvgSegLen (average segment length) and RatioBpOverlapWithinTrackAndGenome (ratio of overlap between every track in GSuite and track from history to global segment size ).'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
     #
     # @classmethod
     # def getToolIllustration(cls):

@@ -1,10 +1,10 @@
 from collections import OrderedDict
-
 from gold.gsuite.GSuiteConstants import TITLE_COL
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.assemblygap.Legend import *
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 import math
 from gold.gsuite import GSuiteConstants, GSuiteFunctions
@@ -525,44 +525,12 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
     #    return []
     #
 
-    @staticmethod
-    def createDescription(toolDescription=None, stepsToRunTool=None, toolResult=None,
-                          limitation=None):
-        core = HtmlCore()
 
-        if toolDescription != None or stepsToRunTool != None or toolResult != None or limitation != None:
-            core.divBegin(divId='decription-page')
-            core.divBegin(divClass='decription-section')
-            core.header('Description')
 
-            # small description of tool (The resaon of creating the tool)
-            if toolDescription != None:
-                core.divBegin(divClass='decription-section-main')
-                core.paragraph(toolDescription)
-                core.divEnd()
+    @classmethod
+    def getToolDescription(cls):
 
-            # how to use tool
-            if stepsToRunTool != None:
-                core.paragraph('To run the tool, follow these steps:')
-                core.orderedList(stepsToRunTool)
-
-            # what is the result of tool
-            if toolDescription != None:
-                core.divBegin(divClass='decription-section-main')
-                core.paragraph(toolResult)
-                core.divEnd()
-
-                # what are the limitation for tool
-                #         if limitation:
-                #             limits...
-
-            core.divEnd()
-            core.divEnd()
-
-        return str(core)
-
-    @staticmethod
-    def getToolDescription():
+        l = Legend()
 
         toolDescription = 'The tool allow to present metadata columns from gSuite or results from tabular file in the chart.'
 
@@ -573,11 +541,12 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                           'Select type of scale for x-Axis',
                           'Select value for y-Axis',
                           'Select type of scale for y-Axis',
-                          'Select results of plotting (option available for selected type of charts)']
+                          'Select results of plotting (option available for selected type of charts),'
+                          'Add trend (option available for selected type of charts)']
 
-        toolResult = 'The results are presented in an interactive chart'
+        toolResult = 'The results are presented in an interactive chart.'
 
-        return PlotMetadataValuesOfTabularFileTool.createDescription(toolDescription=toolDescription,
+        return Legend().createDescription(toolDescription=toolDescription,
                                                      stepsToRunTool=stepsToRunTool,
                                                      toolResult=toolResult)
 
