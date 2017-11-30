@@ -60,7 +60,6 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
                                       galaxyFn)
 
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
-
         print 'Counted gSuite is in the history'
 
     @classmethod
