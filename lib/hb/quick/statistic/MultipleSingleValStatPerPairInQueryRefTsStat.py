@@ -1,3 +1,6 @@
+from collections import OrderedDict
+
+from gold.track.TSResult import TSResult
 from gold.track.TrackStructure import TrackStructureV2
 from quick.statistic.GenericResultsCombinerStat import GenericResultsCombinerStat
 from quick.statistic.PairedTSStat import PairedTSStat
@@ -19,17 +22,24 @@ class MultipleSingleValStatPerPairInQueryRefTsStat(MagicStatFactory):
 class MultipleSingleValStatPerPairInQueryRefTsStatUnsplittable(StatisticV2):
 
     def _compute(self):
-        listOfPairTSs = [child.getResult() for child in self._children]
-        tsWithResults = TrackStructureV2()
-        for i,pairTS in enumerate(listOfPairTSs):
-            tsWithResults[str(i)] = pairTS
-
-        return tsWithResults
+        # listOfPairTSs = [child.getResult() for child in self._children]
+        # tsWithResults = TrackStructureV2()
+        # for i,pairTS in enumerate(listOfPairTSs):
+        #     tsWithResults[str(i)] = pairTS
+        #
+        # return tsWithResults
+        res = TSResult(self._computeTS)
+        for key, child in self._childrenDict.iteritems():
+            res[key] = child.getResult()
+        return res
 
     def _createChildren(self):
 
         #reference is set first (as query) here because single track stats are always ran on the query track
         #make sure to handle this in the results
-        pairedTS = self._trackStructure['query'].makePairwiseCombinations(self._trackStructure['reference'])
-        for pairTSKey in pairedTS:
-            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=GenericResultsCombinerStat, **self._kwArgs))
+        self._childrenDict = OrderedDict()
+        self._computeTS = self._trackStructure['query'].makePairwiseCombinations(self._trackStructure['reference'])
+        for pairTSKey in self._computeTS:
+            self._childrenDict[pairTSKey] = self._addChild(PairedTSStat(self._region, self._computeTS[pairTSKey],
+                                                                        pairedTsRawStatistic=GenericResultsCombinerStat,
+                                                                        **self._kwArgs))

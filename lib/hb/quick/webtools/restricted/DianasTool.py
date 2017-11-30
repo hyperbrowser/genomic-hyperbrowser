@@ -14,7 +14,7 @@ from urllib import quote
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
-from gold.application.HBAPI import GlobalBinSource, PlainTrack
+# from gold.application.HBAPI import GlobalBinSource, PlainTrack
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteComposer
@@ -24,12 +24,12 @@ from gold.gsuite.GSuiteConstants import TITLE_COL
 from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
 from gold.result.MatrixGlobalValuePresenter import \
     MatrixGlobalValueFromTableDataPresenter
-from gold.track.Track import Track
+from gold.track.Track import Track, PlainTrack
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithStdFormatting
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
-from quick.application.UserBinSource import UserBinSource
+from quick.application.UserBinSource import UserBinSource, GlobalBinSource
 from quick.gsuite.GSuiteUtils import getAllTracksWithAttributes
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.GSuiteVsGSuiteWrapperStat import GSuiteVsGSuiteWrapperStat

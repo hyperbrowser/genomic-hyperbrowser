@@ -41,11 +41,18 @@ class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
     def _compute(self):
 
         mcSamplersDict = self._computeSamples()
+        tsRes = TSResult(self._trackStructure)
         for hypothesisKey, hypothesisTS in self._trackStructure.iteritems():
             currentMcSampler = mcSamplersDict[hypothesisKey]
-            hypothesisTS.result = self._evaluatorFunc(currentMcSampler.getAllResults(), self._tail, self._rawStatistic.__name__)
+            hypothesisRes = TSResult(hypothesisTS,
+                                     self._evaluatorFunc(
+                                         currentMcSampler.getAllResults(),
+                                         self._tail,
+                                         self._rawStatistic.__name__))
 
-        return self._trackStructure
+            tsRes[hypothesisKey] = hypothesisRes
+
+        return tsRes
 
 
     def _computeSamples(self):

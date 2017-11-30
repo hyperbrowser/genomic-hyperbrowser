@@ -70,6 +70,8 @@ class TrackStructureV2(dict):
     #A disadvantage is that it becomes less clear that such an attribute might exist,
     # and its existence has to be checked with hasattr(ts,'results')
 
+    TRACK_NAME_SEPARATOR = "#&&#"
+
     @takes('TrackStructureV2', basestring, 'TrackStructureV2')
     def __setitem__(self, key, value):
         dict.__setitem__(self, key, value)
@@ -208,7 +210,7 @@ class TrackStructureV2(dict):
                 newPair = TrackStructureV2()
                 newPair['query'] = query
                 newPair['reference'] = reference
-                root[str(query.track.trackName) + "_" + str(reference.track.trackName)] = newPair
+                root[str(query.track.trackName) + self.TRACK_NAME_SEPARATOR + str(reference.track.trackName)] = newPair
         return root
 
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
@@ -248,8 +250,7 @@ class SingleTrackTS(TrackStructureV2):
         return hash((hash(tuple(self.track.trackName)), hash(self.track.trackTitle)))
 
     def _getNewCopy(self):
-        import copy
-        return SingleTrackTS(self.track, copy.copy(self.metadata))
+        return self
 
     def _copyTreeStructure(self):
         return self._getNewCopy()

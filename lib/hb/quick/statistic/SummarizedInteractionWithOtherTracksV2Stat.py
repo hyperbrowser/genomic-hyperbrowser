@@ -3,6 +3,7 @@ Created on Nov 3, 2015
 
 @author: boris
 """
+from gold.track.TSResult import TSResult
 from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatisticV2 import StatisticV2
@@ -58,17 +59,20 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
             return self.functionDict[summaryFunc]
         
     def _compute(self):
-        listOfPairTSs = [child.getResult() for child in self._children]
-        fullTs = TrackStructureV2()
-        for i,pairTS in enumerate(listOfPairTSs):
-            fullTs[str(i)] = pairTS
-        rawResults = [ts.result for ts in listOfPairTSs]
-        # rawResults = fullTs.result.values()
+        resTs = TSResult(self._computeTrackStructure)
+        #listOfPairRTSs = [child.getResult() for child in self._children]
+        # fullTs = TrackStructureV2()
+        rawResults = []
+        for key, child in self._childrenDict.iteritems():
+            pairRTS = child.getResult()
+            resTs[key] = pairRTS
+            rawResults.append(pairRTS.getResult() )
+
         if self._summaryFunction == 'RawResults':
-            fullTs.result = rawResults
+            resTs.setResult(rawResults)
         else:
-            fullTs.result = self._summaryFunction(rawResults)
-        return fullTs
+            resTs.setResult( self._summaryFunction(rawResults) )
+        return resTs
             
     def _createChildren(self):
         ts = self._trackStructure
@@ -79,5 +83,8 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         else:
             raise InvalidStatArgumentError('reverse must be one of "Yes" or "No"')
 
+        self._childrenDict = {}
         for pairTSKey in pairedTS:
-            self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._rawStatistic, **self._kwArgs))
+            self._childrenDict[pairTSKey] = self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._rawStatistic, **self._kwArgs))
+
+        self._computeTrackStructure = pairedTS
