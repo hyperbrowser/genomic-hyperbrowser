@@ -1,0 +1,4 @@
+<tool id="hb_create_g_suite_from_two_binomal_distributions_tool" name="Create gSuite from two binomal distributions" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.similaritymeasure.CreateGSuiteFromTwoBinomalDistributionsTool" proto_tool_class="CreateGSuiteFromTwoBinomalDistributionsTool">
+  <description></description>
+</tool>
