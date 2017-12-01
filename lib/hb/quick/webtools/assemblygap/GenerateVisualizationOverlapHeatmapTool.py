@@ -10,6 +10,7 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from proto.StaticFile import GalaxyRunSpecificFile
@@ -393,59 +394,26 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from proto.hyperbrowser.HtmlCore import HtmlCore
 
-        core = HtmlCore()
+        l = Legend()
 
-        core.paragraph('This tool computes the overlap between the segments '
-                       'of selected bin against each track in a collection of reference tracks '
-                       'described in a GSuite file. The overlap are output in an '
-                       'heatmap, where each cell is colored according to the '
-                       'overlap between each query segment (column) with each reference '
-                       'track (row).')
+        toolDescription = 'This tool computes the overlap between the segments of selected bin against each track in a collection of reference tracks described in a GSuite file. The overlap are output in an heatmap, where each cell is colored according to the overlap between each query segment (column) with each reference track (row).'
 
-        core.divider()
-        core.paragraph('To carry out the analysis, please follow these steps:')
-        core.orderedList(['Select a genome build. Both the query track and the reference tracks'
-                          'need to use the same genome build.',
-                          'Select the color map, going from no overlap to full overlap.',
-                          'Select region and scale (bin)',
-                          'Click "Execute"'])
+        stepsToRunTool = ['Select GSuite from history',
+                          'Select metadata from GSuite'
+                          'Genome (deafult option: genome from GSuite if exist)',
+                          'Show result as (value - bp, proportion - ratio of values within region)',
+                          'Select a color map',
+                          'Region and scale'
+                          ]
 
-        core.divider()
-        core.smallHeader('Requirements for query track')
-        core.descriptionLine('Track types', ', '.join(cls.TRACK_ALLOWED_TRACK_TYPES),
-                             emphasize=True)
+        toolResult = 'The results are presented as heatmap (available pdf file to download) and as  tabular file with overlap values.'
 
-        cls._addGSuiteFileDescription(core,
-                                      allowedLocations=cls.GSUITE_ALLOWED_LOCATIONS,
-                                      allowedFileFormats=cls.GSUITE_ALLOWED_FILE_FORMATS,
-                                      allowedTrackTypes=cls.GSUITE_ALLOWED_TRACK_TYPES,
-                                      disallowedGenomes=cls.GSUITE_DISALLOWED_GENOMES)
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
 
-        return str(core)
-        #
-        # htmlCore.divBegin(divId ='toolDesc')
-        # htmlCore.descriptionLine('Tool description',
-        #                         """This tool computes the proportions between overlaped segments.
-        #                         Output are three plots: overlap with reference tracks for each local region,
-        #                         lenghts of segments (local regions) and gaps between consecutive
-        #                         segments. """)
-        # htmlCore.divEnd()
-        #
-        # htmlCore.divBegin(divId ='toolExample')
-        # htmlCore.line('<b>Example</b>')
-        # htmlCore.line('<b>Input:</b>')
-        # htmlCore.line('Genome build: Human Feb. 2009 (GRCh37/hg19) (hg19)')
-        # htmlCore.line('Select track: Phenotype_and_disease_associations:Assorted_experiments:Virus_integration,_HPV_specific,_Kraus_et_al')
-        # htmlCore.line('Select GSuite file from history: Genes and gene subsets:Genes')
-        # htmlCore.line('Select a color map')
-        # htmlCore.line('<b>Output:</b>')
-        # htmlCore.line('Plots')
-        #
-        # htmlCore.divEnd()
-        #
-        # return htmlCore
+
 
     # @staticmethod
     # def getToolIllustration():
