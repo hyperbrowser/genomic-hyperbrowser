@@ -1,4 +1,45 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+import collections
+
+CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
+
+CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
+
+LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
+
+DETERMINE_FROM_SUBMITTED_TRACKS = 'determine whether or not to allow overlap based on submitted tracks'
+
+MAY_OVERLAP = 'elements may overlap'
+
+NOT_ALLOWED = 'elements not allowed to overlap'
+
+CLOSEST_COORDINATE = 'distance to closest coordinate'
+
+END_COORDINATE = 'distance to end coordinate'
+
+MIDPOINT = 'distance to midpoint'
+
+START_COORDINATE = 'distance to start coordinate'
+
+BASES = 'total number of overlapping bases'
+
+COUNTS_ = 'number of overlapping regions (counts)'
+
+FLANKING_REGIONS = 'basepair overlap including expansion of flanking regions'
+
+DIRECT_OVERLAP = 'direct basepair overlap between genomic regions'
+
+CORRELATION = 'Correlation'
+
+DISTANCE_ = 'Proximity (distance)'
+
+OVERLAP = 'Overlap'
+
+TWO_TRACK_GROUPS = 'Pairwise comparison of all tracks between two track-groups'
+
+REFERENCE_TRACKS = 'Query track against collection of reference tracks'
+
+TWO_GENOMIC_TRACKS = 'Relation between two genomic tracks'
 
 
 class CongloProtoTool(GeneralGuiTool):
@@ -33,8 +74,27 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Type of co-localization analysis', 'analysisType'),
-                ('Second Header', 'secondKey')]
+        return [('Select the reference genome: ', 'selectReferenceGenome'),
+                ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
+                ('Type of co-localization analysis: ', 'analysisType'),
+                ('Choose a reference track collection', 'ChoiceOfReferenceTrackCollection'),
+                ('Type of co-localization measure (test statistic): ', 'teststatType'),
+                ('Type of overlap measure : ', 'typeOfOverlap'),
+                ('Type of basepair overlap test statistic : ', 'directOverlap'),
+                ('Type of basepair overlap test statistic : ', 'flankingRegions'),
+                ('Flanking size upstream (bp) : ', 'flankingSizeUpstream'),
+                ('Flanking size downstream (bp) : ', 'flankingSizeDownstream'),
+                ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
+                ('Type of distance to use : ', 'distanceType'),
+                ('Type of correlation metric : ', 'correlation'),
+                ('Allow genomic regions to overlap within track ? ', 'allowOverlaps'),
+                ('Restrict the analysis to specific parts of the genome ? ', 'restrictRegions'),
+                ('Preserve local heterogeneity ? ', 'localHeterogeneity'),
+                ('Method of choice to preserve local heterogeneity : ', 'localHandler'),
+                ('Preserve any clumping tendency of genomic elements ? ', 'clumping'),
+                ('Handle confounding features ? ', 'confounding'),
+                ('Method of choice to handle confounding features : ', 'confounderHandler'),
+                ]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -67,7 +127,16 @@ class CongloProtoTool(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxAnalysisType(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxSelectReferenceGenome(cls):  # Alt: getOptionsBox1()
+        return ['Human (hg19)','Human (hg38)', CUSTOM_REFERENCE_GENOME]
+
+    @classmethod
+    def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
+        if prevChoices.selectReferenceGenome == CUSTOM_REFERENCE_GENOME:
+            return ('__history__',)
+
+    @classmethod
+    def getOptionsBoxAnalysisType(cls, prevChoices):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -157,10 +226,15 @@ class CongloProtoTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return ['Relation between two genomic tracks', 'testChoice2', '...']
+        return [TWO_GENOMIC_TRACKS, REFERENCE_TRACKS, TWO_TRACK_GROUPS]
 
     @classmethod
-    def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxChoiceOfReferenceTrackCollection(cls, prevChoices):
+        if prevChoices.analysisType == REFERENCE_TRACKS:
+            return ['Use core database as the set of reference tracks', 'Use custom datasets to build a set of reference tracks']
+
+    @classmethod
+    def getOptionsBoxTeststatType(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -173,7 +247,80 @@ class CongloProtoTool(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return ''
+        return [OVERLAP, DISTANCE_, CORRELATION]
+
+    @classmethod
+    def getOptionsBoxTypeOfOverlap(cls, prevChoices):
+        if prevChoices.teststatType == OVERLAP:
+            return [DIRECT_OVERLAP,
+                    FLANKING_REGIONS]
+
+    @classmethod
+    def getOptionsBoxDirectOverlap(cls, prevChoices):
+        if prevChoices.typeOfOverlap == DIRECT_OVERLAP:
+            return [COUNTS_, BASES]
+
+    @classmethod
+    def getOptionsBoxFlankingRegions(cls, prevChoices):
+        if prevChoices.typeOfOverlap == FLANKING_REGIONS:
+            return [COUNTS_, BASES]
+
+    @classmethod
+    def getOptionsBoxFlankingSizeUpstream(cls, prevChoices):
+        if prevChoices.flankingRegions in [COUNTS_, BASES]:
+            return 'Flank size upstream'
+
+    @classmethod
+    def getOptionsBoxFlankingSizeDownstream(cls, prevChoices):
+        if prevChoices.flankingRegions in [COUNTS_, BASES]:
+            return 'Flank size downstream'
+
+    @classmethod
+    def getOptionsBoxDistanceCoordinate(cls, prevChoices):
+        if prevChoices.teststatType == DISTANCE_:
+            return [START_COORDINATE, MIDPOINT, END_COORDINATE, CLOSEST_COORDINATE]
+
+    @classmethod
+    def getOptionsBoxDistanceType(cls, prevChoices):
+        if prevChoices.distanceCoordinate in [START_COORDINATE, MIDPOINT, END_COORDINATE, CLOSEST_COORDINATE]:
+            return ['absolute distance','average log distance']
+
+    @classmethod
+    def getOptionsBoxCorrelation(cls, prevChoices):
+        if prevChoices.teststatType == CORRELATION:
+            return ['genome-wide kernel correlation (overall relationship)','fine-scale correlation (structure of correlation)','local correlation (genomic region-level)']
+
+    @classmethod
+    def getOptionsBoxAllowOverlaps(cls, prevChoices):  # Alt: getOptionsBox2()
+        return [NOT_ALLOWED, MAY_OVERLAP, DETERMINE_FROM_SUBMITTED_TRACKS]
+
+    @classmethod
+    def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['No, use the whole genome','Yes, exclude specified regions supplied by the user','Perform the analysis only in the explicit set of background regions supplied']
+
+    @classmethod
+    def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['No, distribute genomic regions across the whole genome', LOCAL_HETEROGENEITY]
+
+    @classmethod
+    def getOptionsBoxLocalHandler(cls, prevChoices):  # Alt: getOptionsBox2()
+        if prevChoices.localHeterogeneity == LOCAL_HETEROGENEITY:
+            return ['each genomic region restricted to a fixed size neighbourhood', 'distribute within a specified set of local regions ']
+
+    @classmethod
+    def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['No, assume that genomic features are uniformly distributed', 'Yes, preserve empiric distribution of distances between genomic regions']
+
+    @classmethod
+    def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['No, I am not aware of any potential confounding feature for this analysis',
+                CONFOUNDING_FEATURE]
+
+    @classmethod
+    def getOptionsBoxConfounderHandler(cls, prevChoices):  # Alt: getOptionsBox2()
+        if prevChoices.confounding == CONFOUNDING_FEATURE:
+            return ['Shuffle genomic locations according to a non-homogenous Poisson process',
+                    'Partial correlation', 'Stratified sampling']
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
