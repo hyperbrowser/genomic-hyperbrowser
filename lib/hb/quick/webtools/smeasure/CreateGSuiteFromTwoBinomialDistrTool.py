@@ -53,7 +53,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
         firstProb = choices.firstProb.encode('utf-8')
         firstProb = firstProb.split(',')
         secondProb = choices.secondProb.encode('utf-8')
-        secondProb = choices.secondProb.split(',')
+        secondProb = secondProb.split(',')
 
         firstProb = [float(f) for f in firstProb]
         secondProb = [float(f) for f in secondProb]
