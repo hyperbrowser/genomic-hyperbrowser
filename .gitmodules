@@ -1,0 +1,3 @@
+[submodule "lib/conglomerate"]
+	path = lib/conglomerate
+	url = git@github.com:hyperbrowser/conglomerate.git
