@@ -50,8 +50,15 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        firstProb = float(choices.firstProb)
-        secondProb = float(choices.secondProb)
+        firstProb = choices.firstProb.encode('utf-8')
+        firstProb = firstProb.split(',')
+        secondProb = choices.secondProb.encode('utf-8')
+        secondProb = choices.secondProb.split(',')
+
+        firstProb = [float(f) for f in firstProb]
+        secondProb = [float(f) for f in secondProb]
+
+
         number = int(choices.number)
         parameters = choices.parameters
         gtrackData = cls._readGTrack(parameters)
@@ -84,23 +91,27 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
                     datasetPerChromosome[line[0]].append(int(line[1]))
 
             for nr in range(0, number):
-                dataset = cls._countAllForRequal01(datasetPerChromosome, gtrackData, firstProb,
-                                                   secondProb, number)
-                if len(dataset) > 0:
-                    cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
-                                    nr)
+                for f in firstProb:
+                    for s in secondProb:
+                        dataset = cls._countAllForRequal01(datasetPerChromosome, gtrackData, f,
+                                                           s, number)
+                        if len(dataset) > 0:
+                            cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
+                                            nr, f, s)
 
         return outGSuite
 
     @classmethod
-    def _buildTrack(cls, outGSuite, trackTitle, genome, dataset, galaxyFn, nr):
+    def _buildTrack(cls, outGSuite, trackTitle, genome, dataset, galaxyFn, nr, f, s):
 
         attr = OrderedDict()
         attr['originalTrackName'] = str(trackTitle)
         attr['trackVersion'] = str(nr)
+        attr['R=1 and Y=1'] = str(f)
+        attr['R=0 and Y=0'] = str(s)
 
         uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                            extraFileName=trackTitle + '--' + str(nr),
+                                            extraFileName=trackTitle + '--' + str(nr) + '-' + str(f) + '-' + str(s),
                                             suffix='bed')
         gSuiteTrack = GSuiteTrack(uri)
         outFn = gSuiteTrack.path
@@ -110,7 +121,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
             contentFile.write(str(''.join(['\t'.join(hr) + '\n' for hr in dataset])))
         contentFile.close()
 
-        gs = GSuiteTrack(uri, title=''.join(trackTitle + '--' + str(nr)), genome=genome,
+        gs = GSuiteTrack(uri, title=''.join(trackTitle + '--' + str(nr) + '-' + str(f) + '-' + str(s)), genome=genome,
                          attributes=attr)
 
         outGSuite.addTrack(gs)
