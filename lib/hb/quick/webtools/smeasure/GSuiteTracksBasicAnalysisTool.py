@@ -56,7 +56,7 @@ class GSuiteTracksBasicAnalysisTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        attrName = choices.metadata
+        attrName = choices.metadata.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
         attrValueDict, data = cls._readAndCountDataInGsuite(attrName, choices, gSuite)
