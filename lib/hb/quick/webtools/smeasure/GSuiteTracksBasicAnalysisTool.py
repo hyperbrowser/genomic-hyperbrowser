@@ -80,11 +80,13 @@ class GSuiteTracksBasicAnalysisTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
 
     @classmethod
     def _combainFinalGsuite(cls, attrName, attrValueDict, data, gSuite):
+
         outGSuite = GSuite()
         for i, iTrack in enumerate(gSuite.allTracks()):
             trackTitle = iTrack.title
             trackPath = iTrack.uri
             attrValue = iTrack.getAttribute(attrName)
+            trackType = iTrack.trackType
 
             attr = OrderedDict()
             for a in gSuite.attributes:
@@ -93,7 +95,7 @@ class GSuiteTracksBasicAnalysisTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
             attr['trackNumber'] = str(attrValueDict[attrValue]['num'])
             attr['ratio'] = str(attrValueDict[attrValue]['allAttrValCountStat'])
 
-            cls._buildTrack(outGSuite, trackTitle, gSuite.genome, trackPath, attr)
+            cls._buildTrack(outGSuite, trackTitle, gSuite.genome, trackPath, attr, trackType)
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
 
     @classmethod
@@ -138,7 +140,7 @@ class GSuiteTracksBasicAnalysisTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         return attrValueDict, data
 
     @classmethod
-    def _buildTrack(cls, outGSuite, trackTitle, genome, trackPath, attr):
+    def _buildTrack(cls, outGSuite, trackTitle, genome, trackPath, attr, trackType):
 
         uri = trackPath
         gSuiteTrack = GSuiteTrack(uri)
@@ -146,7 +148,8 @@ class GSuiteTracksBasicAnalysisTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         gs = GSuiteTrack(uri,
                          title=''.join(trackTitle),
                          genome=genome,
-                         attributes=attr)
+                         attributes=attr,
+                         trackType=trackType)
 
         outGSuite.addTrack(gs)
 
