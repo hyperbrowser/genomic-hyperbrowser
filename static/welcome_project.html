@@ -1,0 +1,72 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><link rel="stylesheet" href="welcome_project.css"><meta charset='UTF-8'><title>Assembly gaps</title></head><body><div class='content'><div class ="tabs"> <ul class ="nav nav-tabs" id="tab-links"><li class="active" value="tab0"><a data-toggle="tab" href="#menu0">Assembly gaps</a></li><li  value="tab1"><a data-toggle="tab" href="#menu1">List of other projects</a></li><li  value="tab2"><a data-toggle="tab" href="#menu2">About</a></li></ul></div> <div class="tab-content"><div id="menu0" class="tab-pane fade  in active"><div class="container">
+                            <div class="rowSpecial">
+                                <div class="colAll"><h2 class="projectTitle">Assembly gaps</h2><div class = 'project'><div class = 'projectDesc'><p class="paragraph">Background The difficulties associated with sequencing and assembling some regions of the DNA sequence result in gaps in the reference genomes that are typically represented as stretches of NNNNs. Although the presence of assembly gaps causes slight reduction in the mapping rate in many experimental settings, that does not invalidate the typical statistical testing comparing read count distributions across experimental conditions. However, we hypothesize that the presence of assembly gaps and not handling them in the null model confounds the statistical testing of co-localization of genomic features.</p><p class="paragraph">Results First, we performed a series of explorative analyses to understand whether and how the public genomic tracks intersect the assembly gaps track (hg19). The findings rightly confirm that the genomic regions in public genomic tracks intersect very little with assembly gaps and the intersection was observed only at the beginning and end regions of the assembly gaps rather than covering the whole gap sizes. Further, we simulated a set of the query and reference genomic tracks in a way that nullified any dependence between them to test our hypothesis that not avoiding assembly gaps in the null model would result in spurious inflation of statistical significance. We then contrasted the distributions of test statistics and p-values of Monte Carlo simulation-based permutation tests that either avoided or not avoided assembly gaps in the null model when testing for significant co-localization between a pair of query and reference track. We observed that the statistical tests that did not account for the assembly gaps in the null model resulted in a distribution of p-values that are highly skewed to the left (more significant findings) and a distribution of increased test statistic that is shifted to the right. </p><p class="paragraph">Conclusions These observations confirm our hypothesis that not accounting for assembly gaps in statistical testing of co-localization analysis would result in false-positive and over-optimistic findings.</p></div></div>
+</div> </div></div>
+            <div class="footer">
+                <div class = 'contactInfo'><div class = 'contactInfoDesc'>  If you want to read more about The Genomic HyperBrowser interface, click here  If you have any questions, requests or comments regarding the rainfall plot project, please contact: Diana Domanska or Geir Kjetil Sandve.</div></div>
+
+            </div>
+        </div><div id="menu1" class="tab-pane fade ">
+
+            <div class="container">
+                <div class="rowSpecial">
+                    <div class="colAllProjectList">
+
+                          <div id ='content'></div>
+                                <script>
+                                $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_assemblygaps.txt");
+                                </script>
+                    </div>
+                </div>
+            </div>
+            </div><div id="menu2" class="tab-pane fade ">
+        <div class="container">
+
+
+				<div class="contact">
+
+				    <b>Note:</b>
+                        <p>
+                        This is a specialized version of The Genomic Hyperbrowser,
+                        focusing on new functionality for analyzing collections of genomic track.
+                        More information on the general HyperBrowser functionality can be
+                        found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
+                        </p>
+				    <b>Contact information</b>
+                        <p>
+                        If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
+                        <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
+                       </p>
+
+				        <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
+				         A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
+				        </p>
+
+				</div>
+
+		</div>
+
+        <div class="containerNext">
+            <div class="rowSpecial">
+                <div class ="infoAboutHB">
+                <p class="blocktext">
+                This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
+                supported by various national and local bodies.
+                </p>
+                <p class="blocktext">
+                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+                </p>
+         </div>
+          </div>
+		</div>
+
+        <div class="footer">
+                <div class="section">
+                  <img src="hyperbrowser/images/logo/HB_support.png" class="center">
+                </div>
+        </div>
+
+
+
+
+        </div></div></div></body></html>

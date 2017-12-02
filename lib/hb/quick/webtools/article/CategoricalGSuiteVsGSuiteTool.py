@@ -638,7 +638,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                           'Region and scale (deafult option: chromosomes)'
                           ]
 
-        toolResult = 'The results are presented as a table with overview values and also histogram with Forbes (and if counted with p-val).'
+        toolResult = 'The results are presented as a table with overview values and also histogram with Forbes (and if selected with p-val too).'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,
@@ -695,7 +695,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         Optional method. Default return value if method is not defined:
         'html'
         """
-        return 'html'
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
