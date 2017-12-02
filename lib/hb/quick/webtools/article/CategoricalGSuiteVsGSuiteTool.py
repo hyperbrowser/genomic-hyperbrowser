@@ -21,6 +21,7 @@ from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util import McEvaluators
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -85,8 +86,9 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                  ('Select analysis', 'analysis'),
                 ('Select excluded regions track', 'excludedRegions'),
                  ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
-                cls.getInputBoxNamesForUserBinSelection() + \
-               cls.getInputBoxNamesForDebug()
+                cls.getInputBoxNamesForUserBinSelection()
+               # + \
+               # cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -314,7 +316,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
         Mandatory unless isRedirectTool() returns True.
         """
-        cls._setDebugModeIfSelected(choices)
+
+        # cls._setDebugModeIfSelected(choices)
 
         firstGSuiteCat = choices.firstGSuiteCat
         firstGSuiteCat = firstGSuiteCat.encode("utf-8")
@@ -551,13 +554,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
     #
     @classmethod
     def isPublic(cls):
-        """
-        Specifies whether the tool is accessible to all users. If False, the
-        tool is only accessible to a restricted set of users as well as admin
-        users, as defined in the galaxy.ini file.
-
-        Optional method. Default return value if method is not defined: False
-        """
         return True
     #
     # @classmethod
@@ -624,14 +620,29 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool count Forbes or Forbes with a p-val.'
+
+        stepsToRunTool = ['Select first GSuite',
+                          'Select category for first GSuite',
+                          'Select second GSuite',
+                          'Genome (default option: genome from GSuite if exist)',
+                          'Select category for second GSuite',
+                          'Select analysis (Forbes, Forbes with a p-val)',
+                          'Select excluded regions track (optional)',
+                          'Select MCFDR sampling depth',
+                          'Region and scale (deafult option: chromosomes)'
+                          ]
+
+        toolResult = 'The results are presented as a table with overview values and also histogram with Forbes (and if counted with p-val).'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
     #
     # @classmethod
     # def getToolIllustration(cls):

@@ -397,7 +397,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
         stepsToRunTool = ['Select GSuite from history',
                           'Select metadata from GSuite'
-                          'Genome (deafult option: genome from GSuite if exist)',
+                          'Genome (default option: genome from GSuite if exist)',
                           'Show result as (value - bp, proportion - ratio of values within region)',
                           'Select a color map',
                           'Region and scale'
