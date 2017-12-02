@@ -81,13 +81,13 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
         # analysisSpec1 = AnalysisSpec(SingleTSStat)
         # analysisSpec1.addParameter('rawStatistic', CountSegmentStat.__name__)
         #
-        # analysisSpec2 = AnalysisSpec(SingleTSStat)
-        # analysisSpec2.addParameter('rawStatistic', ProportionCountStat.__name__)
-        # regSpec2 = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.track, False)
-        # binSpec2 = ExternalTrackManager.extractFnFromGalaxyTN(choices.track)
-        # analysisBins2 = GalaxyInterface._getUserBinSource(regSpec2,
-        #                                                  binSpec2,
-        #                                                  choices.genome)
+        analysisSpec2 = AnalysisSpec(SingleTSStat)
+        analysisSpec2.addParameter('rawStatistic', ProportionCountStat.__name__)
+        regSpec2 = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.track, False)
+        binSpec2 = ExternalTrackManager.extractFnFromGalaxyTN(choices.track)
+        analysisBins2 = GalaxyInterface._getUserBinSource(regSpec2,
+                                                         binSpec2,
+                                                         choices.genome)
 
 
         results = []
@@ -103,10 +103,10 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
             # res1 = doAnalysis(analysisSpec1, analysisBins, sts)
             # genomeCoveragePerTrack = res1.getGlobalResult()['Result'].result
 
-            # res2 = doAnalysis(analysisSpec2, analysisBins2, sts)
-            # bpOverlapPerTrack = res2.getGlobalResult()['Result'].result
+            res2 = doAnalysis(analysisSpec2, analysisBins2, sts)
+            bpOverlapPerTrack = res2.getGlobalResult()['Result'].result
 
-            results.append([tt, avgSegLenPerTrack]) #, bpOverlapPerTrack/genomeCoveragePerTrack])
+            results.append([tt, avgSegLenPerTrack, bpOverlapPerTrack])
 
         sortedRes = sorted(results, key=itemgetter(1))
         zipSorted = zip(*sortedRes)
@@ -116,7 +116,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
             cls.makeHistElement(galaxyExt='tabular',
                                 title='Result for average segment length according to bp overlap values'), 'w')
 
-        header = ['Track name', 'AvgSegLen', 'RatioBpOverlapWithinTrackAndGenome']
+        header = ['Track name', 'AvgSegLen', 'RatioBpOverlapWithinTrack']
         output = '\t'.join(header) + '\n'
         for sr in sortedRes:
             output += '\t'.join([str(s) for s in sr]) + '\n'
@@ -128,7 +128,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
         htmlCore.begin()
         htmlCore.tableHeader(['Column name', 'Minimum', 'Maximum', 'Average', 'Median'])
         htmlCore.tableLine(['AvgSegLen', zipSorted[1][0], zipSorted[1][len(zipSorted[1])-1], sum(zipSorted[1])/len(zipSorted[1]), cls.median(zipSorted[1])])
-        #htmlCore.tableLine(['RatioBpOverlapWithinTrackAndGenome', zipSorted[2][0], zipSorted[2][len(zipSorted[2])-1], sum(zipSorted[2]) / len(zipSorted[2]), cls.median(zipSorted[2])])
+        htmlCore.tableLine(['RatioBpOverlapWithinTrackAndGenome', zipSorted[2][0], zipSorted[2][len(zipSorted[2])-1], sum(zipSorted[2]) / len(zipSorted[2]), cls.median(zipSorted[2])])
         htmlCore.end()
 
         print htmlCore
@@ -243,7 +243,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
         toolDescription = 'The tool allow to count average segment length according to bp overlap values.'
 
         stepsToRunTool = ['Select GSuite from history',
-                          'Select track from history,'
+                          'Select track from history',
                           'Region and scale (deafult option: chromosomes)']
 
         toolResult = 'The results are presented a table with two information: AvgSegLen (average segment length) and RatioBpOverlapWithinTrackAndGenome (ratio of overlap between every track in GSuite and track from history to global segment size ).'

@@ -391,10 +391,6 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
     @classmethod
     def getToolDescription(cls):
-        '''
-        Specifies a help text in HTML that is displayed below the tool.
-        '''
-
         l = Legend()
 
         toolDescription = 'This tool computes the overlap between the segments of selected bin against each track in a collection of reference tracks described in a GSuite file. The overlap are output in an heatmap, where each cell is colored according to the overlap between each query segment (column) with each reference track (row).'

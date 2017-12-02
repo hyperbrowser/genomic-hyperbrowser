@@ -1,5 +1,6 @@
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.assemblygap.Legend import Legend
 
 
 class SplitBedFileTool(GeneralGuiTool):
@@ -108,9 +109,23 @@ class SplitBedFileTool(GeneralGuiTool):
     # def getResetBoxes(cls):
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
+
+    @classmethod
+    def getToolDescription(cls):
+        l = Legend()
+
+        toolDescription = 'This tool create descriptive results for tabular file.'
+
+        stepsToRunTool = ['Select file from history',
+                          'Split file by - start (% counted from start), middle (% counted from middle in direction to start and end), end (% counted from end)'
+                          'How much(%)'
+                          ]
+
+        toolResult = 'Output is a .bed file.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
     #
     # @classmethod
     # def getToolIllustration(cls):

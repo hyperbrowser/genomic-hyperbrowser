@@ -3,6 +3,7 @@ from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportB
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 
@@ -229,9 +230,25 @@ class CreateHistogramTool(GeneralGuiTool):
     # def getResetBoxes(cls):
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+        l = Legend()
+
+        toolDescription = 'This tool create descriptive results for tabular file.'
+
+        stepsToRunTool = ['Select file from history',
+                          'Result counted for'
+                          'Result counted as',
+                          'Select break number (default: 20)',
+                          'Include 0 values to count results'
+                          ]
+
+        toolResult = 'The results are presented as plots (cover of the tracks in the region and histogram (based on average)) and also overview of results are visible in the tables.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
+
     #
     # @classmethod
     # def getToolIllustration(cls):
