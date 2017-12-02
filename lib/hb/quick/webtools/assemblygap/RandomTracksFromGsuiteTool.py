@@ -15,6 +15,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, GeneralGuiToolMixin
 from gold.track.Track import Track, PlainTrack
+from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.gsuite.GSuiteConvertFromPreprocessedToPrimaryTool import GSuiteConvertFromPreprocessedToPrimaryTool, \
     FileFormatInfo
 from quick.webtools.util import CommonFunctionsForTools
@@ -25,11 +26,11 @@ class RandomTracksFromGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Random tracks from gSuite"
+        return "Create gSuite with ranomd number of tracks"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select a GSuite', 'gsuite'),
+        return [('Select GSuite from history', 'gsuite'),
                 ('Select number of tracks', 'numTrack')]
 
     @classmethod
@@ -114,9 +115,22 @@ class RandomTracksFromGsuiteTool(GeneralGuiTool):
     # def getResetBoxes(cls):
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool allow to create GSuite with specified number of tracks (randomly selected).'
+
+        stepsToRunTool = ['Select GSuite from history',
+                          'Select number of tracks'
+                          ]
+
+        toolResult = 'The results are presented as GSuite.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
     #
     # @classmethod
     # def getToolIllustration(cls):

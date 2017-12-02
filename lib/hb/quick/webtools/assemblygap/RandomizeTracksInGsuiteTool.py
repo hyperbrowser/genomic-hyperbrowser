@@ -18,6 +18,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool, GeneralGuiToolMixin
 from gold.track.Track import Track, PlainTrack
+from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.gsuite.GSuiteConvertFromPreprocessedToPrimaryTool import GSuiteConvertFromPreprocessedToPrimaryTool, \
     FileFormatInfo
 from quick.webtools.mixin.DebugMixin import DebugMixin
@@ -31,7 +32,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select a GSuite', 'gsuite'),
+        return [('Select GSuite from history', 'gsuite'),
                 ('With exclusion', 'excl'),
                 ('Select track', 'track'),
                 ('Number of randomised variants', 'varTracks'),
@@ -222,6 +223,8 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
             getGSuiteHistoryOutputName('primary', datasetInfo=choices.gsuite)]
         GSuiteComposer.composeToFile(outGSuite, primaryFn)
 
+        print 'Randomized GSuite is in the history'
+
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
@@ -307,9 +310,25 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
     # def getResetBoxes(cls):
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool allow to shuffle and random segments (with or without exclusion) for every track in GSuite.'
+
+        stepsToRunTool = ['Select GSuite from history',
+                          'With exclusion',
+                          'Select track',
+                          'Number of randomised variants',
+                          'Randomize with (yes - average length and elements number of GSuite) and (no - length and elements number of each track in GSuite)'
+                          ]
+
+        toolResult = 'The results are presented as GSuite.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
     #
     # @classmethod
     # def getToolIllustration(cls):
