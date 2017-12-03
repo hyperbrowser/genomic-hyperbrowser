@@ -541,7 +541,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                           'Select type of scale for x-Axis',
                           'Select value for y-Axis',
                           'Select type of scale for y-Axis',
-                          'Select results of plotting (option available for selected type of charts),'
+                          'Select results of plotting (option available for selected type of charts)',
                           'Add trend (option available for selected type of charts)']
 
         toolResult = 'The results are presented in an interactive chart.'
