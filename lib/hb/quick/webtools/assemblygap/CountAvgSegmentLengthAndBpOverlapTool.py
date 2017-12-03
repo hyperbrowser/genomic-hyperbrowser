@@ -98,13 +98,13 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
 
             sts = SingleTrackTS(PlainTrack(track.trackName),OrderedDict(title=tt, genome=str(genome)))
             res = doAnalysis(analysisSpec, analysisBins, sts)
-            avgSegLenPerTrack = res.getGlobalResult()['Result'].result
+            avgSegLenPerTrack = res.getGlobalResult()['Result'].getResult()
 
             # res1 = doAnalysis(analysisSpec1, analysisBins, sts)
             # genomeCoveragePerTrack = res1.getGlobalResult()['Result'].result
 
             res2 = doAnalysis(analysisSpec2, analysisBins2, sts)
-            bpOverlapPerTrack = res2.getGlobalResult()['Result'].result
+            bpOverlapPerTrack = res2.getGlobalResult()['Result'].getResult()
 
             results.append([tt, avgSegLenPerTrack, bpOverlapPerTrack])
 
