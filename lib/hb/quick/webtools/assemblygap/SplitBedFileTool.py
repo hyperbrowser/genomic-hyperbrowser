@@ -6,13 +6,13 @@ from quick.webtools.assemblygap.Legend import Legend
 class SplitBedFileTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Split bed file"
+        return "Split genomic regions into start, middle and end portions by a pred-defined size"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select file', 'selFile'),
-                ('Split file by', 'splittedPart'),
-                ('How much (%)', 'splittedValue')]
+        return [('Select file to be splitted', 'selFile'),
+                ('Select part of genomic regions', 'splittedPart'),
+                ('Define size of genomic regions (%)', 'splittedValue')]
 
     @classmethod
     def getOptionsBoxSelFile(cls):
@@ -116,12 +116,12 @@ class SplitBedFileTool(GeneralGuiTool):
 
         toolDescription = 'This tool create descriptive results for tabular file.'
 
-        stepsToRunTool = ['Select file from history',
-                          'Split file by - start (% counted from start), middle (% counted from middle in direction to start and end), end (% counted from end)'
-                          'How much(%)'
+        stepsToRunTool = ['Select file to be splitted',
+                          'Select part of genomic regions (start [% counted from start], middle [% counted from middle in direction to start and end], end [% counted from end])'
+                          'Define size of genomic regions (%)'
                           ]
 
-        toolResult = 'Output is a .bed file.'
+        toolResult = 'The output of this tool is a .bed file.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

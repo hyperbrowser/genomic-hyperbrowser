@@ -28,15 +28,15 @@ from quick.webtools.mixin.DebugMixin import DebugMixin
 class RandomizeTracksInGsuiteTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Randomize gSuite"
+        return "Randomize a collection of genomic tracks (GSuite)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite from history', 'gsuite'),
+        return [('Select GSuite', 'gsuite'),
                 ('With exclusion', 'excl'),
-                ('Select track', 'track'),
-                ('Number of randomised variants', 'varTracks'),
-                ('Randomize with (yes - average length and elements number of GSuite) and (no - length and elements number of each track in GSuite)', 'option')]\
+                ('Select track of regions to be excluded', 'track'),
+                ('Number of randomised samples to be generated for each track', 'varTracks'),
+                ('Preserve the average length and the number of elements (per GSuite) and (per each track in GSuite)', 'option')]\
                # + \
                # cls.getInputBoxNamesForDebug()
 
@@ -315,16 +315,16 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to shuffle and random segments (with or without exclusion) for every track in GSuite.'
+        toolDescription = 'This tool shuffles genomic tracks by excluding the randomization in certain regions'
 
-        stepsToRunTool = ['Select GSuite from history',
-                          'With exclusion',
-                          'Select track',
-                          'Number of randomised variants',
-                          'Randomize with (yes - average length and elements number of GSuite) and (no - length and elements number of each track in GSuite)'
+        stepsToRunTool = ['Select GSuite',
+                          'With exclusion (yes, no)',
+                          'Select track of regions to be excluded',
+                          'Number of randomised samples to be generated for each track ',
+                          'Preserve the average length and the number of elements (per GSuite) and (per each track in GSuite)'
                           ]
 
-        toolResult = 'The results are presented as GSuite.'
+        toolResult = 'The output of this tool is a randomized collection of tracks presented as GSuite.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,
@@ -696,6 +696,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
 #         resultsObj = doAnalysis(analysisSpec, analysisBins, queryTrackList + refTrackList)
 #         results = resultsObj.getGlobalResult()
 #         analysis1 = results['Similarity_score_table']
+#         return analysis1
 #         return analysis1
 #
 #     analysis = AnalysisSpec(BpOverlapPValOneTrackFixedStat)

@@ -26,12 +26,12 @@ class RandomTracksFromGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Create gSuite with ranomd number of tracks"
+        return "Sample tracks from a collection of tracks (GSuite)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite from history', 'gsuite'),
-                ('Select number of tracks', 'numTrack')]
+        return [('Select GSuite', 'gsuite'),
+                ('Select number of tracks to be extracted', 'numTrack')]
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -120,13 +120,13 @@ class RandomTracksFromGsuiteTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to create GSuite with specified number of tracks (randomly selected).'
+        toolDescription = 'This tool creates a collection of tracks (GSuite) with specified number of tracks (randomly selected).'
 
-        stepsToRunTool = ['Select GSuite from history',
-                          'Select number of tracks'
+        stepsToRunTool = ['Select GSuite',
+                          'Select number of tracks to be extracted '
                           ]
 
-        toolResult = 'The results are presented as GSuite.'
+        toolResult = 'The output of this tool is a randomly selected collection of tracks presented as GSuite.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

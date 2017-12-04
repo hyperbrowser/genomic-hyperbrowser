@@ -403,7 +403,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                           'Region and scale'
                           ]
 
-        toolResult = 'The results are presented as heatmap (available pdf file to download) and as  tabular file with overlap values.'
+        toolResult = 'The results are presented as heatmap (available pdf file to download) and as tabular file with overlap values.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

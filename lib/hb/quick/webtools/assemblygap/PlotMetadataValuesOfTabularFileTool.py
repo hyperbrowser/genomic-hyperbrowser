@@ -532,7 +532,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to present metadata columns from gSuite or results from tabular file in the chart.'
+        toolDescription = 'The tool allow to compute average semgemnt lenght of the track and its  overlap [bp proportion] with a query track].'
 
         stepsToRunTool = ['Select GSuite or file with tabular from history',
                           'Select way of showing series as single or multi charts',
