@@ -1,5 +1,8 @@
+from collections import OrderedDict
+
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import collections
+
 
 CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
@@ -7,11 +10,7 @@ CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
 
 LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
 
-DETERMINE_FROM_SUBMITTED_TRACKS = 'determine whether or not to allow overlap based on submitted tracks'
 
-MAY_OVERLAP = 'elements may overlap'
-
-NOT_ALLOWED = 'elements not allowed to overlap'
 
 CLOSEST_COORDINATE = 'distance to closest coordinate'
 
@@ -23,7 +22,9 @@ START_COORDINATE = 'distance to start coordinate'
 
 BASES = 'total number of overlapping bases'
 
-COUNTS_ = 'number of overlapping regions (counts)'
+COUNTS = 'number of overlapping regions (counts)'
+
+OVERLAP_MEASURES = [COUNTS, BASES]
 
 FLANKING_REGIONS = 'basepair overlap including expansion of flanking regions'
 
@@ -31,7 +32,7 @@ DIRECT_OVERLAP = 'direct basepair overlap between genomic regions'
 
 CORRELATION = 'Correlation'
 
-DISTANCE_ = 'Proximity (distance)'
+DISTANCE = 'Proximity (distance)'
 
 OVERLAP = 'Overlap'
 
@@ -247,37 +248,37 @@ class CongloProtoTool(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return [OVERLAP, DISTANCE_, CORRELATION]
+        return OrderedDict([(OVERLAP, False), (DISTANCE, False), (CORRELATION, False)])
 
     @classmethod
     def getOptionsBoxTypeOfOverlap(cls, prevChoices):
-        if prevChoices.teststatType == OVERLAP:
-            return [DIRECT_OVERLAP,
-                    FLANKING_REGIONS]
+        if prevChoices.teststatType and prevChoices.teststatType[OVERLAP]:
+            return OrderedDict([(DIRECT_OVERLAP,False),
+                                (FLANKING_REGIONS,False)])
 
     @classmethod
     def getOptionsBoxDirectOverlap(cls, prevChoices):
-        if prevChoices.typeOfOverlap == DIRECT_OVERLAP:
-            return [COUNTS_, BASES]
+        if prevChoices.typeOfOverlap and prevChoices.typeOfOverlap[DIRECT_OVERLAP]:
+            return OVERLAP_MEASURES
 
     @classmethod
     def getOptionsBoxFlankingRegions(cls, prevChoices):
-        if prevChoices.typeOfOverlap == FLANKING_REGIONS:
-            return [COUNTS_, BASES]
+        if prevChoices.typeOfOverlap and prevChoices.typeOfOverlap[FLANKING_REGIONS]:
+            return OVERLAP_MEASURES
 
     @classmethod
     def getOptionsBoxFlankingSizeUpstream(cls, prevChoices):
-        if prevChoices.flankingRegions in [COUNTS_, BASES]:
-            return 'Flank size upstream'
+        if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
+            return '1000'
 
     @classmethod
     def getOptionsBoxFlankingSizeDownstream(cls, prevChoices):
-        if prevChoices.flankingRegions in [COUNTS_, BASES]:
-            return 'Flank size downstream'
+        if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
+            return '1000'
 
     @classmethod
     def getOptionsBoxDistanceCoordinate(cls, prevChoices):
-        if prevChoices.teststatType == DISTANCE_:
+        if prevChoices.teststatType == DISTANCE:
             return [START_COORDINATE, MIDPOINT, END_COORDINATE, CLOSEST_COORDINATE]
 
     @classmethod
@@ -290,9 +291,13 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.teststatType == CORRELATION:
             return ['genome-wide kernel correlation (overall relationship)','fine-scale correlation (structure of correlation)','local correlation (genomic region-level)']
 
+    DETERMINE_FROM_SUBMITTED_TRACKS = 'determine whether or not to allow overlap based on submitted tracks'
+    MAY_OVERLAP = 'elements may overlap'
+    NOT_ALLOWED = 'elements not allowed to overlap'
+
     @classmethod
     def getOptionsBoxAllowOverlaps(cls, prevChoices):  # Alt: getOptionsBox2()
-        return [NOT_ALLOWED, MAY_OVERLAP, DETERMINE_FROM_SUBMITTED_TRACKS]
+        return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
 
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -309,7 +314,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['No, assume that genomic features are uniformly distributed', 'Yes, preserve empiric distribution of distances between genomic regions']
+        return OrderedDict([('No, assume that genomic features are uniformly distributed', False), ('Yes, preserve empiric distribution of distances between genomic regions', False)])
 
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -378,7 +383,27 @@ class CongloProtoTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        selections = OrderedDict()
+        choiceValueMappings = OrderedDict()
+
+        selectionMapping = {'allowOverlaps':'setAllowOverlaps'}
+        if choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
+            raise
+        else:
+            choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED:False, cls.MAY_OVERLAP:True}
+
+        for guiKey,selectionKey in selectionMapping.items():
+            selections.update( cls.updateSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey) )
+
+        print selections
+
+    @classmethod
+    def updateSelectionsFromCheckboxParam(cls, choiceValueMappings, choices, selectionName, selections, selectionsKey):
+        selections = {}
+        for choiceName, val in choiceValueMappings.items():
+            if choices[selectionName][choiceName]:
+                selections[selectionsKey].append((selectionsKey, val))
+        return selections
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -392,9 +417,15 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+        if choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
+            if choices.allowOverlaps[cls.MAY_OVERLAP] or choices.allowOverlaps[cls.NOT_ALLOWED]:
+                return "%s can only be selected as a single choice" % cls.DETERMINE_FROM_SUBMITTED_TRACKS
+        else:
+            if not choices.allowOverlaps[cls.NOT_ALLOWED] and not choices.allowOverlaps[cls.MAY_OVERLAP]:
+                return "Please select whether or not to allow genomic regions to overlap within track"
 
-    # @classmethod
+
+            # @classmethod
     # def getSubToolClasses(cls):
     #     """
     #     Specifies a list of classes for subtools of the main tool. These
