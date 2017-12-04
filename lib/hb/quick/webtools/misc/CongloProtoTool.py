@@ -1,4 +1,15 @@
 from collections import OrderedDict
+from itertools import product
+
+#FIXME: REMOVE!!
+from quick.application.ExternalTrackManager import ExternalTrackManager
+
+
+class RestrictedAnalysisUniverse:
+    pass
+class RestrictedThroughExclusion(RestrictedAnalysisUniverse):
+    def __init__(self, path):
+        pass
 
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import collections
@@ -289,7 +300,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxDistanceCoordinate(cls, prevChoices):
         if prevChoices.teststatType and prevChoices.teststatType[DISTANCE]:
-            return OrderedDict([(START_COORDINATE, False), (MIDPOINT, False),(CLOSEST_COORDINATE, False)])
+            return OrderedDict([(cls.START_COORDINATE, False), (cls.MIDPOINT, False),(cls.CLOSEST_COORDINATE, False)])
 
     @classmethod
     def getOptionsBoxDistanceType(cls, prevChoices):
@@ -405,22 +416,74 @@ class CongloProtoTool(GeneralGuiTool):
         Mandatory unless isRedirectTool() returns True.
         """
         selections = OrderedDict()
+        typeOfAnalysis = choices.analysisType
+
+        #SELECTION BOXES:
+        chrLenFnMappings = {'Human (hg19)':'chrom_lengths.tabular'}
+        genomeName = choices.selectReferenceGenome
+        selections['setGenomeName'] = genomeName
+        selections['setChrLenFn'] = chrLenFnMappings[genomeName]
+
+        # mapping = {cls.WHOLE_GENOME:None,
+        #            cls.EXCLUDE_SUPPLIED_BY_THE_USER:RestrictedThroughExclusion(fn)}
+        if choices.restrictRegions==cls.WHOLE_GENOME:
+            restrictRegions = None
+        else:
+            fn = ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload)
+            if choices.restrictRegions==cls.EXCLUDE_SUPPLIED_BY_THE_USER:
+                restrictRegions = RestrictedThroughExclusion(fn)
+            if choices.restrictRegions == cls.EXPLICIT_NEGATIVE_SET:
+                raise
+        selections['setRestrictedAnalysisUniverse'] = ('setRestrictedAnalysisUniverse',restrictRegions)
+
+        #import PRESERVE_HETEROGENEITY_AS_NEIGHBORHOOD ... from conglo..
+        # if choices.localHandler == None:
+        #     hetero = PRESERVE_HETEROGENEITY_NOT
+        # elif choices.localHandler==FIXED_SIZE_NEIGHBOURHOOD:
+        #      hetero = PRESERVE_HETEROGENEITY_AS_NEIGHBORHOOD
+        # elif choices.localHandler==SET_OF_LOCAL_REGIONS_:
+        #     fn = ExternalTrackManager.extractFnFromGalaxyTN(choices.preserveLocalFileUpload)
+        #     hetero = [PRESERVE_HETEROGENEITY_WITHIN_SUPPLIED_REGIONS, fn]
+        # selections['setHeterogeneityPreservation'] = hetero
+
+        #CHECKBOXES
         choiceValueMappings = OrderedDict()
 
-        selectionMapping = {'allowOverlaps':'setAllowOverlaps'}
+        selectionMapping = {'allowOverlaps' : 'setAllowOverlaps',
+                            'clumping' : 'preserveClumping'}
+
+        #TestStat
+        distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]]
+        distTypeSelected = [key for key in choices.distanceType if choices.distanceType[key]]
+        fullDistSpecs = product(distCoordSelected,distTypeSelected)
+        encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
+        overlapSpecs = [key for key in choices.overlapMeasure if choices.overlapMeasure[key]]
+        correlationSpecs = [key for key in choices.correlation if choices.correlation[key]]
+        allTsSpecs = encodedDistSpecs + overlapSpecs + correlationSpecs
+        selections['setTestStatistic'] = zip(['TestStatistic']*len(allTsSpecs), allTsSpecs)
+
+        # distCoordSelections = cls.getSelectionsFromCheckboxParam(distCoordChoiceValueMapping, choices, 'distanceCoordinate', 'distCoord')
+        # distCoordSelections = cls.getSelectionsFromCheckboxParam(distCoordChoiceValueMapping, choices, 'distanceType', 'distType')
+
+
+
         if choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
             raise
         else:
             choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED:False, cls.MAY_OVERLAP:True}
 
+        choiceValueMappings['clumping'] = {UNIFORMLY_DISTRIBUTED:False, PRESERVE_EMPIRIC_DISTRIBUTION:True}
+
         for guiKey,selectionKey in selectionMapping.items():
-            selections.update( cls.updateSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey) )
+            selections.update(cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey))
 
         print selections
+        print typeOfAnalysis
 
     @classmethod
-    def updateSelectionsFromCheckboxParam(cls, choiceValueMappings, choices, selectionName, selections, selectionsKey):
-        selections = {}
+    def getSelectionsFromCheckboxParam(cls, choiceValueMappings, choiceTuple, selectionName, selectionsKey):
+        choices = choiceTuple._asdict()
+        selections = {selectionsKey:[]}
         for choiceName, val in choiceValueMappings.items():
             if choices[selectionName][choiceName]:
                 selections[selectionsKey].append((selectionsKey, val))
