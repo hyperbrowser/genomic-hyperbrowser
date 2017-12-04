@@ -62,12 +62,12 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
 
     @staticmethod
     def getToolName():
-        return "Count coverage for tracks in GSuite within every bin (region)"
+        return "Count coverage for every track within specified region"
 
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select GSuite file from history', 'gsuite'), \
+        return [('Select GSuite', 'gsuite'), \
                 ('Select metadata from GSuite', 'selectColumns')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
@@ -226,7 +226,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                                 fileOutput.getDiskPath(), fileOutputPdf.getDiskPath())
 
             htmlCore.divBegin()
-            htmlCore.link('Download heatmap of coverage in a bin (region) as ' + str(choices.outputRes), fileOutputPdf.getURL())
+            htmlCore.link('Download heatmap of coverage within specified region as ' + str(choices.outputRes), fileOutputPdf.getURL())
             htmlCore.divEnd()
         else:
             htmlCore.line('The heatmap can not be printed because all values are equal 0')
@@ -393,7 +393,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
     def getToolDescription(cls):
         l = Legend()
 
-        toolDescription = 'This tool computes the overlap between the segments of selected bin against each track in a collection of reference tracks described in a GSuite file. The overlap are output in an heatmap, where each cell is colored according to the overlap between each query segment (column) with each reference track (row).'
+        toolDescription = 'This tool computes the coverage between the specified region and every track in a collection of reference tracks described in a GSuite file. '
 
         stepsToRunTool = ['Select GSuite from history',
                           'Select metadata from GSuite'
@@ -403,7 +403,7 @@ class GenerateVisualizationOverlapHeatmapTool(GeneralGuiTool, UserBinMixin, Geno
                           'Region and scale'
                           ]
 
-        toolResult = 'The results are presented as heatmap (available pdf file to download) and as tabular file with overlap values.'
+        toolResult = 'The output of this tool is a heatmap (available pdf file to download) and a tabular file with overlap values. '
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

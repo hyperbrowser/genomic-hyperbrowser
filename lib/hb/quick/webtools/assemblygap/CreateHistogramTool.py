@@ -10,14 +10,14 @@ from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 class CreateHistogramTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Create descriptive results"
+        return "Create descriptive results for tabular file"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select file:', 'selectedFile'),
+        return [('Select tabular file:', 'selectedFile'),
                 ('Result counted for:', 'resRC'),
                 ('Result counted as:', 'resStat'),
-                ('Select break number (default: 20):', 'breaksNumber'),
+                ('Select number of breaks for histogram (default: 20):', 'breaksNumber'),
                 ('Include 0 values to count results:', 'resValue')]
 
     #how many times the region is presented in track (plot plus table)
@@ -243,7 +243,7 @@ class CreateHistogramTool(GeneralGuiTool):
                           'Include 0 values to count results'
                           ]
 
-        toolResult = 'The results are presented as plots (cover of the tracks in the region and histogram (based on average)) and also overview of results are visible in the tables.'
+        toolResult = 'The output of this tool are plots and tables. The plots shows overview of results countes as average/sum of rows/column, visible as counted values and histogram of counted values. In the table we can find summarize results of the counted values. Tool was specifically created for assembly gap to count the average coverege of the tracks within the specified region, so all description of descriptive results used the specified terminology.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

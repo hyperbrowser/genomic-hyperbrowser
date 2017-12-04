@@ -38,14 +38,14 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
                                  GSuiteConstants.VALUED_SEGMENTS]  # points?
     @classmethod
     def getToolName(cls):
-        return "Count average segment length according to bp overlap values"
+        return "Count average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite from history', 'gsuite')] + \
+        return [('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [
-                   ('Select track from history', 'track')
+                   ('Select track', 'track')
 
                ] + cls.getInputBoxNamesForUserBinSelection()
 
@@ -114,7 +114,7 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
 
         writeFile = open(
             cls.makeHistElement(galaxyExt='tabular',
-                                title='Result for average segment length according to bp overlap values'), 'w')
+                                title='Result for average segment length and proportional bp overlap values'), 'w')
 
         header = ['Track name', 'AvgSegLen', 'RatioBpOverlapWithinTrack']
         output = '\t'.join(header) + '\n'
@@ -240,13 +240,13 @@ class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, Genome
 
         l = Legend()
 
-        toolDescription = 'The tool allow to count average segment length according to bp overlap values.'
+        toolDescription = 'This tool counts average segment length and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite).'
 
-        stepsToRunTool = ['Select GSuite from history',
-                          'Select track from history',
+        stepsToRunTool = ['Select GSuite',
+                          'Select track',
                           'Region and scale (deafult option: chromosomes)']
 
-        toolResult = 'The results are presented as s table with two information: AvgSegLen (average segment length) and RatioBpOverlapWithinTrackAndGenome (ratio of overlap between every track in GSuite and track from history to global segment size ).'
+        toolResult = 'The output of this tool is a table with two information: AvgSegLen (average segment length) and RatioBpOverlapWithinTrack (ratio of overlap between every track in GSuite and track from history, respectively to segments size of track).'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

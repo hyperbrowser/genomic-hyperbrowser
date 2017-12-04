@@ -55,7 +55,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
         Mandatory method for all ProTo tools.
         """
-        return "Categorical GSuite analysis"
+        return "Analyse two collection of tracks respectively to specified relation between them"
 
     @classmethod
     def getInputBoxNames(cls):

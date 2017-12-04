@@ -117,7 +117,7 @@ class SplitBedFileTool(GeneralGuiTool):
         toolDescription = 'This tool create descriptive results for tabular file.'
 
         stepsToRunTool = ['Select file to be splitted',
-                          'Select part of genomic regions (start [% counted from start], middle [% counted from middle in direction to start and end], end [% counted from end])'
+                          'Select part of genomic regions (start [% counted from start], middle [% counted from midpoint in both directions], end [% counted from end])',
                           'Define size of genomic regions (%)'
                           ]
 

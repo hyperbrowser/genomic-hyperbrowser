@@ -22,15 +22,15 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
         '''
-        return "Plot metadata values of a GSuite file"
+        return "Create a plot for selected columns in a tabular file"
         # Plot tabular values
 
     @staticmethod
     def getInputBoxNames():
         return [
             ('Select tabular file', 'selFile'),
-            ('Select way of showing series as', 'plotSeries'),
-            ('Select type of chart', 'plotType'),
+            ('Select way of showing series in a one plot as', 'plotSeries'),
+            ('Select type of plot', 'plotType'),
             ('Select value for x-Axis', 'columnX'),
             ('Select type of scale for x-Axis', 'axesScaleX'),
             ('Select value for y-Axis', 'columnY'),
@@ -534,17 +534,17 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
         toolDescription = 'The tool allow to compute average semgemnt lenght of the track and its  overlap [bp proportion] with a query track].'
 
-        stepsToRunTool = ['Select GSuite or file with tabular from history',
-                          'Select way of showing series as single or multi charts',
-                          'Select type of chart',
+        stepsToRunTool = ['Select tabular file',
+                          'Select way of showing series in a one plot as single or multi series',
+                          'Select type of plot',
                           'Select value for x-Axis',
                           'Select type of scale for x-Axis',
                           'Select value for y-Axis',
                           'Select type of scale for y-Axis',
-                          'Select results of plotting (option available for selected type of charts)',
-                          'Add trend (option available for selected type of charts)']
+                          'Select results of plotting (option available for selected type of plots)',
+                          'Add trend (option available for selected type of plots)']
 
-        toolResult = 'The results are presented in an interactive chart.'
+        toolResult = 'The output of this tool is an interactive chart.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                                      stepsToRunTool=stepsToRunTool,
