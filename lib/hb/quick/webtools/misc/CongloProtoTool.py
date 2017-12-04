@@ -3,6 +3,14 @@ from collections import OrderedDict
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import collections
 
+AVERAGE_LOG_DISTANCE = 'average log distance'
+
+ABSOLUTE_DISTANCE = 'absolute distance'
+
+PRESERVE_EMPIRIC_DISTRIBUTION = 'Yes, preserve empiric distribution of distances between genomic regions'
+
+UNIFORMLY_DISTRIBUTED = 'No, assume that genomic features are uniformly distributed'
+
 SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
 
 EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
@@ -19,13 +27,6 @@ LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
 
 
 
-CLOSEST_COORDINATE = 'distance to closest coordinate'
-
-END_COORDINATE = 'distance to end coordinate'
-
-MIDPOINT = 'distance to midpoint'
-
-START_COORDINATE = 'distance to start coordinate'
 
 BASES = 'total number of overlapping bases'
 
@@ -280,6 +281,11 @@ class CongloProtoTool(GeneralGuiTool):
     #     if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
     #         return '1000'
 
+    CLOSEST_COORDINATE = 'distance to closest coordinate'
+    END_COORDINATE = 'distance to end coordinate'
+    MIDPOINT = 'distance to midpoint'
+    START_COORDINATE = 'distance to start coordinate'
+
     @classmethod
     def getOptionsBoxDistanceCoordinate(cls, prevChoices):
         if prevChoices.teststatType and prevChoices.teststatType[DISTANCE]:
@@ -288,7 +294,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxDistanceType(cls, prevChoices):
         if prevChoices.distanceCoordinate and any(prevChoices.distanceCoordinate.values()):
-            return OrderedDict([('absolute distance', False), ('average log distance', False)])
+            return OrderedDict([(ABSOLUTE_DISTANCE, False), (AVERAGE_LOG_DISTANCE, False)])
 
     @classmethod
     def getOptionsBoxCorrelation(cls, prevChoices):
@@ -329,7 +335,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
-        return OrderedDict([('No, assume that genomic features are uniformly distributed', False), ('Yes, preserve empiric distribution of distances between genomic regions', False)])
+        return OrderedDict([(UNIFORMLY_DISTRIBUTED, False), (PRESERVE_EMPIRIC_DISTRIBUTION, False)])
 
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
