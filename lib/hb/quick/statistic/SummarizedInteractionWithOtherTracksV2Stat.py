@@ -59,7 +59,7 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
             return self.functionDict[summaryFunc]
         
     def _compute(self):
-        resTs = TSResult(self._computeTrackStructure)
+        resTs = TSResult(self._trackStructure)
         #listOfPairRTSs = [child.getResult() for child in self._children]
         # fullTs = TrackStructureV2()
         rawResults = []
@@ -86,5 +86,3 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         self._childrenDict = {}
         for pairTSKey in pairedTS:
             self._childrenDict[pairTSKey] = self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._pairwiseStatistic, **self._kwArgs))
-
-        self._computeTrackStructure = pairedTS

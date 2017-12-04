@@ -35,7 +35,7 @@ class SummarizedInteractionPerTsCatV2Stat(MagicStatFactory):
 
 class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
     def _compute(self):
-        rts = TSResult(self._computeTrackStructure)
+        rts = TSResult(self._trackStructure)
         for cat in self._catResults:
             rts[cat] = self._catResults[cat].getResult()
         return rts
@@ -45,5 +45,3 @@ class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
         self._catResults = {}
         for cat, catTS in reRootedTS.iteritems():
             self._catResults[cat] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, catTS, **self._kwArgs))
-
-        self._computeTrackStructure = reRootedTS
