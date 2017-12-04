@@ -3,6 +3,13 @@ from collections import OrderedDict
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import collections
 
+SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
+
+EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
+
+EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
+
+WHOLE_GENOME = 'No, use the whole genome'
 
 CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
@@ -24,7 +31,7 @@ BASES = 'total number of overlapping bases'
 
 COUNTS = 'number of overlapping regions (counts)'
 
-OVERLAP_MEASURES = [COUNTS, BASES]
+#OVERLAP_MEASURES = [COUNTS, BASES]
 
 FLANKING_REGIONS = 'basepair overlap including expansion of flanking regions'
 
@@ -80,18 +87,16 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Type of co-localization analysis: ', 'analysisType'),
                 ('Choose a reference track collection', 'ChoiceOfReferenceTrackCollection'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
-                ('Type of overlap measure : ', 'typeOfOverlap'),
-                ('Type of basepair overlap test statistic : ', 'directOverlap'),
-                ('Type of basepair overlap test statistic : ', 'flankingRegions'),
-                ('Flanking size upstream (bp) : ', 'flankingSizeUpstream'),
-                ('Flanking size downstream (bp) : ', 'flankingSizeDownstream'),
+                ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
                 ('Type of distance to use : ', 'distanceType'),
                 ('Type of correlation metric : ', 'correlation'),
                 ('Allow genomic regions to overlap within track ? ', 'allowOverlaps'),
                 ('Restrict the analysis to specific parts of the genome ? ', 'restrictRegions'),
+                ('Select the uploaded file to restrict the analysis space : ', 'restrictedRegionFileUpload'),
                 ('Preserve local heterogeneity ? ', 'localHeterogeneity'),
                 ('Method of choice to preserve local heterogeneity : ', 'localHandler'),
+                ('Select the uploaded file to preserve local heterogeneity : ', 'preserveLocalFileUpload'),
                 ('Preserve any clumping tendency of genomic elements ? ', 'clumping'),
                 ('Handle confounding features ? ', 'confounding'),
                 ('Method of choice to handle confounding features : ', 'confounderHandler'),
@@ -251,44 +256,43 @@ class CongloProtoTool(GeneralGuiTool):
         return OrderedDict([(OVERLAP, False), (DISTANCE, False), (CORRELATION, False)])
 
     @classmethod
-    def getOptionsBoxTypeOfOverlap(cls, prevChoices):
+    def getOptionsBoxOverlapMeasure(cls, prevChoices):
         if prevChoices.teststatType and prevChoices.teststatType[OVERLAP]:
-            return OrderedDict([(DIRECT_OVERLAP,False),
-                                (FLANKING_REGIONS,False)])
+            return OrderedDict([(COUNTS, False), (BASES, False)])
 
-    @classmethod
-    def getOptionsBoxDirectOverlap(cls, prevChoices):
-        if prevChoices.typeOfOverlap and prevChoices.typeOfOverlap[DIRECT_OVERLAP]:
-            return OVERLAP_MEASURES
-
-    @classmethod
-    def getOptionsBoxFlankingRegions(cls, prevChoices):
-        if prevChoices.typeOfOverlap and prevChoices.typeOfOverlap[FLANKING_REGIONS]:
-            return OVERLAP_MEASURES
-
-    @classmethod
-    def getOptionsBoxFlankingSizeUpstream(cls, prevChoices):
-        if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
-            return '1000'
-
-    @classmethod
-    def getOptionsBoxFlankingSizeDownstream(cls, prevChoices):
-        if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
-            return '1000'
+    # @classmethod
+    # def getOptionsBoxDirectOverlap(cls, prevChoices):
+    #     if prevChoices.typeOfOverlap and prevChoices.typeOfOverlap[DIRECT_OVERLAP]:
+    #         return OVERLAP_MEASURES
+    #
+    # @classmethod
+    # def getOptionsBoxFlankingRegions(cls, prevChoices):
+    #     if prevChoices.typeOfOverlap and prevChoices.typeOfOverlap[FLANKING_REGIONS]:
+    #         return OVERLAP_MEASURES
+    #
+    # @classmethod
+    # def getOptionsBoxFlankingSizeUpstream(cls, prevChoices):
+    #     if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
+    #         return '1000'
+    #
+    # @classmethod
+    # def getOptionsBoxFlankingSizeDownstream(cls, prevChoices):
+    #     if prevChoices.flankingRegions and prevChoices.flankingRegions in OVERLAP_MEASURES:
+    #         return '1000'
 
     @classmethod
     def getOptionsBoxDistanceCoordinate(cls, prevChoices):
-        if prevChoices.teststatType == DISTANCE:
-            return [START_COORDINATE, MIDPOINT, END_COORDINATE, CLOSEST_COORDINATE]
+        if prevChoices.teststatType and prevChoices.teststatType[DISTANCE]:
+            return OrderedDict([(START_COORDINATE, False), (MIDPOINT, False),(CLOSEST_COORDINATE, False)])
 
     @classmethod
     def getOptionsBoxDistanceType(cls, prevChoices):
-        if prevChoices.distanceCoordinate in [START_COORDINATE, MIDPOINT, END_COORDINATE, CLOSEST_COORDINATE]:
-            return ['absolute distance','average log distance']
+        if prevChoices.distanceCoordinate and any(prevChoices.distanceCoordinate.values()):
+            return OrderedDict([('absolute distance', False), ('average log distance', False)])
 
     @classmethod
     def getOptionsBoxCorrelation(cls, prevChoices):
-        if prevChoices.teststatType == CORRELATION:
+        if prevChoices.teststatType and prevChoices.teststatType[CORRELATION]:
             return ['genome-wide kernel correlation (overall relationship)','fine-scale correlation (structure of correlation)','local correlation (genomic region-level)']
 
     DETERMINE_FROM_SUBMITTED_TRACKS = 'determine whether or not to allow overlap based on submitted tracks'
@@ -301,7 +305,13 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['No, use the whole genome','Yes, exclude specified regions supplied by the user','Perform the analysis only in the explicit set of background regions supplied']
+        return [WHOLE_GENOME, EXCLUDE_SUPPLIED_BY_THE_USER, EXPLICIT_NEGATIVE_SET]
+
+    @classmethod
+    def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
+        if prevChoices.restrictRegions in [EXCLUDE_SUPPLIED_BY_THE_USER, EXPLICIT_NEGATIVE_SET]:
+            return '__track__'
+
 
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -310,7 +320,12 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxLocalHandler(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.localHeterogeneity == LOCAL_HETEROGENEITY:
-            return ['each genomic region restricted to a fixed size neighbourhood', 'distribute within a specified set of local regions ']
+            return ['each genomic region restricted to a fixed size neighbourhood', SET_OF_LOCAL_REGIONS_]
+
+    @classmethod
+    def getOptionsBoxPreserveLocalFileUpload(cls, prevChoices):  # Alt: getOptionsBox2()
+        if prevChoices.localHandler == SET_OF_LOCAL_REGIONS_:
+            return '__track__'
 
     @classmethod
     def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
