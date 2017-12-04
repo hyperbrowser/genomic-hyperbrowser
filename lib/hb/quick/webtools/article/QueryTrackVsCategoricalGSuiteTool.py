@@ -9,10 +9,8 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
-from quick.statistic.SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat import \
-    SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat, \
-    SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2StatUnsplittable
-from quick.statistic.SummarizedTrackVsCategoricalSuiteV2Stat import SummarizedTrackVsCategoricalSuiteV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
+    SummarizedInteractionPerTsCatV2StatUnsplittable
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
 from quick.util import McEvaluators
 from quick.util.debug import DebugUtil
@@ -251,7 +249,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     @staticmethod
     def getOptionsBoxCatSummaryFunc(prevChoices):
         if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            return SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2StatUnsplittable.functionDict.keys()
+            return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
 
     @staticmethod
     def getOptionsBoxMcfdrDepth(prevChoices):
@@ -321,7 +319,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Mandatory unless isRedirectTool() returns True.
         """
-        # DebugUtil.insertBreakPoint()
+        # DebugUtil.insertBreakPoint(5678)
 
         cls._setDebugModeIfSelected(choices)
 
@@ -359,6 +357,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
         analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('segregateNodeKey', 'reference')
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"].getResult()
         return results
 
@@ -417,7 +416,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 resTableDict[key].append("NA")
                 resTableDict[key].append("NA")
                 resTableDict[key].append("NA")
-            resTableDict[choices.catSummaryFunc] = [resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat.__name__],
+            resTableDict[choices.catSummaryFunc] = [resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
                                                     resultsMC[choices.categoryVal].getResult()[McEvaluators.PVAL_KEY],
                                                     resultsMC[choices.categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
                                                     resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
@@ -445,12 +444,13 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def prepareAnalysis(cls, choices):
-        analysisSpec = AnalysisSpec(SummarizedTrackVsCategoricalSuiteV2Stat)
+        analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+        analysisSpec.addParameter('segregateNodeKey', 'reference')
         return analysisSpec
 
     @classmethod
@@ -484,7 +484,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('rawStatistic', SummarizedQueryTrackVsCategoricalGSuiteForSelectedCategoryV2Stat.__name__)
+        analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+        analysisSpec.addParameter('segregateNodeKey', 'reference')
+
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
@@ -502,10 +504,10 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def prepareTrackStructure(cls, queryTS, catTS):
-        ts = TrackStructureV2()
-        for cat, refTS in catTS.iteritems():
-            ts[cat] = TrackStructureV2(dict([("query", queryTS), ("reference", refTS)]))
-        return ts
+        return TrackStructureV2(dict([("query", queryTS), ("reference", catTS)]))
+        # for cat, refTS in catTS.iteritems():
+        #     ts[cat] = TrackStructureV2(dict([("query", queryTS), ("reference", refTS)]))
+        # return ts
 
     # @classmethod
     # def getSubToolClasses(cls):

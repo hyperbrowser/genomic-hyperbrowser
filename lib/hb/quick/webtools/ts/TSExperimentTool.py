@@ -98,6 +98,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
 
         spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
         spec.addParameter('summaryFunc',parameter)
+        spec.addParameter('segregateNodeKey', 'reference')
         bins = UserBinSource('chr1','*',genome=genome)
         res = doAnalysis(spec, bins, fullTS)
         tsRes = res.getGlobalResult()['Result']

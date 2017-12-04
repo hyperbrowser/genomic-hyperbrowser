@@ -1,4 +1,4 @@
-from quick.statistic.SummarizedTrackVsCategoricalSuiteV2Stat import SummarizedTrackVsCategoricalSuiteV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.StatisticV2 import StatisticV2
 from gold.statistic.MagicStatFactory import MagicStatFactory
 
@@ -43,5 +43,5 @@ class WilcoxonUnpairedTestRV2StatUnsplittable(StatisticV2):
         return tsResult
 
     def _createChildren(self):
-        self._addChild(SummarizedTrackVsCategoricalSuiteV2Stat(
+        self._addChild(SummarizedInteractionPerTsCatV2Stat(
             self._region, self._trackStructure, summaryFunc='raw', **self._kwArgs))
