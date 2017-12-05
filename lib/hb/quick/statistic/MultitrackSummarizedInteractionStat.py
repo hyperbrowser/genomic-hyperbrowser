@@ -29,7 +29,7 @@ class MultitrackSummarizedInteractionStatUnsplittable(MultipleTrackStatistic):
                 'min',
                 'raw'])
 
-    def _init(self, multitrackSummaryFunc=None, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
+    def _init(self, multitrackSummaryFunc=None, **kwArgs):
         self._multitrackSummaryFunc = resolveSummaryFunctionFromLabel(multitrackSummaryFunc, self.functionDict)
         
     def _compute(self):
