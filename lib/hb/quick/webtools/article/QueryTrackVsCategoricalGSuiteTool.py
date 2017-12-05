@@ -48,6 +48,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         """
         return "Track coinciding with a group of GSuite tracks"
 
+
     @classmethod
     def getInputBoxNames(cls):
         """
@@ -69,7 +70,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select query track from history', 'queryTrack'),
+        return [('Use a GSuite of randomized query track', 'isQueryGSuite'),
+                ('Select query from history', 'queryTrack'),
                 ('Select reference GSuite', 'gsuite'),
                 ('Select category column', 'categoryName'),
                 ('Select primary group category value', 'categoryVal'),
@@ -83,38 +85,13 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 cls.getInputBoxNamesForUserBinSelection() + \
                 cls.getInputBoxNamesForDebug()
 
-    # @classmethod
-    # def getInputBoxOrder(cls):
-    #     """
-    #     Specifies the order in which the input boxes should be displayed,
-    #     as a list. The input boxes are specified by index (starting with 1)
-    #     or by key. If None, the order of the input boxes is in the order
-    #     specified by getInputBoxNames().
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getInputBoxGroups(cls, choices=None):
-    #     """
-    #     Creates a visual separation of groups of consecutive option boxes
-    #     from the rest (fieldset). Each such group has an associated label
-    #     (string), which is shown to the user. To define groups of option
-    #     boxes, return a list of BoxGroup namedtuples with the label, the key
-    #     (or index) of the first and last options boxes (inclusive).
-    #
-    #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey',
-    #                         last='secondKey')]
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
 
     @staticmethod
-    def getOptionsBoxQueryTrack():
+    def getOptionsBoxIsQueryGSuite():
+        return False
+
+    @staticmethod
+    def getOptionsBoxQueryTrack(prevChoices):
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -204,7 +181,38 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return GeneralGuiTool.getHistorySelectionElement()
+        return GeneralGuiTool.getHistorySelectionElement('gsuite') if prevChoices.isQueryGSuite \
+            else GeneralGuiTool.getHistorySelectionElement()
+
+    # @classmethod
+    # def getInputBoxOrder(cls):
+    #     """
+    #     Specifies the order in which the input boxes should be displayed,
+    #     as a list. The input boxes are specified by index (starting with 1)
+    #     or by key. If None, the order of the input boxes is in the order
+    #     specified by getInputBoxNames().
+    #
+    #     Optional method. Default return value if method is not defined: None
+    #     """
+    #     return None
+    #
+    # @classmethod
+    # def getInputBoxGroups(cls, choices=None):
+    #     """
+    #     Creates a visual separation of groups of consecutive option boxes
+    #     from the rest (fieldset). Each such group has an associated label
+    #     (string), which is shown to the user. To define groups of option
+    #     boxes, return a list of BoxGroup namedtuples with the label, the key
+    #     (or index) of the first and last options boxes (inclusive).
+    #
+    #     Example:
+    #        from quick.webtool.GeneralGuiTool import BoxGroup
+    #        return [BoxGroup(label='A group of choices', first='firstKey',
+    #                         last='secondKey')]
+    #
+    #     Optional method. Default return value if method is not defined: None
+    #     """
+    #     return None
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):  # Alternatively: getOptionsBox2()
@@ -326,11 +334,26 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
 
-        queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
+        if choices.isQueryGSuite:
+            queryTS = factory.getFlatTracksTS(choices.genome, choices.queryTrack)
+        else:
+            queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
         refTS = factory.getFlatTracksTS(choices.genome, choices.gsuite)
         catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
         assert choices.categoryVal in catTS
 
+        if choices.isQueryGSuite:
+            cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+        else:
+            cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+
+    @classmethod
+    def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
+        ts = cls.prepareTrackStructure(queryTS, catTS)
+
+
+    @classmethod
+    def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
         wilcoxonResults = None
         resultsMC = None
         core = HtmlCore()
