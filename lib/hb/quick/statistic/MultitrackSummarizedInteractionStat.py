@@ -1,15 +1,6 @@
-from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from gold.util.CustomExceptions import ShouldNotOccurError
 from quick.statistic.SummarizedInteractionWithOtherTracksStat import SummarizedInteractionWithOtherTracksStat
-from quick.util.debug import DebugUtil
-'''
-Created on Jun 11, 2015
-
-@author: boris
-'''
-
-
-from numpy import mean
+from quick.util.StatUtils import getFilteredSummaryFunctionDict, resolveSummaryFunctionFromLabel
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import MultipleTrackStatistic
 
@@ -31,24 +22,15 @@ class MultitrackSummarizedInteractionStat(MagicStatFactory):
             
 class MultitrackSummarizedInteractionStatUnsplittable(MultipleTrackStatistic):
     
-    functionDict = {
-                'sum': smartSum,
-                'avg': smartMeanWithNones,
-                'max': max,
-                'min': min,
-                'raw': 'RawResults'
-                }
-    
-    def _resolveFunction(self, summaryFunc):
-        if summaryFunc not in self.functionDict:
-            raise ShouldNotOccurError(str(summaryFunc) + 
-                                      ' is not in the list of allowed summary functions, must be one of ' + 
-                                      str(sorted(self.functionDict.keys())))
-        else: 
-            return self.functionDict[summaryFunc]
-    
+    functionDict = getFilteredSummaryFunctionDict([
+                'sum',
+                'avg',
+                'max',
+                'min',
+                'raw'])
+
     def _init(self, multitrackSummaryFunc=None, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
-        self._multitrackSummaryFunc = self._resolveFunction(multitrackSummaryFunc)
+        self._multitrackSummaryFunc = resolveSummaryFunctionFromLabel(multitrackSummaryFunc, self.functionDict)
         
     def _compute(self):
         if self._multitrackSummaryFunc:

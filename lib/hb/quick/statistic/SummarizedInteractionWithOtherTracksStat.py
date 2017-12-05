@@ -1,13 +1,7 @@
-'''
-Created on Apr 30, 2015
-
-@author: boris
-'''
-from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from gold.util.CustomExceptions import ShouldNotOccurError
-from numpy import mean
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import MultipleTrackStatistic
+from quick.util.StatUtils import getFilteredSummaryFunctionDict, resolveSummaryFunctionFromLabel
 
 
 class SummarizedInteractionWithOtherTracksStat(MagicStatFactory):
@@ -28,27 +22,18 @@ class SummarizedInteractionWithOtherTracksStat(MagicStatFactory):
             
 class SummarizedInteractionWithOtherTracksStatUnsplittable(MultipleTrackStatistic):
 
-    functionDict = {
-                    'sum': smartSum,
-                    'avg': smartMeanWithNones,
-                    'max': max,
-                    'min': min
-                    }
-    
+    functionDict = getFilteredSummaryFunctionDict([
+                    'sum',
+                    'avg',
+                    'max',
+                    'min'])
+
     def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(pairwiseStatistic)
-        self._summaryFunction = self._resolveFunction(summaryFunc)
+        self._summaryFunction = resolveSummaryFunctionFromLabel(summaryFunc, self.functionDict)
         assert reverse in ['Yes', 'No'], 'reverse must be one of "Yes" or "No"'
         self._reversed = reverse
     
-    def _resolveFunction(self, summaryFunc):
-        if summaryFunc not in self.functionDict:
-            raise ShouldNotOccurError(str(summaryFunc) + 
-                                      ' not in list, must be one of ' + 
-                                      str(sorted(self.functionDict.keys())))
-        else: 
-            return self.functionDict[summaryFunc]
-        
     def _compute(self):
         if self._summaryFunction:
             results = []

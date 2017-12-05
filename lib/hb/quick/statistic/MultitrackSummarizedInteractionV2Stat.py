@@ -6,6 +6,8 @@ from gold.util.CustomExceptions import ShouldNotOccurError
 from numpy import mean
 from gold.track.TrackStructure import TrackStructure, TrackStructureV2
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
+from quick.util.StatUtils import getFilteredSummaryFunctionDict, resolveSummaryFunctionFromLabel
+
 '''
 Created on Nov 9, 2015
 
@@ -34,28 +36,14 @@ class MultitrackSummarizedInteractionV2Stat(MagicStatFactory):
             
 class MultitrackSummarizedInteractionV2StatUnsplittable(StatisticV2):    
     
-    functionDict = {
-                'sum': smartSum,
-                'avg': smartMeanWithNones,
-                'max': max,
-                'min': min,
-                'raw': 'RawResults'
-                }
-    
-    def _resolveFunction(self, summaryFunc):
-        if summaryFunc not in self.functionDict:
-            raise ShouldNotOccurError(str(summaryFunc) + 
-                                      ' is not in the list of allowed summary functions, must be one of ' + 
-                                      str(sorted(self.functionDict.keys())))
-        else: 
-            return self.functionDict[summaryFunc]
-    
+    functionDict = getFilteredSummaryFunctionDict(['sum', 'avg', 'max', 'min', 'raw'])
+
     def _init(self, multitrackSummaryFunc=None, **kwArgs):
-        self._multitrackSummaryFunc = self._resolveFunction(multitrackSummaryFunc)
+        self._multitrackSummaryFunc = resolveSummaryFunctionFromLabel(multitrackSummaryFunc, self.functionDict)
        
     def _compute(self):
 
-        tsResult = TSResult(self._computeTrackStructure)
+        tsResult = TSResult(self._trackStructure)
         rawResults = []
         for key, child in self._childrenDict.iteritems():
             childRes = child.getResult()
@@ -82,7 +70,6 @@ class MultitrackSummarizedInteractionV2StatUnsplittable(StatisticV2):
 #                 for t in val:
 #                     print t.trackName
         self._childrenDict = OrderedDict()
-        self._computeTrackStructure = TrackStructureV2()
         tsLeafNodes = self._trackStructure.getLeafNodes()
         for i, sts in enumerate(tsLeafNodes):
             queryTS = sts
@@ -92,5 +79,4 @@ class MultitrackSummarizedInteractionV2StatUnsplittable(StatisticV2):
             currentTS = TrackStructureV2({TrackStructure.QUERY_KEY:queryTS, TrackStructure.REF_KEY:refTS})
             queryTrackTitle = queryTS.metadata['title']
             self._childrenDict[queryTrackTitle] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, currentTS, **self._kwArgs))
-            self._computeTrackStructure[queryTrackTitle] = currentTS
-            
+
