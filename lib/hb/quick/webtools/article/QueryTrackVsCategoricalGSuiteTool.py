@@ -9,6 +9,7 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
+from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import MultitrackSummarizedInteractionWithOtherTracksV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
     SummarizedInteractionPerTsCatV2StatUnsplittable
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
@@ -349,8 +350,32 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId="progress-output")
+        print str(core)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices, isMC=False)
         ts = cls.prepareTrackStructure(queryTS, catTS)
+        analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
+        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        core = HtmlCore()
+        core.divEnd()
+        core.hideToggle(styleId="progress-output")
+        print str(core)
+        cls._printMultiQueryScenarioResult(results, catTS.keys())
 
+    @classmethod
+    def _printMultiQueryScenarioResult(cls, results, catNames):
+        core = HtmlCore()
+        core.divBegin()
+        resTableDict = OrderedDict()
+        for key, val in results.iteritems():
+            resTableDict[key] = val.getResult()
+
+        core.tableFromDictionary(resTableDict, columnNames=["Query track"]+catNames)
+        core.divEnd()
+        core.end()
+        print str(core)
 
     @classmethod
     def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
@@ -361,7 +386,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         results = cls._getResults(queryTS, catTS, analysisBins, choices)
         if choices.randType == "Wilcoxon":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
-            wilcoxonResults = cls.getWilcoxonResults(analysisBins, catTS, choices, queryTS)
+            wilcoxonResults = cls.getWilcoxonResults(analysisBins, catTS, choices, queryTS).getResult()
         else:
             core.divBegin(divId="progress-output")
             print str(core)
@@ -381,7 +406,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                       choices.similarityFunc])
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('segregateNodeKey', 'reference')
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"].getResult()
+        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
         return results
 
     @classmethod
@@ -392,7 +417,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return results
 
     @classmethod
-    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices):
+    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices, isMC=True):
         n = len(queryTS.getLeafNodes())
         m = len(catTS.getLeafNodes())
         cat_m = len(catTS[choices.categoryVal].getLeafNodes())
@@ -404,8 +429,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         aDChoicec = analysisDef.getChoices(filterByActivation=True)
-        maxSamples = int(aDChoicec['maxSamples'])
+        maxSamples = int(aDChoicec['maxSamples']) if isMC else 0
         return n*m*k*(maxSamples+1)
+
 
     @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
@@ -523,6 +549,22 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
 
+        return analysisSpec
+
+    @classmethod
+    def prepareMultiQueryAnalysis(cls, choices, opCount):
+        analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
+        analysisSpec.addParameter('multitrackRawStatistic',SummarizedInteractionPerTsCatV2Stat.__name__)
+
+        analysisSpec.addParameter('pairwiseStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                      choices.similarityFunc])
+        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
+        analysisSpec.addParameter('summaryFunc',
+                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+        analysisSpec.addParameter('segregateNodeKey', 'reference')
+        analysisSpec.addParameter('progressPoints', opCount)
+        analysisSpec.addParameter('runLocalAnalysis', "No")
         return analysisSpec
 
     @classmethod
