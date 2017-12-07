@@ -81,6 +81,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 ('Type of randomization', 'randType'),
                 ('Select summary function groups', 'catSummaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
+                ('Select alternative for the wilcoxon test', 'wilcoxonTail'),
                 ('Randomization algorithm', 'randAlg')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                 cls.getInputBoxNamesForUserBinSelection() + \
@@ -266,6 +267,11 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
 
     @staticmethod
+    def getOptionsBoxWilcoxonTail(prevChoices):
+        if prevChoices.randType == "Wilcoxon":
+            return ['two.sided', 'less', 'greater']
+
+    @staticmethod
     def getOptionsBoxRandAlg(prevChoices):
         if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
             for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
@@ -406,6 +412,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                       choices.similarityFunc])
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('segregateNodeKey', 'reference')
+        analysisSpec.addParameter('alternative', choices.wilcoxonTail)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
         return results
 

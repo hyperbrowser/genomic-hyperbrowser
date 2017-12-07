@@ -15,6 +15,9 @@ class WilcoxonUnpairedTestRV2Stat(MagicStatFactory):
 
 class WilcoxonUnpairedTestRV2StatUnsplittable(StatisticV2):
 
+    def _init(self, alternative="less", **kwArgs):
+        self._alternative = alternative
+
     def _compute(self):
         tsResult = self._children[0].getResult()
         groups = []
@@ -37,7 +40,7 @@ class WilcoxonUnpairedTestRV2StatUnsplittable(StatisticV2):
         env['x'] = x
         env['y'] = y
 
-        wilcoxResult = wilcoxTest(fmla, alternative='less', paired=False)
+        wilcoxResult = wilcoxTest(fmla, alternative=self._alternative, paired=False)
         #wilcoxResults.names = ['statistic' 'parameter' 'p.value' 'null.value' 'alternative' 'method', 'data.name']
         tsResult.setResult(dict([(wilcoxResult.names[i], wilcoxResult[i]) for i in xrange(len(wilcoxResult.names))]))
         return tsResult
