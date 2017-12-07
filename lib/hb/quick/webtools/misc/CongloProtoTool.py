@@ -4,6 +4,10 @@ from itertools import product
 #FIXME: REMOVE!!
 from quick.application.ExternalTrackManager import ExternalTrackManager
 
+CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
+
+CORE_DATABASE = 'Use core database as the set of reference tracks'
+
 
 class RestrictedAnalysisUniverse:
     pass
@@ -13,6 +17,8 @@ class RestrictedThroughExclusion(RestrictedAnalysisUniverse):
 
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import collections
+
+FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
 
 AVERAGE_LOG_DISTANCE = 'average log distance'
 
@@ -97,7 +103,14 @@ class CongloProtoTool(GeneralGuiTool):
         return [('Select the reference genome: ', 'selectReferenceGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Type of co-localization analysis: ', 'analysisType'),
-                ('Choose a reference track collection', 'ChoiceOfReferenceTrackCollection'),
+                ('Choose a query track: ', 'chooseQueryTrackFile'),
+                ('Choose a reference track: ', 'chooseReferenceTrackFile'),
+                ('Choose a type of reference track collection', 'typeOfReferenceTrackCollection'),
+                ('Choose a core data collection', 'choiceOfCoreDatabase'),
+                ('Choose a custom reference track collection', 'chooseCustomTrackCollection'),
+                ('Use one of the default core databases as reference collection ? ', 'optionalUseOfCoreDatabase'),
+                ('Choose a query track collection: ', 'chooseQueryTrackCollection'),
+                ('Choose a reference track collection: ', 'chooseReferenceTrackCollection'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
                 ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
@@ -247,9 +260,47 @@ class CongloProtoTool(GeneralGuiTool):
         return [TWO_GENOMIC_TRACKS, REFERENCE_TRACKS, TWO_TRACK_GROUPS]
 
     @classmethod
-    def getOptionsBoxChoiceOfReferenceTrackCollection(cls, prevChoices):
+    def getOptionsBoxChooseQueryTrackFile(cls, prevChoices):
+        if prevChoices.analysisType in [TWO_GENOMIC_TRACKS,REFERENCE_TRACKS]:
+            return ('__history__',)
+
+    @classmethod
+    def getOptionsBoxChooseReferenceTrackFile(cls, prevChoices):
+        if prevChoices.analysisType == TWO_GENOMIC_TRACKS:
+            return ('__history__',)
+
+    @classmethod
+    def getOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
         if prevChoices.analysisType == REFERENCE_TRACKS:
-            return ['Use core database as the set of reference tracks', 'Use custom datasets to build a set of reference tracks']
+            return [CORE_DATABASE, CUSTOM_DATABASE]
+
+    @classmethod
+    def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
+        if prevChoices.typeOfReferenceTrackCollection == CORE_DATABASE:
+            return ['LOLA data collection','GIGGLE data collection', 'GSuite Hyperbrowser data collection']
+
+    @classmethod
+    def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
+        if prevChoices.typeOfReferenceTrackCollection == CUSTOM_DATABASE:
+            return ('__history__',)
+
+    @classmethod
+    def getOptionsBoxChooseQueryTrackCollection(cls, prevChoices):
+        if prevChoices.analysisType == TWO_TRACK_GROUPS:
+            return ('__history__',)
+
+    @classmethod
+    def getOptionsBoxOptionalUseOfCoreDatabase(cls, prevChoices):
+        if prevChoices.analysisType == TWO_TRACK_GROUPS:
+            return ['Yes', 'No']
+
+    @classmethod
+    def getOptionsBoxChooseReferenceTrackCollection(cls, prevChoices):
+        if prevChoices.optionalUseOfCoreDatabase == 'Yes':
+            return ['LOLA data collection', 'GIGGLE data collection', 'GSuite Hyperbrowser data collection']
+        elif prevChoices.optionalUseOfCoreDatabase == 'No':
+            return ('__history__',)
+
 
     @classmethod
     def getOptionsBoxTeststatType(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -337,7 +388,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxLocalHandler(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.localHeterogeneity == LOCAL_HETEROGENEITY:
-            return ['each genomic region restricted to a fixed size neighbourhood', SET_OF_LOCAL_REGIONS_]
+            return [FIXED_SIZE_NEIGHBOURHOOD, SET_OF_LOCAL_REGIONS_]
 
     @classmethod
     def getOptionsBoxPreserveLocalFileUpload(cls, prevChoices):  # Alt: getOptionsBox2()
