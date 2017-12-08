@@ -2,6 +2,7 @@ from collections import OrderedDict
 from itertools import product
 
 #FIXME: REMOVE!!
+from conglomerate.methods.stereogene.stereogene import StereoGene
 from quick.application.ExternalTrackManager import ExternalTrackManager
 
 CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
@@ -468,8 +469,16 @@ class CongloProtoTool(GeneralGuiTool):
         """
         selections, typeOfAnalysis = cls.parseChoices(choices)
 
+        from conglomerate.conglomerate.tools.method_compatibility import getCompatibleMethodObjects
+        queryTrack = ['dummy1']
+        refTracks = ['dummy2','dummy3']
+        from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
+        methodClasses = [GenometriCorr, StereoGene]
+
+        workingMethodObjects = getCompatibleMethodObjects(selections, queryTrack, refTracks, methodClasses)
         print selections
         print typeOfAnalysis
+        print workingMethodObjects
 
     @classmethod
     def parseChoices(cls, choices):
