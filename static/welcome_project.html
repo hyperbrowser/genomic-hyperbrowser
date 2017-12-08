@@ -1,0 +1,199 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><link rel="stylesheet" href="welcome_project.css"><meta charset='UTF-8'><title>coloc-stats: a unified web interface to perform co-localization analysis of genomic features</title></head><body><div class='content'><div class ="tabs">
+    <ul class ="nav nav-tabs" id="tab-links">
+        <li class="active" value="tab0">
+            <a data-toggle="tab" href="#menu0">colocStats</a>
+        </li>
+        <li  value="tab1">
+            <a data-toggle="tab" href="#menu1">List of other projects</a>
+        </li>
+        <li  value="tab2">
+            <a data-toggle="tab" href="#menu2">About</a>
+        </li>
+    </ul>
+</div>
+    <div class="tab-content">
+        <div id="menu0" class="tab-pane fade  in active">
+            <div class="container">
+                <div class="rowSpecial">
+                    <div class="colAll">
+                        <h2 class="projectTitle">
+                            coloc-stats: a unified web interface to perform co-localization analysis of genomic features
+                        </h2>
+                        <div class = 'project'>
+                            <div class = 'projectDesc'>
+                                <p class="paragraph">
+                                    Motivation for coloc-stats
+                                </p>
+                                <p class="paragraph">
+                                    more description
+                                </p>
+                                <p class="paragraph">
+                                    To read more about coloc-stats go to: TO BE UPDATED.
+                                </p>
+                                <p class="paragraph">
+                                    To see all examples from above paper [click here] [In case we want to make a page with all examples].
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colAll">
+                         <div class = 'example'>
+                             <h4 class = 'exampleTitle'>
+                                 The unified web interface
+                             </h4>
+                             <div class = 'exampleDesc'>
+                                 <p class="paragraph">
+                                     The following tool have the unified interface of the methods available in the literature:
+                                     <ul style="list-style-type:none">
+                                        <li>- <a href="http://genometriccorr">genometriccorr</a> described in paper [1]</li>
+                                        <li>- <a href="http://giggle">giggle</a> described in paper [2]</li>
+                                        <li>- <a href="http://lola">goshifter</a> described in paper [3]</li>
+                                        <li>- <a href="http://intervalstats">IntervalStats</a> described in paper [4]</li>
+                                        <li>- <a href="http://lola">lola</a> described in paper [5]</li>
+                                        <li>- <a href="http://stereogene">stereogene</a> described in paper [6]</li>
+                                     </ul>
+
+                                     The output of tools is a consolidated output of above methods.
+
+
+                                 </p>
+                                 <p class="paragraph">
+                                     <ul style="list-style-type:none">
+                                        <li>[1]  paper </li>
+                                        <li>[2]  paper </li>
+                                        <li>[3]  paper </li>
+                                        <li>[4]  paper </li>
+                                        <li>[5]  paper </li>
+                                        <li>[6]  paper </li>
+                                     </ul>
+                                 </p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+                        
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colAll">
+                        CongloProtoTool is divided by three possible co-localization analysis:
+                         <div class = 'example'>
+                             <h4 class = 'exampleTitle'>
+                                 CongloProtoTool with co-localization analysis: Relation between two genomic tracks
+                             </h4>
+                             <div class = 'exampleDesc'>
+                                 <p class="paragraph">
+                                     The input for this option in the tool are query and reference track
+                                 </p>
+                                 <p class="paragraph">
+                                     The output is a table ...
+                                 </p>
+                             </div>
+                         </div>
+                        <div class = 'example'>
+                             <h4 class = 'exampleTitle'>
+                                 CongloProtoTool with co-localization analysis: Query track against collection of reference tracks
+                             </h4>
+                             <div class = 'exampleDesc'>
+                                 <p class="paragraph">
+                                     The input for this option in the tool are query and reference track
+                                 </p>
+                                 <p class="paragraph">
+                                     The output is a table ...
+                                 </p>
+                             </div>
+                         </div>
+                        <div class = 'example'>
+                             <h4 class = 'exampleTitle'>
+                                 CongloProtoTool with co-localization analysis: Pairwise comparision of all tracks between two tracks-groups
+                             </h4>
+                             <div class = 'exampleDesc'>
+                                 <p class="paragraph">
+                                     The input for this option in the tool are query and reference track, selected from core or custom database.
+                                 </p>
+                                 <p class="paragraph">
+                                     The output is a table ...
+                                 </p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+                        
+            <div class="footer">
+                <div class = 'contactInfo'>
+                    <div class = 'contactInfoDesc'>
+                          <p class="paragraph">
+                              If you have any questions, requests or comments regarding the rainfall plot project, please contact: <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div><div id="menu1" class="tab-pane fade ">
+
+            <div class="container">
+                <div class="rowSpecial">
+                    <div class="colAllProjectList">
+
+                          <div id ='content'></div>
+                                <script>
+                                $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_colocStats.txt");
+                                </script>
+                    </div>
+                </div>
+            </div>
+            </div><div id="menu2" class="tab-pane fade ">
+        <div class="container">
+
+
+				<div class="contact">
+
+				    <b>Note:</b>
+                        <p>
+                        This is a specialized version of The Genomic Hyperbrowser,
+                        focusing on new functionality for analyzing collections of genomic track.
+                        More information on the general HyperBrowser functionality can be
+                        found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
+                        </p>
+				    <b>Contact information</b>
+                        <p>
+                        If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
+                        <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
+                       </p>
+
+				        <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
+				         A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
+				        </p>
+
+				</div>
+
+		</div>
+
+        <div class="containerNext">
+            <div class="rowSpecial">
+                <div class ="infoAboutHB">
+                <p class="blocktext">
+                This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
+                supported by various national and local bodies.
+                </p>
+                <p class="blocktext">
+                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+                </p>
+         </div>
+          </div>
+		</div>
+
+        <div class="footer">
+                <div class="section">
+                  <img src="hyperbrowser/images/logo/HB_support.png" class="center">
+                </div>
+        </div>
+
+
+
+
+        </div></div></div></body></html>
