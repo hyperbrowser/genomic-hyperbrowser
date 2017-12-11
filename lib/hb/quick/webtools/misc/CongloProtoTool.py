@@ -531,7 +531,7 @@ class CongloProtoTool(GeneralGuiTool):
             raise
         else:
             choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
-        choiceValueMappings['clumping'] = {UNIFORMLY_DISTRIBUTED: False, PRESERVE_EMPIRIC_DISTRIBUTION: True}
+        choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
         for guiKey, selectionKey in selectionMapping.items():
             selections.update(
                 cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey))
