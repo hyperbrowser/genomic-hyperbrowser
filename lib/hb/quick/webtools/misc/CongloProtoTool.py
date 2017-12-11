@@ -1,13 +1,12 @@
 from collections import OrderedDict
 from itertools import product
+from conglomerate.methods.giggle.giggle import Giggle
+from conglomerate.tools.job import Job
 
 #FIXME: REMOVE!!
 from conglomerate.methods.stereogene.stereogene import StereoGene
 from quick.application.ExternalTrackManager import ExternalTrackManager
 
-CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
-
-CORE_DATABASE = 'Use core database as the set of reference tracks'
 
 
 class RestrictedAnalysisUniverse:
@@ -18,55 +17,6 @@ class RestrictedThroughExclusion(RestrictedAnalysisUniverse):
 
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import collections
-
-FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
-
-AVERAGE_LOG_DISTANCE = 'average log distance'
-
-ABSOLUTE_DISTANCE = 'absolute distance'
-
-PRESERVE_EMPIRIC_DISTRIBUTION = 'Yes, preserve empiric distribution of distances between genomic regions'
-
-UNIFORMLY_DISTRIBUTED = 'No, assume that genomic features are uniformly distributed'
-
-SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
-
-EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
-
-EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
-
-WHOLE_GENOME = 'No, use the whole genome'
-
-CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
-
-CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
-
-LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
-
-
-
-
-BASES = 'total number of overlapping bases'
-
-COUNTS = 'number of overlapping regions (counts)'
-
-#OVERLAP_MEASURES = [COUNTS, BASES]
-
-FLANKING_REGIONS = 'basepair overlap including expansion of flanking regions'
-
-DIRECT_OVERLAP = 'direct basepair overlap between genomic regions'
-
-CORRELATION = 'Correlation'
-
-DISTANCE = 'Proximity (distance)'
-
-OVERLAP = 'Overlap'
-
-TWO_TRACK_GROUPS = 'Pairwise comparison of all tracks between two track-groups'
-
-REFERENCE_TRACKS = 'Query track against collection of reference tracks'
-
-TWO_GENOMIC_TRACKS = 'Relation between two genomic tracks'
 
 
 class CongloProtoTool(GeneralGuiTool):
@@ -158,6 +108,8 @@ class CongloProtoTool(GeneralGuiTool):
     #     """
     #     return None
 
+    CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
+
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls):  # Alt: getOptionsBox1()
         return ['Human (hg19)','Human (hg38)', CUSTOM_REFERENCE_GENOME]
@@ -166,6 +118,10 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
         if prevChoices.selectReferenceGenome == CUSTOM_REFERENCE_GENOME:
             return ('__history__',)
+
+    TWO_TRACK_GROUPS = 'Pairwise comparison of all tracks between two track-groups'
+    REFERENCE_TRACKS = 'Query track against collection of reference tracks'
+    TWO_GENOMIC_TRACKS = 'Relation between two genomic tracks'
 
     @classmethod
     def getOptionsBoxAnalysisType(cls, prevChoices):  # Alt: getOptionsBox1()
@@ -270,6 +226,9 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.analysisType == TWO_GENOMIC_TRACKS:
             return ('__history__',)
 
+    CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
+    CORE_DATABASE = 'Use core database as the set of reference tracks'
+
     @classmethod
     def getOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
         if prevChoices.analysisType == REFERENCE_TRACKS:
@@ -302,6 +261,13 @@ class CongloProtoTool(GeneralGuiTool):
         elif prevChoices.optionalUseOfCoreDatabase == 'No':
             return ('__history__',)
 
+    # OVERLAP_MEASURES = [COUNTS, BASES]
+
+    FLANKING_REGIONS = 'basepair overlap including expansion of flanking regions'
+    DIRECT_OVERLAP = 'direct basepair overlap between genomic regions'
+    CORRELATION = 'Correlation'
+    DISTANCE = 'Proximity (distance)'
+    OVERLAP = 'Overlap'
 
     @classmethod
     def getOptionsBoxTeststatType(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -318,6 +284,9 @@ class CongloProtoTool(GeneralGuiTool):
         getInputBoxNames(), if any.
         """
         return OrderedDict([(OVERLAP, False), (DISTANCE, False), (CORRELATION, False)])
+
+    BASES = 'total number of overlapping bases'
+    COUNTS = 'number of overlapping regions (counts)'
 
     @classmethod
     def getOptionsBoxOverlapMeasure(cls, prevChoices):
@@ -354,6 +323,9 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.teststatType and prevChoices.teststatType[DISTANCE]:
             return OrderedDict([(cls.START_COORDINATE, False), (cls.MIDPOINT, False),(cls.CLOSEST_COORDINATE, False)])
 
+    AVERAGE_LOG_DISTANCE = 'average log distance'
+    ABSOLUTE_DISTANCE = 'absolute distance'
+
     @classmethod
     def getOptionsBoxDistanceType(cls, prevChoices):
         if prevChoices.distanceCoordinate and any(prevChoices.distanceCoordinate.values()):
@@ -372,6 +344,10 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxAllowOverlaps(cls, prevChoices):  # Alt: getOptionsBox2()
         return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
 
+    EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
+    EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
+    WHOLE_GENOME = 'No, use the whole genome'
+
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
         return [WHOLE_GENOME, EXCLUDE_SUPPLIED_BY_THE_USER, EXPLICIT_NEGATIVE_SET]
@@ -386,6 +362,9 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
         return ['No, distribute genomic regions across the whole genome', LOCAL_HETEROGENEITY]
 
+    FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
+    SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
+
     @classmethod
     def getOptionsBoxLocalHandler(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.localHeterogeneity == LOCAL_HETEROGENEITY:
@@ -396,9 +375,15 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.localHandler == SET_OF_LOCAL_REGIONS_:
             return '__track__'
 
+    PRESERVE_EMPIRIC_DISTRIBUTION = 'Yes, preserve empiric distribution of distances between genomic regions'
+    UNIFORMLY_DISTRIBUTED = 'No, assume that genomic features are uniformly distributed'
+
     @classmethod
     def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
         return OrderedDict([(UNIFORMLY_DISTRIBUTED, False), (PRESERVE_EMPIRIC_DISTRIBUTION, False)])
+
+    CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
+    LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
 
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
