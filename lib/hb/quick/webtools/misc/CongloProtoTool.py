@@ -425,11 +425,16 @@ class CongloProtoTool(GeneralGuiTool):
         selections, typeOfAnalysis = cls.parseChoices(prevChoices)
         queryTrack = cls.getFnListFromTrackChoice(prevChoices.chooseQueryTrackFile)
         refTracks = cls.getFnListFromTrackChoice(prevChoices.chooseReferenceTrackFile)
+        if queryTrack is None or refTracks is None:
+            return None
 
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
         #methodChoices = [str(wmo) for wmo in workingMethodObjects]
         methodChoices = getCollapsedConfigurationsPerMethod(workingMethodObjects)
-        return OrderedDict( zip(methodChoices, [True]*len(methodChoices)) )
+        if len(methodChoices)==0:
+            return None
+        else:
+            return OrderedDict( zip(methodChoices, [True]*len(methodChoices)) )
 
 
     # @classmethod
@@ -492,7 +497,7 @@ class CongloProtoTool(GeneralGuiTool):
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
 
         selections, typeOfAnalysis = cls.parseChoices(choices)
-
+        #print 'TEMP8: ', type(choices.chooseQueryTrackFile), choices.chooseQueryTrackFile
         queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
         refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
 
@@ -511,7 +516,9 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getFnListFromTrackChoice(cls, trackChoice):
-        print "TEMP9: ", type(trackChoice), trackChoice
+        if trackChoice is None or trackChoice.strip()=='':
+            return None
+
         filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice)
         if filetype in ['bed']:
             fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
