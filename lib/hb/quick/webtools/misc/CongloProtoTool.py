@@ -51,7 +51,8 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select the reference genome: ', 'selectReferenceGenome'),
+        return [('Select the running mode : ', 'selectRunningMode'),
+                ('Select the reference genome: ', 'selectReferenceGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Type of co-localization analysis: ', 'analysisType'),
                 ('Choose a query track: ', 'chooseQueryTrackFile'),
@@ -107,6 +108,15 @@ class CongloProtoTool(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
+
+    ADVANCED = 'Advanced mode: unified specification of individual parameters'
+    SIMPLE_WITH_SHARED_DEFAULTS = 'Simple mode: based on shared parameter settings'
+    SIMPLE_WITH_DEFAULTS = 'Simple mode: based on tool-specific defaults'
+
+    @classmethod
+    def getOptionsBoxSelectRunningMode(cls):  # Alt: getOptionsBox1()
+        return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
+
 
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
