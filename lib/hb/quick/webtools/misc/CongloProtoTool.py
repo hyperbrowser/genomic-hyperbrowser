@@ -112,11 +112,11 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls):  # Alt: getOptionsBox1()
-        return ['Human (hg19)','Human (hg38)', CUSTOM_REFERENCE_GENOME]
+        return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
 
     @classmethod
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
-        if prevChoices.selectReferenceGenome == CUSTOM_REFERENCE_GENOME:
+        if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             return ('__history__',)
 
     TWO_TRACK_GROUPS = 'Pairwise comparison of all tracks between two track-groups'
@@ -214,16 +214,16 @@ class CongloProtoTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return [TWO_GENOMIC_TRACKS, REFERENCE_TRACKS, TWO_TRACK_GROUPS]
+        return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
 
     @classmethod
     def getOptionsBoxChooseQueryTrackFile(cls, prevChoices):
-        if prevChoices.analysisType in [TWO_GENOMIC_TRACKS,REFERENCE_TRACKS]:
+        if prevChoices.analysisType in [cls.TWO_GENOMIC_TRACKS,cls.REFERENCE_TRACKS]:
             return ('__history__',)
 
     @classmethod
     def getOptionsBoxChooseReferenceTrackFile(cls, prevChoices):
-        if prevChoices.analysisType == TWO_GENOMIC_TRACKS:
+        if prevChoices.analysisType == cls.TWO_GENOMIC_TRACKS:
             return ('__history__',)
 
     CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
@@ -231,27 +231,27 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
-        if prevChoices.analysisType == REFERENCE_TRACKS:
-            return [CORE_DATABASE, CUSTOM_DATABASE]
+        if prevChoices.analysisType == cls.REFERENCE_TRACKS:
+            return [cls.CORE_DATABASE, cls.CUSTOM_DATABASE]
 
     @classmethod
     def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
-        if prevChoices.typeOfReferenceTrackCollection == CORE_DATABASE:
+        if prevChoices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
             return ['LOLA data collection','GIGGLE data collection', 'GSuite Hyperbrowser data collection']
 
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
-        if prevChoices.typeOfReferenceTrackCollection == CUSTOM_DATABASE:
+        if prevChoices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
             return ('__history__',)
 
     @classmethod
     def getOptionsBoxChooseQueryTrackCollection(cls, prevChoices):
-        if prevChoices.analysisType == TWO_TRACK_GROUPS:
+        if prevChoices.analysisType == cls.TWO_TRACK_GROUPS:
             return ('__history__',)
 
     @classmethod
     def getOptionsBoxOptionalUseOfCoreDatabase(cls, prevChoices):
-        if prevChoices.analysisType == TWO_TRACK_GROUPS:
+        if prevChoices.analysisType == cls.TWO_TRACK_GROUPS:
             return ['Yes', 'No']
 
     @classmethod
@@ -283,7 +283,7 @@ class CongloProtoTool(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return OrderedDict([(OVERLAP, False), (DISTANCE, False), (CORRELATION, False)])
+        return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)])
 
     BASES = 'total number of overlapping bases'
     COUNTS = 'number of overlapping regions (counts)'
@@ -291,7 +291,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxOverlapMeasure(cls, prevChoices):
         if prevChoices.teststatType and prevChoices.teststatType[OVERLAP]:
-            return OrderedDict([(COUNTS, False), (BASES, False)])
+            return OrderedDict([(cls.COUNTS, False), (cls.BASES, False)])
 
     # @classmethod
     # def getOptionsBoxDirectOverlap(cls, prevChoices):
@@ -320,7 +320,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxDistanceCoordinate(cls, prevChoices):
-        if prevChoices.teststatType and prevChoices.teststatType[DISTANCE]:
+        if prevChoices.teststatType and prevChoices.teststatType[cls.DISTANCE]:
             return OrderedDict([(cls.START_COORDINATE, False), (cls.MIDPOINT, False),(cls.CLOSEST_COORDINATE, False)])
 
     AVERAGE_LOG_DISTANCE = 'average log distance'
@@ -329,11 +329,11 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxDistanceType(cls, prevChoices):
         if prevChoices.distanceCoordinate and any(prevChoices.distanceCoordinate.values()):
-            return OrderedDict([(ABSOLUTE_DISTANCE, False), (AVERAGE_LOG_DISTANCE, False)])
+            return OrderedDict([(cls.ABSOLUTE_DISTANCE, False), (cls.AVERAGE_LOG_DISTANCE, False)])
 
     @classmethod
     def getOptionsBoxCorrelation(cls, prevChoices):
-        if prevChoices.teststatType and prevChoices.teststatType[CORRELATION]:
+        if prevChoices.teststatType and prevChoices.teststatType[cls.CORRELATION]:
             return ['genome-wide kernel correlation (overall relationship)','fine-scale correlation (structure of correlation)','local correlation (genomic region-level)']
 
     DETERMINE_FROM_SUBMITTED_TRACKS = 'determine whether or not to allow overlap based on submitted tracks'
@@ -350,29 +350,29 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
-        return [WHOLE_GENOME, EXCLUDE_SUPPLIED_BY_THE_USER, EXPLICIT_NEGATIVE_SET]
+        return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
 
     @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
-        if prevChoices.restrictRegions in [EXCLUDE_SUPPLIED_BY_THE_USER, EXPLICIT_NEGATIVE_SET]:
+        if prevChoices.restrictRegions in [cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]:
             return '__track__'
 
 
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['No, distribute genomic regions across the whole genome', LOCAL_HETEROGENEITY]
+        return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
 
     FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
     SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
 
     @classmethod
     def getOptionsBoxLocalHandler(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.localHeterogeneity == LOCAL_HETEROGENEITY:
-            return [FIXED_SIZE_NEIGHBOURHOOD, SET_OF_LOCAL_REGIONS_]
+        if prevChoices.localHeterogeneity == cls.LOCAL_HETEROGENEITY:
+            return [cls.FIXED_SIZE_NEIGHBOURHOOD, cls.SET_OF_LOCAL_REGIONS_]
 
     @classmethod
     def getOptionsBoxPreserveLocalFileUpload(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.localHandler == SET_OF_LOCAL_REGIONS_:
+        if prevChoices.localHandler == cls.SET_OF_LOCAL_REGIONS_:
             return '__track__'
 
     PRESERVE_EMPIRIC_DISTRIBUTION = 'Yes, preserve empiric distribution of distances between genomic regions'
@@ -380,7 +380,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
-        return OrderedDict([(UNIFORMLY_DISTRIBUTED, False), (PRESERVE_EMPIRIC_DISTRIBUTION, False)])
+        return OrderedDict([(cls.UNIFORMLY_DISTRIBUTED, False), (cls.PRESERVE_EMPIRIC_DISTRIBUTION, False)])
 
     CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
     LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
@@ -388,11 +388,11 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
         return ['No, I am not aware of any potential confounding feature for this analysis',
-                CONFOUNDING_FEATURE]
+                cls.CONFOUNDING_FEATURE]
 
     @classmethod
     def getOptionsBoxConfounderHandler(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.confounding == CONFOUNDING_FEATURE:
+        if prevChoices.confounding == cls.CONFOUNDING_FEATURE:
             return ['Shuffle genomic locations according to a non-homogenous Poisson process',
                     'Partial correlation', 'Stratified sampling']
 
