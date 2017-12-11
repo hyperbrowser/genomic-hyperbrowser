@@ -452,18 +452,36 @@ class CongloProtoTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
+        # ('Choose a query track: ', 'chooseQueryTrackFile'),
+        # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
+
         selections, typeOfAnalysis = cls.parseChoices(choices)
 
         from conglomerate.conglomerate.tools.method_compatibility import getCompatibleMethodObjects
         queryTrack = ['dummy1']
-        refTracks = ['dummy2','dummy3']
+        refTracks = ['dummy2', 'dummy3']
         from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
         methodClasses = [GenometriCorr, StereoGene]
+
+        #queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
+        #refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
 
         workingMethodObjects = getCompatibleMethodObjects(selections, queryTrack, refTracks, methodClasses)
         print selections
         print typeOfAnalysis
         print workingMethodObjects
+
+    @classmethod
+    def getFnListFromTrackChoice(cls, trackChoice):
+        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice)
+        if filetype in ['bed']:
+            fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
+        elif filetype in ['gsuite']:
+            gsuite = ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
+            fnList = [gsTrack.path for gsTrack in gsuite.allTracks()]
+        else:
+            print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
+        return fnList
 
     @classmethod
     def parseChoices(cls, choices):
