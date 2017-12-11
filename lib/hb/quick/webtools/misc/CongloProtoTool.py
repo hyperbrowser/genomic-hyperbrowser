@@ -135,7 +135,7 @@ class CongloProtoTool(GeneralGuiTool):
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
     @classmethod
-    def getOptionsBoxSelectReferenceGenome(cls, self):  # Alt: getOptionsBox1()
+    def getOptionsBoxSelectReferenceGenome(cls,prevChoices):  # Alt: getOptionsBox1()
         return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
 
     @classmethod
@@ -307,7 +307,8 @@ class CongloProtoTool(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)])
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)])
 
     BASES = 'total number of overlapping bases'
     COUNTS = 'number of overlapping regions (counts)'
@@ -366,7 +367,8 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxAllowOverlaps(cls, prevChoices):  # Alt: getOptionsBox2()
-        return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
 
     EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
     EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
@@ -374,7 +376,8 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
-        return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
 
     @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
@@ -384,7 +387,8 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
 
     FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
     SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
@@ -404,14 +408,16 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxClumping(cls, prevChoices):  # Alt: getOptionsBox2()
-        return OrderedDict([(cls.UNIFORMLY_DISTRIBUTED, False), (cls.PRESERVE_EMPIRIC_DISTRIBUTION, False)])
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return OrderedDict([(cls.UNIFORMLY_DISTRIBUTED, False), (cls.PRESERVE_EMPIRIC_DISTRIBUTION, False)])
 
     CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
     LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
 
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['No, I am not aware of any potential confounding feature for this analysis',
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return ['No, I am not aware of any potential confounding feature for this analysis',
                 cls.CONFOUNDING_FEATURE]
 
     @classmethod
@@ -612,11 +618,11 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        if choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
+        if choices.allowOverlaps and choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
             if choices.allowOverlaps[cls.MAY_OVERLAP] or choices.allowOverlaps[cls.NOT_ALLOWED]:
                 return "%s can only be selected as a single choice" % cls.DETERMINE_FROM_SUBMITTED_TRACKS
         else:
-            if not choices.allowOverlaps[cls.NOT_ALLOWED] and not choices.allowOverlaps[cls.MAY_OVERLAP]:
+            if choices.allowOverlaps and not choices.allowOverlaps[cls.NOT_ALLOWED] and not choices.allowOverlaps[cls.MAY_OVERLAP]:
                 return "Please select whether or not to allow genomic regions to overlap within track"
 
 
