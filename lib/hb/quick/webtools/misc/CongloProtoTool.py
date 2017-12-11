@@ -1,23 +1,36 @@
 from collections import OrderedDict
 from itertools import product
+from conglomerate.tools.method_compatibility import getCompatibleMethodObjects, getCollapsedConfigurationsPerMethod
+
+import pkg_resources
+
+from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
 from conglomerate.methods.giggle.giggle import Giggle
+from conglomerate.methods.interface import ColocMeasureOverlap, RestrictedAnalysisUniverse, RestrictedThroughExclusion
 from conglomerate.tools.job import Job
 
-#FIXME: REMOVE!!
 from conglomerate.methods.stereogene.stereogene import StereoGene
+from conglomerate.tools.runner import runAllMethodsInSequence
 from quick.application.ExternalTrackManager import ExternalTrackManager
 
-
-
-class RestrictedAnalysisUniverse:
-    pass
-class RestrictedThroughExclusion(RestrictedAnalysisUniverse):
-    def __init__(self, path):
-        pass
-
+ALL_METHOD_CLASSES = [GenometriCorr, StereoGene]
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import collections
 
+class ResultMocker:
+    def __init__(self, key, ts, p, wmoName):
+        self._ts = ts
+        self._p = p
+        self._key = key
+        self._wmoName = wmoName
+
+    def getPValue(self):
+        return {self._key : self._p}
+
+    def getTestStatistic(self):
+        return {self._key : self._ts}
+
+    def getFullResults(self):
+        return 'DETAILED RESULTS for result with p-val: ' + str(self._p)
 
 class CongloProtoTool(GeneralGuiTool):
     @classmethod
@@ -77,6 +90,7 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Preserve any clumping tendency of genomic elements ? ', 'clumping'),
                 ('Handle confounding features ? ', 'confounding'),
                 ('Method of choice to handle confounding features : ', 'confounderHandler'),
+                ('Compatible methods : ', 'compatibleMethods')
                 ]
 
     # @classmethod
@@ -121,7 +135,7 @@ class CongloProtoTool(GeneralGuiTool):
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
     @classmethod
-    def getOptionsBoxSelectReferenceGenome(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxSelectReferenceGenome(cls, self):  # Alt: getOptionsBox1()
         return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
 
     @classmethod
@@ -406,6 +420,18 @@ class CongloProtoTool(GeneralGuiTool):
             return ['Shuffle genomic locations according to a non-homogenous Poisson process',
                     'Partial correlation', 'Stratified sampling']
 
+    @classmethod
+    def getOptionsBoxCompatibleMethods(cls, prevChoices):
+        selections, typeOfAnalysis = cls.parseChoices(prevChoices)
+        queryTrack = cls.getFnListFromTrackChoice(prevChoices.chooseQueryTrackFile)
+        refTracks = cls.getFnListFromTrackChoice(prevChoices.chooseReferenceTrackFile)
+
+        workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
+        #methodChoices = [str(wmo) for wmo in workingMethodObjects]
+        methodChoices = getCollapsedConfigurationsPerMethod(workingMethodObjects)
+        return OrderedDict( zip(methodChoices, [True]*len(methodChoices)) )
+
+
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -467,22 +493,25 @@ class CongloProtoTool(GeneralGuiTool):
 
         selections, typeOfAnalysis = cls.parseChoices(choices)
 
-        from conglomerate.tools.method_compatibility import getCompatibleMethodObjects
-        queryTrack = ['dummy1']
-        refTracks = ['dummy2', 'dummy3']
-        from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
-        methodClasses = [GenometriCorr, StereoGene]
+        queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
+        refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
 
-        #queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
-        #refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
-
-        workingMethodObjects = getCompatibleMethodObjects(selections, queryTrack, refTracks, methodClasses)
+        workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
+        methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
+        keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
+        print choices.compatibleMethods
         print selections
         print typeOfAnalysis
         print workingMethodObjects
+        print keptWmos
+        # runAllMethodsInSequence(keptWmos)
+        mocked = [ResultMocker((queryTrack[0],refTracks[0]),5,0.05, wmo._methodCls.__name__) for wmo in keptWmos]
+        for wmo in mocked:
+            print wmo._wmoName, wmo.getPValue(), wmo.getTestStatistic(), wmo.getFullResults()
 
     @classmethod
     def getFnListFromTrackChoice(cls, trackChoice):
+        print "TEMP9: ", type(trackChoice), trackChoice
         filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice)
         if filetype in ['bed']:
             fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
@@ -498,10 +527,10 @@ class CongloProtoTool(GeneralGuiTool):
         selections = OrderedDict()
         typeOfAnalysis = choices.analysisType
         # SELECTION BOXES:
-        chrLenFnMappings = {'Human (hg19)': 'chrom_lengths.tabular'}
+        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
         genomeName = choices.selectReferenceGenome
-        selections['setGenomeName'] = genomeName
-        selections['setChrLenFn'] = chrLenFnMappings[genomeName]
+        selections['setGenomeName'] = [('setGenomeName', genomeName)]
+        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
         # mapping = {cls.WHOLE_GENOME:None,
         #            cls.EXCLUDE_SUPPLIED_BY_THE_USER:RestrictedThroughExclusion(fn)}
         if choices.restrictRegions == cls.WHOLE_GENOME:
@@ -512,7 +541,7 @@ class CongloProtoTool(GeneralGuiTool):
                 restrictRegions = RestrictedThroughExclusion(fn)
             if choices.restrictRegions == cls.EXPLICIT_NEGATIVE_SET:
                 raise
-        selections['setRestrictedAnalysisUniverse'] = ('setRestrictedAnalysisUniverse', restrictRegions)
+        selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', restrictRegions)]
         # import PRESERVE_HETEROGENEITY_AS_NEIGHBORHOOD ... from conglo..
         # if choices.localHandler == None:
         #     hetero = PRESERVE_HETEROGENEITY_NOT
@@ -527,14 +556,21 @@ class CongloProtoTool(GeneralGuiTool):
         selectionMapping = {'allowOverlaps': 'setAllowOverlaps',
                             'clumping': 'preserveClumping'}
         # TestStat
-        distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]]
-        distTypeSelected = [key for key in choices.distanceType if choices.distanceType[key]]
+        distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]] \
+                            if choices.distanceCoordinate is not None else []
+        distTypeSelected = [key for key in choices.distanceType if choices.distanceType[key]] \
+                            if choices.distanceType is not None else[]
         fullDistSpecs = product(distCoordSelected, distTypeSelected)
         encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
-        overlapSpecs = [key for key in choices.overlapMeasure if choices.overlapMeasure[key]]
-        correlationSpecs = [key for key in choices.correlation if choices.correlation[key]]
+        tsMapping = {cls.COUNTS : ColocMeasureOverlap(False, True,0,0),
+                                cls.BASES : ColocMeasureOverlap(False, False,0,0)}
+        overlapSpecs = [tsMapping[key] for key in choices.overlapMeasure if choices.overlapMeasure[key]] \
+                        if choices.overlapMeasure is not None else []
+
+        correlationSpecs = [key for key in choices.correlation if choices.correlation[key]] \
+                            if choices.correlation is not None else[]
         allTsSpecs = encodedDistSpecs + overlapSpecs + correlationSpecs
-        selections['setTestStatistic'] = zip(['TestStatistic'] * len(allTsSpecs), allTsSpecs)
+        selections['setColocMeasure'] = zip(['setColocMeasure'] * len(allTsSpecs), allTsSpecs)
         # distCoordSelections = cls.getSelectionsFromCheckboxParam(distCoordChoiceValueMapping, choices, 'distanceCoordinate', 'distCoord')
         # distCoordSelections = cls.getSelectionsFromCheckboxParam(distCoordChoiceValueMapping, choices, 'distanceType', 'distType')
         if choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
@@ -543,8 +579,9 @@ class CongloProtoTool(GeneralGuiTool):
             choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
         choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
         for guiKey, selectionKey in selectionMapping.items():
-            selections.update(
-                cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey))
+            currSelection = cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey)
+            assert len(currSelection.values()[0])>0, (guiKey, selectionKey, currSelection)
+            selections.update(currSelection)
         return selections, typeOfAnalysis
 
     @classmethod
