@@ -467,7 +467,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         selections, typeOfAnalysis = cls.parseChoices(choices)
 
-        from conglomerate.conglomerate.tools.method_compatibility import getCompatibleMethodObjects
+        from conglomerate.tools.method_compatibility import getCompatibleMethodObjects
         queryTrack = ['dummy1']
         refTracks = ['dummy2', 'dummy3']
         from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
