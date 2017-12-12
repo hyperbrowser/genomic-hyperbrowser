@@ -30,9 +30,9 @@ RSQLite
 org.Hs.eg.db
 hgu133plus2.db
 locfit
-DESeq
+#DESeq
 limma
 edgeR
-DESeq2
+#DESeq2
 MASS
 calibrate
