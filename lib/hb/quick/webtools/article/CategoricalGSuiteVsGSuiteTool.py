@@ -55,7 +55,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
         Mandatory method for all ProTo tools.
         """
-        return "Analyse two collection of tracks respectively to specified relation between them"
+        return "Paired co-localization analysis of two collections of tracks"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -397,9 +397,9 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
                 tableDict=resultsDict,
-                columnNames=["Category", "Forbes score", "Avg Forbes score from null", "SD of Forbes score from null", "P-value"]
+                columnNames=["Category", "Forbes score", "Avg Forbes score from null model", "SD of Forbes score from null model", "P-value"]
             )
-            core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
+            core.paragraph("For detailed view of the null model distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
 
             breaksGeneral, countsGeneral = cls.countHist(dataAvgRandomForbes+dataForbes)
             breaksAF, countsAF = cls.countHist(dataAvgRandomForbes, breaksGeneral)
@@ -409,8 +409,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             cls.drawHist(core,
                          textTitle,
                          [countsF, countsAF],
-                         breaks=breaksF,
-                         seriesName=['Forbes', 'Avg Forbes'])
+                         breaksF,
+                         seriesName=['Forbes score', 'Avg Forbes score from null model'])
 
             textTitle = 'Histogram p-values'
             breaks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -418,7 +418,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             cls.drawHist(core,
                          textTitle,
                          countspVal,
-                         breakspVal)
+                         breakspVal,
+                         seriesName=['Forbes score', 'Avg Forbes score from null model'])
 
 
         core.divEnd()
@@ -447,10 +448,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         res = vg.drawColumnChart(counts,
                                  xAxisRotation=90,
                                  categories=breaks,
-                                 showInLegend=False,
+                                 showInLegend=True,
                                  titleText=textTitle,
                                  histogram=True,
-                                 seriesName = seriesName,
+                                 label='<b>{series.name}: </b>{point.y} <br \>',
+                                 seriesName=seriesName,
                                  yAxisTitle='Density',
                                  height=400
                                  )
