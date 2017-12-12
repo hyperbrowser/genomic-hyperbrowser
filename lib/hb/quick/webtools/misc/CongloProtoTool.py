@@ -2,8 +2,9 @@ from collections import OrderedDict
 from itertools import product
 
 #FIXME: REMOVE!!
-from conglomerate.methods.stereogene.stereogene import StereoGene
+#from conglomerate.methods.stereogene.stereogene import StereoGene
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.webtools.projectsPageTemplate.Legend import Legend
 
 CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
 
@@ -575,16 +576,9 @@ class CongloProtoTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -650,14 +644,33 @@ class CongloProtoTool(GeneralGuiTool):
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+        l = Legend()
+
+        toolDescription = 'This tool provide uniform output from .....'
+
+        stepsToRunTool = ['Select the reference genome',
+                          'Type of co-localization analysis',
+                          'Use one of the default core databases as reference collection (need to be specified when type of co-localization analysis is selected "Pairwise comparision of all tracks between two track-groups")',
+                          'Choose a query track collection',
+                          'Choose a type of reference track collection (if available)'
+                          'Choose a reference track (if available)',
+                          'Choose a reference track collection (if available)',
+                          'Choose a core data collection (if available)',
+                          'Type of co-localization measure (test statistic)',
+                          'Allow genomic regions to overlap within track ?',
+                          'Restrict the analysis to specific parts of the genome ?',
+                          'Preserve local heterogeneity ? ',
+                          'Preserve any clumping tendency of genomic elements ?',
+                          'Handle confounding features ?'
+                          ]
+
+        toolResult = 'The output of this tool is a table with .'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
     #
     # @classmethod
     # def getToolIllustration(cls):
