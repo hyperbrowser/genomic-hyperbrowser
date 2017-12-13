@@ -11,6 +11,8 @@ from conglomerate.tools.job import Job
 
 from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
+from proto.HtmlCore import HtmlCore
+from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene]
@@ -523,7 +525,8 @@ class CongloProtoTool(GeneralGuiTool):
         # ('Choose a query track: ', 'chooseQueryTrackFile'),
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
 
-        selections, typeOfAnalysis = cls.parseChoices(choices)
+        selections = cls.determine_selections(choices)
+        typeOfAnalysis = choices.analysisType
         #print 'TEMP8: ', type(choices.chooseQueryTrackFile), choices.chooseQueryTrackFile
         queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
         refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
@@ -538,8 +541,21 @@ class CongloProtoTool(GeneralGuiTool):
         print keptWmos
         # runAllMethodsInSequence(keptWmos)
         mocked = [ResultMocker((queryTrack[0],refTracks[0]),5,0.05, wmo._methodCls.__name__) for wmo in keptWmos]
-        for wmo in mocked:
-            print wmo._wmoName, wmo.getPValue(), wmo.getTestStatistic(), wmo.getFullResults()
+        core = HtmlCore()
+        core.tableHeader(['Method name', 'Query and reference track','P-value', 'Test statistic', 'Detailed results'])
+        for i,wmo in enumerate(mocked):
+            fullResultStaticFile = GalaxyRunSpecificFile(['details'+str(i)+'.html'], galaxyFn)
+            fullResultStaticFile.writeTextToFile(wmo.getFullResults())
+            allPvals = wmo.getPValue()
+            allTestStats = wmo.getTestStatistic()
+            assert len(allPvals) == len(allTestStats)
+            for trackCombination in allPvals.keys():
+                pval = allPvals[trackCombination]
+                ts = allTestStats[trackCombination]
+                prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
+                core.tableLine([wmo._wmoName, prettyTrackComb, str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
+        core.tableFooter()
+        print core
 
     @classmethod
     def getFnListFromTrackChoice(cls, trackChoice):
