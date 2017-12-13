@@ -397,29 +397,30 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
                 tableDict=resultsDict,
-                columnNames=["Category", "Forbes score", "Avg Forbes score from null model", "SD of Forbes score from null model", "P-value"]
+                columnNames=["Category", "Forbes score", "Avg Forbes score under null model", "SD of Forbes score under null model", "P-value"]
             )
-            core.paragraph("For detailed view of the null model distribution scores view the " + rawNDResultsFile.getLink("null distribution table") + ".")
+            core.paragraph("For detailed view of the null model distribution scores click on " + rawNDResultsFile.getLink("null distribution table") + ".")
 
             breaksGeneral, countsGeneral = cls.countHist(dataAvgRandomForbes+dataForbes)
             breaksAF, countsAF = cls.countHist(dataAvgRandomForbes, breaksGeneral)
             breaksF, countsF = cls.countHist(dataForbes, breaksGeneral)
-            textTitle = 'Histogram Forbes'
+            textTitle = 'Histogram Forbes score'
 
             cls.drawHist(core,
                          textTitle,
                          [countsF, countsAF],
                          breaksF,
-                         seriesName=['Forbes score', 'Avg Forbes score from null model'])
+                         seriesName=['Forbes score', 'Avg Forbes score under null model'])
 
             textTitle = 'Histogram p-values'
+
             breaks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
             breakspVal, countspVal = cls.countHist(datapVal, breaks=breaks)
             cls.drawHist(core,
                          textTitle,
                          countspVal,
                          breakspVal,
-                         seriesName=['Forbes score', 'Avg Forbes score from null model'])
+                         seriesName=['Forbes score', 'Avg Forbes score under null model'])
 
 
         core.divEnd()
