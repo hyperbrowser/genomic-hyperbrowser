@@ -11,29 +11,28 @@ from proto.tools.GeneralGuiTool import HistElement
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
+class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     @classmethod
     def getToolName(cls):
         return "Create gSuite from two binomal distributions"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select gsuite contain track Y', 'gSuite'),
-                ('Select gtrack', 'parameters'),
-                ('Select probability that R=1 given that Y=1', 'firstProb'),
+        return [('Select gsuite contain track Y', 'gsuite')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select probability that R=1 given that Y=1', 'firstProb'),
                 ('Select probability that R=0 given that Y=0', 'secondProb'),
                 ('Select number of output tracks (subsampling replicates Rs)', 'number'),
-                ]
+                ] + cls.getInputBoxNamesForUserBinSelection()
+
 
     @classmethod
-    def getOptionsBoxGSuite(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxGsuite(cls):  # Alt: getOptionsBox1()
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
-
-    @classmethod
-    def getOptionsBoxParameters(cls, prevChoices):  # Alt: getOptionsBox1()
-        return GeneralGuiTool.getHistorySelectionElement('gtrack')
 
     @classmethod
     def getOptionsBoxFirstProb(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -49,7 +48,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstProb = choices.firstProb.encode('utf-8')
         firstProb = firstProb.split(',')
         secondProb = choices.secondProb.encode('utf-8')
@@ -58,10 +57,10 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
         firstProb = [float(f) for f in firstProb]
         secondProb = [float(f) for f in secondProb]
 
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
 
         number = int(choices.number)
-        parameters = choices.parameters
-        gtrackData = cls._readGTrack(parameters)
+        gtrackData = cls._readRegSpec(regSpec)
 
         outGSuite = cls._countResults(gSuite, gtrackData, firstProb, secondProb, number,
                                       galaxyFn)
@@ -86,9 +85,11 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
             with open(trackPath, 'r') as f:
                 for l in f.readlines():
                     line = l.strip('n').split('\t')
-                    if not line[0] in datasetPerChromosome.keys():
-                        datasetPerChromosome[line[0]] = []
-                    datasetPerChromosome[line[0]].append(int(line[1]))
+                    if line[0] in gtrackData.keys():
+                        if not line[0] in datasetPerChromosome.keys():
+                            datasetPerChromosome[line[0]] = []
+                        if int(line[1]) >=  gtrackData[line[0]][0] and int(line[1]) <= gtrackData[line[0]][1]:
+                            datasetPerChromosome[line[0]].append(int(line[1]))
 
             for nr in range(0, number):
                 for f in firstProb:
@@ -162,27 +163,20 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool):
                                   str(allPossibilitiesWithOption[i] + 1)])
 
     @classmethod
-    def _readGTrack(cls, parameters):
+    def _readRegSpec(cls, parameters):
         # change for gtrack
-        dataOut = {}
-        with open(ExternalTrackManager.extractFnFromGalaxyTN(parameters.split(':')), 'r') as f:
-            for x in f.readlines():
-                xx = x.strip('\n')
-                if not '#' in xx:
-                    data = xx.split('\t')
-                    if len(data) == 6:
-                        if data[0] not in dataOut.keys():
-                            dataOut[data[0]] = [int(data[1]), int(data[2])]
-                        else:
-                            newMin = dataOut[data[0]][0]
-                            newMax = dataOut[data[0]][1]
-                            if dataOut[data[0]][0] > int(data[1]):
-                                newMin = int(data[1])
-                            if dataOut[data[0]][1] < int(data[2]):
-                                newMax = int(data[2])
-                            dataOut[data[0]] = [newMin, newMax]
 
-        f.closed
+        parameters = parameters.encode('utf-8')
+
+        dataOut = {}
+        parameters = parameters.replace(' ','').split(',')
+        for p in parameters:
+            chromosme = p.split(':')[0]
+            chromosmeSt = int(p.split(':')[1].split('-')[0])
+            chromosmeEnd = int(p.split(':')[1].split('-')[1])
+
+            if not chromosme in dataOut.keys():
+                dataOut[chromosme] = [chromosmeSt, chromosmeEnd]
 
         return dataOut
 
