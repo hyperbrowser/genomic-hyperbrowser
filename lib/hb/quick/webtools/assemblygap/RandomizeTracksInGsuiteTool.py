@@ -36,7 +36,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
                 ('With exclusion', 'excl'),
                 ('Select track of regions to be excluded', 'track'),
                 ('Number of randomised samples to be generated for each track', 'varTracks'),
-                ('Preserve the average length and the number of elements (per GSuite) and (per each track in GSuite)', 'option')]\
+                ('Preserve the average length and the number of elements (per GSuite - [yes]) and (per each track in GSuite - [no])', 'option')]\
                # + \
                # cls.getInputBoxNamesForDebug()
 
@@ -321,7 +321,7 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
                           'With exclusion (yes, no)',
                           'Select track of regions to be excluded',
                           'Number of randomised samples to be generated for each track ',
-                          'Preserve the average length and the number of elements (per GSuite) and (per each track in GSuite)'
+                          'Preserve the average length and the number of elements (per GSuite - [yes]) and (per each track in GSuite - [no])'
                           ]
 
         toolResult = 'The output of this tool is a randomized collection of tracks presented as GSuite.'
