@@ -544,7 +544,7 @@ class CongloProtoTool(GeneralGuiTool):
         print typeOfAnalysis
         print workingMethodObjects
         print keptWmos
-
+        print [wmo._methodCls for wmo in keptWmos]
         runAllMethodsInSequence(keptWmos)
         mocked = [ResultMocker((queryTrack[0],refTracks[0]),5,0.05, wmo._methodCls.__name__) for wmo in keptWmos]
         mocked = keptWmos
