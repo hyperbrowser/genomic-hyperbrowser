@@ -14,6 +14,7 @@ from conglomerate.tools.runner import runAllMethodsInSequence
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene]
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -240,7 +241,9 @@ class CongloProtoTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
+        #return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
+        #Not including TWO GROUPS for now, for running time reasons.. (also not handled for now, but easy to do)
+        return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS]
 
     @classmethod
     def getOptionsBoxChooseQueryTrackFile(cls, prevChoices):
@@ -268,12 +271,12 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
-            return ('__history__',)
+            return ('__history__','gsuite')
 
     @classmethod
     def getOptionsBoxChooseQueryTrackCollection(cls, prevChoices):
         if prevChoices.analysisType == cls.TWO_TRACK_GROUPS:
-            return ('__history__',)
+            return ('__history__','gsuite')
 
     @classmethod
     def getOptionsBoxOptionalUseOfCoreDatabase(cls, prevChoices):
@@ -446,8 +449,8 @@ class CongloProtoTool(GeneralGuiTool):
     def getWorkingMethodObjects(cls, prevChoices):
         selections = cls.determine_selections(prevChoices)
         # typeOfAnalysis = prevChoices.analysisType
-        queryTrack = cls.getFnListFromTrackChoice(prevChoices.chooseQueryTrackFile)
-        refTracks = cls.getFnListFromTrackChoice(prevChoices.chooseReferenceTrackFile)
+        queryTrack = cls.getQueryTracksFromChoices(prevChoices)
+        refTracks = cls.getRefTracksFromChoices(prevChoices)
         if queryTrack is None or refTracks is None:
             return None
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
@@ -529,12 +532,19 @@ class CongloProtoTool(GeneralGuiTool):
         """
         # ('Choose a query track: ', 'chooseQueryTrackFile'),
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
+        print 'choices, galaxyFn:'
+        print repr(choices)
+        print galaxyFn
 
         selections = cls.determine_selections(choices)
+
+        #TEMP, for transferring to local computer..
+        print ''
+        print 'selections = ', repr(selections)
+        print ''
+        queryTrack = cls.getQueryTracksFromChoices(choices)
+        refTracks = cls.getRefTracksFromChoices(choices)
         typeOfAnalysis = choices.analysisType
-        #print 'TEMP8: ', type(choices.chooseQueryTrackFile), choices.chooseQueryTrackFile
-        queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
-        refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
 
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
@@ -566,15 +576,33 @@ class CongloProtoTool(GeneralGuiTool):
         print core
 
     @classmethod
+    def getQueryTracksFromChoices(cls, choices):
+        queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
+        return queryTrack
+
+    @classmethod
+    def getRefTracksFromChoices(cls, choices):
+        typeOfAnalysis = choices.analysisType
+        if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
+            referenceTrackChoice = choices.chooseReferenceTrackFile
+        elif typeOfAnalysis == cls.REFERENCE_TRACKS:
+            referenceTrackChoice = choices.chooseCustomTrackCollection
+        else:
+            raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
+        refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
+        return refTracks
+
+    @classmethod
     def getFnListFromTrackChoice(cls, trackChoice):
         if trackChoice is None or trackChoice.strip()=='':
             return None
 
-        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice)
+        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice, allowUnsupportedSuffixes=True)
         if filetype in ['bed']:
             fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
         elif filetype in ['gsuite']:
-            gsuite = ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
+            gsuite = getGSuiteFromGalaxyTN(trackChoice)
+
             fnList = [gsTrack.path for gsTrack in gsuite.allTracks()]
         else:
             print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
@@ -669,9 +697,9 @@ class CongloProtoTool(GeneralGuiTool):
         if choices.clumping and not any(choices.clumping.values()):
             return "Please select whether or not to handle clumping"
 
-        if cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile) is None:
+        if cls.getQueryTracksFromChoices(choices) is None:
             return "Please select query track"
-        if cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile) is None:
+        if cls.getRefTracksFromChoices(choices) is None:
             return "Please select reference tracks"
 
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
