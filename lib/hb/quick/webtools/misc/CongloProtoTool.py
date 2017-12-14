@@ -464,6 +464,11 @@ class CongloProtoTool(GeneralGuiTool):
             selections = cls.parseChoices(prevChoices)
         else:
             raise
+        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
+        genomeName = prevChoices.selectReferenceGenome
+        selections['setGenomeName'] = [('setGenomeName', genomeName)]
+        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
+
         return selections
 
     # @classmethod
@@ -539,8 +544,11 @@ class CongloProtoTool(GeneralGuiTool):
         print typeOfAnalysis
         print workingMethodObjects
         print keptWmos
-        # runAllMethodsInSequence(keptWmos)
+
+        runAllMethodsInSequence(keptWmos)
         mocked = [ResultMocker((queryTrack[0],refTracks[0]),5,0.05, wmo._methodCls.__name__) for wmo in keptWmos]
+        mocked = keptWmos
+
         core = HtmlCore()
         core.tableHeader(['Method name', 'Query and reference track','P-value', 'Test statistic', 'Detailed results'])
         for i,wmo in enumerate(mocked):
@@ -576,10 +584,6 @@ class CongloProtoTool(GeneralGuiTool):
     def parseChoices(cls, choices):
         selections = OrderedDict()
         # SELECTION BOXES:
-        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
-        genomeName = choices.selectReferenceGenome
-        selections['setGenomeName'] = [('setGenomeName', genomeName)]
-        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
         # mapping = {cls.WHOLE_GENOME:None,
         #            cls.EXCLUDE_SUPPLIED_BY_THE_USER:RestrictedThroughExclusion(fn)}
         if choices.restrictRegions in [cls.WHOLE_GENOME,None]:
