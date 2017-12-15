@@ -1,0 +1,72 @@
+analysisList	analysisList	analysisList	dataset	dataset	action	action	action	action	action
+AnalysisStat	AnalysisName	AnalysisDescription	track1	track2	mean	standard deviation	min	max	average
+MarksSortedBySegmentOverlapStat	None	None	0	0	0	0	0	0	0
+StdDevStat	Std. dev	The standard deviation of values of track1 	1	0	0	1	0	0	0
+VennDataStat	base-pair Venn diagram	The number of basepair that are inside/outside of categories.  Regions can then be exported to the history as a track  	0	0	0	0	0	0	0
+PropOfSegmentsInsideEachBinStat	Relative coverage per bin	The proportion of track1-segments (counting base pairs) falling within each bin 	1	0	0	0	0	0	0
+CustomRStat	None	None	0	0	0	0	0	0	0
+SumOfSquaresStat	None	None	0	0	0	0	0	0	0
+MeanInsideStat	Mean inside	The mean value of track2 inside track1 	1	1	1	0	0	0	0
+SimilarSegmentStat	Similar segments	For all track1-segments, the number of similar segments in track2 [minRelSimilarity:_Relative similarity threshold=1.0/0.99/0.95/0.9/0.8/0.7/0.6/0.5/0.25/0.1] 	1	1	0	0	1	0	0
+CountPointAllowingOverlapStat	Counts (allowing overlaps)	The number of track1-points (allowing overlaps)	1	0	0	0	0	0	0
+TpReshuffledStat	None	None	0	0	0	0	0	0	0
+ZipperStat	None	None	0	0	0	0	0	0	0
+NumberOfNodesAndEdges3dStat	Number of nodes and edges	The number of nodes and edges in track1 	1	0	0	0	0	0	0
+ProportionOverlapStat	Overlap and coverage	Base pair and proportional coverage by track1, track2 and by both 	1	1	0	0	0	0	0
+AvgRelPointPositioningStat	Relative position within segments	The average relative position of track1-points within track2-segments 	1	1	0	0	0	0	1
+SumInsideStat	None	None	0	0	0	0	0	0	0
+VarianceStat	Variance	The variance of values of track1 	1	0	0	0	0	0	0
+RipleysKStat	RipleysK	Ripleys K clustering statistic [bpWindow=100/10000/1000000] 	0	0	0	0	0	0	0
+GenericRelativeToGlobalStat	Relative proportional coverage	The proportion of base pairs covered by track1, relative to global proportional coverage [rawStatistic:_=ProportionCountStat][globalSource:_Normalize against=chrs:Whole genome (all chromosomes)/chrarms:Genome excl centromere (all chr arms)/ensembl:Genes (All Ensembl gene regions)/userbins:Analysis domain (Union of analysis bins)]  	1	0	0	0	0	0	0
+ComputeROCScoreFromRankedTargetControlMarksStat	None	None	0	0	0	0	0	0	0
+ProportionCountStat	Proportional coverage	The proportion of total base pairs covered by track1 	1	0	0	0	0	0	0
+MeanInsideOutsideStat	Mean inside and outside	The mean value of track2 inside track1 and outside track1[missingVals:Handle missing observations=treatAsZero:treat missing observations as zero/exclude:exclude missing observations]  	1	1	1	0	0	0	0
+CategoryPointCountInSegsMatrixStat	Matrix of count inside	The number of track1-points inside track2-segments, for all combinations of categories from both tracks 	1	1	0	0	0	0	0
+PointCountPerMicroBinQuantileStat	Quantile of microBins	A quantile in the distribution for the number of track1-points in micro-bins [microBin=1000/2000/10000/100000/1000000] [quantile=1/5/50/95/99/avg] 	1	0	0	0	0	0	0
+AccuracyStat	Precision, recall...	Precision, recall, Hamming distance and Pearsons correlation coefficient of base pair coverage when viewing track1 as predictions and track2 as answer 	1	1	0	0	1	0	0
+ListCollapserStat	None	None	0	0	0	0	0	0	0
+PropFreqOfTr1VsTr2Stat	Frequency proportion	The proportion of all points (Track1 and Track2) arising from track1 	1	0	0	0	0	0	0
+CorrespondingPointMarkCCStat	CC	Pearson's correlation coefficient of values for corresponding points in track1 and track2 	1	1	0	0	0	0	0
+ConfusionMatrixStat	Two-by-two table of inside	Two-by-two table of case/control track1-points that falls inside case/control track2-segments [rawStatistic:=PointCountInsideSegsStat:] 	1	1	0	0	0	0	0
+GenericResultsCombinerStat	Mean and variance of gaps	Mean and variance of gaps between track1-points[rawStatistics:=MeanOfGapsStat^VarOfGapsStat:]	1	0	0	0	0	0	0
+MarksSortedByFunctionValueStat	None	None	0	0	0	0	0	0	0
+RawDataStat	None	None	0	0	0	0	0	0	0
+CategoryMatrixStat	Contingency table of inside	Contingency table of categorical track1-points that falls inside categorical track2-segments [rawStatistic:=PointCountInsideSegsStat:] 	1	1	0	0	0	0	0
+BpCoverageByCatStat	Category bp coverage	The number of base pairs covered by each category of track1 	1	0	0	0	0	0	0
+PointFreqStat	Frequency	The frequency of track1-points 	1	0	0	0	0	0	0
+DiffOfMeanInsideOutsideStat	Inside vs outside	The mean difference between values of track2 inside track1 versus outside track1 	1	1	1	0	0	0	0
+PointPositionsInSegsStat	None	None	0	0	0	0	0	0	0
+GeneralTrack2TcStat	Inside case vs control	The number of  of track1-points that falls inside track2-segments marked as case or control [rawStatistic:=PointCountInsideSegsStat:] 	1	1	0	0	0	0	0
+NumberOfPresentCategoriesStat	Number of categories	The number of distinct categories present in each bin  	0	0	0	0	0	0	0
+CaseVsControlOverlapEffectSizeStat	Various effect measures for c/c overlap	Various measures of effect size for overlap between segments of track 1 marked as case/control with the segments of track 2 	0	0	0	0	0	0	0
+DerivedCaseVsControlOverlapDifferenceStat	Overlap case vs control	The numbers and proportions of base pairs overlapping between track1-segments and track2-segments, for case/control-elements of track1, respectively 	1	1	0	0	0	0	0
+PropPointCountsAllowOverlapsVsSegsStat	Count inside/outside (allowing overlaps)	The number and proportion of track1-points (allowing overlaps) inside and outside track2-segments 	1	1	0	0	0	0	0
+MeanStat	Mean	The mean value of track1 	1	0	1	0	0	0	0
+MaxElementValueStat	Max element value	The maximum value of elements inside each bin 	0	0	0	0	0	1	0
+PropCoverageByCatStat	Category proportional coverage	The proportion of total base pairs covered by each category of track1 	1	0	0	0	0	0	0
+DerivedOverlapStat	Enrichment	The enrichment of track1 inside track2 and vice versa, at the bp level	1	1	0	0	0	0	0
+RandomizationManagerStat	None	None	0	0	0	0	0	0	0
+PropOfPointsInsideEachBinStat	Relative frequency per bin	The proportion of track1-points falling within each bin 	1	0	0	0	0	0	0
+MinAndMaxStat	Min and max	The extreme values (min/max) of track1 	1	0	0	0	1	1	0
+TpPointReshuffledStat	None	None	0	0	0	0	0	0	0
+BasicCustomRStat	None	None	0	0	0	0	0	0	0
+AvgSegLenStat	Avg segment length	The average length of segments of track1 [withOverlaps:_Overlap handling=no:Cluster overlaps/yes:Allow overlaps] 	1	0	0	0	0	0	1
+TpPointInSegStat	None	None	0	0	0	0	0	0	0
+CountPointBothTracksStat	Counts	The number of track1-points and the number of track2-points 	1	1	0	0	0	0	0
+SingleValExtractorStat	None	None	0	0	0	0	0	0	0
+SegmentOverviewWithoutOverlapStat	Overview of segment properties	Counts, coverage and average length of segments	0	0	0	0	0	0	1
+GeneralOneTcTrackStat	Counts of case vs control	The number of  of case/control-track1-points [rawStatistic:=CountPointStat:] 	1	0	0	0	0	0	0
+MeanValAtPointsStat	Mean at points	The mean value of track1 at positions of track2 	1	1	1	0	0	0	0
+PointCountPerMicroBinV4Stat	Counts in microBins	The number of track1-points in micro-bins (allowing overlapping points) [microBin=1000/2000/10000/100000/1000000] 	1	0	0	0	0	0	0
+MeanMarkStat	Mean of values	The mean value of values of track1 [logScale:Use log2-scaled values=False:No/True:Yes]	1	0	1	0	0	0	0
+CountSegmentStat	Bp coverage	The number of base pairs covered by track1 	1	0	0	0	0	0	0
+AvgRelPosInBinStat	Relative avg position	The relative average position of track1-points inside the bins 	1	0	0	0	0	0	1
+SumStat	Sum	The sum of values of track1 	1	0	0	0	0	0	0
+CountPointStat	Counts	The number of track1-points 	1	0	0	0	0	0	0
+LogSumSegDistStat	None	None	0	0	0	0	0	0	0
+RipleysKChrStat	RipleysKChr	Ripleys K clustering statistic separately for each chromosome [bpWindow=100/10000/1000000] 	0	0	0	0	0	0	0
+AvgSegDistStat	Avg segment distance	The average distance between segments of track1 [withOverlaps:_Overlap handling=no:Cluster overlaps] 	1	0	0	0	0	0	1
+TpRawOverlapStat	None	None	0	0	0	0	0	0	0
+FreqByCatStat	Category point count	The number of elements of each category of track1 (with overlaps) 	1	0	0	0	0	0	0
+PropPointCountsVsSegsStat	Count inside/outside	The number and proportion of track1-points inside and outside track2-segments 	1	1	0	0	0	0	0
+CorrCoefStat	CC	Pearson's correlation coefficient of track1 and track2 	1	1	0	0	0	0	0
