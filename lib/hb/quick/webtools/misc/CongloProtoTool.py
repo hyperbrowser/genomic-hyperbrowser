@@ -561,8 +561,18 @@ class CongloProtoTool(GeneralGuiTool):
         mocked = [ResultMocker((queryTrack[0],refTracks[0]),5,0.05, wmo._methodCls.__name__) for wmo in keptWmos]
         mocked = keptWmos
 
+        unionOfAnnotatedChoices= set([paramKey for wmo in mocked for paramKey in wmo.annotatedChoices.keys()])
+        keysWithVariation = []
+        for key in unionOfAnnotatedChoices:
+            if len(set([wmo.annotatedChoices.get(key) \
+                                                 if not isinstance(wmo.annotatedChoices.get(key), list) \
+                                                 else tuple(wmo.annotatedChoices.get(key)) \
+                                             for wmo in mocked])) > 1:
+                keysWithVariation.append(key)
+        keysWithVariation.sort()
+
         core = HtmlCore()
-        core.tableHeader(['Method name', 'Query and reference track','P-value', 'Test statistic', 'Detailed results'])
+        core.tableHeader(['Method name', 'Query and reference track'] + keysWithVariation + ['P-value', 'Test statistic', 'Detailed results'])
         for i,wmo in enumerate(mocked):
             fullResultStaticFile = GalaxyRunSpecificFile(['details'+str(i)+'.html'], galaxyFn)
             fullResultStaticFile.writeTextToFile(wmo.getFullResults())
@@ -573,7 +583,10 @@ class CongloProtoTool(GeneralGuiTool):
                 pval = allPvals[trackCombination]
                 ts = allTestStats[trackCombination]
                 prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
-                core.tableLine([wmo._wmoName, prettyTrackComb, str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
+                core.tableLine(
+                    [wmo._methodCls.__name__, prettyTrackComb] +
+                    [wmo.annotatedChoices.get(key) for key in keysWithVariation] +
+                    [str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
         core.tableFooter()
         print core
 
