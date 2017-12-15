@@ -91,6 +91,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                         if int(line[1]) >=  gtrackData[line[0]][0] and int(line[1]) <= gtrackData[line[0]][1]:
                             datasetPerChromosome[line[0]].append(int(line[1]))
 
+
             for nr in range(0, number):
                 for f in firstProb:
                     for s in secondProb:
@@ -133,20 +134,26 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
         allPossibilitiesWithOptionFinalChoice = []
         for chr in datasetPerChromosome.keys():
-            allPossibilitiesWith1 = datasetPerChromosome[chr]
+            allPossibilitiesWith1 = datasetPerChromosome[chr] #[1, 2, 5, 6]
             allPossibilitiesWith0 = [i for i in
                                      range(gtrackData[chr][0], gtrackData[chr][1] + 1)]
+
+
             allPossibilitiesWith0 = [x for x in allPossibilitiesWith0 if
                                      x not in datasetPerChromosome[chr]]
+
 
             allPossibilitiesWith1BinomalDistribution = cls._countBinomalDistribution(
                 n=len(allPossibilitiesWith1), size=1, prob=firstProb)
             allPossibilitiesWith0BinomalDistribution = cls._countBinomalDistribution(
-                n=len(allPossibilitiesWith0), size=1, prob=secondProb)
+                n=len(allPossibilitiesWith0), size=1, prob=secondProb, reverse = True)
+
 
             cls._selectChoiceWith1(chr, allPossibilitiesWith1BinomalDistribution,
                                    allPossibilitiesWith1,
                                    allPossibilitiesWithOptionFinalChoice)
+
+
             cls._selectChoiceWith1(chr, allPossibilitiesWith0BinomalDistribution,
                                    allPossibilitiesWith0,
                                    allPossibilitiesWithOptionFinalChoice)
@@ -157,8 +164,11 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
     def _selectChoiceWith1(cls, chr, allPossibilitiesWithOptionBinomalDistribution,
                            allPossibilitiesWithOption, finalList):
 
+
         for i, elI in enumerate(allPossibilitiesWithOptionBinomalDistribution):
+
             if elI == 1:
+
                 finalList.append([chr, str(allPossibilitiesWithOption[i]),
                                   str(allPossibilitiesWithOption[i] + 1)])
 
@@ -178,10 +188,12 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             if not chromosme in dataOut.keys():
                 dataOut[chromosme] = [chromosmeSt, chromosmeEnd]
 
+
+
         return dataOut
 
     @classmethod
-    def _countBinomalDistribution(cls, n, size, prob):
+    def _countBinomalDistribution(cls, n, size, prob, reverse = False):
         from proto.RSetup import r
 
         rCode = 'countBinomalDist <- function(vec) {' \
@@ -191,7 +203,13 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             [n, size, prob])
         output = r(rCode)(dd)
 
-        return list(output)
+
+        if reverse == True:
+            output = [1 if x == 0 else 0 for x in list(output)]
+        else:
+            output = list(output)
+
+        return output
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
