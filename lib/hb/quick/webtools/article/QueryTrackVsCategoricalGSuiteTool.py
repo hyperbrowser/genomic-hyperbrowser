@@ -368,17 +368,21 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         core.divEnd()
         core.hideToggle(styleId="progress-output")
         print str(core)
-        cls._printMultiQueryScenarioResult(results, catTS.keys())
+        cls._printMultiQueryScenarioResult(results, catTS.keys(), choices)
 
     @classmethod
-    def _printMultiQueryScenarioResult(cls, results, catNames):
+    def _printMultiQueryScenarioResult(cls, results, catNames, choices):
         core = HtmlCore()
         core.divBegin()
         resTableDict = OrderedDict()
-        for key, val in results.iteritems():
-            resTableDict[key] = val.getResult()
-
-        core.tableFromDictionary(resTableDict, columnNames=["Query track"]+catNames)
+        if choices.randType == "Wilcoxon":
+            for key, val in results.iteritems():
+                resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
+            core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
+        else:
+            for key, val in results.iteritems():
+                resTableDict[key] = val.getResult()
+            core.tableFromDictionary(resTableDict, columnNames=["Query track"]+catNames)
         core.divEnd()
         core.end()
         print str(core)
@@ -561,12 +565,15 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     @classmethod
     def prepareMultiQueryAnalysis(cls, choices, opCount):
         analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
-        analysisSpec.addParameter('multitrackRawStatistic',SummarizedInteractionPerTsCatV2Stat.__name__)
+        if choices.randType == "Wilcoxon":
+            analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+        else:
+            analysisSpec.addParameter('multitrackRawStatistic',SummarizedInteractionPerTsCatV2Stat.__name__)
+        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('segregateNodeKey', 'reference')
