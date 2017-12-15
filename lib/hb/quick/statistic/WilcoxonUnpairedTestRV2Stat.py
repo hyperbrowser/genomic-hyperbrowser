@@ -15,8 +15,9 @@ class WilcoxonUnpairedTestRV2Stat(MagicStatFactory):
 
 class WilcoxonUnpairedTestRV2StatUnsplittable(StatisticV2):
 
-    def _init(self, alternative="less", **kwArgs):
+    def _init(self, summaryFunc, alternative="less", **kwArgs):
         self._alternative = alternative
+        self._kwArgs = kwArgs
 
     def _compute(self):
         tsResult = self._children[0].getResult()
