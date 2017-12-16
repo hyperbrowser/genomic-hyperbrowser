@@ -1,0 +1,4 @@
+<tool id="hb_simulate_ttwo_continuous_tracks_based_on_a_binormal_distribution_tool" name="Simulate two continuous tracks based on a binormal distribution" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.smeasure.SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool" proto_tool_class="SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool">
+  <description></description>
+</tool>
