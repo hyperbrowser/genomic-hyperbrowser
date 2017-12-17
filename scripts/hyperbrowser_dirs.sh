@@ -155,11 +155,12 @@ remove_link_if_exists     'GALAXY_JOB_WORKING_DIR'
 if [ -z $(python scripts/hyperbrowser_config.py -c 'EXT_RESULTS_PATH') ]
 then
     link_dir 'GALAXY_REL_FILE_PATH' 'RESULTS_FILES_PATH' ../../
-    link_dir 'GALAXY_REL_JOB_WORKING_DIR' 'RESULTS_JOB_WORKING_DIR' ../../
+#    link_dir 'GALAXY_REL_JOB_WORKING_DIR' 'RESULTS_JOB_WORKING_DIR' ../../
 else
     create_rename_old_and_link 'RESULTS_FILES_PATH'         'GALAXY_FILE_PATH'
-    create_rename_old_and_link 'RESULTS_JOB_WORKING_DIR'    'GALAXY_JOB_WORKING_DIR'
+#    create_rename_old_and_link 'RESULTS_JOB_WORKING_DIR'    'GALAXY_JOB_WORKING_DIR'
 fi
+link_dir 'GALAXY_REL_JOB_WORKING_DIR' 'RESULTS_JOB_WORKING_DIR' ../../
 
 #
 # For subdirs of RESULTS_PATH, which must thus be created first

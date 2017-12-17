@@ -1,5 +1,7 @@
 from collections import OrderedDict
 from itertools import product
+
+from conglomerate.methods.lola.lola import LOLA
 from conglomerate.tools.method_compatibility import getCompatibleMethodObjects, getCollapsedConfigurationsPerMethod
 
 import pkg_resources
@@ -11,9 +13,12 @@ from conglomerate.tools.job import Job
 
 from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
+from proto.HtmlCore import HtmlCore
+from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene]
+ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, LOLA, Giggle]
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class ResultMocker:
@@ -238,7 +243,9 @@ class CongloProtoTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
+        #return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
+        #Not including TWO GROUPS for now, for running time reasons.. (also not handled for now, but easy to do)
+        return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS]
 
     @classmethod
     def getOptionsBoxChooseQueryTrackFile(cls, prevChoices):
@@ -266,12 +273,12 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
-            return ('__history__',)
+            return ('__history__','gsuite')
 
     @classmethod
     def getOptionsBoxChooseQueryTrackCollection(cls, prevChoices):
         if prevChoices.analysisType == cls.TWO_TRACK_GROUPS:
-            return ('__history__',)
+            return ('__history__','gsuite')
 
     @classmethod
     def getOptionsBoxOptionalUseOfCoreDatabase(cls, prevChoices):
@@ -444,8 +451,8 @@ class CongloProtoTool(GeneralGuiTool):
     def getWorkingMethodObjects(cls, prevChoices):
         selections = cls.determine_selections(prevChoices)
         # typeOfAnalysis = prevChoices.analysisType
-        queryTrack = cls.getFnListFromTrackChoice(prevChoices.chooseQueryTrackFile)
-        refTracks = cls.getFnListFromTrackChoice(prevChoices.chooseReferenceTrackFile)
+        queryTrack = cls.getQueryTracksFromChoices(prevChoices)
+        refTracks = cls.getRefTracksFromChoices(prevChoices)
         if queryTrack is None or refTracks is None:
             return None
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
@@ -462,6 +469,11 @@ class CongloProtoTool(GeneralGuiTool):
             selections = cls.parseChoices(prevChoices)
         else:
             raise
+        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
+        genomeName = prevChoices.selectReferenceGenome
+        selections['setGenomeName'] = [('setGenomeName', genomeName)]
+        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
+
         return selections
 
     # @classmethod
@@ -522,11 +534,19 @@ class CongloProtoTool(GeneralGuiTool):
         """
         # ('Choose a query track: ', 'chooseQueryTrackFile'),
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
+        print 'choices, galaxyFn:'
+        print repr(choices)
+        print galaxyFn
 
-        selections, typeOfAnalysis = cls.parseChoices(choices)
-        #print 'TEMP8: ', type(choices.chooseQueryTrackFile), choices.chooseQueryTrackFile
-        queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
-        refTracks = cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile)
+        selections = cls.determine_selections(choices)
+
+        #TEMP, for transferring to local computer..
+        print ''
+        print 'selections = ', repr(selections)
+        print ''
+        queryTrack = cls.getQueryTracksFromChoices(choices)
+        refTracks = cls.getRefTracksFromChoices(choices)
+        typeOfAnalysis = choices.analysisType
 
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
@@ -536,21 +556,68 @@ class CongloProtoTool(GeneralGuiTool):
         print typeOfAnalysis
         print workingMethodObjects
         print keptWmos
-        # runAllMethodsInSequence(keptWmos)
+        print 'NAMES:', [wmo._methodCls.__name__ for wmo in keptWmos]
+        runAllMethodsInSequence(keptWmos)
         mocked = [ResultMocker((queryTrack[0],refTracks[0]),5,0.05, wmo._methodCls.__name__) for wmo in keptWmos]
-        for wmo in mocked:
-            print wmo._wmoName, wmo.getPValue(), wmo.getTestStatistic(), wmo.getFullResults()
+        mocked = keptWmos
+
+        unionOfAnnotatedChoices= set([paramKey for wmo in mocked for paramKey in wmo.annotatedChoices.keys()])
+        keysWithVariation = []
+        for key in unionOfAnnotatedChoices:
+            if len(set([wmo.annotatedChoices.get(key) \
+                                                 if not isinstance(wmo.annotatedChoices.get(key), list) \
+                                                 else tuple(wmo.annotatedChoices.get(key)) \
+                                             for wmo in mocked])) > 1:
+                keysWithVariation.append(key)
+        keysWithVariation.sort()
+
+        core = HtmlCore()
+        core.tableHeader(['Method name', 'Query and reference track'] + keysWithVariation + ['P-value', 'Test statistic', 'Detailed results'])
+        for i,wmo in enumerate(mocked):
+            fullResultStaticFile = GalaxyRunSpecificFile(['details'+str(i)+'.html'], galaxyFn)
+            fullResultStaticFile.writeTextToFile(wmo.getFullResults())
+            allPvals = wmo.getPValue()
+            allTestStats = wmo.getTestStatistic()
+            assert len(allPvals) == len(allTestStats)
+            for trackCombination in allPvals.keys():
+                pval = allPvals[trackCombination]
+                ts = allTestStats[trackCombination]
+                prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
+                core.tableLine(
+                    [wmo._methodCls.__name__, prettyTrackComb] +
+                    [wmo.annotatedChoices.get(key) for key in keysWithVariation] +
+                    [str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
+        core.tableFooter()
+        print core
+
+    @classmethod
+    def getQueryTracksFromChoices(cls, choices):
+        queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
+        return queryTrack
+
+    @classmethod
+    def getRefTracksFromChoices(cls, choices):
+        typeOfAnalysis = choices.analysisType
+        if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
+            referenceTrackChoice = choices.chooseReferenceTrackFile
+        elif typeOfAnalysis == cls.REFERENCE_TRACKS:
+            referenceTrackChoice = choices.chooseCustomTrackCollection
+        else:
+            raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
+        refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
+        return refTracks
 
     @classmethod
     def getFnListFromTrackChoice(cls, trackChoice):
         if trackChoice is None or trackChoice.strip()=='':
             return None
 
-        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice)
+        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice, allowUnsupportedSuffixes=True)
         if filetype in ['bed']:
             fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
         elif filetype in ['gsuite']:
-            gsuite = ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
+            gsuite = getGSuiteFromGalaxyTN(trackChoice)
+
             fnList = [gsTrack.path for gsTrack in gsuite.allTracks()]
         else:
             print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
@@ -560,10 +627,6 @@ class CongloProtoTool(GeneralGuiTool):
     def parseChoices(cls, choices):
         selections = OrderedDict()
         # SELECTION BOXES:
-        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
-        genomeName = choices.selectReferenceGenome
-        selections['setGenomeName'] = [('setGenomeName', genomeName)]
-        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
         # mapping = {cls.WHOLE_GENOME:None,
         #            cls.EXCLUDE_SUPPLIED_BY_THE_USER:RestrictedThroughExclusion(fn)}
         if choices.restrictRegions in [cls.WHOLE_GENOME,None]:
@@ -649,9 +712,9 @@ class CongloProtoTool(GeneralGuiTool):
         if choices.clumping and not any(choices.clumping.values()):
             return "Please select whether or not to handle clumping"
 
-        if cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile) is None:
+        if cls.getQueryTracksFromChoices(choices) is None:
             return "Please select query track"
-        if cls.getFnListFromTrackChoice(choices.chooseReferenceTrackFile) is None:
+        if cls.getRefTracksFromChoices(choices) is None:
             return "Please select reference tracks"
 
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
