@@ -1,7 +1,15 @@
+import os
 from rpy2 import robjects
 from rpy2.robjects import r
 
+from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
+from proto.CommonFunctions import ensurePathExists
+from proto.tools.GeneralGuiTool import HistElement
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiTool, UserBinMixin):
@@ -13,11 +21,12 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     def getInputBoxNames(cls):
 
         return [('Select covariance value', 'covValue'),
-                ('Select mean value', 'meanValue')
+                ('Select values for mean (eg. 0.5)', 'meanValue'),
+                ('Select genome', 'genome'),
                 ] + cls.getInputBoxNamesForUserBinSelection()
 
     @classmethod
-    def getOptionsCovValue(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxCovValue(cls):  # Alt: getOptionsBox1()
         return ''
 
     @classmethod
@@ -25,24 +34,84 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
         return ''
 
     @classmethod
+    def getOptionsBoxGenome(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '__genome__'
+
+    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        covValue = float(choices.covValue)
-        meanValue = float(choices.meanValue)
+        covValue = choices.covValue.encode('utf-8').replace(' ', '').split(',')
+        meanValue = choices.meanValue.encode('utf-8').replace(' ', '').split(',')
 
-        rCode = """ 
-                    library(MASS)
-                    createTrack <- 
-                    function(vec) {
-                        mu <- rep(0,2)
-                        covChosen=vec[0]
-                        Sigma <- matrix(covChosen, nrow=2, ncol=2) + diag(2)*.3
-                        rawvars <- mvrnorm(n=10000, mu=mu, Sigma=Sigma)
-                    }"""
-        dd=robjects.FloatVector([covValue, meanValue])
-        data = r(rCode)(dd)
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        parsedRegSpec = cls._readRegSpec(regSpec)
 
-        print data
+        outGSuite = GSuite()
+        for iCov, cov in enumerate(covValue):
+
+            fileName = 'syn-cov' + str(cov) + '-' + str(meanValue[iCov]) + '-iter-' + str(iCov)
+
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName=fileName,
+                                                suffix='gtrack')
+
+            gSuiteTrack = GSuiteTrack(uri)
+            outFn = gSuiteTrack.path
+            ensurePathExists(outFn)
+
+            countData = "##Track type: function" + '\n'
+            countData += '###value' + '\n'
+
+            for chromosome in parsedRegSpec.keys():
+
+                for prs in parsedRegSpec[chromosome]:
+                    elementsNumber = int(prs[1]) - int(prs[0])
+
+                    countData += ';'.join(['####genome=' + str(choices.genome), 'seqid=' + str(chromosome),'start=' + str(str(prs[0])),'end=' + str(str(prs[1]))]) + '\n'
+
+                    rCode = """ 
+                                library(MASS)
+                                createTrack <- 
+                                function(vec) {
+                                    covChosen <- vec[1]
+                                    mu <- vec[2]
+                                    Sigma <- matrix(covChosen, nrow=1, ncol=1)
+                                    rawvars <- mvrnorm(n=vec[3], mu=mu, Sigma=Sigma)
+                                }"""
+                    dd=robjects.FloatVector([covValue[iCov], meanValue[iCov], elementsNumber])
+                    data = r(rCode)(dd)
+
+                    countData += '\n'.join([str(d) for d in list(data)]) + '\n'
+
+            writeFile = open(outFn, 'w')
+            writeFile.write(countData)
+            writeFile.close()
+
+            outGSuite.addTrack(GSuiteTrack(uri, title=''.join(fileName), genome=choices.genome))
+
+        GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
+        print 'Counted gSuite is in the history'
+
+    @classmethod
+    def getExtraHistElements(cls, choices):
+        return [HistElement('output gSuite', 'gsuite')]
+
+    @classmethod
+    def _readRegSpec(cls, parameters):
+        parameters = parameters.encode('utf-8')
+
+        dataOut = {}
+        parameters = parameters.replace(' ', '').split(',')
+        for p in parameters:
+            chromosme = p.split(':')[0]
+            chromosmeSt = int(p.split(':')[1].split('-')[0])
+            chromosmeEnd = int(p.split(':')[1].split('-')[1])
+
+            if not chromosme in dataOut.keys():
+                dataOut[chromosme] = []
+            dataOut[chromosme].append([chromosmeSt, chromosmeEnd])
+
+        return dataOut
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -70,16 +139,9 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -188,24 +250,9 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'gsuite'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

@@ -88,8 +88,10 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                     if line[0] in gtrackData.keys():
                         if not line[0] in datasetPerChromosome.keys():
                             datasetPerChromosome[line[0]] = []
-                        if int(line[1]) >=  gtrackData[line[0]][0] and int(line[1]) <= gtrackData[line[0]][1]:
-                            datasetPerChromosome[line[0]].append(int(line[1]))
+
+                        for prs in gtrackData[line[0]]:
+                            if int(line[1]) >=  prs[0] and int(line[1]) <= prs[1]:
+                                datasetPerChromosome[line[0]].append(int(line[1]))
 
 
             for nr in range(0, number):
@@ -135,9 +137,10 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         allPossibilitiesWithOptionFinalChoice = []
         for chr in datasetPerChromosome.keys():
             allPossibilitiesWith1 = datasetPerChromosome[chr] #[1, 2, 5, 6]
-            allPossibilitiesWith0 = [i for i in
-                                     range(gtrackData[chr][0], gtrackData[chr][1] + 1)]
 
+            allPossibilitiesWith0 = []
+            for prs in gtrackData[chr]:
+                allPossibilitiesWith0 += [i for i in range(prs[0], prs[1] + 1)]
 
             allPossibilitiesWith0 = [x for x in allPossibilitiesWith0 if
                                      x not in datasetPerChromosome[chr]]
@@ -186,7 +189,8 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             chromosmeEnd = int(p.split(':')[1].split('-')[1])
 
             if not chromosme in dataOut.keys():
-                dataOut[chromosme] = [chromosmeSt, chromosmeEnd]
+                dataOut[chromosme] = []
+            dataOut[chromosme].append([chromosmeSt, chromosmeEnd])
 
 
 
