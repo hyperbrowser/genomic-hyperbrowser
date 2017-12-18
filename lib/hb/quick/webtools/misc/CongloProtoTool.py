@@ -24,22 +24,6 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, LOLA, Giggle, IntervalStats]
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-# class ResultMocker:
-#     def __init__(self, key, ts, p, wmoName):
-#         self._ts = ts
-#         self._p = p
-#         self._key = key
-#         self._wmoName = wmoName
-#
-#     def getPValue(self):
-#         return {self._key : self._p}
-#
-#     def getTestStatistic(self):
-#         return {self._key : self._ts}
-#
-#     def getFullResults(self):
-#         return 'DETAILED RESULTS for result with p-val: ' + str(self._p)
-
 class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
