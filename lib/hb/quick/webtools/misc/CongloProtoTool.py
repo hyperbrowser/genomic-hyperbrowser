@@ -741,7 +741,6 @@ class CongloProtoTool(GeneralGuiTool):
                 fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
                 fullResult = allFullResults[trackCombination]
                 fullResultStaticFile.writeTextToFile(fullResult)
-                # print 'TEMP17: ', fullResult
                 pval = allPvals[trackCombination]
                 ts = allTestStats[trackCombination]
                 # prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
