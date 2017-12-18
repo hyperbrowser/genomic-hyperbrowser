@@ -22,8 +22,6 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, LOLA, Giggle, IntervalStats]
-#Not working:
-#OK: GenometriCorr, StereoGene, LOLA, Giggle, IntervalStats
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 # class ResultMocker:
