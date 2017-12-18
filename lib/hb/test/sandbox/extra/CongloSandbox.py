@@ -5,6 +5,7 @@ import pkg_resources
 
 from conglomerate.tools.method_compatibility import getCompatibleMethodObjects
 from conglomerate.tools.runner import runAllMethodsInSequence
+from conglomerate_submodule.conglomerate.tools.constants import VERBOSE_RUNNING
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.misc.CongloProtoTool import ALL_METHOD_CLASSES
@@ -27,63 +28,72 @@ refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_over
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed.gz'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed.gz')]
 
 
-workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
-keptWmos = workingMethodObjects#[-1:]
-print keptWmos
-print [wmo._methodCls.__name__ for wmo in keptWmos]
-for wmo in keptWmos:
-    print '**', wmo._methodCls.__name__, '**'
-    print wmo._methods[0]._params
-    print '****'
+wmos = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
+keptWmos = wmos#[-1:]
+
+if VERBOSE_RUNNING:
+    print 'Working methods:'
+    print [wmo._methodCls.__name__ for wmo in keptWmos]
+    for wmo in keptWmos:
+        print '**', wmo._methodCls.__name__, '**'
+        print wmo._methods[0]._params
+        print '****'
 
 runAllMethodsInSequence(keptWmos)
 
 mocked = keptWmos
 
 unionOfParamKeys = set([paramKey for wmo in mocked for paramKey in wmo.annotatedChoices.keys()])
-print(unionOfParamKeys)
+# print(unionOfParamKeys)
 keysWithVariation = []
 for key in unionOfParamKeys:
     numDifferentKeyValues = len(set([wmo.annotatedChoices.get(key) \
                         if not isinstance(wmo.annotatedChoices.get(key), list) \
                 else tuple(wmo.annotatedChoices.get(key)) \
                 for wmo in mocked]))
-    print(key, numDifferentKeyValues)
+    # print(key, numDifferentKeyValues)
     if numDifferentKeyValues > 1:
         keysWithVariation.append(key)
 keysWithVariation.sort()
 
 core = HtmlCore()
-core.tableHeader(['Method name', 'Query and reference track'] + keysWithVariation + ['P-value', 'Test statistic', 'Detailed results'])
+core.tableHeader(['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic', 'Detailed results'])
 for i, wmo in enumerate(mocked):
-    # if not wmo.ranSuccessfully():
-    #     continue
+    if not wmo.ranSuccessfully():
+        continue
     # print 'TEMP16: ', wmo.getFullResults()
 
     allPvals = wmo.getPValue()
     allTestStats = wmo.getTestStatistic()
+    # print 'TEMP18: ', wmo._methodCls.__name__, allTestStats
     allFullResults = wmo.getFullResults()
-    assert len(allPvals)>0, allPvals
+    # assert len(allPvals)>0, allPvals
     assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
     for j,trackCombination in enumerate(allPvals.keys()):
         fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
         fullResult = allFullResults[trackCombination]
-        fullResultStaticFile.writeTextToFile(fullResult)
+        # fullResultStaticFile.writeTextToFile(fullResult)
+        # print 'TEMP17: ', fullResult
         pval = allPvals[trackCombination]
         ts = allTestStats[trackCombination]
-        prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
+        # prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
+        prettyTracks = [track.split('/')[-1] for track in trackCombination]
         #print 'TEMP14', [wmo._methodCls.__name__, prettyTrackComb] + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')]
         core.tableLine(
-            [wmo._methodCls.__name__, prettyTrackComb] + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
+            [wmo._methodCls.__name__] + prettyTracks + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
 core.tableFooter()
 
 #not wmo.ranSuccessfully()
-core.tableHeader(['Method name', 'Tool error'])
-for wmo in mocked:
-    if wmo.ranSuccessfully():
-        continue
-    core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
-core.tableFooter()
+if not all( wmo.ranSuccessfully() for wmo in mocked):
+    core.tableHeader(['Method name', 'Tool error'])
+    for i,wmo in enumerate(mocked):
+        if wmo.ranSuccessfully():
+            continue
+        errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
+        # errorStaticFile.writeTextToFile(wmo.getErrorDetails())
+        # print 'TEMP18: ', wmo.getErrorDetails()
+        core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
+    core.tableFooter()
 
 
 
