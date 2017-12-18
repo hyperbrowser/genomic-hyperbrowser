@@ -1,21 +1,53 @@
 #For doAnalysis
 import collections
+import logging
+from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.application.StatRunner import AnalysisDefJob, StatJob
 
 #For getTrackData
-from gold.track.Track import Track
+from gold.origdata.GESourceWrapper import GESourceWrapper
+from gold.track.Track import Track, PlainTrack
+from gold.track.GenomeRegion import GenomeRegion
 
 #Include these in this name space, to allow them to be imported from this API module
 from gold.track.TrackStructure import TrackStructureV2
+from quick.application.UserBinSource import RegionIter, GlobalBinSource,\
+    BinSource
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.gsuite.GSuite import GSuite
 from collections import OrderedDict
-from quick.application.SignatureDevianceLogging import takes
+from quick.application.SignatureDevianceLogging import takes, returns
+from gold.result import Results
 from gold.application import GSuiteAPI
+from gold.application.StatRunnerV2 import StatJobV2
+from urllib import quote
 from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings, wrapClass
 
-@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable, TrackStructureV2)
+def doAnalysisOldWay(analysisSpec, analysisBins, tracks):
+    silenceRWarnings()
+    silenceNumpyWarnings()
+
+    if len(tracks) > 2:
+        from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
+        analysisSpec.addParameter(
+            'extraTracks',
+            MULTIPLE_EXTRA_TRACKS_SEPARATOR.join(
+                ['^'.join([quote(part) for part in x.trackName])
+                 for x in tracks[2:]]
+            )
+        )
+    job = AnalysisDefJob(analysisSpec.getDefAfterChoices(),
+                         tracks[0].trackName,
+                         tracks[1].trackName if len(tracks) > 1 else None,
+                         analysisBins, galaxyFn=None)
+    res = job.run(printProgress=False)  # printProgress should be optional?
+    return res
+
+
+#@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable, TrackStructureV2)
 def doAnalysis(analysisSpec, analysisBins, trackStructure):
+    if type(trackStructure)==list:
+        return doAnalysisOldWay(analysisSpec, analysisBins, trackStructure)
     '''Performs an analysis,
     as specified by analysisSpec object,
     in each bin specified by analysisBins,
