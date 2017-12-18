@@ -740,7 +740,7 @@ class CongloProtoTool(GeneralGuiTool):
             for j, trackCombination in enumerate(allPvals.keys()):
                 fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
                 fullResult = allFullResults[trackCombination]
-                # fullResultStaticFile.writeTextToFile(fullResult)
+                fullResultStaticFile.writeTextToFile(fullResult)
                 # print 'TEMP17: ', fullResult
                 pval = allPvals[trackCombination]
                 ts = allTestStats[trackCombination]
@@ -761,7 +761,7 @@ class CongloProtoTool(GeneralGuiTool):
                 if wmo.ranSuccessfully():
                     continue
                 errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
-                # errorStaticFile.writeTextToFile(wmo.getErrorDetails())
+                errorStaticFile.writeTextToFile(wmo.getErrorDetails())
                 # print 'TEMP18: ', wmo.getErrorDetails()
                 core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
             core.tableFooter()
