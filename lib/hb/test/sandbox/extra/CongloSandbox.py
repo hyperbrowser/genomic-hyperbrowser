@@ -19,12 +19,12 @@ selections['preserveClumping'] = [('preserveClumping', False), ('preserveClumpin
 
 selections['setChromLenFileName'] = [('setChromLenFileName',pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular') )]
 galaxyFn = '/software/galaxy/personal/geirksa/galaxy_dev/database/files/000/dataset_635.dat'
-#queryTrack = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps_cropped.bed')]
-queryTrack = [pkg_resources.resource_filename('tests.resources', 'Refseq_Genes_cropped.bed.gz')]
+queryTrack = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps_cropped.bed')]
+#queryTrack = [pkg_resources.resource_filename('tests.resources', 'Refseq_Genes_cropped.bed.gz')]
 
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_with_overlaps.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me3_with_overlaps.bed')]
-#refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')]
-refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed.gz'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed.gz')]
+refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')]
+#refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed.gz'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed.gz')]
 
 
 workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
@@ -55,20 +55,36 @@ keysWithVariation.sort()
 
 core = HtmlCore()
 core.tableHeader(['Method name', 'Query and reference track'] + keysWithVariation + ['P-value', 'Test statistic', 'Detailed results'])
-print('TEMPM13: ', len(mocked))
 for i, wmo in enumerate(mocked):
-    fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '.html'], galaxyFn)
-    #fullResultStaticFile.writeTextToFile(wmo.getFullResults())
+    # if not wmo.ranSuccessfully():
+    #     continue
+    # print 'TEMP16: ', wmo.getFullResults()
+
     allPvals = wmo.getPValue()
     allTestStats = wmo.getTestStatistic()
+    allFullResults = wmo.getFullResults()
     assert len(allPvals)>0, allPvals
-    assert len(allPvals) == len(allTestStats)
-    for trackCombination in allPvals.keys():
+    assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
+    for j,trackCombination in enumerate(allPvals.keys()):
+        fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
+        fullResult = allFullResults[trackCombination]
+        fullResultStaticFile.writeTextToFile(fullResult)
         pval = allPvals[trackCombination]
         ts = allTestStats[trackCombination]
         prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
-        print 'TEMP14', [wmo._methodCls.__name__, prettyTrackComb] + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')]
+        #print 'TEMP14', [wmo._methodCls.__name__, prettyTrackComb] + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')]
         core.tableLine(
             [wmo._methodCls.__name__, prettyTrackComb] + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')])
 core.tableFooter()
+
+#not wmo.ranSuccessfully()
+core.tableHeader(['Method name', 'Tool error'])
+for wmo in mocked:
+    if wmo.ranSuccessfully():
+        continue
+    core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
+core.tableFooter()
+
+
+
 print core
