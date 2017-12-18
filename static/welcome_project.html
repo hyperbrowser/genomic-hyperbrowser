@@ -1,137 +1,36 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><link rel="stylesheet" href="welcome_project.css"><meta charset='UTF-8'><title>coloc-stats: a unified web interface to perform co-localization analysis of genomic features</title></head><body><div class='content'><div class ="tabs">
-    <ul class ="nav nav-tabs" id="tab-links">
-        <li class="active" value="tab0">
-            <a data-toggle="tab" href="#menu0">colocStats</a>
-        </li>
-        <li  value="tab1">
-            <a data-toggle="tab" href="#menu1">List of other projects</a>
-        </li>
-        <li  value="tab2">
-            <a data-toggle="tab" href="#menu2">About</a>
-        </li>
-    </ul>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><link rel="stylesheet" href="welcome_project.css"><meta charset='UTF-8'><title>coloc-stats: a unified web interface to perform co-localization analysis of genomic features</title></head><body><div class='content'><div class ="tabs"> <ul class ="nav nav-tabs" id="tab-links"><li class="active" value="tab0"><a data-toggle="tab" href="#menu0">coloc-stats</a></li><li  value="tab1"><a data-toggle="tab" href="#menu1">List of other projects</a></li><li  value="tab2"><a data-toggle="tab" href="#menu2">About</a></li></ul></div> <div class="tab-content"><div id="menu0" class="tab-pane fade  in active"><div class="container">
+                            <div class="rowSpecial">
+                                <div class="colAll"><h2 class="projectTitle">coloc-stats: a unified web interface to perform co-localization analysis of genomic features</h2><div class = 'project'><div class = 'projectDesc'><p class="paragraph">Several generic and specialized tools are available to perform co-localization analysis, they vary in the statistical methodology and analysis approaches, thus potentially providing different conclusions for the same research question. As the findings of co-localization analysis are often the basis for further follow-up experimental investigations, assessing the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution, null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features). To address this gap, we propose a coloc-stats, single interface for multiple previously published co-localization analysis methods. </p><p class="paragraph">coloc-stats allows a user to find a method that supports their experimental requirements, and when multiple methods meet the requirements, assess the robustness of conclusions by running and inspecting results across methods. Additionally, we extend methods that only support a pair of tracks to consider track collections. </p></div></div>
+</div> </div></div>
+                        <div class="containerNext">
+                            <div class="rowSpecialWithGap">
+                          <div class="colAll"> <div class = 'description'><h4 class = 'descriptionTitle'>Tools integrated in coloc-stats</h4><div class = 'descriptionDesc'><p class="paragraph">Coloc-stats provides a unified interface to eight different co-localization analysis tools. Tools are listed in chronological order they are published.</p><a href = 'https://doi.org/10.1186/gb-2010-11-12-r121' >Genomic Hyperbrowser</a></div></div>
+<div class = 'description'><a href = 'https://doi.org/10.1093/bioinformatics/bts009' >IntervalStats</a></div>
+<div class = 'description'><a href = 'https://doi.org/10.1371/journal.pcbi.1002529' >GenometriCorr</a></div>
+<div class = 'description'><a href = 'https://doi.org/10.1016/j.ajhg.2015.05.016' >GoShifter</a></div>
+<div class = 'description'><a href = 'https://doi.org/10.1093/bioinformatics/btv612' >LOLA</a></div>
+<div class = 'description'><a href = ' https://doi.org/10.1093/gigascience/gix032' >GSuite Hyperbrowser</a></div>
+<div class = 'description'><a href = 'https://doi.org/10.1093/bioinformatics/btx379' >Stereogene</a></div>
+<div class = 'description'><a href = 'https://doi.org/10.1101/157735' >GIGGLE</a></div>
+
 </div>
-    <div class="tab-content">
-        <div id="menu0" class="tab-pane fade  in active">
-            <div class="container">
-                <div class="rowSpecial">
-                    <div class="colAll">
-                        <h2 class="projectTitle">
-                            coloc-stats: a unified web interface to perform co-localization analysis of genomic features
-                        </h2>
-                        <div class = 'project'>
-                            <div class = 'projectDesc'>
-                                <p class="paragraph">
-                                    Motivation for coloc-stats
-                                </p>
-                                <p class="paragraph">
-                                    more description
-                                </p>
-                                <p class="paragraph">
-                                    To read more about coloc-stats go to: TO BE UPDATED.
-                                </p>
-                                <p class="paragraph">
-                                    To see all examples from above paper [click here] [In case we want to make a page with all examples].
-                                </p>
+
+                
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                         <div class = 'example'>
-                             <h4 class = 'exampleTitle'>
-                                 The unified web interface
-                             </h4>
-                             <div class = 'exampleDesc'>
-                                 <p class="paragraph">
-                                     The following tool have the unified interface of the methods available in the literature:
-                                     <ul style="list-style-type:none">
-                                        <li>- <a href="http://genometriccorr">genometriccorr</a> described in paper [1]</li>
-                                        <li>- <a href="http://giggle">giggle</a> described in paper [2]</li>
-                                        <li>- <a href="http://lola">goshifter</a> described in paper [3]</li>
-                                        <li>- <a href="http://intervalstats">IntervalStats</a> described in paper [4]</li>
-                                        <li>- <a href="http://lola">lola</a> described in paper [5]</li>
-                                        <li>- <a href="http://stereogene">stereogene</a> described in paper [6]</li>
-                                     </ul>
-
-                                     The output of tools is a consolidated output of above methods.
-
-
-                                 </p>
-                                 <p class="paragraph">
-                                     <ul style="list-style-type:none">
-                                        <li>[1]  paper </li>
-                                        <li>[2]  paper </li>
-                                        <li>[3]  paper </li>
-                                        <li>[4]  paper </li>
-                                        <li>[5]  paper </li>
-                                        <li>[6]  paper </li>
-                                     </ul>
-                                 </p>
-                             </div>
-                         </div>
-                    </div>
-                </div>
-            </div>
                         
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        CongloProtoTool is divided by three possible co-localization analysis:
-                         <div class = 'example'>
-                             <h4 class = 'exampleTitle'>
-                                 CongloProtoTool with co-localization analysis: Relation between two genomic tracks
-                             </h4>
-                             <div class = 'exampleDesc'>
-                                 <p class="paragraph">
-                                     The input for this option in the tool are query and reference track
-                                 </p>
-                                 <p class="paragraph">
-                                     The output is a table ...
-                                 </p>
-                             </div>
-                         </div>
-                        <div class = 'example'>
-                             <h4 class = 'exampleTitle'>
-                                 CongloProtoTool with co-localization analysis: Query track against collection of reference tracks
-                             </h4>
-                             <div class = 'exampleDesc'>
-                                 <p class="paragraph">
-                                     The input for this option in the tool are query and reference track
-                                 </p>
-                                 <p class="paragraph">
-                                     The output is a table ...
-                                 </p>
-                             </div>
-                         </div>
-                        <div class = 'example'>
-                             <h4 class = 'exampleTitle'>
-                                 CongloProtoTool with co-localization analysis: Pairwise comparision of all tracks between two tracks-groups
-                             </h4>
-                             <div class = 'exampleDesc'>
-                                 <p class="paragraph">
-                                     The input for this option in the tool are query and reference track, selected from core or custom database.
-                                 </p>
-                                 <p class="paragraph">
-                                     The output is a table ...
-                                 </p>
-                             </div>
-                         </div>
-                    </div>
-                </div>
-            </div>
+                        <div class="containerNext">
+                            <div class="rowSpecialWithGap">
+                          <div class="colAll"> <div class = 'example'><h4 class = 'exampleTitle'>Demo video</h4></div></div>
+</div>
+
+                
+                            </div>
+                        </div>
                         
             <div class="footer">
-                <div class = 'contactInfo'>
-                    <div class = 'contactInfoDesc'>
-                          <p class="paragraph">
-                              If you have any questions, requests or comments regarding the rainfall plot project, please contact: <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
-                        </p>
-                    </div>
-                </div>
+                <div class = 'contactInfo'><div class = 'contactInfoDesc'>All questions, requests or comments can be redirected to<a href='mailto:geirska@ifi.uio.no' target='_top'>Geir Kjetil Sandve.</a></div></div>
+
             </div>
         </div><div id="menu1" class="tab-pane fade ">
 
@@ -141,7 +40,7 @@
 
                           <div id ='content'></div>
                                 <script>
-                                $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_colocStats.txt");
+                                $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_coloc-stats.txt");
                                 </script>
                     </div>
                 </div>

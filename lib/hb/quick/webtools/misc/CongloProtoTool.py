@@ -14,12 +14,13 @@ from conglomerate.tools.job import Job
 
 from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
+from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [IntervalStats]
+ALL_METHOD_CLASSES = [Giggle]
 #Not working: IntervalStats
 #OK: GenometriCorr, StereoGene, LOLA, Giggle
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -84,6 +85,8 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Use one of the default core databases as reference collection ? ', 'optionalUseOfCoreDatabase'),
                 ('Choose a query track collection: ', 'chooseQueryTrackCollection'),
                 ('Choose a reference track collection: ', 'chooseReferenceTrackCollection'),
+                ('Analyse against background regions? (optional)','analyseInBackground'),
+                ('Select the uploaded file of background regions','backgroundRegionFileUpload'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
                 ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
@@ -139,6 +142,14 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxSelectRunningMode(cls):  # Alt: getOptionsBox1()
         return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
 
+    @classmethod
+    def getInfoForOptionsBoxSelectRunningMode(cls):
+        text = 'Simple mode with tool-specific defaults performs co-localization analysis with six different tools with default settings.'
+        text += '<br>'
+        text += 'Simple mode with shared defaults runs the co-localization analysis tools with similar or same parameters/settings to allow comparison between the findings of the tools.'
+        text += '<br>'
+        text += 'Advanced mode allows the selection of co-localization analysis tools/methods based on detailed choices of parameters and methodological assumptions.'
+        return text
 
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
@@ -147,9 +158,24 @@ class CongloProtoTool(GeneralGuiTool):
         return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
 
     @classmethod
+    def getInfoForOptionsBoxSelectReferenceGenome(cls, prevChoices):
+        text = 'Currently supports only hg19, hg38 and mm9.'
+        text += '<br>'
+        text += 'Please upload the chromosome lengths file of a reference genome of your choice, if the default options are not suitable for your analysis.'
+        return text
+
+    @classmethod
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
         if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             return ('__history__',)
+
+    @classmethod
+    def getInfoForOptionsBoxChooseChrnLenFile(cls, prevChoices):
+        text = 'Upload the chromosome lengths file of a reference genome of your choice, if the default reference genomes are not suitable for your analysis.'
+        text += '<br>'
+        text += 'The file should be tab separated with two fields; the first field should contain the chromosome name (e.g. chr22) and the second field should contain the length of the chromosome (e.g., 123456).'
+        return text
+
 
     TWO_TRACK_GROUPS = 'Pairwise comparison of all tracks between two track-groups'
     REFERENCE_TRACKS = 'Query track against collection of reference tracks'
@@ -251,14 +277,50 @@ class CongloProtoTool(GeneralGuiTool):
         return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS]
 
     @classmethod
+    def getInfoForOptionsBoxAnalysisType(cls, prevChoices):
+        text = 'Here you can choose to perform the co-localization analysis either between a pair of genomic tracks or analyse a single genomic track against a large collection of genomic tracks.' \
+               'The large collection of genomic tracks can further be a core database, where one could for example perform the analysis against ENCODE or Roadmap Epigenomics data including ' \
+               'transcription factor binding sites, DNAse hypersensitive sites and so on. See the articles [1,2,3] for the reference track collections they curated.'
+        text += '<br>'
+        text += '[1] https://doi.org/10.1186/gb-2010-11-12-r121'
+        text += '<br>'
+        text += '[2]https://doi.org/10.1101/157735'
+        text += '<br>'
+        text += '[3] 10.1093/bioinformatics/btv612'
+        return text
+
+    @classmethod
     def getOptionsBoxChooseQueryTrackFile(cls, prevChoices):
         if prevChoices.analysisType in [cls.TWO_GENOMIC_TRACKS,cls.REFERENCE_TRACKS]:
             return ('__history__','bed')
 
     @classmethod
+    def getInfoForOptionsBoxChooseQueryTrackFile(cls, prevChoices):
+        text = 'For now, only BED files are supported.' \
+               'Upload files through the upload button on the top left corner under the tools menu. ' \
+               'The file will appear under the galaxy history in the right menu panel. '
+        text += '<br>'
+        text += 'It is strongly advised to adhere to the BED file format specifications.'
+        text += 'If you have a different file format other than BED, you can use the tool on the left-hand menu to convert between file formats.'
+        text += 'Please see under the tools menu "Format and convert tracks".'
+        return text
+
+    @classmethod
     def getOptionsBoxChooseReferenceTrackFile(cls, prevChoices):
         if prevChoices.analysisType == cls.TWO_GENOMIC_TRACKS:
             return ('__history__','bed')
+
+    @classmethod
+    def getInfoForOptionsBoxChooseReferenceTrackFile(cls, prevChoices):
+        text = 'For now, only BED files are supported.' \
+               'Upload files through the upload button on the top left corner under the tools menu. ' \
+               'The file will appear under the galaxy history in the right menu panel. '
+        text += '<br>'
+        text += 'It is strongly advised to adhere to the BED file format specifications.'
+        text += 'If you have a different file format other than BED, you can use the tool on the left-hand menu to convert between file formats.'
+        text += 'Please see under the tools menu "Format and convert tracks".'
+        return text
+
 
     CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
     CORE_DATABASE = 'Use core database as the set of reference tracks'
@@ -269,6 +331,26 @@ class CongloProtoTool(GeneralGuiTool):
             return [cls.CORE_DATABASE, cls.CUSTOM_DATABASE]
 
     @classmethod
+    def getInfoForOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
+        text = 'The large collection of genomic tracks can be a core database, ' \
+               'where one could for example perform the analysis against ENCODE ' \
+               'or Roadmap Epigenomics data including transcription factor binding sites, ' \
+               'DNAse hypersensitive sites and so on. See the articles [1,2,3] ' \
+               'for the reference track collections they curated.'
+        text += '<br>'
+        text += 'Alternatively, one could build a custom collection of reference tracks.' \
+                'For this, one can upload a bunch of BED files through the upload functionality ' \
+                '(drag and drop works) or a tar file containing several BED files ' \
+                '- further one can build a collection of genomic tracks (which we refer to as GSuite).'
+        text += '<br>'
+        text += '[1] https://doi.org/10.1186/gb-2010-11-12-r121'
+        text += '<br>'
+        text += '[2]https://doi.org/10.1101/157735'
+        text += '<br>'
+        text += '[3] 10.1093/bioinformatics/btv612'
+        return text
+
+    @classmethod
     def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
             return ['LOLA data collection','GIGGLE data collection', 'GSuite Hyperbrowser data collection']
@@ -277,6 +359,14 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
             return ('__history__','gsuite')
+
+    @classmethod
+    def getInfoForOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
+        text = 'Select the custom reference track collection. One could upload a bunch of BED files through the upload functionality' \
+                '(drag and drop works) or a tar file containing several BED files' \
+                '- further one can build a collection of genomic tracks (which we refer to as GSuite).'
+        return text
+
 
     @classmethod
     def getOptionsBoxChooseQueryTrackCollection(cls, prevChoices):
@@ -296,6 +386,44 @@ class CongloProtoTool(GeneralGuiTool):
             return ('__history__',)
 
     # OVERLAP_MEASURES = [COUNTS, BASES]
+
+
+    EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
+    EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
+    WHOLE_GENOME = 'No, use the whole genome'
+
+
+    @classmethod
+    def getOptionsBoxAnalyseInBackground(cls, prevChoices):  # Alt: getOptionsBox2()
+        if prevChoices.selectRunningMode in [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS]:
+            return [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
+
+    @classmethod
+    def getInfoForOptionsBoxAnalyseInBackground(cls, prevChoices):
+        text = 'The genomic regions in a genomic track file are typically a result of some form of genomic assay ' \
+               'analysed on a high throughput sequencing or genotyping platform, where some predefined regions ' \
+               'of the genome are assayed (e.g., all the SNPs, transcripts, exonic regions and so on). The genomic ' \
+               'regions found based on such assays are thus restricted to the regions queried on the technology platform. ' \
+               'The statistical test (null model) should ideally restrict the analysis space to the regions queried on the ' \
+               'technology platform. Some tools provide the possibility to restrict the analysis to background set of regions, ' \
+               'by either excluding the regions supplied by the user or by performing the analysis only against an explicit set ' \
+               'of background regions supplied by the user. Only BED files are supported for now.'
+        text += '<br>'
+        return text
+
+
+    @classmethod
+    def getOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
+        if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
+            return '__history__'
+
+    @classmethod
+    def getInfoForOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
+        text = 'Some tools provide the possibility to restrict the analysis to background set of regions, ' \
+               'by either excluding the regions supplied by the user or by performing the analysis only against an explicit set ' \
+               'of background regions supplied by the user. Upload an explicit set of background regions; the analysis will be restricted Only BED files are supported for now.'
+        text += '<br>'
+        return text
 
     FLANKING_REGIONS = 'basepair overlap including expansion of flanking regions'
     DIRECT_OVERLAP = 'direct basepair overlap between genomic regions'
@@ -380,9 +508,6 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.selectRunningMode == cls.ADVANCED:
             return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
 
-    EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
-    EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
-    WHOLE_GENOME = 'No, use the whole genome'
 
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -465,7 +590,10 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def determine_selections(cls, prevChoices):
         if prevChoices.selectRunningMode == cls.SIMPLE_WITH_SHARED_DEFAULTS:
-            selections = {'preserveClumping': [('preserveClumping', False), ('preserveClumping', True)]}
+            selections = {'setColocMeasure': [('setColocMeasure', ColocMeasureOverlap(**{'includeFlanks':False, 'countWholeIntervals':True, 'flankSizeUpstream':0, 'flankSizeDownstream':0})),
+                                              ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))],
+            'setRestrictedAnalysisUniverse': [('setRestrictedAnalysisUniverse',RestrictedThroughPreDefined(path))],
+            }
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {}
         elif prevChoices.selectRunningMode == cls.ADVANCED:
