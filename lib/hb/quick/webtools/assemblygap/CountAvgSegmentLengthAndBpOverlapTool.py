@@ -20,7 +20,6 @@ from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
-
 class CountAvgSegmentLengthAndBpOverlapTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
