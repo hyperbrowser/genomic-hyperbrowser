@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from itertools import product
 
+from conglomerate.methods.intervalstats.intervalstats import IntervalStats
 from conglomerate.methods.lola.lola import LOLA
 from conglomerate.tools.method_compatibility import getCompatibleMethodObjects, getCollapsedConfigurationsPerMethod
 
@@ -18,7 +19,9 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, LOLA, Giggle]
+ALL_METHOD_CLASSES = [IntervalStats]
+#Not working: IntervalStats
+#OK: GenometriCorr, StereoGene, LOLA, Giggle
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class ResultMocker:
