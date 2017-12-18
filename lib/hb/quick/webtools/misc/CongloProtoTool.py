@@ -15,7 +15,7 @@ from conglomerate.tools.job import Job
 from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
 from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
-from conglomerate_submodule.conglomerate.tools.constants import VERBOSE_RUNNING
+from conglomerate.tools.constants import VERBOSE_RUNNING
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
