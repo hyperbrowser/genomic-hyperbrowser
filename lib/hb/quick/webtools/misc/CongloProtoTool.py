@@ -50,7 +50,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         Mandatory method for all ProTo tools.
         """
-        return "CongloProtoTool"
+        return "coloc-stats"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -383,7 +383,7 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.optionalUseOfCoreDatabase == 'Yes':
             return ['LOLA data collection', 'GIGGLE data collection', 'GSuite Hyperbrowser data collection']
         elif prevChoices.optionalUseOfCoreDatabase == 'No':
-            return ('__history__',)
+            return ('__history__','gsuite')
 
     # OVERLAP_MEASURES = [COUNTS, BASES]
 
@@ -415,13 +415,13 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
         if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
-            return '__history__'
+            return ('__history__','bed')
 
     @classmethod
     def getInfoForOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
         text = 'Some tools provide the possibility to restrict the analysis to background set of regions, ' \
                'by either excluding the regions supplied by the user or by performing the analysis only against an explicit set ' \
-               'of background regions supplied by the user. Upload an explicit set of background regions; the analysis will be restricted Only BED files are supported for now.'
+               'of background regions supplied by the user. Upload an explicit set of background regions; the analysis will be restricted to the regions defined in the file. Only BED files are supported for now.'
         text += '<br>'
         return text
 
@@ -450,6 +450,35 @@ class CongloProtoTool(GeneralGuiTool):
 
     BASES = 'total number of overlapping bases'
     COUNTS = 'number of overlapping regions (counts)'
+
+    @classmethod
+    def getInfoForOptionsBoxTeststatType(cls, prevChoices):
+        text = 'Choose at least one or many co-localization measures (test statistic). ' \
+               'Selection of a test statistic shows further options to choose from. ' \
+               'Overlap measure can use counts (total number of overlapping intervals ' \
+               'between two files) or size (total number of overlapping base pairs between ' \
+               'two files). Proximity (distance) can be computed to either start or midpoint ' \
+               'or the closest coordinate.  A correlation metric can be obtained genome-wide ' \
+               '(overall relationship), at a fine-scale, or a local correlation (region-level). ' \
+               'For more information about the test statistics, see the original articles ' \
+               '[1,2,3,4,5,6,7,8]'
+        text += '<br>'
+        text += '[1] https://doi.org/10.1186/gb-2010-11-12-r121'
+        text += '<br>'
+        text += '[2]https://doi.org/10.1371/journal.pcbi.1002529'
+        text += '<br>'
+        text += '[3] 10.1093/bioinformatics/btv612'
+        text += '<br>'
+        text += '[4] https://doi.org/10.1093/bioinformatics/btx379'
+        text += '<br>'
+        text += '[5] https://doi.org/10.1101/157735'
+        text += '<br>'
+        text += '[6] 10.1093/bioinformatics/bts009'
+        text += '<br>'
+        text += '[7] 10.1016/j.ajhg.2015.05.016'
+        text += '<br>'
+        text += '[8] 10.1093/gigascience/gix032'
+        return text
 
     @classmethod
     def getOptionsBoxOverlapMeasure(cls, prevChoices):
