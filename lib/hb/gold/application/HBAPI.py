@@ -36,6 +36,7 @@ def doAnalysisOldWay(analysisSpec, analysisBins, tracks):
                  for x in tracks[2:]]
             )
         )
+
     job = AnalysisDefJob(analysisSpec.getDefAfterChoices(),
                          tracks[0].trackName,
                          tracks[1].trackName if len(tracks) > 1 else None,

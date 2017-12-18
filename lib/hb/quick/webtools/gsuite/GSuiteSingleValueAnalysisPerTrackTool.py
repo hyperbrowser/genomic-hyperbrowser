@@ -6,6 +6,8 @@ from gold.description.AnalysisManager import AnalysisManager
 from gold.gsuite import GSuiteConstants, GSuiteComposer
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountSegmentStat import CountSegmentStat
+from gold.track.Track import PlainTrack
+from gold.track.TrackStructure import SingleTrackTS
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
@@ -13,6 +15,7 @@ from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.AvgElementLengthStat import AvgElementLengthStat
+from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -36,6 +39,12 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         'Base-pair coverage': AnalysisSpec(CountSegmentStat),
         'Average length of segments': AnalysisSpec(AvgElementLengthStat),
         'Number of elements': AnalysisSpec(CountElementStat)
+    }
+
+    ANALYSIS_PRETTY_NAME_TO_ANALYSIS_SPEC_MAPPING_DIFFERENT = {
+        'Base-pair coverage': CountSegmentStat.__name__,
+        'Average length of segments': AvgElementLengthStat.__name__,
+        'Number of elements': CountElementStat.__name__
     }
 
     @staticmethod
@@ -219,6 +228,8 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+
+
         '''
         Is called when execute-button is pushed by web-user. Should print
         output as HTML to standard out, which will be directed to a results page
@@ -238,7 +249,9 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
         # selectedAnalysis = GSuiteSingleValueAnalysisPerTrackTool \
         #     ._resolveAnalysisFromName(gSuite.genome, fullCategory, tracks[0].trackName, analysisName)
 
-        selectedAnalysis = cls.ANALYSIS_PRETTY_NAME_TO_ANALYSIS_SPEC_MAPPING[choices.analysis]
+        selectedAnalysis = cls.ANALYSIS_PRETTY_NAME_TO_ANALYSIS_SPEC_MAPPING_DIFFERENT[choices.analysis]
+        analysisSpec = AnalysisSpec(SingleTSStat)
+        analysisSpec.addParameter('rawStatistic', selectedAnalysis)
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
@@ -253,11 +266,15 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
 
         for track in tracks:
             tableDict[track.title] = OrderedDict()
-            result = doAnalysis(selectedAnalysis, analysisBins, [track])
+            #result = doAnalysis(selectedAnalysis, analysisBins, [track])
+            sts = SingleTrackTS(PlainTrack(track.trackName),
+                                OrderedDict(title=track.title, genome=str(genome)))
+            result = doAnalysis(analysisSpec, analysisBins, sts)
+
             resultDict = result.getGlobalResult()
             if 'Result' in resultDict:
-                track.setAttribute(analysisName.lower(), str(resultDict['Result']))
-                tableDict[track.title][analysisName] = strWithNatLangFormatting(resultDict['Result'])
+                track.setAttribute(analysisName.lower(), str(resultDict['Result'].getResult()))
+                tableDict[track.title][analysisName] = strWithNatLangFormatting(resultDict['Result'].getResult())
             else:
                 for attrName, attrVal in resultDict.iteritems():
                     attrNameExtended = analysisName + ':' + attrName

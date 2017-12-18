@@ -38,6 +38,7 @@ class AnalysisSpec(object):
                     defAfterChoices += part.getDefAfterChoice()
             else:
                 defAfterChoices += str(part)
+
         defAfterChoices += ' -> ' + ','.join([x.__name__ for x in self._statClassList])
         return defAfterChoices
         

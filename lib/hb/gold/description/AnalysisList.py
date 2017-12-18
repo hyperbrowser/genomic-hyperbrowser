@@ -778,6 +778,7 @@ Relative avg position: The relative average position of track1-points inside the
 Strands in bin: The strand type of track1 inside the bins $EXPERIMENTAL$ -> StrandsInsideBinStat
 #(per bp)?
 Overlap and coverage: Base pair and proportional coverage by track1, track2 and by both -> ProportionOverlapStat
+Get regions based on treshold: Count function track based on treshold value [threshold=1.0/0.99/0.95/0.9/0.8/0.7/0.6/0.5/0.25/0.1] by track1 -> CountFunctionTrackBasedOnTresholdStat
 #Category bp coverage: Bp coverage by track1, track2 and both, for each category of track1 [rawStatistic:=ProportionOverlapStat:]-> GeneralOneCatTrackJoinWithDoubleDictSumStat
 Combined aggregates per bin: A custom operation on aggregate bin values on each track  $EXPERIMENTAL$ [rawStatisticTrack1=MaxOfMarksStat] [rawStatisticTrack2=MaxOfMarksStat] [combineOperation=product] -> ResultPerTrackCombinerStat
 Enrichment: The enrichment of track1 inside track2 and vice versa, at the bp level-> DerivedOverlapStat

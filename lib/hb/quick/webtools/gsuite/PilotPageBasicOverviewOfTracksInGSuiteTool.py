@@ -3,6 +3,7 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.TrackReportCommon import generatePilotPageOneParagraphs
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
@@ -11,7 +12,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 # web page.
 
 class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
-                                                 GenomeMixin):
+                                                 GenomeMixin, DebugMixin):
     
     '''
         https://docs.google.com/document/d/1c03750V_xDXfdTYrHOoAZPIjVihtOUpfXlWQm7dO95Q/edit
@@ -80,7 +81,8 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
                 ('', 'basicQuestionId'),
                 ('Select GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
-               cls.getInputBoxNamesForUserBinSelection()
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsBasic():
@@ -96,6 +98,8 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+
+        #cls._setDebugModeIfSelected(choices)
         
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         if gSuite.genome != choices.genome:
@@ -163,3 +167,7 @@ class PilotPageBasicOverviewOfTracksInGSuiteTool(GeneralGuiTool, UserBinMixin,
 #         Specifies whether the debug mode is turned on.
 #         '''
 #         return True
+
+    @classmethod
+    def isDebugMode(cls):
+        return True
