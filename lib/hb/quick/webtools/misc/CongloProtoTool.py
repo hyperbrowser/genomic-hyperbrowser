@@ -677,9 +677,6 @@ class CongloProtoTool(GeneralGuiTool):
         """
         # ('Choose a query track: ', 'chooseQueryTrackFile'),
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
-        # print 'choices, galaxyFn:'
-        # print repr(choices)
-        # print galaxyFn
 
         selections = cls.determine_selections(choices)
 
