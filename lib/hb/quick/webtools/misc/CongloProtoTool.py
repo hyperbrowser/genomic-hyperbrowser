@@ -677,7 +677,8 @@ class CongloProtoTool(GeneralGuiTool):
         """
         # ('Choose a query track: ', 'chooseQueryTrackFile'),
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
-
+        import conglomerate.tools.constants as const
+        const.CATCH_METHOD_EXCEPTIONS = False
         selections = cls.determine_selections(choices)
 
         #TEMP, for transferring to local computer..
@@ -692,7 +693,6 @@ class CongloProtoTool(GeneralGuiTool):
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
 
-
         if VERBOSE_RUNNING:
             print choices.compatibleMethods
             print selections
@@ -703,6 +703,7 @@ class CongloProtoTool(GeneralGuiTool):
                 print '**', wmo._methodCls.__name__, '**'
                 print wmo._methods[0]._params
                 print '****'
+                print ''
 
         runAllMethodsInSequence(keptWmos)
 
