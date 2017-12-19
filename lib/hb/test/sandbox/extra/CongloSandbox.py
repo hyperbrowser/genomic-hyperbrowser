@@ -14,7 +14,7 @@ from quick.webtools.misc.CongloProtoTool import ALL_METHOD_CLASSES
 selections =  {'setGenomeName': [('setGenomeName', u'Human (hg19)')], 'setChromLenFileName': [('setChromLenFileName', '/software/galaxy/personal/geirksa/galaxy_dev/lib/tests/resources/chrom_lengths.tabular')]}
 #OK: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')))]
 #Not Working: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'Ensembl_Genes_cropped.bed.gz')))]
-selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse',None), ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
+#TO SUPPORT LOLA: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse',None), ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
 
 #selections['preserveClumping'] = [('preserveClumping', False), ('preserveClumping', True)]
 

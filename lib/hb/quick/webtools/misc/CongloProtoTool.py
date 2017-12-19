@@ -19,9 +19,11 @@ from conglomerate.tools.constants import VERBOSE_RUNNING
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.congloproto.HBCongloMethod import HBCongloMethod
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [LOLA, GenometriCorr, StereoGene, Giggle, IntervalStats]
+ALL_METHOD_CLASSES = [GenometriCorr]
+#[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HBCongloMethod]
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class CongloProtoTool(GeneralGuiTool):
