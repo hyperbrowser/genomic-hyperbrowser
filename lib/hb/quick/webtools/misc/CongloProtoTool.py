@@ -738,7 +738,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         for i, wmo in enumerate(keptWmos):
             if VERBOSE_RUNNING:
-                print 'Stdout of tool: ', wmo.getResultFilesDict()
+                print 'Stdout of tool: ', wmo.getResultFilesDictList()
             if not wmo.ranSuccessfully():
                 if VERBOSE_RUNNING:
                     print 'skipping result output for method', wmo
