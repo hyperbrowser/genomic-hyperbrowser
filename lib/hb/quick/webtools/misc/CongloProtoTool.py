@@ -703,7 +703,7 @@ class CongloProtoTool(GeneralGuiTool):
                 print '**', wmo._methodCls.__name__, '**'
                 print wmo._methods[0]._params
                 print '****'
-                print ''
+                print ' '
 
         runAllMethodsInSequence(keptWmos)
 
