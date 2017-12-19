@@ -3,7 +3,7 @@
 
 
   <label text="coloc-stats tools" id="ch_tools" />
-  <section name="Conglo" id="my_tools">
+  <section name="coloc-stats" id="my_tools">
     <tool file="proto/hyperbrowser/misc/CongloProtoTool.xml" />
   </section>
 
