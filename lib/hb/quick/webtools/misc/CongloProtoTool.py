@@ -21,7 +21,7 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, LOLA, Giggle, IntervalStats]
+ALL_METHOD_CLASSES = [LOLA, GenometriCorr, StereoGene, Giggle, IntervalStats]
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class CongloProtoTool(GeneralGuiTool):
@@ -333,10 +333,14 @@ class CongloProtoTool(GeneralGuiTool):
         text += '[3] 10.1093/bioinformatics/btv612'
         return text
 
+    LOLA_COLLECTION = 'LOLA data collection'
+    GIGGLE_COLLECTION = 'GIGGLE data collection'
+    HB_COLLECTION = 'GSuite Hyperbrowser data collection'
+
     @classmethod
     def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
-            return ['LOLA data collection','GIGGLE data collection', 'GSuite Hyperbrowser data collection']
+            return [cls.LOLA_COLLECTION, cls.GIGGLE_COLLECTION, cls.HB_COLLECTION]
 
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
@@ -609,7 +613,7 @@ class CongloProtoTool(GeneralGuiTool):
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {}
         elif prevChoices.selectRunningMode == cls.ADVANCED:
-            selections = cls.parseChoices(prevChoices)
+            selections = cls.parseAdvancedChoices(prevChoices)
         else:
             raise
         chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
@@ -797,7 +801,7 @@ class CongloProtoTool(GeneralGuiTool):
         return fnList
 
     @classmethod
-    def parseChoices(cls, choices):
+    def parseAdvancedChoices(cls, choices):
         selections = OrderedDict()
         # SELECTION BOXES:
         # mapping = {cls.WHOLE_GENOME:None,
@@ -823,7 +827,8 @@ class CongloProtoTool(GeneralGuiTool):
         # CHECKBOXES
         choiceValueMappings = OrderedDict()
         selectionMapping = {'allowOverlaps': 'setAllowOverlaps',
-                            'clumping': 'preserveClumping'}
+                            'clumping': 'preserveClumping',
+                            'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
         # TestStat
         distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]] \
                             if choices.distanceCoordinate is not None else []
@@ -847,6 +852,7 @@ class CongloProtoTool(GeneralGuiTool):
         else:
             choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
         choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
+        choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
         for guiKey, selectionKey in selectionMapping.items():
             currSelection = cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey)
             assert len(currSelection.values()[0])>0, (guiKey, selectionKey, currSelection)
