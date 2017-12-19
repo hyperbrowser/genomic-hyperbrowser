@@ -732,10 +732,13 @@ class CongloProtoTool(GeneralGuiTool):
         core.tableHeader(
             ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic',
             'Detailed results'])
+
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
 
         for i, wmo in enumerate(keptWmos):
+            if VERBOSE_RUNNING:
+                print 'Stdout of tool: ', wmo.getResultFilesDict()
             if not wmo.ranSuccessfully():
                 if VERBOSE_RUNNING:
                     print 'skipping result output for method', wmo
@@ -745,7 +748,7 @@ class CongloProtoTool(GeneralGuiTool):
             allTestStats = wmo.getTestStatistic()
             # print 'TEMP18: ', wmo._methodCls.__name__, allTestStats
             allFullResults = wmo.getFullResults()
-            # assert len(allPvals)>0, allPvals
+            assert len(allPvals)>0, allPvals
 
             assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
             for j, trackCombination in enumerate(allPvals.keys()):
