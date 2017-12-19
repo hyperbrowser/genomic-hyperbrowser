@@ -684,9 +684,9 @@ class CongloProtoTool(GeneralGuiTool):
         selections = cls.determine_selections(choices)
 
         #TEMP, for transferring to local computer..
-        print ''
-        print 'selections = ', repr(selections)
-        print ''
+        # print ''
+        # print 'selections = ', repr(selections)
+        # print ''
         queryTrack = cls.getQueryTracksFromChoices(choices)
         refTracks = cls.getRefTracksFromChoices(choices)
         typeOfAnalysis = choices.analysisType
