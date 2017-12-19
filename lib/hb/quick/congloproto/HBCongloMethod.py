@@ -79,10 +79,19 @@ class HBCongloMethod(ManyVsManyMethod):
         pass
 
     def getPValue(self):
-        pass
+        pvals = OrderedDict()
+        for trackTuple, result in self._results:
+            pval = result.getGlobalResult()['Result']['P-value']
+            pvals[trackTuple] = pval
+        return pvals
+
 
     def getTestStatistic(self):
-        pass
+        testStats = OrderedDict()
+        for trackTuple, result in self._results:
+            pval = result.getGlobalResult()['Result']['TSMC_' + self._colocStatistic]
+            testStats[trackTuple] = pval
+        return testStats
 
     def getFullResults(self):
         return self._results
