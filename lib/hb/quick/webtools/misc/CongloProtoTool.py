@@ -726,7 +726,6 @@ class CongloProtoTool(GeneralGuiTool):
         for i, wmo in enumerate(keptWmos):
             if not wmo.ranSuccessfully():
                 continue
-            # print 'TEMP16: ', wmo.getFullResults()
 
             allPvals = wmo.getPValue()
             allTestStats = wmo.getTestStatistic()
