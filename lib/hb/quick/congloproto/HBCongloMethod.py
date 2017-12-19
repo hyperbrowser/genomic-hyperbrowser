@@ -1,30 +1,51 @@
-from conglomerate.methods.method import OneVsManyMethod
-from conglomerate.tools.constants import HB_TOOL_NAME
+from collections import OrderedDict, namedtuple
+
+from conglomerate.methods.interface import ColocMeasureOverlap
+from conglomerate.methods.method import ManyVsManyMethod
 from conglomerate.tools.job import Job
-from gold.application import HBAPI
+from gold.application.HBAPI import doAnalysis
+from gold.track.Track import Track
+from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.UserBinSource import GlobalBinSource
+from quick.statistic.StatFacades import TpRawOverlapStat
 
 
-class HBCongloMethod(OneVsManyMethod):
+AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks'])
+
+class HBCongloMethod(ManyVsManyMethod):
 
     def __init__(self):
         self._parsedResults = None
         self._genome = None
-        self._queryTrack = None
+        self._queryTracks = None
         self._refTracks = None
-        self._analysisList = []
+        self._queryTracksProcessed = None
+        self._refTracksProcessed = None
         self._allowOverlaps = False
+        self._colocStatistic = None
+        self._randomizationAssumption = None
+        self._analyses = OrderedDict()
+        self._results = None
+
 
     def _getToolName(self):
-        return HB_TOOL_NAME
+        return 'hb_conglo'
 
     def _getTool(self):
         raise NotImplementedError('Not supported by HB')
 
     def createJobs(self):
-        pass
+        self._processTracks()
+        for queryTrack in self._queryTracksProcessed:
+            for refTrack in self._refTracksProcessed:
+                self._analyses[(queryTrack.title, refTrack.title)] = AnalysisObject(self._getAnalysisSpec(),
+                                                                                    self._binSource,
+                                                                                    [queryTrack, refTrack])
+        return [HBJob(self._analyses)]
+
 
     def setResultFilesDict(self, resultFilesDict):
-        raise NotImplementedError('Not supported by HB')
+        self._results = resultFilesDict
 
     def getResultFilesDict(self):
         raise NotImplementedError('Not supported by HB')
@@ -34,15 +55,22 @@ class HBCongloMethod(OneVsManyMethod):
 
     def setGenomeName(self, genomeName):
         self._genome = genomeName
+        self._binSource = GlobalBinSource(genomeName)
 
     def setChromLenFileName(self, chromLenFileName):
         pass
 
-    def _setQueryTrackFileName(self, trackFn):
-        self._queryTrack = PlainTrack(ExternalTrackManager.constructGalaxyTnFromSuitedFn(trackFn))
+    def _setQueryTrackFileNames(self, trackFnList):
+        # self._queryTracks = [self._getTrackFromFilename(trackFn) for trackFn in trackFnList]
+        # self._queryTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
+        self._queryTracks = trackFnList
 
     def _setReferenceTrackFileNames(self, trackFnList):
-        self._refTracks = [PlainTrack(ExternalTrackManager.constructGalaxyTnFromSuitedFn(trackFn)) for trackFn in trackFnList]
+        self._refTracks = trackFnList
+        # self._refTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
+        # self._refTracks = [self._getTrackFromFilename(trackFn) for trackFn in trackFnList]
+        # self._refTracks = [Track(ExternalTrackManager.constructGalaxyTnFromSuitedFn(trackFn),
+        #                          splitext(basename(trackFn))) for trackFn in trackFnList]
 
     def setAllowOverlaps(self, allowOverlaps):
         self._allowOverlaps = allowOverlaps
@@ -57,24 +85,81 @@ class HBCongloMethod(OneVsManyMethod):
         pass
 
     def getFullResults(self):
-        pass
+        return self._results
 
     def preserveClumping(self, preserve):
-        pass
+        if preserve:
+            self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
+        else:
+            self._randomizationAssumption = 'PermutedSegsAndSampledIntersegsTrack_'
 
     def setRestrictedAnalysisUniverse(self, restrictedAnalysisUniverse):
         pass
 
     def setColocMeasure(self, colocMeasure):
-        pass
+
+        if isinstance(colocMeasure, ColocMeasureOverlap):
+            self._colocStatistic = TpRawOverlapStat
+        else:
+            raise AssertionError('Overlap is the only supported measure')
 
     def setHeterogeneityPreservation(self, preservationScheme, fn=None):
         pass
 
+    def _getAnalysisSpec(self):
+
+        from gold.description.AnalysisList import REPLACE_TEMPLATES
+        from gold.description.AnalysisDefHandler import AnalysisDefHandler
+
+        analysisDefString = REPLACE_TEMPLATES[
+                                '$MCFDR$'] + ' -> RandomizationManagerStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', 'mediumGlobal')
+        analysisSpec.addParameter('assumptions', self._randomizationAssumption)
+        analysisSpec.addParameter('rawStatistic', self._colocStatistic)
+        analysisSpec.addParameter('tail', 'more')
+        return analysisSpec
+
+    def _getTrackFromFilename(self, filePath):
+        import os
+        import shutil
+        from gold.util.CommonFunctions import convertTNstrToTNListFormat
+        relFilePath = os.path.relpath(filePath)
+        trackName = ':'.join(os.path.normpath(relFilePath).split(os.sep))
+        # trackName = _convertTrackName(trackName)
+        convertedTrackName = convertTNstrToTNListFormat(trackName, doUnquoting=True)
+
+        from gold.util.CommonFunctions import createOrigPath, ensurePathExists
+        origFn = createOrigPath(self._genome, convertedTrackName, os.path.basename(filePath))
+        if os.path.exists(origFn):
+            shutil.rmtree(os.path.dirname(origFn))
+        ensurePathExists(origFn)
+        shutil.copy(filePath, origFn)
+        os.chmod(origFn, 0664)
+
+        from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
+        PreProcessAllTracksJob(self._genome, convertedTrackName).process()
+        return Track(convertedTrackName, trackTitle=trackName.split(":")[-1])
+
+    def _processTracks(self):
+        self._queryTracksProcessed = \
+            [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome,
+                                                                   ['galaxy', 'bed', trackFn, 'qdummy'])
+             for trackFn in self._queryTracks]
+
+        self._refTracksProcessed = \
+            [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome,
+                                                                   ['galaxy', 'bed', trackFn, 'rdummy'])
+             for trackFn in self._refTracks]
+
 
 class HBJob(Job):
-    def run(self):
-        pass
 
-    def __init__(self, analysesList, binSource, tracks):
-        pass
+    def __init__(self, analyses):
+        self._analyses = analyses
+
+    def run(self):
+        results = OrderedDict()
+        for analysisObj in self._analyses:
+            results[tuple(analysisObj.tracks)] = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
+        return results
