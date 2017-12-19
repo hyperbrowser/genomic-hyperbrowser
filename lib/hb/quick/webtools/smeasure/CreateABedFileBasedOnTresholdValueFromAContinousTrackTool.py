@@ -1,123 +1,111 @@
-import os
 from collections import OrderedDict
 
-from rpy2 import robjects
-from rpy2.robjects import r
-
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
+from gold.track.Track import Track
 from proto.CommonFunctions import ensurePathExists
 from proto.tools.GeneralGuiTool import HistElement
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.CountFunctionTrackBasedOnTresholdStat import \
+    CountFunctionTrackBasedOnTresholdStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiTool, UserBinMixin):
+class CreateABedFileBasedOnTresholdValueFromAContinousTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin):
     @classmethod
     def getToolName(cls):
-        return "Simulate continuous tracks based on a binormal distribution"
+
+        return "Create a bed file based on treshold value from a continuous track"
 
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select covariance value  (eg. 0.2,0.3)', 'covValue'),
-                ('Select values for mean (eg. 0.5,0.6)', 'meanValue'),
-                ('Select genome', 'genome'),
-                ] + cls.getInputBoxNamesForUserBinSelection()
+        return [('Select gsuite', 'gsuite')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select tresholds [values>treshold] (eg. 0.7,0.9)', 'treshold')
+                 ] + cls.getInputBoxNamesForUserBinSelection()
+
+
 
     @classmethod
-    def getOptionsBoxCovValue(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxGsuite(cls):  # Alt: getOptionsBox1()
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+    @classmethod
+    def getOptionsBoxTreshold(cls, prevChoices):  # Alt: getOptionsBox2()
         return ''
-
-    @classmethod
-    def getOptionsBoxMeanValue(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ''
-
-    @classmethod
-    def getOptionsBoxGenome(cls, prevChoices):  # Alt: getOptionsBox2()
-        return '__genome__'
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        tresholdList = choices.treshold.encode('utf-8').replace(' ', '').split(',')
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        covValue = choices.covValue.encode('utf-8').replace(' ', '').split(',')
-        meanValue = choices.meanValue.encode('utf-8').replace(' ', '').split(',')
-
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        parsedRegSpec = cls._readRegSpec(regSpec)
+        tracksList = [Track(x.trackName, trackTitle=x.title) for x in gSuite.allTracks()]
 
         outGSuite = GSuite()
-        for iCov, cov in enumerate(covValue):
 
-            fileName = 'syn-cov' + str(cov) + '-' + str(meanValue[iCov]) + '-iter-' + str(iCov)
+        analysisSpec = AnalysisSpec(CountFunctionTrackBasedOnTresholdStat)
+        for trNum, tr in enumerate(tresholdList):
+            analysisSpec.addParameter("treshold", float(tr))
+            regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+            analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=gSuite.genome)
 
-            attr = OrderedDict()
-            attr['mean'] = str(meanValue[iCov])
-            attr['cov'] = str(cov)
+            for i, track in enumerate(tracksList):
 
-            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                extraFileName=fileName,
-                                                suffix='gtrack')
+                attr = OrderedDict()
+                attr['originalTrackName'] = str(track.trackTitle)
+                attr['treshold'] = str(tr)
 
-            gSuiteTrack = GSuiteTrack(uri)
-            outFn = gSuiteTrack.path
-            ensurePathExists(outFn)
 
-            countData = "##Track type: function" + '\n'
-            countData += '###value' + '\n'
+                fileName =  str(track.trackTitle)  + '-' + 'treshold-' + str(tr)
 
-            for chromosome in parsedRegSpec.keys():
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                    extraFileName=fileName,
+                                                    suffix='bed')
 
-                for prs in parsedRegSpec[chromosome]:
-                    elementsNumber = int(prs[1]) - int(prs[0])
+                gSuiteTrack = GSuiteTrack(uri)
+                outFn = gSuiteTrack.path
+                ensurePathExists(outFn)
 
-                    countData += ';'.join(['####genome=' + str(choices.genome), 'seqid=' + str(chromosome),'start=' + str(str(prs[0])),'end=' + str(str(prs[1]))]) + '\n'
+                results = doAnalysis(analysisSpec, analysisBins, [track])
 
-                    rCode = """ 
-                                library(MASS)
-                                createTrack <- 
-                                function(vec) {
-                                    covChosen <- vec[1]
-                                    mu <- vec[2]
-                                    Sigma <- matrix(covChosen, nrow=1, ncol=1)
-                                    rawvars <- mvrnorm(n=vec[3], mu=mu, Sigma=Sigma)
-                                }"""
-                    dd=robjects.FloatVector([covValue[iCov], meanValue[iCov], elementsNumber])
-                    data = r(rCode)(dd)
+                singleRegion = results.getAllRegionKeys()[0]
+                resLocal = results.getAllValuesForResDictKey('Result')
+                singleListOfElements = resLocal[0]
 
-                    countData += '\n'.join([str(d) for d in list(data)]) + '\n'
+                chromosome = singleRegion.chr
+                st = singleRegion.start
 
-            writeFile = open(outFn, 'w')
-            writeFile.write(countData)
-            writeFile.close()
+                data = []
+                for s in singleListOfElements:
+                    data.append([chromosome.encode('utf-8'), str(st+s), str(st+s+1)])
 
-            outGSuite.addTrack(GSuiteTrack(uri, title=''.join(fileName), genome=choices.genome, attributes=attr))
+                writeFile = open(outFn, 'w')
+                writeFile.write('\n'.join(['\t'.join(d) for d in data]))
+                writeFile.close()
 
-        GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output simulated gSuite'])
+                outGSuite.addTrack(GSuiteTrack(uri, title=''.join(fileName), genome=choices.genome, attributes=attr))
+
+
+        GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output treshold gSuite'])
         print 'Counted gSuite is in the history'
+
 
     @classmethod
     def getExtraHistElements(cls, choices):
-        return [HistElement('output simulated gSuite', 'gsuite')]
+        return [HistElement('output treshold gSuite', 'gsuite')]
 
-    @classmethod
-    def _readRegSpec(cls, parameters):
-        parameters = parameters.encode('utf-8')
 
-        dataOut = {}
-        parameters = parameters.replace(' ', '').split(',')
-        for p in parameters:
-            chromosme = p.split(':')[0]
-            chromosmeSt = int(p.split(':')[1].split('-')[0])
-            chromosmeEnd = int(p.split(':')[1].split('-')[1])
 
-            if not chromosme in dataOut.keys():
-                dataOut[chromosme] = []
-            dataOut[chromosme].append([chromosmeSt, chromosmeEnd])
 
-        return dataOut
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -258,7 +246,7 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     #
     @classmethod
     def getOutputFormat(cls, choices):
-        return 'gsuite'
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

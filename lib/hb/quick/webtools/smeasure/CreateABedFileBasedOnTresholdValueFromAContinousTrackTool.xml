@@ -1,0 +1,4 @@
+<tool id="hb_create_a_bed_file_based_on_treshold_value_from_a_continous_track_tool" name="Create a bed file based on treshold value from a continous track" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.smeasure.CreateABedFileBasedOnTresholdValueFromAContinousTrackTool" proto_tool_class="CreateABedFileBasedOnTresholdValueFromAContinousTrackTool">
+  <description></description>
+</tool>
