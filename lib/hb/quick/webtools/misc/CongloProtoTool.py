@@ -685,8 +685,6 @@ class CongloProtoTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        # ('Choose a query track: ', 'chooseQueryTrackFile'),
-        # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
         # import conglomerate.tools.constants as const
         # const.CATCH_METHOD_EXCEPTIONS = False
         selections = cls.determine_selections(choices)
