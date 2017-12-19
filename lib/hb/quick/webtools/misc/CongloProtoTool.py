@@ -606,10 +606,14 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def determine_selections(cls, prevChoices):
         if prevChoices.selectRunningMode == cls.SIMPLE_WITH_SHARED_DEFAULTS:
+
             selections = {'setColocMeasure': [('setColocMeasure', ColocMeasureOverlap(**{'includeFlanks':False, 'countWholeIntervals':True, 'flankSizeUpstream':0, 'flankSizeDownstream':0})),
                                               ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))],
-            'setRestrictedAnalysisUniverse': [('setRestrictedAnalysisUniverse',RestrictedThroughPreDefined(path))],
-            }
+                          'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
+            if prevChoices.backgroundRegionFileUpload != None:
+                              selections['setRestrictedAnalysisUniverse'].append(
+                                  ('setRestrictedAnalysisUniverse',RestrictedThroughPreDefined(prevChoices.backgroundRegionFileUpload)) )
+
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {}
         elif prevChoices.selectRunningMode == cls.ADVANCED:
@@ -681,8 +685,8 @@ class CongloProtoTool(GeneralGuiTool):
         """
         # ('Choose a query track: ', 'chooseQueryTrackFile'),
         # ('Choose a reference track: ', 'chooseReferenceTrackFile'),
-        # import conglomerate.tools.constants as const
-        # const.CATCH_METHOD_EXCEPTIONS = False
+        import conglomerate.tools.constants as const
+        const.CATCH_METHOD_EXCEPTIONS = False
         selections = cls.determine_selections(choices)
 
         #TEMP, for transferring to local computer..

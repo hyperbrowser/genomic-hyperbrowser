@@ -24,9 +24,9 @@ queryTrack = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_ove
 #queryTrack = [pkg_resources.resource_filename('tests.resources', 'Refseq_Genes_cropped.bed.gz')]
 
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_with_overlaps.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me3_with_overlaps.bed')]
-refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')]
+#refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')]
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed.gz'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed.gz')]
-
+refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed')]
 
 wmos = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
 keptWmos = wmos#[-1:]
