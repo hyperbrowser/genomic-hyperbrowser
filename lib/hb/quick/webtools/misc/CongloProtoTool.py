@@ -715,7 +715,6 @@ class CongloProtoTool(GeneralGuiTool):
                                                  if not isinstance(wmo.annotatedChoices.get(key), list) \
                                                  else tuple(wmo.annotatedChoices.get(key)) \
                                              for wmo in keptWmos]))
-            # print(key, numDifferentKeyValues)
             if numDifferentKeyValues > 1:
                 keysWithVariation.append(key)
         keysWithVariation.sort()
