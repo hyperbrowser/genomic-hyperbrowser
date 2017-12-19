@@ -688,7 +688,7 @@ class CongloProtoTool(GeneralGuiTool):
         # import conglomerate.tools.constants as const
         # const.CATCH_METHOD_EXCEPTIONS = False
         selections = cls.determine_selections(choices)
-        #
+
 
         #TEMP, for transferring to local computer..
         # print ''
