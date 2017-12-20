@@ -54,7 +54,7 @@ class HBCongloMethod(ManyVsManyMethod):
         pass
 
     def setGenomeName(self, genomeName):
-        self._genome = genomeName
+        self._genome = genomeName.split('(')[-1].split(')')[0]
         self._binSource = GlobalBinSource(genomeName)
 
     def setChromLenFileName(self, chromLenFileName):
