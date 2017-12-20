@@ -24,7 +24,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats] #LOLA, HBCongloMethod
 #[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HBCongloMethod]
-#debug
+#debug1
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class CongloProtoTool(GeneralGuiTool):
