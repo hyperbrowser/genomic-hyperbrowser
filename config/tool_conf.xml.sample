@@ -143,5 +143,9 @@
     <tool file="filters/wig_to_bigwig.xml" />
     <tool file="filters/bed_to_bigbed.xml" />
   </section>
+  <label text="Standard Galaxy tools" id="galaxy_tools" />
 
+  <section id="getext" name="Get Data">
+    <tool file="data_source/upload.xml" />
+  </section>
 </toolbox>
