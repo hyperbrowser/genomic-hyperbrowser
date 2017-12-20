@@ -9,8 +9,8 @@
 
 <label id="hb_internal_tools" text="HyperBrowser internal tools" version="" />
     <section id="manage_tracks_genomes" name="Admin of genomes and tracks" version="">
-        <tool file="proto/hyperbrowser/imports/UploadGenomeTool.xml />
-        <tool file="proto/hyperbrowser/imports/InstallGenomeTool.xml />
+        <tool file="proto/hyperbrowser/imports/UploadGenomeTool.xml" />
+        <tool file="proto/hyperbrowser/imports/InstallGenomeTool.xml" />
     </section>
 
   <label text="Track collection tools" id="hb_gsuite_tools" />
