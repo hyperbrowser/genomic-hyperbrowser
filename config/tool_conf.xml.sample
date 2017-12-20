@@ -7,6 +7,12 @@
     <tool file="proto/hyperbrowser/misc/CongloProtoTool.xml" />
   </section>
 
+<label id="hb_internal_tools" text="HyperBrowser internal tools" version="" />
+    <section id="manage_tracks_genomes" name="Admin of genomes and tracks" version="">
+        <tool file="proto/hyperbrowser/imports/UploadGenomeTool.xml />
+        <tool file="proto/hyperbrowser/imports/InstallGenomeTool.xml />
+    </section>
+
   <label text="Track collection tools" id="hb_gsuite_tools" />
 
   <section name="Create a GSuite of genomic tracks" id="gsuite_compile_tools">
@@ -137,10 +143,5 @@
     <tool file="filters/wig_to_bigwig.xml" />
     <tool file="filters/bed_to_bigbed.xml" />
   </section>
-<label id="hb_internal_tools" text="HyperBrowser internal tools" version="" />
-    <section id="manage_tracks_genomes" name="Admin of genomes and tracks" version="">
-        <tool id="hb_upload_genome" />
-        <tool id="hb_install_genome" />
-    </section>
 
 </toolbox>
