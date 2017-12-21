@@ -793,10 +793,19 @@ class CongloProtoTool(GeneralGuiTool):
         if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
             referenceTrackChoice = choices.chooseReferenceTrackFile
         elif typeOfAnalysis == cls.REFERENCE_TRACKS:
-            referenceTrackChoice = choices.chooseCustomTrackCollection
+            if choices.choiceOfCoreDatabase!=None:
+                assert choices.chooseCustomTrackCollection is None, choices.chooseCustomTrackCollection
+                if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
+                    refTracks = ['dummy1','dummy2']
+                else:
+                    raise
+            else:
+                assert choices.choiceOfCoreDatabase is None, choices.choiceOfCoreDatabase
+                referenceTrackChoice = choices.chooseCustomTrackCollection
+                refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         else:
             raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
-        refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
+
         return refTracks
 
     @classmethod
@@ -842,8 +851,8 @@ class CongloProtoTool(GeneralGuiTool):
         # CHECKBOXES
         choiceValueMappings = OrderedDict()
         selectionMapping = {'allowOverlaps': 'setAllowOverlaps',
-                            'clumping': 'preserveClumping',
-                            'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
+                            'clumping': 'preserveClumping'}
+                            #'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
         # TestStat
         distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]] \
                             if choices.distanceCoordinate is not None else []
@@ -867,7 +876,7 @@ class CongloProtoTool(GeneralGuiTool):
         else:
             choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
         choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
-        choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
+        #choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
         for guiKey, selectionKey in selectionMapping.items():
             currSelection = cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey)
             assert len(currSelection.values()[0])>0, (guiKey, selectionKey, currSelection)

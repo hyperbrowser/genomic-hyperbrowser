@@ -1,4 +1,6 @@
+from conglomerate.methods.giggle.giggle import Giggle
 from conglomerate.methods.interface import RestrictedThroughInclusion
+from conglomerate.methods.lola.lola import LOLA
 from conglomerate.methods.stereogene.stereogene import StereoGene
 
 import pkg_resources
@@ -9,12 +11,15 @@ from conglomerate.tools.constants import VERBOSE_RUNNING
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.misc.CongloProtoTool import ALL_METHOD_CLASSES
-#ALL_METHOD_CLASSES = [StereoGene]
+ALL_METHOD_CLASSES = [Giggle]
 #WORKING: selections = {'setGenomeName': [('setGenomeName', u'Human (hg19)')], 'setChromLenFileName': [('setChromLenFileName', '/software/galaxy/personal/geirksa/galaxy_dev/lib/tests/resources/chrom_lengths.tabular')], 'preserveClumping': [('preserveClumping', False), ('preserveClumping', True)]}
 selections =  {'setGenomeName': [('setGenomeName', u'Human (hg19)')], 'setChromLenFileName': [('setChromLenFileName', '/software/galaxy/personal/geirksa/galaxy_dev/lib/tests/resources/chrom_lengths.tabular')]}
 #OK: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')))]
 #Not Working: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'Ensembl_Genes_cropped.bed.gz')))]
-#TO SUPPORT LOLA: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse',None), ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
+#TO SUPPORT also LOLA: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse',None), ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
+#TO SUPPORT only LOLA: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
+#selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')))]
+#selections['setPredefinedTrackIndexAndCollection'] = [('setPredefinedTrackIndexAndCollection', {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'})]
 
 #selections['preserveClumping'] = [('preserveClumping', False), ('preserveClumping', True)]
 
@@ -26,7 +31,8 @@ queryTrack = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_ove
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me1_with_overlaps.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me3_with_overlaps.bed')]
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')]
 #refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed.gz'), pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed.gz')]
-refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed')]
+#refTracks = [pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps_cropped.bed')]
+refTracks = ['dummy1','dummy2']
 
 wmos = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
 keptWmos = wmos#[-1:]
@@ -71,7 +77,7 @@ for i, wmo in enumerate(keptWmos):
     for j, trackCombination in enumerate(allPvals.keys()):
         fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
         fullResult = allFullResults[trackCombination]
-        fullResultStaticFile.writeTextToFile(fullResult)
+        # fullResultStaticFile.writeTextToFile(fullResult)
         pval = allPvals[trackCombination]
         ts = allTestStats[trackCombination]
         # prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
@@ -91,7 +97,7 @@ if not all(wmo.ranSuccessfully() for wmo in keptWmos):
         if wmo.ranSuccessfully():
             continue
         errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
-        errorStaticFile.writeTextToFile(wmo.getErrorDetails())
+        # errorStaticFile.writeTextToFile(wmo.getErrorDetails())
         # print 'TEMP18: ', wmo.getErrorDetails()
         core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
     core.tableFooter()
