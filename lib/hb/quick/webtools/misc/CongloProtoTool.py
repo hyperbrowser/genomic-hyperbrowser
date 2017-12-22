@@ -630,8 +630,12 @@ class CongloProtoTool(GeneralGuiTool):
         else:
             raise
         chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular'),
-                            'hg19': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular'),
-                            'hg18': pkg_resources.resource_filename('resources')}
+                            'hg19': pkg_resources.resource_filename('conglomerate_resources', 'hg19.chrom.sizes'),
+                            'hg18': pkg_resources.resource_filename('conglomerate_resources', 'hg18.chrom.sizes'),
+                            'hg38': pkg_resources.resource_filename('conglomerate_resources', 'hg38.chrom.sizes'),
+                            'mm9': pkg_resources.resource_filename('conglomerate_resources', 'mm9.chrom.sizes'),
+                            'mm10': pkg_resources.resource_filename('conglomerate_resources', 'mm10.chrom.sizes'),
+                            }
         genomeName = prevChoices.selectReferenceGenome
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
         selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
@@ -800,6 +804,7 @@ class CongloProtoTool(GeneralGuiTool):
         typeOfAnalysis = choices.analysisType
         if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
             referenceTrackChoice = choices.chooseReferenceTrackFile
+            refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         elif typeOfAnalysis == cls.REFERENCE_TRACKS:
             if choices.choiceOfCoreDatabase!=None:
                 assert choices.chooseCustomTrackCollection is None, choices.chooseCustomTrackCollection
