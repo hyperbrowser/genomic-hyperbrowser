@@ -9,7 +9,8 @@ import pkg_resources
 
 from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
 from conglomerate.methods.giggle.giggle import Giggle
-from conglomerate.methods.interface import ColocMeasureOverlap, RestrictedAnalysisUniverse, RestrictedThroughExclusion
+from conglomerate.methods.interface import ColocMeasureOverlap, RestrictedAnalysisUniverse, RestrictedThroughExclusion, \
+    RestrictedThroughInclusion
 from conglomerate.tools.job import Job
 
 from conglomerate.methods.stereogene.stereogene import StereoGene
@@ -622,13 +623,13 @@ class CongloProtoTool(GeneralGuiTool):
                           'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
             if prevChoices.backgroundRegionFileUpload != None:
                               selections['setRestrictedAnalysisUniverse'].append(
-                                  ('setRestrictedAnalysisUniverse',RestrictedThroughPreDefined(prevChoices.backgroundRegionFileUpload)) )
+                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
 
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
-            selections = {}
+            selections = {'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
             if prevChoices.backgroundRegionFileUpload != None:
                               selections['setRestrictedAnalysisUniverse'].append(
-                                  ('setRestrictedAnalysisUniverse',RestrictedThroughPreDefined(prevChoices.backgroundRegionFileUpload)) )
+                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
         elif prevChoices.selectRunningMode == cls.ADVANCED:
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
@@ -811,7 +812,7 @@ class CongloProtoTool(GeneralGuiTool):
             refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         elif typeOfAnalysis == cls.REFERENCE_TRACKS:
             if choices.choiceOfCoreDatabase!=None:
-                assert choices.chooseCustomTrackCollection is None, choices.chooseCustomTrackCollection
+                assert choices.chooseCustomTrackCollection in [None,''], choices.chooseCustomTrackCollection
                 if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
                     return ['dummy1','dummy2']
                 else:
