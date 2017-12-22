@@ -17,6 +17,7 @@ from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
 from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
 from conglomerate.tools.constants import VERBOSE_RUNNING
+from gold.gsuite.GSuite import GSuite
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -608,6 +609,7 @@ class CongloProtoTool(GeneralGuiTool):
         # typeOfAnalysis = prevChoices.analysisType
         queryTrack = cls.getQueryTracksFromChoices(prevChoices)
         refTracks = cls.getRefTracksFromChoices(prevChoices)
+
         if queryTrack is None or refTracks is None:
             return None
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
@@ -822,6 +824,8 @@ class CongloProtoTool(GeneralGuiTool):
         else:
             raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
         refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
+        if len(refTracks)==0:
+            raise Exception('Please select non-empty gsuite')
         #raise Exception(str(refTracks))
         return refTracks
 
@@ -835,7 +839,8 @@ class CongloProtoTool(GeneralGuiTool):
             fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
         elif filetype in ['gsuite']:
             gsuite = getGSuiteFromGalaxyTN(trackChoice)
-
+            if gsuite.isPreprocessed():
+                raise Exception("Please select gsuite in primary format (a gsuite referring to a set of bed files)")
             fnList = [gsTrack.path for gsTrack in gsuite.allTracks()]
         else:
             print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
@@ -935,8 +940,11 @@ class CongloProtoTool(GeneralGuiTool):
 
         if cls.getQueryTracksFromChoices(choices) is None:
             return "Please select query track"
-        if cls.getRefTracksFromChoices(choices) is None:
-            return "Please select reference tracks"
+        try:
+            if cls.getRefTracksFromChoices(choices) is None:
+                return "Please select reference tracks"
+        except Exception,e:
+            return e.message
 
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
         if workingMethodObjects is None:
