@@ -68,6 +68,7 @@ workflow_schedulers_conf.xml
 config/*
 static/welcome.html.*
 static/welcome.html
+lib/conglomerate_submodule
 
 # Tool data.
 tool-data/annotation_profiler_options.xml
