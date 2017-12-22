@@ -20,7 +20,7 @@ from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 #from quick.congloproto.HBCongloMethod import HBCongloMethod
-from quick.congloproto import HBCongloMethod
+#from quick.congloproto import HBCongloMethod
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA]#, HBCongloMethod]
