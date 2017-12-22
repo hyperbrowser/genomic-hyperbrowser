@@ -317,7 +317,7 @@ class CongloProtoTool(GeneralGuiTool):
 
 
     CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
-    CORE_DATABASE = 'DEBUG! Use core database as the set of reference tracks'
+    CORE_DATABASE = 'Use core database as the set of reference tracks'
 
     @classmethod
     def getOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
@@ -815,7 +815,7 @@ class CongloProtoTool(GeneralGuiTool):
                 if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
                     return ['dummy1','dummy2']
                 else:
-                    raise
+                    raise Exception("Not supported: " + str(choices.choiceOfCoreDatabase))
             else:
                 assert choices.choiceOfCoreDatabase is None, choices.choiceOfCoreDatabase
                 referenceTrackChoice = choices.chooseCustomTrackCollection
