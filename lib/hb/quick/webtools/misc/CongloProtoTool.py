@@ -813,7 +813,7 @@ class CongloProtoTool(GeneralGuiTool):
             if choices.choiceOfCoreDatabase!=None:
                 assert choices.chooseCustomTrackCollection in [None,''], choices.chooseCustomTrackCollection
                 if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
-                    return ['dummy1','dummy2']
+                    return ['prebuilt','LOLACore_170206']
                 else:
                     raise Exception("Not supported: " + str(choices.choiceOfCoreDatabase))
             else:
