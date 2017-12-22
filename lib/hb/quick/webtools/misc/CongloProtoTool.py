@@ -626,6 +626,9 @@ class CongloProtoTool(GeneralGuiTool):
 
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {}
+            if prevChoices.backgroundRegionFileUpload != None:
+                              selections['setRestrictedAnalysisUniverse'].append(
+                                  ('setRestrictedAnalysisUniverse',RestrictedThroughPreDefined(prevChoices.backgroundRegionFileUpload)) )
         elif prevChoices.selectRunningMode == cls.ADVANCED:
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
