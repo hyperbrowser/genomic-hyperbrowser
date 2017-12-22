@@ -317,7 +317,7 @@ class CongloProtoTool(GeneralGuiTool):
 
 
     CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
-    CORE_DATABASE = 'Use core database as the set of reference tracks'
+    CORE_DATABASE = 'DEBUG! Use core database as the set of reference tracks'
 
     @classmethod
     def getOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
