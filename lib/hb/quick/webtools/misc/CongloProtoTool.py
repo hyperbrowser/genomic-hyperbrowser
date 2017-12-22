@@ -144,8 +144,8 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls,prevChoices):  # Alt: getOptionsBox1()
-        # return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
-        return '__genome__'
+        return ['Human (hg19)','Human (hg38)', 'Mouse (mm10)', cls.CUSTOM_REFERENCE_GENOME]
+        #return '__genome__'
 
     @classmethod
     def getInfoForOptionsBoxSelectReferenceGenome(cls, prevChoices):
@@ -634,14 +634,13 @@ class CongloProtoTool(GeneralGuiTool):
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
             raise
-        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular'),
-                            'hg19': pkg_resources.resource_filename('conglomerate_resources', 'hg19.chrom.sizes'),
+        chrLenFnMappings = {'hg19': pkg_resources.resource_filename('conglomerate_resources', 'hg19.chrom.sizes'),
                             'hg18': pkg_resources.resource_filename('conglomerate_resources', 'hg18.chrom.sizes'),
                             'hg38': pkg_resources.resource_filename('conglomerate_resources', 'hg38.chrom.sizes'),
                             'mm9': pkg_resources.resource_filename('conglomerate_resources', 'mm9.chrom.sizes'),
                             'mm10': pkg_resources.resource_filename('conglomerate_resources', 'mm10.chrom.sizes'),
                             }
-        genomeName = prevChoices.selectReferenceGenome
+        genomeName = prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
         selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
 
