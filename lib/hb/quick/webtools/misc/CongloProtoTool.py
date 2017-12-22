@@ -809,15 +809,15 @@ class CongloProtoTool(GeneralGuiTool):
             if choices.choiceOfCoreDatabase!=None:
                 assert choices.chooseCustomTrackCollection is None, choices.chooseCustomTrackCollection
                 if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
-                    refTracks = ['dummy1','dummy2']
+                    return ['dummy1','dummy2']
                 else:
                     raise
             else:
                 assert choices.choiceOfCoreDatabase is None, choices.choiceOfCoreDatabase
                 referenceTrackChoice = choices.chooseCustomTrackCollection
-                refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         else:
             raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
+        refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         #raise Exception(str(refTracks))
         return refTracks
 
