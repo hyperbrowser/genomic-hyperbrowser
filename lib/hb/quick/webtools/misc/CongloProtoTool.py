@@ -812,15 +812,17 @@ class CongloProtoTool(GeneralGuiTool):
             referenceTrackChoice = choices.chooseReferenceTrackFile
             refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         elif typeOfAnalysis == cls.REFERENCE_TRACKS:
-            if choices.choiceOfCoreDatabase!=None:
-                assert choices.chooseCustomTrackCollection in [None,''], choices.chooseCustomTrackCollection
+            if choices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
+                #assert choices.chooseCustomTrackCollection in [None,''], choices.chooseCustomTrackCollection
                 if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
                     return ['prebuilt','LOLACore_170206']
                 else:
                     raise Exception("Not supported: " + str(choices.choiceOfCoreDatabase))
-            else:
-                assert choices.choiceOfCoreDatabase is None, choices.choiceOfCoreDatabase
+            elif choices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
+                #assert choices.choiceOfCoreDatabase is None, choices.choiceOfCoreDatabase
                 referenceTrackChoice = choices.chooseCustomTrackCollection
+            else:
+                raise
         else:
             raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
         refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
