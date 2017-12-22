@@ -19,7 +19,7 @@ from conglomerate.tools.constants import VERBOSE_RUNNING
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.congloproto.HBCongloMethod import HBCongloMethod
+#from quick.congloproto.HBCongloMethod import HBCongloMethod
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats] #LOLA, HBCongloMethod
@@ -805,7 +805,7 @@ class CongloProtoTool(GeneralGuiTool):
                 refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         else:
             raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
-
+        #raise Exception(str(refTracks))
         return refTracks
 
     @classmethod
@@ -906,6 +906,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
+        #return str(choices.choiceOfCoreDatabase)
         if choices.allowOverlaps and choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
             if choices.allowOverlaps[cls.MAY_OVERLAP] or choices.allowOverlaps[cls.NOT_ALLOWED]:
                 return "%s can only be selected as a single choice" % cls.DETERMINE_FROM_SUBMITTED_TRACKS

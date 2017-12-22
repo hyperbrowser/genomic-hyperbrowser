@@ -11,14 +11,14 @@ from conglomerate.tools.constants import VERBOSE_RUNNING
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.misc.CongloProtoTool import ALL_METHOD_CLASSES
-ALL_METHOD_CLASSES = [Giggle]
+ALL_METHOD_CLASSES = [LOLA]
 #WORKING: selections = {'setGenomeName': [('setGenomeName', u'Human (hg19)')], 'setChromLenFileName': [('setChromLenFileName', '/software/galaxy/personal/geirksa/galaxy_dev/lib/tests/resources/chrom_lengths.tabular')], 'preserveClumping': [('preserveClumping', False), ('preserveClumping', True)]}
 selections =  {'setGenomeName': [('setGenomeName', u'Human (hg19)')], 'setChromLenFileName': [('setChromLenFileName', '/software/galaxy/personal/geirksa/galaxy_dev/lib/tests/resources/chrom_lengths.tabular')]}
 #OK: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')))]
 #Not Working: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'Ensembl_Genes_cropped.bed.gz')))]
 #TO SUPPORT also LOLA: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse',None), ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
 #TO SUPPORT only LOLA: selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me3_no_overlaps.bed')))]
-#selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')))]
+selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(pkg_resources.resource_filename('tests.resources', 'H3K4me1_no_overlaps.bed')))]
 #selections['setPredefinedTrackIndexAndCollection'] = [('setPredefinedTrackIndexAndCollection', {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'})]
 
 #selections['preserveClumping'] = [('preserveClumping', False), ('preserveClumping', True)]
