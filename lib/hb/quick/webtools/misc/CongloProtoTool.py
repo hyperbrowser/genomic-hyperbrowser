@@ -61,6 +61,7 @@ class CongloProtoTool(GeneralGuiTool):
         """
         return [('Select the running mode : ', 'selectRunningMode'),
                 ('Select the reference genome: ', 'selectReferenceGenome'),
+                ('Upload your own genome chromosome lenghts file', 'missingGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Type of co-localization analysis: ', 'analysisType'),
                 ('Choose a query track: ', 'chooseQueryTrackFile'),
@@ -141,18 +142,23 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls,prevChoices):  # Alt: getOptionsBox1()
-        return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
+        # return ['Human (hg19)','Human (hg38)', cls.CUSTOM_REFERENCE_GENOME]
+        return '__genome__'
 
     @classmethod
     def getInfoForOptionsBoxSelectReferenceGenome(cls, prevChoices):
-        text = 'Currently supports only hg19, hg38 and mm9.'
+        text = 'Currently supports only hg19, hg18, hg38, mm10 and mm9.'
         text += '<br>'
         text += 'Please upload the chromosome lengths file of a reference genome of your choice, if the default options are not suitable for your analysis.'
         return text
 
     @classmethod
+    def getOptionsBoxMissingGenome(cls, prevChoices):
+        return False
+
+    @classmethod
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
-        if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
+        if prevChoices.missingGenome:
             return ('__history__',)
 
     @classmethod
@@ -623,7 +629,13 @@ class CongloProtoTool(GeneralGuiTool):
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
             raise
-        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular')}
+        chrLenFnMappings = {'Human (hg19)': pkg_resources.resource_filename('tests.resources', 'chrom_lengths.tabular'),
+                            'hg19': pkg_resources.resource_filename('conglomerate_resources', 'hg19.chrom.sizes'),
+                            'hg18': pkg_resources.resource_filename('conglomerate_resources', 'hg18.chrom.sizes'),
+                            'hg38': pkg_resources.resource_filename('conglomerate_resources', 'hg38.chrom.sizes'),
+                            'mm9': pkg_resources.resource_filename('conglomerate_resources', 'mm9.chrom.sizes'),
+                            'mm10': pkg_resources.resource_filename('conglomerate_resources', 'mm10.chrom.sizes'),
+                            }
         genomeName = prevChoices.selectReferenceGenome
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
         selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
@@ -792,6 +804,7 @@ class CongloProtoTool(GeneralGuiTool):
         typeOfAnalysis = choices.analysisType
         if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
             referenceTrackChoice = choices.chooseReferenceTrackFile
+            refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         elif typeOfAnalysis == cls.REFERENCE_TRACKS:
             if choices.choiceOfCoreDatabase!=None:
                 assert choices.chooseCustomTrackCollection is None, choices.chooseCustomTrackCollection
