@@ -629,14 +629,16 @@ class CongloProtoTool(GeneralGuiTool):
                                               ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))],
                           'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
             if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
-                              selections['setRestrictedAnalysisUniverse'].append(
-                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
+                bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+                selections['setRestrictedAnalysisUniverse'].append(
+                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(bgFn)) )
 
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
             if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
-                              selections['setRestrictedAnalysisUniverse'].append(
-                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
+                bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+                selections['setRestrictedAnalysisUniverse'].append(
+                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(bgFn)) )
         elif prevChoices.selectRunningMode == cls.ADVANCED:
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
