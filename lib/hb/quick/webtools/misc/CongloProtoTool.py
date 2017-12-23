@@ -17,7 +17,7 @@ from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
 from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
 from conglomerate.tools.constants import VERBOSE_RUNNING
-from conglomerate_submodule.conglomerate.methods.interface import InvalidSpecification
+from conglomerate.methods.interface import InvalidSpecification
 from gold.gsuite.GSuite import GSuite
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
