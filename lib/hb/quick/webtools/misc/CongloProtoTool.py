@@ -936,7 +936,6 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return str(choices)
         return cls.getValidationText(choices)
 
     @classmethod
