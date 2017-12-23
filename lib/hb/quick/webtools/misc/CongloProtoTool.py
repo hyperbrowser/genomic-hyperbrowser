@@ -17,6 +17,7 @@ from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
 from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
 from conglomerate.tools.constants import VERBOSE_RUNNING
+from conglomerate_submodule.conglomerate.methods.interface import InvalidSpecification
 from gold.gsuite.GSuite import GSuite
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
@@ -25,7 +26,7 @@ from quick.congloproto.HBCongloMethod import HBCongloMethod
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA]#, HBCongloMethod]
+ALL_METHOD_CLASSES = [LOLA]#[GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA]#, HBCongloMethod]
 #[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HBCongloMethod]
 #debug3
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -659,10 +660,13 @@ class CongloProtoTool(GeneralGuiTool):
                                                cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
             bgOptions.append([('setRestrictedAnalysisUniverse', None)])
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
-            assert prevChoices.backgroundRegionFileUpload not in [None, '']
-            bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+            if prevChoices.backgroundRegionFileUpload in [None, '']:
+                spec = InvalidSpecification('No background region file selected in GUI.')
+            else:
+                bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+                spec = RestrictedThroughInclusion(bgFn)
             bgOptions.append(
-                ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(bgFn)))
+                ('setRestrictedAnalysisUniverse', spec))
         return bgOptions
 
     # @classmethod
