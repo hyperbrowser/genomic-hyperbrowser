@@ -387,15 +387,18 @@ class CongloProtoTool(GeneralGuiTool):
     # OVERLAP_MEASURES = [COUNTS, BASES]
 
 
+    SIMPLEMODE_ONLY_WHOLE_GENOME = 'No, use only methods that can use the whole genome as background'
+    SIMPLEMODE_OPTIONALLY_EXPLICIT_BG = 'Yes, provide an explicit set of background regions to tools that can take it as input (using whole genome for others)'
+    SIMPLEMODE_ONLY_EXPLICIT_BG = 'Yes, use only methods that can take an explicit set of background regions as input'
+
     EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
     EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
     WHOLE_GENOME = 'No, use the whole genome'
 
-
     @classmethod
     def getOptionsBoxAnalyseInBackground(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode in [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS]:
-            return [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
+            return [cls.SIMPLEMODE_ONLY_WHOLE_GENOME, cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG ]
 
     @classmethod
     def getInfoForOptionsBoxAnalyseInBackground(cls, prevChoices):
@@ -410,10 +413,9 @@ class CongloProtoTool(GeneralGuiTool):
         text += '<br>'
         return text
 
-
     @classmethod
     def getOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
-        if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
+        if prevChoices.analyseInBackground in [cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG, cls.SIMPLEMODE_ONLY_EXPLICIT_BG]:
             return ('__history__','bed')
 
     @classmethod
@@ -626,19 +628,14 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.selectRunningMode == cls.SIMPLE_WITH_SHARED_DEFAULTS:
 
             selections = {'setColocMeasure': [('setColocMeasure', ColocMeasureOverlap(**{'includeFlanks':False, 'countWholeIntervals':True, 'flankSizeUpstream':0, 'flankSizeDownstream':0})),
-                                              ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))],
-                          'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
-            if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
-                bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
-                selections['setRestrictedAnalysisUniverse'].append(
-                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(bgFn)) )
+                                              ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))]}
+
+            selections['setRestrictedAnalysisUniverse'] = cls.parseSimpleModeBgOptions(prevChoices)
 
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
-            selections = {'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
-            if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
-                bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
-                selections['setRestrictedAnalysisUniverse'].append(
-                                  ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(bgFn)) )
+            selections = {}
+            selections['setRestrictedAnalysisUniverse'] = cls.parseSimpleModeBgOptions(prevChoices)
+
         elif prevChoices.selectRunningMode == cls.ADVANCED:
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
@@ -654,6 +651,19 @@ class CongloProtoTool(GeneralGuiTool):
         selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
 
         return selections
+
+    @classmethod
+    def parseSimpleModeBgOptions(cls, prevChoices):
+        bgOptions = []
+        if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_WHOLE_GENOME,
+                                               cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
+            bgOptions.append([('setRestrictedAnalysisUniverse', None)])
+        if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
+            assert prevChoices.backgroundRegionFileUpload not in [None, '']
+            bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+            bgOptions.append(
+                ('setRestrictedAnalysisUniverse', RestrictedThroughInclusion(bgFn)))
+        return bgOptions
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
