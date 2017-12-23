@@ -663,8 +663,9 @@ class CongloProtoTool(GeneralGuiTool):
             if prevChoices.backgroundRegionFileUpload in [None, '']:
                 spec = InvalidSpecification('No background region file selected in GUI.')
             else:
-                bgFn = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
-                spec = RestrictedThroughInclusion(bgFn)
+                bgFns = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+                assert len(bgFns)==1
+                spec = RestrictedThroughInclusion(bgFns[0])
             bgOptions.append(
                 ('setRestrictedAnalysisUniverse', spec))
         return bgOptions
