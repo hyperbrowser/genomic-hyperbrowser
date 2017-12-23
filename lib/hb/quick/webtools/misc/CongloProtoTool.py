@@ -628,13 +628,13 @@ class CongloProtoTool(GeneralGuiTool):
             selections = {'setColocMeasure': [('setColocMeasure', ColocMeasureOverlap(**{'includeFlanks':False, 'countWholeIntervals':True, 'flankSizeUpstream':0, 'flankSizeDownstream':0})),
                                               ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))],
                           'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
-            if prevChoices.backgroundRegionFileUpload != None:
+            if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
                               selections['setRestrictedAnalysisUniverse'].append(
                                   ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
 
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
-            if prevChoices.backgroundRegionFileUpload != None:
+            if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET
                               selections['setRestrictedAnalysisUniverse'].append(
                                   ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
         elif prevChoices.selectRunningMode == cls.ADVANCED:
