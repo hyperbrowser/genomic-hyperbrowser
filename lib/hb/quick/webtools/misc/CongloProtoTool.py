@@ -25,7 +25,7 @@ from quick.congloproto.HBCongloMethod import HBCongloMethod
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA, HBCongloMethod]
+ALL_METHOD_CLASSES = [GenometriCorr]#, StereoGene, Giggle, IntervalStats, LOLA, HBCongloMethod]
 #[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HBCongloMethod]
 #debug3
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -723,6 +723,7 @@ class CongloProtoTool(GeneralGuiTool):
         #typeOfAnalysis = choices.analysisType
 
         #workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
+        print 'All Choices: ', choices
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
