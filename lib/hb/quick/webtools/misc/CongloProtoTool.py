@@ -634,7 +634,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         elif prevChoices.selectRunningMode == cls.SIMPLE_WITH_DEFAULTS:
             selections = {'setRestrictedAnalysisUniverse':  [('setRestrictedAnalysisUniverse',None)]}
-            if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET
+            if prevChoices.analyseInBackground == cls.EXPLICIT_NEGATIVE_SET:
                               selections['setRestrictedAnalysisUniverse'].append(
                                   ('setRestrictedAnalysisUniverse',RestrictedThroughInclusion(prevChoices.backgroundRegionFileUpload)) )
         elif prevChoices.selectRunningMode == cls.ADVANCED:
