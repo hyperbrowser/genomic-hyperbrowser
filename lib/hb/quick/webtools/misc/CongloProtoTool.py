@@ -611,9 +611,14 @@ class CongloProtoTool(GeneralGuiTool):
         refTracks = cls.getRefTracksFromChoices(prevChoices)
 
         if queryTrack is None or refTracks is None:
+            if VERBOSE_RUNNING:
+                print 'No WMOs due to lacking tracks'
             return None
+        if VERBOSE_RUNNING:
+            print 'Considered methods: ', ','.join([x.__name__ for x in ALL_METHOD_CLASSES])
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
                                                           ALL_METHOD_CLASSES)
+        print 'Kept methods: ', ','.join([str(x) for x in workingMethodObjects])
         return workingMethodObjects
 
     @classmethod
