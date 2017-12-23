@@ -658,7 +658,7 @@ class CongloProtoTool(GeneralGuiTool):
         bgOptions = []
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_WHOLE_GENOME,
                                                cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
-            bgOptions.append([('setRestrictedAnalysisUniverse', None)])
+            bgOptions.append( ('setRestrictedAnalysisUniverse', None) )
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
             if prevChoices.backgroundRegionFileUpload in [None, '']:
                 spec = InvalidSpecification('No background region file selected in GUI.')
