@@ -591,7 +591,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxCompatibleMethods(cls, prevChoices):
-        if cls.validateAndReturnErrors(prevChoices) is not None:
+        if cls.getValidationText(prevChoices) is not None:
             return None
 
         workingMethodObjects = cls.getWorkingMethodObjects(prevChoices)
@@ -935,7 +935,11 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        #return str(choices.choiceOfCoreDatabase)
+        return str(choices)
+        return cls.getValidationText(choices)
+
+    @classmethod
+    def getValidationText(cls, choices):
         if choices.allowOverlaps and choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
             if choices.allowOverlaps[cls.MAY_OVERLAP] or choices.allowOverlaps[cls.NOT_ALLOWED]:
                 return "%s can only be selected as a single choice" % cls.DETERMINE_FROM_SUBMITTED_TRACKS
