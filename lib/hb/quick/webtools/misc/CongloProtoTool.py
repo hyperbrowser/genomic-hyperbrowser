@@ -618,7 +618,7 @@ class CongloProtoTool(GeneralGuiTool):
             print 'Considered methods: ', ','.join([x.__name__ for x in ALL_METHOD_CLASSES])
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
                                                           ALL_METHOD_CLASSES)
-        print 'Kept methods: ', ','.join([str(x) for x in workingMethodObjects])
+        print 'Compatible methods: ', ','.join([str(x) for x in workingMethodObjects])
         return workingMethodObjects
 
     @classmethod
@@ -711,27 +711,27 @@ class CongloProtoTool(GeneralGuiTool):
         """
         # import conglomerate.tools.constants as const
         # const.CATCH_METHOD_EXCEPTIONS = False
-        selections = cls.determine_selections(choices)
+        #selections = cls.determine_selections(choices)
 
 
         #TEMP, for transferring to local computer..
         # print ''
         # print 'selections = ', repr(selections)
         # print ''
-        queryTrack = cls.getQueryTracksFromChoices(choices)
-        refTracks = cls.getRefTracksFromChoices(choices)
-        typeOfAnalysis = choices.analysisType
+        #queryTrack = cls.getQueryTracksFromChoices(choices)
+        #refTracks = cls.getRefTracksFromChoices(choices)
+        #typeOfAnalysis = choices.analysisType
 
-        workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
+        #workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
+        workingMethodObjects = cls.getWorkingMethodObjects(choices)
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
 
         if VERBOSE_RUNNING:
-            print choices.compatibleMethods
-            print selections
-            print typeOfAnalysis
-            print 'Working methods:'
-            print [wmo._methodCls.__name__ for wmo in keptWmos]
+            #print choices.compatibleMethods
+            #print selections
+            #print typeOfAnalysis
+            print 'Kept methods (after manual GUI subselection):', [wmo._methodCls.__name__ for wmo in keptWmos]
             for wmo in keptWmos:
                 print '**', wmo._methodCls.__name__, '**'
                 print wmo._methods[0]._params
