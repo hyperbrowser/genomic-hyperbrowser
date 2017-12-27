@@ -3,7 +3,7 @@ from collections import OrderedDict, namedtuple
 from cStringIO import StringIO
 
 from gold.gsuite.GSuite import GSuite
-# from gold.gsuite.GSuiteTrack import GSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack
 from gold.gsuite.GSuiteConstants import ALLOWED_CHARS, HEADER_VAR_DICT, FILE_TYPE_HEADER, \
                                         TEXT, BINARY, PRIMARY, PREPROCESSED, \
                                         URI_COL_SPEC, ALL_STD_COL_SPECS, \
