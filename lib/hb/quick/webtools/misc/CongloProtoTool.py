@@ -832,7 +832,7 @@ class CongloProtoTool(GeneralGuiTool):
                 for trackCombination in allTestStats.keys()]
             #tsRanks = dict([(track, 1+sum(v>val for t,v in tsVals)) for track, val in tsVals])
             for trackName, val in tsVals:
-                rankTableDict[trackName][wmoLabel] = str(1+sum(v>val for t,v in tsVals))
+                rankTableDict[trackName][wmoLabel] = 1+sum(v>val for t,v in tsVals)
 
         if len(rankTableDict)>1: #More than 1 ref track
             allTrackNames = rankTableDict.keys()
@@ -840,7 +840,9 @@ class CongloProtoTool(GeneralGuiTool):
             assert all([row.keys() == allWmoLabels for row in rankTableDict.values()])
             core.tableHeader([' '] + allWmoLabels, sortable=True)
             for trackName in rankTableDict:
-                core.tableLine([trackName] + [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels])
+                ranksInRow = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels]
+                meanRank = '%.1f' % reduce(lambda x, y: x*y, ranksInRow)**(1.0/len(ranksInRow))
+                core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
             core.tableFooter()
 
 
