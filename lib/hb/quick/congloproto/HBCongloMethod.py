@@ -12,7 +12,6 @@ from quick.statistic.StatFacades import TpRawOverlapStat
 
 AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks'])
 
-#just testing GoCD
 class HBCongloMethod(ManyVsManyMethod):
 
     def __init__(self):
