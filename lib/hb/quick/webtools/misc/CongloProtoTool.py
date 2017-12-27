@@ -749,7 +749,7 @@ class CongloProtoTool(GeneralGuiTool):
             workingMethodObjects = pickle.load(open('/data/tmp/congloTmp/adhoc.pickle'))
         else:
             print 'Storing pickle'
-            pickle.dumps(workingMethodObjects, open('/data/tmp/congloTmp/adhoc.pickle','w'))
+            pickle.dump(workingMethodObjects, open('/data/tmp/congloTmp/adhoc.pickle','w'))
 
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
