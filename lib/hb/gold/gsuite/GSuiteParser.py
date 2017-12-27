@@ -1,6 +1,6 @@
 from urllib import unquote
 from collections import OrderedDict, namedtuple
-from cStringIO import StringIO
+# from cStringIO import StringIO
 
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
@@ -295,50 +295,50 @@ def parse(gSuiteFileName):
 
     return gSuite
 
-def validateLines(gSuiteLines, outFile=None, printHelpText=True):
-    '''
-    :return bool: True if GSuite file is valid, else False
-    '''
-    out = outFile if outFile is not None else StringIO()
-
-    if printHelpText:
-        print >>out, 'Validating GSuite file...'
-        print >>out, '-----------------'
-
-    try:
-        parseLines(gSuiteLines)
-        valid = True
-        print >>out, 'GSuite file is valid'
-
-    except Exception, e:
-        if printHelpText:
-            print >>out, e
-            print >>out, '-----------------'
-            print >>out, 'GSuite file is invalid'
-        else:
-            print >>out, 'GSuite file is invalid. Error: ', e
-        valid = False
-
-    if outFile is None:
-        print out.getvalue()
-
-    return valid
-
-def validateFromString(gSuiteStr, outFile=None, printHelpText=True):
-    '''
-    :return bool: True if GSuite file is valid, else False
-    '''
-    valid = validateLines(gSuiteStr.split('\n'), outFile,
-                          printHelpText=printHelpText)
-
-    return valid
-
-def validate(gSuiteFileName, outFile=None, printHelpText=True):
-    '''
-    :return bool: True if GSuite file is valid, else False
-    '''
-    with open(gSuiteFileName) as gSuiteFileHandle:
-        valid = validateLines(gSuiteFileHandle, outFile,
-                              printHelpText=printHelpText)
-
-    return valid
+# def validateLines(gSuiteLines, outFile=None, printHelpText=True):
+#     '''
+#     :return bool: True if GSuite file is valid, else False
+#     '''
+#     out = outFile if outFile is not None else StringIO()
+#
+#     if printHelpText:
+#         print >>out, 'Validating GSuite file...'
+#         print >>out, '-----------------'
+#
+#     try:
+#         parseLines(gSuiteLines)
+#         valid = True
+#         print >>out, 'GSuite file is valid'
+#
+#     except Exception, e:
+#         if printHelpText:
+#             print >>out, e
+#             print >>out, '-----------------'
+#             print >>out, 'GSuite file is invalid'
+#         else:
+#             print >>out, 'GSuite file is invalid. Error: ', e
+#         valid = False
+#
+#     if outFile is None:
+#         print out.getvalue()
+#
+#     return valid
+#
+# def validateFromString(gSuiteStr, outFile=None, printHelpText=True):
+#     '''
+#     :return bool: True if GSuite file is valid, else False
+#     '''
+#     valid = validateLines(gSuiteStr.split('\n'), outFile,
+#                           printHelpText=printHelpText)
+#
+#     return valid
+#
+# def validate(gSuiteFileName, outFile=None, printHelpText=True):
+#     '''
+#     :return bool: True if GSuite file is valid, else False
+#     '''
+#     with open(gSuiteFileName) as gSuiteFileHandle:
+#         valid = validateLines(gSuiteFileHandle, outFile,
+#                               printHelpText=printHelpText)
+#
+#     return valid
