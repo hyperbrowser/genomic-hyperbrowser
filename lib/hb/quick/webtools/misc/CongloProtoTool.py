@@ -742,14 +742,14 @@ class CongloProtoTool(GeneralGuiTool):
         #workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
         print 'All Choices: ', choices
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
-        import pickle
-        import os
-        if os.path.exists('/data/tmp/congloTmp/adhoc.pickle'):
-            print 'Loading pickle'
-            workingMethodObjects = pickle.load(open('/data/tmp/congloTmp/adhoc.pickle'))
-        else:
-            print 'Storing pickle'
-            pickle.dump(workingMethodObjects, open('/data/tmp/congloTmp/adhoc.pickle','w'))
+        # import pickle
+        # import os
+        # if os.path.exists('/data/tmp/congloTmp/adhoc.pickle'):
+        #     print 'Loading pickle'
+        #     workingMethodObjects = pickle.load(open('/data/tmp/congloTmp/adhoc.pickle'))
+        # else:
+        #     print 'Storing pickle'
+        #     pickle.dump(workingMethodObjects, open('/data/tmp/congloTmp/adhoc.pickle','w'))
 
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
