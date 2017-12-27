@@ -744,7 +744,7 @@ class CongloProtoTool(GeneralGuiTool):
         import pickle
         import os
         if os.path.exists('/data/tmp/congloTmp/adhoc.pickle'):
-            choices = pickle.load('/data/tmp/congloTmp/adhoc.pickle')
+            choices = pickle.load(open('/data/tmp/congloTmp/adhoc.pickle'))
         else:
             pickle.dumps(choices, open('/data/tmp/congloTmp/adhoc.pickle','w'))
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
