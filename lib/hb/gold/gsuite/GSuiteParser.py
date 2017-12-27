@@ -3,7 +3,7 @@ from collections import OrderedDict, namedtuple
 # from cStringIO import StringIO
 
 # from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
+# from gold.gsuite.GSuiteTrack import GSuiteTrack
 from gold.gsuite.GSuiteConstants import ALLOWED_CHARS, HEADER_VAR_DICT, FILE_TYPE_HEADER, \
                                         TEXT, BINARY, PRIMARY, PREPROCESSED, \
                                         URI_COL_SPEC, ALL_STD_COL_SPECS, \
@@ -169,40 +169,40 @@ def _popValueFromColValsAndNamesIfPresent(colVals, colNames, colName):
         colNames.remove(colName)
         return retVal
 
-def _parseTrackLine(trackLine, colNames, headerVars):
-    colVals = trackLine.split('\t')
-
-    if len(colVals) != len(colNames):
-        raise InvalidFormatError('The number of columns in track line: %s ' % (repr(trackLine)) +\
-                                 'is not equal to the number of columns in the ' \
-                                 'column specification line (%s != %s)' % (len(colVals), len(colNames)))
-
-    from copy import copy
-    remainingColNames = copy(colNames)
-
-    assert colNames[0] == URI_COL
-    kwArgs = {}
-    for colSpec in ALL_STD_COL_SPECS:
-        val = _popValueFromColValsAndNamesIfPresent(colVals, remainingColNames, colSpec.colName)
-        if val is not None:
-            kwArgs[colSpec.memberName] = val
-        elif colSpec.headerName in headerVars:
-            if headerVars[colSpec.headerName] != MULTIPLE:
-                kwArgs[colSpec.memberName] = headerVars[colSpec.headerName]
-
-    attributes = OrderedDict(zip(remainingColNames, colVals))
-    for key, val in attributes.iteritems():
-        if val == '.':
-            del attributes[key]
-    kwArgs['attributes'] = attributes
-
-    try:
-        track = GSuiteTrack(**kwArgs)
-    except InvalidFormatError as e:
-        errorMsg = 'Error in track line %s:\n' % repr(trackLine) + e.message
-        raise InvalidFormatError(errorMsg)
-
-    return track
+# def _parseTrackLine(trackLine, colNames, headerVars):
+#     colVals = trackLine.split('\t')
+#
+#     if len(colVals) != len(colNames):
+#         raise InvalidFormatError('The number of columns in track line: %s ' % (repr(trackLine)) +\
+#                                  'is not equal to the number of columns in the ' \
+#                                  'column specification line (%s != %s)' % (len(colVals), len(colNames)))
+#
+#     from copy import copy
+#     remainingColNames = copy(colNames)
+#
+#     assert colNames[0] == URI_COL
+#     kwArgs = {}
+#     for colSpec in ALL_STD_COL_SPECS:
+#         val = _popValueFromColValsAndNamesIfPresent(colVals, remainingColNames, colSpec.colName)
+#         if val is not None:
+#             kwArgs[colSpec.memberName] = val
+#         elif colSpec.headerName in headerVars:
+#             if headerVars[colSpec.headerName] != MULTIPLE:
+#                 kwArgs[colSpec.memberName] = headerVars[colSpec.headerName]
+#
+#     attributes = OrderedDict(zip(remainingColNames, colVals))
+#     for key, val in attributes.iteritems():
+#         if val == '.':
+#             del attributes[key]
+#     kwArgs['attributes'] = attributes
+#
+#     try:
+#         track = GSuiteTrack(**kwArgs)
+#     except InvalidFormatError as e:
+#         errorMsg = 'Error in track line %s:\n' % repr(trackLine) + e.message
+#         raise InvalidFormatError(errorMsg)
+#
+#     return track
 
 #
 # Helper functions
@@ -244,43 +244,43 @@ def parseLines(gSuiteLines):
 
     return None
 
-    gSuite = None#GSuite()
-
-    trackLines = []
-    level = 0
-    for line in gSuiteLines:
-
-        line = line.rstrip(' \t\r\n')
-
-        _checkCharUsageOfPhrase(line)
-
-        if line.startswith('####'): #Deprecated, but kept for backwards compatibility
-            level = _setLevelAndCheckOrder(level, 4)
-            headerVars[GENOME_HEADER] = _parseGenomeLine(line)
-        elif line.startswith('###'):
-            level = _setLevelAndCheckOrder(level, 3)
-            colNames = _parseColumnSpecLine(line)
-        elif line.startswith('##'):
-            level = _setLevelAndCheckOrder(level, 2)
-            key, val = _parseHeaderLine(line)
-            headerVars = _updateHeaderVars(headerVars, key, val)
-        elif line == '' or line.startswith('#'):
-            pass
-        else:
-            level = _setLevelAndCheckOrder(level, 5)
-            trackLines.append(line)
-
-    #headerVars = _updateUnsetHeaderVarsWithDefaultVals(headerVars)
-    if not colNames:
-        colNames = _getDefaultColNames()
-
-    for trackLine in trackLines:
-        gSuite.addTrack(_parseTrackLine(trackLine, colNames, headerVars),
-                        allowDuplicateTitles=False)
-    
-    _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
-
-    return gSuite
+    # gSuite = GSuite()
+    #
+    # trackLines = []
+    # level = 0
+    # for line in gSuiteLines:
+    #
+    #     line = line.rstrip(' \t\r\n')
+    #
+    #     _checkCharUsageOfPhrase(line)
+    #
+    #     if line.startswith('####'): #Deprecated, but kept for backwards compatibility
+    #         level = _setLevelAndCheckOrder(level, 4)
+    #         headerVars[GENOME_HEADER] = _parseGenomeLine(line)
+    #     elif line.startswith('###'):
+    #         level = _setLevelAndCheckOrder(level, 3)
+    #         colNames = _parseColumnSpecLine(line)
+    #     elif line.startswith('##'):
+    #         level = _setLevelAndCheckOrder(level, 2)
+    #         key, val = _parseHeaderLine(line)
+    #         headerVars = _updateHeaderVars(headerVars, key, val)
+    #     elif line == '' or line.startswith('#'):
+    #         pass
+    #     else:
+    #         level = _setLevelAndCheckOrder(level, 5)
+    #         trackLines.append(line)
+    #
+    # #headerVars = _updateUnsetHeaderVarsWithDefaultVals(headerVars)
+    # if not colNames:
+    #     colNames = _getDefaultColNames()
+    #
+    # for trackLine in trackLines:
+    #     gSuite.addTrack(_parseTrackLine(trackLine, colNames, headerVars),
+    #                     allowDuplicateTitles=False)
+    #
+    # _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
+    #
+    # return gSuite
 
 def parseFromString(gSuiteStr):
     '''
