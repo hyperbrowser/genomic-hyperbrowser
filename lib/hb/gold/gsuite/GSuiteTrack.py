@@ -10,7 +10,7 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
 from gold.util.CustomExceptions import InvalidFormatError, AbstractClassError, \
                                        NotSupportedError
 from gold.util.CommonFunctions import getFileSuffix
-from quick.application.SignatureDevianceLogging import takes, returns
+# from quick.application.SignatureDevianceLogging import takes, returns
 
 
 _GSUITE_TRACK_REGISTRY = {}
@@ -239,12 +239,12 @@ class GSuiteTrack(object):
                     val = unquote(val)
                 self._attributes[key] = val
 
-    @takes(str, str)
+    # @takes(str, str)
     def setAttribute(self, attrName, attrVal):
         self._attributes[attrName] = attrVal
 
-    @takes(str)
-    @returns(str)
+    # @takes(str)
+    # @returns(str)
     def getAttribute(self, attrName):
         if attrName in self._attributes:
             return self._attributes[attrName]
