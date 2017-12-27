@@ -780,6 +780,7 @@ class CongloProtoTool(GeneralGuiTool):
         keysWithVariation.sort()
 
         core = HtmlCore()
+        core.begin()
         core.tableHeader(
             ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic',
             'Detailed results'], sortable=True)
@@ -832,7 +833,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         if len(rankTableDict)>1: #More than 1 ref track
             allTrackNames = rankTableDict.keys()
-            allWmoLabels = allTrackNames.values()[0].keys()
+            allWmoLabels = rankTableDict.values()[0].keys()
             assert all([row.keys() == allWmoLabels for row in rankTableDict.values()])
             core.tableHeader([' '] + allWmoLabels, sortable=True)
             for trackName in rankTableDict:
@@ -854,6 +855,7 @@ class CongloProtoTool(GeneralGuiTool):
                 core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
             core.tableFooter()
 
+        core.end()
         print core
 
     @classmethod
@@ -1143,24 +1145,24 @@ class CongloProtoTool(GeneralGuiTool):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        """
+        The format of the history element with the output of the tool. Note
+        that if 'html' is returned, any print statements in the execute()
+        method is printed to the output dataset. For text-based output
+        (e.g. bed) the output dataset only contains text written to the
+        galaxyFn file, while all print statements are redirected to the info
+        field of the history item box.
+
+        Note that for 'html' output, standard HTML header and footer code is
+        added to the output dataset. If one wants to write the complete HTML
+        page, use the restricted output format 'customhtml' instead.
+
+        Optional method. Default return value if method is not defined:
+        'html'
+        """
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
