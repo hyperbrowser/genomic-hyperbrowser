@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from itertools import product
 
 from conglomerate.methods.intervalstats.intervalstats import IntervalStats
@@ -782,10 +782,11 @@ class CongloProtoTool(GeneralGuiTool):
         core = HtmlCore()
         core.tableHeader(
             ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic',
-            'Detailed results'])
+            'Detailed results'], sortable=True)
 
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
+
 
         for i, wmo in enumerate(keptWmos):
             if VERBOSE_RUNNING:
@@ -818,7 +819,30 @@ class CongloProtoTool(GeneralGuiTool):
                                                                                           'Full results')])
         core.tableFooter()
 
-        # not wmo.ranSuccessfully()
+        rankTableDict = defaultdict(dict)
+        for i, wmo in enumerate(keptWmos):
+            wmoLabel = wmo._methodCls.__name__ + '(' + ','.join([key+':'+wmo.annotatedChoices.get(key) for key in
+                                                                keysWithVariation]) + ')'
+            allTestStats = wmo.getTestStatistic()
+            tsVals = [(trackCombination[1].split('/')[-1], allTestStats[trackCombination]) \
+                for trackCombination in allTestStats.keys()]
+            #tsRanks = dict([(track, 1+sum(v>val for t,v in tsVals)) for track, val in tsVals])
+            for trackName, val in tsVals:
+                rankTableDict[trackName][wmoLabel] = str(1+sum(v>val for t,v in tsVals))
+
+        if len(rankTableDict)>1: #More than 1 ref track
+            allTrackNames = rankTableDict.keys()
+            allWmoLabels = allTrackNames.values()[0].keys()
+            assert all([row.keys() == allWmoLabels for row in rankTableDict.values()])
+            core.tableHeader([' '] + allWmoLabels, sortable=True)
+            for trackName in rankTableDict:
+                core.tableLine([trackName] + [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels])
+            core.tableFooter()
+
+
+
+
+                # not wmo.ranSuccessfully()
         if not all(wmo.ranSuccessfully() for wmo in keptWmos):
             core.tableHeader(['Method name', 'Tool error'])
             for i, wmo in enumerate(keptWmos):
