@@ -522,14 +522,14 @@ def registerGSuiteTrackClass(cls):
 def fixNetlocParsingForFile():
     urlparse.uses_netloc.remove(FileGSuiteTrack.SCHEME)
 
-# for cls in [FtpGSuiteTrack,
-#             HttpGSuiteTrack,
-#             HttpsGSuiteTrack,
-#             RsyncGSuiteTrack,
-#             HbGSuiteTrack,
-#             GalaxyGSuiteTrack]:
-#     registerGSuiteTrackClass(cls)
+for cls in [FtpGSuiteTrack,
+            HttpGSuiteTrack,
+            HttpsGSuiteTrack,
+            RsyncGSuiteTrack,
+            HbGSuiteTrack,
+            GalaxyGSuiteTrack]:
+    registerGSuiteTrackClass(cls)
 
 # if ALLOW_GSUITE_FILE_PROTOCOL:
 #     registerGSuiteTrackClass(FileGSuiteTrack)
-# fixNetlocParsingForFile()
+fixNetlocParsingForFile()
