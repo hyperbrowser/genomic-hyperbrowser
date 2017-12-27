@@ -3,7 +3,7 @@ import urlparse
 
 from collections import OrderedDict
 from urllib import quote, quote_plus, unquote, unquote_plus
-# from config.Config import ALLOW_GSUITE_FILE_PROTOCOL
+from config.Config import ALLOW_GSUITE_FILE_PROTOCOL
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_FORMAT_HEADER, \
                                         TRACK_TYPE_HEADER, GENOME_HEADER, LOCAL, REMOTE, TEXT, BINARY, \
                                         MULTIPLE, UNKNOWN, PREPROCESSED, PRIMARY, BTRACK_SUFFIX
@@ -530,6 +530,6 @@ for cls in [FtpGSuiteTrack,
             GalaxyGSuiteTrack]:
     registerGSuiteTrackClass(cls)
 
-# if ALLOW_GSUITE_FILE_PROTOCOL:
-#     registerGSuiteTrackClass(FileGSuiteTrack)
+if ALLOW_GSUITE_FILE_PROTOCOL:
+    registerGSuiteTrackClass(FileGSuiteTrack)
 # fixNetlocParsingForFile()
