@@ -822,6 +822,9 @@ class CongloProtoTool(GeneralGuiTool):
 
         rankTableDict = defaultdict(dict)
         for i, wmo in enumerate(keptWmos):
+            if not wmo.ranSuccessfully():
+                continue
+
             wmoLabel = wmo._methodCls.__name__ + '(' + ','.join([key+':'+wmo.annotatedChoices.get(key) for key in
                                                                 keysWithVariation]) + ')'
             allTestStats = wmo.getTestStatistic()
