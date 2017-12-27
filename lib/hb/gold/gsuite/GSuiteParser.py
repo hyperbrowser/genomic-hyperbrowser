@@ -3,7 +3,7 @@ from collections import OrderedDict, namedtuple
 from cStringIO import StringIO
 
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
+# from gold.gsuite.GSuiteTrack import GSuiteTrack
 from gold.gsuite.GSuiteConstants import ALLOWED_CHARS, HEADER_VAR_DICT, FILE_TYPE_HEADER, \
                                         TEXT, BINARY, PRIMARY, PREPROCESSED, \
                                         URI_COL_SPEC, ALL_STD_COL_SPECS, \
@@ -197,7 +197,7 @@ def _parseTrackLine(trackLine, colNames, headerVars):
     kwArgs['attributes'] = attributes
 
     try:
-        track = GSuiteTrack(**kwArgs)
+        track = None#GSuiteTrack(**kwArgs)
     except InvalidFormatError as e:
         errorMsg = 'Error in track line %s:\n' % repr(trackLine) + e.message
         raise InvalidFormatError(errorMsg)
