@@ -2,7 +2,7 @@ import os
 import urlparse
 
 from collections import OrderedDict
-from urllib import quote, quote_plus, unquote, unquote_plus 
+from urllib import quote, quote_plus, unquote, unquote_plus
 # from config.Config import ALLOW_GSUITE_FILE_PROTOCOL
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_FORMAT_HEADER, \
                                         TRACK_TYPE_HEADER, GENOME_HEADER, LOCAL, REMOTE, TEXT, BINARY, \
@@ -522,14 +522,14 @@ def registerGSuiteTrackClass(cls):
 def fixNetlocParsingForFile():
     urlparse.uses_netloc.remove(FileGSuiteTrack.SCHEME)
 
-for cls in [FtpGSuiteTrack,
-            HttpGSuiteTrack,
-            HttpsGSuiteTrack,
-            RsyncGSuiteTrack,
-            HbGSuiteTrack,
-            GalaxyGSuiteTrack]:
-    registerGSuiteTrackClass(cls)
+# for cls in [FtpGSuiteTrack,
+#             HttpGSuiteTrack,
+#             HttpsGSuiteTrack,
+#             RsyncGSuiteTrack,
+#             HbGSuiteTrack,
+#             GalaxyGSuiteTrack]:
+#     registerGSuiteTrackClass(cls)
 
 # if ALLOW_GSUITE_FILE_PROTOCOL:
 #     registerGSuiteTrackClass(FileGSuiteTrack)
-fixNetlocParsingForFile()
+# fixNetlocParsingForFile()
