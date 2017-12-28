@@ -123,6 +123,16 @@ class HBCongloMethod(ManyVsManyMethod):
     def setHeterogeneityPreservation(self, preservationScheme, fn=None):
         pass
 
+    def setRuntimeMode(self, mode):
+        if mode =='quick':
+            self._runtimeMode = 'Quick and rough indication'
+        elif mode == 'medium':
+            self._runtimeMode = 'Moderate resolution of global p-value'
+        elif mode == 'accurate':
+            self._runtimeMode = 'Fixed 10 000 samples (slow)'
+        else:
+            raise
+
     def _getAnalysisSpec(self):
 
         from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -131,7 +141,7 @@ class HBCongloMethod(ManyVsManyMethod):
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDR$'] + ' -> RandomizationManagerStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
-        analysisSpec.setChoice('MCFDR sampling depth', 'Moderate resolution of global p-value')
+        analysisSpec.setChoice('MCFDR sampling depth', self._runtimeMode)
         analysisSpec.addParameter('assumptions', self._randomizationAssumption)
         analysisSpec.addParameter('rawStatistic', self._colocStatistic)
         analysisSpec.addParameter('tail', 'more')

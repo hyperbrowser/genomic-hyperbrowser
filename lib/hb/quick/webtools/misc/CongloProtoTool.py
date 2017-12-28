@@ -92,6 +92,7 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Preserve any clumping tendency of genomic elements ? ', 'clumping'),
                 ('Handle confounding features ? ', 'confounding'),
                 ('Method of choice to handle confounding features : ', 'confounderHandler'),
+                ('Runtime mode : ', 'runtimeMode')
                 ('Compatible methods : ', 'compatibleMethods')
                 ]
 
@@ -591,6 +592,10 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.confounding == cls.CONFOUNDING_FEATURE:
             return ['Shuffle genomic locations according to a non-homogenous Poisson process',
                     'Partial correlation', 'Stratified sampling']
+
+    @classmethod
+    def getOptionsBoxRuntimeMode(cls, prevChoices):
+        return ['quick', 'medium', 'accurate']
 
     @classmethod
     def getOptionsBoxCompatibleMethods(cls, prevChoices):
