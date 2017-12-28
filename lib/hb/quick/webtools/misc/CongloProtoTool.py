@@ -626,7 +626,8 @@ class CongloProtoTool(GeneralGuiTool):
             print 'Considered methods: ', ','.join([x.__name__ for x in ALL_METHOD_CLASSES])
         workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
                                                           ALL_METHOD_CLASSES)
-        print 'Compatible methods: ', ','.join([str(x) for x in workingMethodObjects])
+        if VERBOSE_RUNNING:
+            print 'Compatible methods: ', ','.join([str(x) for x in workingMethodObjects])
         return workingMethodObjects
 
     @classmethod
