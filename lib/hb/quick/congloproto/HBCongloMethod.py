@@ -24,16 +24,16 @@ class HBCongloMethod(ManyVsManyMethod):
         self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
         self._analyses = OrderedDict()
         self._results = None
-	self._params = "Conglo Params not supported in HBCongloMethod"
+        self._params = "Conglo Params not supported in HBCongloMethod"
 
     def _getToolName(self):
         return 'hb_conglo'
 
     def _getTool(self):
-	raise NotImplementedError('Not supported by HB')
+        raise NotImplementedError('Not supported by HB')
 
     def checkForAbsentMandatoryParameters(self):
-	pass
+        pass
 
     def createJobs(self):
         for queryTrack in self._queryTracks:
@@ -48,7 +48,7 @@ class HBCongloMethod(ManyVsManyMethod):
 
     def setResultFilesDict(self, resultFilesDict):
         self._results = resultFilesDict
-	self._ranSuccessfully = True
+        self._ranSuccessfully = True
 
     def getResultFilesDict(self):
         return self._results
@@ -97,7 +97,7 @@ class HBCongloMethod(ManyVsManyMethod):
         return testStats
 
     def getFullResults(self):
-	from os import linesep
+        from os import linesep
         fullResult = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
