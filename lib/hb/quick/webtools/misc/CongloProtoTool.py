@@ -656,7 +656,7 @@ class CongloProtoTool(GeneralGuiTool):
         genomeName = prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
         selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
-
+        selections['setRuntimeMode'] = [('setRuntimeMode', prevChoices.runtimeMode)]
         return selections
 
     @classmethod
@@ -722,6 +722,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         print HtmlCore().begin()
+        if VERBOSE_RUNNING:
+            print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
@@ -732,7 +734,7 @@ class CongloProtoTool(GeneralGuiTool):
         runAllMethodsInSequence(keptWmos)
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
-
+            print '</pre>'
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
         print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
         try:
