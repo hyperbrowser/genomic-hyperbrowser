@@ -730,6 +730,8 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
         runAllMethodsInSequence(keptWmos)
+        if VERBOSE_RUNNING:
+            print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
 
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
         print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
@@ -749,7 +751,7 @@ class CongloProtoTool(GeneralGuiTool):
         for wmo in keptWmos:
             print '**', wmo._methodCls.__name__, '**'
             print wmo._methods[0]._params, '\n****\n'
-        print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
+
 
     @classmethod
     def createErrorTable(cls, galaxyFn, keptWmos):
