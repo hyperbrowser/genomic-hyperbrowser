@@ -92,7 +92,7 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Preserve any clumping tendency of genomic elements ? ', 'clumping'),
                 ('Handle confounding features ? ', 'confounding'),
                 ('Method of choice to handle confounding features : ', 'confounderHandler'),
-                ('Runtime mode : ', 'runtimeMode')
+                ('Runtime mode : ', 'runtimeMode'),
                 ('Compatible methods : ', 'compatibleMethods')
                 ]
 
