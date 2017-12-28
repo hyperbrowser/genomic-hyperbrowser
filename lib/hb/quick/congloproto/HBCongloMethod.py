@@ -19,37 +19,40 @@ class HBCongloMethod(ManyVsManyMethod):
         self._genome = None
         self._queryTracks = None
         self._refTracks = None
-        self._queryTracksProcessed = None
-        self._refTracksProcessed = None
         self._allowOverlaps = False
-        self._colocStatistic = None
-        self._randomizationAssumption = None
+        self._colocStatistic = "TpRawOverlapStat"
+        self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
         self._analyses = OrderedDict()
         self._results = None
-
+	self._params = "Conglo Params not supported in HBCongloMethod"
 
     def _getToolName(self):
         return 'hb_conglo'
 
     def _getTool(self):
-        raise NotImplementedError('Not supported by HB')
+	raise NotImplementedError('Not supported by HB')
+
+    def checkForAbsentMandatoryParameters(self):
+	pass
 
     def createJobs(self):
-        self._processTracks()
-        for queryTrack in self._queryTracksProcessed:
-            for refTrack in self._refTracksProcessed:
-                self._analyses[(queryTrack.title, refTrack.title)] = AnalysisObject(self._getAnalysisSpec(),
+        for queryTrack in self._queryTracks:
+            qTrack = self._processTrack(queryTrack)
+            for refTrack in self._refTracks:
+                rTrack = self._processTrack(refTrack)
+                self._analyses[(queryTrack, refTrack)] = AnalysisObject(self._getAnalysisSpec(),
                                                                                     self._binSource,
-                                                                                    [queryTrack, refTrack])
+                                                                                    [qTrack, rTrack])
         return [HBJob(self._analyses)]
 
 
     def setResultFilesDict(self, resultFilesDict):
         self._results = resultFilesDict
+	self._ranSuccessfully = True
 
     def getResultFilesDict(self):
-        raise NotImplementedError('Not supported by HB')
-
+        return self._results
+	
     def _setDefaultParamValues(self):
         pass
 
@@ -80,21 +83,26 @@ class HBCongloMethod(ManyVsManyMethod):
 
     def getPValue(self):
         pvals = OrderedDict()
-        for trackTuple, result in self._results:
-            pval = result.getGlobalResult()['Result']['P-value']
+        for trackTuple, result in self._results.iteritems():
+            pval = result.getGlobalResult()['P-value']
             pvals[trackTuple] = pval
         return pvals
 
 
     def getTestStatistic(self):
         testStats = OrderedDict()
-        for trackTuple, result in self._results:
-            pval = result.getGlobalResult()['Result']['TSMC_' + self._colocStatistic]
-            testStats[trackTuple] = pval
+        for trackTuple, result in self._results.iteritems():
+            testStat = result.getGlobalResult()['TSMC_' + self._colocStatistic]
+            testStats[trackTuple] = testStat
         return testStats
 
     def getFullResults(self):
-        return self._results
+	from os import linesep
+        fullResult = OrderedDict()
+        for trackTuple, result in self._results.iteritems():
+            fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
+                          "\t" + str(result.getGlobalResult()['P-value']) + " <br>" + linesep
+        return fullResult
 
     def preserveClumping(self, preserve):
         if preserve:
@@ -108,7 +116,7 @@ class HBCongloMethod(ManyVsManyMethod):
     def setColocMeasure(self, colocMeasure):
 
         if isinstance(colocMeasure, ColocMeasureOverlap):
-            self._colocStatistic = TpRawOverlapStat
+            self._colocStatistic = "TpRawOverlapStat"
         else:
             raise AssertionError('Overlap is the only supported measure')
 
@@ -123,7 +131,7 @@ class HBCongloMethod(ManyVsManyMethod):
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDR$'] + ' -> RandomizationManagerStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
-        analysisSpec.setChoice('MCFDR sampling depth', 'mediumGlobal')
+        analysisSpec.setChoice('MCFDR sampling depth', 'Moderate resolution of global p-value')
         analysisSpec.addParameter('assumptions', self._randomizationAssumption)
         analysisSpec.addParameter('rawStatistic', self._colocStatistic)
         analysisSpec.addParameter('tail', 'more')
@@ -150,16 +158,12 @@ class HBCongloMethod(ManyVsManyMethod):
         PreProcessAllTracksJob(self._genome, convertedTrackName).process()
         return Track(convertedTrackName, trackTitle=trackName.split(":")[-1])
 
-    def _processTracks(self):
-        self._queryTracksProcessed = \
-            [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome,
-                                                                   ['galaxy', 'bed', trackFn, 'qdummy'])
-             for trackFn in self._queryTracks]
-
-        self._refTracksProcessed = \
-            [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome,
-                                                                   ['galaxy', 'bed', trackFn, 'rdummy'])
-             for trackFn in self._refTracks]
+    def _processTrack(self, trackFn):
+        from os.path import splitext, basename
+        return Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome,
+                                                                    ['galaxy', 'bed', trackFn, 'dummy'],
+								    printErrors=False, printProgress=False),
+                                                                    splitext(basename(trackFn)))
 
 
 class HBJob(Job):
@@ -169,6 +173,6 @@ class HBJob(Job):
 
     def run(self):
         results = OrderedDict()
-        for analysisObj in self._analyses:
-            results[tuple(analysisObj.tracks)] = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
+        for key, analysisObj in self._analyses.iteritems():
+            results[key] = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
         return results
