@@ -715,60 +715,81 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        """
-        Is called when execute-button is pushed by web-user. Should print
-        output as HTML to standard out, which will be directed to a results
-        page in Galaxy history. If getOutputFormat is anything else than
-        'html', the output should be written to the file with path galaxyFn.
-        If needed, StaticFile can be used to get a path where additional
-        files can be put (cls, e.g. generated image files). choices is a list
-        of selections made by web-user in each options box.
-
-        Mandatory unless isRedirectTool() returns True.
-        """
-        # import conglomerate.tools.constants as const
-        # const.CATCH_METHOD_EXCEPTIONS = False
-        #selections = cls.determine_selections(choices)
-
-
-        #TEMP, for transferring to local computer..
-        # print ''
-        # print 'selections = ', repr(selections)
-        # print ''
-        #queryTrack = cls.getQueryTracksFromChoices(choices)
-        #refTracks = cls.getRefTracksFromChoices(choices)
-        #typeOfAnalysis = choices.analysisType
-
-        #workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks, ALL_METHOD_CLASSES)
-        print 'All Choices: ', choices
+        print HtmlCore().begin()
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
-        # import pickle
-        # import os
-        # if os.path.exists('/data/tmp/congloTmp/adhoc.pickle'):
-        #     print 'Loading pickle'
-        #     workingMethodObjects = pickle.load(open('/data/tmp/congloTmp/adhoc.pickle'))
-        # else:
-        #     print 'Storing pickle'
-        #     pickle.dump(workingMethodObjects, open('/data/tmp/congloTmp/adhoc.pickle','w'))
-
         methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
         keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
 
         if VERBOSE_RUNNING:
-            #print choices.compatibleMethods
-            #print selections
-            #print typeOfAnalysis
-            print 'Kept methods (after manual GUI subselection):', [wmo._methodCls.__name__ for wmo in keptWmos]
-            for wmo in keptWmos:
-                print '**', wmo._methodCls.__name__, '**'
-                print wmo._methods[0]._params
-                print '****'
-                print ' '
+            cls._printWmoInfo(keptWmos)
 
         runAllMethodsInSequence(keptWmos)
 
+        keysWithVariation = cls.determineKeysWithVariation(keptWmos)
+        print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
+        try:
+            print str(cls.createRankTable(keptWmos, keysWithVariation))
+        except:
+            print "Error creating rank table"
+            if VERBOSE_RUNNING:
+                import traceback
+                traceback.print_exc()
+        print str(cls.createErrorTable(galaxyFn, keptWmos))
+        print HtmlCore().end()
+
+    @classmethod
+    def _printWmoInfo(cls, keptWmos):
+        print 'Kept methods (after manual GUI subselection):', [wmo._methodCls.__name__ for wmo in keptWmos]
+        for wmo in keptWmos:
+            print '**', wmo._methodCls.__name__, '**'
+            print wmo._methods[0]._params, '\n****\n'
+        print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
+
+    @classmethod
+    def createErrorTable(cls, galaxyFn, keptWmos):
+        core = HtmlCore()
+        if not all(wmo.ranSuccessfully() for wmo in keptWmos):
+            core.tableHeader(['Method name', 'Tool error'])
+            for i, wmo in enumerate(keptWmos):
+                if wmo.ranSuccessfully():
+                    continue
+                errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
+                errorStaticFile.writeTextToFile(wmo.getErrorDetails())
+                core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
+            core.tableFooter()
+        return core
+
+    @classmethod
+    def createRankTable(cls, keptWmos, keysWithVariation):
+        core = HtmlCore()
+        rankTableDict = defaultdict(dict)
+        for i, wmo in enumerate(keptWmos):
+            if not wmo.ranSuccessfully():
+                continue
+
+            wmoLabel = wmo._methodCls.__name__  #+ '(' + ','.join([key + ':' + wmo.annotatedChoices.get(key) for key in
+                                                #                 keysWithVariation]) + ')'
+            allTestStats = wmo.getTestStatistic()
+            tsVals = [(trackCombination[1].split('/')[-1], allTestStats[trackCombination]) \
+                      for trackCombination in allTestStats.keys()]
+            # tsRanks = dict([(track, 1+sum(v>val for t,v in tsVals)) for track, val in tsVals])
+            for trackName, val in tsVals:
+                rankTableDict[trackName][wmoLabel] = 1 + sum(v > val for t, v in tsVals)
+        if len(rankTableDict) > 1:  # More than 1 ref track
+            allTrackNames = rankTableDict.keys()
+            allWmoLabels = rankTableDict.values()[0].keys()
+            assert all([row.keys() == allWmoLabels for row in rankTableDict.values()])
+            core.tableHeader([' '] + allWmoLabels, sortable=True)
+            for trackName in rankTableDict:
+                ranksInRow = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels]
+                meanRank = '%.1f' % reduce(lambda x, y: x * y, ranksInRow) ** (1.0 / len(ranksInRow))
+                core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
+            core.tableFooter()
+        return core
+
+    @classmethod
+    def determineKeysWithVariation(cls, keptWmos):
         unionOfParamKeys = set([paramKey for wmo in keptWmos for paramKey in wmo.annotatedChoices.keys()])
-        # print(unionOfParamKeys)
         keysWithVariation = []
         for key in unionOfParamKeys:
             numDifferentKeyValues = len(set([wmo.annotatedChoices.get(key) \
@@ -778,17 +799,34 @@ class CongloProtoTool(GeneralGuiTool):
             if numDifferentKeyValues > 1:
                 keysWithVariation.append(key)
         keysWithVariation.sort()
+        return keysWithVariation
 
+    # @classmethod
+    # def extractResultsFromWmo(cls, wmo, keysWithVariation):
+    #     if VERBOSE_RUNNING:
+    #         print 'Stdout of tool: ', wmo.getResultFilesDictList()
+    #     if not wmo.ranSuccessfully():
+    #         if VERBOSE_RUNNING:
+    #             print 'skipping result output for method', wmo
+    #         return
+    #     allPvals = wmo.getPValue()
+    #     allTestStats = wmo.getTestStatistic()
+    #     allFullResults = wmo.getFullResults()
+    #     assert len(allPvals) > 0, allPvals
+    #     assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
+    #
+    #     for trackCombination in allPvals.keys():
+    #         fullResult = allFullResults[trackCombination]
+    #
+    #         pval = allPvals[trackCombination]
+    #         ts = allTestStats[trackCombination]
+
+    @classmethod
+    def createMainTable(cls, galaxyFn, keptWmos, keysWithVariation):
         core = HtmlCore()
-        core.begin()
         core.tableHeader(
             ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic',
-            'Detailed results'], sortable=True)
-
-        if VERBOSE_RUNNING:
-            print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
-
-
+                                                                                     'Detailed results'], sortable=True)
         for i, wmo in enumerate(keptWmos):
             if VERBOSE_RUNNING:
                 print 'Stdout of tool: ', wmo.getResultFilesDictList()
@@ -799,9 +837,8 @@ class CongloProtoTool(GeneralGuiTool):
 
             allPvals = wmo.getPValue()
             allTestStats = wmo.getTestStatistic()
-            # print 'TEMP18: ', wmo._methodCls.__name__, allTestStats
             allFullResults = wmo.getFullResults()
-            assert len(allPvals)>0, allPvals
+            assert len(allPvals) > 0, allPvals
 
             assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
             for j, trackCombination in enumerate(allPvals.keys()):
@@ -810,58 +847,14 @@ class CongloProtoTool(GeneralGuiTool):
                 fullResultStaticFile.writeTextToFile(fullResult)
                 pval = allPvals[trackCombination]
                 ts = allTestStats[trackCombination]
-                # prettyTrackComb = '-'.join([track.split('/')[-1] for track in trackCombination])
                 prettyTracks = [track.split('/')[-1] for track in trackCombination]
-                # print 'TEMP14', [wmo._methodCls.__name__, prettyTrackComb] + [wmo.annotatedChoices.get(key) for key in keysWithVariation] + [str(pval), str(ts), fullResultStaticFile.getLink('Full results')]
                 core.tableLine(
                     [wmo._methodCls.__name__] + prettyTracks + [wmo.annotatedChoices.get(key) for key in
                                                                 keysWithVariation] + [str(pval), str(ts),
                                                                                       fullResultStaticFile.getLink(
                                                                                           'Full results')])
         core.tableFooter()
-
-        rankTableDict = defaultdict(dict)
-        for i, wmo in enumerate(keptWmos):
-            if not wmo.ranSuccessfully():
-                continue
-
-            wmoLabel = wmo._methodCls.__name__ + '(' + ','.join([key+':'+wmo.annotatedChoices.get(key) for key in
-                                                                keysWithVariation]) + ')'
-            allTestStats = wmo.getTestStatistic()
-            tsVals = [(trackCombination[1].split('/')[-1], allTestStats[trackCombination]) \
-                for trackCombination in allTestStats.keys()]
-            #tsRanks = dict([(track, 1+sum(v>val for t,v in tsVals)) for track, val in tsVals])
-            for trackName, val in tsVals:
-                rankTableDict[trackName][wmoLabel] = 1+sum(v>val for t,v in tsVals)
-
-        if len(rankTableDict)>1: #More than 1 ref track
-            allTrackNames = rankTableDict.keys()
-            allWmoLabels = rankTableDict.values()[0].keys()
-            assert all([row.keys() == allWmoLabels for row in rankTableDict.values()])
-            core.tableHeader([' '] + allWmoLabels, sortable=True)
-            for trackName in rankTableDict:
-                ranksInRow = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels]
-                meanRank = '%.1f' % reduce(lambda x, y: x*y, ranksInRow)**(1.0/len(ranksInRow))
-                core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
-            core.tableFooter()
-
-
-
-
-                # not wmo.ranSuccessfully()
-        if not all(wmo.ranSuccessfully() for wmo in keptWmos):
-            core.tableHeader(['Method name', 'Tool error'])
-            for i, wmo in enumerate(keptWmos):
-                if wmo.ranSuccessfully():
-                    continue
-                errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
-                errorStaticFile.writeTextToFile(wmo.getErrorDetails())
-                # print 'TEMP18: ', wmo.getErrorDetails()
-                core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
-            core.tableFooter()
-
-        core.end()
-        print core
+        return core
 
     @classmethod
     def getQueryTracksFromChoices(cls, choices):
