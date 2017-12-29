@@ -734,7 +734,7 @@ class CongloProtoTool(GeneralGuiTool):
         runAllMethodsInSequence(keptWmos)
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
-            print '</pre>'
+            print '</pre><br>'
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
         print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
         try:
