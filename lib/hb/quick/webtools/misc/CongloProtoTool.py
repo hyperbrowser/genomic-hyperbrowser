@@ -787,11 +787,13 @@ class CongloProtoTool(GeneralGuiTool):
                 rankTableDict[trackName][wmoLabel] = 1 + sum(v > val for t, v in tsVals)
         if len(rankTableDict) > 1:  # More than 1 ref track
             allTrackNames = rankTableDict.keys()
-            allWmoLabels = rankTableDict.values()[0].keys()
-            assert all([row.keys() == allWmoLabels for row in rankTableDict.values()])
+            #allWmoLabels = rankTableDict.values()[0].keys()
+            #assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
+            allWmoLabels = set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()])
             core.tableHeader([' '] + allWmoLabels, sortable=True)
             for trackName in rankTableDict:
-                ranksInRow = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels]
+                ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A'\
+                              for wmoLabel in allWmoLabels]
                 meanRank = '%.1f' % reduce(lambda x, y: x * y, ranksInRow) ** (1.0 / len(ranksInRow))
                 core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
             core.tableFooter()
