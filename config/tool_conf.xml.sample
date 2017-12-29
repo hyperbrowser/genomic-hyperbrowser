@@ -83,7 +83,7 @@
     <tool file="proto/hyperbrowser/create/CreateSegmentsFromGeneListTool.xml" />
     <!-- <tool file="hyperbrowser/custom_track.xml" /> -->
     <!--<tool file="proto/hyperbrowser/track/CreateCategoryBasedOnTresholdIntervals.xml" />-->
-    <tool file="proto/tools/FileImport.xml" />
+    <tool file="proto/FileImport.xml" />
   </section>
 
   <section name="Format and convert tracks" id="format_convert_tracks">
