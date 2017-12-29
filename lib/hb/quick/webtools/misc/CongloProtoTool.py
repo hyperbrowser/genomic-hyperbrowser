@@ -736,7 +736,7 @@ class CongloProtoTool(GeneralGuiTool):
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre>'
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
-        print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
+        print str(cls.createMainTable2(galaxyFn, keptWmos, keysWithVariation))
         try:
             print str(cls.createRankTable(keptWmos, keysWithVariation))
         except:
@@ -866,6 +866,54 @@ class CongloProtoTool(GeneralGuiTool):
                                                                                       fullResultStaticFile.getLink(
                                                                                           'Full results')])
         core.tableFooter()
+        return core
+
+    @classmethod
+    def createMainTable2(cls, galaxyFn, keptWmos, keysWithVariation):
+
+        def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
+            return core.tableFromDictionary(
+                tableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
+
+        core = HtmlCore()
+        tableData = OrderedDict()
+        colNames = ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic',
+                                                                                     'Detailed results']
+
+        for i, wmo in enumerate(keptWmos):
+            if VERBOSE_RUNNING:
+                print 'Stdout of tool: ', wmo.getResultFilesDictList()
+            if not wmo.ranSuccessfully():
+                if VERBOSE_RUNNING:
+                    print 'skipping result output for method', wmo
+                continue
+
+            allPvals = wmo.getPValue()
+            allTestStats = wmo.getTestStatistic()
+            allFullResults = wmo.getFullResults()
+            assert len(allPvals) > 0, allPvals
+
+            assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
+            for j, trackCombination in enumerate(allPvals.keys()):
+                fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
+                fullResult = allFullResults[trackCombination]
+                fullResultStaticFile.writeTextToFile(fullResult)
+                pval = allPvals[trackCombination]
+                ts = allTestStats[trackCombination]
+                prettyTracks = [track.split('/')[-1] for track in trackCombination]
+                tableData[wmo._methodCls.__name__] = prettyTracks + [wmo.annotatedChoices.get(key) for key in
+                                                                keysWithVariation] + [str(pval), str(ts),
+                                                                                      fullResultStaticFile.getLink(
+                                                                                          'Full results')]
+        tableId = 'resultsTable'
+        tableFile = GalaxyRunSpecificFile([tableId, 'main_table.tsv'], galaxyFn)
+        tabularHistElementName = 'Raw main results'
+
+        core.tableWithTabularImportButton(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+                                    tabularHistElementName=tabularHistElementName,
+                                    produceTableCallbackFunc=_produceTable,
+                                    tableDict=tableData,
+                                    columnNames=colNames, tableId=tableId, sortable=True)
         return core
 
     @classmethod
