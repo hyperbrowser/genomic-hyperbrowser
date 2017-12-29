@@ -789,7 +789,7 @@ class CongloProtoTool(GeneralGuiTool):
             allTrackNames = rankTableDict.keys()
             #allWmoLabels = rankTableDict.values()[0].keys()
             #assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
-            allWmoLabels = set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()])
+            allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
             core.tableHeader([' '] + allWmoLabels, sortable=True)
             for trackName in rankTableDict:
                 ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A'\
