@@ -65,9 +65,13 @@ class HBCongloMethod(ManyVsManyMethod):
     def setChromLenFileName(self, chromLenFileName):
         pass
 
-    def _setQueryTrackFileNames(self, trackFnList):
+    def _setQueryTrackFileNames(self, trackFileList):
         # self._queryTracks = [self._getTrackFromFilename(trackFn) for trackFn in trackFnList]
         # self._queryTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
+        trackFnList = []
+        for trackFile in trackFileList:
+            self._addTrackTitleMapping(trackFile.path, trackFile.title)
+            trackFnList.append(trackFile.path)
         self._queryTracks = trackFnList
 
     def _setReferenceTrackFileNames(self, trackFileList):
