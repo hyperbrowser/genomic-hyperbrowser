@@ -93,7 +93,7 @@ class HBCongloMethod(ManyVsManyMethod):
         for trackTuple, result in self._results.iteritems():
             pval = result.getGlobalResult()['P-value']
             pvals[trackTuple] = pval
-        return pvals
+        return self.getRemappedResultDict(pvals)
 
 
     def getTestStatistic(self):
@@ -101,7 +101,7 @@ class HBCongloMethod(ManyVsManyMethod):
         for trackTuple, result in self._results.iteritems():
             testStat = result.getGlobalResult()['TSMC_' + self._colocStatistic]
             testStats[trackTuple] = testStat
-        return testStats
+        return self.getRemappedResultDict(testStats)
 
     def getFullResults(self):
         from os import linesep
@@ -109,7 +109,7 @@ class HBCongloMethod(ManyVsManyMethod):
         for trackTuple, result in self._results.iteritems():
             fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
                           "\t" + str(result.getGlobalResult()['P-value']) + " <br>" + linesep
-        return fullResult
+        return self.getRemappedResultDict(fullResult)
 
     def preserveClumping(self, preserve):
         if preserve:
