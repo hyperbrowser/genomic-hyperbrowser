@@ -609,7 +609,7 @@ class CongloProtoTool(GeneralGuiTool):
         if len(methodChoices)==0:
             return None
         else:
-            return OrderedDict( zip(methodChoices, [True]*len(methodChoices)) )
+            return OrderedDict( zip(sorted(methodChoices), [True]*len(methodChoices)) )
 
     @classmethod
     def getWorkingMethodObjects(cls, prevChoices):
