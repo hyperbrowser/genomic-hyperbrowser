@@ -867,10 +867,15 @@ class CongloProtoTool(GeneralGuiTool):
                 pval = allPvals[trackCombination]
                 ts = allTestStats[trackCombination]
                 prettyTracks = [track.split('/')[-1] for track in trackCombination]
-                tableData[wmo._methodCls.__name__] = prettyTracks + [wmo.annotatedChoices.get(key) for key in
-                                                                keysWithVariation] + [str(pval), str(ts),
-                                                                                      fullResultStaticFile.getLink(
-                                                                                          'Full results')]
+                # tableData[wmo._methodCls.__name__] = prettyTracks + [wmo.annotatedChoices.get(key) for key in
+                #                                                 keysWithVariation] + [str(pval), str(ts),
+                #                                                                       fullResultStaticFile.getLink(
+                #                                                                           'Full results')]
+                keyCols = (wmo._methodCls.__name__,) + tuple(prettyTracks) + tuple([wmo.annotatedChoices.get(key) for key in
+                                                                keysWithVariation])
+                furtherCols = [str(pval), str(ts),fullResultStaticFile.getLink('Full results')]
+                tableData[keyCols] =furtherCols
+
         tableId = 'resultsTable'
         tableFile = GalaxyRunSpecificFile([tableId, 'main_table.tsv'], galaxyFn)
         tabularHistElementName = 'Raw main results'

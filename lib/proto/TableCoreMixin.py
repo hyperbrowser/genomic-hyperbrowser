@@ -29,10 +29,11 @@ class TableCoreMixin(object):
                          tableClass=tableClass, **kwargs)
 
         for key, val in dataDictOfLists.iteritems():
-            if isinstance(val, list):
-                self.tableLine([key] + val, **kwargs)
-            else:
-                self.tableLine([key] + [val], **kwargs)
+            if not isinstance(key, tuple):
+                key = [key]
+            if not any(isinstance(val, x) for x in [list, tuple]):
+                val = [val]
+            self.tableLine(key + val, **kwargs)
 
         self.tableFooter(expandable=expandable, tableId=tableId,
                          numRows=len(dataDict), visibleRows=visibleRows, **kwargs)
