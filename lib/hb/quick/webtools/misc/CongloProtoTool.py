@@ -65,7 +65,7 @@ class CongloProtoTool(GeneralGuiTool):
         """
         return [('Select the running mode : ', 'selectRunningMode'),
                 ('Select the reference genome: ', 'selectReferenceGenome'),
-                ('Upload your own genome chromosome lenghts file', 'missingGenome'),
+                ('Upload your own genome chromosome lengths file', 'missingGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Type of co-localization analysis: ', 'analysisType'),
                 ('Choose a query track: ', 'chooseQueryTrackFile'),
@@ -159,11 +159,13 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxMissingGenome(cls, prevChoices):
-        return False
+        return None
+        #return False
 
     @classmethod
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
-        if prevChoices.missingGenome:
+        #if prevChoices.missingGenome:
+        if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             return ('__history__',)
 
     @classmethod
@@ -653,9 +655,15 @@ class CongloProtoTool(GeneralGuiTool):
                             'mm9': pkg_resources.resource_filename('conglomerate_resources', 'mm9.chrom.sizes'),
                             'mm10': pkg_resources.resource_filename('conglomerate_resources', 'mm10.chrom.sizes'),
                             }
-        genomeName = prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
+        if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
+            genomeName = 'Custom'
+            chrLenFn = ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.chooseChrnLenFile)
+        else:
+            genomeName = prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
+            chrLenFn = chrLenFnMappings[genomeName]
+
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
-        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFnMappings[genomeName])]
+        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFn)]
         selections['setRuntimeMode'] = [('setRuntimeMode', prevChoices.runtimeMode)]
         return selections
 
