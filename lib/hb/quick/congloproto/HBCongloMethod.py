@@ -100,7 +100,7 @@ class HBCongloMethod(ManyVsManyMethod):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             testStat = float(result.getGlobalResult()['TSMC_' + self._colocStatistic]) / result.getGlobalResult()['MeanOfNullDistr']
-            testStats[trackTuple] = ('%.1f' % testStat) + '(ratio of observed/expected)'
+            testStats[trackTuple] = '<a href="" title="ratio of observed/expected">' + ('%.1f' % testStat) + '</a>'
         return self.getRemappedResultDict(testStats)
 
     def getFullResults(self):
