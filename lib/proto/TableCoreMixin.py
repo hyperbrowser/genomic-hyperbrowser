@@ -29,7 +29,9 @@ class TableCoreMixin(object):
                          tableClass=tableClass, **kwargs)
 
         for key, val in dataDictOfLists.iteritems():
-            if not isinstance(key, tuple):
+            if isinstance(key, tuple):
+                key = list(key)
+            else:
                 key = [key]
             if not any(isinstance(val, x) for x in [list, tuple]):
                 val = [val]
