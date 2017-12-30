@@ -790,7 +790,7 @@ class CongloProtoTool(GeneralGuiTool):
             #allWmoLabels = rankTableDict.values()[0].keys()
             #assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
             allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
-            core.tableHeader([' '] + allWmoLabels, sortable=True)
+            core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
             for trackName in rankTableDict:
                 ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A'\
                               for wmoLabel in allWmoLabels]
@@ -843,7 +843,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         core = HtmlCore()
         tableData = OrderedDict()
-        colNames = ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Test statistic',
+        colNames = ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Co-localization enrichment',
                                                                                      'Detailed results']
 
         for i, wmo in enumerate(keptWmos):
