@@ -4,7 +4,7 @@ from itertools import product
 from conglomerate.methods.intervalstats.intervalstats import IntervalStats
 from conglomerate.methods.lola.lola import LOLA
 from conglomerate.tools.method_compatibility import getCompatibleMethodObjects, getCollapsedConfigurationsPerMethod
-
+from conglomerate.tools.TrackFile import TrackFile
 import pkg_resources
 
 from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
@@ -897,7 +897,7 @@ class CongloProtoTool(GeneralGuiTool):
         typeOfAnalysis = choices.analysisType
         if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
             referenceTrackChoice = choices.chooseReferenceTrackFile
-            refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
+            # refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
         elif typeOfAnalysis == cls.REFERENCE_TRACKS:
             if choices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
                 #assert choices.chooseCustomTrackCollection in [None,''], choices.chooseCustomTrackCollection
@@ -930,7 +930,8 @@ class CongloProtoTool(GeneralGuiTool):
             gsuite = getGSuiteFromGalaxyTN(trackChoice)
             if gsuite.isPreprocessed():
                 raise Exception("Please select gsuite in primary format (a gsuite referring to a set of bed files)")
-            fnList = [gsTrack.path for gsTrack in gsuite.allTracks()]
+            fnList = [TrackFile(gsTrack.path, gsTrack.title) for gsTrack in gsuite.allTracks()]
+            print 'TEMP4: ', [gsTrack.title for gsTrack in gsuite.allTracks()]
         else:
             print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
         return fnList
