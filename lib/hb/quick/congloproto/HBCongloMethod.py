@@ -68,7 +68,12 @@ class HBCongloMethod(ManyVsManyMethod):
         # self._queryTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
         self._queryTracks = trackFnList
 
-    def _setReferenceTrackFileNames(self, trackFnList):
+    def _setReferenceTrackFileNames(self, trackFileList):
+        trackFnList = []
+        for trackFile in trackFileList:
+            self._addTrackTitleMapping(trackFile.path, trackFile.title)
+            trackFnList.append(trackFile.path)
+
         self._refTracks = trackFnList
         # self._refTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
         # self._refTracks = [self._getTrackFromFilename(trackFn) for trackFn in trackFnList]
