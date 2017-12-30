@@ -25,6 +25,8 @@ class HBCongloMethod(ManyVsManyMethod):
         self._analyses = OrderedDict()
         self._results = None
         self._params = "Conglo Params not supported in HBCongloMethod"
+        self._trackTitleMappings = {}
+
 
     def _getToolName(self):
         return 'hb_conglo'
