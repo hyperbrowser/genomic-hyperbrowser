@@ -925,13 +925,14 @@ class CongloProtoTool(GeneralGuiTool):
 
         filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice, allowUnsupportedSuffixes=True)
         if filetype in ['bed']:
-            fnList = [ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)]
+            fnList = [TrackFile( ExternalTrackManager.extractFnFromGalaxyTN(trackChoice),\
+                      ExternalTrackManager.extractNameFromHistoryTN(trackChoice) )]
+
         elif filetype in ['gsuite']:
             gsuite = getGSuiteFromGalaxyTN(trackChoice)
             if gsuite.isPreprocessed():
                 raise Exception("Please select gsuite in primary format (a gsuite referring to a set of bed files)")
             fnList = [TrackFile(gsTrack.path, gsTrack.title) for gsTrack in gsuite.allTracks()]
-            print 'TEMP4: ', [gsTrack.title for gsTrack in gsuite.allTracks()]
         else:
             print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
         return fnList
