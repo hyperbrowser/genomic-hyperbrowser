@@ -99,8 +99,8 @@ class HBCongloMethod(ManyVsManyMethod):
     def getTestStatistic(self):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
-            testStat = result.getGlobalResult()['TSMC_' + self._colocStatistic]
-            testStats[trackTuple] = testStat
+            testStat = float(result.getGlobalResult()['TSMC_' + self._colocStatistic]) / result.getGlobalResult()['MeanOfNullDistr']
+            testStats[trackTuple] = ('%.1f' % testStat) + '(ratio of observed/expected)'
         return self.getRemappedResultDict(testStats)
 
     def getFullResults(self):
