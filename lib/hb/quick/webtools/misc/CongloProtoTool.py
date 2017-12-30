@@ -794,7 +794,8 @@ class CongloProtoTool(GeneralGuiTool):
             for trackName in rankTableDict:
                 ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A'\
                               for wmoLabel in allWmoLabels]
-                meanRank = '%.1f' % reduce(lambda x, y: x * y, ranksInRow) ** (1.0 / len(ranksInRow))
+                nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if wmoLabel in rankTableDict[trackName]]
+                meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
                 core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
             core.tableFooter()
         return core
