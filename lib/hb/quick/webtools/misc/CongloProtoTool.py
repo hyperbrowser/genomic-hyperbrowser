@@ -735,6 +735,7 @@ class CongloProtoTool(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         print HtmlCore().begin()
         print '<h1>Result page for coloc-stats analysis</h1>'
+        print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
