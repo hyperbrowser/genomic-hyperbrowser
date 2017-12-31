@@ -126,35 +126,37 @@ class CongloProtoTool(GeneralGuiTool):
     #     """
     #     return None
 
-    ADVANCED = 'Advanced mode: unified specification of individual parameters'
+    ADVANCED = 'Advanced mode: unified selection of specific parameters'
     SIMPLE_WITH_SHARED_DEFAULTS = 'Simple mode: based on shared parameter settings'
-    SIMPLE_WITH_DEFAULTS = 'Simple mode: based on tool-specific defaults'
+    SIMPLE_WITH_DEFAULTS = 'Basic mode: partly based on tool-specific defaults'
 
     @classmethod
     def getOptionsBoxSelectRunningMode(cls):  # Alt: getOptionsBox1()
-        return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
+        #return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
+        return [cls.SIMPLE_WITH_DEFAULTS, cls.ADVANCED]
 
     @classmethod
     def getInfoForOptionsBoxSelectRunningMode(cls):
-        text = 'Simple mode with tool-specific defaults performs co-localization analysis with six different tools with default settings.'
+        text = 'Basic mode with partly tool-specific defaults performs co-localization analysis with six different tools using partly their default settings. Only a few main selections need to be made by the user.'
         text += '<br>'
-        text += 'Simple mode with shared defaults runs the co-localization analysis tools with similar or same parameters/settings to allow comparison between the findings of the tools.'
-        text += '<br>'
-        text += 'Advanced mode allows the selection of co-localization analysis tools/methods based on detailed choices of parameters and methodological assumptions.'
+        text += 'Advanced mode allows the selection of co-localization analysis tools/methods based on detailed choices of parameters and methodological assumptions. After selecting one or many specific parameter values, a list of compatible tools will be shown.'
         return text
+        # text += 'Simple mode with shared defaults runs the co-localization analysis tools with similar or same parameters/settings to allow comparison between the findings of the tools.'
+        # text += '<br>'
+
 
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls,prevChoices):  # Alt: getOptionsBox1()
-        return ['Human (hg19)','Human (hg38)', 'Mouse (mm10)', cls.CUSTOM_REFERENCE_GENOME]
+        return ['Human (hg19)','Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)', cls.CUSTOM_REFERENCE_GENOME]
         #return '__genome__'
 
     @classmethod
     def getInfoForOptionsBoxSelectReferenceGenome(cls, prevChoices):
-        text = 'Currently supports only hg19, hg18, hg38, mm10 and mm9.'
+        text = 'Support for hg19, hg38, mm9 and mm10 is integrated in the system.'
         text += '<br>'
-        text += 'Please upload the chromosome lengths file of a reference genome of your choice, if the default options are not suitable for your analysis.'
+        text += 'Analysis can be performed on other reference genomes by uploading a custom chromosome lengths file.'
         return text
 
     @classmethod
@@ -356,7 +358,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
-            return [cls.LOLA_COLLECTION, cls.GIGGLE_COLLECTION, cls.HB_COLLECTION]
+            return [cls.LOLA_COLLECTION]
+            #return [cls.LOLA_COLLECTION, cls.GIGGLE_COLLECTION, cls.HB_COLLECTION]
 
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
@@ -384,7 +387,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxChooseReferenceTrackCollection(cls, prevChoices):
         if prevChoices.optionalUseOfCoreDatabase == 'Yes':
-            return ['LOLA data collection', 'GIGGLE data collection', 'GSuite Hyperbrowser data collection']
+            return [cls.LOLA_COLLECTION]
+            #return ['LOLA data collection', 'GIGGLE data collection', 'GSuite Hyperbrowser data collection']
         elif prevChoices.optionalUseOfCoreDatabase == 'No':
             return ('__history__','gsuite')
 
