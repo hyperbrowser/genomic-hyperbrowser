@@ -596,8 +596,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
-            return ['No, I am not aware of any potential confounding feature for this analysis',
-                cls.CONFOUNDING_FEATURE]
+            return ['No, I am not aware of any potential confounding feature for this analysis']
+            #return ['No, I am not aware of any potential confounding feature for this analysis',cls.CONFOUNDING_FEATURE]
 
     @classmethod
     def getOptionsBoxConfounderHandler(cls, prevChoices):  # Alt: getOptionsBox2()
