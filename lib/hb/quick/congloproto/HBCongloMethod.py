@@ -96,7 +96,7 @@ class HyperBrowser(ManyVsManyMethod):
         pvals = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             pval = result.getGlobalResult()['P-value']
-            pvals[trackTuple] = pval
+            pvals[trackTuple] = '%.2f' % pval
         return self.getRemappedResultDict(pvals)
 
 
