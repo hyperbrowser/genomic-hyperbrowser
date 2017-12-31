@@ -536,8 +536,9 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxCorrelation(cls, prevChoices):
-        if prevChoices.teststatType and prevChoices.teststatType[cls.CORRELATION]:
-            return ['genome-wide kernel correlation (overall relationship)','fine-scale correlation (structure of correlation)','local correlation (genomic region-level)']
+        return None
+        # if prevChoices.teststatType and prevChoices.teststatType[cls.CORRELATION]:
+        #     return ['genome-wide kernel correlation (overall relationship)','fine-scale correlation (structure of correlation)','local correlation (genomic region-level)']
 
     DETERMINE_FROM_SUBMITTED_TRACKS = 'determine whether or not to allow overlap based on submitted tracks'
     MAY_OVERLAP = 'elements may overlap'
