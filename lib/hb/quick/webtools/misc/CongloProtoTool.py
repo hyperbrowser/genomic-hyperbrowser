@@ -734,6 +734,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         print HtmlCore().begin()
+        print '<h1>Result page for coloc-stats analysis</h1>'
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
@@ -748,15 +749,22 @@ class CongloProtoTool(GeneralGuiTool):
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre><br>'
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
+        print '<h2>Results for each dataset and tool configuration</h2>'
         print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
         try:
-            print str(cls.createRankTable(keptWmos, keysWithVariation))
+            rankTableHtmlStr = str(cls.createRankTable(keptWmos, keysWithVariation))
+            print '<h2>Ranking of reference datasets by degree of co-localization according to each tool</h2>'
+            print rankTableHtmlStr
         except:
             print "Error creating rank table"
             if VERBOSE_RUNNING:
                 import traceback
                 traceback.print_exc()
-        print str(cls.createErrorTable(galaxyFn, keptWmos))
+
+        errorTableHtmlCore = cls.createErrorTable(galaxyFn, keptWmos)
+        if errorTableHtmlCore is not None:
+            print '<h2>Table with error messages for failing tools</h2>'
+            print str(errorTableHtmlCore)
         print HtmlCore().end()
 
     @classmethod
@@ -769,16 +777,17 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def createErrorTable(cls, galaxyFn, keptWmos):
+        if all(wmo.ranSuccessfully() for wmo in keptWmos):
+            return None
         core = HtmlCore()
-        if not all(wmo.ranSuccessfully() for wmo in keptWmos):
-            core.tableHeader(['Method name', 'Tool error'])
-            for i, wmo in enumerate(keptWmos):
-                if wmo.ranSuccessfully():
-                    continue
-                errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
-                errorStaticFile.writeTextToFile(wmo.getErrorDetails())
-                core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
-            core.tableFooter()
+        core.tableHeader(['Method name', 'Tool error'])
+        for i, wmo in enumerate(keptWmos):
+            if wmo.ranSuccessfully():
+                continue
+            errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
+            errorStaticFile.writeTextToFile(wmo.getErrorDetails())
+            core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
+        core.tableFooter()
         return core
 
     @classmethod
