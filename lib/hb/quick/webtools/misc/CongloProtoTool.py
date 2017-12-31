@@ -554,7 +554,7 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
             #return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
-            [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
+            return [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
 
     @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
@@ -565,7 +565,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
-            return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
+            # return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
+            return ['No, distribute genomic regions across the whole genome']
 
     FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
     SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
