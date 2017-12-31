@@ -2,7 +2,7 @@ import pkg_resources
 import pytest
 
 from conglomerate.tools import runner
-from quick.congloproto.HBCongloMethod import HBCongloMethod
+from quick.congloproto.HBCongloMethod import HyperBrowser
 
 
 @pytest.fixture(scope='function')
@@ -18,7 +18,7 @@ def tracks():
 class TestHBCongloMethod(object):
 
     def testHBMethod(self, tracks):
-        method = HBCongloMethod()
+        method = HyperBrowser()
         method.setQueryTrackFileNames([tracks[0], tracks[2]])
         method.setReferenceTrackFileNames([tracks[1], tracks[3]])
         method.setGenomeName('hg19')

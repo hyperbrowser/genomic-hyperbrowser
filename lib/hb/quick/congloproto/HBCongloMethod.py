@@ -12,7 +12,7 @@ from quick.statistic.StatFacades import TpRawOverlapStat
 
 AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks'])
 
-class HBCongloMethod(ManyVsManyMethod):
+class HyperBrowser(ManyVsManyMethod):
 
     def __init__(self):
         self._parsedResults = None
@@ -24,7 +24,7 @@ class HBCongloMethod(ManyVsManyMethod):
         self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
         self._analyses = OrderedDict()
         self._results = None
-        self._params = "Conglo Params not supported in HBCongloMethod"
+        self._params = "Conglo Params not supported in HyperBrowser"
         self._trackTitleMappings = {}
 
 

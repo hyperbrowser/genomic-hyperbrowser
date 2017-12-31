@@ -22,12 +22,12 @@ from gold.gsuite.GSuite import GSuite
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from quick.congloproto.HBCongloMethod import HBCongloMethod
+from quick.congloproto.HBCongloMethod import HyperBrowser
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA, HBCongloMethod]
-#[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HBCongloMethod]
+ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA, HyperBrowser]
+#[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
 #debug3
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
