@@ -553,7 +553,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
-            return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
+            #return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
+            [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
 
     @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
@@ -1008,11 +1009,15 @@ class CongloProtoTool(GeneralGuiTool):
         if choices.restrictRegions in [cls.WHOLE_GENOME,None]:
             restrictRegions = None
         else:
-            fn = ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload)
+            if choices.restrictedRegionFileUpload in [None,'',[]]:
+                fn = None
+            else:
+                fn = ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload)
+
             if choices.restrictRegions == cls.EXCLUDE_SUPPLIED_BY_THE_USER:
                 restrictRegions = RestrictedThroughExclusion(fn)
             if choices.restrictRegions == cls.EXPLICIT_NEGATIVE_SET:
-                raise
+                restrictRegions = RestrictedThroughInclusion(fn)
         selections['setRestrictedAnalysisUniverse'] = [('setRestrictedAnalysisUniverse', restrictRegions)]
         # import PRESERVE_HETEROGENEITY_AS_NEIGHBORHOOD ... from conglo..
         # if choices.localHandler == None:
