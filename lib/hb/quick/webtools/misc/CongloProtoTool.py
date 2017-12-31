@@ -10,7 +10,7 @@ import pkg_resources
 from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
 from conglomerate.methods.giggle.giggle import Giggle
 from conglomerate.methods.interface import ColocMeasureOverlap, RestrictedAnalysisUniverse, RestrictedThroughExclusion, \
-    RestrictedThroughInclusion
+    RestrictedThroughInclusion, ColocMeasureProximity
 from conglomerate.tools.job import Job
 
 from conglomerate.methods.stereogene.stereogene import StereoGene
@@ -521,16 +521,18 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxDistanceCoordinate(cls, prevChoices):
-        if prevChoices.teststatType and prevChoices.teststatType[cls.DISTANCE]:
-            return OrderedDict([(cls.START_COORDINATE, False), (cls.MIDPOINT, False),(cls.CLOSEST_COORDINATE, False)])
+        return None
+        # if prevChoices.teststatType and prevChoices.teststatType[cls.DISTANCE]:
+        #     return OrderedDict([(cls.START_COORDINATE, False), (cls.MIDPOINT, False),(cls.CLOSEST_COORDINATE, False)])
 
     AVERAGE_LOG_DISTANCE = 'average log distance'
     ABSOLUTE_DISTANCE = 'absolute distance'
 
     @classmethod
     def getOptionsBoxDistanceType(cls, prevChoices):
-        if prevChoices.distanceCoordinate and any(prevChoices.distanceCoordinate.values()):
-            return OrderedDict([(cls.ABSOLUTE_DISTANCE, False), (cls.AVERAGE_LOG_DISTANCE, False)])
+        return None
+        # if prevChoices.distanceCoordinate and any(prevChoices.distanceCoordinate.values()):
+        #     return OrderedDict([(cls.ABSOLUTE_DISTANCE, False), (cls.AVERAGE_LOG_DISTANCE, False)])
 
     @classmethod
     def getOptionsBoxCorrelation(cls, prevChoices):
@@ -543,8 +545,9 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxAllowOverlaps(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.selectRunningMode == cls.ADVANCED:
-            return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
+        return None
+        # if prevChoices.selectRunningMode == cls.ADVANCED:
+        #     return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
 
 
     @classmethod
@@ -752,12 +755,23 @@ class CongloProtoTool(GeneralGuiTool):
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
         print '<h2>Results for each dataset and tool configuration</h2>'
         print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
+
         try:
-            rankTableHtmlStr = str(cls.createRankTable(keptWmos, keysWithVariation))
+            pvalTableHtmlStr = str(cls.createRankTable(keptWmos, keysWithVariation))
             print '<h2>Ranking of reference datasets by degree of co-localization according to each tool</h2>'
-            print rankTableHtmlStr
+            print pvalTableHtmlStr
         except:
             print "Error creating rank table"
+            if VERBOSE_RUNNING:
+                import traceback
+                traceback.print_exc()
+
+        try:
+            pvalTableHtmlStr = str(cls.createPvalTable(keptWmos, keysWithVariation))
+            print '<h2>P-value of co-localization enrichment for each reference track and tool</h2>'
+            print pvalTableHtmlStr
+        except:
+            print "Error creating P-value table"
             if VERBOSE_RUNNING:
                 import traceback
                 traceback.print_exc()
@@ -819,6 +833,32 @@ class CongloProtoTool(GeneralGuiTool):
                 nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if wmoLabel in rankTableDict[trackName]]
                 meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
                 core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
+            core.tableFooter()
+        return core
+
+    @classmethod
+    def createPvalTable(cls, keptWmos, keysWithVariation):
+        tableDict = defaultdict(dict)
+        for i, wmo in enumerate(keptWmos):
+            if not wmo.ranSuccessfully():
+                continue
+
+            wmoLabel = wmo._methodCls.__name__
+            allValues = wmo.getPValue()
+            trackValueItems = [(trackCombination[1].split('/')[-1], allValues[trackCombination]) \
+                      for trackCombination in allValues.keys()]
+            for trackName, val in trackValueItems:
+                tableDict[trackName][wmoLabel] = val
+
+        core = HtmlCore()
+        if len(tableDict) > 1:  # More than 1 ref track
+            allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
+            core.tableHeader([' '] + allWmoLabels, sortable=True)
+            for trackName in tableDict:
+                valuesInRow = [tableDict[trackName][wmoLabel] if wmoLabel in tableDict[trackName] else 'N/A'\
+                              for wmoLabel in allWmoLabels]
+
+                core.tableLine([trackName] + [str(x) for x in valuesInRow])
             core.tableFooter()
         return core
 
@@ -985,31 +1025,44 @@ class CongloProtoTool(GeneralGuiTool):
         # selections['setHeterogeneityPreservation'] = hetero
         # CHECKBOXES
         choiceValueMappings = OrderedDict()
-        selectionMapping = {'allowOverlaps': 'setAllowOverlaps',
-                            'clumping': 'preserveClumping'}
+        selectionMapping = {'clumping': 'preserveClumping'}
+                            # 'allowOverlaps': 'setAllowOverlaps',
                             #'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
         # TestStat
-        distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]] \
-                            if choices.distanceCoordinate is not None else []
-        distTypeSelected = [key for key in choices.distanceType if choices.distanceType[key]] \
-                            if choices.distanceType is not None else[]
-        fullDistSpecs = product(distCoordSelected, distTypeSelected)
-        encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
+        # distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]] \
+        #                     if choices.distanceCoordinate is not None else []
+        # distTypeSelected = [key for key in choices.distanceType if choices.distanceType[key]] \
+        #                     if choices.distanceType is not None else[]
+        # fullDistSpecs = product(distCoordSelected, distTypeSelected)
+        # encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
+        if choices.teststatType is not None and choices.teststatType[cls.DISTANCE]==True:
+            encodedDistSpecs = [ColocMeasureProximity(None,None)]
+        else:
+            encodedDistSpecs = []
+
         tsMapping = {cls.COUNTS : ColocMeasureOverlap(False, True,0,0),
                                 cls.BASES : ColocMeasureOverlap(False, False,0,0)}
         overlapSpecs = [tsMapping[key] for key in choices.overlapMeasure if choices.overlapMeasure[key]] \
                         if choices.overlapMeasure is not None else []
 
-        correlationSpecs = [key for key in choices.correlation if choices.correlation[key]] \
-                            if choices.correlation is not None else[]
+        # correlationSpecs = [key for key in choices.correlation if choices.correlation[key]] \
+        #                     if choices.correlation is not None else[]
+        if choices.teststatType is not None and choices.teststatType[cls.CORRELATION]==True:
+            correlationSpecs = [ColocMeasureCorrelation(None)]
+        else:
+            correlationSpecs = []
+
+
         allTsSpecs = encodedDistSpecs + overlapSpecs + correlationSpecs
         selections['setColocMeasure'] = zip(['setColocMeasure'] * len(allTsSpecs), allTsSpecs)
         # distCoordSelections = cls.getSelectionsFromCheckboxParam(distCoordChoiceValueMapping, choices, 'distanceCoordinate', 'distCoord')
         # distCoordSelections = cls.getSelectionsFromCheckboxParam(distCoordChoiceValueMapping, choices, 'distanceType', 'distType')
-        if choices.allowOverlaps and choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
-            raise
-        else:
-            choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
+
+        # if choices.allowOverlaps and choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
+        #     raise
+        # else:
+        #     choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
+
         choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
         #choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
         for guiKey, selectionKey in selectionMapping.items():
