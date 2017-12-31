@@ -559,7 +559,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
         if prevChoices.restrictRegions in [cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]:
-            return '__history__'
+            return ('__history__','bed')
 
 
     @classmethod
