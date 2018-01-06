@@ -22,8 +22,11 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select covariance value  (eg. 0.2,0.3)', 'covValue'),
-                ('Select values for mean (eg. 0.5,0.6)', 'meanValue'),
+        return [('covChosen (eg. 0.2)', 'covValue'),
+                ('mu first (eg. 0.5)', 'meanValueFirst'),
+                ('mu second (eg. 0.5)', 'meanValueSecond'),
+                ('Sigma[1,1]', 'sigmaFirst'),
+                ('Sigma[2,2]', 'sigmaSecond'),
                 ('Select genome', 'genome'),
                 ] + cls.getInputBoxNamesForUserBinSelection()
 
@@ -32,7 +35,19 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
         return ''
 
     @classmethod
-    def getOptionsBoxMeanValue(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxMeanValueFirst(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ''
+
+    @classmethod
+    def getOptionsBoxMeanValueSecond(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ''
+
+    @classmethod
+    def getOptionsBoxSigmaFirst(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ''
+
+    @classmethod
+    def getOptionsBoxSigmaSecond(cls, prevChoices):  # Alt: getOptionsBox2()
         return ''
 
     @classmethod
@@ -42,58 +57,45 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        covValue = choices.covValue.encode('utf-8').replace(' ', '').split(',')
-        meanValue = choices.meanValue.encode('utf-8').replace(' ', '').split(',')
+        covValue = float(choices.covValue)
+        meanValueFirst = float(choices.meanValueFirst)
+        meanValueSecond = float(choices.meanValueSecond)
+        sigmaFirst = float(choices.sigmaFirst)
+        sigmaSecond = float(choices.sigmaSecond)
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         parsedRegSpec = cls._readRegSpec(regSpec)
 
         outGSuite = GSuite()
-        for iCov, cov in enumerate(covValue):
 
-            fileName = 'syn-cov' + str(cov) + '-' + str(meanValue[iCov]) + '-iter-' + str(iCov)
+        for chromosome in parsedRegSpec.keys():
 
-            attr = OrderedDict()
-            attr['mean'] = str(meanValue[iCov])
-            attr['cov'] = str(cov)
+            for prs in parsedRegSpec[chromosome]:
+                elementsNumber = int(prs[1]) - int(prs[0])
 
-            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                extraFileName=fileName,
-                                                suffix='gtrack')
 
-            gSuiteTrack = GSuiteTrack(uri)
-            outFn = gSuiteTrack.path
-            ensurePathExists(outFn)
+                rCode = """library(MASS)
+                createTrack <- function (vec) {
+                covChosen <- vec[1]
+                mu <- vec[2:3]
+                Sigma <- matrix(covChosen, nrow=2, ncol=2)
+                Sigma[1,1] <- vec[5]
+                Sigma[2,2] <- vec[6]
+                rawVars <- mvrnorm(n=vec[4], mu=mu, Sigma=Sigma)
+                return (rawVars)
+                }
+                        """
+                dd=robjects.FloatVector([covValue, meanValueFirst, meanValueSecond, elementsNumber, sigmaFirst, sigmaSecond])
+                data = r(rCode)(dd)
 
-            countData = "##Track type: function" + '\n'
-            countData += '###value' + '\n'
+                listA, listB = cls._splitList(list(data))
 
-            for chromosome in parsedRegSpec.keys():
+                cls._addTrackToGsuite(chromosome, prs, covValue, sigmaFirst, sigmaSecond, meanValueFirst, meanValueSecond, 1, galaxyFn, listA, outGSuite,
+                              choices.genome)
 
-                for prs in parsedRegSpec[chromosome]:
-                    elementsNumber = int(prs[1]) - int(prs[0])
-
-                    countData += ';'.join(['####genome=' + str(choices.genome), 'seqid=' + str(chromosome),'start=' + str(str(prs[0])),'end=' + str(str(prs[1]))]) + '\n'
-
-                    rCode = """ 
-                                library(MASS)
-                                createTrack <- 
-                                function(vec) {
-                                    covChosen <- vec[1]
-                                    mu <- vec[2]
-                                    Sigma <- matrix(covChosen, nrow=1, ncol=1)
-                                    rawvars <- mvrnorm(n=vec[3], mu=mu, Sigma=Sigma)
-                                }"""
-                    dd=robjects.FloatVector([covValue[iCov], meanValue[iCov], elementsNumber])
-                    data = r(rCode)(dd)
-
-                    countData += '\n'.join([str(d) for d in list(data)]) + '\n'
-
-            writeFile = open(outFn, 'w')
-            writeFile.write(countData)
-            writeFile.close()
-
-            outGSuite.addTrack(GSuiteTrack(uri, title=''.join(fileName), genome=choices.genome, attributes=attr))
+                cls._addTrackToGsuite(chromosome, prs, covValue, sigmaFirst, sigmaSecond, meanValueFirst, meanValueSecond, 2, galaxyFn,
+                                  listB, outGSuite,
+                                  choices.genome)
 
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output simulated gSuite'])
         print 'Counted gSuite is in the history'
@@ -101,6 +103,49 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     @classmethod
     def getExtraHistElements(cls, choices):
         return [HistElement('output simulated gSuite', 'gsuite')]
+
+
+    @classmethod
+    def _addTrackToGsuite(cls, chromosome, prs, cov, sigmaFirst, sigmaSecond, meanValueFirst, meanValueSecond, iCov, galaxyFn, data, outGSuite, genome):
+
+        fileName = 'syn-' + str(cov) + 'sigma' + str(sigmaFirst) + '-' + str(sigmaSecond) + '-mean' + str(meanValueFirst) + '-' + str(meanValueSecond) + '-iter-' + str(iCov)
+
+        attr = OrderedDict()
+        attr['cov'] = str(cov)
+        attr['meanFirst'] = str(meanValueFirst)
+        attr['meanSecond'] = str(meanValueSecond)
+        attr['sigmaFirst'] = str(sigmaFirst)
+        attr['sigmaSecond'] = str(sigmaSecond)
+        attr['iter'] = str(iCov)
+
+        uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                            extraFileName=fileName,
+                                            suffix='gtrack')
+
+        gSuiteTrack = GSuiteTrack(uri)
+        outFn = gSuiteTrack.path
+        ensurePathExists(outFn)
+
+        countData = "##Track type: function" + '\n'
+        countData += '###value' + '\n'
+
+        countData += ';'.join(['####genome=' + str(genome), 'seqid=' + str(chromosome),
+                               'start=' + str(str(prs[0])), 'end=' + str(str(prs[1]))]) + '\n'
+
+        countData += '\n'.join([str(d) for d in list(data)]) + '\n'
+
+        writeFile = open(outFn, 'w')
+        writeFile.write(countData)
+        writeFile.close()
+
+        outGSuite.addTrack(
+            GSuiteTrack(uri, title=''.join(fileName), genome=genome, attributes=attr))
+
+
+    @classmethod
+    def _splitList(cls, a_list):
+        half = len(a_list) / 2
+        return a_list[:half], a_list[half:]
 
     @classmethod
     def _readRegSpec(cls, parameters):
