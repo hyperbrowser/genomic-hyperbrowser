@@ -34,6 +34,14 @@ PAIRWISE_STAT_LABELS = PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING.keys()
 SUMMARY_FUNCTIONS_MAPPER = OrderedDict([('average', 'avg'), ('maximum', 'max'), ('minimum', 'min')])
 SUMMARY_FUNCTIONS_LABELS = SUMMARY_FUNCTIONS_MAPPER.keys()
 
+PAIRWISE_RAND_CLS_MAPPING = OrderedDict(
+    [
+        ("Preserve elements of T2 and inter-element distances of T1; randomize positions (T1) (MC)", "PermutedSegsAndIntersegsTrack_"),
+        ("Preserve elements of T2 and number of elements of T1; randomize positions (T1) (MC)", "PermutedSegsAndSampledIntersegsTrack_"),
+        ("Preserve elements of T1 and inter-element distances of T2; randomize positions (T2) (MC)", "_PermutedSegsAndIntersegsTrack"),
+        ("Preserve elements of T1 and number of points of T2; randomize positions (T2) (MC)", "_PermutedSegsAndSampledIntersegsTrack"),
+     ]
+)
 
 def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None):
     '''
