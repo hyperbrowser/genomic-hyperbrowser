@@ -98,6 +98,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
              ('Select the randomization strategy', 'randStrat'),
+             ('Select an intensity track', 'intensityTrack'),
              ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
             cls.getInputBoxNamesForAttributesSelection() + \
             cls.getInputBoxNamesForUserBinSelection() + \
@@ -224,6 +225,13 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             '''
 
     @classmethod
+    def getOptionsBoxIntensityTrack(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
+                prevChoices.randStrat in ["Preserve elements of T2 and number of elements of T1; randomize positions (T1) according to an intensity track",
+                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) according to an intensity track"]:
+            return GeneralGuiTool.getHistorySelectionElement()
+
+    @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
         if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
             analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$'])
@@ -336,6 +344,12 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
                                                                                      printErrors=False,
                                                                                      printProgress=False)
+        if choices.intensityTrack:
+            intensityTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.intensityTrack,
+                                                                                     printErrors=False,
+                                                                                     printProgress=False)
+        else:
+            intensityTrackNameAsList = None
         analysisQuestion = choices.analysisQName
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
@@ -377,7 +391,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core = cls.generateQ1output(additionalResultsDict, analysisQuestion, choices, galaxyFn, gsPerTrackResults,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
-            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles, randStrat)
+            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles, randStrat,
+                                         intensityTrackNameAsList)
 
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
@@ -439,7 +454,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ2(cls, choices, similarityStatClassName, trackTitles, randStrat):
+    def prepareQ2(cls, choices, similarityStatClassName, trackTitles, randStrat, intensityTrackNameAsList=[]):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES[
@@ -454,6 +469,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('tail', 'more')
         analysisSpec.addParameter('trackTitles', trackTitles)
         analysisSpec.addParameter('queryTracksNum', str(1))
+        if intensityTrackNameAsList:
+            analysisSpec.addParameter('trackNameIntesity', '|'.join(intensityTrackNameAsList))
         return analysisSpec
 
     @classmethod

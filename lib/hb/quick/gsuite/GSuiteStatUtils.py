@@ -39,7 +39,9 @@ PAIRWISE_RAND_CLS_MAPPING = OrderedDict(
         ("Preserve elements of T2 and inter-element distances of T1; randomize positions (T1) (MC)", "PermutedSegsAndIntersegsTrack_"),
         ("Preserve elements of T2 and number of elements of T1; randomize positions (T1) (MC)", "PermutedSegsAndSampledIntersegsTrack_"),
         ("Preserve elements of T1 and inter-element distances of T2; randomize positions (T2) (MC)", "_PermutedSegsAndIntersegsTrack"),
-        ("Preserve elements of T1 and number of points of T2; randomize positions (T2) (MC)", "_PermutedSegsAndSampledIntersegsTrack"),
+        ("Preserve elements of T1 and number of elements of T2; randomize positions (T2) (MC)", "_PermutedSegsAndSampledIntersegsTrack"),
+        ("Preserve elements of T2 and number of elements of T1; randomize positions (T1) according to an intensity track", "SegsSampledByIntensityTrack_"),
+        ("Preserve elements of T1 and number of elements of T2; randomize positions (T2) according to an intensity track", "_SegsSampledByIntensityTrack")
      ]
 )
 
