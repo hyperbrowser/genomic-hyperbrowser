@@ -71,8 +71,11 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
 
     def _createRandomizedStat(self, i):
         # Refactor the first argument after a better track input handling is in place..
-        randomizedTrackStructure = self._trackStructure
-        randomizedTrackStructure['reference'] = randomizedTrackStructure['reference'].getRandomizedVersion(self._tvProviderClass, False,i)  # TODO: Handle AllowOverlaps
+        if 'reference' in self._trackStructure:
+            randomizedTrackStructure = self._trackStructure
+            randomizedTrackStructure['reference'] = randomizedTrackStructure['reference'].getRandomizedVersion(self._tvProviderClass, False,i)  # TODO: Handle AllowOverlaps
+        else:
+            randomizedTrackStructure = self._trackStructure.getRandomizedVersion(self._tvProviderClass, False,i)
         return self._rawStatistic(self._region, randomizedTrackStructure, **self._kwArgs)
         # return createRandomizedTrackStructureStat(self._trackStructure, self._randTrackStructureClassDict, self._rawStatistic, self._region, self._kwArgs, i)
 

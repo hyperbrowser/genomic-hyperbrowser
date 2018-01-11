@@ -398,7 +398,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def prepareQ2TrackStructure(cls, queryTS, refTS, randType, randAlg, analysisBins, excludedTs):
         q2TS = TrackStructureV2()
         randQueryTS = queryTS
-        randRefTS = refTS.getRandomizedVersion( RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg], binSource=analysisBins, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
+        randRefTS = refTS.getRandomizedVersion(
+            RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg],
+            binSource=analysisBins, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
         hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
         for hypothesisKey in hypothesisKeyList:
             realTS = TrackStructureV2()
