@@ -676,5 +676,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
+        analysisSpec.addParameter('runLocalAnalysis', 'No')
         return analysisSpec
 
