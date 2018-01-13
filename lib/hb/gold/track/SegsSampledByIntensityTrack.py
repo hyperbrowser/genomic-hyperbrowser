@@ -11,7 +11,6 @@ class SegsSampledByIntensityTrack(RandomizedTrack):
     WORKS_WITH_MINIMAL = False
 
     def __init__(self, origTrack, origRegion, randIndex, trackNameIntensity="", **kwArgs):
-        #print 'INTENSITY TRACK IS USED: ',trackNameIntensity
         #from gold.util.CommonFunctions import isIter
         #from gold.util.CustomExceptions import SplittableStatNotAvailableError
         #if isIter(origRegion):

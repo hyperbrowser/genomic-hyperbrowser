@@ -228,7 +228,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxIntensityTrack(cls, prevChoices):
         if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
                 prevChoices.randStrat in ["Preserve elements of T2 and number of elements of T1; randomize positions (T1) according to an intensity track",
-                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) according to an intensity track"]:
+                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) according to an intensity track",
+                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) among locations provided in a universe track",
+                                          "Preserve elements of T2 and number of elements of T1; randomize positions (T1) among locations provided in a universe track"]:
             return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
@@ -354,7 +356,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
         reverse = 'Yes' if choices.reversed else 'No'
-        randStrat = 'PermutedSegsAndIntersegsTrack_' if choices.isBasic else GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING[choices.randStrat]
+        if analysisQuestion in [cls.Q2, cls.Q3]:
+            randStrat = 'PermutedSegsAndIntersegsTrack_' if choices.isBasic else GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING[choices.randStrat]
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
@@ -470,7 +473,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('trackTitles', trackTitles)
         analysisSpec.addParameter('queryTracksNum', str(1))
         if intensityTrackNameAsList:
-            analysisSpec.addParameter('trackNameIntesity', '|'.join(intensityTrackNameAsList))
+            analysisSpec.addParameter('trackNameIntensity', '|'.join(intensityTrackNameAsList))
         return analysisSpec
 
     @classmethod
