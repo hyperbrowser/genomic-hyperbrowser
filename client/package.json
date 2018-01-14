@@ -23,6 +23,7 @@
     "handlebars": "^4.0.4",
     "handlebars-loader": "^1.1.4",
     "i18n-webpack-plugin": "^0.2.7",
+    "readable-stream": "^2.3.3",
     "webpack": "^1.10.1",
     "webpack-dev-server": "^1.7.0"
   }
