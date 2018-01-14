@@ -129,3 +129,6 @@ doc/build
 .idea
 .stversions
 .stfolder
+.stglobalignore
+.stignore
+.syncthing*
