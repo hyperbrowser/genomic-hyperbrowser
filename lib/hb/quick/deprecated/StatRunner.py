@@ -251,7 +251,7 @@ class AnalysisDefJob(StatJob):
 
     def __init__(self, analysisDef, trackName1, trackName2, userBinSource,
                  genome=None, galaxyFn=None, *args, **kwArgs):
-        from gold.description.Analysis import Analysis
+        from quick.deprecated.Analysis import Analysis
 
         #  to be removed later.. Just for convenience with development now..
         self._analysisDef = analysisDef

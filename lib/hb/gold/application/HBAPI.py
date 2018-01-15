@@ -1,16 +1,23 @@
-#For doAnalysis
+# For doAnalysis
 import collections
 from urllib import quote
-
 from gold.application.StatRunner import StatJob
 
-#For getTrackData
-from gold.track.Track import Track
+# For getTrackData
+from gold.origdata.GESourceWrapper import GESourceWrapper
+from gold.track.Track import Track, PlainTrack
+from gold.track.GenomeRegion import GenomeRegion
 
-#Include these in this name space, to allow them to be imported from this API module
+# Include these in this name space, to allow them to be imported from this API module
 from gold.track.TrackStructure import TrackStructureV2
+from quick.application.UserBinSource import RegionIter, GlobalBinSource, \
+    BinSource
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
+from gold.gsuite.GSuite import GSuite
+from collections import OrderedDict
 from quick.application.SignatureDevianceLogging import takes
+from gold.result import Results
+from gold.application import GSuiteAPI
 from quick.deprecated.StatRunner import AnalysisDefJob
 from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings, wrapClass
 
