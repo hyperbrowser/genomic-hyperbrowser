@@ -18,7 +18,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     @classmethod
     def getToolName(cls):
-        return "Create gSuite from two binomal distributions"
+        return "Create gSuite from subsetting using binomial distribution"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -95,10 +95,12 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
 
             for nr in range(0, number):
+                print 'nr', nr, '<br>', '<br>', '<br>'
                 for f in firstProb:
                     for s in secondProb:
                         dataset = cls._countAllForRequal01(datasetPerChromosome, gtrackData, f,
                                                            s, number)
+                        print 'dataset', dataset, '<br>', '<br>', '<br>'
                         if len(dataset) > 0:
                             cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
                                             nr, f, s)
@@ -145,9 +147,11 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             allPossibilitiesWith0 = [x for x in allPossibilitiesWith0 if
                                      x not in datasetPerChromosome[chr]]
 
+            print 'chr', chr, '<br>', '<br>', '<br>'
 
             allPossibilitiesWith1BinomalDistribution = cls._countBinomalDistribution(
                 n=len(allPossibilitiesWith1), size=1, prob=firstProb)
+
             allPossibilitiesWith0BinomalDistribution = cls._countBinomalDistribution(
                 n=len(allPossibilitiesWith0), size=1, prob=secondProb, reverse = True)
 
@@ -165,8 +169,9 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
     @classmethod
     def _selectChoiceWith1(cls, chr, allPossibilitiesWithOptionBinomalDistribution,
-                           allPossibilitiesWithOption, finalList):
+                       allPossibilitiesWithOption, finalList):
 
+        print 'allPossibilitiesWithOptionBinomalDistribution', allPossibilitiesWithOptionBinomalDistribution, '<br>', '<br>', '<br>'
 
         for i, elI in enumerate(allPossibilitiesWithOptionBinomalDistribution):
 
@@ -200,6 +205,8 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
     def _countBinomalDistribution(cls, n, size, prob, reverse = False):
         from proto.RSetup import r
 
+        print 'parameters:', [n, size, prob], '<br>', '<br>'
+
         rCode = 'countBinomalDist <- function(vec) {' \
                 'rbinom(n=vec[1], size=vec[2], prob=vec[3])' \
                 '}'
@@ -207,11 +214,15 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             [n, size, prob])
         output = r(rCode)(dd)
 
+        print 'output', output, 'len<b>', output.size, '</b><br>', '<br>'
 
         if reverse == True:
             output = [1 if x == 0 else 0 for x in list(output)]
         else:
-            output = list(output)
+            if output.size == 1:
+                output = [output]
+            else:
+                output = list(output)
 
         return output
 
