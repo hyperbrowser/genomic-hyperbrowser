@@ -3,7 +3,8 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="welcome_project.css">
     <meta charset='UTF-8'>
     <title>Assembly gaps</title>
@@ -26,17 +27,27 @@
                         <div class = 'project'>
                             <div class = 'projectDesc'>
                                 <p class="paragraph">
-                                    Background The difficulties associated with sequencing and assembling some regions of the DNA sequence result in gaps in the reference genomes that are typically represented as stretches of NNNNs. Although the presence of assembly gaps causes slight reduction in the mapping rate in many experimental settings, that does not invalidate the typical statistical testing comparing read count distributions across experimental conditions. However, we hypothesize that the presence of assembly gaps and not handling them in the null model confounds the statistical testing of co-localization of genomic features.</p><p class="paragraph">Results First, we performed a series of explorative analyses to understand whether and how the public genomic tracks intersect the assembly gaps track (hg19). The findings rightly confirm that the genomic regions in public genomic tracks intersect very little with assembly gaps and the intersection was observed only at the beginning and end regions of the assembly gaps rather than covering the whole gap sizes. Further, we simulated a set of the query and reference genomic tracks in a way that nullified any dependence between them to test our hypothesis that not avoiding assembly gaps in the null model would result in spurious inflation of statistical significance. We then contrasted the distributions of test statistics and p-values of Monte Carlo simulation-based permutation tests that either avoided or not avoided assembly gaps in the null model when testing for significant co-localization between a pair of query and reference track. We observed that the statistical tests that did not account for the assembly gaps in the null model resulted in a distribution of p-values that are highly skewed to the left (more significant findings) and a distribution of increased test statistic that is shifted to the right.
+                                    <div><b>Background</b></div>
+                                    The difficulties associated with sequencing and assembling some regions of the DNA sequence result in gaps in the reference genomes that are typically represented as stretches of Ns. Although the presence of assembly gaps causes slight reduction in the mapping rate in many experimental settings, that does not invalidate the typical statistical testing comparing read count distributions across experimental conditions. However, we hypothesize that not handling assembly gaps in the null model may confound statistical testing of co-localization of genomic features.
                                 </p>
                                 <p class="paragraph">
-                                    Conclusions These observations confirm our hypothesis that not accounting for assembly gaps in statistical testing of co-localization analysis would result in false-positive and over-optimistic findings.
+                                    <div><b>Results</b></div>
+                                    First, we performed a series of <b>explorative analyses</b> to understand whether and how the public genomic tracks intersect the assembly gaps track (hg19).
+                                    The findings rightly confirm that the genomic regions in public genomic tracks intersect very little with assembly gaps and the intersection was observed only at the beginning and end regions of the assembly gaps rather than covering the whole gap sizes.
+                                    Further, we simulated a set of query and reference genomic tracks in a way that nullified any dependence between them to test our hypothesis that not avoiding assembly gaps in the null model would result in spurious inflation of statistical significance.
+                                We then <b>contrasted the distributions of test statistics and p-values of Monte Carlo simulation-based permutation tests that either avoided or not avoided assembly gaps in the null model when testing for significant co-localization between a pair of query and reference tracks</b>.
+                                    We observed that the statistical tests that did not account for the assembly gaps in the null model resulted in a distribution of p-values that is shifted to the left (leading to inflated significance) and a distribution of the test statistic that is shifted to the right.
                                 </p>
                                 <p class="paragraph">
-                                    To read more about rainfall plot go to: TO BE WRITTEN LATER.
+                                    <div><b>Conclusion</b></div>
+                                    Our results confirm that not accounting for assembly gaps in statistical testing of co-localization analysis leads to false positives and over-optimistic findings.
                                 </p>
-                                <p class="paragraph">https://hyperbrowser.uio.no/assemblygaps/u/hb-superuser/p/assembly-gaps
+                                <p class="paragraph">
+                                    To read more about <b>'Mind your gaps: Overlooking of assembly gaps confounds statistical testing in genome analysis'</b> go to: TO BE WRITTEN LATER.
+                                </p>
+                                <!-- <p class="paragraph">https://hyperbrowser.uio.no/assemblygaps/u/hb-superuser/p/assembly-gaps
                                 To see all examples from above paper <a href="../u/hb-superuser/p/assembly-gaps">click here</a>..
-                                </p>
+                                </p> -->
                             </div>
                         </div>
                     </div>
