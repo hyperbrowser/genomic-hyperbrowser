@@ -246,27 +246,36 @@ class UserBinMixin(object):
         if hasattr(choices, 'genome'):
             return choices.genome
         else:
-            genomes = set(getGSuiteFromGalaxyTN(getattr(choices, key)).genome for key in
-                          cls.GSUITE_FILE_OPTIONS_BOX_KEYS if hasattr(choices, key))
-            if len(genomes) == 1:
-                genome = genomes.pop()
-                if genome:
-                    return genome
+            gsuites = cls._getAllSelectedGsuites(choices)
 
-            raise ShouldNotOccurError(
-                'Subclass of UserBinMixin needs to override the cls._getGenome method')
+            if len(gsuites) > 0:
+                genomes = set(gsuite.genome for gsuite in gsuites)
+
+                if len(genomes) == 1:
+                    genome = genomes.pop()
+                    if genome:
+                        return genome
+
+                raise ShouldNotOccurError(
+                    'Genome information is not provided in the selected genomes. '
+                    'Subclass of UserBinMixin should add a genome choice box using GenomeMixin, '
+                    'or override the cls._getGenome method')
 
     @classmethod
     def _getTrackNameList(cls, choices):
         trackNameList = []
-        gsuites = [getGSuiteFromGalaxyTN(getattr(choices, key)) for key in
-                   cls.GSUITE_FILE_OPTIONS_BOX_KEYS if
-                   hasattr(choices, key) and getattr(choices, key)]
+        gsuites = cls._getAllSelectedGsuites(choices)
 
         for gsuite in gsuites:
             trackNameList += [track.trackName for track in gsuite.allTracks()]
 
         return trackNameList
+
+    @classmethod
+    def _getAllSelectedGsuites(cls, choices):
+        return [getGSuiteFromGalaxyTN(getattr(choices, key)) for key in
+                cls.GSUITE_FILE_OPTIONS_BOX_KEYS if
+                hasattr(choices, key) and getattr(choices, key)]
 
 
 class UserBinMixinForDescriptiveStats(UserBinMixin):
