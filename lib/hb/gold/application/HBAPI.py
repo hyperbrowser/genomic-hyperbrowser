@@ -1,6 +1,8 @@
 #For doAnalysis
 import collections
-from gold.application.StatRunner import AnalysisDefJob, StatJob
+from urllib import quote
+
+from gold.application.StatRunner import StatJob
 
 #For getTrackData
 from gold.track.Track import Track
@@ -8,13 +10,13 @@ from gold.track.Track import Track
 #Include these in this name space, to allow them to be imported from this API module
 from gold.track.TrackStructure import TrackStructureV2
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
-from gold.gsuite.GSuite import GSuite
-from collections import OrderedDict
 from quick.application.SignatureDevianceLogging import takes
-from gold.application import GSuiteAPI
+from quick.deprecated.StatRunner import AnalysisDefJob
 from quick.util.CommonFunctions import silenceRWarnings, silenceNumpyWarnings, wrapClass
 
-@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable, TrackStructureV2)
+
+@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable,
+       (TrackStructureV2, tuple, list))
 def doAnalysis(analysisSpec, analysisBins, trackStructure):
     '''Performs an analysis,
     as specified by analysisSpec object,
@@ -37,25 +39,27 @@ def doAnalysis(analysisSpec, analysisBins, trackStructure):
     silenceRWarnings()
     silenceNumpyWarnings()
 
-    # # if isinstance(tracks, TrackStructure):
-    # #     pass
-    # if len(tracks) > 2:
-    #     from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
-    #     analysisSpec.addParameter(
-    #         'extraTracks',
-    #         MULTIPLE_EXTRA_TRACKS_SEPARATOR.join(
-    #             ['^'.join([quote(part) for part in x.trackName])
-    #              for x in tracks[2:]]
-    #         )
-    #     )
-    # job = AnalysisDefJob(analysisSpec.getDefAfterChoices(),
-    #                      tracks[0].trackName,
-    #                      tracks[1].trackName if len(tracks) > 1 else None,
-    #                      analysisBins, galaxyFn=None)
-    analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
-    statClass = analysisDef._statClassList[0]
-    validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True) )
-    job = StatJob(analysisBins, trackStructure, validStatClass)
+    if isinstance(trackStructure, TrackStructureV2):
+        analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
+        statClass = analysisDef._statClassList[0]
+        validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True))
+        job = StatJob(analysisBins, trackStructure, validStatClass)
+    else:
+        tracks = trackStructure
+        if len(tracks) > 2:
+            from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
+            analysisSpec.addParameter(
+                'extraTracks',
+                MULTIPLE_EXTRA_TRACKS_SEPARATOR.join(
+                    ['^'.join([quote(part) for part in x.trackName])
+                     for x in tracks[2:]]
+                )
+            )
+        job = AnalysisDefJob(analysisSpec.getDefAfterChoices(),
+                             tracks[0].trackName,
+                             tracks[1].trackName if len(tracks) > 1 else None,
+                             analysisBins, galaxyFn=None)
+
     res = job.run(printProgress=False)  # printProgress should be optional?
     return res
 
@@ -72,46 +76,3 @@ def getTrackData(track, region):
     trackView = getTrackData(track, region)
     '''
     return track.getTrackView(region)
-
-
-#@takes(list)
-#@returns(list(tuple))
-def getTrackCombinations(inputList):
-    '''inputList is a list of tracks and/or GSuites. The return value of the method is each product element of the given input elements.'''
-    expandedTrackList = [None] * len(inputList)
-    for index, trackListElement in enumerate(inputList):
-        if isinstance(trackListElement, GSuite):
-            expandedTrackList[index] = [Track(gSuiteTrack.trackName) for gSuiteTrack in trackListElement.allTracks()]
-        else:
-            expandedTrackList[index] = [Track(trackListElement)]
-
-    import itertools
-    trackCombinations = itertools.product(expandedTrackList)
-    return trackCombinations
-
-#@takes(AnalysisSpec, BinSource, list)
-#@returns(dict(tuple, Results))
-def doAnalysisSupportingGsuite(analysisSpec, analysisBins, tracks):
-    '''For each track combination (a tuple) run the given analysis.
-        Return a dictionary of results, where the key is the tuple of tracks involved in the single analysis,
-        and the value is the corresponding result'''
-    trackCombinations = getTrackCombinations(tracks)
-    results = OrderedDict()
-    for trackCombination in trackCombinations:
-        results[trackCombination] = doAnalysis(analysisSpec, analysisBins, trackCombination)
-    return results
-
-# @takes(AnalysisSpec, BinSource, GSuite)
-# @returns(dict(tuple, Results))
-def doAnalysisGSuitePairwise(analysisSpec, analysisBins, gSuite):
-    '''
-    For each pair of tracks in a GSuite run the analysis (analysisSpec).
-    Returns an OrderedDict where the key is a tuple of track titles, the value is a Results object.
-    '''
-    results = OrderedDict()
-    for trackPair in GSuiteAPI.generateAllTrackPairsInGSuite(gSuite):
-        tracks = [Track(t.trackName) for t in trackPair]
-        result = doAnalysis(analysisSpec, analysisBins, tracks)
-        results[(t.title for t in trackPair)] = result
-
-    return results
