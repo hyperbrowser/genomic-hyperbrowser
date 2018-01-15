@@ -7,7 +7,7 @@ from quick.application.SignatureDevianceLogging import takes
 from test.gold.track.common.SampleTrack import SampleTrack
 
 class PermutedSegsAndIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
-    def __init__(self, origTs, allowOverlaps, *args, **kwargs):
+    def __init__(self, origTs, allowOverlaps=False, **kwArgs):
         if allowOverlaps == True:
             raise NotSupportedError('Overlaps are not supported in this type of randomization')
         TsBasedRandomTrackViewProvider.__init__(self, origTs, False)

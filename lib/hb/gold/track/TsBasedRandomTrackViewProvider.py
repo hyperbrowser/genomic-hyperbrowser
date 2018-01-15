@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+
 from gold.origdata.GESourceWrapper import GESourceWrapper
 from gold.track.Track import Track
 from gold.util.CustomExceptions import AbstractClassError
@@ -10,24 +12,28 @@ NUMBER_OF_SEGMENTS = 'Number of segments'
 COVERAGE = 'Base pair coverage'
 
 class TsBasedRandomTrackViewProvider(object):
+    __metaclass__ = ABCMeta
+
+
+class TsBasedRandomTrackViewProvider(object):
     # @takes('TsBasedRandomTrackViewProvider', 'TrackStructureV2', one_of(None, GESourceWrapper, BinSource), one_of(None, 'TrackStructureV2'), bool)
-    def __init__(self, origTs, binSource=None, excludedTs=None,  allowOverlaps=False):
+    def __init__(self, origTs, binSource=None, excludedTs=None, allowOverlaps=False):
         # TODO: Remove binSource and excludedTs here and where the init is called
         self._origTs = origTs
         self._allowOverlaps = allowOverlaps
         self._excludedTs = excludedTs
         self._binSource = binSource
 
-
+    @abstractmethod
     @takes('TsBasedRandomTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):
-        raise AbstractClassError
+        pass
+
 
 class BetweenTrackRandomTvProvider(TsBasedRandomTrackViewProvider):
-    def __init__(self, *args, **kwArgs):
-        raise AbstractClassError
+    pass
+
 
 class WithinTrackRandomTvProvider(TsBasedRandomTrackViewProvider):
-    def __init__(self, *args, **kwArgs):
-        raise AbstractClassError
+    pass
 
