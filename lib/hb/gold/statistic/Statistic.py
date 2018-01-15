@@ -147,6 +147,10 @@ class Statistic(object):
         res = None
         with StatisticExceptionHandling(**self._kwArgs):
             res = self._compute()
+            # import os
+            # import psutil
+            # process = psutil.Process(os.getpid())
+            # print process.memory_info().rss
             if DebugConfig.VERBOSE:
                 logMessage('Result of statistic %s in region %s: %s' % (getClassName(self), self._region, res))
 

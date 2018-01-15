@@ -2,7 +2,7 @@
 class VirtualNumpyArray(object):
     def __init__(self):
         self._cachedNumpyArray = None
-        
+
     def cacheNumpyArray(self):
         self._cachedNumpyArray = self._asNumpyArray()
 
@@ -13,12 +13,12 @@ class VirtualNumpyArray(object):
 
 def _delegateMethod(cls, delegateCls, method_name):
     method = getattr(delegateCls, method_name)
-    
+
     def f(self, *args, **kwArgs):
         if self._cachedNumpyArray is None:
             self.cacheNumpyArray()
         return method(self._cachedNumpyArray, *args, **kwArgs)
-    
+
     f.func_name = method_name
     setattr(cls, method_name, f)
 
@@ -26,6 +26,13 @@ NDARRAY_SPECIAL_METHODS_TO_OVERRIDE = [
  '__abs__',
  '__add__',
  '__and__',
+ '__array__',
+ '__array_finalize__',
+ '__array_interface__',
+ '__array_prepare__',
+ '__array_priority__',
+ '__array_struct__',
+ '__array_wrap__',
  '__contains__',
  '__copy__',
  '__deepcopy__',
