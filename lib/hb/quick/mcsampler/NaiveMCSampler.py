@@ -28,6 +28,6 @@ class NaiveMCSampler(object):
                 **self._kwArgs).drawRandomResult())
 
     def getAllResults(self):
-        if self._rawStatistic is None:
+        if self._realResult is None:
             self.computeRealResult()
         return self._realResult, self._randResultList

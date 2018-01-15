@@ -51,7 +51,7 @@ class SmartMemmap(object):
         self._dtype = dtype
         self._mode = mode
         self._dTypeSize = numpy.dtype(dtype).itemsize
-        self._origShape = calcShape(self._fn, elementDim, dtypeDim, dtype)
+        self._origShape = list(calcShape(self._fn, elementDim, dtypeDim, dtype))
         self._cachedMemmapBinNum = None
         self._cachedMemmap = None
 

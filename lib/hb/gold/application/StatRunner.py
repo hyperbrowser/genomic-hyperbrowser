@@ -114,6 +114,11 @@ class StatJob(object):
         startLocal = time.time()
         
         while True:
+            stats = []
+            if hasattr(self._statClass, 'keywords'):
+                runLocal = self._statClass.keywords.get('runLocalAnalysis') if 'runLocalAnalysis' in self._statClass.keywords else None
+                if runLocal == "No":
+                    break
             stats = self._doLocalAnalysis(results, stats=[])
             #stats[0] is used to call class method
             if self._kwArgs.get('minimal') == True:
@@ -136,7 +141,7 @@ class StatJob(object):
         # self._progress.globalAnalysisStarted()
         # self._progress.printMessage('\nPerforming global analysis...')
         while True:
-            stat = self._doGlobalAnalysis(results, stats)
+            stat = self._doGlobalAnalysis(results, stats=None)
             if stat is None:                
                 break
             nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)

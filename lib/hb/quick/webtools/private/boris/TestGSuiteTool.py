@@ -1,8 +1,14 @@
+from config.DebugConfig import DebugConfig
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
-from gold.track.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.random.ExcludedSegmentsStorage import ExcludedSegmentsStorage
+from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
+    ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.trackstructure.random.TrackDataStorageRandAlgorithm import \
+    ShuffleElementsBetweenTracksAndBinsRandAlgorithm
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -10,11 +16,12 @@ from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatFacades import ObservedVsExpectedStat
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
+class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
         """
@@ -33,7 +40,8 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
             cls.getInputBoxNamesForGenomeSelection() + \
             [('Select excluded regions track', 'excludedRegions'),
             ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
-            cls.getInputBoxNamesForUserBinSelection()
+            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxGsuite():
@@ -56,6 +64,7 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
     def execute(cls, choices, galaxyFn=None, username=''):
 
         # DebugUtil.insertBreakPoint()
+        cls._setDebugModeIfSelected(choices)
 
         choices_queryTrack = choices.queryTrack
         choices_gsuite = choices.gsuite
@@ -81,10 +90,13 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         realTS["query"] = queryTS
         realTS["reference"] = refTS
         randQueryTS = queryTS
-        randRefTS = refTS.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider,
-                                               binSource=analysisBins,
-                                               excludedTs=excludedTs,
-                                               allowOverlaps=False, randIndex=0)
+        excludedSegments = ExcludedSegmentsStorage(excludedTS=excludedTs, binSource=analysisBins)
+        randAlg = ShuffleElementsBetweenTracksAndBinsRandAlgorithm(
+            False, excludedSegmentsStorage=excludedSegments)
+        randTvProvider = ShuffleElementsBetweenTracksAndBinsTvProvider(randAlgorithm=randAlg,
+                                                                       origTs=refTS,
+                                                                       binSource=analysisBins)
+        randRefTS = refTS._getRandomizedVersion(randTvProvider, 0)
         hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
         for hypothesisKey in hypothesisKeyList:
             realTS = TrackStructureV2()
@@ -98,7 +110,18 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
             hypothesisTS["rand"] = randTS
             ts[hypothesisKey] = hypothesisTS
         analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
-        result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
+        if DebugConfig.USE_PROFILING:
+            from gold.util.Profiler import Profiler
+            profiler = Profiler()
+            resDict = {}
+            profiler.run('resDict[0] = doAnalysis(analysisSpec, analysisBins, ts)', globals(), locals())
+            res = resDict[0]
+            result = res.getGlobalResult()['Result']
+            profiler.printStats()
+            if DebugConfig.USE_CALLGRAPH and galaxyFn:
+                profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+        else:
+            result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
         print "Result", result
 
 
@@ -120,8 +143,18 @@ class TestGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
-        analysisSpec.addParameter("runLocalAnalysis", "No")
         return analysisSpec
+
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
 
     @staticmethod
     def getOutputFormat(choices=None):
