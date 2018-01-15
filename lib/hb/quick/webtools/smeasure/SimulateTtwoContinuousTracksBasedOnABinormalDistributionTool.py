@@ -17,7 +17,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiTool, UserBinMixin):
     @classmethod
     def getToolName(cls):
-        return "Simulate continuous tracks based on a binormal distribution"
+        return "Simulate continuous tracks based on multi-normal distributions"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -153,6 +153,7 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
 
         dataOut = {}
         parameters = parameters.replace(' ', '').split(',')
+
         for p in parameters:
             chromosme = p.split(':')[0]
             chromosmeSt = int(p.split(':')[1].split('-')[0])
@@ -303,7 +304,7 @@ class SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool(GeneralGuiToo
     #
     @classmethod
     def getOutputFormat(cls, choices):
-        return 'gsuite'
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
