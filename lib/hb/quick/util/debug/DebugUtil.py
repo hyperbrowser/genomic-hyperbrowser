@@ -4,8 +4,8 @@ Created on Oct 1, 2014
 @author: boris
 '''
 
-def insertBreakPoint(username=None, currentUser=None, ipAddress='localhost', 
-                     errorToServer=True, outToServer=True):
+def insertBreakPoint(port, username=None, currentUser=None, ipAddress='localhost',
+                     errorToServer=True, outToServer=True, suspend=True):
     if username is None or username == currentUser:
         pydevPath = '/software/VERSIONS/python2-packages-2.7_2/lib/python2.7/site-packages/pysrc'
         import sys
@@ -15,5 +15,5 @@ def insertBreakPoint(username=None, currentUser=None, ipAddress='localhost',
 #         print str(pydevd_file_utils.PATHS_FROM_ECLIPSE_TO_PYTHON)
 #         pydevd_file_utils.PATHS_FROM_ECLIPSE_TO_PYTHON = [('/home/boris/workspace/HBdev/HBdev','/hyperbrowser/src/hb_core_developer/trunk')]
         import pydevd
-        pydevd.settrace(ipAddress, stderrToServer=errorToServer, stdoutToServer=outToServer)
+        pydevd.settrace(ipAddress, port=port, stderrToServer=errorToServer, stdoutToServer=outToServer, suspend=suspend)
         print 'Debugging... Reached breakpoint!'
