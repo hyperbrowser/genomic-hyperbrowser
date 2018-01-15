@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
 from gold.track.Track import Track
-from gold.util.CustomExceptions import LackingTsResultsError
+from gold.util.CustomExceptions import LackingTsResultsError, InvalidOperationError
 import copy
 from quick.application.SignatureDevianceLogging import takes
 from test.gold.track.common.SampleTrack import SampleTrack
@@ -238,10 +238,10 @@ class SingleTrackTS(TrackStructureV2):
         self.metadata = metadata
 
     def __setitem__(self, key, value):
-        raise
+        raise InvalidOperationError('SingleTrackTS is a leaf node and does not support children')
 
     def _inferResult(self):
-        raise LackingTsResultsError
+        raise LackingTsResultsError()
 
     def __hash__(self):
         # track.getUniqueKey(...) is not a good candidate for hashing as it needs a genome
