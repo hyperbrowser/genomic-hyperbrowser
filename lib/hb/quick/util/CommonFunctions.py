@@ -433,7 +433,12 @@ def isListType(x):
 
 
 def ifDictConvertToList(d):
-    return [(x, d[x]) for x in sorted(d.keys())] if isinstance(d, dict) else d
+    if isinstance(d, OrderedDict):
+        return [(x, d[x]) for x in d.keys()] if isinstance(d, dict) else d
+    elif isinstance(d, dict):
+        return [(x, d[x]) for x in sorted(d.keys())] if isinstance(d, dict) else d
+    else:
+        return d
 
 
 def smartRecursiveAssertList(x, y, assertEqualFunc, assertAlmostEqualFunc):

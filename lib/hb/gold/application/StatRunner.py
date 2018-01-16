@@ -141,7 +141,7 @@ class StatJob(object):
         # self._progress.globalAnalysisStarted()
         # self._progress.printMessage('\nPerforming global analysis...')
         while True:
-            stat = self._doGlobalAnalysis(results, stats)
+            stat = self._doGlobalAnalysis(results, stats=None)
             if stat is None:                
                 break
             nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)

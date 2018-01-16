@@ -216,8 +216,8 @@ class TrackStructureV2(dict):
 
     # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
     # @takes('TrackStructureV2', type, anything, 'TrackStructureV2', bool, int)
-    def getRandomizedVersion(self, randTvProvider, binSource=None, excludedTs=None, allowOverlaps=False, randIndex=0):
-        return self._getRandomizedVersion(randTvProvider(self, binSource=binSource, excludedTs=excludedTs, allowOverlaps=allowOverlaps), randIndex)
+    def getRandomizedVersion(self, randTvProviderClass, binSource=None, excludedTs=None, allowOverlaps=False, randIndex=0):
+        return self._getRandomizedVersion(randTvProviderClass(self, binSource=binSource, excludedTs=excludedTs, allowOverlaps=allowOverlaps), randIndex)
 
     @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)
     def _getRandomizedVersion(self, randTvProvider, randIndex):
