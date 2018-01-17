@@ -152,7 +152,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             allPossibilitiesWith0 = [x for x in allPossibilitiesWith0 if
                                      x not in datasetPerChromosome[chr]]
 
-            print 'chr', chr, '<br>', '<br>', '<br>'
+            print 'For: ', chr, '<br>', '<br>', '<br>'
 
             allPossibilitiesWith1BinomalDistribution = cls._countBinomalDistribution(
                 n=len(allPossibilitiesWith1), size=1, prob=firstProb)
