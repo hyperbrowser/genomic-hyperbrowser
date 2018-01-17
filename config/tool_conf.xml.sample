@@ -3,11 +3,11 @@
 
 
   <section name="Assembly gap" id="assembly_gap" >
-    <label text="Statistical testing" id="ranodmizationAG"/>
+    <label text="Statistical testing" id="ranodmizationAGaps"/>
       <tool file="proto/hyperbrowser/assemblygap/RandomizeTracksInGsuiteTool.xml" />
       <tool file="proto/hyperbrowser/assemblygap/RandomTracksFromGsuiteTool.xml" />
       <tool file="proto/hyperbrowser/article/CategoricalGSuiteVsGSuiteTool.xml" />
-    <label text="Descriptive analysis" id="descriptiveAG"/>
+    <label text="Descriptive analysis" id="descriptiveAGaps"/>
       <tool file="proto/hyperbrowser/assemblygap/CountAvgSegmentLengthAndBpOverlapTool.xml" />
       <tool file="proto/hyperbrowser/assemblygap/GenerateVisualizationOverlapHeatmapTool.xml" />
       <tool file="proto/hyperbrowser/assemblygap/CountBpCoverageBetweenSegmentsTool.xml" />
