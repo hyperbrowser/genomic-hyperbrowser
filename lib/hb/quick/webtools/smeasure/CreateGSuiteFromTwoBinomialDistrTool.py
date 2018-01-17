@@ -10,6 +10,7 @@ from proto.CommonFunctions import ensurePathExists
 from proto.tools.GeneralGuiTool import HistElement
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -59,10 +60,11 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
 
-        number = int(choices.number)
-        gtrackData = cls._readRegSpec(regSpec)
 
-        outGSuite = cls._countResults(gSuite, gtrackData, firstProb, secondProb, number,
+        number = int(choices.number)
+        getIntervals = cls._readRegSpec(regSpec, binSpec, gSuite.genome)
+
+        outGSuite = cls._countResults(gSuite, getIntervals, firstProb, secondProb, number,
                                       galaxyFn)
 
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
@@ -73,7 +75,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         return [HistElement('output gSuite', 'gsuite')]
 
     @classmethod
-    def _countResults(cls, gSuite, gtrackData, firstProb, secondProb, number, galaxyFn):
+    def _countResults(cls, gSuite, getIntervals, firstProb, secondProb, number, galaxyFn):
 
         outGSuite = GSuite()
 
@@ -84,12 +86,15 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             datasetPerChromosome = {}
             with open(trackPath, 'r') as f:
                 for l in f.readlines():
+                    #print 'l=', l, '<br>'
                     line = l.strip('n').split('\t')
-                    if line[0] in gtrackData.keys():
+                    #print 'getIntervals.keys()', getIntervals.keys(), '<br>'
+                    if line[0] in getIntervals.keys():
+                        #print 'line[0]', line[0], '<br>'
                         if not line[0] in datasetPerChromosome.keys():
                             datasetPerChromosome[line[0]] = []
 
-                        for prs in gtrackData[line[0]]:
+                        for prs in getIntervals[line[0]]:
                             if int(line[1]) >=  prs[0] and int(line[1]) <= prs[1]:
                                 datasetPerChromosome[line[0]].append(int(line[1]))
 
@@ -98,9 +103,9 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                 print 'nr', nr, '<br>', '<br>', '<br>'
                 for f in firstProb:
                     for s in secondProb:
-                        dataset = cls._countAllForRequal01(datasetPerChromosome, gtrackData, f,
+                        dataset = cls._countAllForRequal01(datasetPerChromosome, getIntervals, f,
                                                            s, number)
-                        print 'dataset', dataset, '<br>', '<br>', '<br>'
+                        print 'dataset len', len(dataset), '<br>', '<br>', '<br>'
                         if len(dataset) > 0:
                             cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
                                             nr, f, s)
@@ -181,23 +186,39 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                                   str(allPossibilitiesWithOption[i] + 1)])
 
     @classmethod
-    def _readRegSpec(cls, parameters):
+    def _readRegSpec(cls, parameters,binSpec, genome):
         # change for gtrack
 
-        parameters = parameters.encode('utf-8')
-
         dataOut = {}
-        parameters = parameters.replace(' ','').split(',')
-        for p in parameters:
-            chromosme = p.split(':')[0]
-            chromosmeSt = int(p.split(':')[1].split('-')[0])
-            chromosmeEnd = int(p.split(':')[1].split('-')[1])
+        if parameters == '__chrs__':
 
-            if not chromosme in dataOut.keys():
-                dataOut[chromosme] = []
-            dataOut[chromosme].append([chromosmeSt, chromosmeEnd])
+            if binSpec == '*':
+                for chromosme,lenChr in GenomeInfo.getStdChrLengthDict(genome).items():
+                    if not chromosme in dataOut.keys():
+                        dataOut[chromosme] = []
+                    dataOut[chromosme].append([1, lenChr])
+            else:
+                chromosmeUser = binSpec.replace(' ','').split(',')
+                for chromosme, lenChr in GenomeInfo.getStdChrLengthDict(genome).items():
+                    if chromosme in chromosmeUser:
+                        if not chromosme in dataOut.keys():
+                            dataOut[chromosme] = []
+                        dataOut[chromosme].append([1, lenChr])
 
 
+        else:
+            parameters = parameters.encode('utf-8')
+
+
+            parameters = parameters.replace(' ','').split(',')
+            for p in parameters:
+                chromosme = p.split(':')[0]
+                chromosmeSt = int(p.split(':')[1].split('-')[0])
+                chromosmeEnd = int(p.split(':')[1].split('-')[1])
+
+                if not chromosme in dataOut.keys():
+                    dataOut[chromosme] = []
+                dataOut[chromosme].append([chromosmeSt, chromosmeEnd])
 
         return dataOut
 
