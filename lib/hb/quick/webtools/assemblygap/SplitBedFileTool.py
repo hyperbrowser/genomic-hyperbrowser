@@ -6,7 +6,7 @@ from quick.webtools.assemblygap.Legend import Legend
 class SplitBedFileTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Split genomic regions into start, middle and end portions by a pred-defined size"
+        return "Split genomic regions into start, middle and end portions by a pre-defined size"
 
     @classmethod
     def getInputBoxNames(cls):

@@ -1,4 +1,4 @@
-<tool id="hb_plot_metadata_values_of_tabular_file_tool" name="Plot metadata values of a GSuite file" version="1.0.0"
+<tool id="hb_plot_metadata_values_of_tabular_file_tool" name="Create a plot for selected columns in a tabular file" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.PlotMetadataValuesOfTabularFileTool" proto_tool_class="PlotMetadataValuesOfTabularFileTool">
   <description></description>
 </tool>

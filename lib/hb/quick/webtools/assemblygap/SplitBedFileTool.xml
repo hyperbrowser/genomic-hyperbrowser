@@ -1,4 +1,4 @@
-<tool id="hb_split_bed_file_tool" name="Split bed file" version="1.0.0"
+<tool id="hb_split_bed_file_tool" name="Split genomic regions into start, middle and end portions by a pre-defined size" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.SplitBedFileTool" proto_tool_class="SplitBedFileTool">
   <description></description>
 </tool>
