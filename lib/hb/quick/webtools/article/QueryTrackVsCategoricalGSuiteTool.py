@@ -9,7 +9,8 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
-from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import MultitrackSummarizedInteractionWithOtherTracksV2Stat
+from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
+    MultitrackSummarizedInteractionWithOtherTracksV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
     SummarizedInteractionPerTsCatV2StatUnsplittable
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
@@ -24,7 +25,6 @@ import quick.gsuite.GuiBasedTsFactory as factory
 
 
 class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
-
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
@@ -48,7 +48,6 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         Mandatory method for all ProTo tools.
         """
         return "Track coinciding with a group of GSuite tracks"
-
 
     @classmethod
     def getInputBoxNames(cls):
@@ -83,10 +82,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Select alternative for the wilcoxon test', 'wilcoxonTail'),
                 ('Randomization algorithm', 'randAlg')] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
-                cls.getInputBoxNamesForUserBinSelection() + \
-                cls.getInputBoxNamesForDebug()
-
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsQueryGSuite():
@@ -382,7 +380,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         else:
             for key, val in results.iteritems():
                 resTableDict[key] = val.getResult()
-            core.tableFromDictionary(resTableDict, columnNames=["Query track"]+catNames)
+            core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
         core.divEnd()
         core.end()
         print str(core)
@@ -432,7 +430,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         n = len(queryTS.getLeafNodes())
         m = len(catTS.getLeafNodes())
         cat_m = len(catTS[choices.categoryVal].getLeafNodes())
-        k = 1 #len(list(analysisBins)) + 1 #currently local analysis is turned of
+        k = 1  # len(list(analysisBins)) + 1 #currently local analysis is turned of
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
@@ -441,8 +439,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         aDChoicec = analysisDef.getChoices(filterByActivation=True)
         maxSamples = int(aDChoicec['maxSamples']) if isMC else 0
-        return n*m*k*(maxSamples+1)
-
+        return n * m * k * (maxSamples + 1)
 
     @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
@@ -457,7 +454,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     def _printResultsHtml(cls, choices, results, resultsMC, wilcoxonResults, galaxyFn):
         core = HtmlCore()
         core.divBegin()
-        core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (choices.summaryFunc, choices.similarityFunc))
+        core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
+        choices.summaryFunc, choices.similarityFunc))
 
         if wilcoxonResults:
             resTableDict = OrderedDict()
@@ -476,11 +474,12 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 resTableDict[key].append("NA")
                 resTableDict[key].append("NA")
                 resTableDict[key].append("NA")
-            resTableDict[choices.catSummaryFunc] = [resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
-                                                    resultsMC[choices.categoryVal].getResult()[McEvaluators.PVAL_KEY],
-                                                    resultsMC[choices.categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
-                                                    resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
-                                                    ]
+            resTableDict[choices.catSummaryFunc] = [
+                resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
+                resultsMC[choices.categoryVal].getResult()[McEvaluators.PVAL_KEY],
+                resultsMC[choices.categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
+                resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
+                ]
             rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
             core.tableFromDictionary(resTableDict, columnNames=["Group", "Similarity score",
                                                                 "P-value", "Mean score for null distribution",
@@ -529,7 +528,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def prepareMCTrackStructure(cls, queryTS, catTS, randType, randAlg, analysisBins, categoryVal):
-        randCatTS = catTS.getRandomizedVersion(RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg], binSource=analysisBins)
+        randCatTS = catTS.getRandomizedVersion(RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg],
+                                               binSource=analysisBins)
         realTS = cls.prepareTrackStructure(queryTS, catTS)
         randTS = cls.prepareTrackStructure(queryTS, randCatTS)
         hypothesisTS = TrackStructureV2()
@@ -568,7 +568,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         if choices.randType == "Wilcoxon":
             analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
         else:
-            analysisSpec.addParameter('multitrackRawStatistic',SummarizedInteractionPerTsCatV2Stat.__name__)
+            analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
         analysisSpec.addParameter('pairwiseStatistic',
@@ -610,6 +610,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         Optional method. Default return value if method is not defined: False
         """
         return True
+
     #
     # @classmethod
     # def isRedirectTool(cls):

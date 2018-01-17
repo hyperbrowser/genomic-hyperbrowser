@@ -1,7 +1,41 @@
+from collections import OrderedDict
+
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
+from gold.description.AnalysisList import REPLACE_TEMPLATES
+from gold.gsuite import GSuiteConstants
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
+from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
+    MultitrackSummarizedInteractionWithOtherTracksV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable, \
+    SummarizedInteractionPerTsCatV2Stat
+from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
+from gold.track.TrackStructure import TrackStructureV2
 
+class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
 
-class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gsuite', 'refGsuite']
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
+                                  GSuiteConstants.VALUED_POINTS,
+                                  GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
+
+    GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
+                                 GSuiteConstants.MULTIPLE]
+
     @classmethod
     def getToolName(cls):
         """
@@ -10,7 +44,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
 
         Mandatory method for all ProTo tools.
         """
-        return "Group difference test - Benchmark 1"
+        return "GSuite Tracks coinciding with a group of GSuite tracks"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -33,8 +67,21 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('First header', 'firstKey'),
-                ('Second Header', 'secondKey')]
+        return [('Select query GSuite', 'gsuite'),
+                ('Select reference GSuite', 'refGsuite'),
+                ('Select category column', 'categoryName'),
+                ('Select primary group category value', 'categoryVal'),
+                ('Select track to track similarity/distance measure', 'similarityFunc'),
+                ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
+                ('Type of randomization', 'randType'),
+                ('Select summary function groups', 'catSummaryFunc'),
+                ('Select MCFDR sampling depth', 'mcfdrDepth'),
+                ('Select alternative for the wilcoxon test', 'wilcoxonTail'),
+                ('Randomization algorithm', 'randAlg')
+                ] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                cls.getInputBoxNamesForUserBinSelection() + \
+                cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -67,7 +114,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxFirstKey(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxGsuite(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -157,10 +204,10 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return ['testChoice1', 'testChoice2', '...']
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxRefGsuite(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -173,7 +220,55 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return ''
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+    @staticmethod
+    def getOptionsBoxCategoryName(prevChoices):
+        if prevChoices.refGsuite:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.refGsuite)
+            return gsuite.attributes
+
+    @staticmethod
+    def getOptionsBoxCategoryVal(prevChoices):
+        if prevChoices.refGsuite and prevChoices.categoryName:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.refGsuite)
+            return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
+
+    @staticmethod
+    def getOptionsBoxSimilarityFunc(prevChoices):
+        return GSuiteStatUtils.PAIRWISE_STAT_LABELS
+
+    @staticmethod
+    def getOptionsBoxSummaryFunc(prevChoices):
+        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
+
+    @staticmethod
+    def getOptionsBoxRandType(prevChoices):
+        return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
+
+    @staticmethod
+    def getOptionsBoxCatSummaryFunc(prevChoices):
+        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+            return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
+
+    @staticmethod
+    def getOptionsBoxMcfdrDepth(prevChoices):
+        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+            return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+
+    @staticmethod
+    def getOptionsBoxWilcoxonTail(prevChoices):
+        if prevChoices.randType == "Wilcoxon":
+            return ['two.sided', 'less', 'greater']
+
+    @staticmethod
+    def getOptionsBoxRandAlg(prevChoices):
+        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+                if prevChoices.randType == definedRandType:
+                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -231,7 +326,16 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        cls._setDebugModeIfSelected(choices)
+
+        analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
+                                                         genome=choices.genome)
+        queryTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.gsuite)
+        refTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.refGsuite)
+        catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
+        assert choices.categoryVal in catTS
+
+        cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -246,6 +350,78 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: None
         """
         return None
+
+    @classmethod
+    def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
+        core = HtmlCore()
+        core.begin()
+        core.divBegin(divId="progress-output")
+        print str(core)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices, isMC=False)
+        ts = cls.prepareTrackStructure(queryTS, catTS)
+        analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
+        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        core = HtmlCore()
+        core.divEnd()
+        core.hideToggle(styleId="progress-output")
+        print str(core)
+        cls._printMultiQueryScenarioResult(results, catTS.keys(), choices)
+
+    @classmethod
+    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices, isMC=True):
+        n = len(queryTS.getLeafNodes())
+        m = len(catTS.getLeafNodes())
+        cat_m = len(catTS[choices.categoryVal].getLeafNodes())
+        k = 1  # len(list(analysisBins)) + 1 #currently local analysis is turned of
+        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
+        analysisSpec = AnalysisDefHandler(analysisDefString)
+        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+        analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
+        aDChoicec = analysisDef.getChoices(filterByActivation=True)
+        maxSamples = int(aDChoicec['maxSamples']) if isMC else 0
+        return n * m * k * (maxSamples + 1)
+
+    @classmethod
+    def prepareTrackStructure(cls, queryTS, catTS):
+        return TrackStructureV2(dict([("query", queryTS), ("reference", catTS)]))
+
+    @classmethod
+    def prepareMultiQueryAnalysis(cls, choices, opCount):
+        analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
+        if choices.randType == "Wilcoxon":
+            analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+        else:
+            analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
+
+        analysisSpec.addParameter('pairwiseStatistic',
+                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                      choices.similarityFunc])
+        analysisSpec.addParameter('summaryFunc',
+                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+        analysisSpec.addParameter('segregateNodeKey', 'reference')
+        analysisSpec.addParameter('progressPoints', opCount)
+        analysisSpec.addParameter('runLocalAnalysis', "No")
+        return analysisSpec
+
+    @classmethod
+    def _printMultiQueryScenarioResult(cls, results, catNames, choices):
+        core = HtmlCore()
+        core.divBegin()
+        resTableDict = OrderedDict()
+        if choices.randType == "Wilcoxon":
+            for key, val in results.iteritems():
+                resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
+            core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
+        else:
+            for key, val in results.iteritems():
+                resTableDict[key] = val.getResult()
+            core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
+        core.divEnd()
+        core.end()
+        print str(core)
 
     # @classmethod
     # def getSubToolClasses(cls):
