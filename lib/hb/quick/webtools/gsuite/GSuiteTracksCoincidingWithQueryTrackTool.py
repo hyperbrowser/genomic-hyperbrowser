@@ -229,8 +229,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
                 prevChoices.randStrat in ["Preserve elements of T2 and number of elements of T1; randomize positions (T1) according to an intensity track",
                                           "Preserve elements of T1 and number of elements of T2; randomize positions (T2) according to an intensity track",
-                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) among locations provided in a universe track",
-                                          "Preserve elements of T2 and number of elements of T1; randomize positions (T1) among locations provided in a universe track"]:
+                                          "Preserve elements of T1 and number of points of T2; randomize positions (T2) among locations provided in a universe track of points",
+                                          "Preserve elements of T2 and number of points of T1; randomize positions (T1) among locations provided in a universe track of points"]:
             return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
