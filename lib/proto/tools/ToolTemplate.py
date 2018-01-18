@@ -58,7 +58,7 @@ class ToolTemplate(GeneralGuiTool):
     #     (or index) of the first and last options boxes (inclusive).
     #
     #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
+    #        from proto.tools.GeneralGuiTool import BoxGroup
     #        return [BoxGroup(label='A group of choices', first='firstKey',
     #                         last='secondKey')]
     #

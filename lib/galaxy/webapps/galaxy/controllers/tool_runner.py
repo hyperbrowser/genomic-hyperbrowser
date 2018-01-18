@@ -78,8 +78,8 @@ class ToolRunner( BaseUIController ):
         if len( params ) > 0:
             trans.log_event( 'Tool params: %s' % ( str( params ) ), tool_id=tool_id )
 
-        # ProTo: if no params then this is a direct request/link to open the tool interface, redirect hyperbrowser-tools
-        #  to the hyper-controller
+        # ProTo: if no params then this is a direct request/link to open the tool interface,
+        # redirect proto-tools to the proto-controller
         if len(params) == 0 and proto_tool_types.has_key(tool.tool_type):
             if tool.inputs.has_key('mako'):
                 return trans.response.send_redirect(url_for(controller=tool.action, tool_id=tool_id,

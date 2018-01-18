@@ -107,7 +107,7 @@ class HtmlCore(TableCoreMixin):
         return self
 
     def format(self, val):
-        from gold.util.CommonFunctions import strWithStdFormatting
+        from proto.CommonFunctions import strWithStdFormatting
         self._str += strWithStdFormatting(val, separateThousands=True)
         return self
 

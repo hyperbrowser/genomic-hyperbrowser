@@ -1,5 +1,6 @@
 #
-# instance is dynamically imported into namespace of <modulename>.mako template (see web/controllers/hyper.py)
+# instance is dynamically imported into namespace of <modulename>.mako template
+# (see galaxy/webapps/controllers/proto.py)
 
 import sys, os, json, shelve
 import cPickle as pickle
@@ -606,23 +607,18 @@ class GenericToolController(BaseToolController):
         return image
 
     def getDemoURL(self):
-        try:
-            demo = self.prototype.getDemoSelections()
-            url = '?mako=generictool&tool_id=' + self.toolId
-            for i, id in enumerate(self.inputIds):
-                if self.inputTypes[i] == '__genome__':
-                    id = 'dbkey'
-                #else:
-                #    id = self.inputIds[i]
-                try:
-                    val = getattr(demo, id)
-                except:
-                    val = demo[i]
-                url += '&' + id + '=' + val
-        except Exception, e:
-            from gold.application.LogSetup import logException
-            logException(e)
-            url = None
+        demo = self.prototype.getDemoSelections()
+        url = '?mako=generictool&tool_id=' + self.toolId
+        for i, id in enumerate(self.inputIds):
+            if self.inputTypes[i] == '__genome__':
+                id = 'dbkey'
+            #else:
+            #    id = self.inputIds[i]
+            try:
+                val = getattr(demo, id)
+            except:
+                val = demo[i]
+            url += '&' + id + '=' + val
         return url
 
     def hasDemoURL(self):
@@ -635,13 +631,7 @@ class GenericToolController(BaseToolController):
         return False
 
     def getFullExampleURL(self):
-        try:
-            url = self.prototype.getFullExampleURL()
-        except Exception, e:
-            from gold.application.LogSetup import logException
-            logException(e)
-            url = None
-        return url
+        return self.prototype.getFullExampleURL()
 
     def hasFullExampleURL(self):
         try:
@@ -649,8 +639,6 @@ class GenericToolController(BaseToolController):
             if url is not None:
                 return True
         except Exception, e:
-            from gold.application.LogSetup import logException
-            logException(e)
             pass
         return False
 
@@ -681,16 +669,10 @@ class GenericToolController(BaseToolController):
     #def ajaxValidate(self):
     #    return self.prototype.validateAndReturnErrors(self.inputValues)
 
-
     def getInputValueForTrack(self, id, name):
         return None
 
 
-def getController(transaction = None, job = None):
-    #from gold.util.Profiler import Profiler
-    #prof = Profiler()
-    #prof.start()
+def getController(transaction=None, job=None):
     control = GenericToolController(transaction, job)
-    #prof.stop()
-    #prof.printStats()
     return control

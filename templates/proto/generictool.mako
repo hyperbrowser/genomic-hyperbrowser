@@ -5,7 +5,7 @@ from base64 import urlsafe_b64encode
 from cgi import escape
 from urllib import quote, unquote
 
-import proto.hyper_gui as gui
+import proto.gui as gui
 
 %>
 <%

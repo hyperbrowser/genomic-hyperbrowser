@@ -106,8 +106,6 @@ class GenerateToolsTool(GeneralGuiTool):
             setattr(cls, 'getOptionsBoxNewDir%s' % i,
                     partial(cls._getOptionsBoxNewDir, index=i))
 
-        from gold.application.LogSetup import logMessage
-
     @classmethod
     def _getProtoRelToolDirs(cls):
         assert cls.TOOL_DIR.startswith(SOURCE_CODE_BASE_DIR)
