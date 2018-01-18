@@ -20,6 +20,7 @@
             'bootstrap-tour',
         )}
         ${ page_setup() }
+        <link rel="icon" href="static/favicon.png">
     </head>
 
     <body scroll="no" class="full-content">
