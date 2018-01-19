@@ -7,8 +7,8 @@ ALL_GUI_ELEMENTS = [
     ('Check box', 'checkBox'),
     ('Selection box', 'selectionBox'),
     ('Selection box (empty)', 'selectionBoxEmpty'),
-    ('Text area (simple)', 'textAreaSimple'),
-    ('Text area (medium, with default value)', 'textAreaMediumWithDefault'),
+    ('Text area (simple, non-dynamic)', 'textAreaSimple'),
+    ('Text area (medium, with default value, non-dynamic)', 'textAreaMediumWithDefault'),
     ('Text area (large, readonly)', 'textAreaLargeReadonly'),
     ('Password field', 'passwordField'),
     ('Raw HTML', 'rawHtml'),
@@ -29,6 +29,7 @@ READ_ONLY_TEXT = "Read only text"
 TABLE = [['Header A', 'Header B'], [1, 2], ['Some text', 'Other text']]
 CHECK_BOX_LIST = OrderedDict([('Something', True), ('Something else', False)])
 
+
 class ProtoGuiTestTool1(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
@@ -38,7 +39,7 @@ class ProtoGuiTestTool1(GeneralGuiTool):
 
         Mandatory method for all ProTo tools.
         """
-        return "Basic GUI elements: Test tool #1 for Galaxy ProTo GUI elements"
+        return "Basic GUI elements: Test tool #1 for Galaxy ProTo GUI"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -385,16 +386,16 @@ class ProtoGuiTestTool1(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @classmethod
-    # def isDynamic(cls):
-    #     """
-    #     Specifies whether changing the content of textboxes causes the page
-    #     to reload. Returning False stops the need for reloading the tool
-    #     after each input, resulting in less lags for the user.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return True
+    @classmethod
+    def isDynamic(cls):
+        """
+        Specifies whether changing the content of textboxes causes the page
+        to reload. Returning False stops the need for reloading the tool
+        after each input, resulting in less lags for the user.
+
+        Optional method. Default return value if method is not defined: True
+        """
+        return False
     #
     # @classmethod
     # def getResetBoxes(cls):
