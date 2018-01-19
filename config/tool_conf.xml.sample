@@ -127,6 +127,9 @@
     <tool file="proto/FileImport.xml" />
     <!-- end hidden tools -->
   </section>
+  <section id="protoGuiTestTools" name="ProTo GUI test tools">
+    <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
+  </section>
   <section id="installedProto" name="Installed ProTo tools">
   </section>
 </toolbox>
