@@ -78,7 +78,10 @@ class ToolTemplate(GeneralGuiTool):
 
         The input box is defined according to the following syntax:
 
-        Selection box:          ['choice1','choice2']
+        Check box:              False | True
+        - Returns: bool
+
+        Selection box:          ['choice1', 'choice2']
         - Returns: string
 
         Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
