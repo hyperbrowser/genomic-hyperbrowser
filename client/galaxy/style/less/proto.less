@@ -1,3 +1,5 @@
+@import "bootstrap.less";
+
 // morj: override inline-block with inline so that relative width of input boxes
 // relates to parent block
 label {
@@ -179,3 +181,22 @@ p {
   background-size: 32px;
 }
 
+legend {
+    font-size: @font-size-base;
+    margin-bottom: 4px;
+    width: auto;
+    padding: 2px;
+    border-bottom: 0;
+}
+
+fieldset {
+    border: 1px solid #C0C0C0;
+    padding: 4px;
+    margin-bottom: 4px;
+}
+
+div.debug {
+    font-size: 90%;
+    font-family: monospace;
+    white-space: pre;
+}
