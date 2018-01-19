@@ -11,14 +11,13 @@
             padding-left: 15px;
             margin-right: auto;
             margin-left: auto;
-            text-align: justify;
         }
         
         .nav {
             padding-bottom:1px;
         }
         .nav-tabs {
-            border-bottom: 1px solid #8fbc8f;
+            border-bottom: 1px solid #9aa49a;
         }
         .nav-tabs > li {
             background-color: #66635B;
@@ -27,22 +26,22 @@
         .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
             color: #222;
             cursor: default;
-            background-color: #8fbc8f;
-            border: 1px solid #8fbc8f;
+            background-color: #9aa49a;
+            border: 1px solid #9aa49a;
             border-bottom-color: transparent;
         }
         .nav-tabs > li > a {
             margin-right: 2px;
             line-height: 1.42857143;
             border-radius: 4px 4px 0 0;
-            border: 1px solid #8fbc8f;
+            border: 1px solid #9aa49a;
             border-bottom-color:transparent ;
             color: #fff;
         }
         .nav-tabs > li > a:hover {
             color: #000000;
-            background-color: #b0d0b0;
-            border: 1px solid #8fbc8f;
+            background-color: #b8bfb8;
+            border: 1px solid #9aa49a;
             border-bottom-color:transparent;
         }
         .nav > li > a {
@@ -57,7 +56,7 @@
         .container{
             color: #222;
             width: 100%;
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             margin-bottom:10px;
         }
 
@@ -65,13 +64,13 @@
             text-align:center;
             padding: 10px;
             width: 100%;
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             margin-top: 20px;
             border-radius: 0px 0px 4px 4px;
         }
 
         .projectTitle {
-            border-bottom: 1px dotted #333333;
+            border-bottom: 1px dotted #f8faf8;
         }
 
         containerNext{
@@ -81,7 +80,7 @@
 
         .rowSpecial{
             overflow: hidden;
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             margin-top: 20px;
             padding-bottom: 10px;
         }
@@ -92,14 +91,14 @@
             margin-top: 20px;
         }
         .colHalfLeft{
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             float: left;
             width:50%;
             padding:15px;
         }
         .colHalfRight{
             float: left;
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             width:50%;
             padding:15px;
             border-left: 10px solid #66635B;
@@ -108,30 +107,30 @@
         .colAll{
             padding:15px;
             width:100%;
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
         }
         .colAllProjectList{
             padding:5px;
             padding-left: 15px;
             padding-right: 15px;
             width:100%;
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
         }
         .colOneThirdLeft{
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             float:left;
             padding:15px;
             width:33.3333333%;
         }
         .colOneThirdMiddle{
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             float:left;
             padding:15px;
             width:33.3333333%;
             border-left: 10px solid #66635B;
         }
         .colOneThirdRight{
-            background-color: #8fbc8f;
+            background-color: #9aa49a;
             float:left;
             padding:15px;
             width:33.3333333%;
@@ -150,11 +149,11 @@
         }
 
         a {
-            color: #557055
+            color: #5c625c
         }
 
         a:hover {
-            color: #b0d0b0
+            color: #b8bfb8
         }
 
         
@@ -182,7 +181,7 @@
         
             .example
             {
-                border: 1px dotted #333333;
+                border: 1px dotted #f8faf8;
                 padding: 10px;
                 margin-bottom:10px;
             }
@@ -190,6 +189,10 @@
             {
                 border:none;
                 font-weight: bold;
+            }
+            .exampleDesc
+            {
+                margin-top:25px;
             }
             .exampleDesc a
             {
@@ -199,7 +202,7 @@
             .exampleDesc a:hover
             {
                 text-decoration: none;
-                color: #557055;
+                color: #5c625c;
             }
             .exampleDesc p{
                 font-weight:normal;
@@ -226,10 +229,10 @@
             .project a:hover, .description a:hover
             {
                 text-decoration: none;
-                color: #557055;
+                color: #5c625c;
             }
             .descriptionTitle {
-                border-bottom: 1px dotted #474747;
+                border-bottom: 1px dotted #f8faf8;
                 padding-bottom: 5px;
             }
             .description p.paragraph
@@ -253,7 +256,7 @@
             .contactInfo a:hover
             {
                 text-decoration: none;
-                color: #557055;
+                color: #5c625c;
             }
 
 

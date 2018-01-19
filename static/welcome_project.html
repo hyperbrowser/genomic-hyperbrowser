@@ -57,11 +57,57 @@
                 <div class="rowSpecialWithGap">
                     <div class="colAll">
                         <div class = 'description'>
-                        <h4 class = 'descriptionTitle'>Overlap of genomic tracks with genome assembly gaps</h4>
+                        <h4 class = 'descriptionTitle'>Overlap of public genomic tracks with genome assembly gaps</h4>
                             <div class = 'descriptionDesc'>
                                 <p class="paragraph">
-                                    A series of explorative analyses to understand the nature and extent of intersection of genomic tracks with genome assembly gaps.
+                                    We performed a series of explorative analyses to understand the nature and extent of intersection of genomic tracks with genome assembly gaps.
                                 </p>
+                                <p class="paragraph">
+                                    All the examples were executed based on 3 large collections of public genomics tracks:
+                                    <ul>
+                                        <li><a href="../u/hb-superuser/h/dataset-histmod" target="_blank">histone modifications collection</a>, which consist of 477 tracks</li>
+                                        <li><a href="../u/hb-superuser/h/analysis-dnase" target="_blank">DNase hypersensitive sites collection</a>, which consist of 838 tracks</li>
+                                        <li><a href="../u/hb-superuser/h/dataset-k562" target="_blank">transcription factor bindingsites in K562 cell line collection</a>, which consist of 568 tracks</li>
+                                    </ul>
+                                </p>
+                                <p class="paragraph">
+                                    The following examples are based on dataset: DNase hypersensitive sites collection and <a href="../u/hb-superuser/h/dataset-assembly-gaps" target="_blank"> assembly gaps track (element 1) and start, middle and end region of assembly gaps track (element 2, 3, 4, respectively) </a>.
+                                    The rest of the analysis described in the paper 'Mind your gaps: Overlooking of assembly gaps confounds statistical testing in genome analysis' can be found <a href="../u/hb-superuser/p/assembly-gaps" target="_blank">here.</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class = 'example'>
+                            <h4 class = 'exampleTitle'>
+                                Number of elements per track in GSuite
+                            </h4>
+                            <div class = 'exampleDesc'>
+                                The following tool: "Compute a basic measure for each track in a GSuite" is used to count number of elements per every track in DNase hypersensitive sites collection.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_g_suite_single_value_analysis_per_track_tool">Click here to use the tool</a>
+                                or
+                                <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 14, 19)</a>
+                            </div>
+                            <div class = 'exampleDesc'>
+                                The following tool: "Create a plot for selected columns in a tabular file" is used to visualize the results of the above calculations.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Click here to use the tool</a>
+                                or
+                                <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 20)</a>
+                            </div>
+                        </div>
+                        <div class = 'example'>
+                            <h4 class = 'exampleTitle'>
+                                Average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)
+                            </h4>
+                            <div class = 'exampleDesc'>
+                                The following tool: "Count average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)" is used to count average segment length track and bp proportion overlap value per every track in DNase hypersensitive sites collection and assembly gaps track.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_count_avg_segment_length_and_bp_overlap_tool">Click here to use the tool</a>
+                                or
+                                <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 15, 16)</a>
+                            </div>
+                            <div class = 'exampleDesc'>
+                                The following tool: "Create a plot for selected columns in a tabular file" is used to visualize the results of the above calculations.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Click here to use the tool</a>
+                                or
+                                <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 17, 18)</a>
                             </div>
                         </div>
                         <div class = 'example'>
@@ -69,43 +115,41 @@
                                 Intersection between the genomic tracks (collection of tracks - GSuite) and selected track
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Count coverage for tracks in GSuite within every bin (region)" is used to count intersection between the DNase hypersensitive sites GSuite and assembly gaps track.
+                                The following tool: "Count coverage for every track within specified region" is used to count intersection between the DNase hypersensitive sites collection and assembly gaps track.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_generate_visualization_overlap_heatmap_tool">Click here to use the tool</a>
                                 or
-                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 3, 4)</a>
-                            </div>
-                        </div>
-                        <div class = 'example'>
-                            <h4 class = 'exampleTitle'>
-                                Overview of the results given by tabular file
-                            </h4>
-                            <div class = 'exampleDesc'>
-                                The following tool: "Create descriptive results" is used to show overview of counted intersection between the DNase hypersensitive sites GSuite and assembly gaps track.
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 23, 24)</a>
+                                The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
                                 or
-                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 18)</a>
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 31)</a>
                             </div>
-                        </div>
-                        <div class = 'example'>
-                            <h4 class = 'exampleTitle'>
-                                Average segments length with ratio of bp overlap values
-                            </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Count average segment length according to bp overlap values" is used to count average segment length per track and bp overlap values with selected track.
-                                <a href="../tool_runner/data_source_redirect?tool_id=hb_count_avg_segment_length_and_bp_overlap_tool">Click here to use the tool</a>
+                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase hypersensitive sites collection and start region of assembly gaps track.
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">Click here to view an example (element 25, 26)</a>
+                                The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
                                 or
-                                <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 4)</a>
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 32)</a>
                             </div>
-                        </div>
-                        <div class = 'example'>
-                            <h4 class = 'exampleTitle'>
-                                Plot metadata values of GSuite
-                            </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Plot metadata values of a GSuite file" is used to plot average segment length per track on x-axis and bp overlap values with selected track on y-axis.
-                                <a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Click here to use the tool</a>
+                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase hypersensitive sites collection and middle region of assembly gaps track.
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">Click here to view an example (element 27, 28)</a>
+                                The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
                                 or
-                                <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 8)</a>
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 33)</a>
+                            </div>
+                            <div class = 'exampleDesc'>
+                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase hypersensitive sites collection and end region of assembly gaps track.
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">Click here to view an example (element 29, 30)</a>
+                                The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
+                                or
+                                <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 34)</a>
+                            </div>
+                            <div class = 'exampleDesc'>
+                                Also, average segment length of track and bp overlap value (with selected track) per every track in a collection of tracks (GSuite) were counted in the same way. The results are presented <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp">here</a>.
                             </div>
                         </div>
                     </div>
@@ -119,49 +163,59 @@
                         <h4 class = 'descriptionTitle'>The impact of not avoiding the assembly gaps on the findings of statistical testing in co-localization analysis</h4>
                             <div class = 'descriptionDesc'>
                                 <p class="paragraph">
-                                    Contrasted the findings of MC-based permutation tests that either avoided or not avoided assembly gaps in the null model.
+                                    We tested the significance of pairwise overlap of 100 pairs of genomic tracks by accounting and not accounting for assembly gaps.
                                 </p>
                             </div>
                         </div>
                         <div class = 'example'>
                             <h4 class = 'exampleTitle'>
-                                Preparing data for counting significance of pairwise overlap
+                                Preparing data for MC-based permutation tests either avoided or not avoided assembly gaps in the null model.
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tools: "Select random tracks from gsuite" and "Randomize gSuite" are used to prepare data used in the next step for counting significance of pairwise overlap. Data are randomised based on selected GSuite.
-                                <a href="../tool_runner/data_source_redirect?tool_id=hb_randomize_gsuite_tool">Click here to use the first tool</a> and <a href="../tool_runner/data_source_redirect?tool_id=hb_count_null_model_for_randomized_g_suite_tool">Click here to use the second tool</a>
+                                The following tool: "Sample tracks from a collection of tracks (GSuite)" creates a collection of tracks (GSuite) with specified number of tracks (randomly selected from DNase hypersensitive sites collection).
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_randomize_gsuite_tool">Click here to use the tool</a>
                                 or
-                                <a href = "../u/hb-superuser/h/randomization---gsuite-dnase">here to view an example (element ????)</a>
+                                <a href = "../u/hb-superuser/h/randomization---gsuite-dnase">here to view an example (element 30)</a>
                             </div>
+                            <div class = 'exampleDesc'>
+                                The following tool: "Randomize a collection of genomic tracks (GSuite)" is used to shuffles genomic tracks by excluding the randomization in certain regions (assembly gaps track).
+                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_count_null_model_for_randomized_g_suite_tool">Click here to use the tool</a>
+                                or
+                                <a href = "../u/hb-superuser/h/randomization---gsuite-dnase">here to view an example (element 30-36)</a>
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
+                     <div class="colAll">
+                        <div class = 'descriptionDesc'>
+                            <p class="paragraph">
+                                The following tool: "Paired co-localization analysis of two collections of tracks" is used to count Forbes or Forbes with a p-val with the selected MCFDR sampling depth and with or without excluded regions track.
+                                <a href="../tool_runner/data_source_redirect?tool_id=hb_categorical_g_suite_vs_g_suite_tool">Click here to use the tool</a>.
+                            </p>
+                        </div>
+                     </div>
 
-                <div class="rowSpecialWithGap">
+
+                <div class="">
                     <div class="colHalfLeft">
                         <div class = 'example'>
                             <h4 class = 'exampleTitle'>
-                                Significance of pairwise overlap without exclusion of assembly gaps track
+                                Testing the significance of pairwise overlap without exclusion of assembly gaps track.
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tools: "Select random tracks from gsuite" and "Randomize gSuite" are used to prepare data used in the next step for counting significance of pairwise overlap. Data are randomised based on selected GSuite.
-                                <a href="../tool_runner/data_source_redirect?tool_id=hb_randomize_gsuite_tool">Click here to use the first tool</a> and <a href="../tool_runner/data_source_redirect?tool_id=hb_count_null_model_for_randomized_g_suite_tool">Click here to use the second tool</a>
-                                or
-                                <a href = "../u/hb-superuser/h/hb_categorical_g_suite_vs_g_suite_tool">here to view an example (element ????)</a>
+                                <a href = "../u/hb-superuser/h/hb_categorical_g_suite_vs_g_suite_tool">Click here to view an example (element 10)</a>.
                             </div>
                         </div>
                     </div>
-                    <div class="colHalfRight">
+                    <div class="colHalfRight" style="border-left:0px solid transparent;">
                         <div class = 'example'>
                             <h4 class = 'exampleTitle'>
-                                Significance of pairwise overlap with exclusion of assembly gaps track
+                                Testing the significance of pairwise overlap with exclusion of assembly gaps track
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tools: "Select random tracks from gsuite" and "Randomize gSuite" are used to prepare data used in the next step for counting significance of pairwise overlap. Data are randomised based on selected GSuite.
-                                <a href="../tool_runner/data_source_redirect?tool_id=hb_randomize_gsuite_tool">Click here to use the first tool</a> and <a href="../tool_runner/data_source_redirect?tool_id=hb_count_null_model_for_randomized_g_suite_tool">Click here to use the second tool</a>
-                                or
-                                <a href = "../u/hb-superuser/h/hb_categorical_g_suite_vs_g_suite_tool">here to view an example (element ????)</a>
+                                <a href = "../u/hb-superuser/h/hb_categorical_g_suite_vs_g_suite_tool">Click here to view an example (element 11)</a>.
                             </div>
                         </div>
                     </div>
@@ -175,7 +229,7 @@
                             If you want to read more about The Genomic HyperBrowser interface, <a href="https://sites.google.com/site/hyperbrowserhelp/" target="_blank"> click here </a>
                         </p>
                         <p class="paragraph">
-                            If you have any questions, requests or comments regarding the rainfall plot project, please contact: <a href='mailto:dianadom@ifi.uio.no' target='_top'> Diana Domanska</a> or <a href='mailto:geirksa@ifi.uio.no' target='_top'>Geir Kjetil Sandve</a>.
+                            If you have any questions, requests or comments regarding the assembly gaps project, please contact: <a href='mailto:dianadom@ifi.uio.no' target='_top'> Diana Domanska</a> or <a href='mailto:geirksa@ifi.uio.no' target='_top'>Geir Kjetil Sandve</a>.
                         </p>
                     </div>
                 </div>
