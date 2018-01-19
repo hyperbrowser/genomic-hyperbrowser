@@ -128,8 +128,8 @@
     <!-- end hidden tools -->
   </section>
   <section id="protoGuiTestTools" name="ProTo GUI test tools">
-    <tool file="proto/guitest/ProtoGuiTestTool2.xml" />
     <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool2.xml" />
   </section>
   <section id="installedProto" name="Installed ProTo tools">
   </section>
