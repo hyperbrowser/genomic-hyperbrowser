@@ -13,7 +13,8 @@ ALL_GUI_ELEMENTS = [
     ('Text area (readandwrite)', 'textAreaReadWrite'),
     ('Text area (readonly)', 'textAreaReadonly'),
     ('Table', 'table'),
-    ('Check box list (only unique values)', 'checkBoxList')
+    ('Check box list (only unique values)', 'checkBoxList'),
+    ('Hidden element', 'hidden')
 ]
 
 # Order is different than
@@ -26,6 +27,7 @@ GUI_ELEMENTS_ORDER = [
     'rawHtmlWaitForPassword',
     'table',
     'checkBoxList',
+    'hidden',
     'historySelectionTabular',
     'historyContents'
 ]
@@ -275,6 +277,11 @@ class ProtoGuiTestTool2(GeneralGuiTool):
             (str(prevChoices.textAreaReadWrite), True),
             (str(prevChoices.passwordField), False),
         ])
+
+    @classmethod
+    def getOptionsBoxHidden(cls, prevChoices):
+        return '__hidden__', \
+               '|'.join([key for key, sel in prevChoices.checkBoxList.iteritems() if sel])
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
