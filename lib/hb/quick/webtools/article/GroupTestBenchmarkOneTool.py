@@ -1,7 +1,26 @@
+from gold.gsuite import GSuiteConstants
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class GroupTestBenchmarkOneTool(GeneralGuiTool):
+class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
+
+    ALLOW_UNKNOWN_GENOME = False
+    ALLOW_GENOME_OVERRIDE = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
+                                  GSuiteConstants.VALUED_POINTS,
+                                  GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
+
+    GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
+                                 GSuiteConstants.MULTIPLE]
+
     @classmethod
     def getToolName(cls):
         """
@@ -33,8 +52,18 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('First header', 'firstKey'),
-                ('Second Header', 'secondKey')]
+        return [('Select query track', 'queryTrack'),
+                ('Select the randomized query GSuite', 'queryGsuite'),
+                ('Select the categorical reference GSuite', 'refGSuite'),
+                ('Select category column', 'categoryName'),
+                ('Select primary group category value', 'categoryVal'),
+                ('Select track to track similarity/distance measure', 'similarityFunc'),
+                ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
+                ('Select summary function groups', 'catSummaryFunc')
+                ] + \
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -67,7 +96,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxFirstKey(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxQueryTrack(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -157,10 +186,10 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return ['testChoice1', 'testChoice2', '...']
+        return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
-    def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxQueryGsuite(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -173,7 +202,11 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return ''
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+    @classmethod
+    def getOptionsBoxRefGsuite(cls, prevChoices):  # Alt: getOptionsBox2()
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
