@@ -42,7 +42,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
 
         Mandatory method for all ProTo tools.
         """
-        return "GSuite Tracks coinciding with a group of GSuite tracks"
+        return "Group difference test - external randomized GSuite"
 
     @classmethod
     def getInputBoxNames(cls):

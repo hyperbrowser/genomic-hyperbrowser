@@ -1,4 +1,4 @@
-<tool id="hb_group_test_query_g_suite_vs_categorical_ref_g_suite_tool" name="Group difference test - Benchmark 1" version="1.0.0"
+<tool id="hb_group_test_query_g_suite_vs_categorical_ref_g_suite_tool" name="Group difference test - external randomized GSuite" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.gsuite.GroupTestQueryGSuiteVsCategoricalRefGSuiteTool" proto_tool_class="GroupTestQueryGSuiteVsCategoricalRefGSuiteTool">
   <description></description>
 </tool>
