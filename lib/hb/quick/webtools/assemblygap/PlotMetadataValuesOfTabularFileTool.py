@@ -298,23 +298,39 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                             dataTrend.append(A+B*x1)
                         dataTrendAll.append(dataTrend)
 
-
-
-                    data = data + dataTrendAll
                     seriesName = seriesName + dataTrendNameAll
-                    res += vg.drawMultiTypeChart(
-                        data,
-                        categories=categories,
-                        xAxisRotation=90,
-                        marginTop=30,
-                        xAxisTitle=xAxisTitle,
-                        yAxisTitle=yAxisTitle,
-                        height=500,
-                        seriesName=seriesName,
-                        label=label,
-                        seriesType = st
-                        #                      titleText = 'Plot',
-                    )
+
+                    if columnX == 'line number':
+
+                        data = data + dataTrendAll
+                        seriesName = seriesName + dataTrendNameAll
+                        res += vg.drawMultiTypeChart(
+                            data,
+                            categories=categories,
+                            xAxisRotation=90,
+                            marginTop=30,
+                            xAxisTitle=xAxisTitle,
+                            yAxisTitle=yAxisTitle,
+                            height=500,
+                            seriesName=seriesName,
+                            label=label,
+                            seriesType=st
+                            #                      titleText = 'Plot',
+                        )
+                    else:
+                        seriesName = seriesName + dataTrendNameAll
+                        res += vg.drawScatterChartWithTrendLine(
+                            data,
+                            dataTrend=dataTrendAll,
+                            categories=categories,
+                            xAxisRotation=90,
+                            marginTop=30,
+                            xAxisTitle=xAxisTitle,
+                            yAxisTitle=yAxisTitle,
+                            height=500,
+                            seriesName=seriesName,
+                            label=label
+                        )
 
                 else:
                     res += vg.drawScatterChart(

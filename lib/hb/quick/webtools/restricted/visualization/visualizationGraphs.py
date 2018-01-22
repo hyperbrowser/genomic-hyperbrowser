@@ -493,6 +493,7 @@ class visualizationGraphs(object):
                 <script src="https://code.highcharts.com/modules/data.js"></script>
                 <script src="https://code.highcharts.com/modules/heatmap.js"></script>
                 <script src="https://code.highcharts.com/modules/exporting.js"></script>
+                <script src="https://code.highcharts.com/modules/offline-exporting.js"></script>
                 <script src="https://raw.github.com/briancray/tooltipsy/master/tooltipsy.min.js"></script>
                 <script src="https://code.highcharts.com/highcharts-more.js"></script>
                 """
@@ -1051,6 +1052,29 @@ class visualizationGraphs(object):
 
         return data, legendSize, legendSizeExtra
 
+
+    def _parseData6(self, dataY, categories, seriesName, dataTrend):
+
+        legendSizeExtra = 0
+        legendSize = ''
+        dataYdepth = self._depth(dataY)
+        data="{ name: '" + str(seriesName[0]) + "', type: 'scatter', data: "
+        dataList=[]
+        if dataYdepth == 2:
+                for i in range(0, len(categories)):
+                        dataList.append([float(categories[i]), dataY[0][i]])
+        data += str(dataList) +'},'
+
+        data += "{ name: '" + str(seriesName[1]) + "', type: 'line', color: 'red', data: "
+        dataList = []
+        if dataYdepth == 2:
+                for i in range(0, len(categories)):
+                        dataList.append([float(categories[i]), dataTrend[0][i]])
+        data += str(dataList) +'}'
+
+
+        return data, legendSize, legendSizeExtra
+
     def _parseData(self, dataY, type, seriesType, seriesName, multiYAxis, visible, yAxisMulti, multiXAxis, xAxisMulti, markerRadius):
         
         
@@ -1420,6 +1444,9 @@ class visualizationGraphs(object):
         #print interaction
         #print self._interactionNumberStart
         #print self._interactionNumberEnd
+
+        if type =='scatter3':
+                type = 'scatter'
         
         if type!='bubble' and type!='scatter':
             minX = 'min:0,'
@@ -1666,7 +1693,12 @@ class visualizationGraphs(object):
         
         return xAxis
     
-    
+    def _addExportingOption(self):
+        return """exporting: {
+                        allowHTML: true,
+                        enabled: true,
+                        scale: 0.5,
+                        },"""
     def _useYAxis(self, yAxisTitle, allowDecimals, maxY, yAxisType, minY, type, categoriesY):
         
         if yAxisType is None:
@@ -1788,6 +1820,9 @@ class visualizationGraphs(object):
             },
         """
     def _useChart(self, height, polar, marginTop, zoomType, countNum, type):
+
+        if type == 'scatter3':
+            type = 'scatter'
         
         if type == 'heatmap' or type =='largeHeatmap':
             chart = """
@@ -2083,6 +2118,7 @@ class visualizationGraphs(object):
         functionJS1 += str(self._useXAxis(xAxisTitle, tickInterval, tickMinValue, categories, typeAxisXScale, xAxisRotation, \
                                           labelX, interaction, type, histogram, plotLines, plotLinesName,
                                           plotBands, plotBandsColor, multiXAxis,xAxisMulti))
+        functionJS1 += str(self._addExportingOption())
         
         if multiYAxis==True:
             functionJS1 += str(self._useMultiYAxis(yAxisTitle, reversed, minY))
@@ -2114,8 +2150,9 @@ class visualizationGraphs(object):
         }],
             
             """
+        elif type == 'scatter3':
+             functionJS1 += " series: [ " + self._useAttribute4(pointStartLog, "pointStart")
         else:
-        
             functionJS1 += " series: [{ " + self._useAttribute4(pointStartLog, "pointStart") 
         
         
@@ -2400,6 +2437,8 @@ class visualizationGraphs(object):
         if type!='heatmap' and type != 'largeHeatmap':
             if type == 'boxplot':
                 functionJS2 = """ } ] } """ + inter + """    );""" + sortableAccordingToTable + extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
+            elif type == 'scatter3':
+                functionJS2 = """ ]} """ + inter + """    );""" + sortableAccordingToTable + extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
             else:
                 functionJS2 = """ ] } """ + inter + """    );""" + sortableAccordingToTable + extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
             #functionJS2 = """ ] } """ + inter  + """    );"""+ sortableAccordingToTable +  extraScriptButton + """  }  , function(chart) {  $('.hastip').tooltipsy(); }   ); </script> """
@@ -2444,7 +2483,11 @@ class visualizationGraphs(object):
         if type=='largeHeatmap':
             return '{0}{1}{2}{3}{4}'.format(button, jsCodeShowChartClickOnLink, container, functionJS1, functionJS2)
         elif type == 'boxplot':
+
             return '{0}{1}{2}{3}{4}{5}'.format(button, jsCodeShowChartClickOnLink, container,
+                                                   functionJS1, dataY, functionJS2)
+        elif type == 'scatter3':
+                return '{0}{1}{2}{3}{4}{5}'.format(button, jsCodeShowChartClickOnLink, container,
                                                    functionJS1, dataY, functionJS2)
         else:
             return '{0}{1}{2}{3}{4}{5}'.format(button, jsCodeShowChartClickOnLink, container, functionJS1, dataY, functionJS2)
@@ -3368,6 +3411,110 @@ class visualizationGraphs(object):
                            )
         
         return graph
+
+    def drawScatterChartWithTrendLine(self,
+                         dataY,
+                         dataTrend=None,
+                         height=None,
+                         addOptions=None,
+                         tickInterval=None,
+                         label='<b>{series.name}: </b>{point.y} <br \>',
+                         lineWidth=1,
+                         titleText=None,
+                         subtitleText=None,
+                         xAxisTitle=None,
+                         yAxisTitle=None,
+                         categories=None,
+                         seriesType=None,
+                         seriesName=None,
+                         legend=None,
+                         xAxisRotation=0,
+                         dataLabels=True,
+                         shared=True,
+                         overMouseAxisX=False,
+                         overMouseLabelX=' + this.value + ',
+                         showChartClickOnLink=False,
+                         typeAxisXScale=None,
+                         pointStartLog=None,
+                         zoomType='x',
+                         marginTop=60,
+                         interaction=False,
+                         extraArg=None,
+                         allowDecimals=None,
+                         maxY=None,
+                         yAxisType=None,
+                         extraScriptButton=None,
+                         visible=None,
+                         addTable=None,
+                         markerRadius=None,
+                         minY=None,
+                         plotLines=None,
+                         plotLinesName=None,
+                         plotBands=None,
+                         plotBandsColor=None
+                         ):
+
+            type = 'scatter3'
+
+            graph = ''
+
+            if len(dataY) > 0:
+                    tooltipVal = None
+
+                    data, legendSize, legendSizeExtra = self._parseData6(dataY=dataY, categories=categories, seriesName=seriesName, dataTrend=dataTrend)
+
+
+                    categories = None
+
+                    graph = self._draw(
+                            data, legendSize, legendSizeExtra,
+                            type=type,
+                            height=height,
+                            addOptions=addOptions,
+                            tickInterval=tickInterval,
+                            tickMinValue=None,
+                            label=label,
+                            lineWidth=lineWidth,
+                            titleText=titleText,
+                            subtitleText=subtitleText,
+                            xAxisTitle=xAxisTitle,
+                            yAxisTitle=yAxisTitle,
+                            categories=categories,
+                            legend=legend,
+                            xAxisRotation=xAxisRotation,
+                            dataLabels=dataLabels,
+                            polar=None,
+                            stacking=None,
+                            shared=shared,
+                            overMouseAxisX=overMouseAxisX,
+                            overMouseLabelX=overMouseLabelX,
+                            showChartClickOnLink=showChartClickOnLink,
+                            typeAxisXScale=typeAxisXScale,
+                            pointStartLog=pointStartLog,
+                            zoomType=zoomType,
+                            marginTop=marginTop,
+                            interaction=interaction,
+                            multiYAxis=False, multiXAxis=False, xAxisMulti=None,
+                            showInLegend=None,
+                            extraArg=extraArg,
+                            allowDecimals=allowDecimals,
+                            maxY=maxY,
+                            yAxisType=yAxisType,
+                            extraScriptButton=extraScriptButton,
+                            addTable=addTable,
+                            histogram=None,
+                            sortableAccordingToTable=None,
+                            sortableAccordingToTableDataY=None,
+                            tableName=None,
+                            sortableAccordingToTableIndexWithTrackTitle=None,
+                            plotOptions=None,
+                            tooltipVal=tooltipVal, reversed=None, minY=minY, plotLines=plotLines,
+                            categoriesY=None, plotLinesName=plotLinesName,
+                            plotBands=plotBands,
+                            plotBandsColor=plotBandsColor
+                    )
+
+            return graph
 
     def drawMultiTypeChart(self,
                          dataY,
