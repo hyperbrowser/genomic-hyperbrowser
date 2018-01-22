@@ -1,25 +1,12 @@
-from collections import OrderedDict
-
-from gold.application.HBAPI import doAnalysis
-from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
-from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
-from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.application.GalaxyInterface import GalaxyInterface
-from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
-from quick.statistic.QueryTrackVsRefGSuiteWithExternalRandGSuiteStat import QueryTrackVsRefGSuiteWithExternalRandGSuiteStat
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable, \
-    SummarizedInteractionPerTsCatV2Stat
-from quick.util import McEvaluators
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
-from gold.track.TrackStructure import TrackStructureV2
 
-class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
 
-    GSUITE_FILE_OPTIONS_BOX_KEYS = ['queryGsuite', 'refGsuite']
+class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
+
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
@@ -42,7 +29,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
 
         Mandatory method for all ProTo tools.
         """
-        return "GSuite Tracks coinciding with a group of GSuite tracks"
+        return "Group difference test - Benchmark One"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -67,17 +54,16 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         """
         return [('Select query track', 'queryTrack'),
                 ('Select the randomized query GSuite', 'queryGsuite'),
-                ('Select the categorical reference GSuite', 'refGsuite'),
+                ('Select the categorical reference GSuite', 'refGSuite'),
                 ('Select category column', 'categoryName'),
                 ('Select primary group category value', 'categoryVal'),
                 ('Select track to track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
                 ('Select summary function groups', 'catSummaryFunc')
-
                 ] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
-                cls.getInputBoxNamesForUserBinSelection() + \
-                cls.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection() + \
+               cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -203,11 +189,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
-    def getOptionsBoxQueryGsuite(cls, prevChoices):
-        return GeneralGuiTool.getHistorySelectionElement('gsuite')
-
-    @classmethod
-    def getOptionsBoxRefGsuite(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxQueryGsuite(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -222,31 +204,9 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         """
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
-    @staticmethod
-    def getOptionsBoxCategoryName(prevChoices):
-        if prevChoices.refGsuite:
-            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-            gsuite = getGSuiteFromGalaxyTN(prevChoices.refGsuite)
-            return gsuite.attributes
-
-    @staticmethod
-    def getOptionsBoxCategoryVal(prevChoices):
-        if prevChoices.refGsuite and prevChoices.categoryName:
-            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-            gsuite = getGSuiteFromGalaxyTN(prevChoices.refGsuite)
-            return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
-
-    @staticmethod
-    def getOptionsBoxSimilarityFunc(prevChoices):
-        return GSuiteStatUtils.PAIRWISE_STAT_LABELS
-
-    @staticmethod
-    def getOptionsBoxSummaryFunc(prevChoices):
-        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
-
-    @staticmethod
-    def getOptionsBoxCatSummaryFunc(prevChoices):
-        return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
+    @classmethod
+    def getOptionsBoxRefGsuite(cls, prevChoices):  # Alt: getOptionsBox2()
+        return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -304,18 +264,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
 
         Mandatory unless isRedirectTool() returns True.
         """
-        cls._setDebugModeIfSelected(choices)
-
-        analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
-                                                         genome=choices.genome)
-        querySTS = GuiBasedTsFactory.getSingleTrackTS(choices.genome, choices.queryTrack)
-        queryTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.queryGsuite)
-        refTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.refGsuite)
-        catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
-        assert choices.categoryVal in catTS
-
-        cls._execute(querySTS, queryTS, catTS, analysisBins, choices, galaxyFn)
-        # cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+        print 'Executing...'
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -330,68 +279,6 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         Optional method. Default return value if method is not defined: None
         """
         return None
-
-    @classmethod
-    def _execute(cls, querySTS, queryTS, catTS, analysisBins, choices, galaxyFn):
-        core = HtmlCore()
-        core.begin()
-        core.divBegin(divId="progress-output")
-        print str(core)
-        ts = cls.prepareTrackStructure(querySTS, queryTS, catTS)
-        analysisSpec = cls.prepareAnalysis(choices)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
-        print results
-        core = HtmlCore()
-        core.divEnd()
-        core.hideToggle(styleId="progress-output")
-        print str(core)
-        cls._printResult(results, catTS.keys(), choices)
-
-    @classmethod
-    def prepareTrackStructure(cls, querySTS, queryTS, catTS):
-        ts = TrackStructureV2()
-        ts[TrackStructureV2.QUERY_KEY] = querySTS
-        ts[TrackStructureV2.REF_KEY] = catTS
-        ts['randQuery'] = queryTS
-        return ts
-
-    @classmethod
-    def prepareAnalysis(cls, choices):
-        analysisSpec = AnalysisSpec(QueryTrackVsRefGSuiteWithExternalRandGSuiteStat)
-        analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
-        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
-
-        analysisSpec.addParameter('pairwiseStatistic',
-                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
-                                      choices.similarityFunc])
-        analysisSpec.addParameter('summaryFunc',
-                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
-        analysisSpec.addParameter('segregateNodeKey', 'reference')
-        analysisSpec.addParameter('runLocalAnalysis', "No")
-        analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
-        return analysisSpec
-
-    @classmethod
-    def _printResult(cls, results, catNames, choices):
-        core = HtmlCore()
-        core.divBegin()
-        observedAndMcSamplesTuple = tuple([results['real'].getResult(), results['rand'].getResult()])
-        hypothesisTestingResults = McEvaluators.evaluatePvalueAndNullDistribution(
-            observedAndMcSamplesTuple, 'two-tail',
-            GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[choices.similarityFunc])
-        resTableDict = OrderedDict()
-        # if choices.randType == "Wilcoxon":
-        #     for key, val in results.iteritems():
-        #         resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-        #     core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
-        # else:
-        #     for key, val in results.iteritems():
-        #         resTableDict[key] = val.getResult()
-        #     core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
-        core.tableFromDictionary(hypothesisTestingResults)
-        core.divEnd()
-        core.end()
-        print str(core)
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -512,16 +399,16 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
     #     """
     #     return None
     #
-    @classmethod
-    def isDebugMode(cls):
-        """
-        Specifies whether the debug mode is turned on. Debug mode is
-        currently mostly used within the Genomic HyperBrowser and will make
-        little difference in a plain Galaxy ProTo installation.
-
-        Optional method. Default return value if method is not defined: False
-        """
-        return True
+    # @classmethod
+    # def isDebugMode(cls):
+    #     """
+    #     Specifies whether the debug mode is turned on. Debug mode is
+    #     currently mostly used within the Genomic HyperBrowser and will make
+    #     little difference in a plain Galaxy ProTo installation.
+    #
+    #     Optional method. Default return value if method is not defined: False
+    #     """
+    #     return False
     #
     # @classmethod
     # def getOutputFormat(cls, choices):
