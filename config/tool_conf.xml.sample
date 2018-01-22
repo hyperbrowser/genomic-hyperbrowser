@@ -61,6 +61,10 @@
   </section>
 
   <section name="Domain-specific analysis" id="analyse_domain_specific">
+    <label text="Group test" id="group_test_tools"/>
+      <tool file="proto/hyperbrowser/gsuite/GroupTestQueryGSuiteVsCategoricalRefGSuiteTool.xml" />
+      <tool file="proto/hyperbrowser/article/QueryTrackVsCategoricalGSuiteTool.xml" />
+      <tool file="proto/hyperbrowser/article/CategoricalGSuiteVsGSuiteTool.xml" />
     <label text="TF workbench" id="tf_workbench_tools"/>
       <tool file="proto/hyperbrowser/tfbs/AllTargetsOfTfs.xml" />
       <tool file="proto/hyperbrowser/tfbs/AllTfsOfRegions.xml" />
