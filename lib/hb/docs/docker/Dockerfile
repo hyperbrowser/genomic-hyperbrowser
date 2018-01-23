@@ -16,3 +16,6 @@ RUN apt-get update && apt-get install -y \
    libpq-dev \
    libglu1-mesa-dev
 
+# required by R package "devtools"
+RUN apt-get update && apt-get install -y \
+   libcurl4-openssl-dev
