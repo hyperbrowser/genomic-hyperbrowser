@@ -26,8 +26,6 @@ def _install_and_check_r_library(library):
              "install.packages('%s', repos='http://cran.r-project.org', dependencies=TRUE)"
              ,"source('http://www.bioconductor.org/biocLite.R'); "
                 "biocLite('%s', suppressUpdates=TRUE, dependencies=TRUE)"
-             ,"install.packages('%s', repos='http://hyperbrowser.uio.no/eggs_repo/R', "
-                "dependencies=TRUE)"
              ,"devtools::install_version('%s', repos='http://cran.r-project.org')"
             ]
         exceptions = []
