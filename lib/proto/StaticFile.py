@@ -48,7 +48,8 @@ class StaticFile(object):
         return str(HtmlCore().link(linkText,
                                    getLoadToGalaxyHistoryURL
                                    (self.getDiskPath(relativeToBase=True),
-                                    galaxyDataType=galaxyDataType)))
+                                    galaxyDataType=galaxyDataType,
+                                    histElementName=self.getId()[-1])))
 
     def openRFigure(self, h=600, w=800):
         from proto.RSetup import r
