@@ -265,8 +265,10 @@ class ProtoGuiTestTool3(GeneralGuiTool):
 
         inFileSuffix = extractFileSuffixFromDatasetInfo(datasetInfo)
         inDatasetName = extractNameFromDatasetInfo(datasetInfo)
+        if not inDatasetName.endswith('.' + inFileSuffix):
+            inDatasetName = '.'.join([inDatasetName, inFileSuffix])
 
-        embeddedBaseFileName = '.'.join([cls._cleanUpName(inDatasetName), inFileSuffix])
+        embeddedBaseFileName = cls._cleanUpName(inDatasetName)
 
         embeddedFile = GalaxyRunSpecificFile(['embedded', embeddedBaseFileName], outFileName)
         shutil.copy(inFileName, embeddedFile.getDiskPath(ensurePath=True))
@@ -284,7 +286,8 @@ class ProtoGuiTestTool3(GeneralGuiTool):
             core.header('File contents')
             core.fieldsetBegin('Ten first lines of file: ' +
                                extractNameFromDatasetInfo(datasetInfo))
-            core.preformatted(''.join([cgi.escape(inFile.readline()) for _ in range(10)]))
+            core.preformatted(''.join([cgi.escape(inFile.readline()).decode('utf-8', 'ignore')
+                                       for _ in range(10)]))
             core.fieldsetEnd()
 
             core.header('Direct URL to file')
@@ -298,11 +301,12 @@ class ProtoGuiTestTool3(GeneralGuiTool):
 
             core.end()
 
-        return str(core)
+        return unicode(core)
 
     @classmethod
     def _writeHtmlContent(cls, htmlContent, outFileName):
-        with open(outFileName, 'w') as outFile:
+        import io
+        with io.open(outFileName, 'w', encoding='utf-8') as outFile:
             outFile.write(htmlContent)
 
     @classmethod
