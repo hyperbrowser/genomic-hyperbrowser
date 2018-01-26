@@ -414,7 +414,7 @@ class ProtoGuiTestTool3(GeneralGuiTool):
                        'history element on disk and is a copy of the original.')
         core.paragraph('Below is an example of a tool illustration.')
         core.paragraph('The example link at the bottom currently points to the Galaxy ProTo '
-                       'GitHub page. It typically points to a Galaxy example page, but does '
+                       'GitHub page. It would typically point to a Galaxy example page, but does '
                        'not do so in this case, as Galaxy Pages currently are installation '
                        'dependent and cannot be distributed with the source code.')
         return str(core)
