@@ -415,7 +415,7 @@ class GenericToolController(BaseToolController):
             oldval = self.oldValues[id] if id in self.oldValues else None
             if i in self.resetBoxes:
                 self.oldValues[id] = val
-                if oldval == None or val != oldval:
+                if val != oldval:
                     reset = True
 
         ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds)
