@@ -520,7 +520,7 @@ class GenericToolController(BaseToolController):
         #batchargs = '|'.join([repr(c.items()) if not isinstance(c, basestring) else c for c in choices])
 
         #print choices
-        if outputFormat == 'html':
+        if self.prototype.shouldAppendHtmlHeaderAndFooter(outputFormat):
             print \
 '''<html>
 
@@ -560,7 +560,7 @@ class GenericToolController(BaseToolController):
         username = self.params['userEmail'] if 'userEmail' in self.params else ''
         self._executeTool(getClassName(self.prototype), choices, galaxyFn=self.jobFile, username=username)
 
-        if outputFormat == 'html':
+        if self.prototype.shouldAppendHtmlHeaderAndFooter(outputFormat):
             print '''</pre>
 
 </body>

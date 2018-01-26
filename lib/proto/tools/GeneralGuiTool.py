@@ -89,6 +89,10 @@ class GeneralGuiTool(object):
     def validateAndReturnErrors(choices):
         return None
 
+    @staticmethod
+    def shouldAppendHtmlHeaderAndFooter(outputFormat):
+        return outputFormat == 'html'
+
     # Convenience methods
 
     @classmethod
