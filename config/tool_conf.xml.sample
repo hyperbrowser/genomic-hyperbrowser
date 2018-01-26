@@ -130,6 +130,7 @@
   <section id="protoGuiTestTools" name="ProTo GUI test tools">
     <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
     <tool file="proto/guitest/ProtoGuiTestTool2.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool3.xml" />
   </section>
   <section id="installedProto" name="Installed ProTo tools">
   </section>
