@@ -22,6 +22,15 @@ is the name of the history element, mostly used for presentation purposes.
 """
 
 
+def getFileSuffix(fn):
+    return os.path.splitext(fn)[1].replace('.', '')
+
+
+def stripFileSuffix(fn):
+    suffix = getFileSuffix(fn)
+    return fn[:-len(suffix)-1]
+
+
 def ensurePathExists(fn):
     "Assumes that fn consists of a basepath (folder) and a filename, and ensures that the folder exists."
     path = os.path.split(fn)[0]
