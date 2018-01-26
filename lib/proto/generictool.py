@@ -521,16 +521,20 @@ class GenericToolController(BaseToolController):
 
         #print choices
         if outputFormat == 'html':
-            print '''
-            <html>
-                <head>
-                    <script type="text/javascript" src="%(prefix)s/static/scripts/libs/jquery/jquery.js"></script>
-                    <link href="%(prefix)s/static/style/base.css" rel="stylesheet" type="text/css" />
-                </head>
-                <body>
-                    <p style="text-align:right"><a href="#debug" onclick="$('.debug').toggle()">Toggle debug</a></p>
-                    <pre>
-            ''' % {'prefix': URL_PREFIX}
+            print \
+'''<html>
+
+<head>
+    <script type="text/javascript" src="%(prefix)s/static/scripts/libs/jquery/jquery.js"></script>
+    <link href="%(prefix)s/static/style/base.css" rel="stylesheet" type="text/css" />
+    <link href="%(prefix)s/static/style/proto_base.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<p style="text-align:right"><a href="#debug" onclick="$('.debug').toggle()">Toggle debug</a></p>
+
+<pre>''' % {'prefix': URL_PREFIX}
         #    print '<div class="debug">Corresponding batch run line:\n', '$Tool[%s](%s)</div>' % (self.toolId, batchargs)
 
 
@@ -557,14 +561,15 @@ class GenericToolController(BaseToolController):
         self._executeTool(getClassName(self.prototype), choices, galaxyFn=self.jobFile, username=username)
 
         if outputFormat == 'html':
-            print '''
-                </pre>
-                </body>
-                <script type="text/javascript">
-                    $('.debug').hide()
-                </script>
-            </html>
-            '''
+            print '''</pre>
+
+</body>
+
+<script type="text/javascript">
+    $('.debug').hide()
+</script>
+
+</html>'''
 
     def _executeTool(self, toolClassName, choices, galaxyFn, username):
         if hasattr(super(GenericToolController, self), '_executeTool'):

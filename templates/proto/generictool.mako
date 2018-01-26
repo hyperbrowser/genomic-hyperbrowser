@@ -131,7 +131,7 @@ else:
 
     %if control.getIllustrationImage():
         %if os.path.exists(control.getIllustrationImage().getDiskPath()):
-            <p><hr><img width="100%" style="max-width: 640px; width: expression(this.width > 640 ? 640: true);" src="${control.getIllustrationImage().getURL()}"></p>
+            <p><hr><img style="max-width: 640px; width: expression(this.width > 640 ? 640 : true);" src="${control.getIllustrationImage().getURL()}"></p>
         %elif control.isDebugging():
             <p class="warningmessage">No imagefile exists at: ${control.getIllustrationImage().getDiskPath()}</p>
         %endif
