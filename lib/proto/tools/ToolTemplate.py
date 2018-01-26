@@ -203,7 +203,7 @@ class ToolTemplate(GeneralGuiTool):
     #     This is defined by a list of HistElement objects, as in the
     #     following example:
     #
-    #        from proto.GeneralGuiTool import HistElement
+    #        from proto.tools.GeneralGuiTool import HistElement
     #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
     #
     #     It is good practice to use class constants for longer strings.
@@ -385,10 +385,10 @@ class ToolTemplate(GeneralGuiTool):
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
     #     """
     #     The title (name) of the main output history element.
     #
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+    #     return cls.getToolSelectionName()
