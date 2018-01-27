@@ -2,6 +2,7 @@
 # instance is dynamically imported into namespace of <modulename>.mako template
 # (see galaxy/webapps/controllers/proto.py)
 
+import logging
 import sys, os, json, shelve
 import cPickle as pickle
 from zlib import compress, decompress
@@ -15,6 +16,8 @@ from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, GA
 from BaseToolController import BaseToolController
 from proto.ProtoToolRegister import getToolPrototype
 from proto.StaticFile import StaticImage
+
+log = logging.getLogger( __name__ )
 
 
 def getClassName(obj):
@@ -612,18 +615,25 @@ class GenericToolController(BaseToolController):
         return image
 
     def getDemoURL(self):
-        demo = self.prototype.getDemoSelections()
-        url = '?mako=generictool&tool_id=' + self.toolId
-        for i, id in enumerate(self.inputIds):
-            if self.inputTypes[i] == '__genome__':
-                id = 'dbkey'
-            #else:
-            #    id = self.inputIds[i]
-            try:
-                val = getattr(demo, id)
-            except:
-                val = demo[i]
-            url += '&' + id + '=' + val
+        try:
+            demo = self.prototype.getDemoSelections()
+            url = '?mako=generictool&tool_id=' + self.toolId
+            for i, id in enumerate(self.inputIds):
+                if self.inputTypes[i] == '__genome__':
+                    id = 'dbkey'
+                #else:
+                #    id = self.inputIds[i]
+                try:
+                    val = getattr(demo, id)
+                except:
+                    val = demo[i]
+                url += '&' + id + '=' + val
+        except Exception, e:
+            log.exception(e)
+            log.debug(i)
+            log.debug(repr(demo))
+            url = None
+
         return url
 
     def hasDemoURL(self):
@@ -631,8 +641,8 @@ class GenericToolController(BaseToolController):
             demo = self.prototype.getDemoSelections()
             if len(demo) > 0:
                 return True
-        except:
-            pass
+        except Exception, e:
+            log.exception(e)
         return False
 
     def getFullExampleURL(self):
@@ -644,7 +654,7 @@ class GenericToolController(BaseToolController):
             if url is not None:
                 return True
         except Exception, e:
-            pass
+            log.exception(e)
         return False
 
     def isRedirectTool(self):
