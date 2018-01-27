@@ -119,7 +119,21 @@
   <section id="protoTools" name="ProTo development tools">
     <tool file="proto/GenerateToolsTool.xml" />
     <tool file="proto/ExploreToolsTool.xml" />
+    <tool file="proto/HideInExplorerTool.xml" />
+    <tool file="proto/DebugToolImportTool.xml" />
     <tool file="proto/InstallToolsTool.xml" />
+
+    <!-- hidden tools -->
+    <tool file="proto/FileImport.xml" />
+    <!-- end hidden tools -->
+  </section>
+  <section id="protoGuiTestTools" name="ProTo GUI test tools">
+    <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool2.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool3.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool4.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool5.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool6.xml" />
   </section>
   <section id="installedProto" name="Installed ProTo tools">
   </section>

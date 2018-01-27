@@ -8,10 +8,10 @@ for arg in "$@"; do
     [ "$arg" = "--skip-venv" ] && SET_VENV=0
 done
 
-# Conda Python is in use, do not use virtualenv
-if python -V 2>&1 | grep -q 'Continuum Analytics'; then
-    SET_VENV=0
-fi
+## Conda Python is in use, do not use virtualenv
+#if python -V 2>&1 | grep -q 'Continuum Analytics'; then
+#    SET_VENV=0
+#fi
 
 DEV_WHEELS=0
 FETCH_WHEELS=1
@@ -127,7 +127,7 @@ if [ $SET_VENV -eq 1 ]; then
         then
             printf "Setting up R in virtualenv at $GALAXY_VIRTUAL_ENV\n"
 
-            echo '\nexport R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
+            printf '\nexport R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
             for LIB in $GALAXY_VIRTUAL_ENV/lib/python*
             do
                 echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py

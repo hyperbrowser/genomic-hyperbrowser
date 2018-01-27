@@ -435,6 +435,9 @@
     <datatype extension="biom1" type="galaxy.datatypes.text:Biom1" display_in_upload="True" subclass="True" mimetype="application/json" />
     <!-- Strand-specific Coordinate Count Datatype used by the Center for Eukaryotic Gene Regulation labs at Penn State -->
     <datatype extension="scidx" type="galaxy.datatypes.interval:ScIdx" display_in_upload="true" />
+
+  <!-- Galaxy ProTo datatypes -->
+    <datatype extension="customhtml" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
   </registration>
   <sniffers>
     <!--

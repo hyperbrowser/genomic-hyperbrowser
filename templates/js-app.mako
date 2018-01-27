@@ -3,7 +3,7 @@
 <html>
     <!--js-app.mako-->
     <head>
-        <title>Galaxy</title>
+        <title>${app.config.html_title}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ## For mobile browsers, don't scale up
         <meta name="viewport" content="maximum-scale=1.0">
@@ -20,6 +20,7 @@
             'bootstrap-tour',
         )}
         ${ page_setup() }
+        <link rel="icon" href="static/favicon.png">
     </head>
 
     <body scroll="no" class="full-content">
