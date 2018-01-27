@@ -442,16 +442,16 @@ class ProtoGuiTestTool3(GeneralGuiTool):
         """
         return "https://github.com/elixir-no-nels/proto"
 
-    @classmethod
-    def isDebugMode(cls):
-        """
-        Specifies whether the debug mode is turned on. Debug mode is
-        currently mostly used within the Genomic HyperBrowser and will make
-        little difference in a plain Galaxy ProTo installation.
-
-        Optional method. Default return value if method is not defined: False
-        """
-        return False
+    # @classmethod
+    # def isDebugMode(cls):
+    #     """
+    #     Specifies whether the debug mode is turned on. Debug mode is
+    #     currently mostly used within the Genomic HyperBrowser and will make
+    #     little difference in a plain Galaxy ProTo installation.
+    #
+    #     Optional method. Default return value if method is not defined: False
+    #     """
+    #     return False
 
     @classmethod
     def getOutputFormat(cls, choices):
