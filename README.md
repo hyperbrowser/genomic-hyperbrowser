@@ -258,9 +258,10 @@ class MyTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
     # Existing option boxes
-      + [('Extra box number %s' % (i+1), 'extra%s' % i) for i \
+      + [('Extra box number {}'.format(i+1), 'extra{}'.format(i)) for i \
          in range(cls.MAX_NUM_OF_EXTRA_BOXES)]
     (...)
+    @classmethod
     def _getOptionBoxExtra(cls, prevChoices, index):
         if index < numBoxes(prevChoices): #numBoxes is placeholder for some logic that returns the exact number of boxes
             #code for option box
@@ -270,12 +271,12 @@ class MyTool(GeneralGuiTool):
     def setupExtraBoxMethods(cls):
         from functools import partial
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-            setattr(cls, 'getOptionsBoxExtra%s' % i, partial(cls._getOptionBoxExtra, index=i))
+            setattr(cls, 'getOptionsBoxExtra{}'.format(i), partial(cls._getOptionBoxExtra, index=i))
     (...)
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         (...)
-        extraChoices = [getattr(choices, 'extra%s' % i) \
+        extraChoices = [getattr(choices, 'extra{}'.format(i)) \
                         for i in range(numBoxes(choices))]
 
 (...)
@@ -288,7 +289,7 @@ up `MAX_NUM_OF_EXTRA_BOXES` new option boxes. The code for each box is essential
 ```
     @classmethod
     def getOptionsBoxExtra0(cls, prevChoices):
-        return cls._methodForOptionsBox(prevChoices, index=0)
+        return cls._getOptionBoxExtra(prevChoices, index=0)
 ```
 
 #### Use class constants to store selection box text
