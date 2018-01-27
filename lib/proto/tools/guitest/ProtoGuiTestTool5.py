@@ -281,17 +281,17 @@ class ProtoGuiTestTool5(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return False
 
     @classmethod
     def isRedirectTool(cls):
@@ -347,29 +347,34 @@ class ProtoGuiTestTool5(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: True
     #     """
     #     return []
-    #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
-    # @classmethod
-    # def getToolIllustration(cls):
-    #     """
-    #     Specifies an id used by StaticFile.py to reference an illustration
-    #     file on disk. The id is a list of optional directory names followed
-    #     by a filename. The base directory is STATIC_PATH as defined by
-    #     Config.py. The full path is created from the base directory
-    #     followed by the id.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
+
+    @classmethod
+    def getToolDescription(cls):
+        """
+        Specifies a help text in HTML that is displayed below the tool.
+
+        Optional method. Default return value if method is not defined: ''
+        """
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.paragraph('Not publicly available, in order to test the "isPublic()" method.')
+        core.paragraph('There should also be an error message for incorrect illustration ' \
+                       'path, testing "getDebugMode()".')
+        return unicode(core)
+
+    @classmethod
+    def getToolIllustration(cls):
+        """
+        Specifies an id used by StaticFile.py to reference an illustration
+        file on disk. The id is a list of optional directory names followed
+        by a filename. The base directory is STATIC_PATH as defined by
+        Config.py. The full path is created from the base directory
+        followed by the id.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return ['doesnotexist.png']
+
     # @classmethod
     # def getFullExampleURL(cls):
     #     """
@@ -379,18 +384,18 @@ class ProtoGuiTestTool5(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
+
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
     # @classmethod
     # def getOutputFormat(cls, choices):
     #     """
