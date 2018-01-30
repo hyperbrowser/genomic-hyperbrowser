@@ -2,7 +2,6 @@
 # The run.sh script will install these libraries in the
 # .venv/R/library virtualenv directory.
 
-devtools
 Biobase
 bioDist
 flashClust
