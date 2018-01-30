@@ -209,7 +209,7 @@ with open(galaxyFn, 'w') as outFile:
 ```
 
 #### More than one output history element
-Galaxy ProTo supports the creation of more than one history element, as in this code snippet (**Note: As of version 0.9, this functionality is not operational. We are working on a fix.**):
+Galaxy ProTo supports the creation of more than one history element, as in this code snippet:
 
 ```
 class MyTool(GeneralGuiTool):
@@ -352,5 +352,6 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v1.0: All HyperBrowser code been cleaned out. Tools for generating, developing and installing Galaxy ProTo tools have been greatly improved. Several core components have been refactored and numerous bugs have been fixed. Example tools for testing the GUI elements, showcasing most of the functionality, have been implemented. First fully functional release.
 * v0.9.1: Small bugfixes and updates to the README.md.
 * v0.9: Full functionality, but still with rests of HyperBrowser code to ble cleaned out.
