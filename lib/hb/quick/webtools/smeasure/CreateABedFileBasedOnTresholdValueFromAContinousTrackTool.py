@@ -31,8 +31,6 @@ class CreateABedFileBasedOnTresholdValueFromAContinousTrackTool(GeneralGuiTool, 
                 [('Select tresholds [values>treshold] (eg. 0.7,0.9)', 'treshold')
                  ] + cls.getInputBoxNamesForUserBinSelection()
 
-
-
     @classmethod
     def getOptionsBoxGsuite(cls):  # Alt: getOptionsBox1()
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
