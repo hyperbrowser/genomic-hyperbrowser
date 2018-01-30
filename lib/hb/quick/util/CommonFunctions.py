@@ -729,3 +729,26 @@ def cleanUpTrackType(trackTypeStr):
         trackTypeStr = trackTypeStr.replace(old, new).strip()
 
     return trackTypeStr
+
+def dump_args_and_more(func):
+    '''This decorator dumps out the arguments passed to a function before calling it,
+    as well as return value or any exception'''
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+
+    def echo_func(*args,**kwargs):
+        print fname, ":", ', '.join(
+            '%s=%r' % entry
+            for entry in zip(argnames,args) + kwargs.items())
+        try:
+            result = func(*args, **kwargs)
+            print "-> ", result
+            return result
+        except:
+            print '-> raised exception:'
+            import traceback
+            traceback.print_exc()
+            raise
+
+
+    return echo_func
