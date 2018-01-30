@@ -7,7 +7,7 @@ REPLACE_TEMPLATES = {}
 #Inside $-signs, e.g. $MCFDR$
 REPLACE_TEMPLATES['$MCFDR$']=\
 '''
- [setup:_MCFDR sampling depth=quick:Quick and rough indication/mediumGlobal:Moderate resolution of global p-value/mediumLocal:Moderate resolution of global and local p-values/robust:Fixed 10 000 samples (slow)]
+ [setup:_MCFDR sampling depth=quick:Quick and rough indication/mediumGlobal:Moderate resolution of global p-value/mediumLocal:Moderate resolution of global and local p-values/robust:Fixed 10 000 samples (slow)/scratch:for testing]
  [numResamplings:<setup--quick>=50:]
  [numSamplesPerChunk:<setup--quick>=10:]
  [maxSamples:<setup--quick>=150:]
@@ -35,6 +35,13 @@ REPLACE_TEMPLATES['$MCFDR$']=\
  [mThreshold:<setup--robust>=1:]
  [globalPvalThreshold:<setup--robust>=1.0:]
  [fdrThreshold:<setup--robust>=1.0:]
+
+ [numResamplings:<setup--scratch>=3:]
+ [numSamplesPerChunk:<setup--scratch>=3:]
+ [maxSamples:<setup--scratch>=3:]
+ [mThreshold:<setup--scratch>=1:]
+ [globalPvalThreshold:<setup--scratch>=1.0:]
+ [fdrThreshold:<setup--scratch>=1.0:]
 
  [fdrCriterion:=simultaneous:]
 '''
