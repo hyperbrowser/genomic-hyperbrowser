@@ -110,8 +110,8 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                     spec = AnalysisSpec(StatTvOutputWriterStat)
                     spec.addParameter('trackFilePath', fn)
                     spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
-                    spec.addParameter('keepOnesProb', firstProb[0]) #TODO: Use all values in loop..
-                    spec.addParameter('introduceZerosProb', secondProb[0])
+                    spec.addParameter('keepOnesProb', f)
+                    spec.addParameter('introduceZerosProb', s)
 
                     doAnalysis(spec, bins, [iTrack])
 
