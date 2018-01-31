@@ -23,7 +23,7 @@ class NoisyPointTrackGenerationStatUnsplittable(Statistic):
         sampler = SparseSampling(binSize, points, self._keepOnesProb, self._introduceZerosProb)
         sampledStartsArray = sampler.get_samples()
         outTv = TrackView(self._region, sampledStartsArray, None, None,None,None,None,None,borderHandling='crop',allowOverlaps=False)
-        return TrackView
+        return outTv
 
     def _createChildren(self):
         self._rawData = self._addChild(RawDataStat(self._region, self._track, TrackFormatReq(dense=False, interval=False)))
@@ -43,7 +43,7 @@ class SparseSampling:
 
     def sample_ones(self):
         if self._ones.size==0:
-            return numpy.array([])
+            return numpy.array([], dtype='int')
         poisson_lambda = self._ones.size*self._ones_prob
         N = numpy.random.poisson(poisson_lambda, 1)
         samples = numpy.random.choice(self._ones, N, replace=False)

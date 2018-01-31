@@ -12,6 +12,7 @@ from proto.tools.GeneralGuiTool import HistElement
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.StatTvOutputWriterStat import StatTvOutputWriterStat
 from quick.statistic.NoisyPointTrackGenerationStat import NoisyPointTrackGenerationStat
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -74,13 +75,24 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         for i, iTrack in enumerate(gSuite.allTracks()):
             trackTitle = iTrack.title
             trackPath = iTrack.path
-            spec = AnalysisSpec(NoisyPointTrackGenerationStat)
+            #spec = AnalysisSpec(NoisyPointTrackGenerationStat)
+            from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+            sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
+            fn = sf.getDiskPath(ensurePath=True)
+            import urllib
+            fn = urllib.quote(fn, safe='')
+            print sf.getLink('My file')
+            spec = AnalysisSpec(StatTvOutputWriterStat)
+            spec.addParameter('trackFilePath', fn)
+            spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
             spec.addParameter('keepOnesProb', firstProb[0]) #TODO: Use all values in loop..
             spec.addParameter('introduceZerosProb', secondProb[0])
-            resObj = doAnalysis(spec, bins, [iTrack])
-            for reg in resObj:
-                localResult = resObj[reg]
-                print reg, ': ',localResult
+
+            doAnalysis(spec, bins, [iTrack])
+            # resObj = doAnalysis(spec, bins, [iTrack])
+            # for reg in resObj:
+            #     localResult = resObj[reg]
+            #     print reg, ': ',localResult
 
             #cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
             #            nr, f, s)
