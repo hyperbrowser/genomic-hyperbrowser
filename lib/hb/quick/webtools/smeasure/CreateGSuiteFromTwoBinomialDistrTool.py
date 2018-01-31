@@ -76,26 +76,60 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             trackTitle = iTrack.title
             trackPath = iTrack.path
             #spec = AnalysisSpec(NoisyPointTrackGenerationStat)
-            from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-            sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
-            fn = sf.getDiskPath(ensurePath=True)
-            import urllib
-            fn = urllib.quote(fn, safe='')
-            print sf.getLink('My file')
-            spec = AnalysisSpec(StatTvOutputWriterStat)
-            spec.addParameter('trackFilePath', fn)
-            spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
-            spec.addParameter('keepOnesProb', firstProb[0]) #TODO: Use all values in loop..
-            spec.addParameter('introduceZerosProb', secondProb[0])
 
-            doAnalysis(spec, bins, [iTrack])
+            for f in firstProb:
+                for s in secondProb:
+
+                    #build track
+                    attr = OrderedDict()
+                    attr['originalTrackName'] = str(trackTitle)
+                    attr['trackVersion'] = str(i)
+                    attr['R=1 and Y=1'] = str(f)
+                    attr['R=0 and Y=0'] = str(s)
+
+                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                        extraFileName=trackTitle + '--' + str(
+                                                            i) + '-' + str(f) + '-' + str(s),
+                                                        suffix='bed')
+                    gSuiteTrack = GSuiteTrack(uri)
+                    outFn = gSuiteTrack.path
+                    ensurePathExists(outFn)
+
+
+
+
+                    # from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+                    # sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
+                    # fn = sf.getDiskPath(ensurePath=True)
+                    import urllib
+                    fn = urllib.quote(outFn, safe='')
+                    # print sf.getLink('My file')
+
+
+
+                    spec = AnalysisSpec(StatTvOutputWriterStat)
+                    spec.addParameter('trackFilePath', fn)
+                    spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
+                    spec.addParameter('keepOnesProb', firstProb[0]) #TODO: Use all values in loop..
+                    spec.addParameter('introduceZerosProb', secondProb[0])
+
+                    doAnalysis(spec, bins, [iTrack])
+
+                    gs = GSuiteTrack(uri, title=''.join(
+                        trackTitle + '--' + str(i) + '-' + str(f) + '-' + str(s)), genome=genome,
+                                     attributes=attr)
+
+                    outGSuite.addTrack(gs)
+
+        GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
+
             # resObj = doAnalysis(spec, bins, [iTrack])
             # for reg in resObj:
             #     localResult = resObj[reg]
             #     print reg, ': ',localResult
 
-            #cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
-            #            nr, f, s)
+
+
         # getIntervals = cls._readRegSpec(regSpec, binSpec, gSuite.genome)
         #
         # outGSuite = cls._countResults(gSuite, getIntervals, firstProb, secondProb, number,
