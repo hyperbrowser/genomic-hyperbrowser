@@ -1,23 +1,45 @@
-import base64
-import os
+from collections import OrderedDict
 
-import shutil
-
-from proto.config.Config import STATIC_PATH, GALAXY_FILE_PATH, GALAXY_BASE_DIR
-from proto.config.Security import GALAXY_SECURITY_HELPER_OBJ
+from proto.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
+ALL_GUI_ELEMENTS = [
+    ('Check box', 'checkBox'),
+    ('Selection box', 'selectionBox'),
+    ('Selection box (empty)', 'selectionBoxEmpty'),
+    ('Text area (simple, non-dynamic)', 'textAreaSimple'),
+    ('Text area (medium, with default value, non-dynamic)', 'textAreaMediumWithDefault'),
+    ('Text area (large, readonly)', 'textAreaLargeReadonly'),
+    ('Password field', 'passwordField'),
+    ('Raw HTML', 'rawHtml'),
+    ('Table', 'table'),
+    ('Check box list', 'checkBoxList'),
+    ('Genome selection box', 'genomeSelection'),
+    ('History selection box', 'historySelection'),
+    ('History selection box (tabular files only)', 'historySelectionTabular'),
+    ('History check box list', 'historyCheckBoxList'),
+    ('History check box list (tabular files only)', 'historyCheckBoxListTabular')
+]
 
-class FileImport(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
+SELECTION_A = 'Selection A'
+SELECTION_B = 'Selection B'
+SELECTION_C = 'Selection C'
+DEFAULT_TEXT = 'Default text'
+READ_ONLY_TEXT = "Read only text"
+TABLE = [['Header A', 'Header B'], [1, 2], ['Some text', 'Other text']]
+CHECK_BOX_LIST = OrderedDict([('Something', True), ('Something else', False)])
+
+
+class ProtoGuiTestTool1(GeneralGuiTool):
+    @classmethod
+    def getToolName(cls):
         """
         Specifies a header of the tool, which is displayed at the top of the
         page.
 
         Mandatory method for all ProTo tools.
         """
-        return "Import file to history"
+        return "Basic GUI elements: Test tool #1 for Galaxy ProTo GUI"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -40,10 +62,7 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('', 'basicQuestionId'),
-                ('Input filename', 'input'),
-                ('Format', 'format'),
-                ('Datatype', 'datatype')]
+        return ALL_GUI_ELEMENTS
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -76,7 +95,7 @@ class FileImport(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxBasicQuestionId(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxCheckBox(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -107,10 +126,6 @@ class FileImport(GeneralGuiTool):
 
         Genome selection box:   '__genome__'
         - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
 
         History selection box:  ('__history__',) |
                                 ('__history__', 'bed', 'wig')
@@ -169,10 +184,10 @@ class FileImport(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return '__hidden__', ''
+        return True
 
     @classmethod
-    def getOptionsBoxInput(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxSelectionBox(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -185,16 +200,61 @@ class FileImport(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return '__hidden__', ''
+        return [SELECTION_A, SELECTION_B, SELECTION_C]
 
-    @staticmethod
-    def getOptionsBoxDatatype(prevChoices):
+    @classmethod
+    def getOptionsBoxSelectionBoxEmpty(cls, prevChoices):  # Alt: getOptionsBox2()
+        return []
 
-        return '__hidden__', prevChoices.format if prevChoices.format else 'bed'
+    @classmethod
+    def getOptionsBoxTextAreaSimple(cls, prevChoices):
+        return ''
 
-    @staticmethod
-    def getOptionsBoxFormat(prevChoices):
-        return '__hidden__', ''
+    @classmethod
+    def getOptionsBoxTextAreaMediumWithDefault(cls, prevChoices):
+        return DEFAULT_TEXT, 3
+
+    @classmethod
+    def getOptionsBoxTextAreaLargeReadonly(cls, prevChoices):
+        return READ_ONLY_TEXT, 5, True
+
+    @classmethod
+    def getOptionsBoxPasswordField(cls, prevChoices):
+        return '__password__'
+
+    @classmethod
+    def getOptionsBoxRawHtml(cls, prevChoices):
+        core = HtmlCore()
+        core.image('static/images/pearson.png')
+        return '__rawstr__', str(core)
+
+    @classmethod
+    def getOptionsBoxTable(cls, prevChoices):
+        return TABLE
+
+    @classmethod
+    def getOptionsBoxCheckBoxList(cls, prevChoices):
+        return CHECK_BOX_LIST
+
+    @classmethod
+    def getOptionsBoxGenomeSelection(cls, prevChoices):
+        return '__genome__'
+
+    @classmethod
+    def getOptionsBoxHistorySelection(cls, prevChoices):
+        return '__history__',
+
+    @classmethod
+    def getOptionsBoxHistorySelectionTabular(cls, prevChoices):
+        return '__history__', 'tabular'
+
+    @classmethod
+    def getOptionsBoxHistoryCheckBoxList(cls, prevChoices):
+        return '__multihistory__',
+
+    @classmethod
+    def getOptionsBoxHistoryCheckBoxListTabular(cls, prevChoices):
+        return '__multihistory__', 'tabular'
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -252,32 +312,7 @@ class FileImport(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        input = str(choices.input)
-
-        try:
-            input = base64.urlsafe_b64decode(input)
-            input = GALAXY_SECURITY_HELPER_OBJ.decode_guid(input)
-        except:
-            raise Exception('Old-style "import to history" URLs have been deprecated due to '
-                            'security concerns. If you clicked from the output of an analysis '
-                            'job, please re-run the job to get updated links.')
-
-        input = os.path.abspath(input)
-        output = galaxyFn
-
-        if not input.startswith(GALAXY_BASE_DIR):
-            input = os.path.sep.join([GALAXY_BASE_DIR.rstrip(os.path.sep),
-                                           input.lstrip(os.path.sep)])
-
-        # datatype = choices.format if choices.format else choices.datatype
-
-        # if input.endswith('.' + datatype):
-        shutil.copy(input, output)
-        # else:
-            # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
-            #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            # raise Exception(input + ' not allowed to import!')
-
+        pass
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -291,7 +326,12 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return ''
+        core = HtmlCore()
+        core.smallHeader('GUI selections (value of prevChoices/choices attributes)')
+        for guiElement in ALL_GUI_ELEMENTS:
+            core.descriptionLine(guiElement[0] + ' [' + guiElement[1] + ']',
+                                 repr(getattr(choices, guiElement[1])))
+        return str(core)
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -304,18 +344,18 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
+
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
     # @classmethod
     # def isRedirectTool(cls):
     #     """
@@ -346,28 +386,19 @@ class FileImport(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @classmethod
-    # def isBatchTool(cls):
-    #     """
-    #     Specifies if this tool could be run from batch using the batch. The
-    #     batch run line can be fetched from the info box at the bottom of the
-    #     tool.
-    #     """
-    #     return cls.isHistoryTool()
+    @classmethod
+    def isDynamic(cls):
+        """
+        Specifies whether changing the content of textboxes causes the page
+        to reload. Returning False stops the need for reloading the tool
+        after each input, resulting in less lags for the user.
+
+        Optional method. Default return value if method is not defined: True
+        """
+        return False
     #
     # @classmethod
-    # def isDynamic(cls):
-    #     """
-    #     Specifies whether changing the content of textboxes causes the page
-    #     to reload. Returning False stops the need for reloading the tool
-    #     after each input, resulting in less lags for the user.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return True
-    #
-    # @staticmethod
-    # def getResetBoxes():
+    # def getResetBoxes(cls):
     #     """
     #     Specifies a list of input boxes which resets the subsequent stored
     #     choices previously made. The input boxes are specified by index
@@ -419,26 +450,26 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: False
     #     """
     #     return False
-
-    @classmethod
-    def getOutputFormat(cls, choices):
-        """
-        The format of the history element with the output of the tool. Note
-        that if 'html' is returned, any print statements in the execute()
-        method is printed to the output dataset. For text-based output
-        (e.g. bed) the output dataset only contains text written to the
-        galaxyFn file, while all print statements are redirected to the info
-        field of the history item box.
-
-        Note that for 'html' output, standard HTML header and footer code is
-        added to the output dataset. If one wants to write the complete HTML
-        page, use the restricted output format 'customhtml' instead.
-
-        Optional method. Default return value if method is not defined:
-        'html'
-        """
-        return choices.format if choices.format else choices.datatype
-
+    #
+    # @classmethod
+    # def getOutputFormat(cls, choices):
+    #     """
+    #     The format of the history element with the output of the tool. Note
+    #     that if 'html' is returned, any print statements in the execute()
+    #     method is printed to the output dataset. For text-based output
+    #     (e.g. bed) the output dataset only contains text written to the
+    #     galaxyFn file, while all print statements are redirected to the info
+    #     field of the history item box.
+    #
+    #     Note that for 'html' output, standard HTML header and footer code is
+    #     added to the output dataset. If one wants to write the complete HTML
+    #     page, use the restricted output format 'customhtml' instead.
+    #
+    #     Optional method. Default return value if method is not defined:
+    #     'html'
+    #     """
+    #     return 'html'
+    #
     # @classmethod
     # def getOutputName(cls, choices=None):
     #     """
@@ -448,7 +479,3 @@ class FileImport(GeneralGuiTool):
     #     the name of the tool.
     #     """
     #     return cls.getToolSelectionName()
-
-    @staticmethod
-    def shouldAppendHtmlHeaderAndFooter(outputFormat):
-        return False

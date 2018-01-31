@@ -1,7 +1,7 @@
 from gold.application.GalaxyInterface import GalaxyInterface
 import quick.extra.GoogleMapsInterface as GMI
 
-from proto.hyper_gui import *
+from proto.gui import *
 from proto.BaseToolController import *
 from proto.hyperbrowser.HyperBrowserControllerMixin import HyperBrowserControllerMixin
 

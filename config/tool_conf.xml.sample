@@ -383,10 +383,19 @@
     <!-- end hidden tools -->
   </section>
 
+  <section id="protoGuiTestTools" name="ProTo GUI test tools">
+    <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool2.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool3.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool4.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool5.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool6.xml" />
+  </section>
+
   <label text=" " id="space0"/>
-  
+
   <label text="Standard Galaxy tools" id="galaxy_tools" />
-  
+
   <section id="getext" name="Get Data">
     <tool file="data_source/upload.xml" />
     <tool file="data_source/ucsc_tablebrowser.xml" />

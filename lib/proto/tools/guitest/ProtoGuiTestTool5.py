@@ -1,23 +1,16 @@
-import base64
-import os
-
-import shutil
-
-from proto.config.Config import STATIC_PATH, GALAXY_FILE_PATH, GALAXY_BASE_DIR
-from proto.config.Security import GALAXY_SECURITY_HELPER_OBJ
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
-class FileImport(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
+class ProtoGuiTestTool5(GeneralGuiTool):
+    @classmethod
+    def getToolName(cls):
         """
         Specifies a header of the tool, which is displayed at the top of the
         page.
 
         Mandatory method for all ProTo tools.
         """
-        return "Import file to history"
+        return "Redirect tool (square matrix): Test tool #5 for Galaxy ProTo GUI"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -40,10 +33,7 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('', 'basicQuestionId'),
-                ('Input filename', 'input'),
-                ('Format', 'format'),
-                ('Datatype', 'datatype')]
+        return [('Select number of rows/cols (equal)', 'numRowCols')]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -74,9 +64,9 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-
+    #
     @classmethod
-    def getOptionsBoxBasicQuestionId(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxNumRowCols(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -107,10 +97,6 @@ class FileImport(GeneralGuiTool):
 
         Genome selection box:   '__genome__'
         - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
 
         History selection box:  ('__history__',) |
                                 ('__history__', 'bed', 'wig')
@@ -169,33 +155,24 @@ class FileImport(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return '__hidden__', ''
+        return '2'
 
-    @classmethod
-    def getOptionsBoxInput(cls, prevChoices):  # Alt: getOptionsBox2()
-        """
-        See getOptionsBoxFirstKey().
-
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
-        """
-        return '__hidden__', ''
-
-    @staticmethod
-    def getOptionsBoxDatatype(prevChoices):
-
-        return '__hidden__', prevChoices.format if prevChoices.format else 'bed'
-
-    @staticmethod
-    def getOptionsBoxFormat(prevChoices):
-        return '__hidden__', ''
-
+    # @classmethod
+    # def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    #     """
+    #     See getOptionsBoxFirstKey().
+    #
+    #     prevChoices is a namedtuple of selections made by the user in the
+    #     previous input boxes (that is, a namedtuple containing only one element
+    #     in this case). The elements can accessed either by index, e.g.
+    #     prevChoices[0] for the result of input box 1, or by key, e.g.
+    #     prevChoices.key (case 2).
+    #
+    #     Mandatory for the subsequent keys (after the first key) defined in
+    #     getInputBoxNames(), if any.
+    #     """
+    #     return ''
+    #
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -238,46 +215,21 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-
-    @classmethod
-    def execute(cls, choices, galaxyFn=None, username=''):
-        """
-        Is called when execute-button is pushed by web-user. Should print
-        output as HTML to standard out, which will be directed to a results
-        page in Galaxy history. If getOutputFormat is anything else than
-        'html', the output should be written to the file with path galaxyFn.
-        If needed, StaticFile can be used to get a path where additional
-        files can be put (cls, e.g. generated image files). choices is a list
-        of selections made by web-user in each options box.
-
-        Mandatory unless isRedirectTool() returns True.
-        """
-        input = str(choices.input)
-
-        try:
-            input = base64.urlsafe_b64decode(input)
-            input = GALAXY_SECURITY_HELPER_OBJ.decode_guid(input)
-        except:
-            raise Exception('Old-style "import to history" URLs have been deprecated due to '
-                            'security concerns. If you clicked from the output of an analysis '
-                            'job, please re-run the job to get updated links.')
-
-        input = os.path.abspath(input)
-        output = galaxyFn
-
-        if not input.startswith(GALAXY_BASE_DIR):
-            input = os.path.sep.join([GALAXY_BASE_DIR.rstrip(os.path.sep),
-                                           input.lstrip(os.path.sep)])
-
-        # datatype = choices.format if choices.format else choices.datatype
-
-        # if input.endswith('.' + datatype):
-        shutil.copy(input, output)
-        # else:
-            # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
-            #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            # raise Exception(input + ' not allowed to import!')
-
+    #
+    # @classmethod
+    # def execute(cls, choices, galaxyFn=None, username=''):
+    #     """
+    #     Is called when execute-button is pushed by web-user. Should print
+    #     output as HTML to standard out, which will be directed to a results
+    #     page in Galaxy history. If getOutputFormat is anything else than
+    #     'html', the output should be written to the file with path galaxyFn.
+    #     If needed, StaticFile can be used to get a path where additional
+    #     files can be put (cls, e.g. generated image files). choices is a list
+    #     of selections made by web-user in each options box.
+    #
+    #     Mandatory unless isRedirectTool() returns True.
+    #     """
+    #     print 'Executing...'
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -291,7 +243,32 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return ''
+        return No
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
+        """
+        Should validate the selected input parameters. If the parameters are
+        not valid, an error text explaining the problem should be returned.
+        The GUI then shows this text to the user (if not empty) and greys
+        out the execute button (even if the text is empty). If all
+        parameters are valid, the method should return None, which enables
+        the execute button.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        if not choices.numRowCols:
+            return 'Please enter the number of rows/cols of the new square matrix.'
+
+        try:
+            numRowCols = int(choices.numRowCols)
+        except:
+            return 'Please enter an integer'
+
+        from proto.tools.guitest.ProtoGuiTestTool6 import ProtoGuiTestTool6
+        if numRowCols < 2 or numRowCols > ProtoGuiTestTool6.MAX_ROWS_AND_COLS:
+            return 'Number of rows and cols must be in the interval [2, {}].'.format(
+                ProtoGuiTestTool6.MAX_ROWS_AND_COLS
+            )
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -304,38 +281,41 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
-    # @classmethod
-    # def isRedirectTool(cls):
-    #     """
-    #     Specifies whether the tool should redirect to an URL when the Execute
-    #     button is clicked.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
-    # @classmethod
-    # def getRedirectURL(cls, choices):
-    #     """
-    #     This method is called to return an URL if the isRedirectTool method
-    #     returns True.
-    #
-    #     Mandatory method if isRedirectTool() returns True.
-    #     """
-    #     return ''
-    #
+
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return False
+
+    @classmethod
+    def isRedirectTool(cls):
+        """
+        Specifies whether the tool should redirect to an URL when the Execute
+        button is clicked.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
+    @classmethod
+    def getRedirectURL(cls, choices):
+        """
+        This method is called to return an URL if the isRedirectTool method
+        returns True.
+
+        Mandatory method if isRedirectTool() returns True.
+        """
+        from proto.CommonFunctions import createToolURL
+        return createToolURL('proto_proto_gui_test_tool6',
+                             numRows=choices.numRowCols,
+                             numCols=choices.numRowCols)
+
     # @classmethod
     # def isHistoryTool(cls):
     #     """
@@ -345,15 +325,6 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: True
     #     """
     #     return True
-    #
-    # @classmethod
-    # def isBatchTool(cls):
-    #     """
-    #     Specifies if this tool could be run from batch using the batch. The
-    #     batch run line can be fetched from the info box at the bottom of the
-    #     tool.
-    #     """
-    #     return cls.isHistoryTool()
     #
     # @classmethod
     # def isDynamic(cls):
@@ -366,8 +337,8 @@ class FileImport(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @staticmethod
-    # def getResetBoxes():
+    # @classmethod
+    # def getResetBoxes(cls):
     #     """
     #     Specifies a list of input boxes which resets the subsequent stored
     #     choices previously made. The input boxes are specified by index
@@ -376,29 +347,34 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: True
     #     """
     #     return []
-    #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
-    # @classmethod
-    # def getToolIllustration(cls):
-    #     """
-    #     Specifies an id used by StaticFile.py to reference an illustration
-    #     file on disk. The id is a list of optional directory names followed
-    #     by a filename. The base directory is STATIC_PATH as defined by
-    #     Config.py. The full path is created from the base directory
-    #     followed by the id.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
+
+    @classmethod
+    def getToolDescription(cls):
+        """
+        Specifies a help text in HTML that is displayed below the tool.
+
+        Optional method. Default return value if method is not defined: ''
+        """
+        from proto.HtmlCore import HtmlCore
+        core = HtmlCore()
+        core.paragraph('Not publicly available, in order to test the "isPublic()" method.')
+        core.paragraph('There should also be an error message for incorrect illustration ' \
+                       'path, testing "getDebugMode()".')
+        return unicode(core)
+
+    @classmethod
+    def getToolIllustration(cls):
+        """
+        Specifies an id used by StaticFile.py to reference an illustration
+        file on disk. The id is a list of optional directory names followed
+        by a filename. The base directory is STATIC_PATH as defined by
+        Config.py. The full path is created from the base directory
+        followed by the id.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return ['doesnotexist.png']
+
     # @classmethod
     # def getFullExampleURL(cls):
     #     """
@@ -408,37 +384,37 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
 
     @classmethod
-    def getOutputFormat(cls, choices):
+    def isDebugMode(cls):
         """
-        The format of the history element with the output of the tool. Note
-        that if 'html' is returned, any print statements in the execute()
-        method is printed to the output dataset. For text-based output
-        (e.g. bed) the output dataset only contains text written to the
-        galaxyFn file, while all print statements are redirected to the info
-        field of the history item box.
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
 
-        Note that for 'html' output, standard HTML header and footer code is
-        added to the output dataset. If one wants to write the complete HTML
-        page, use the restricted output format 'customhtml' instead.
-
-        Optional method. Default return value if method is not defined:
-        'html'
+        Optional method. Default return value if method is not defined: False
         """
-        return choices.format if choices.format else choices.datatype
+        return True
 
+    # @classmethod
+    # def getOutputFormat(cls, choices):
+    #     """
+    #     The format of the history element with the output of the tool. Note
+    #     that if 'html' is returned, any print statements in the execute()
+    #     method is printed to the output dataset. For text-based output
+    #     (e.g. bed) the output dataset only contains text written to the
+    #     galaxyFn file, while all print statements are redirected to the info
+    #     field of the history item box.
+    #
+    #     Note that for 'html' output, standard HTML header and footer code is
+    #     added to the output dataset. If one wants to write the complete HTML
+    #     page, use the restricted output format 'customhtml' instead.
+    #
+    #     Optional method. Default return value if method is not defined:
+    #     'html'
+    #     """
+    #     return 'html'
+    #
     # @classmethod
     # def getOutputName(cls, choices=None):
     #     """
@@ -448,7 +424,3 @@ class FileImport(GeneralGuiTool):
     #     the name of the tool.
     #     """
     #     return cls.getToolSelectionName()
-
-    @staticmethod
-    def shouldAppendHtmlHeaderAndFooter(outputFormat):
-        return False

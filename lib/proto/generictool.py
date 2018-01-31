@@ -1,6 +1,8 @@
 #
-# instance is dynamically imported into namespace of <modulename>.mako template (see web/controllers/hyper.py)
+# instance is dynamically imported into namespace of <modulename>.mako template
+# (see galaxy/webapps/controllers/proto.py)
 
+import logging
 import sys, os, json, shelve
 import cPickle as pickle
 from zlib import compress, decompress
@@ -14,6 +16,8 @@ from proto.config.Security import galaxySecureEncodeId, galaxySecureDecodeId, GA
 from BaseToolController import BaseToolController
 from proto.ProtoToolRegister import getToolPrototype
 from proto.StaticFile import StaticImage
+
+log = logging.getLogger( __name__ )
 
 
 def getClassName(obj):
@@ -414,7 +418,7 @@ class GenericToolController(BaseToolController):
             oldval = self.oldValues[id] if id in self.oldValues else None
             if i in self.resetBoxes:
                 self.oldValues[id] = val
-                if oldval == None or val != oldval:
+                if val != oldval:
                     reset = True
 
         ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds)
@@ -519,17 +523,21 @@ class GenericToolController(BaseToolController):
         #batchargs = '|'.join([repr(c.items()) if not isinstance(c, basestring) else c for c in choices])
 
         #print choices
-        if outputFormat == 'html':
-            print '''
-            <html>
-                <head>
-                    <script type="text/javascript" src="%(prefix)s/static/scripts/libs/jquery/jquery.js"></script>
-                    <link href="%(prefix)s/static/style/base.css" rel="stylesheet" type="text/css" />
-                </head>
-                <body>
-                    <p style="text-align:right"><a href="#debug" onclick="$('.debug').toggle()">Toggle debug</a></p>
-                    <pre>
-            ''' % {'prefix': URL_PREFIX}
+        if self.prototype.shouldAppendHtmlHeaderAndFooter(outputFormat):
+            print \
+'''<html>
+
+<head>
+    <script type="text/javascript" src="%(prefix)s/static/scripts/libs/jquery/jquery.js"></script>
+    <link href="%(prefix)s/static/style/base.css" rel="stylesheet" type="text/css" />
+    <link href="%(prefix)s/static/style/proto_base.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+<p style="text-align:right"><a href="#debug" onclick="$('.debug').toggle()">Toggle debug</a></p>
+
+<pre>''' % {'prefix': URL_PREFIX}
         #    print '<div class="debug">Corresponding batch run line:\n', '$Tool[%s](%s)</div>' % (self.toolId, batchargs)
 
 
@@ -555,15 +563,16 @@ class GenericToolController(BaseToolController):
         username = self.params['userEmail'] if 'userEmail' in self.params else ''
         self._executeTool(getClassName(self.prototype), choices, galaxyFn=self.jobFile, username=username)
 
-        if outputFormat == 'html':
-            print '''
-                </pre>
-                </body>
-                <script type="text/javascript">
-                    $('.debug').hide()
-                </script>
-            </html>
-            '''
+        if self.prototype.shouldAppendHtmlHeaderAndFooter(outputFormat):
+            print '''</pre>
+
+</body>
+
+<script type="text/javascript">
+    $('.debug').hide()
+</script>
+
+</html>'''
 
     def _executeTool(self, toolClassName, choices, galaxyFn, username):
         if hasattr(super(GenericToolController, self), '_executeTool'):
@@ -620,9 +629,11 @@ class GenericToolController(BaseToolController):
                     val = demo[i]
                 url += '&' + id + '=' + val
         except Exception, e:
-            from gold.application.LogSetup import logException
-            logException(e)
+            log.exception(e)
+            log.debug(i)
+            log.debug(repr(demo))
             url = None
+
         return url
 
     def hasDemoURL(self):
@@ -630,18 +641,12 @@ class GenericToolController(BaseToolController):
             demo = self.prototype.getDemoSelections()
             if len(demo) > 0:
                 return True
-        except:
-            pass
+        except Exception, e:
+            log.exception(e)
         return False
 
     def getFullExampleURL(self):
-        try:
-            url = self.prototype.getFullExampleURL()
-        except Exception, e:
-            from gold.application.LogSetup import logException
-            logException(e)
-            url = None
-        return url
+        return self.prototype.getFullExampleURL()
 
     def hasFullExampleURL(self):
         try:
@@ -649,9 +654,7 @@ class GenericToolController(BaseToolController):
             if url is not None:
                 return True
         except Exception, e:
-            from gold.application.LogSetup import logException
-            logException(e)
-            pass
+            log.exception(e)
         return False
 
     def isRedirectTool(self):
@@ -681,16 +684,10 @@ class GenericToolController(BaseToolController):
     #def ajaxValidate(self):
     #    return self.prototype.validateAndReturnErrors(self.inputValues)
 
-
     def getInputValueForTrack(self, id, name):
         return None
 
 
-def getController(transaction = None, job = None):
-    #from gold.util.Profiler import Profiler
-    #prof = Profiler()
-    #prof.start()
+def getController(transaction=None, job=None):
     control = GenericToolController(transaction, job)
-    #prof.stop()
-    #prof.printStats()
     return control

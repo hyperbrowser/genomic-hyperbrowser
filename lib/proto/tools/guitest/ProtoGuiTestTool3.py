@@ -1,23 +1,23 @@
-import base64
 import os
 
 import shutil
 
-from proto.config.Config import STATIC_PATH, GALAXY_FILE_PATH, GALAXY_BASE_DIR
-from proto.config.Security import GALAXY_SECURITY_HELPER_OBJ
+from proto.CommonFunctions import extractNameFromDatasetInfo, extractFnFromDatasetInfo, \
+    extractFileSuffixFromDatasetInfo, getLoadToGalaxyHistoryURL, getFileSuffix, stripFileSuffix
+from proto.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
-class FileImport(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
+class ProtoGuiTestTool3(GeneralGuiTool):
+    @classmethod
+    def getToolName(cls):
         """
         Specifies a header of the tool, which is displayed at the top of the
         page.
 
         Mandatory method for all ProTo tools.
         """
-        return "Import file to history"
+        return "Inputs and outputs: Test tool #3 for Galaxy ProTo GUI"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -40,10 +40,7 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('', 'basicQuestionId'),
-                ('Input filename', 'input'),
-                ('Format', 'format'),
-                ('Datatype', 'datatype')]
+        return [('Select input histories', 'histories')]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -76,7 +73,7 @@ class FileImport(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxBasicQuestionId(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxHistories(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -107,10 +104,6 @@ class FileImport(GeneralGuiTool):
 
         Genome selection box:   '__genome__'
         - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
 
         History selection box:  ('__history__',) |
                                 ('__history__', 'bed', 'wig')
@@ -169,32 +162,23 @@ class FileImport(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return '__hidden__', ''
+        return '__multihistory__',
 
-    @classmethod
-    def getOptionsBoxInput(cls, prevChoices):  # Alt: getOptionsBox2()
-        """
-        See getOptionsBoxFirstKey().
-
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
-        """
-        return '__hidden__', ''
-
-    @staticmethod
-    def getOptionsBoxDatatype(prevChoices):
-
-        return '__hidden__', prevChoices.format if prevChoices.format else 'bed'
-
-    @staticmethod
-    def getOptionsBoxFormat(prevChoices):
-        return '__hidden__', ''
+    # @classmethod
+    # def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
+    #     """
+    #     See getOptionsBoxFirstKey().
+    #
+    #     prevChoices is a namedtuple of selections made by the user in the
+    #     previous input boxes (that is, a namedtuple containing only one element
+    #     in this case). The elements can accessed either by index, e.g.
+    #     prevChoices[0] for the result of input box 1, or by key, e.g.
+    #     prevChoices.key (case 2).
+    #
+    #     Mandatory for the subsequent keys (after the first key) defined in
+    #     getInputBoxNames(), if any.
+    #     """
+    #     return ''
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -218,26 +202,31 @@ class FileImport(GeneralGuiTool):
     #     """
     #     return ['testChoice1', '..']
     #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.tools.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+    @classmethod
+    def getExtraHistElements(cls, choices):
+        """
+        Defines extra history elements to be created when clicking execute.
+        This is defined by a list of HistElement objects, as in the
+        following example:
+
+           from proto.tools.GeneralGuiTool import HistElement
+           return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
+
+        It is good practice to use class constants for longer strings.
+
+        In the execute() method, one typically needs to fetch the path to
+        the dataset referred to by the extra history element. To fetch the
+        path, use the dict cls.extraGalaxyFn with the defined history title
+        as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
+
+        Optional method. Default return value if method is not defined: None
+        """
+        if cls._anyHistoriesSelected(choices):
+            from proto.tools.GeneralGuiTool import HistElement
+            return [HistElement(name=name,
+                                format='customhtml',
+                                label=cls._createHistLabel(name)) for name in
+                    cls._getNamesForSelectedHistories(choices)[1:]]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -252,32 +241,73 @@ class FileImport(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        input = str(choices.input)
+        for i, datasetInfo in enumerate(cls._getDatasetInfoForSelectedHistories(choices)):
+            inFileName, outFileName = cls._getInputAndOutputFileNames(i, datasetInfo, galaxyFn)
+            embeddedFile = cls._createEmbeddedFile(datasetInfo, inFileName, outFileName)
+            htmlContent = cls._generateHtmlContent(datasetInfo, embeddedFile, inFileName)
+            cls._writeHtmlContent(htmlContent, outFileName)
 
-        try:
-            input = base64.urlsafe_b64decode(input)
-            input = GALAXY_SECURITY_HELPER_OBJ.decode_guid(input)
-        except:
-            raise Exception('Old-style "import to history" URLs have been deprecated due to '
-                            'security concerns. If you clicked from the output of an analysis '
-                            'job, please re-run the job to get updated links.')
+    @classmethod
+    def _getInputAndOutputFileNames(cls, i, datasetInfo, galaxyFn):
+        if i == 0:
+            outFileName = galaxyFn
+        else:
+            datasetName = extractNameFromDatasetInfo(datasetInfo)
+            outFileName = cls.extraGalaxyFn[datasetName]
 
-        input = os.path.abspath(input)
-        output = galaxyFn
+        inFileName = extractFnFromDatasetInfo(datasetInfo)
 
-        if not input.startswith(GALAXY_BASE_DIR):
-            input = os.path.sep.join([GALAXY_BASE_DIR.rstrip(os.path.sep),
-                                           input.lstrip(os.path.sep)])
+        return inFileName, outFileName
 
-        # datatype = choices.format if choices.format else choices.datatype
+    @classmethod
+    def _createEmbeddedFile(cls, datasetInfo, inFileName, outFileName):
+        from proto.StaticFile import GalaxyRunSpecificFile
 
-        # if input.endswith('.' + datatype):
-        shutil.copy(input, output)
-        # else:
-            # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
-            #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            # raise Exception(input + ' not allowed to import!')
+        inFileSuffix = extractFileSuffixFromDatasetInfo(datasetInfo)
+        inDatasetName = extractNameFromDatasetInfo(datasetInfo)
+        if not inDatasetName.endswith('.' + inFileSuffix):
+            inDatasetName = '.'.join([inDatasetName, inFileSuffix])
 
+        embeddedBaseFileName = cls._cleanUpName(inDatasetName)
+
+        embeddedFile = GalaxyRunSpecificFile(['embedded', embeddedBaseFileName], outFileName)
+        shutil.copy(inFileName, embeddedFile.getDiskPath(ensurePath=True))
+
+        return embeddedFile
+
+    @classmethod
+    def _generateHtmlContent(cls, datasetInfo, embeddedFile, inFileName):
+        with open(inFileName) as inFile:
+            import cgi
+
+            core = HtmlCore()
+            core.begin()
+
+            core.header('File contents')
+            core.fieldsetBegin('Ten first lines of file: ' +
+                               extractNameFromDatasetInfo(datasetInfo))
+            core.preformatted(''.join([cgi.escape(inFile.readline()).decode('utf-8', 'ignore')
+                                       for _ in range(10)]))
+            core.fieldsetEnd()
+
+            core.header('Direct URL to file')
+            embeddedBaseFileName = embeddedFile.getId()[-1]
+            core.paragraph(embeddedFile.getLink(embeddedBaseFileName))
+
+            core.header('Open file in Galaxy history')
+            embeddedFileSuffix = getFileSuffix(embeddedBaseFileName)
+            core.paragraph(embeddedFile.getLoadToHistoryLink
+                           (embeddedBaseFileName, galaxyDataType=embeddedFileSuffix))
+
+            core.end()
+
+        return unicode(core)
+
+    @classmethod
+    def _writeHtmlContent(cls, htmlContent, outFileName):
+        import io
+        with io.open(outFileName, 'w', encoding='utf-8') as outFile:
+            outFile.write(htmlContent)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -291,7 +321,8 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return ''
+        if not cls._anyHistoriesSelected(choices):
+            return "Please select at least one history element"
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -304,18 +335,18 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
+
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
     # @classmethod
     # def isRedirectTool(cls):
     #     """
@@ -347,15 +378,6 @@ class FileImport(GeneralGuiTool):
     #     return True
     #
     # @classmethod
-    # def isBatchTool(cls):
-    #     """
-    #     Specifies if this tool could be run from batch using the batch. The
-    #     batch run line can be fetched from the info box at the bottom of the
-    #     tool.
-    #     """
-    #     return cls.isHistoryTool()
-    #
-    # @classmethod
     # def isDynamic(cls):
     #     """
     #     Specifies whether changing the content of textboxes causes the page
@@ -366,8 +388,8 @@ class FileImport(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @staticmethod
-    # def getResetBoxes():
+    # @classmethod
+    # def getResetBoxes(cls):
     #     """
     #     Specifies a list of input boxes which resets the subsequent stored
     #     choices previously made. The input boxes are specified by index
@@ -376,39 +398,50 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: True
     #     """
     #     return []
-    #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
-    # @classmethod
-    # def getToolIllustration(cls):
-    #     """
-    #     Specifies an id used by StaticFile.py to reference an illustration
-    #     file on disk. The id is a list of optional directory names followed
-    #     by a filename. The base directory is STATIC_PATH as defined by
-    #     Config.py. The full path is created from the base directory
-    #     followed by the id.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getFullExampleURL(cls):
-    #     """
-    #     Specifies an URL to an example page that describes the tool, for
-    #     instance a Galaxy page.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
+
+    @classmethod
+    def getToolDescription(cls):
+        """
+        Specifies a help text in HTML that is displayed below the tool.
+
+        Optional method. Default return value if method is not defined: ''
+        """
+        core = HtmlCore()
+        core.paragraph('This test tool creates one output history element for each input '
+                       'history element. The output element is a HTML page showing the first '
+                       '10 lines of the corresponding file, as well as a link to the '
+                       'embedded full file. The embedded file are stored together with the '
+                       'history element on disk and is a copy of the original.')
+        core.paragraph('Below is an example of a tool illustration.')
+        core.paragraph('The example link at the bottom currently points to the Galaxy ProTo '
+                       'GitHub page. It would typically point to a Galaxy example page, but does '
+                       'not do so in this case, as Galaxy Pages currently are installation '
+                       'dependent and cannot be distributed with the source code.')
+        return str(core)
+
+    @classmethod
+    def getToolIllustration(cls):
+        """
+        Specifies an id used by StaticFile.py to reference an illustration
+        file on disk. The id is a list of optional directory names followed
+        by a filename. The base directory is STATIC_PATH as defined by
+        Config.py. The full path is created from the base directory
+        followed by the id.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return ['logo', 'ELIXIR_NORWAY_logo_transparent.png']
+
+    @classmethod
+    def getFullExampleURL(cls):
+        """
+        Specifies an URL to an example page that describes the tool, for
+        instance a Galaxy page.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return "https://github.com/elixir-no-nels/proto"
+
     # @classmethod
     # def isDebugMode(cls):
     #     """
@@ -437,18 +470,39 @@ class FileImport(GeneralGuiTool):
         Optional method. Default return value if method is not defined:
         'html'
         """
-        return choices.format if choices.format else choices.datatype
+        return 'customhtml'
 
-    # @classmethod
-    # def getOutputName(cls, choices=None):
-    #     """
-    #     The title (name) of the main output history element.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     the name of the tool.
-    #     """
-    #     return cls.getToolSelectionName()
+    @classmethod
+    def getOutputName(cls, choices=None):
+        """
+        The title (name) of the main output history element.
 
-    @staticmethod
-    def shouldAppendHtmlHeaderAndFooter(outputFormat):
-        return False
+        Optional method. Default return value if method is not defined:
+        the name of the tool.
+        """
+        if cls._anyHistoriesSelected(choices):
+            historyName = cls._getNamesForSelectedHistories(choices)[0]
+            return cls._createHistLabel(historyName)
+
+    @classmethod
+    def _anyHistoriesSelected(cls, choices):
+        return any(sel for sel in choices.histories.values())
+
+    @classmethod
+    def _getNamesForSelectedHistories(cls, choices):
+        return [extractNameFromDatasetInfo(datasetInfo) for datasetInfo in
+                cls._getDatasetInfoForSelectedHistories(choices)]
+
+    @classmethod
+    def _getDatasetInfoForSelectedHistories(cls, choices):
+        return [val for val in choices.histories.values() if val]
+
+    @classmethod
+    def _cleanUpName(cls, historyName):
+        histNum, histLabel = historyName.split(' - ', 1)
+        return '_'.join([histNum] + histLabel.lower().split(' '))
+
+    @classmethod
+    def _createHistLabel(cls, name):
+        cleanupName = cls._cleanUpName(name)
+        return 'Embedded file: ' + cleanupName

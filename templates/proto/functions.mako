@@ -5,7 +5,7 @@ from urllib import quote, unquote
 import json
 from string import lower
 
-import proto.hyper_gui as gui
+import proto.gui as gui
 %>
 
 <%def name="staticInfoBox(name, info)">

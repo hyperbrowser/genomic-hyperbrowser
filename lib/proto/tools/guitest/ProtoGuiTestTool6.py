@@ -1,23 +1,21 @@
-import base64
-import os
-
-import shutil
-
-from proto.config.Config import STATIC_PATH, GALAXY_FILE_PATH, GALAXY_BASE_DIR
-from proto.config.Security import GALAXY_SECURITY_HELPER_OBJ
+from proto.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
-class FileImport(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
+class ProtoGuiTestTool6(GeneralGuiTool):
+    MAX_ROWS_AND_COLS = 5
+    SELECT_R_OPERATION = '-- No selection (or finished selecting) --'
+    CLEAR_OPERATION_QUEUE = '-- Clear matrix operation queue --'
+
+    @classmethod
+    def getToolName(cls):
         """
         Specifies a header of the tool, which is displayed at the top of the
         page.
 
         Mandatory method for all ProTo tools.
         """
-        return "Import file to history"
+        return "Variable number of inputs and R: Test tool #6 for Galaxy ProTo GUI"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -40,10 +38,14 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('', 'basicQuestionId'),
-                ('Input filename', 'input'),
-                ('Format', 'format'),
-                ('Datatype', 'datatype')]
+        return [('Number of rows (2-{})'.format(cls.MAX_ROWS_AND_COLS), 'numRows'),
+                ('Number of columns (2-{})'.format(cls.MAX_ROWS_AND_COLS), 'numCols')] +\
+               [('Value in matrix element ({}, {})'.format(i, j), 'extra{}_{}'.format(i, j))
+                for i in xrange(cls.MAX_ROWS_AND_COLS) for j in xrange(cls.MAX_ROWS_AND_COLS)] +\
+               [('Matrix', 'matrix'),
+                ('Select next R single matrix operation', 'operation'),
+                ('Operation queue', 'queue'),
+                ('Operation queue (Html)', 'queueHtml')]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -76,7 +78,7 @@ class FileImport(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxBasicQuestionId(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxNumRows(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -107,10 +109,6 @@ class FileImport(GeneralGuiTool):
 
         Genome selection box:   '__genome__'
         - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
 
         History selection box:  ('__history__',) |
                                 ('__history__', 'bed', 'wig')
@@ -169,10 +167,10 @@ class FileImport(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return '__hidden__', ''
+        return '2'
 
     @classmethod
-    def getOptionsBoxInput(cls, prevChoices):  # Alt: getOptionsBox2()
+    def getOptionsBoxNumCols(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
@@ -185,16 +183,63 @@ class FileImport(GeneralGuiTool):
         Mandatory for the subsequent keys (after the first key) defined in
         getInputBoxNames(), if any.
         """
-        return '__hidden__', ''
+        return '2'
 
-    @staticmethod
-    def getOptionsBoxDatatype(prevChoices):
+    @classmethod
+    def _getOptionBoxExtra(cls, prevChoices, i, j):
+        if i < int(prevChoices.numRows) and j < int(prevChoices.numCols):
+            return '0'
 
-        return '__hidden__', prevChoices.format if prevChoices.format else 'bed'
+    @classmethod
+    def setupExtraBoxMethods(cls):
+        from functools import partial
+        for i in xrange(cls.MAX_ROWS_AND_COLS):
+            for j in xrange(cls.MAX_ROWS_AND_COLS):
+                setattr(cls, 'getOptionsBoxExtra{}_{}'.format(i, j),
+                        partial(cls._getOptionBoxExtra, i=i, j=j))
 
-    @staticmethod
-    def getOptionsBoxFormat(prevChoices):
-        return '__hidden__', ''
+    @classmethod
+    def getOptionsBoxMatrix(cls, prevChoices):
+        return cls._getMatrixFromChoices(prevChoices)
+
+    @classmethod
+    def _getMatrixFromChoices(cls, prevChoices):
+        import numpy as np
+        allVals = np.array([float(_) for _ in cls._getExtraChoices(prevChoices)])
+        matrix = allVals.reshape((int(prevChoices.numRows), int(prevChoices.numCols))).tolist()
+        return matrix
+
+    @classmethod
+    def getOptionsBoxOperation(cls, prevChoices):
+        return [cls.SELECT_R_OPERATION, 'crossprod', 't', 'solve', cls.CLEAR_OPERATION_QUEUE]
+
+    @classmethod
+    def getOptionsBoxQueue(cls, prevChoices):
+        queue = prevChoices.queue
+        operation = prevChoices.operation
+
+        if operation == cls.CLEAR_OPERATION_QUEUE:
+            ret = ''
+        elif operation == cls.SELECT_R_OPERATION:
+            ret = queue if queue is not None else ''
+        else:
+            ret = '|'.join([queue, operation]) if queue else operation
+
+        return '__hidden__', ret
+
+    @classmethod
+    def getOptionsBoxQueueHtml(cls, prevChoices):
+        queue = prevChoices.queue
+        core = HtmlCore()
+
+        core.smallHeader('Queue of R single matrix operations')
+        if queue:
+            for i, operation in enumerate(queue.split('|')):
+                core.descriptionLine(str(i + 1), operation)
+        else:
+            core.paragraph('No matrix operations selected.')
+
+        return '__rawstr__', unicode(core)
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -205,19 +250,24 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def getDemoSelections(cls):
-    #     """
-    #     Defines a set of demo inputs to the option boxes in the
-    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
-    #     If not None, a Demo button appears in the interface. Clicking the
-    #     button fills the option boxed with the defined demo values.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return ['testChoice1', '..']
-    #
+
+    @classmethod
+    def getDemoSelections(cls):
+        """
+        Defines a set of demo inputs to the option boxes in the
+        order defined by getOptionBoxNames and getOptionsBoxOrder.
+        If not None, a Demo button appears in the interface. Clicking the
+        button fills the option boxed with the defined demo values.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return ['2', '2', '3', '4'] +\
+               [''] * (cls.MAX_ROWS_AND_COLS - 2) +\
+               ['1', '2'] +\
+               [''] * (cls.MAX_ROWS_AND_COLS - 2) +\
+               [''] * ((cls.MAX_ROWS_AND_COLS - 2) * cls.MAX_ROWS_AND_COLS) +\
+               ['None', cls.SELECT_R_OPERATION, 'crossprod|solve|t', 'None']
+
     # @classmethod
     # def getExtraHistElements(cls, choices):
     #     """
@@ -252,32 +302,25 @@ class FileImport(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        input = str(choices.input)
+        from proto.RSetup import r
+
+        core = HtmlCore()
 
         try:
-            input = base64.urlsafe_b64decode(input)
-            input = GALAXY_SECURITY_HELPER_OBJ.decode_guid(input)
-        except:
-            raise Exception('Old-style "import to history" URLs have been deprecated due to '
-                            'security concerns. If you clicked from the output of an analysis '
-                            'job, please re-run the job to get updated links.')
+            mat = cls._getMatrixFromChoices(choices)
+            for operation in choices.queue.split('|'):
+                mat = r[operation](mat).tolist()
+        except Exception, e:
+            core.paragraph(str(e))
+        else:
+            core.smallHeader('Output matrix after all R single matrix operations have been '
+                             'carried out:')
+            core.tableHeader([])
+            for rowNum in range(len(mat)):
+                core.tableLine(mat[rowNum])
+            core.tableFooter()
 
-        input = os.path.abspath(input)
-        output = galaxyFn
-
-        if not input.startswith(GALAXY_BASE_DIR):
-            input = os.path.sep.join([GALAXY_BASE_DIR.rstrip(os.path.sep),
-                                           input.lstrip(os.path.sep)])
-
-        # datatype = choices.format if choices.format else choices.datatype
-
-        # if input.endswith('.' + datatype):
-        shutil.copy(input, output)
-        # else:
-            # print input, input_real, 'not allowed', os.path.realpath(STATIC_PATH), \
-            #     os.path.realpath(GALAXY_FILE_PATH), datatype
-            # raise Exception(input + ' not allowed to import!')
-
+        return unicode(core)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -291,7 +334,34 @@ class FileImport(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return ''
+        for optionsBox in ['numRows', 'numCols']:
+            val = getattr(choices, optionsBox)
+            try:
+                num = int(val)
+                if num < 2 or num > cls.MAX_ROWS_AND_COLS:
+                    return '"{}" is not in interval [2, {}]: {}'.format(
+                        optionsBox, cls.MAX_ROWS_AND_COLS, val)
+            except:
+                return '"{}" is not an integer: {}'.format(optionsBox, val)
+
+        extraChoices = ProtoGuiTestTool6._getExtraChoices(choices)
+        for x, val in enumerate(extraChoices):
+            try:
+                num = float(val)
+            except:
+                numCols = int(choices.numCols)
+                i = x / numCols
+                j = x % numCols
+                return 'Value in matrix element ({}, {}) is not a float: {}'.format(i, j, val)
+
+        if not choices.queue:
+            return 'Please select at least one R matrix operation'
+
+    @classmethod
+    def _getExtraChoices(cls, choices):
+        return [getattr(choices, 'extra{}_{}'.format(i, j)) \
+                for i in xrange(int(choices.numRows))
+                for j in xrange(int(choices.numCols))]
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -304,18 +374,18 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return None
-    #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
+
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
     # @classmethod
     # def isRedirectTool(cls):
     #     """
@@ -335,26 +405,17 @@ class FileImport(GeneralGuiTool):
     #     Mandatory method if isRedirectTool() returns True.
     #     """
     #     return ''
-    #
-    # @classmethod
-    # def isHistoryTool(cls):
-    #     """
-    #     Specifies if a History item should be created when the Execute button
-    #     is clicked.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return True
-    #
-    # @classmethod
-    # def isBatchTool(cls):
-    #     """
-    #     Specifies if this tool could be run from batch using the batch. The
-    #     batch run line can be fetched from the info box at the bottom of the
-    #     tool.
-    #     """
-    #     return cls.isHistoryTool()
-    #
+
+    @classmethod
+    def isHistoryTool(cls):
+        """
+        Specifies if a History item should be created when the Execute button
+        is clicked.
+
+        Optional method. Default return value if method is not defined: True
+        """
+        return False
+
     # @classmethod
     # def isDynamic(cls):
     #     """
@@ -366,8 +427,8 @@ class FileImport(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @staticmethod
-    # def getResetBoxes():
+    # @classmethod
+    # def getResetBoxes(cls):
     #     """
     #     Specifies a list of input boxes which resets the subsequent stored
     #     choices previously made. The input boxes are specified by index
@@ -419,26 +480,26 @@ class FileImport(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined: False
     #     """
     #     return False
-
-    @classmethod
-    def getOutputFormat(cls, choices):
-        """
-        The format of the history element with the output of the tool. Note
-        that if 'html' is returned, any print statements in the execute()
-        method is printed to the output dataset. For text-based output
-        (e.g. bed) the output dataset only contains text written to the
-        galaxyFn file, while all print statements are redirected to the info
-        field of the history item box.
-
-        Note that for 'html' output, standard HTML header and footer code is
-        added to the output dataset. If one wants to write the complete HTML
-        page, use the restricted output format 'customhtml' instead.
-
-        Optional method. Default return value if method is not defined:
-        'html'
-        """
-        return choices.format if choices.format else choices.datatype
-
+    #
+    # @classmethod
+    # def getOutputFormat(cls, choices):
+    #     """
+    #     The format of the history element with the output of the tool. Note
+    #     that if 'html' is returned, any print statements in the execute()
+    #     method is printed to the output dataset. For text-based output
+    #     (e.g. bed) the output dataset only contains text written to the
+    #     galaxyFn file, while all print statements are redirected to the info
+    #     field of the history item box.
+    #
+    #     Note that for 'html' output, standard HTML header and footer code is
+    #     added to the output dataset. If one wants to write the complete HTML
+    #     page, use the restricted output format 'customhtml' instead.
+    #
+    #     Optional method. Default return value if method is not defined:
+    #     'html'
+    #     """
+    #     return 'html'
+    #
     # @classmethod
     # def getOutputName(cls, choices=None):
     #     """
@@ -449,6 +510,5 @@ class FileImport(GeneralGuiTool):
     #     """
     #     return cls.getToolSelectionName()
 
-    @staticmethod
-    def shouldAppendHtmlHeaderAndFooter(outputFormat):
-        return False
+
+ProtoGuiTestTool6.setupExtraBoxMethods()

@@ -106,8 +106,6 @@ class GenerateToolsTool(GeneralGuiTool):
             setattr(cls, 'getOptionsBoxNewDir%s' % i,
                     partial(cls._getOptionsBoxNewDir, index=i))
 
-        from gold.application.LogSetup import logMessage
-
     @classmethod
     def _getProtoRelToolDirs(cls):
         assert cls.TOOL_DIR.startswith(SOURCE_CODE_BASE_DIR)
@@ -232,7 +230,7 @@ class GenerateToolsTool(GeneralGuiTool):
                              "with 'Tool', e.g. 'MyNewTool'. This will create "
                              "a Python module 'MyNewTool.py' with the class "
                              "'MyNewTool', inheriting from "
-                             "'proto.GeneralGuiTool'.", emphasize=True)
+                             "'proto.tools.GeneralGuiTool'.", emphasize=True)
         core.descriptionLine("Tool name",
                              "A string with the name or title of the tool. "
                              "This will appear on the top of the tool GUI "
