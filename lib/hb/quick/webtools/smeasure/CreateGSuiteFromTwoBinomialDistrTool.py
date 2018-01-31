@@ -1,22 +1,26 @@
 
 from collections import OrderedDict
 
-from rpy2 import robjects
-
+#from rpy2 import robjects
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
 from proto.CommonFunctions import ensurePathExists
 from proto.tools.GeneralGuiTool import HistElement
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.NoisyPointTrackGenerationStat import NoisyPointTrackGenerationStat
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeMixin):
+class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
         return "Create gSuite from subsetting using binomial distribution"
@@ -28,7 +32,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                 [('Select probability that R=1 given that Y=1', 'firstProb'),
                 ('Select probability that R=0 given that Y=0', 'secondProb'),
                 ('Select number of output tracks (subsampling replicates Rs)', 'number'),
-                ] + cls.getInputBoxNamesForUserBinSelection()
+                ] + cls.getInputBoxNamesForUserBinSelection() + cls.getInputBoxNamesForDebug()
 
 
     @classmethod
@@ -49,6 +53,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        DebugMixin._setDebugModeIfSelected(choices)
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstProb = choices.firstProb.encode('utf-8')
         firstProb = firstProb.split(',')
@@ -59,16 +64,33 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         secondProb = [float(f) for f in secondProb]
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-
+        genome = gSuite.genome
+        bins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome)
 
         number = int(choices.number)
-        getIntervals = cls._readRegSpec(regSpec, binSpec, gSuite.genome)
 
-        outGSuite = cls._countResults(gSuite, getIntervals, firstProb, secondProb, number,
-                                      galaxyFn)
+        outGSuite = GSuite()
 
-        GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
-        print 'Counted gSuite is in the history'
+        for i, iTrack in enumerate(gSuite.allTracks()):
+            trackTitle = iTrack.title
+            trackPath = iTrack.path
+            spec = AnalysisSpec(NoisyPointTrackGenerationStat)
+            spec.addParameter('keepOnesProb', firstProb[0]) #TODO: Use all values in loop..
+            spec.addParameter('introduceZerosProb', secondProb[0])
+            resObj = doAnalysis(spec, bins, [iTrack])
+            for reg in resObj:
+                localResult = resObj[reg]
+                print reg, ': ',localResult
+
+            #cls._buildTrack(outGSuite, trackTitle, gSuite.genome, dataset, galaxyFn,
+            #            nr, f, s)
+        # getIntervals = cls._readRegSpec(regSpec, binSpec, gSuite.genome)
+        #
+        # outGSuite = cls._countResults(gSuite, getIntervals, firstProb, secondProb, number,
+        #                               galaxyFn)
+
+        #GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
+        #print 'Counted gSuite is in the history'
 
     @classmethod
     def getExtraHistElements(cls, choices):
@@ -373,8 +395,10 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
+    @classmethod
+    def isDebugMode(cls):
+        return True
+
     #     """
     #     Specifies whether the debug mode is turned on. Debug mode is
     #     currently mostly used within the Genomic HyperBrowser and will make
