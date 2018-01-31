@@ -9,8 +9,8 @@ from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class FileImport(GeneralGuiTool):
-    @staticmethod
-    def getToolName():
+    @classmethod
+    def getToolName(cls):
         """
         Specifies a header of the tool, which is displayed at the top of the
         page.
