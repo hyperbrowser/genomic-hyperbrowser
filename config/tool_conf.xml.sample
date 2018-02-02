@@ -56,7 +56,7 @@
     <tool file="stats/filtering.xml" />
     <tool file="filters/sorter.xml" />
     <tool file="filters/grep.xml" />
-    
+
     <label id="gff" text="GFF" />
     <tool file="filters/gff/extract_GFF_Features.xml" />
     <tool file="filters/gff/gff_filter_by_attribute.xml" />
@@ -113,19 +113,20 @@
     <tool file="plotting/boxplot.xml" />
     <tool file="maf/vcf_to_maf_customtrack.xml" />
   </section>
-
   <label text="Galaxy ProTo" id="proto_label" />
-
   <section id="protoTools" name="ProTo development tools">
     <tool file="proto/GenerateToolsTool.xml" />
     <tool file="proto/ExploreToolsTool.xml" />
     <tool file="proto/HideInExplorerTool.xml" />
     <tool file="proto/DebugToolImportTool.xml" />
     <tool file="proto/InstallToolsTool.xml" />
-
     <!-- hidden tools -->
     <tool file="proto/FileImport.xml" />
     <!-- end hidden tools -->
+  </section>
+  <section id="protoApiDoc" name="ProTo API documentation">
+    <tool file="proto/doc/proto_api_doc.xml" />
+    <tool file="proto/doc/tool_template_doc.xml" />
   </section>
   <section id="protoGuiTestTools" name="ProTo GUI test tools">
     <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
