@@ -121,6 +121,13 @@ bower_components
 # Documentation build files.
 doc/build
 
+# Galaxy ProTo doc files
+lib/proto/doc/_build
+lib/proto/doc/_static
+lib/proto/doc/_templates
+lib/proto/doc/modules.rst
+lib/proto/doc/proto*.rst
+
 # Misc
 *.orig
 .DS_Store

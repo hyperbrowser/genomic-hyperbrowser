@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>proto.tools.ToolTemplate module &mdash; Galaxy ProTo 1.0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Galaxy ProTo 1.0.2 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Galaxy ProTo
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">proto.tools.ToolTemplate module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Galaxy ProTo</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>proto.tools.ToolTemplate module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/proto.tools.ToolTemplate.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-proto.tools.ToolTemplate">
+<span id="proto-tools-tooltemplate-module"></span><h1>proto.tools.ToolTemplate module<a class="headerlink" href="#module-proto.tools.ToolTemplate" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="proto.tools.ToolTemplate.ToolTemplate">
+<em class="property">class </em><code class="descclassname">proto.tools.ToolTemplate.</code><code class="descname">ToolTemplate</code><span class="sig-paren">(</span><em>toolId=None</em><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">proto.tools.GeneralGuiTool.GeneralGuiTool</span></code></p>
+<dl class="classmethod">
+<dt id="proto.tools.ToolTemplate.ToolTemplate.execute">
+<em class="property">classmethod </em><code class="descname">execute</code><span class="sig-paren">(</span><em>choices</em>, <em>galaxyFn=None</em>, <em>username=''</em><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is called when execute-button is pushed by web-user. Should print
+output as HTML to standard out, which will be directed to a results
+page in Galaxy history. If getOutputFormat is anything else than
+‘html’, the output should be written to the file with path galaxyFn.
+If needed, StaticFile can be used to get a path where additional
+files can be put (cls, e.g. generated image files). choices is a list
+of selections made by web-user in each options box.</p>
+<p>Mandatory unless isRedirectTool() returns True.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="proto.tools.ToolTemplate.ToolTemplate.getInputBoxNames">
+<em class="property">classmethod </em><code class="descname">getInputBoxNames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate.getInputBoxNames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies a list of headers for the input boxes, and implicitly also
+the number of input boxes to display on the page. The returned list
+can have two syntaxes:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>A list of strings denoting the headers for the input boxes in
+numerical order.</li>
+<li>A list of tuples of strings, where each tuple has
+two items: a header and a key.</li>
+</ol>
+</div></blockquote>
+<p>The contents of each input box must be defined by the function
+getOptionsBoxK, where K is either a number in the range of 1 to the
+number of boxes (case 1), or the specified key (case 2).</p>
+<dl class="docutils">
+<dt>Note: the key has to be camelCase and start with a non-capital letter</dt>
+<dd>(e.g. “firstKey”)</dd>
+</dl>
+<p>Optional method. Default return value if method is not defined: []</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="proto.tools.ToolTemplate.ToolTemplate.getOptionsBoxFirstKey">
+<em class="property">classmethod </em><code class="descname">getOptionsBoxFirstKey</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate.getOptionsBoxFirstKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the type and contents of the input box. User selections are
+returned to the tools in the prevChoices and choices attributes to
+other methods. These are lists of results, one for each input box
+(in the order specified by getInputBoxOrder()).</p>
+<p>Mandatory for the first key defined in getInputBoxNames(), if any.</p>
+<p>The input box is defined according to the following syntax:</p>
+<p>Check box:              False | True
+- Returns: bool</p>
+<p>Selection box:          [‘choice1’, ‘choice2’]
+- Returns: string</p>
+<p>Text area:              ‘textbox’ | (‘textbox’,1) | (‘textbox’,1,False)
+- Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
+- The contents is the default value shown inside the text area
+- Returns: string</p>
+<p>Raw HTML code:          ‘__rawstr__’, ‘HTML code’
+- This is mainly intended for read only usage. Even though more</p>
+<blockquote>
+<div>advanced hacks are possible, it is discouraged.</div></blockquote>
+<p>Password field:         ‘__password__’
+- Returns: string</p>
+<p>Genome selection box:   ‘__genome__’
+- Returns: string</p>
+<dl class="docutils">
+<dt>History selection box:  (‘__history__’,) |</dt>
+<dd>(‘__history__’, ‘bed’, ‘wig’)</dd>
+</dl>
+<ul class="simple">
+<li>Only history items of specified types are shown.</li>
+<li><dl class="first docutils">
+<dt>Returns: colon-separated string denoting Galaxy dataset info, as</dt>
+<dd>described below.</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>History check box list: (‘__multihistory__’, ) |</dt>
+<dd>(‘__multihistory__’, ‘bed’, ‘wig’)</dd>
+</dl>
+<ul class="simple">
+<li>Only history items of specified types are shown.</li>
+<li><dl class="first docutils">
+<dt>Returns: OrderedDict with Galaxy dataset ids as key (the number YYYY</dt>
+<dd>as described below), and the associated Galaxy dataset info as the
+values, given that the history element is ticked off by the user.
+If not, the value is set to None. The Galaxy dataset info structure
+is described below.</dd>
+</dl>
+</li>
+</ul>
+<p>Hidden field:           (‘__hidden__’, ‘Hidden value’)
+- Returns: string</p>
+<dl class="docutils">
+<dt>Table:                  [[‘header1’,’header2’], [‘cell1_1’,’cell1_2’],</dt>
+<dd>[‘cell2_1’,’cell2_2’]]</dd>
+</dl>
+<ul class="simple">
+<li>Returns: None</li>
+</ul>
+<dl class="docutils">
+<dt>Check box list:         OrderedDict([(‘key1’, True), (‘key2’, False),</dt>
+<dd>(‘key3’, False)])</dd>
+</dl>
+<ul class="simple">
+<li>Returns: OrderedDict from key to selection status (bool).</li>
+</ul>
+<p>###
+Note about the “Galaxy dataset info” data structure:
+###</p>
+<p>“Galaxy dataset info” is a list of strings coding information about a
+Galaxy history element and its associated dataset, typically used to
+provide info on the history element selected by the user as input to a
+ProTo tool.</p>
+<dl class="docutils">
+<dt>Structure:</dt>
+<dd>[‘galaxy’, fileFormat, path, name]</dd>
+</dl>
+<p>Optionally encoded as a single string, delineated by colon:</p>
+<blockquote>
+<div>‘galaxy:fileFormat:path:name’</div></blockquote>
+<dl class="docutils">
+<dt>Where:</dt>
+<dd><p class="first">‘galaxy’ used for assertions in the code
+fileFormat (or suffix) contains the file format of the dataset, as</p>
+<blockquote>
+<div>encoded in the ‘format’ field of a Galaxy history element.</div></blockquote>
+<dl class="docutils">
+<dt>path (or file name/fn) is the disk path to the dataset file.</dt>
+<dd>Typically ends with ‘XXX/dataset_YYYY.dat’. XXX and YYYY are
+numbers which are extracted and used as an unique id  of the
+dataset in the form [XXX, YYYY]</dd>
+</dl>
+<p class="last">name is the title of the history element</p>
+</dd>
+</dl>
+<p>The different parts can be extracted using the functions
+extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
+extractNameFromDatasetInfo() from the module CommonFunctions.py.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="proto.tools.ToolTemplate.ToolTemplate.getOptionsBoxSecondKey">
+<em class="property">classmethod </em><code class="descname">getOptionsBoxSecondKey</code><span class="sig-paren">(</span><em>prevChoices</em><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate.getOptionsBoxSecondKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>See getOptionsBoxFirstKey().</p>
+<p>prevChoices is a namedtuple of selections made by the user in the
+previous input boxes (that is, a namedtuple containing only one element
+in this case). The elements can accessed either by index, e.g.
+prevChoices[0] for the result of input box 1, or by key, e.g.
+prevChoices.key (case 2).</p>
+<p>Mandatory for the subsequent keys (after the first key) defined in
+getInputBoxNames(), if any.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="proto.tools.ToolTemplate.ToolTemplate.getToolName">
+<em class="property">classmethod </em><code class="descname">getToolName</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate.getToolName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies a header of the tool, which is displayed at the top of the
+page.</p>
+<p>Mandatory method for all ProTo tools.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="proto.tools.ToolTemplate.ToolTemplate.validateAndReturnErrors">
+<em class="property">classmethod </em><code class="descname">validateAndReturnErrors</code><span class="sig-paren">(</span><em>choices</em><span class="sig-paren">)</span><a class="headerlink" href="#proto.tools.ToolTemplate.ToolTemplate.validateAndReturnErrors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should validate the selected input parameters. If the parameters are
+not valid, an error text explaining the problem should be returned.
+The GUI then shows this text to the user (if not empty) and greys
+out the execute button (even if the text is empty). If all
+parameters are valid, the method should return None, which enables
+the execute button.</p>
+<p>Optional method. Default return value if method is not defined: None</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Morten Johansen, Sveinung Gundersen, Geir Kjetil Sandve.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

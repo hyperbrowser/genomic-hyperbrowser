@@ -1,0 +1,22 @@
+proto package
+=============
+
+Submodules
+----------
+
+.. toctree::
+
+   proto.CommonFunctions
+   proto.HtmlCore
+   proto.RSetup
+   proto.StaticFile
+   proto.TableCoreMixin
+   proto.TextCore
+
+Module contents
+---------------
+
+.. automodule:: proto
+    :members:
+    :undoc-members:
+    :show-inheritance:
