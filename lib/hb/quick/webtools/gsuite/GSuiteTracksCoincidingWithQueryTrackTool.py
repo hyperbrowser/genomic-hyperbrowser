@@ -1,3 +1,4 @@
+#TODO: NB! INVALID AFTER MERING - REDO MERGING!
 from collections import OrderedDict
 from urllib import quote
 
@@ -113,7 +114,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Type of randomization', 'randType'),
              ('Randomization algorithm', 'randAlg'),
              ('Select the excluded regions track', 'excludedRegions')] + \
-             ('Select the randomization strategy', 'randStrat'),
+             [('Select the randomization strategy', 'randStrat'),
              ('Select a universe track', 'intensityTrack'),
              ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
             cls.getInputBoxNamesForAttributesSelection() + \

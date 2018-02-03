@@ -13,6 +13,7 @@ from gold.util.CustomExceptions import AbstractClassError
 from config.Config import DebugConfig
 
 class RandomizedTrack(Track):
+    _adhocCache = {}  # TODO: Remove before merging in..
     IS_MEMOIZABLE = False
     WORKS_WITH_MINIMAL = True
 
@@ -33,6 +34,8 @@ class RandomizedTrack(Track):
         self.formatConverters = [TrivialFormatConverter] #To allow construction of uniqueID
         self._trackId = None #To allow construction of uniqueID
 
+
+
     def _checkTrackFormat(self, origTV):
         pass
 
@@ -46,7 +49,10 @@ class RandomizedTrack(Track):
         if self._minimal and not self.WORKS_WITH_MINIMAL:
             return self._origTrack.getTrackView(region)
 
-        return self._getTrackView(region)
+        adhocCacheKey = (region, self._origTrack, self._randIndex)
+        if not adhocCacheKey in self._adhocCache:
+            self._adhocCache[adhocCacheKey] = self._getTrackView(region)
+        return self._adhocCache[adhocCacheKey]
 
     def _getTrackView(self, region):
         #if self._cachedTV is None:

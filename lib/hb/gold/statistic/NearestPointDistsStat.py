@@ -39,7 +39,10 @@ class NearestPointDistsStatUnsplittable(Statistic):
                 ri+=1
             leftDist = q - rl[ri-1] if ri>0 else None
             rightDist = rl[ri]-q if ri<len(rl) else None
+            assert leftDist is None or leftDist >= 0, (leftDist, qi, ri, q, rl[ri-1],ql[qi],ql[qi-1])
+            assert rightDist is None or rightDist >= 0, rightDist
             assert leftDist is not None or rightDist is not None
+
             if distDirection == 'left':
                 dist[qi] = 0 if rightDist==0 else leftDist
             elif distDirection == 'right':

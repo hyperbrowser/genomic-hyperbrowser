@@ -1,6 +1,9 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+
+from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.util.Profiler import Profiler
 from config.DebugConfig import DebugConfig
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GuiBasedTsFactory
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
@@ -24,7 +27,7 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
 
         Mandatory method for all ProTo tools.
         """
-        return "Sandboxing"
+        return "Computes and outputs null distribution for each pairwise combination of tracks from suites"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -48,7 +51,10 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
         Optional method. Default return value if method is not defined: []
         """
         return [('Select GSuite 1', 'gsuite1'),
-                 ('Select GSuite 2', 'gsuite2')
+                 ('Select GSuite 2', 'gsuite2'),
+                ('Number of samples from each null model','samples'),
+                ('Universe track', 'universe')
+
                 ] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection() + \
@@ -62,26 +68,42 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
     def getOptionsBoxGsuite2(cls, prevChoices):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
+    @classmethod
+    def getOptionsBoxSamples(cls, prevChoices):
+        return ''
+
+    @classmethod
+    def getOptionsBoxUniverse(cls, prevChoices):
+        return GeneralGuiTool.getHistorySelectionElement(
+                *getSupportedFileSuffixesForPointsAndSegments())
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         cls._setDebugModeIfSelected(choices)
         #from time import time
         #startTime = time()
+        numSamples = int(choices.samples)
+        genome = choices.genome
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
-        queryTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.gsuite1)
-        refTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.gsuite2)
+        queryTS = GuiBasedTsFactory.getFlatTracksTS(genome, choices.gsuite1)
+        refTS = GuiBasedTsFactory.getFlatTracksTS(genome, choices.gsuite2)
         ts = TrackStructureV2([("query", queryTS), ("reference", refTS)])
 
+        intensityTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.universe,
+                                                                                         printErrors=False,
+                                                                                         printProgress=False)
+
         analysisSpec = AnalysisSpec(SummarizedInteractionWithOtherTracksV2Stat)
-        analysisSpec.addParameter('numResamplings','5')
+        analysisSpec.addParameter('numResamplings',numSamples)
         analysisSpec.addParameter('rawStatistic', 'LogSumDistStat')
         analysisSpec.addParameter('pairwiseStatistic', 'RandomizationManagerStat')
         analysisSpec.addParameter('summaryFunc','raw')
         analysisSpec.addParameter('tails', 'left-tail')
         analysisSpec.addParameter('includeFullNullDistribution','yes')
-        analysisSpec.addParameter('assumptions','PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('trackNameIntensity','|'.join(intensityTrackNameAsList) )
+        analysisSpec.addParameter('assumptions','PointsSampledFromBinaryIntensityTrack_')
 
         if DebugConfig.USE_PROFILING:
             resObj = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn)
