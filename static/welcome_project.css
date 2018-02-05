@@ -314,4 +314,20 @@
 
 
 
-        
+        .button {
+            font-size: 13px;
+            color: #332b00;
+            font-weight:bold;
+        }
+
+        .button a{
+
+        }
+
+        .projectDesc li{
+            margin: 10px 0px;
+        }
+
+        .projectDescSingle {
+            margin-bottom: 20px;
+        }
