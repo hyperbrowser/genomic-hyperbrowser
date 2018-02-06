@@ -758,8 +758,8 @@ class CongloProtoTool(GeneralGuiTool):
         print '<h2>Results for each dataset and tool configuration</h2>'
         succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
                                           for state in [True,False]]
-        trackCombResults = extractResultsFromWorkingMethodList(succeedingMethods)
-        core.paragraph(cls.createMainTable(galaxyFn, trackCombResults, keysWithVariation))
+        trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods)
+        print str(cls.createMainTable(galaxyFn, trackCombResults, keysWithVariation)))
         #print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
 
         try:
