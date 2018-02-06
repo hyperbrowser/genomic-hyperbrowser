@@ -743,8 +743,6 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
 
-        return #TODO: Remove this - only used for testing..
-
         # # TODO: Remove this - only used for testing..
         # sf = GalaxyRunSpecificFile(['wmos.pickle'], galaxyFn)
         # path = sf.getDiskPath(ensurePath=True)
