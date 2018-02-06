@@ -1,5 +1,6 @@
 from collections import OrderedDict, defaultdict
 from itertools import product
+from pickle import dump
 
 from conglomerate.methods.intervalstats.intervalstats import IntervalStats
 from conglomerate.methods.lola.lola import LOLA
@@ -27,9 +28,10 @@ from quick.congloproto.HBCongloMethod import HyperBrowser
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA, HyperBrowser]
-#[GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
-#debug3
+# [GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
+# debug3
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class CongloProtoTool(GeneralGuiTool):
     @classmethod
@@ -76,8 +78,8 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Use one of the default core databases as reference collection ? ', 'optionalUseOfCoreDatabase'),
                 ('Choose a query track collection: ', 'chooseQueryTrackCollection'),
                 ('Choose a reference track collection: ', 'chooseReferenceTrackCollection'),
-                ('Analyse against background regions? (optional)','analyseInBackground'),
-                ('Select the uploaded file of background regions','backgroundRegionFileUpload'),
+                ('Analyse against background regions? (optional)', 'analyseInBackground'),
+                ('Select the uploaded file of background regions', 'backgroundRegionFileUpload'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
                 ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
@@ -132,7 +134,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectRunningMode(cls):  # Alt: getOptionsBox1()
-        #return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
+        # return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
         return [cls.SIMPLE_WITH_DEFAULTS, cls.ADVANCED]
 
     @classmethod
@@ -144,13 +146,12 @@ class CongloProtoTool(GeneralGuiTool):
         # text += 'Simple mode with shared defaults runs the co-localization analysis tools with similar or same parameters/settings to allow comparison between the findings of the tools.'
         # text += '<br>'
 
-
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
     @classmethod
-    def getOptionsBoxSelectReferenceGenome(cls,prevChoices):  # Alt: getOptionsBox1()
-        return ['Human (hg19)','Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)', cls.CUSTOM_REFERENCE_GENOME]
-        #return '__genome__'
+    def getOptionsBoxSelectReferenceGenome(cls, prevChoices):  # Alt: getOptionsBox1()
+        return ['Human (hg19)', 'Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)', cls.CUSTOM_REFERENCE_GENOME]
+        # return '__genome__'
 
     @classmethod
     def getInfoForOptionsBoxSelectReferenceGenome(cls, prevChoices):
@@ -162,11 +163,11 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxMissingGenome(cls, prevChoices):
         return None
-        #return False
+        # return False
 
     @classmethod
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
-        #if prevChoices.missingGenome:
+        # if prevChoices.missingGenome:
         if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             return ('__history__',)
 
@@ -176,7 +177,6 @@ class CongloProtoTool(GeneralGuiTool):
         text += '<br>'
         text += 'The file should be tab separated with two fields; the first field should contain the chromosome name (e.g. chr22) and the second field should contain the length of the chromosome (e.g., 123456).'
         return text
-
 
     TWO_TRACK_GROUPS = 'Pairwise comparison of all tracks between two track-groups'
     REFERENCE_TRACKS = 'Query track against collection of reference tracks'
@@ -273,8 +273,8 @@ class CongloProtoTool(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        #return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
-        #Not including TWO GROUPS for now, for running time reasons.. (also not handled for now, but easy to do)
+        # return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS, cls.TWO_TRACK_GROUPS]
+        # Not including TWO GROUPS for now, for running time reasons.. (also not handled for now, but easy to do)
         return [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS]
 
     @classmethod
@@ -292,8 +292,8 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxChooseQueryTrackFile(cls, prevChoices):
-        if prevChoices.analysisType in [cls.TWO_GENOMIC_TRACKS,cls.REFERENCE_TRACKS]:
-            return ('__history__','bed')
+        if prevChoices.analysisType in [cls.TWO_GENOMIC_TRACKS, cls.REFERENCE_TRACKS]:
+            return ('__history__', 'bed')
 
     @classmethod
     def getInfoForOptionsBoxChooseQueryTrackFile(cls, prevChoices):
@@ -309,7 +309,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxChooseReferenceTrackFile(cls, prevChoices):
         if prevChoices.analysisType == cls.TWO_GENOMIC_TRACKS:
-            return ('__history__','bed')
+            return ('__history__', 'bed')
 
     @classmethod
     def getInfoForOptionsBoxChooseReferenceTrackFile(cls, prevChoices):
@@ -321,7 +321,6 @@ class CongloProtoTool(GeneralGuiTool):
         text += 'If you have a different file format other than BED, you can use the tool on the left-hand menu to convert between file formats.'
         text += 'Please see under the tools menu "Format and convert tracks".'
         return text
-
 
     CUSTOM_DATABASE = 'Use custom datasets to build a set of reference tracks'
     CORE_DATABASE = 'Use core database as the set of reference tracks'
@@ -359,25 +358,24 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
             return [cls.LOLA_COLLECTION]
-            #return [cls.LOLA_COLLECTION, cls.GIGGLE_COLLECTION, cls.HB_COLLECTION]
+            # return [cls.LOLA_COLLECTION, cls.GIGGLE_COLLECTION, cls.HB_COLLECTION]
 
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
-            return ('__history__','gsuite')
+            return ('__history__', 'gsuite')
 
     @classmethod
     def getInfoForOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
         text = 'Select the custom reference track collection. One could upload a bunch of BED files through the upload functionality' \
-                '(drag and drop works) or a tar file containing several BED files' \
-                '- further one can build a collection of genomic tracks (which we refer to as GSuite).'
+               '(drag and drop works) or a tar file containing several BED files' \
+               '- further one can build a collection of genomic tracks (which we refer to as GSuite).'
         return text
-
 
     @classmethod
     def getOptionsBoxChooseQueryTrackCollection(cls, prevChoices):
         if prevChoices.analysisType == cls.TWO_TRACK_GROUPS:
-            return ('__history__','gsuite')
+            return ('__history__', 'gsuite')
 
     @classmethod
     def getOptionsBoxOptionalUseOfCoreDatabase(cls, prevChoices):
@@ -388,9 +386,9 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxChooseReferenceTrackCollection(cls, prevChoices):
         if prevChoices.optionalUseOfCoreDatabase == 'Yes':
             return [cls.LOLA_COLLECTION]
-            #return ['LOLA data collection', 'GIGGLE data collection', 'GSuite Hyperbrowser data collection']
+            # return ['LOLA data collection', 'GIGGLE data collection', 'GSuite Hyperbrowser data collection']
         elif prevChoices.optionalUseOfCoreDatabase == 'No':
-            return ('__history__','gsuite')
+            return ('__history__', 'gsuite')
 
     # OVERLAP_MEASURES = [COUNTS, BASES]
 
@@ -406,7 +404,8 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxAnalyseInBackground(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode in [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS]:
-            return [cls.SIMPLEMODE_ONLY_WHOLE_GENOME, cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG ]
+            return [cls.SIMPLEMODE_ONLY_WHOLE_GENOME, cls.SIMPLEMODE_ONLY_EXPLICIT_BG,
+                    cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]
 
     @classmethod
     def getInfoForOptionsBoxAnalyseInBackground(cls, prevChoices):
@@ -424,7 +423,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG, cls.SIMPLEMODE_ONLY_EXPLICIT_BG]:
-            return ('__history__','bed')
+            return ('__history__', 'bed')
 
     @classmethod
     def getInfoForOptionsBoxBackgroundRegionFileUpload(cls, prevChoices):
@@ -550,18 +549,16 @@ class CongloProtoTool(GeneralGuiTool):
         # if prevChoices.selectRunningMode == cls.ADVANCED:
         #     return OrderedDict([(cls.NOT_ALLOWED,False), (cls.MAY_OVERLAP,False), (cls.DETERMINE_FROM_SUBMITTED_TRACKS,False)])
 
-
     @classmethod
     def getOptionsBoxRestrictRegions(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
-            #return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
+            # return [cls.WHOLE_GENOME, cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]
             return [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
 
     @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
         if prevChoices.restrictRegions in [cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]:
-            return ('__history__','bed')
-
+            return ('__history__', 'bed')
 
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -597,7 +594,7 @@ class CongloProtoTool(GeneralGuiTool):
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
             return ['No, I am not aware of any potential confounding feature for this analysis']
-            #return ['No, I am not aware of any potential confounding feature for this analysis',cls.CONFOUNDING_FEATURE]
+            # return ['No, I am not aware of any potential confounding feature for this analysis',cls.CONFOUNDING_FEATURE]
 
     @classmethod
     def getOptionsBoxConfounderHandler(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -618,36 +615,29 @@ class CongloProtoTool(GeneralGuiTool):
         if workingMethodObjects is None:
             return None
         methodChoices = getCollapsedConfigurationsPerMethod(workingMethodObjects)
-        if len(methodChoices)==0:
+        if len(methodChoices) == 0:
             return None
         else:
-            return OrderedDict( zip(sorted(methodChoices), [True]*len(methodChoices)) )
+            return OrderedDict(zip(sorted(methodChoices), [True] * len(methodChoices)))
 
     @classmethod
-    def getWorkingMethodObjects(cls, prevChoices):
-        selections = cls.determine_selections(prevChoices)
-        # typeOfAnalysis = prevChoices.analysisType
-        queryTrack = cls.getQueryTracksFromChoices(prevChoices)
-        refTracks = cls.getRefTracksFromChoices(prevChoices)
-
-        if queryTrack is None or refTracks is None:
-            if VERBOSE_RUNNING:
-                print 'No WMOs due to lacking tracks'
-            return None
-        if VERBOSE_RUNNING:
-            print 'Considered methods: ', ','.join([x.__name__ for x in ALL_METHOD_CLASSES])
-        workingMethodObjects = getCompatibleMethodObjects(selections.values(), queryTrack, refTracks,
-                                                          ALL_METHOD_CLASSES)
-        if VERBOSE_RUNNING:
-            print 'Compatible methods: ', ','.join([str(x) for x in workingMethodObjects])
-        return workingMethodObjects
+    def getWorkingMethodObjects(cls, choices):
+        selections = cls.determine_selections(choices)
+        queryTrack = ReferenceTrackParser.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
+        refTrackParser = ReferenceTrackParser.createFromGUIChoices(choices)
+        refTracks = refTrackParser.getRefTracksFromChoices()
+        wmoParser = WorkingMethodObjectParser(queryTrack, refTracks, selections.values())
+        return wmoParser.getWorkingMethodObjects()
 
     @classmethod
     def determine_selections(cls, prevChoices):
         if prevChoices.selectRunningMode == cls.SIMPLE_WITH_SHARED_DEFAULTS:
 
-            selections = {'setColocMeasure': [('setColocMeasure', ColocMeasureOverlap(**{'includeFlanks':False, 'countWholeIntervals':True, 'flankSizeUpstream':0, 'flankSizeDownstream':0})),
-                                              ('setColocMeasure', ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))]}
+            selections = {'setColocMeasure': [('setColocMeasure', ColocMeasureOverlap(
+                **{'includeFlanks': False, 'countWholeIntervals': True, 'flankSizeUpstream': 0,
+                   'flankSizeDownstream': 0})),
+                                              ('setColocMeasure',
+                                               ColocMeasureCorrelation(typeOfCorrelation='genome-wide'))]}
 
             selections['setRestrictedAnalysisUniverse'] = cls.parseSimpleModeBgOptions(prevChoices)
 
@@ -673,7 +663,7 @@ class CongloProtoTool(GeneralGuiTool):
             chrLenFn = chrLenFnMappings[genomeName]
 
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
-        selections['setChromLenFileName'] = [('setChromLenFileName',chrLenFn)]
+        selections['setChromLenFileName'] = [('setChromLenFileName', chrLenFn)]
         selections['setRuntimeMode'] = [('setRuntimeMode', prevChoices.runtimeMode)]
         return selections
 
@@ -682,13 +672,13 @@ class CongloProtoTool(GeneralGuiTool):
         bgOptions = []
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_WHOLE_GENOME,
                                                cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
-            bgOptions.append( ('setRestrictedAnalysisUniverse', None) )
+            bgOptions.append(('setRestrictedAnalysisUniverse', None))
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
             if prevChoices.backgroundRegionFileUpload in [None, '']:
                 spec = InvalidSpecification('No background region file selected in GUI.')
             else:
-                bgFns = cls.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
-                assert len(bgFns)==1
+                bgFns = TrackParser.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
+                assert len(bgFns) == 1
                 spec = RestrictedThroughInclusion(bgFns[0])
             bgOptions.append(
                 ('setRestrictedAnalysisUniverse', spec))
@@ -745,11 +735,22 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
-        methodSelectionStatus = dict([(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName,selectionStatus in choices.compatibleMethods.items()])
-        keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__] ]
+        methodSelectionStatus = dict(
+            [(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName, selectionStatus in
+             choices.compatibleMethods.items()])
+        keptWmos = [wmo for wmo in workingMethodObjects if methodSelectionStatus[wmo._methodCls.__name__]]
 
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
+
+        return #TODO: Remove this - only used for testing..
+
+        # # TODO: Remove this - only used for testing..
+        # sf = GalaxyRunSpecificFile(['wmos.pickle'], galaxyFn)
+        # path = sf.getDiskPath(ensurePath=True)
+        # dump(keptWmos, open(path, 'w'))
+        # print sf.getLink('Pickles')
+        # return
 
         runAllMethodsInSequence(keptWmos)
         if VERBOSE_RUNNING:
@@ -757,7 +758,11 @@ class CongloProtoTool(GeneralGuiTool):
             print '</pre><br>'
         keysWithVariation = cls.determineKeysWithVariation(keptWmos)
         print '<h2>Results for each dataset and tool configuration</h2>'
-        print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
+        succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
+                                          for state in [True,False]]
+        trackCombResults = extractResultsFromWorkingMethodList(succeedingMethods)
+        core.paragraph(cls.createMainTable(galaxyFn, trackCombResults, keysWithVariation))
+        #print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
 
         try:
             pvalTableHtmlStr = str(cls.createRankTable(keptWmos, keysWithVariation))
@@ -792,7 +797,6 @@ class CongloProtoTool(GeneralGuiTool):
             print '**', wmo._methodCls.__name__, '**'
             print wmo._methods[0]._params, '\n****\n'
 
-
     @classmethod
     def createErrorTable(cls, galaxyFn, keptWmos):
         if all(wmo.ranSuccessfully() for wmo in keptWmos):
@@ -816,8 +820,8 @@ class CongloProtoTool(GeneralGuiTool):
             if not wmo.ranSuccessfully():
                 continue
 
-            wmoLabel = wmo._methodCls.__name__  #+ '(' + ','.join([key + ':' + wmo.annotatedChoices.get(key) for key in
-                                                #                 keysWithVariation]) + ')'
+            wmoLabel = wmo._methodCls.__name__  # + '(' + ','.join([key + ':' + wmo.annotatedChoices.get(key) for key in
+            #                 keysWithVariation]) + ')'
             allTestStats = wmo.getTestStatistic()
             tsVals = [(trackCombination[1].split('/')[-1], allTestStats[trackCombination]) \
                       for trackCombination in allTestStats.keys()]
@@ -826,14 +830,15 @@ class CongloProtoTool(GeneralGuiTool):
                 rankTableDict[trackName][wmoLabel] = 1 + sum(v > val for t, v in tsVals)
         if len(rankTableDict) > 1:  # More than 1 ref track
             allTrackNames = rankTableDict.keys()
-            #allWmoLabels = rankTableDict.values()[0].keys()
-            #assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
+            # allWmoLabels = rankTableDict.values()[0].keys()
+            # assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
             allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
             core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
             for trackName in rankTableDict:
-                ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A'\
+                ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A' \
                               for wmoLabel in allWmoLabels]
-                nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if wmoLabel in rankTableDict[trackName]]
+                nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if
+                              wmoLabel in rankTableDict[trackName]]
                 meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
                 core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
             core.tableFooter()
@@ -849,7 +854,7 @@ class CongloProtoTool(GeneralGuiTool):
             wmoLabel = wmo._methodCls.__name__
             allValues = wmo.getPValue()
             trackValueItems = [(trackCombination[1].split('/')[-1], allValues[trackCombination]) \
-                      for trackCombination in allValues.keys()]
+                               for trackCombination in allValues.keys()]
             for trackName, val in trackValueItems:
                 tableDict[trackName][wmoLabel] = val
 
@@ -858,8 +863,8 @@ class CongloProtoTool(GeneralGuiTool):
             allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
             core.tableHeader([' '] + allWmoLabels, sortable=True)
             for trackName in tableDict:
-                valuesInRow = [tableDict[trackName][wmoLabel] if wmoLabel in tableDict[trackName] else 'N/A'\
-                              for wmoLabel in allWmoLabels]
+                valuesInRow = [tableDict[trackName][wmoLabel] if wmoLabel in tableDict[trackName] else 'N/A' \
+                               for wmoLabel in allWmoLabels]
 
                 core.tableLine([trackName] + [str(x) for x in valuesInRow])
             core.tableFooter()
@@ -879,28 +884,92 @@ class CongloProtoTool(GeneralGuiTool):
         keysWithVariation.sort()
         return keysWithVariation
 
-    # @classmethod
-    # def extractResultsFromWmo(cls, wmo, keysWithVariation):
-    #     if VERBOSE_RUNNING:
-    #         print 'Stdout of tool: ', wmo.getResultFilesDictList()
-    #     if not wmo.ranSuccessfully():
-    #         if VERBOSE_RUNNING:
-    #             print 'skipping result output for method', wmo
-    #         return
-    #     allPvals = wmo.getPValue()
-    #     allTestStats = wmo.getTestStatistic()
-    #     allFullResults = wmo.getFullResults()
-    #     assert len(allPvals) > 0, allPvals
-    #     assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
-    #
-    #     for trackCombination in allPvals.keys():
-    #         fullResult = allFullResults[trackCombination]
-    #
-    #         pval = allPvals[trackCombination]
-    #         ts = allTestStats[trackCombination]
+    @classmethod
+    def extractResultsFromWorkingMethodList(cls, wmoList):
+        return reduce(lambda x,y:x+y, [cls.extractResultsFromWorkingMethod(wmo) for wmo in wmoList])
 
     @classmethod
-    def createMainTable(cls, galaxyFn, keptWmos, keysWithVariation):
+    def extractResultsFromWorkingMethod(cls, wmo):
+        if VERBOSE_RUNNING:
+            print 'Stdout of tool: ', wmo.getResultFilesDictList()
+        if not wmo.ranSuccessfully():
+            if VERBOSE_RUNNING:
+                print 'skipping result output for method', wmo
+            return
+        allPvals = wmo.getPValue()
+        allTestStats = wmo.getTestStatistic()
+        allFullResults = wmo.getFullResults()
+        assert len(allPvals) > 0, allPvals
+        assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
+        trackCombinations = allPvals.keys()
+
+        results = []
+        for trackCombination in trackCombinations:
+            fullResult = allFullResults[trackCombination]
+            pval = allPvals[trackCombination]
+            testStat = allTestStats[trackCombination]
+            methodName = wmo._methodCls.__name__ #TODO: Make public method
+            annotatedChoices = wmo.annotatedChoices
+            results.append(TrackCombResult(testStat, pval, fullResult, trackCombination, methodName, annotatedChoices))
+        return results
+
+    # @classmethod
+    # def createMainTable(cls, galaxyFn, keptWmos, keysWithVariation):
+    #
+    #     def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
+    #         return core.tableFromDictionary(
+    #             tableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
+    #
+    #     core = HtmlCore()
+    #     tableData = OrderedDict()
+    #     colNames = ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value',
+    #                                                                                         'Co-localization enrichment',
+    #                                                                                         'Detailed results']
+    #
+    #     for i, wmo in enumerate(keptWmos):
+    #         if VERBOSE_RUNNING:
+    #             print 'Stdout of tool: ', wmo.getResultFilesDictList()
+    #         if not wmo.ranSuccessfully():
+    #             if VERBOSE_RUNNING:
+    #                 print 'skipping result output for method', wmo
+    #             continue
+    #
+    #         allPvals = wmo.getPValue()
+    #         allTestStats = wmo.getTestStatistic()
+    #         allFullResults = wmo.getFullResults()
+    #         assert len(allPvals) > 0, allPvals
+    #
+    #         assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
+    #         for j, trackCombination in enumerate(allPvals.keys()):
+    #             fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
+    #             fullResult = allFullResults[trackCombination]
+    #             fullResultStaticFile.writeTextToFile(fullResult)
+    #             pval = allPvals[trackCombination]
+    #             ts = allTestStats[trackCombination]
+    #             prettyTracks = [track.split('/')[-1] for track in trackCombination]
+    #             # tableData[wmo._methodCls.__name__] = prettyTracks + [wmo.annotatedChoices.get(key) for key in
+    #             #                                                 keysWithVariation] + [str(pval), str(ts),
+    #             #                                                                       fullResultStaticFile.getLink(
+    #             #                                                                           'Full results')]
+    #             keyCols = (wmo._methodCls.__name__,) + tuple(prettyTracks) + tuple(
+    #                 [wmo.annotatedChoices.get(key) for key in
+    #                  keysWithVariation])
+    #             furtherCols = [str(pval), str(ts), fullResultStaticFile.getLink('Full results')]
+    #             tableData[keyCols] = furtherCols
+    #
+    #     tableId = 'resultsTable'
+    #     tableFile = GalaxyRunSpecificFile([tableId, 'main_table.tsv'], galaxyFn)
+    #     tabularHistElementName = 'Raw main results'
+    #
+    #     core.tableWithTabularImportButton(tabularFile=True, tabularFn=tableFile.getDiskPath(),
+    #                                       tabularHistElementName=tabularHistElementName,
+    #                                       produceTableCallbackFunc=_produceTable,
+    #                                       tableDict=tableData,
+    #                                       columnNames=colNames, tableId=tableId, sortable=True)
+    #     return core
+
+    @classmethod
+    def createMainTable(cls, galaxyFn, trackCombResults, keysWithVariation):
 
         def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
             return core.tableFromDictionary(
@@ -908,99 +977,27 @@ class CongloProtoTool(GeneralGuiTool):
 
         core = HtmlCore()
         tableData = OrderedDict()
-        colNames = ['Method name', 'Query track', 'reference track'] + keysWithVariation + ['P-value', 'Co-localization enrichment',
-                                                                                     'Detailed results']
-
-        for i, wmo in enumerate(keptWmos):
-            if VERBOSE_RUNNING:
-                print 'Stdout of tool: ', wmo.getResultFilesDictList()
-            if not wmo.ranSuccessfully():
-                if VERBOSE_RUNNING:
-                    print 'skipping result output for method', wmo
-                continue
-
-            allPvals = wmo.getPValue()
-            allTestStats = wmo.getTestStatistic()
-            allFullResults = wmo.getFullResults()
-            assert len(allPvals) > 0, allPvals
-
-            assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
-            for j, trackCombination in enumerate(allPvals.keys()):
-                fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(i) + '_' + str(j) + '.html'], galaxyFn)
-                fullResult = allFullResults[trackCombination]
-                fullResultStaticFile.writeTextToFile(fullResult)
-                pval = allPvals[trackCombination]
-                ts = allTestStats[trackCombination]
-                prettyTracks = [track.split('/')[-1] for track in trackCombination]
-                # tableData[wmo._methodCls.__name__] = prettyTracks + [wmo.annotatedChoices.get(key) for key in
-                #                                                 keysWithVariation] + [str(pval), str(ts),
-                #                                                                       fullResultStaticFile.getLink(
-                #                                                                           'Full results')]
-                keyCols = (wmo._methodCls.__name__,) + tuple(prettyTracks) + tuple([wmo.annotatedChoices.get(key) for key in
-                                                                keysWithVariation])
-                furtherCols = [str(pval), str(ts),fullResultStaticFile.getLink('Full results')]
-                tableData[keyCols] =furtherCols
+        colNames = ['Method name', 'Query track', 'reference track'] + keysWithVariation + \
+                   ['P-value','Co-localization enrichment', 'Detailed results']
+        for j, res in enumerate(trackCombResults):
+            fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(j) + '.html'], galaxyFn)
+            fullResultStaticFile.writeTextToFile(res.fullResult)
+            keyCols = (res.methodName) + tuple(res.getPrettyTrackStr()) + \
+                      tuple([res.annotatedChoices.get(key) for key in
+                 keysWithVariation])
+            furtherCols = [str(res.pval), str(res.testStat), fullResultStaticFile.getLink('Full results')]
+            tableData[keyCols] = furtherCols
 
         tableId = 'resultsTable'
         tableFile = GalaxyRunSpecificFile([tableId, 'main_table.tsv'], galaxyFn)
         tabularHistElementName = 'Raw main results'
 
         core.tableWithTabularImportButton(tabularFile=True, tabularFn=tableFile.getDiskPath(),
-                                    tabularHistElementName=tabularHistElementName,
-                                    produceTableCallbackFunc=_produceTable,
-                                    tableDict=tableData,
-                                    columnNames=colNames, tableId=tableId, sortable=True)
+                                          tabularHistElementName=tabularHistElementName,
+                                          produceTableCallbackFunc=_produceTable,
+                                          tableDict=tableData,
+                                          columnNames=colNames, tableId=tableId, sortable=True)
         return core
-
-    @classmethod
-    def getQueryTracksFromChoices(cls, choices):
-        queryTrack = cls.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
-        return queryTrack
-
-    @classmethod
-    def getRefTracksFromChoices(cls, choices):
-        typeOfAnalysis = choices.analysisType
-        if typeOfAnalysis == cls.TWO_GENOMIC_TRACKS:
-            referenceTrackChoice = choices.chooseReferenceTrackFile
-            # refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
-        elif typeOfAnalysis == cls.REFERENCE_TRACKS:
-            if choices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
-                #assert choices.chooseCustomTrackCollection in [None,''], choices.chooseCustomTrackCollection
-                if choices.choiceOfCoreDatabase == cls.LOLA_COLLECTION:
-                    return ['prebuilt','LOLACore_170206']
-                else:
-                    raise Exception("Not supported: " + str(choices.choiceOfCoreDatabase))
-            elif choices.typeOfReferenceTrackCollection == cls.CUSTOM_DATABASE:
-                #assert choices.choiceOfCoreDatabase is None, choices.choiceOfCoreDatabase
-                referenceTrackChoice = choices.chooseCustomTrackCollection
-            else:
-                raise
-        else:
-            raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
-        refTracks = cls.getFnListFromTrackChoice(referenceTrackChoice)
-        if len(refTracks)==0:
-            raise Exception('Please select non-empty gsuite')
-        #raise Exception(str(refTracks))
-        return refTracks
-
-    @classmethod
-    def getFnListFromTrackChoice(cls, trackChoice):
-        if trackChoice is None or trackChoice.strip()=='':
-            return None
-
-        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice, allowUnsupportedSuffixes=True)
-        if filetype in ['bed']:
-            fnList = [TrackFile( ExternalTrackManager.extractFnFromGalaxyTN(trackChoice),\
-                      ExternalTrackManager.extractNameFromHistoryTN(trackChoice) )]
-
-        elif filetype in ['gsuite']:
-            gsuite = getGSuiteFromGalaxyTN(trackChoice)
-            if gsuite.isPreprocessed():
-                raise Exception("Please select gsuite in primary format (a gsuite referring to a set of bed files)")
-            fnList = [TrackFile(gsTrack.path, gsTrack.title) for gsTrack in gsuite.allTracks()]
-        else:
-            print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
-        return fnList
 
     @classmethod
     def parseAdvancedChoices(cls, choices):
@@ -1008,13 +1005,13 @@ class CongloProtoTool(GeneralGuiTool):
         # SELECTION BOXES:
         # mapping = {cls.WHOLE_GENOME:None,
         #            cls.EXCLUDE_SUPPLIED_BY_THE_USER:RestrictedThroughExclusion(fn)}
-        if choices.restrictRegions in [cls.WHOLE_GENOME,None]:
+        if choices.restrictRegions in [cls.WHOLE_GENOME, None]:
             restrictRegions = None
         else:
-            if choices.restrictedRegionFileUpload in [None,'',[]]:
+            if choices.restrictedRegionFileUpload in [None, '', []]:
                 fn = None
             else:
-                fn = TrackFile(ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload),'')
+                fn = TrackFile(ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload), '')
 
             if choices.restrictRegions == cls.EXCLUDE_SUPPLIED_BY_THE_USER:
                 restrictRegions = RestrictedThroughExclusion(fn)
@@ -1033,8 +1030,8 @@ class CongloProtoTool(GeneralGuiTool):
         # CHECKBOXES
         choiceValueMappings = OrderedDict()
         selectionMapping = {'clumping': 'preserveClumping'}
-                            # 'allowOverlaps': 'setAllowOverlaps',
-                            #'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
+        # 'allowOverlaps': 'setAllowOverlaps',
+        # 'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
         # TestStat
         # distCoordSelected = [key for key in choices.distanceCoordinate if choices.distanceCoordinate[key]] \
         #                     if choices.distanceCoordinate is not None else []
@@ -1042,23 +1039,22 @@ class CongloProtoTool(GeneralGuiTool):
         #                     if choices.distanceType is not None else[]
         # fullDistSpecs = product(distCoordSelected, distTypeSelected)
         # encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
-        if choices.teststatType is not None and choices.teststatType[cls.DISTANCE]==True:
-            encodedDistSpecs = [ColocMeasureProximity(None,None)]
+        if choices.teststatType is not None and choices.teststatType[cls.DISTANCE] == True:
+            encodedDistSpecs = [ColocMeasureProximity(None, None)]
         else:
             encodedDistSpecs = []
 
-        tsMapping = {cls.COUNTS : ColocMeasureOverlap(False, True,0,0),
-                                cls.BASES : ColocMeasureOverlap(False, False,0,0)}
+        tsMapping = {cls.COUNTS: ColocMeasureOverlap(False, True, 0, 0),
+                     cls.BASES: ColocMeasureOverlap(False, False, 0, 0)}
         overlapSpecs = [tsMapping[key] for key in choices.overlapMeasure if choices.overlapMeasure[key]] \
-                        if choices.overlapMeasure is not None else []
+            if choices.overlapMeasure is not None else []
 
         # correlationSpecs = [key for key in choices.correlation if choices.correlation[key]] \
         #                     if choices.correlation is not None else[]
-        if choices.teststatType is not None and choices.teststatType[cls.CORRELATION]==True:
+        if choices.teststatType is not None and choices.teststatType[cls.CORRELATION] == True:
             correlationSpecs = [ColocMeasureCorrelation(None)]
         else:
             correlationSpecs = []
-
 
         allTsSpecs = encodedDistSpecs + overlapSpecs + correlationSpecs
         selections['setColocMeasure'] = zip(['setColocMeasure'] * len(allTsSpecs), allTsSpecs)
@@ -1071,10 +1067,11 @@ class CongloProtoTool(GeneralGuiTool):
         #     choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
 
         choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
-        #choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
+        # choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
         for guiKey, selectionKey in selectionMapping.items():
-            currSelection = cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey, selectionKey)
-            assert len(currSelection.values()[0])>0, (guiKey, selectionKey, currSelection)
+            currSelection = cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey,
+                                                               selectionKey)
+            assert len(currSelection.values()[0]) > 0, (guiKey, selectionKey, currSelection)
             selections.update(currSelection)
         return selections
 
@@ -1083,7 +1080,7 @@ class CongloProtoTool(GeneralGuiTool):
         choices = choiceTuple._asdict()
         # if choices[selectionName] is None:
         #     return {selectionsKey:None}
-        selections = {selectionsKey:[]}
+        selections = {selectionsKey: []}
         for choiceName, val in choiceValueMappings.items():
             if choices[selectionName][choiceName]:
                 selections[selectionsKey].append((selectionsKey, val))
@@ -1109,26 +1106,29 @@ class CongloProtoTool(GeneralGuiTool):
             if choices.allowOverlaps[cls.MAY_OVERLAP] or choices.allowOverlaps[cls.NOT_ALLOWED]:
                 return "%s can only be selected as a single choice" % cls.DETERMINE_FROM_SUBMITTED_TRACKS
         else:
-            if choices.allowOverlaps and not choices.allowOverlaps[cls.NOT_ALLOWED] and not choices.allowOverlaps[cls.MAY_OVERLAP]:
+            if choices.allowOverlaps and not choices.allowOverlaps[cls.NOT_ALLOWED] and not choices.allowOverlaps[
+                cls.MAY_OVERLAP]:
                 return "Please select whether or not to allow genomic regions to overlap within track"
         if choices.clumping and not any(choices.clumping.values()):
             return "Please select whether or not to handle clumping"
 
-        if cls.getQueryTracksFromChoices(choices) is None:
+        if TrackParser.getFnListFromTrackChoice(choices.chooseQueryTrackFile) is None:
             return "Please select query track"
         try:
-            if cls.getRefTracksFromChoices(choices) is None:
+            refTrackParser = ReferenceTrackParser.createFromGUIChoices(choices)
+            if refTrackParser.getRefTracksFromChoices() is None:
                 return "Please select reference tracks"
-        except Exception,e:
+        except Exception, e:
             return e.message
 
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
         if workingMethodObjects is None:
             return "Unresolved error"
-        elif len(workingMethodObjects)==0:
+        elif len(workingMethodObjects) == 0:
             return "No method is compatible with current selections - please make further selections"
 
             # @classmethod
+
     # def getSubToolClasses(cls):
     #     """
     #     Specifies a list of classes for subtools of the main tool. These
@@ -1150,6 +1150,7 @@ class CongloProtoTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: False
         """
         return True
+
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -1276,13 +1277,136 @@ class CongloProtoTool(GeneralGuiTool):
         'html'
         """
         return 'customhtml'
-    #
-    # @classmethod
-    # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
-    #     """
-    #     The title (name) of the main output history element.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     the name of the tool.
-    #     """
+        #
+        # @classmethod
+        # def getOutputName(cls, choices=None):
+        #     return cls.getToolSelectionName()
+        #     """
+        #     The title (name) of the main output history element.
+        #
+        #     Optional method. Default return value if method is not defined:
+        #     the name of the tool.
+        #     """
+
+
+def dump_args_and_more(func):
+    '''This decorator dumps out the arguments passed to a function before calling it,
+    as well as return value or any exception'''
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+
+    def echo_func(*args,**kwargs):
+        print fname, ":", ', '.join(
+            '%s=%r' % entry
+            for entry in zip(argnames,args) + kwargs.items())
+        try:
+            result = func(*args, **kwargs)
+            print "-> ", result
+            return result
+        except:
+            print '-> raised exception:'
+            import traceback
+            traceback.print_exc()
+            raise
+
+
+    return echo_func
+
+class WorkingMethodObjectParser:
+
+    def __init__(self, queryTrack, refTracks, selectionVals):
+        assert type(selectionVals)==list
+        self._queryTrack = queryTrack
+        self._refTracks = refTracks
+        self._selectionVals = selectionVals
+
+    def getWorkingMethodObjects(self):
+        if self._queryTrack is None or self._refTracks is None:
+            if VERBOSE_RUNNING:
+                print 'No WMOs due to lacking tracks'
+            return None
+        if VERBOSE_RUNNING:
+            print 'Considered methods: ', ','.join([x.__name__ for x in ALL_METHOD_CLASSES])
+        # selectionVals = selections.values()
+        workingMethodObjects = getCompatibleMethodObjects(self._selectionVals, self._queryTrack, self._refTracks,
+                                                          ALL_METHOD_CLASSES)
+        if VERBOSE_RUNNING:
+            print 'Compatible methods: ', ','.join([str(x) for x in workingMethodObjects])
+        return workingMethodObjects
+
+class TrackParser:
+    @classmethod
+    def getFnListFromTrackChoice(cls, trackChoice):
+        if trackChoice is None or trackChoice.strip() == '':
+            return None
+
+        filetype = ExternalTrackManager.extractFileSuffixFromGalaxyTN(trackChoice, allowUnsupportedSuffixes=True)
+        if filetype in ['bed']:
+            fnList = [TrackFile(ExternalTrackManager.extractFnFromGalaxyTN(trackChoice), \
+                                ExternalTrackManager.extractNameFromHistoryTN(trackChoice))]
+
+        elif filetype in ['gsuite']:
+            gsuite = getGSuiteFromGalaxyTN(trackChoice)
+            if gsuite.isPreprocessed():
+                raise Exception("Please select gsuite in primary format (a gsuite referring to a set of bed files)")
+            fnList = [TrackFile(gsTrack.path, gsTrack.title) for gsTrack in gsuite.allTracks()]
+        else:
+            print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
+        return fnList
+
+class ReferenceTrackParser(TrackParser):
+    @classmethod
+    def createFromGUIChoices(cls, choices):
+        return ReferenceTrackParser(choices.analysisType, choices.choiceOfCoreDatabase, \
+                                    choices.chooseReferenceTrackFile, choices.typeOfReferenceTrackCollection, \
+                                    choices.chooseCustomTrackCollection)
+
+    def __init__(self, analysisType, choiceOfCoreDatabase, chooseReferenceTrackFile, typeOfReferenceTrackCollection, chooseCustomTrackCollection):
+        self._analysisType = analysisType
+        self._choiceOfCoreDatabase = choiceOfCoreDatabase
+        self._chooseReferenceTrackFile = chooseReferenceTrackFile
+        self._typeOfReferenceTrackCollection = typeOfReferenceTrackCollection
+        self._chooseCustomTrackCollection = chooseCustomTrackCollection
+
+    def getRefTracksFromChoices(self):
+        if self._analysisType == CongloProtoTool.REFERENCE_TRACKS and self._choiceOfCoreDatabase == CongloProtoTool.LOLA_COLLECTION:
+            return ['prebuilt', 'LOLACore_170206']
+
+        referenceTrackChoice = self._getRefTrackChoice()
+        refTracks = self.getFnListFromTrackChoice(referenceTrackChoice)
+        if len(refTracks) == 0:
+            raise Exception('Please select non-empty gsuite')
+        return refTracks
+
+    def _getRefTrackChoice(self):
+        typeOfAnalysis = self._analysisType
+        choiceOfCoreDatabase = self._choiceOfCoreDatabase
+        assert not (typeOfAnalysis == CongloProtoTool.REFERENCE_TRACKS and choiceOfCoreDatabase == CongloProtoTool.LOLA_COLLECTION)
+        if typeOfAnalysis == CongloProtoTool.TWO_GENOMIC_TRACKS:
+            referenceTrackChoice = self._chooseReferenceTrackFile
+        elif typeOfAnalysis == CongloProtoTool.REFERENCE_TRACKS:
+            if self._typeOfReferenceTrackCollection == CongloProtoTool.CORE_DATABASE:
+                raise Exception("Not supported: " + str(self._choiceOfCoreDatabase))
+            elif self._typeOfReferenceTrackCollection == CongloProtoTool.CUSTOM_DATABASE:
+                referenceTrackChoice = self._chooseCustomTrackCollection
+            else:
+                raise
+        else:
+            raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
+        return referenceTrackChoice
+
+
+class TrackList:
+    pass
+
+class TrackCombResult:
+    def __init__(self, testStat, pval, fullResult, trackCombination, methodName, annotatedChoices):
+        self.testStat = testStat
+        self.pval = pval
+        self.fullResult = fullResult
+        self.trackCombination = trackCombination
+        self._methodName = methodName
+        self._annotatedChoices = annotatedChoices
+
+    def getPrettyTrackStr(self):
+        raise
