@@ -1403,8 +1403,8 @@ class TrackCombResult:
         self.pval = pval
         self.fullResult = fullResult
         self.trackCombination = trackCombination
-        self._methodName = methodName
-        self._annotatedChoices = annotatedChoices
+        self.methodName = methodName
+        self.annotatedChoices = annotatedChoices
 
     def getPrettyTrackStr(self):
         raise
