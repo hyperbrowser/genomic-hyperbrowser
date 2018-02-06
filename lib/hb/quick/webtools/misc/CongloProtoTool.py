@@ -743,13 +743,6 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
 
-        # # TODO: Remove this - only used for testing..
-        # sf = GalaxyRunSpecificFile(['wmos.pickle'], galaxyFn)
-        # path = sf.getDiskPath(ensurePath=True)
-        # dump(keptWmos, open(path, 'w'))
-        # print sf.getLink('Pickles')
-        # return
-
         runAllMethodsInSequence(keptWmos)
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
@@ -759,6 +752,14 @@ class CongloProtoTool(GeneralGuiTool):
         succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
                                           for state in [True,False]]
         trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods)
+
+        #TODO: Temp code:
+        sf = GalaxyRunSpecificFile(['trackComb.pickle'], galaxyFn)
+        path = sf.getDiskPath(ensurePath=True)
+        dump(trackCombResults, open(path, 'w'))
+        print sf.getLink('Pickles')
+        return
+
         print str(cls.createMainTable(galaxyFn, trackCombResults, keysWithVariation))
         #print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
 
