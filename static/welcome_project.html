@@ -5,72 +5,353 @@
             <li class="active" value="tab0">
                 <a data-toggle="tab" href="#menu0">coloc-stats</a>
             </li>
+            <li  value="tab1">
+                <a data-toggle="tab" href="#menu1">Documentation</a>
+            </li>
+            <li  value="tab2">
+                <a data-toggle="tab" href="#menu2">FAQ</a>
+            </li>
+            <li  value="tab3">
+                <a data-toggle="tab" href="#menu3">About</a>
+            </li>
 
         </ul>
-    </div> <div class="tab-content"><div id="menu0" class="tab-pane fade  in active"><div class="container">
-                            <div class="rowSpecial">
-                                <div class="colAll">
-                                    <h2 class="projectTitle">coloc-stats: a unified web interface to perform co-localization analysis of genomic features</h2>
-                                    <div class = 'project'>
-                                        <div class = 'projectDesc'>
-                                            <b>Get started by:</b>
-<ol>
-<li>uploading datasets of genomic locations (bed-files) by clicking the upload icon at the almost top left</li>
-<li>selecting the coloc-stats tool to the left</li>
-<li>choose to analyze your datasets of interest using default or custom parameter settings</li>
-</ol>
-                                            <b>You can also:</b>
-<ul>
-    <li><a href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-example-analysis" target="_top">View an example analysis</a> (clicking eye icons to see results or re-run icons to see selections for example runs and optionally re-run with identical or modified choices)</li>
-    <li><a href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-sample-data" target='_top'>load a history</a> with small sample datasets (in the next page, click "import history")</li>
-<li>look at one of the short screencasts below on how to use the system (<1 minute)</li>
-</ul>
-                                            <p class="paragraph">
-                                                Several generic and specialized tools are available to perform co-localization analysis, they vary in the statistical methodology and analysis approaches, thus potentially providing different conclusions for the same research question. As the findings of co-localization analysis are often the basis for further follow-up experimental investigations, assessing the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution, null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features). To address this gap, we propose a coloc-stats, single interface for multiple previously published co-localization analysis methods. </p><p class="paragraph">coloc-stats allows a user to find a method that supports their experimental requirements, and when multiple methods meet the requirements, assess the robustness of conclusions by running and inspecting results across methods. Additionally, we extend methods that only support a pair of tracks to consider track collections. </p></div></div>
-</div> </div></div>
-                        <div class="containerNext">
-                            <div class="rowSpecialWithGap">
-                          <div class="colAll">
-                              <div class = 'description'>
-                              <h4 class = 'descriptionTitle'>Tools integrated in coloc-stats</h4>
-                              <div class = 'descriptionDesc'>
-                                  <p class="paragraph">
-                                      Coloc-stats provides a unified interface to eight different co-localization analysis tools. Tools are listed in chronological order they are published.</p></div>
-                                        <div class = 'description'><a  target="_blank"  href = 'https://doi.org/10.1186/gb-2010-11-12-r121' >Genomic Hyperbrowser</a></div>
-                                        <div class = 'description'><a target="_blank" href = 'https://doi.org/10.1093/bioinformatics/bts009' >IntervalStats</a></div>
-                                        <div class = 'description'><a target="_blank"  href = 'https://doi.org/10.1371/journal.pcbi.1002529' >GenometriCorr</a></div>
-                                        <div class = 'description'><a target="_blank"  href = 'https://doi.org/10.1016/j.ajhg.2015.05.016' >GoShifter</a></div>
-                                        <div class = 'description'><a target="_blank"  href = 'https://doi.org/10.1093/bioinformatics/btv612' >LOLA</a></div>
-                                        <div class = 'description'><a target="_blank"  href = ' https://doi.org/10.1093/gigascience/gix032' >GSuite Hyperbrowser</a></div>
-                                        <div class = 'description'><a target="_blank"  href = 'https://doi.org/10.1093/bioinformatics/btx379' >Stereogene</a></div>
-                                        <div class = 'description'><a target="_blank"  href = 'https://doi.org/10.1101/157735' >GIGGLE</a></div>
-                          </div>
-                            </div>
+    </div>
+    <div class="tab-content">
+        <div id="menu0" class="tab-pane fade  in active">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAll">
+                    <h2 class="projectTitle">coloc-stats</h2>
+                    <div class = 'projectDescSingle'>
+                        a unified web interface to perform co-localization analysis of genomic features
+                    </div>
+                    <div class = 'project'>
+                        <div class = 'projectDesc'>
+                            <b>Get started by:</b>
+                            <ol>
+                                <li>
+                                    <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Uploading datasets</a> of genomic locations (bed-files)
+                                </li>
+                                <li>
+                                    Go to the <a class="button" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> to analyze your datasets by multiple methods
+                                </li>
+                                <li>
+                                    View your results (by clicking the eye icon on the history element to the right)
+                                </li>
+                            </ol>
+
                         </div>
-
-
-                        <div class="containerNext">
-                            <div class="rowSpecialWithGap">
-                          <div class="colAll">
-                              <div class = 'example'><h4 class = 'exampleTitle'>Demo video</h4>
-                                <!–– <video controls="controls" width="800" height="600"
-                                name="Video Name" src="images/gettingStartedWithColocStats.mov"> -->
-                                <!–– </video> -->
-                                  <iframe src="https://player.vimeo.com/video/249248452" width="800" height="600" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
-                              </div>
-                          </div>
-</div>
-
-
-                            </div>
+                        <div class ="projectDesc" style="margin: 20px 0px; font-style: italic;">
+                            If you are new to Galaxy, you can follow a brief interactive tour
                         </div>
-                        
-            <div class="footer">
-                <div class = 'contactInfo'><div class = 'contactInfoDesc'>All questions, requests or comments can be redirected to <a href='mailto:geirska@ifi.uio.no' target='_top'>Geir Kjetil Sandve.</a></div></div>
-
+                        <div class ="projectDesc">
+                            <b>You can also:</b>
+                            <ul>
+                                <li>
+                                    <a class="button" href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-example-analysis" target="_top">View an example analysis</a>
+                                </li>
+                                <li>
+                                    <a class="button" href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-sample-data" target='_top'>Load a history</a> with small sample datasets (in the next page, click "import history")
+                                </li>
+                                <li>
+                                    Look at the screencasts below on how to use the system
+                                </li>
+                            </ul>
+                        </div>
+                        <div class ="projectDesc" style="margin: 20px 0px; font-style: italic;">
+                            Please feel free to contact us with any questions.
+                        </div>
+                        <!--<div class ="projectDesc">-->
+                            <!--<p class="paragraph">-->
+                                <!--Several generic and specialized tools are available to perform co-localization analysis, they vary in the statistical methodology and analysis approaches, thus potentially providing different conclusions for the same research question. As the findings of co-localization analysis are often the basis for further follow-up experimental investigations, assessing the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution, null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features). To address this gap, we propose a coloc-stats, single interface for multiple previously published co-localization analysis methods. </p><p class="paragraph">coloc-stats allows a user to find a method that supports their experimental requirements, and when multiple methods meet the requirements, assess the robustness of conclusions by running and inspecting results across methods. Additionally, we extend methods that only support a pair of tracks to consider track collections.-->
+                        <!--</p>-->
+                        <!--</div>-->
+                    </div>
+                </div>
             </div>
         </div>
+        <!--<div class="containerNext">-->
+            <!--<div class="containerNext">-->
+                <!--<div class="rowSpecialWithGap">-->
+                <!--<div class="colAll">-->
+                    <!--<div class = 'example'><h4 class = 'exampleTitle'>Demo video</h4>-->
+                    <!--<!–– <video controls="controls" width="800" height="600"-->
+                    <!--name="Video Name" src="images/gettingStartedWithColocStats.mov"> &ndash;&gt;-->
+                    <!--<!–– </video> &ndash;&gt;-->
+                    <!--<iframe src="https://player.vimeo.com/video/249248452" width="800" height="600" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+                        
+        <!--<div class="footer">-->
+            <!--<div class = 'contactInfo'>-->
+                <!--<div class = 'contactInfoDesc'>-->
+                    <!--All questions, requests or comments can be redirected to <a href='mailto:geirska@ifi.uio.no' target='_top'>Geir Kjetil Sandve.</a>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+        </div>
+
+
+
+        <div id="menu1" class="tab-pane fade">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAll">
+                    <div class = 'project'>
+                        <div class = 'projectDescSingle'>
+                            <b>Coloc-stats Help</b>
+
+                            <div class = 'projectDesc'>
+                                ........
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle' >
+                            <b>General</b>
+
+                            <div class = 'projectDesc'>
+                                ........
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <b>Input</b>
+
+                            <div class = 'projectDesc'>
+                                ........
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <b>File formats</b>
+
+                            <div class = 'projectDesc'>
+                                Coloc-stats supports files only in BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the BED file format described on the UCSC browser page (https://genome.ucsc.edu/FAQ/FAQformat.html#format1)
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <b>Invalid file formats</b>
+
+                            <div class = 'projectDesc'>
+                                Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.
+                            </div>
+                        </div>
+
+                        <div class = 'projectDescSingle'>
+                            <b>File size limitations</b>
+                            <div class = 'projectDesc'>
+                                We are not aware of any file size limitations as of now.
+                            </div>
+                        </div>
+
+                        <div class = 'projectDescSingle'>
+                            <b>Genome assemblies</b>
+
+                            <div class = 'projectDesc'>
+                                Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div id="menu2" class="tab-pane fade">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAll" style="padding-left: 0px">
+                    <div class = 'project'>
+                        <div class = 'projectDesc'>
+
+                            <ol>
+                                <li>
+                                    <b>I know some co-localization analysis tools. What is the purpose of a new tool?</b>
+                                    <div class = 'projectDesc'>
+                                        The existing co-localization analysis tools vary in the statistical methodology and analysis approaches, thus potentially providing different conclusions for the same research question. As the findings of co-localization analysis are often the basis for further follow-up experimental investigations, assessing the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution, null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features). To address this gap, we propose coloc-stats, a single interface for multiple previously published co-localization analysis methods.
+                                    </div>
+                                </li>
+                                <li>
+                                    <b>What can I achieve more with coloc-stats, than just running other co-localization analysis tools?</b>
+                                    <div class = 'projectDesc'>
+                                        Coloc-stats allows a user:
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            To make the most appropriate analysis choices given their research question.
+                                        </li>
+                                        <li>
+                                            Find a relevant method (amongst several) that supports their analysis choices.
+                                        </li>
+                                        <li>
+                                            To assess the robustness of conclusions by running and inspecting results across several methods.
+                                        </li>
+                                        <li>
+                                             Extend methods that only support a pair of tracks to consider track collections.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <b>When and why should I use coloc-stats?</b>
+                                    <div class = 'projectDesc'>
+                                        Coloc-stats is useful when:
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            The user is not aware of all the analysis choices that would affect the conclusions of co-localization analysis
+                                        </li>
+                                        <li>
+                                            The user is not familiar of all the existing methods and tools that support their analysis choices and assumptions
+                                        </li>
+                                        <li>
+                                            The user is uncertain about the association between a pair of tracks, to assess the robustness of findings
+                                        </li>
+                                        <li>
+                                             The user wants to run existing pairwise co-localization analysis tools in one-against-many mode
+                                        </li>
+                                        <li>
+                                             The user wants to run several co-localization analysis tools at once
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ol>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu3" class="tab-pane fade">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAll">
+                    <div class = 'project'>
+                        <div class = 'projectDesc'>
+                            <b>What is coloc-stats</b>
+                        </div>
+                        <div class = 'projectDesc'>
+                            Coloc-stats is a collaborative project between the authors of several published co-localization analysis tools. The tool is developed at the Department of Informatics at the University of Oslo and the web server is hosted at https://hyperbrowser.uio.no/coloc-stats/
+                        </div>
+
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>Tools integrated in coloc-stats</b>
+                        </div>
+
+                        <div class = 'projectDesc'>
+                                Coloc-stats provides a unified interface to eight different co-localization analysis tools. Tools are listed in chronological order they are published.
+
+                        </div>
+                        <div class = 'description'>
+                            <a  target="_blank"  href = 'https://doi.org/10.1186/gb-2010-11-12-r121' >Genomic Hyperbrowser</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank" href = 'https://doi.org/10.1093/bioinformatics/bts009' >IntervalStats</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank"  href = 'https://doi.org/10.1371/journal.pcbi.1002529' >GenometriCorr</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank"  href = 'https://doi.org/10.1016/j.ajhg.2015.05.016' >GoShifter</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank"  href = 'https://doi.org/10.1093/bioinformatics/btv612' >LOLA</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank"  href = ' https://doi.org/10.1093/gigascience/gix032' >GSuite Hyperbrowser</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank"  href = 'https://doi.org/10.1093/bioinformatics/btx379' >Stereogene</a>
+                        </div>
+                        <div class = 'description'>
+                            <a target="_blank"  href = 'https://doi.org/10.1101/157735' >GIGGLE</a>
+                        </div>
+
+
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>About us</b>
+                        </div>
+                        <div class = 'projectDesc'>
+                            Team at the Department of Informatics, University of Oslo
+                        </div>
+                        <div class = 'description'>
+                            Geir Kjetil Sandve (Principal Investigator)
+                        </div>
+                        <div class = 'description'>
+                            Boris Simovski
+                        </div>
+                        <div class = 'description'>
+                            Chakravarthi Kanduri
+                        </div>
+                        <div class = 'description'>
+                            Sveinung Gundersen
+                        </div>
+                        <div class = 'description'>
+                            Dmytro Titov
+                        </div>
+                        <div class = 'description'>
+                            Diana Domanska
+                        </div>
+
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>International collaborators</b>
+                        </div>
+                        <div class = 'description'>
+                            Christoph Bock (CeMM Research Center for Molecular Medicine of the Austrian Academy of Sciences, Vienna, Austria)
+                        </div>
+                        <div class = 'description'>
+                            Maria Chikina (University of Pittsburgh School of Medicine, Pittsburgh, PA, USA)
+                        </div>
+                        <div class = 'description'>
+                            Alexander Favorov (John Hopkins University School of Medicine, Baltimore, Maryland, USA)
+                        </div>
+                        <div class = 'description'>
+                            Ryan Layer (Department of Human Genetics, University of Utah, Salt Lake City, UT, USA)
+                        </div>
+                        <div class = 'description'>
+                            Aaron Quinlan (Department of Human Genetics, University of Utah, Salt Lake City, UT, USA)
+                        </div>
+                        <div class = 'description'>
+                            Nathan Sheffield (Center for Public Health Genomics, University of Virginia, Charlottesville, Virginia, USA)
+                        </div>
+                        <div class = 'description'>
+                            Gosia Trynka (Wellcome Trust Sanger Institute, Hinxton, UK)
+                        </div>
+
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>Contact us</b>
+                        </div>
+                        <div class = 'description'>
+                            ..........
+                        </div>
+
+
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>Version history</b>
+                        </div>
+                        <div class = 'description'>
+                            ..........
+                        </div>
+
+
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>How to cite coloc-stats</b>
+                        </div>
+                        <div class = 'description'>
+                            ..........
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
     </div>
 </div>
