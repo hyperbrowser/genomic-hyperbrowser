@@ -1,6 +1,6 @@
 from collections import OrderedDict, defaultdict
 from itertools import product
-from pickle import dump
+from pickle import dump, load
 
 from conglomerate.methods.intervalstats.intervalstats import IntervalStats
 from conglomerate.methods.lola.lola import LOLA
@@ -729,7 +729,14 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        LOAD_PICKLES = False #TODO: temp
         print HtmlCore().begin()
+        if LOAD_PICKLES:
+            pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
+            trackCombResults = load(open(pickleFn))
+            CongloProtoTool.outputResults(trackCombResults, [], None, [],galaxyFn)
+            return
+
         print '<h1>Result page for coloc-stats analysis</h1>'
         print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
         if VERBOSE_RUNNING:
@@ -752,29 +759,32 @@ class CongloProtoTool(GeneralGuiTool):
         succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
                                           for state in [True,False]]
         trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods)
-
+        trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
         #TODO: Temp code:
         sf = GalaxyRunSpecificFile(['trackComb.pickle'], galaxyFn)
         path = sf.getDiskPath(ensurePath=True)
         dump(trackCombResults, open(path, 'w'))
         print sf.getLink('Pickles')
-        return
 
+        cls.outputResults(trackCombResults, trackCombErrors, keptWmos, keysWithVariation, galaxyFn)
+
+    @classmethod
+    def outputResults(cls, trackCombResults, trackCombErrors, keptWmos, keysWithVariation, galaxyFn):
         print str(cls.createMainTable(galaxyFn, trackCombResults, keysWithVariation))
-        #print str(cls.createMainTable(galaxyFn, keptWmos, keysWithVariation))
 
         try:
-            pvalTableHtmlStr = str(cls.createRankTable(keptWmos, keysWithVariation))
+            pvalTableHtmlStr = str(cls.createRankTable(trackCombResults, keysWithVariation))
             print '<h2>Ranking of reference datasets by degree of co-localization according to each tool</h2>'
             print pvalTableHtmlStr
         except:
+            raise #TODO:remove
             print "Error creating rank table"
             if VERBOSE_RUNNING:
                 import traceback
                 traceback.print_exc()
 
         try:
-            pvalTableHtmlStr = str(cls.createPvalTable(keptWmos, keysWithVariation))
+            pvalTableHtmlStr = str(cls.createPvalTable(trackCombResults, keysWithVariation))
             print '<h2>P-value of co-localization enrichment for each reference track and tool</h2>'
             print pvalTableHtmlStr
         except:
@@ -783,10 +793,11 @@ class CongloProtoTool(GeneralGuiTool):
                 import traceback
                 traceback.print_exc()
 
-        errorTableHtmlCore = cls.createErrorTable(galaxyFn, keptWmos)
-        if errorTableHtmlCore is not None:
+
+        # if all(wmo.ranSuccessfully() for wmo in keptWmos):
+        if len(trackCombErrors)>0:
             print '<h2>Table with error messages for failing tools</h2>'
-            print str(errorTableHtmlCore)
+            print str(cls.createErrorTable(galaxyFn, trackCombErrors))
         print HtmlCore().end()
 
     @classmethod
@@ -797,40 +808,59 @@ class CongloProtoTool(GeneralGuiTool):
             print wmo._methods[0]._params, '\n****\n'
 
     @classmethod
-    def createErrorTable(cls, galaxyFn, keptWmos):
-        if all(wmo.ranSuccessfully() for wmo in keptWmos):
-            return None
+    def createErrorTable(cls, galaxyFn, trackCombErrors):
         core = HtmlCore()
         core.tableHeader(['Method name', 'Tool error'])
-        for i, wmo in enumerate(keptWmos):
-            if wmo.ranSuccessfully():
-                continue
+        for i, error in enumerate(trackCombErrors):
             errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], galaxyFn)
-            errorStaticFile.writeTextToFile(wmo.getErrorDetails())
-            core.tableLine([wmo._methodCls.__name__, errorStaticFile.getLink('Tool error output')])
+            errorStaticFile.writeTextToFile(error.errorStr)
+            core.tableLine([error.methodName, errorStaticFile.getLink('Tool error output')])
         core.tableFooter()
         return core
 
+    # @classmethod
+    # def createRankTable(cls, keptWmos, keysWithVariation):
+    #     core = HtmlCore()
+    #     rankTableDict = defaultdict(dict)
+    #     for i, wmo in enumerate(keptWmos):
+    #         if not wmo.ranSuccessfully():
+    #             continue
+    #
+    #         wmoLabel = wmo._methodCls.__name__  # + '(' + ','.join([key + ':' + wmo.annotatedChoices.get(key) for key in
+    #         #                 keysWithVariation]) + ')'
+    #         allTestStats = wmo.getTestStatistic()
+    #         tsVals = [(trackCombination[1].split('/')[-1], allTestStats[trackCombination]) \
+    #                   for trackCombination in allTestStats.keys()]
+    #         # tsRanks = dict([(track, 1+sum(v>val for t,v in tsVals)) for track, val in tsVals])
+    #         for trackName, val in tsVals:
+    #             rankTableDict[trackName][wmoLabel] = 1 + sum(v > val for t, v in tsVals)
+    #     if len(rankTableDict) > 1:  # More than 1 ref track
+    #         allTrackNames = rankTableDict.keys()
+    #         # allWmoLabels = rankTableDict.values()[0].keys()
+    #         # assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
+    #         allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
+    #         core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
+    #         for trackName in rankTableDict:
+    #             ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A' \
+    #                           for wmoLabel in allWmoLabels]
+    #             nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if
+    #                           wmoLabel in rankTableDict[trackName]]
+    #             meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
+    #             core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
+    #         core.tableFooter()
+    #     return core
+
     @classmethod
-    def createRankTable(cls, keptWmos, keysWithVariation):
+    def createRankTable(cls, trackCombResults, keysWithVariation):
         core = HtmlCore()
         rankTableDict = defaultdict(dict)
-        for i, wmo in enumerate(keptWmos):
-            if not wmo.ranSuccessfully():
-                continue
+        tsVals = [(res, res.testStat) for res in trackCombResults]
 
-            wmoLabel = wmo._methodCls.__name__  # + '(' + ','.join([key + ':' + wmo.annotatedChoices.get(key) for key in
-            #                 keysWithVariation]) + ')'
-            allTestStats = wmo.getTestStatistic()
-            tsVals = [(trackCombination[1].split('/')[-1], allTestStats[trackCombination]) \
-                      for trackCombination in allTestStats.keys()]
-            # tsRanks = dict([(track, 1+sum(v>val for t,v in tsVals)) for track, val in tsVals])
-            for trackName, val in tsVals:
-                rankTableDict[trackName][wmoLabel] = 1 + sum(v > val for t, v in tsVals)
+        for res, val in tsVals:
+            trackName = res.trackCombination[1].split('/')[-1]
+            rankTableDict[trackName][res.methodName] = 1 + sum(v > val for r, v in tsVals)
+
         if len(rankTableDict) > 1:  # More than 1 ref track
-            allTrackNames = rankTableDict.keys()
-            # allWmoLabels = rankTableDict.values()[0].keys()
-            # assert all([row.keys() == allWmoLabels for row in rankTableDict.values()]), (allWmoLabels, [row.keys() for row in rankTableDict.values()])
             allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
             core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
             for trackName in rankTableDict:
@@ -844,18 +874,11 @@ class CongloProtoTool(GeneralGuiTool):
         return core
 
     @classmethod
-    def createPvalTable(cls, keptWmos, keysWithVariation):
+    def createPvalTable(cls, trackCombResults, keysWithVariation):
         tableDict = defaultdict(dict)
-        for i, wmo in enumerate(keptWmos):
-            if not wmo.ranSuccessfully():
-                continue
-
-            wmoLabel = wmo._methodCls.__name__
-            allValues = wmo.getPValue()
-            trackValueItems = [(trackCombination[1].split('/')[-1], allValues[trackCombination]) \
-                               for trackCombination in allValues.keys()]
-            for trackName, val in trackValueItems:
-                tableDict[trackName][wmoLabel] = val
+        for res in trackCombResults:
+            trackName = res.trackCombination[1].split('/')[-1]
+            tableDict[trackName][res.methodName] = res.pval
 
         core = HtmlCore()
         if len(tableDict) > 1:  # More than 1 ref track
@@ -882,6 +905,15 @@ class CongloProtoTool(GeneralGuiTool):
                 keysWithVariation.append(key)
         keysWithVariation.sort()
         return keysWithVariation
+
+    @classmethod
+    def extractErrorFromFailingMethodList(cls, wmoList):
+        return reduce(lambda x,y:x+y, [cls.extractErrorFromFailingMethod(wmo) for wmo in wmoList])
+
+    @classmethod
+    def extractErrorFromFailingMethod(cls, wmo):
+        methodName = wmo._methodCls.__name__  # TODO: Make public method
+        return [TrackCombError(wmo.getErrorDetails(), methodName)]
 
     @classmethod
     def extractResultsFromWorkingMethodList(cls, wmoList):
@@ -981,7 +1013,7 @@ class CongloProtoTool(GeneralGuiTool):
         for j, res in enumerate(trackCombResults):
             fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(j) + '.html'], galaxyFn)
             fullResultStaticFile.writeTextToFile(res.fullResult)
-            keyCols = (res.methodName) + tuple(res.getPrettyTrackStr()) + \
+            keyCols = (res.methodName,) + tuple(res.getPrettyTrackNames()) + \
                       tuple([res.annotatedChoices.get(key) for key in
                  keysWithVariation])
             furtherCols = [str(res.pval), str(res.testStat), fullResultStaticFile.getLink('Full results')]
@@ -1407,5 +1439,18 @@ class TrackCombResult:
         self.methodName = methodName
         self.annotatedChoices = annotatedChoices
 
-    def getPrettyTrackStr(self):
-        raise
+    def getPrettyTrackNames(self):
+        return [track.split('/')[-1] for track in self.trackCombination]
+
+class TrackCombError:
+    def __init__(self, errorStr, methodName):
+        self.errorStr = errorStr
+        self.methodName = methodName
+
+
+def runResultOutputFromPickle(): #TODO: Temporary
+    pickleFn = '/Users/sandve/Downloads/trackComb.pickle'
+    trackCombResults = load(open(pickleFn))
+    CongloProtoTool.outputResults(trackCombResults, None, [], '/software/galaxy/personal/geirksa/galaxy_dev/database/files/000/dataset_886.dat')
+
+#runResultOutputFromPickle()
