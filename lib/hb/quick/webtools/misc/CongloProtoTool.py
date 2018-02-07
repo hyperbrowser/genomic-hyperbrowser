@@ -299,7 +299,7 @@ class CongloProtoTool(GeneralGuiTool):
         text = 'Upload files through the upload button on the top left corner under the tools menu. ' \
                'The file will appear under the galaxy history in the right menu panel. ' \
                'For now, only BED files are supported.'
-                text += '<br>'
+        text += '<br>'
         text += 'It is strongly advised to adhere to the BED file format specifications.'
         text += 'If you have a different file format other than BED, you can use the tool on the left-hand menu to convert between file formats.'
         text += 'Please see under the tools menu "Format and convert tracks".'
