@@ -743,12 +743,16 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        LOAD_PICKLES = False #TODO: temp
+        LOAD_PICKLES = True #TODO: temp
         print HtmlCore().begin()
         if LOAD_PICKLES:
             pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
             trackCombResults = load(open(pickleFn))
-            CongloProtoTool.outputResults(trackCombResults, [], None, [],galaxyFn)
+            if not type(trackCombResults)==TrackCombResultList:
+                trackCombResults = TrackCombResultList(trackCombResults)
+            #CongloProtoTool.outputResults(trackCombResults, [], None, [],galaxyFn)
+            crg = CongloResultsGenerator(trackCombResults, [], [],galaxyFn)
+            crg.outputResults()
             return
 
         print '<h1>Result page for coloc-stats analysis</h1>'
@@ -848,7 +852,10 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def extractErrorFromFailingMethodList(cls, wmoList):
-        return reduce(lambda x,y:x+y, [cls.extractErrorFromFailingMethod(wmo) for wmo in wmoList])
+        if len(wmoList)>0:
+            return reduce(lambda x,y:x+y, [cls.extractErrorFromFailingMethod(wmo) for wmo in wmoList])
+        else:
+            return []
 
     @classmethod
     def extractErrorFromFailingMethod(cls, wmo):
@@ -1350,6 +1357,9 @@ class TrackCombResultList(list):
     def getResultsForSpecifiedRefTrack(self, refTrack):
         return TrackCombResultList([res for res in self if res.trackCombination[1]==refTrack])
 
+    def getResultsForSpecifiedMethodName(self, methodName):
+        return TrackCombResultList([res for res in self if res.methodName==methodName])
+
 
 class TrackCombResult:
     def __init__(self, testStat, pval, fullResult, trackCombination, methodName, annotatedChoices):
@@ -1381,7 +1391,7 @@ class CongloResultsGenerator:
         if len(refTrackSet)>1:
             self._outputOneVsManyResults()
         else:
-            self._outputOneVsOneResults(self._trackCombResults, self._keysWithVariation, self._galaxyFn)
+            self._outputOneVsOneResults()
 
         if len(self._trackCombErrors)>0:
             print str(self._createErrorTable())
@@ -1392,7 +1402,7 @@ class CongloResultsGenerator:
 
     def _outputOneVsManyResults(self):
         try:
-            print self.createRankTable(self._trackCombResults, self._keysWithVariation)
+            print self.createRankTable()
         except:
             raise #TODO:remove
             print "Error creating rank table"
@@ -1401,7 +1411,7 @@ class CongloResultsGenerator:
                 traceback.print_exc()
 
         try:
-            print self.createPvalTable(trackCombResults, self._keysWithVariation)
+            print self.createPvalTable()
         except:
             print "Error creating P-value table"
             if VERBOSE_RUNNING:
@@ -1414,7 +1424,6 @@ class CongloResultsGenerator:
             self.createMainTable(resultsSubset)
 
 
-    @classmethod
     def createRankTable(self):
         core = HtmlCore()
         core.header('Ranking of reference datasets by degree of co-localization according to each tool')
@@ -1423,22 +1432,22 @@ class CongloResultsGenerator:
 
         for res, val in tsVals:
             trackName = res.trackCombination[1].split('/')[-1]
-            rankTableDict[trackName][res.methodName] = 1 + sum(v > val for r, v in tsVals)
+            resultsForSameMethod = self._trackCombResults.getResultsForSpecifiedMethodName(res.methodName)
+            rankTableDict[trackName][res.methodName] = 1 + sum(r.testStat > val for r in resultsForSameMethod)
 
-        if len(rankTableDict) > 1:  # More than 1 ref track
-            allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
-            core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
-            for trackName in rankTableDict:
-                ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A' \
-                              for wmoLabel in allWmoLabels]
-                nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if
-                              wmoLabel in rankTableDict[trackName]]
-                meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
-                core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
-            core.tableFooter()
+        assert len(rankTableDict) > 1  # More than 1 ref track
+        allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
+        core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
+        for trackName in rankTableDict:
+            ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A' \
+                          for wmoLabel in allWmoLabels]
+            nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if
+                          wmoLabel in rankTableDict[trackName]]
+            meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
+            core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
+        core.tableFooter()
         return core
 
-    @classmethod
     def createPvalTable(self):
         tableDict = defaultdict(dict)
         for res in self._trackCombResults:
