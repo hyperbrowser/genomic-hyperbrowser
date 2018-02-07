@@ -22,13 +22,13 @@
         <div class="container">
             <div class="rowSpecial">
                 <div class="colAll">
-                    <h2 class="projectTitle">coloc-stats</h2>
+                    <h1 class="projectTitle">coloc-stats</h1>
                     <div class = 'projectDescSingle'>
-                        a unified web interface to perform co-localization analysis of genomic features
+                        a unified web interface to perform <a href="#co-loc-analysis"><font color="#0645AD">co-localization analysis</font></a> of genomic features
                     </div>
                     <div class = 'project'>
                         <div class = 'projectDesc'>
-                            <b>Get started by:</b>
+                            <h4>Get started by:</h4>
                             <ol>
                                 <li>
                                     <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Uploading datasets</a> of genomic locations (bed-files)
@@ -43,7 +43,7 @@
 
                         </div>
                         <div class ="projectDesc" style="margin: 20px 0px; font-style: italic;">
-                            If you are new to Galaxy, you can follow a brief interactive tour
+                            If you are new to Galaxy, you can follow a <a class="button" href="https://galaxyproject.org/tutorials/g101/" target="_top">brief tutorial</a>
                         </div>
                         <div class ="projectDesc">
                             <b>You can also:</b>
@@ -55,12 +55,12 @@
                                     <a class="button" href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-sample-data" target='_top'>Load a history</a> with small sample datasets (in the next page, click "import history")
                                 </li>
                                 <li>
-                                    Look at the screencasts below on how to use the system
+                                    Look at the <a href='https://vimeo.com/249248452' target='_top'><font color="#0645AD">screencasts</font></a> below on how to use the system
                                 </li>
                             </ul>
                         </div>
                         <div class ="projectDesc" style="margin: 20px 0px; font-style: italic;">
-                            Please feel free to contact us with any questions.
+                            Please feel free to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">contact us</font></a> with any questions.
                         </div>
                         <!--<div class ="projectDesc">-->
                             <!--<p class="paragraph">-->
@@ -71,20 +71,20 @@
                 </div>
             </div>
         </div>
-        <!--<div class="containerNext">-->
-            <!--<div class="containerNext">-->
-                <!--<div class="rowSpecialWithGap">-->
-                <!--<div class="colAll">-->
-                    <!--<div class = 'example'><h4 class = 'exampleTitle'>Demo video</h4>-->
-                    <!--<!–– <video controls="controls" width="800" height="600"-->
-                    <!--name="Video Name" src="images/gettingStartedWithColocStats.mov"> &ndash;&gt;-->
-                    <!--<!–– </video> &ndash;&gt;-->
-                    <!--<iframe src="https://player.vimeo.com/video/249248452" width="800" height="600" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>-->
-                    <!--</div>-->
-                <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
+        <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'example'><h4 class = 'exampleTitle'>Screencast:quick tutorial</h4>
+                    <!–– <video controls="controls" width="800" height="600"
+                    name="Video Name" src="images/gettingStartedWithColocStats.mov">
+                    <!–– </video>
+                    <iframe src="https://player.vimeo.com/video/249248452" width="800" height="600" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
                         
         <!--<div class="footer">-->
             <!--<div class = 'contactInfo'>-->
@@ -103,35 +103,59 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
-                            <b>Coloc-stats Help</b>
+                            <h3>Documentation</h3>
 
                             <div class = 'projectDesc'>
                                 ........
                             </div>
                         </div>
                         <div class = 'projectDescSingle' >
-                            <b>General</b>
+                            <h3>General</h3>
+
+                            <div class = 'projectDesc'>
+                                <h4 id="co-loc-analysis">Co-localization analysis</h4>
+                                <p>High-throughput sequencing methods assay various features of the genome
+                                        including regulatory elements, transcription factor binding sites (TFBS),
+                                        transcripts and so on. Functionally related genomic features often
+                                        co-occur within a genomic sequence (for e.g., co-occurrence of TFBS).
+                                        One important way of determining whether genomic features are functionally
+                                        related, is to search for their significant co-localization
+                                        (based on overlap or proximity). The methodology that determines a
+                                        significant co-localization of genomic features is often referred to as
+                                        co-localization analysis or alternatively as co-occurrence analysis or
+                                    region set enrichment analysis.</p>
+                                <p></p>
+                                <h4>Basic overview of a typical co-localization analysis</h4>
+                                <p>Genomic features are mapped on the reference genome using chromosomal
+                                        coordinates (e.g., chr1:100-1000), which are simply the start position
+                                        and end position of a sequence of nucleotides on a chromosome. Such a
+                                        representation of nucleotide sequence is referred to as genomic regions
+                                        or genomic intervals. One of the main outputs of genomic assays is a
+                                        list of genomic regions and a collection of sets of genomic regions are
+                                        referred to as genomic tracks or region sets. Arithmetic set operations
+                                        are performed between genomic tracks to determine the amount of overlap
+                                        (overlapping sequence nucleotides) or spatial proximity (e.g. geometric
+                                        distance between two genomic regions). This is followed by statistical
+                                        testing to determine whether the observed overlap or spatial proximity
+                                    is likely due to chance.</p>
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h3>Input</h3>
 
                             <div class = 'projectDesc'>
                                 ........
                             </div>
                         </div>
                         <div class = 'projectDescSingle'>
-                            <b>Input</b>
-
-                            <div class = 'projectDesc'>
-                                ........
-                            </div>
-                        </div>
-                        <div class = 'projectDescSingle'>
-                            <b>File formats</b>
+                            <h3>File formats</h3>
 
                             <div class = 'projectDesc'>
                                 Coloc-stats supports files only in BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the BED file format described on the UCSC browser page (https://genome.ucsc.edu/FAQ/FAQformat.html#format1)
                             </div>
                         </div>
                         <div class = 'projectDescSingle'>
-                            <b>Invalid file formats</b>
+                            <h3>Invalid file formats</h3>
 
                             <div class = 'projectDesc'>
                                 Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.
@@ -139,14 +163,14 @@
                         </div>
 
                         <div class = 'projectDescSingle'>
-                            <b>File size limitations</b>
+                            <h3>File size limitations</h3>
                             <div class = 'projectDesc'>
                                 We are not aware of any file size limitations as of now.
                             </div>
                         </div>
 
                         <div class = 'projectDescSingle'>
-                            <b>Genome assemblies</b>
+                            <h3>Genome assemblies</h3>
 
                             <div class = 'projectDesc'>
                                 Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.

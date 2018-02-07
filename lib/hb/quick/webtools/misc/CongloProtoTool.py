@@ -280,8 +280,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getInfoForOptionsBoxAnalysisType(cls, prevChoices):
         text = 'Here you can choose to perform the co-localization analysis either between a pair of genomic tracks or analyse a single genomic track against a large collection of genomic tracks.' \
-               'The large collection of genomic tracks can further be a core database, where one could for example perform the analysis against ENCODE or Roadmap Epigenomics data including ' \
-               'transcription factor binding sites, DNAse hypersensitive sites and so on. See the articles [1,2,3] for the reference track collections they curated.'
+                'For more information about co-localization analysis, refer the following citations:'
         text += '<br>'
         text += '[1] https://doi.org/10.1186/gb-2010-11-12-r121'
         text += '<br>'
@@ -297,10 +296,10 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getInfoForOptionsBoxChooseQueryTrackFile(cls, prevChoices):
-        text = 'For now, only BED files are supported.' \
-               'Upload files through the upload button on the top left corner under the tools menu. ' \
-               'The file will appear under the galaxy history in the right menu panel. '
-        text += '<br>'
+        text = 'Upload files through the upload button on the top left corner under the tools menu. ' \
+               'The file will appear under the galaxy history in the right menu panel. ' \
+               'For now, only BED files are supported.'
+                text += '<br>'
         text += 'It is strongly advised to adhere to the BED file format specifications.'
         text += 'If you have a different file format other than BED, you can use the tool on the left-hand menu to convert between file formats.'
         text += 'Please see under the tools menu "Format and convert tracks".'
@@ -605,6 +604,14 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxRuntimeMode(cls, prevChoices):
         return ['quick', 'medium', 'accurate']
+
+    @classmethod
+    def getInfoForOptionsBoxRuntimeMode(cls, prevChoices):
+        text = 'Depending upon the analysis choices and the run times of corresponding compatible methods, the run time can vary from minutes to hours.' \
+                'Choosing a quick mode reduces the run time of the compatible methods,for instance, by reducing the number of permutations.'
+        text += '<br>'
+        return text
+
 
     @classmethod
     def getOptionsBoxCompatibleMethods(cls, prevChoices):
