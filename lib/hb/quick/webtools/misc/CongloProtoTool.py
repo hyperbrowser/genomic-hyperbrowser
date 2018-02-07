@@ -656,11 +656,11 @@ class CongloProtoTool(GeneralGuiTool):
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
             raise
-        chrLenFnMappings = {'hg19': pkg_resources.resource_filename('conglomerate_resources', 'hg19.chrom.sizes'),
-                            'hg18': pkg_resources.resource_filename('conglomerate_resources', 'hg18.chrom.sizes'),
-                            'hg38': pkg_resources.resource_filename('conglomerate_resources', 'hg38.chrom.sizes'),
-                            'mm9': pkg_resources.resource_filename('conglomerate_resources', 'mm9.chrom.sizes'),
-                            'mm10': pkg_resources.resource_filename('conglomerate_resources', 'mm10.chrom.sizes'),
+        chrLenFnMappings = {'hg19': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/hg19.chrom.sizes'),
+                            'hg18': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/hg18.chrom.sizes'),
+                            'hg38': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/hg38.chrom.sizes'),
+                            'mm9': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/mm9.chrom.sizes'),
+                            'mm10': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/mm10.chrom.sizes'),
                             }
         if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             genomeName = 'Custom'
