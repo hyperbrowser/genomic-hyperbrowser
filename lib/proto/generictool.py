@@ -541,7 +541,7 @@ class GenericToolController(BaseToolController):
         #    print '<div class="debug">Corresponding batch run line:\n', '$Tool[%s](%s)</div>' % (self.toolId, batchargs)
 
 
-        self.extraGalaxyFn = {}
+        self.extraGalaxyFn = OrderedDict()
 
 #        if hasattr(self.prototype, 'getExtraHistElements'):
 #            for output in self.prototype.getExtraHistElements(choices):
