@@ -2,6 +2,9 @@ from collections import OrderedDict, defaultdict
 from itertools import product
 from pickle import dump, load
 
+import os
+
+from config.Config import GALAXY_TOOL_DATA_PATH
 from conglomerate.methods.intervalstats.intervalstats import IntervalStats
 from conglomerate.methods.lola.lola import LOLA
 from conglomerate.tools.method_compatibility import getCompatibleMethodObjects, getCollapsedConfigurationsPerMethod
@@ -655,12 +658,12 @@ class CongloProtoTool(GeneralGuiTool):
         elif prevChoices.selectRunningMode == cls.ADVANCED:
             selections = cls.parseAdvancedChoices(prevChoices)
         else:
-            raise
-        chrLenFnMappings = {'hg19': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/hg19.chrom.sizes'),
-                            'hg18': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/hg18.chrom.sizes'),
-                            'hg38': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/hg38.chrom.sizes'),
-                            'mm9': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/mm9.chrom.sizes'),
-                            'mm10': pkg_resources.resource_filename('conglomerate', '../conglomerate_resources/mm10.chrom.sizes'),
+            raise Exception()
+        chrLenFnMappings = {'hg19': cls._getCongloResourcePath('hg19.chrom.sizes'),
+                            'hg18': cls._getCongloResourcePath('hg18.chrom.sizes'),
+                            'hg38': cls._getCongloResourcePath('hg38.chrom.sizes'),
+                            'mm9': cls._getCongloResourcePath('mm9.chrom.sizes'),
+                            'mm10': cls._getCongloResourcePath('mm10.chrom.sizes'),
                             }
         if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             genomeName = 'Custom'
@@ -673,6 +676,10 @@ class CongloProtoTool(GeneralGuiTool):
         selections['setChromLenFileName'] = [('setChromLenFileName', chrLenFn)]
         selections['setRuntimeMode'] = [('setRuntimeMode', prevChoices.runtimeMode)]
         return selections
+
+    @classmethod
+    def _getCongloResourcePath(cls, resourceFn):
+        return os.path.join([GALAXY_TOOL_DATA_PATH, 'conglomerate', 'resources', resourceFn])
 
     @classmethod
     def parseSimpleModeBgOptions(cls, prevChoices):
@@ -1428,7 +1435,7 @@ class ReferenceTrackParser(TrackParser):
             elif self._typeOfReferenceTrackCollection == CongloProtoTool.CUSTOM_DATABASE:
                 referenceTrackChoice = self._chooseCustomTrackCollection
             else:
-                raise
+                raise Exception()
         else:
             raise Exception('Invalid typeOfAnalysis: ' + str(typeOfAnalysis))
         return referenceTrackChoice
