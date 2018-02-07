@@ -679,7 +679,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def _getCongloResourcePath(cls, resourceFn):
-        return os.path.join([GALAXY_TOOL_DATA_PATH, 'conglomerate', 'resources', resourceFn])
+        return os.path.join(*[GALAXY_TOOL_DATA_PATH, 'conglomerate', 'resources', resourceFn])
 
     @classmethod
     def parseSimpleModeBgOptions(cls, prevChoices):
