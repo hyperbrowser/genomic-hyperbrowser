@@ -9,6 +9,7 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
     MultitrackSummarizedInteractionWithOtherTracksV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
@@ -366,21 +367,25 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         core.divEnd()
         core.hideToggle(styleId="progress-output")
         print str(core)
-        cls._printMultiQueryScenarioResult(results, catTS.keys(), choices)
+        cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
 
     @classmethod
-    def _printMultiQueryScenarioResult(cls, results, catNames, choices):
+    def _printMultiQueryScenarioResult(cls, results, catNames, choices, galaxyFn):
         core = HtmlCore()
         core.divBegin()
         resTableDict = OrderedDict()
         if choices.randType == "Wilcoxon":
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-            core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
+            columnNames = ["Query track", "Wilcoxon score", "P-value"]
+            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+            # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
         else:
             for key, val in results.iteritems():
                 resTableDict[key] = val.getResult()
-            core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
+            columnNames = ["Query track"] + catNames
+            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+            # core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
         core.divEnd()
         core.end()
         print str(core)
@@ -464,8 +469,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 resTableDict[key].append("NA")
             resTableDict['Wilcoxon'] = [wilcoxonResults['statistic'], wilcoxonResults['p.value']]
 
-            core.tableFromDictionary(resTableDict, columnNames=["Group", "Score",
-                                                                "P-value"])
+            columnNames = ["Group", "Score", "P-value"]
+            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+            # core.tableFromDictionary(resTableDict, columnNames=columnNames)
 
         else:
             resTableDict = OrderedDict()
@@ -481,9 +487,10 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
                 ]
             rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
-            core.tableFromDictionary(resTableDict, columnNames=["Group", "Similarity score",
-                                                                "P-value", "Mean score for null distribution",
-                                                                "Std. deviation of score for null distribution"])
+            columnNames = ["Group", "Similarity score", "P-value", "Mean score for null distribution",
+                             "Std. deviation of score for null distribution"]
+            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+            # core.tableFromDictionary(resTableDict, columnNames=columnNames)
 
             core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
                 "null distribution table") + ".")
