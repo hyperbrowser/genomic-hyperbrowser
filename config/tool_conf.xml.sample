@@ -5,6 +5,7 @@
   <label text="coloc-stats tools" id="ch_tools" />
   <section name="coloc-stats" id="my_tools">
     <tool file="proto/hyperbrowser/misc/CongloProtoTool.xml" />
+    <tool file="proto/hyperbrowser/misc/CongloImportSampleFilesTool.xml" />
   </section>
 
 <label id="hb_internal_tools" text="HyperBrowser internal tools" version="" />
@@ -84,7 +85,6 @@
     <!-- <tool file="hyperbrowser/custom_track.xml" /> -->
     <!--<tool file="proto/hyperbrowser/track/CreateCategoryBasedOnTresholdIntervals.xml" />-->
     <tool file="proto/FileImport.xml" />
-    <tool file="proto/hyperbrowser/misc/CongloImportSampleFilesTool.xml" />
   </section>
 
   <section name="Format and convert tracks" id="format_convert_tracks">
