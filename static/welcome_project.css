@@ -331,3 +331,18 @@
         .projectDescSingle {
             margin-bottom: 20px;
         }
+
+        dt {
+            cursor: pointer;
+        }
+        dt:hover{
+            color: #66635B;
+        }
+        h4{
+            text-decoration: underline;
+        }
+
+        dd {
+            text-align: justify;
+            padding: 10px;
+        }
