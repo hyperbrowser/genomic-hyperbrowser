@@ -20,6 +20,8 @@ vioplot
 mvtnorm
 sfsmisc
 polycor
+ggplot2
+ggthemes
 
 
 # Todo: Experimental packages (from developer), double-check these

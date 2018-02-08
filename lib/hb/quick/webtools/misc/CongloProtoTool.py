@@ -801,7 +801,6 @@ class CongloProtoTool(GeneralGuiTool):
         path = sf.getDiskPath(ensurePath=True)
         dump(trackCombResults, open(path, 'w'))
         print sf.getLink('Pickles')
-        return
 
         #cls.outputResults(trackCombResults, trackCombErrors, keptWmos, keysWithVariation, galaxyFn)
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
@@ -1429,7 +1428,7 @@ class CongloResultsGenerator:
         methods = [res.methodName for res in trackCombResults]
         sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
         sf.openRFigure()
-        #r.plot_pvals(pvals, methods)
+        r.plot_pvals(pvals, methods)
         sf.closeRFigure()
         return sf.getLink('Pvalue-plot')
 
