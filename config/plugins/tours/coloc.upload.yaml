@@ -1,0 +1,50 @@
+id: coloc-upload
+name: Coloc-stats upload datasets
+description: How to upload datasets for the first time
+title_default: Galaxy Tour
+steps:
+  - title: Step 1.
+    element: .upload-button
+    content: Open the upload tool
+    placement: right
+    postclick:
+      - .upload-button
+  - title: Step 2
+    element: '#btn-local'
+    content: Select datasets for analysis
+    placement: right
+    postclick:
+      - 'button#btn-reset'
+      - 'button#btn-new'
+  - title: Step 3
+    element: '#text-content'
+    intro: URLs separated by a line break are automatically downloaded by Galaxy.
+    position: bottom
+    textinsert: >-
+      https://hyperbrowser.uio.no/coloc-stats/datasets/f82b9e20331d2d97/display?to_ext=bed
+
+      https://hyperbrowser.uio.no/coloc-stats/datasets/5304041262143d5a/display?to_ext=gsuite
+  - title: Step 4
+    element: 'div#extension a.select2-choice'
+    content: 'Specify the proper datatype (e.g. bed, gsuite)'
+    placement: right
+  - title: Step 5
+    element: 'div#genome a.select2-choice'
+    content: Specify the proper genome (e.g. hg19)
+    placement: right
+  - title: Step 6
+    element: '#btn-start'
+    content: Click start to upload datasets to history
+    placement: left
+    postclick:
+      - '#btn-start'
+  - title: Step 7
+    element: '#btn-close'
+    content: Close upload tool
+    placement: left
+    postclick:
+      - '#btn-close'
+  - title: Step 8
+    element: '#title_my_tools'
+    content: Open coloc-stats tool here
+    placement: right

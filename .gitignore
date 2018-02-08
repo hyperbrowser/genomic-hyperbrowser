@@ -66,6 +66,12 @@ object_store_conf.xml
 job_metrics_conf.xml
 workflow_schedulers_conf.xml
 config/*
+!config/plugins
+config/plugins/*
+!config/plugins/tours
+config/plugins/tours/*
+!config/plugins/tours/coloc.upload.yaml
+
 static/welcome.html.*
 static/welcome.html
 lib/conglomerate_submodule/*
