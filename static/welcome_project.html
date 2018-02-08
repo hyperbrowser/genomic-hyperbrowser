@@ -315,7 +315,143 @@
                                 </dd>
                                      </li>
                                      <p></p>
-
+                                 <li>
+                                <dt><b>Is there a way of programmatically accessing coloc-stats page?</b></dt>
+                                <dd>
+                                    We do not yet have a programming interface, but this will be a possibility in the near future.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>The coloc-stats webpage is quite slow. Is there something I can do to fix it?</b></dt>
+                                <dd>
+                                    Depending upon the traffic to the server, sometimes the webpage might appear to be slow. But this is supposed to be a temporary thing and the webpage should return to its original smoothness within few minutes-hours.
+                                    If that is not the case <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">you can report to us</font></a> to get support.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     <h4>## Error messages </h4>
+                                     <p></p>
+                                <li>
+                                <dt><b>Something is causing an error, I do not know what it is. What do I do now?</b></dt>
+                                <dd>
+                                   We observed that some co-localization analysis tools throw errors sometimes because of various different reasons. However, the coloc-stats tool itself should run all the other methods (that pass) and show the results.
+                                    If this is not the case, (i.e., if coloc-stats tool itself throws error) then the history element will turn red. When the coloc-stats tool itself throws error, you can  <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">share the history with us</font></a> to get support.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>My input file is causing an error!</b></dt>
+                                <dd>
+                                    Be aware that coloc-stats currently accepts only BED files. If you have your genomic regions in other file formats, you have to convert them to BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the
+                                    <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">BED file format specifications</font></a> described on the UCSC browser page.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>I am using a BED file as input, still it shows an error!</b></dt>
+                                <dd>
+                                    Adhering to the BED format specifications is always recommended. Deviations from the file format specifications are a common cause for errors when running several of the bioinformatic tools.
+                                    See more about the BED format specifications in the previous question. If you are sure that you adhered to the file format specifications, but still encounter an error, please
+                                    <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report to us</font></a> and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <h4> ## Results and results pages </h4>
+                                     <p></p>
+                                 <li>
+                                <dt><b>I am not sure if I completely understood the output page. Explain me.</b></dt>
+                                <dd>
+                                    While the computations of various tools are ongoing, the results page shows statements indicating “in progress”.
+                                    Once the computations are completed, the results page is populated with the results from one or several tools,
+                                    depending upon the parameters and configurations chosen by the user. The results page shows the parameters chosen
+                                    for the analysis. When you run a pairwise co-localization analysis (between two genomic tracks), a plot is displayed
+                                    showing the negative logarithmic p-values obtained through different methods/configurations chosen. A simplistic indication
+                                    is also provided to the user on how to interpret the findings to allow the user to make an informed decision. A table showing
+                                    p-values, enrichment statistics and full results (as given out by the specific tool) of each tool/configuration is also provided.
+                                    If any chosen tool fails or reports an error, the error messages are shown in a separate table.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>The links to the full results pages of individual tools are broken. What do I do now?</b></dt>
+                                <dd>
+                                    This is not the expected behaviour of coloc-stats tool.
+                                    Please take a minute to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
+                                    and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>The p-values are set to NA for some methods. What does this mean?</b></dt>
+                                <dd>
+                                    Some tools by their nature (e.g., IntervalStats) do not return p-value for the overall association
+                                    between tracks as of now. Otherwise all the other tools should return p-value unless they throw an error
+                                    for the input genomic tracks. If this is the case, refer to the error messages table to see if an error message
+                                    was thrown for the tracks of interest. If you observe a trend of consistent error messages, you can suspect
+                                    something went wrong. If that is the case, please take a minute to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
+                                    and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>Some tables are empty/contain empty fields. What does this mean?</b></dt>
+                                <dd>
+                                    If no errors are thrown, the table containing error messages would be empty.
+                                    This is expected behaviour. Other than that, the tables should not be empty or
+                                    contain empty fields. If that is the case, If that is the case, please take a
+                                    minute to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
+                                    and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <h4> ## Reproducibility, replication and sharing results </h4>
+                                     <p></p>
+                                 <li>
+                                <dt><b>How can I share my analysis history with anyone?</b></dt>
+                                <dd>
+                                    See here on <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">how to share your analysis history with anyone</font></a>.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                 <li>
+                                <dt><b>I was not able to reproduce the analysis that I did earlier.</b></dt>
+                                <dd>
+                                    All the analyses you performed are stored in the history, if you choose to create a user account and store your analysis histories.
+                                    To know more about histories in galaxy, <a href='https://galaxyproject.org/tutorials/histories/' target='_top'><font color="#0645AD">see a brief tutorial </font></a> here.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>I was not able to replicate the findings. The p-values seem to change everytime I run the analysis.</b></dt>
+                                <dd>
+                                    This is quite expected behaviour in some types of statistical testing that involves permutations and random sampling.
+                                    As all the tools integrated into coloc-stats do not support setting a seed, we currently do not provide a functionality to set seed.
+                                    On the other hand, if the p-values do not stand significant at a given threshold, that finding should always be interpreted with caution.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     <h4> ## Genome assemblies and species </h4>
+                                     <p></p>
+                                <li>
+                                <dt><b>Which genome assemblies are supported by coloc-stats?</b></dt>
+                                <dd>
+                                     Currently hg19, hg38, mm9 and mm10 are supported right away in the coloc-stats tool.
+                                    However, all the genome assemblies of any species can be used to perform the analysis.
+                                    For that, you only need a text file containing the chromosome lengths.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>How can I use coloc-stats for a different species or genome assembly?</b></dt>
+                                <dd>
+                                     To use coloc-stats for a genome assembly or species that is not installed on coloc-stats tool,
+                                    all you need is a text file containing the chromosome lengths of that genome assembly.
+                                    Select custom reference genome in the “reference genome” section of the tool, which will prompt
+                                    you to upload a chromosome lengths file. Upload that file and continue with the remaining analysis choices normally.
+                                </dd>
+                                     </li>
+                                     <p></p>
                                      </li>
                             </dl>
 <script type="text/javascript">
