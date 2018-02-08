@@ -757,6 +757,8 @@ class CongloProtoTool(GeneralGuiTool):
 
         print '<h1>Result page for coloc-stats analysis</h1>'
         print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
+        print '''Your analysis has been completed. You can now view the results.
+                You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element'''
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
@@ -1385,48 +1387,77 @@ class CongloResultsGenerator:
         self._trackCombErrors = trackCombErrors
         self._keysWithVariation = keysWithVariation
         self._galaxyFn = galaxyFn
+        self._subPageStaticFiles = {}
 
     def outputResults(self):
         refTrackSet = self._trackCombResults.getSetOfAllRefTracks()
         if len(refTrackSet)>1:
             self._outputOneVsManyResults()
         else:
-            self._outputOneVsOneResults()
+            self._generateOneVsOneResults(self._trackCombResults)
 
         if len(self._trackCombErrors)>0:
             print str(self._createErrorTable())
 
-    def _outputOneVsOneResults(self):
-        print self.createMainTable(self._trackCombResults)
+    def _generateOneVsOneResults(self, trackCombResults):
+        core = HtmlCore()
+        core.append(str(self.createMainTable(trackCombResults)))
+        core.paragraph(str(self.plotPvals(trackCombResults)))
+        core.paragraph(self.getSimplisticPvalIndication(trackCombResults))
+        core.paragraph('Relevant FAQ: Why are the p-values of different methods different, when they are analysing the same research question?')
+        return str(core)
 
+    def plotPvals(self, trackCombResults):
+        from proto.RSetup import r
+        r(R_PLOTTING_CODE)
+        pvals = [res.pval for res in trackCombResults]
+        methods = [res.methodName for res in trackCombResults]
+        sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
+        sf.openRFigure()
+        #r.plot_pvals(pvals, methods)
+        sf.closeRFigure()
+        return sf.getLink('Pvalue-plot')
+
+    def getSimplisticPvalIndication(self, trackCombResults):
+        return '''<b>Simplistic indication:</b> Based on the consensus of different statistical tests, there is NO strong evidence to conclude that there is a strong association between query and reference tracks. (we return this even when one of the null model does not indicate strong association - since it is always advised to believe on the worst p-value)'''
 
     def _outputOneVsManyResults(self):
-        try:
-            print self.createRankTable()
-        except:
-            raise #TODO:remove
-            print "Error creating rank table"
-            if VERBOSE_RUNNING:
-                import traceback
-                traceback.print_exc()
-
-        try:
-            print self.createPvalTable()
-        except:
-            print "Error creating P-value table"
-            if VERBOSE_RUNNING:
-                import traceback
-                traceback.print_exc()
-
         refTrackSet = self._trackCombResults.getSetOfAllRefTracks()
         for refTrack in refTrackSet:
             resultsSubset = self._trackCombResults.getResultsForSpecifiedRefTrack(refTrack)
-            self.createMainTable(resultsSubset)
+            self._subPageStaticFiles[refTrack] = GalaxyRunSpecificFile(['oneVsOne',refTrack+'.html'],self._galaxyFn)
+            subPageHtml = HtmlCore()
+            subPageHtml.begin()
+            subPageHtml.append(self._generateOneVsOneResults(resultsSubset))
+            subPageHtml.end()
+            self._subPageStaticFiles[refTrack].writeTextToFile(str(subPageHtml))
 
+        print self.createRankTable()
+        print self.createTestStatTable()
+        print self.createPvalTable()
+
+        print str(self.createDetailedResultsLinkTable())
+
+    def createDetailedResultsLinkTable(self):
+        core = HtmlCore()
+        core.header('Full results')
+
+        core.tableHeader(['Detailed results per reference track'])
+        for refTrack in self._trackCombResults.getSetOfAllRefTracks():
+            refTrackLink = self._subPageStaticFiles[refTrack].getLink(refTrack)
+            core.tableLine([refTrackLink])
+        core.tableFooter()
+        return core
 
     def createRankTable(self):
+        someResult = self._trackCombResults[0]
         core = HtmlCore()
-        core.header('Ranking of reference datasets by degree of co-localization according to each tool')
+        core.header('Ranking of reference tracks')
+        #by degree of co-localization according to each tool
+        core.paragraph('''Note: When multiple methods are used, reference tracks are ranked and sorted 
+        based on a consensus rank determined as a geometric mean of the individual ranks obtained through multiple methods. 
+        The table can also be sorted based on method-specific rankings to see the individual ranks. ''')
+        core.paragraph('Query track tested for co-localization: ' + someResult.trackCombination[0].split('/')[-1])
         rankTableDict = defaultdict(dict)
         tsVals = [(res, res.testStat) for res in self._trackCombResults]
 
@@ -1437,40 +1468,54 @@ class CongloResultsGenerator:
 
         assert len(rankTableDict) > 1  # More than 1 ref track
         allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
-        core.tableHeader([' '] + allWmoLabels + ['Mean rank'], sortable=True)
+        core.tableHeader(['Reference track'] + allWmoLabels + ['Consensus rank'], sortable=True)
         for trackName in rankTableDict:
             ranksInRow = [rankTableDict[trackName][wmoLabel] if wmoLabel in rankTableDict[trackName] else 'N/A' \
                           for wmoLabel in allWmoLabels]
             nonNAranks = [rankTableDict[trackName][wmoLabel] for wmoLabel in allWmoLabels if
                           wmoLabel in rankTableDict[trackName]]
             meanRank = '%.1f' % (reduce(lambda x, y: x * y, nonNAranks) ** (1.0 / len(nonNAranks)))
+            #trackNameLink = self._subPageStaticFiles[trackName].getLink(trackName)
             core.tableLine([trackName] + [str(x) for x in ranksInRow] + [meanRank])
         core.tableFooter()
         return core
 
     def createPvalTable(self):
+        return self.createTableOfExtractedResultAttribute('pval', 'P-value of co-localization enrichment for each reference track and tool')
+
+    def createTestStatTable(self):
+        return self.createTableOfExtractedResultAttribute('testStat', 'Co-localization enrichment for each reference track and tool')
+
+    def createTableOfExtractedResultAttribute(self, attribute, headerLine):
+        assert attribute in ['pval', 'testStat']
         tableDict = defaultdict(dict)
         for res in self._trackCombResults:
             trackName = res.trackCombination[1].split('/')[-1]
-            tableDict[trackName][res.methodName] = res.pval
+            #tableDict[trackName][res.methodName] = res.pval
+            tableDict[trackName][res.methodName] = getattr(res,attribute)
+
 
         core = HtmlCore()
-        core.header('P-value of co-localization enrichment for each reference track and tool')
+        core.header(headerLine)
 
         if len(tableDict) > 1:  # More than 1 ref track
             allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
-            core.tableHeader([' '] + allWmoLabels, sortable=True)
+            if attribute=='testStat':
+                allWmoClasses = [globals()[label] for label in allWmoLabels]
+                allWmoDescr = [wmo.getTestStatDescr() for wmo in allWmoClasses]
+                allWmoLabels = [label+'<br>('+descr+')' for label,descr in zip(allWmoLabels,allWmoDescr)]
+            core.tableHeader(['Reference track'] + allWmoLabels, sortable=True)
             for trackName in tableDict:
                 valuesInRow = [tableDict[trackName][wmoLabel] if wmoLabel in tableDict[trackName] else 'N/A' \
                                for wmoLabel in allWmoLabels]
-
+                #trackNameLink = self._subPageStaticFiles[trackName].getLink(trackName)
                 core.tableLine([trackName] + [str(x) for x in valuesInRow])
             core.tableFooter()
         return core
 
     def _createErrorTable(self):
         core = HtmlCore()
-        core.header('Table with error messages for failing tools')
+        core.header('Tools that returned errors')
         core.tableHeader(['Method name', 'Tool error'])
         for i, error in enumerate(self._trackCombErrors):
             errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], self._galaxyFn)
@@ -1484,15 +1529,20 @@ class CongloResultsGenerator:
         def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
             return core.tableFromDictionary(
                 tableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
-
+        someResult = trackCombResults[0]
+        prettyTracks = someResult.getPrettyTrackNames()
         core = HtmlCore()
+        core.header('Detailed results of each tool and configuration')
+        core.paragraph('Query track: ' + prettyTracks[0])
+        core.paragraph('Reference track: ' + prettyTracks[1])
+
         tableData = OrderedDict()
-        colNames = ['Method name', 'Query track', 'reference track'] + self._keysWithVariation + \
+        colNames = ['Method name'] + self._keysWithVariation + \
                    ['P-value','Co-localization enrichment', 'Detailed results']
         for j, res in enumerate(trackCombResults):
             fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(j) + '.html'], self._galaxyFn)
             fullResultStaticFile.writeTextToFile(res.fullResult)
-            keyCols = (res.methodName,) + tuple(res.getPrettyTrackNames()) + \
+            keyCols = (res.methodName,) + \
                       tuple([res.annotatedChoices.get(key) for key in
                              self._keysWithVariation])
             furtherCols = [str(res.pval), str(res.testStat), fullResultStaticFile.getLink('Full results')]
@@ -1516,3 +1566,25 @@ def runResultOutputFromPickle(): #TODO: Temporary
     CongloProtoTool.outputResults(trackCombResults, None, [], '/software/galaxy/personal/geirksa/galaxy_dev/database/files/000/dataset_886.dat')
 
 #runResultOutputFromPickle()
+
+
+R_PLOTTING_CODE = '''
+## the libraries ggplot2 and ggthemes should be installed
+## install.packages('ggplot2')
+## install.packages('ggthemes')
+## input is a list of p-values and a list of corresponding tools/methods that produced the p-values.
+
+plot_pvals <- function(pvals_list,methods_list){
+  library(ggplot2)
+  library(ggthemes)
+  pvals_list <- as.numeric(pvals_list)
+  if(!all(!is.na(pvals_list))){
+    methods_list <- methods_list[-which(is.na(pvals_list))]
+    pvals_list <- pvals_list[-which(is.na(pvals_list))]
+  }
+  plot_data <- data.frame(pvals_list,methods_list)
+  plot_object <- ggplot(data=plot_data,aes(x=methods_list,y=-log10(pvals_list)))
+  final_plot <- plot_object+geom_bar(stat = 'identity',width=0.2)+coord_flip()+xlab('')+ylab('-log10(p-val)')+theme_minimal()
+  return(final_plot)
+}
+'''
