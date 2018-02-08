@@ -34,7 +34,7 @@
                                     <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Uploading datasets</a> of genomic locations (bed-files)
                                 </li>
                                 <li>
-                                    Go to the <a class="button" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> to analyze your datasets by multiple methods
+                                    Go to the <a class="button" id="coloc-tool" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> to analyze your datasets by multiple methods
                                 </li>
                                 <li>
                                     View your results (by clicking the eye icon on the history element to the right)
@@ -190,16 +190,29 @@
                 <div class="colAll" style="padding-left: 0px">
                     <div class = 'project'>
                         <div class = 'projectDesc'>
-
-                            <ol>
-                                <li>
-                                    <b>I know some co-localization analysis tools. What is the purpose of a new tool?</b>
-                                    <div class = 'projectDesc'>
-                                        The existing co-localization analysis tools vary in the statistical methodology and analysis approaches, thus potentially providing different conclusions for the same research question. As the findings of co-localization analysis are often the basis for further follow-up experimental investigations, assessing the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution, null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features). To address this gap, we propose coloc-stats, a single interface for multiple previously published co-localization analysis methods.
-                                    </div>
-                                </li>
-                                <li>
-                                    <b>What can I achieve more with coloc-stats, than just running other co-localization analysis tools?</b>
+                             <dl id="faqs">
+                                 <h3>Frequently asked questions</h3>
+                                 (click on the question to see the answer)
+                                 <p></p>
+                                 <h4>## Why coloc-stats? When coloc-stats? How coloc-stats?</h4>
+                                 <p></p>
+                                 <ol>
+                                     <li>
+                                <dt><b>I know some co-localization analysis tools. What is the purpose of a new tool?</b></dt>
+                                <dd>
+                                    The existing co-localization analysis tools vary in the statistical methodology and analysis approaches,
+                                        thus potentially providing different conclusions for the same research question. As the findings of
+                                        co-localization analysis are often the basis for further follow-up experimental investigations, assessing
+                                        the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization
+                                        analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution,
+                                        null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features).
+                                        To address this gap, we propose coloc-stats, a single interface for multiple previously published co-localization analysis methods.
+                                </dd>
+                                     </li>
+                                <p></p>
+                                     <li>
+                                <dt><b>What can I achieve more with coloc-stats, than just running other co-localization analysis tools?</b></dt>
+                                <dd>
                                     <div class = 'projectDesc'>
                                         Coloc-stats allows a user:
                                     </div>
@@ -217,9 +230,12 @@
                                              Extend methods that only support a pair of tracks to consider track collections.
                                         </li>
                                     </ul>
-                                </li>
-                                <li>
-                                    <b>When and why should I use coloc-stats?</b>
+                                </dd>
+                                    </li>
+                                     <p></p>
+                                     <li>
+                                <dt><b>When and why should I use coloc-stats?</b></dt>
+                                <dd>
                                     <div class = 'projectDesc'>
                                         Coloc-stats is useful when:
                                     </div>
@@ -240,8 +256,75 @@
                                              The user wants to run several co-localization analysis tools at once
                                         </li>
                                     </ul>
-                                </li>
-                            </ol>
+                                </dd>
+                                     <p></p>
+                                     <li>
+                                <dt><b>I do not know how to get started, please help me</b></dt>
+                                <dd>
+                                To perform co-localization analysis, you need a query track and reference track of interest in
+                                    BED format. Once you have the BED files, upload them using the
+                                    <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Upload button</a>
+                                    on the top left corner of the web page. If you  do not know how to upload files into a galaxy interface,
+                                    follow a <a href='https://galaxyproject.org/tutorials/upload/' target='_top'><font color="#0645AD">quick tutorial</font></a>
+                                    Once you upload the files, they will appear in your history (on the panel that appears as margin to the right). To know more
+                                    about histories in galaxy, <a href='https://galaxyproject.org/tutorials/histories/' target='_top'><font color="#0645AD">see a tutorial here</font></a>.
+                                    Then go to the <a class="button" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> and choose the relevant
+                                    parameter settings to execute. Once you execute the tool, the analysis will be performed by one or several tools in parallel depending upon the chosen
+                                    parameter settings. This may take from few minutes to several hours. The results element will be created in your history, which you can also monitor while
+                                    the analysis is in progress by clicking on the “eye” icon on the history element. Once all the computations are completed, the history element will turn green.
+                                    If the analysis is failed for some reason, it will turn red.
+
+                                </dd>
+                                     </li>
+                                <p></p>
+
+                                         <p></p>
+                                 <h4>## User interface and sharing results</h4>
+                                     <p></p>
+                                     <li>
+                                <dt><b>What is galaxy project ?</b></dt>
+                                <dd>
+                                If you are not familiar of galaxy project, you can <a href='https://academic.oup.com/nar/article/44/W1/W3/2499339' target='_top'><font color="#0645AD">read a < 10-sentence abstract </font></a>
+                                    and visit the <a href='https://usegalaxy.org/' target='_top'><font color="#0645AD">galaxy project homepage</font></a> to know more about it.
+                                </dd>
+                                     </li>
+                                <p></p>
+                                     <li>
+                                <dt><b>I am new to a galaxy interface; give me a quick overview on how to navigate.</b></dt>
+                                <dd>
+                                You can follow a quick and brief tutorial on <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">using a galaxy interface</font></a> (takes ~ 2 min).
+                                </dd>
+                                     </li>
+                                <p></p>
+                                     <li>
+                                <dt><b>Is coloc-stats available as a command line tool?</b></dt>
+                                <dd>
+                                    As of now, coloc-stats is available only through the web server. Command line tool might be a future possibility.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                  <li>
+                                <dt><b>Why is it taking ages to run a coloc-stats analysis?</b></dt>
+                                <dd>
+                                    Depending upon the number of genomic tracks being analysed and also depending upon the number of tools and tool-specific
+                                    configuration variants chosen, the analysis might take few minutes to several hours. Especially, some tools by nature are relatively
+                                    on a slower side. To quickly confirm that this is not  a server issue, you can run another analysis with less number of genomic tracks
+                                    and tools to check if the slowness persists. Depending upon the traffic to the server, sometimes the webpage might appear to be slow and
+                                    the computations might be queued. But this is supposed to be a temporary thing and the webpage should return to its original smoothness
+                                    within few minutes-hours. If that is not the case <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">you can report to us</font></a> to get support.
+                                </dd>
+                                     </li>
+                                     <p></p>
+
+                                     </li>
+                            </dl>
+<script type="text/javascript">
+    $("#faqs dd").hide();
+    $("#faqs dt").click(function () {
+        $(this).next("#faqs dd").slideToggle(500);
+        $(this).toggleClass("expanded");
+    });
+</script>
 
                         </div>
                     </div>
@@ -256,20 +339,21 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDesc'>
-                            <b>What is coloc-stats</b>
+                            <h4>What is coloc-stats</h4>
                         </div>
                         <div class = 'projectDesc'>
                             Coloc-stats is a collaborative project between the authors of several published co-localization analysis tools. The tool is developed at the Department of Informatics at the University of Oslo and the web server is hosted at https://hyperbrowser.uio.no/coloc-stats/
                         </div>
 
                         <div class = 'projectDesc' style="margin-top:20px">
-                            <b>Tools integrated in coloc-stats</b>
+                            <h4>Tools integrated in coloc-stats</h4>
                         </div>
 
                         <div class = 'projectDesc'>
                                 Coloc-stats provides a unified interface to eight different co-localization analysis tools. Tools are listed in chronological order they are published.
 
                         </div>
+                        <p></p>
                         <div class = 'description'>
                             <a  target="_blank"  href = 'https://doi.org/10.1186/gb-2010-11-12-r121' >Genomic Hyperbrowser</a>
                         </div>
@@ -296,12 +380,89 @@
                         </div>
 
 
+                        <!--<div class = 'projectDesc' style="margin-top:20px">-->
+                            <!--<h4>About us</h4>-->
+                        <!--</div>-->
+                        <!--<p></p>-->
+                        <!--<div class = 'projectDesc'>-->
+                            <!--<b>Team at the Department of Informatics, University of Oslo</b>-->
+                        <!--</div>-->
+                        <!--<p></p>-->
+                        <!--<div class = 'description'>-->
+                            <!--Geir Kjetil Sandve (Principal Investigator)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Boris Simovski-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Chakravarthi Kanduri-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Sveinung Gundersen-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Dmytro Titov-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Diana Domanska-->
+                        <!--</div>-->
+
+                        <!--<div class = 'projectDesc' style="margin-top:20px">-->
+                            <!--<b>International collaborators</b>-->
+                        <!--</div>-->
+                        <!--<p></p>-->
+                        <!--<div class = 'description'>-->
+                            <!--Christoph Bock (CeMM Research Center for Molecular Medicine of the Austrian Academy of Sciences, Vienna, Austria)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Maria Chikina (University of Pittsburgh School of Medicine, Pittsburgh, PA, USA)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Alexander Favorov (John Hopkins University School of Medicine, Baltimore, Maryland, USA)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Ryan Layer (Department of Human Genetics, University of Utah, Salt Lake City, UT, USA)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Aaron Quinlan (Department of Human Genetics, University of Utah, Salt Lake City, UT, USA)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Nathan Sheffield (Center for Public Health Genomics, University of Virginia, Charlottesville, Virginia, USA)-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--Gosia Trynka (Wellcome Trust Sanger Institute, Hinxton, UK)-->
+                        <!--</div>-->
+
+                        <!--<div class = 'projectDesc' style="margin-top:20px">-->
+                            <!--<b>Contact us</b>-->
+                        <!--</div>-->
+                        <!--<div class = 'description'>-->
+                            <!--..........-->
+                        <!--</div>-->
+
+
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'project'>
                         <div class = 'projectDesc' style="margin-top:20px">
-                            <b>About us</b>
+                            <h4>About us</h4>
                         </div>
+                        <p></p>
                         <div class = 'projectDesc'>
-                            Team at the Department of Informatics, University of Oslo
+                            <b>Team at the Department of Informatics, University of Oslo</b>
                         </div>
+                        <p></p>
                         <div class = 'description'>
                             Geir Kjetil Sandve (Principal Investigator)
                         </div>
@@ -324,6 +485,7 @@
                         <div class = 'projectDesc' style="margin-top:20px">
                             <b>International collaborators</b>
                         </div>
+                        <p></p>
                         <div class = 'description'>
                             Christoph Bock (CeMM Research Center for Molecular Medicine of the Austrian Academy of Sciences, Vienna, Austria)
                         </div>
@@ -345,6 +507,16 @@
                         <div class = 'description'>
                             Gosia Trynka (Wellcome Trust Sanger Institute, Hinxton, UK)
                         </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'project'>
 
                         <div class = 'projectDesc' style="margin-top:20px">
                             <b>Contact us</b>
@@ -352,24 +524,19 @@
                         <div class = 'description'>
                             ..........
                         </div>
-
-
-                        <div class = 'projectDesc' style="margin-top:20px">
-                            <b>Version history</b>
-                        </div>
-                        <div class = 'description'>
-                            ..........
-                        </div>
-
-
                         <div class = 'projectDesc' style="margin-top:20px">
                             <b>How to cite coloc-stats</b>
                         </div>
                         <div class = 'description'>
                             ..........
                         </div>
-
-                    </div>
+                        <div class = 'projectDesc' style="margin-top:20px">
+                            <b>Version history</b>
+                        </div>
+                        <div class = 'description'>
+                            ..........
+                        </div>
+                </div>
                 </div>
             </div>
         </div>
