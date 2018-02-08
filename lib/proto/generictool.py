@@ -542,10 +542,13 @@ class GenericToolController(BaseToolController):
 #                else:
 #                    self.extraGalaxyFn[output[0]] = self.params[output[0]]
 
-        if hasattr(self.prototype, 'getExtraHistElements') and self.params.has_key('extra_output'):
-            extra_output = json.loads(unquote(self.params['extra_output']))
-            if isinstance(extra_output, list):
-                for output in extra_output:
+        if hasattr(self.prototype, 'getExtraHistElements'):
+            if self.params.has_key('extra_output'):
+                extra_hist_elements = json.loads(unquote(self.params['extra_output']))
+            else:
+                extra_hist_elements = self.prototype.getExtraHistElements(choices)
+            if isinstance(extra_hist_elements, list):
+                for output in extra_hist_elements:
                     if isinstance(output, HistElement):
                         self.extraGalaxyFn[unicode(output.name)] = self.params[output.name]
                     else:

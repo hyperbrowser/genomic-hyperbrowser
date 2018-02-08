@@ -1,0 +1,8 @@
+##location: local
+##file format: primary
+##track type: unknown
+##genome: unknown
+###uri	title
+galaxy:/fa25ebfd57d5f405;bed	2 - wgEncodeAwgDnaseUwdukeK562UniPk.bed
+galaxy:/ab8162a293e94084;bed	3 - wgEncodeOpenChromDnaseFibroblPk.bed
+galaxy:/f1c6045602ce326c;bed	4 - wgEncodeUwDnaseGm12878PkRep1.bed
