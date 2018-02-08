@@ -1,0 +1,8 @@
+##location: local
+##file format: primary
+##track type: unknown
+##genome: unknown
+###uri	title
+galaxy:/6c41ad5d07b840e4;bed	20 - Select random lines on data 2
+galaxy:/1250beab3bdf7dad;bed	21 - Select random lines on data 3
+galaxy:/62f7f66588916fd6;bed	22 - Select random lines on data 4
