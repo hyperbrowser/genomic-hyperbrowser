@@ -23,6 +23,7 @@ from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMea
 from conglomerate.tools.constants import VERBOSE_RUNNING
 from conglomerate.methods.interface import InvalidSpecification
 from gold.gsuite.GSuite import GSuite
+from proto.CommonFunctions import createGalaxyToolURL
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -68,7 +69,8 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select the running mode : ', 'selectRunningMode'),
+        return [('Import sample data to the history', 'importSampleData'),
+                ('Select the running mode: ', 'selectRunningMode'),
                 ('Select the reference genome: ', 'selectReferenceGenome'),
                 ('Upload your own genome chromosome lengths file', 'missingGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
@@ -131,12 +133,25 @@ class CongloProtoTool(GeneralGuiTool):
     #     """
     #     return None
 
+    @classmethod
+    def getOptionsBoxImportSampleData(cls):
+        core = HtmlCore()
+        core.divBegin(divClass='infomessagesmall')
+        link = str(HtmlCore().link(
+            'Import sample data to Galaxy history',
+            createGalaxyToolURL('hb_conglo_import_sample_files_tool', runtool_btn='yes'))
+        )
+        core.paragraph('For demonstration purposes, you can import sample data for use in this '
+                       'tool here: ' + link)
+        core.divEnd()
+        return '__rawStr__', str(core)
+
     ADVANCED = 'Advanced mode: unified selection of specific parameters'
     SIMPLE_WITH_SHARED_DEFAULTS = 'Simple mode: based on shared parameter settings'
     SIMPLE_WITH_DEFAULTS = 'Basic mode: partly based on tool-specific defaults'
 
     @classmethod
-    def getOptionsBoxSelectRunningMode(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxSelectRunningMode(cls, prevChoices):  # Alt: getOptionsBox1()
         # return [cls.SIMPLE_WITH_DEFAULTS, cls.SIMPLE_WITH_SHARED_DEFAULTS, cls.ADVANCED]
         return [cls.SIMPLE_WITH_DEFAULTS, cls.ADVANCED]
 
