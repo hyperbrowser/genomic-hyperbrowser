@@ -1406,9 +1406,9 @@ class CongloResultsGenerator:
     def outputResults(self):
         refTrackSet = self._trackCombResults.getSetOfAllRefTracks()
         if len(refTrackSet)>1:
-            self._outputOneVsManyResults()
+            print str(self._generateOneVsManyResults())
         else:
-            self._generateOneVsOneResults(self._trackCombResults)
+            print str(self._generateOneVsOneResults(self._trackCombResults))
 
         if len(self._trackCombErrors)>0:
             print str(self._createErrorTable())
@@ -1435,7 +1435,7 @@ class CongloResultsGenerator:
     def getSimplisticPvalIndication(self, trackCombResults):
         return '''<b>Simplistic indication:</b> Based on the consensus of different statistical tests, there is NO strong evidence to conclude that there is a strong association between query and reference tracks. (we return this even when one of the null model does not indicate strong association - since it is always advised to believe on the worst p-value)'''
 
-    def _outputOneVsManyResults(self):
+    def _generateOneVsManyResults(self):
         refTrackSet = self._trackCombResults.getSetOfAllRefTracks()
         for refTrack in refTrackSet:
             resultsSubset = self._trackCombResults.getResultsForSpecifiedRefTrack(refTrack)
@@ -1446,11 +1446,13 @@ class CongloResultsGenerator:
             subPageHtml.end()
             self._subPageStaticFiles[refTrack].writeTextToFile(str(subPageHtml))
 
-        print self.createRankTable()
-        print self.createTestStatTable()
-        print self.createPvalTable()
+        core = HtmlCore()
+        core.append(str(self.createRankTable()))
+        core.append(str(self.createTestStatTable()))
+        core.append(str(self.createPvalTable()))
 
-        print str(self.createDetailedResultsLinkTable())
+        core.append(str(self.createDetailedResultsLinkTable()))
+        return core
 
     def createDetailedResultsLinkTable(self):
         core = HtmlCore()
