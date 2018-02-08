@@ -148,6 +148,5 @@
 
   <section id="getext" name="Get Data">
     <tool file="data_source/upload.xml" />
-    <tool file="proto/hyperbrowser/misc/CongloImportSampleFilesTool.xml" />
   </section>
 </toolbox>
