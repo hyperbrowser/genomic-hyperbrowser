@@ -778,7 +778,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        LOAD_PICKLES = True #TODO: temp
+        LOAD_PICKLES = False #TODO: temp
         print HtmlCore().begin()
         if LOAD_PICKLES:
             pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
