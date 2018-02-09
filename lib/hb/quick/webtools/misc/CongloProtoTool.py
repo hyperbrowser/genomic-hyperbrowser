@@ -813,7 +813,10 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
 
+
+        print '''<div id="progress"><a style="text-decoration:none;" href="#" onclick="$('progress').toggle()">'''
         runAllMethodsInSequence(keptWmos)
+        print '''</a></div>'''
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre><br>'
