@@ -801,6 +801,9 @@ class CongloProtoTool(GeneralGuiTool):
         # TODO: /REMOVE
 
         print '<h1>Result page for coloc-stats analysis</h1>'
+
+        print HtmlCore().toggle('Show/Hide progress', styleId='progress', withDivider=True)
+        print '''<div id="progress" style="display: block; background-color: lightgray; border-style: ridge; padding: 8px;">'''
         print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
         if VERBOSE_RUNNING:
             print '<pre>'
@@ -813,9 +816,6 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
 
-
-        print HtmlCore().toggle('Toggle debug', styleId='progress', withDivider=True)
-        print '''<div id="progress">'''
         runAllMethodsInSequence(keptWmos)
         print '''</div>'''
         if VERBOSE_RUNNING:
