@@ -702,7 +702,10 @@ class CongloProtoTool(GeneralGuiTool):
                             }
         if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             genomeName = 'Custom'
-            chrLenFn = ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.chooseChrnLenFile)
+            chrLenFn = ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.chooseChrnLenFile) \
+                if prevChoices.chooseChrnLenFile is not None \
+                else None
+
         else:
             genomeName = prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
             chrLenFn = chrLenFnMappings[genomeName]
