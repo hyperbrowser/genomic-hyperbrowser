@@ -115,12 +115,19 @@ class HyperBrowser(ManyVsManyMethod):
     def getTestStatDescr(cls):
         return 'ratio of observed/expected'
 
-    def getFullResults(self):
+    def getFullResults(self, galaxyFn=None):
         from os import linesep
         fullResult = OrderedDict()
-        for trackTuple, result in self._results.iteritems():
-            fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
-                          "\t" + str(result.getGlobalResult()['P-value']) + " <br>" + linesep
+
+        if galaxyFn:
+            from gold.result.ResultsViewer import ResultsViewerCollection
+            resColl = ResultsViewerCollection(self._results.keys(), galaxyFn)
+            for trackTuple, result in self._results.iteritems():
+                fullResult[trackTuple] = str(resColl)
+        else:
+            for trackTuple, result in self._results.iteritems():
+                fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
+                             "\t" + str(result.getGlobalResult()['P-value']) + " <br>" + linesep
         return self.getRemappedResultDict(fullResult)
 
     def preserveClumping(self, preserve):

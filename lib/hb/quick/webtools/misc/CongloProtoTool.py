@@ -827,7 +827,8 @@ class CongloProtoTool(GeneralGuiTool):
         print '<h2>Results for each dataset and tool configuration</h2>'
         succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
                                           for state in [True,False]]
-        trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods)
+        # TODO: Adding galaxyFn is a temporary hack to allow full HyperBrowser output
+        trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods, galaxyFn)
         trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
 
         # TODO: REMOVE
@@ -933,7 +934,12 @@ class CongloProtoTool(GeneralGuiTool):
                 return
             allPvals = wmo.getPValue()
             allTestStats = wmo.getTestStatistic()
-            allFullResults = wmo.getFullResults()
+            # TODO: temporary hack
+            from quick.congloproto import HBCongloMethod
+            if isinstance(wmo, HBCongloMethod):
+                allFullResults = wmo.getFullResults(galaxyFn)
+            else:
+                allFullResults = wmo.getFullResults()
             assert len(allPvals) > 0, allPvals
             assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
             trackCombinations = allPvals.keys()
