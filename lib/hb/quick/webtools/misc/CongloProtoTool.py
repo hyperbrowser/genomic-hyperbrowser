@@ -1563,7 +1563,7 @@ class CongloResultsGenerator:
 
     def createDetailedResultsLinkTable(self):
         core = HtmlCore()
-        core.header('Full results')
+        core.bigHeader('Full results')
         core.paragraph('The table below provides the full results for each reference track, '
                        'obtained through all the methods/configurations chosen. '
                        'Click on the reference track, which will redirect to a new page containing '
@@ -1581,7 +1581,7 @@ class CongloResultsGenerator:
             return ''
         someResult = self._trackCombResults[0]
         core = HtmlCore()
-        core.header('Ranking of reference tracks')
+        core.bigHeader('Ranking of reference tracks')
         #by degree of co-localization according to each tool
         core.paragraph('''The table below shows the reference tracks ordered by the magnitude of their co-localization enrichment with the query track. 
         Ranks are given to each reference track based on the co-localization enrichment determined by each individual tool/configuration chosen. 
@@ -1655,7 +1655,7 @@ class CongloResultsGenerator:
 
     def _createErrorTable(self):
         core = HtmlCore()
-        core.header('Tools that returned errors')
+        core.bigHeader('Tools that returned errors')
         core.tableHeader(['Method name', 'Tool error'])
         for i, error in enumerate(self._trackCombErrors):
             errorStaticFile = GalaxyRunSpecificFile(['errors' + str(i) + '.html'], self._galaxyFn)
@@ -1680,7 +1680,7 @@ class CongloResultsGenerator:
         someResult = trackCombResults[0]
         prettyTracks = someResult.getPrettyTrackNames()
         core = HtmlCore()
-        core.header('Detailed results of each tool and configuration')
+        core.bigHeader('Detailed results of each tool and configuration')
         core.paragraph('Query track: ' + prettyTracks[0])
         core.paragraph('Reference track: ' + prettyTracks[1])
 
