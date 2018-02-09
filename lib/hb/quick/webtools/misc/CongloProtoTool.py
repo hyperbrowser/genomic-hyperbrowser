@@ -788,9 +788,10 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        print HtmlCore().begin(reloadTime=5)
         # TODO: REMOVE
         # LOAD_PICKLES = True
-        # print HtmlCore().begin(reloadTime=5)
+        #
         # if LOAD_PICKLES:
         #     pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany_v2.pickle'
         #     trackCombResults = load(open(pickleFn))
