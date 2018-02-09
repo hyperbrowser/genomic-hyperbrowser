@@ -805,8 +805,8 @@ class CongloProtoTool(GeneralGuiTool):
         print '<h1>Result page for coloc-stats analysis</h1>'
 
         print HtmlCore().toggle('Show/Hide progress', styleId='progress', withDivider=True)
-        print '''<div id="progress" style="display: block; background-color: lightgray; border-style: ridge; padding: 8px;">'''
-        print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
+        print HtmlCore().divBegin(divId="progress", style="display: block; background-color: lightgray; border-style: ridge; padding: 8px;")
+        print HtmlCore.paragraph('Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)')
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
@@ -819,7 +819,7 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
         runAllMethodsInSequence(keptWmos)
-        print '''</div>'''
+        print HtmlCore.divEnd()
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre><br>'
@@ -843,7 +843,7 @@ class CongloProtoTool(GeneralGuiTool):
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
         crg.outputResults()
 
-        print HtmlCore().end(stopReload)
+        print HtmlCore().end(stopReload=True)
 
 
 
