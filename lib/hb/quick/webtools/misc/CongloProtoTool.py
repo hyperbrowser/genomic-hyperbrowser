@@ -1465,7 +1465,11 @@ class CongloResultsGenerator:
     def _generateOneVsOneResults(self, trackCombResults):
         core = HtmlCore()
         core.append(str(self.createMainTable(trackCombResults)))
-        core.paragraph(str(self.plotPvals(trackCombResults)))
+        try:
+            core.paragraph(str(self.plotPvals(trackCombResults)))
+        except Exception as e:
+            core.smallHeader('Pval plotting error:')
+            core.preformatted(e)
         core.paragraph(self.getSimplisticPvalIndication(trackCombResults))
         core.paragraph('Relevant FAQ: Why are the p-values of different methods different, when they are analysing the same research question?')
         return str(core)
