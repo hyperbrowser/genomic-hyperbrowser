@@ -806,7 +806,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         print HtmlCore().toggle('Show/Hide progress', styleId='progress', withDivider=True)
         print HtmlCore().divBegin(divId="progress", style="display: block; background-color: lightgray; border-style: ridge; padding: 8px;")
-        print HtmlCore.paragraph('Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)')
+        print HtmlCore().paragraph('Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)')
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
