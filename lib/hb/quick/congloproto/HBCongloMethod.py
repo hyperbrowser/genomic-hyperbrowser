@@ -2,6 +2,7 @@ from collections import OrderedDict, namedtuple
 
 from conglomerate.methods.interface import ColocMeasureOverlap
 from conglomerate.methods.method import ManyVsManyMethod
+from conglomerate.tools.SingleResultValue import SingleResultValue
 from conglomerate.tools.job import Job
 from gold.application.HBAPI import doAnalysis
 from gold.track.Track import Track
@@ -104,7 +105,8 @@ class HyperBrowser(ManyVsManyMethod):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             testStat = float(result.getGlobalResult()['TSMC_' + self._colocStatistic]) / result.getGlobalResult()['MeanOfNullDistr']
-            testStats[trackTuple] = '<span title="ratio of observed/expected">' + ('%.2f' % testStat) + '</span>'
+            svr = SingleResultValue(testStat, '<span title="ratio of observed/expected">' + ('%.2f' % testStat) + '</span>')
+            testStats[trackTuple] = svr
         return self.getRemappedResultDict(testStats)
 
     def getFullResults(self):
@@ -143,7 +145,7 @@ class HyperBrowser(ManyVsManyMethod):
         elif mode == 'accurate':
             self._runtimeMode = 'Fixed 10 000 samples (slow)'
         else:
-            raise
+            raise Exception("Invalid mode")
 
     def _getAnalysisSpec(self):
 
