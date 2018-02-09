@@ -48,3 +48,5 @@ steps:
     element: '#title_my_tools'
     content: Open coloc-stats tool here
     placement: right
+    postclick:
+      - 'a[href$="https://hyperbrowser.uio.no/coloc-stats/tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool"]'
