@@ -105,9 +105,15 @@ class HyperBrowser(ManyVsManyMethod):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             testStat = float(result.getGlobalResult()['TSMC_' + self._colocStatistic]) / result.getGlobalResult()['MeanOfNullDistr']
-            svr = SingleResultValue(testStat, '<span title="ratio of observed/expected">' + ('%.2f' % testStat) + '</span>')
+            svr = SingleResultValue(testStat, '<span title="' + \
+                                    self.getTestStatDescr() \
+                                    + '">' + ('%.2f' % testStat) + '</span>')
             testStats[trackTuple] = svr
         return self.getRemappedResultDict(testStats)
+
+    @classmethod
+    def getTestStatDescr(cls):
+        return 'ratio of observed/expected'
 
     def getFullResults(self):
         from os import linesep
