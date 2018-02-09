@@ -920,11 +920,11 @@ class CongloProtoTool(GeneralGuiTool):
             return []
 
     @classmethod
-    def extractResultsFromWorkingMethodList(cls, wmoList):
-        return TrackCombResultList(reduce(lambda x,y:x+y, [cls.extractResultsFromWorkingMethod(wmo) for wmo in wmoList]))
+    def extractResultsFromWorkingMethodList(cls, wmoList, galaxyFn):
+        return TrackCombResultList(reduce(lambda x,y:x+y, [cls.extractResultsFromWorkingMethod(wmo, galaxyFn) for wmo in wmoList]))
 
     @classmethod
-    def extractResultsFromWorkingMethod(cls, wmo):
+    def extractResultsFromWorkingMethod(cls, wmo, galaxyFn):
         try:
             if VERBOSE_RUNNING:
                 print 'Stdout of tool: ', wmo.getResultFilesDictList()
