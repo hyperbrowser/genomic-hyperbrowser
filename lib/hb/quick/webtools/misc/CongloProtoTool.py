@@ -46,7 +46,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         Mandatory method for all ProTo tools.
         """
-        return "coloc-stats"
+        return ""
 
     @classmethod
     def getInputBoxNames(cls):
@@ -69,15 +69,16 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Import sample data to the history', 'importSampleData'),
-                ('Select the running mode: ', 'selectRunningMode'),
-                ('Select the reference genome: ', 'selectReferenceGenome'),
+        return [("", 'toolDescTop'),
+                ('Import sample data to the history', 'importSampleData'),
+                ('Running mode: ', 'selectRunningMode'),
+                ('Reference genome: ', 'selectReferenceGenome'),
                 ('Upload your own genome chromosome lengths file', 'missingGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Type of co-localization analysis: ', 'analysisType'),
                 ('Choose a query track: ', 'chooseQueryTrackFile'),
                 ('Choose a reference track: ', 'chooseReferenceTrackFile'),
-                ('Choose a type of reference track collection', 'typeOfReferenceTrackCollection'),
+                ('Type of reference track collection', 'typeOfReferenceTrackCollection'),
                 ('Choose a core data collection', 'choiceOfCoreDatabase'),
                 ('Choose a custom reference track collection', 'chooseCustomTrackCollection'),
                 ('Use one of the default core databases as reference collection ? ', 'optionalUseOfCoreDatabase'),
@@ -134,7 +135,26 @@ class CongloProtoTool(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxImportSampleData(cls):
+    def getOptionsBoxToolDescTop(cls):
+        from proto.hyperbrowser.HtmlCore import HtmlCore
+
+        core = HtmlCore()
+        core.bigHeader('coloc-stats')
+        core.smallHeader('.... a unified web interface to perform co-localization analysis of genomic features')
+        core.divider()
+        core.paragraph(
+            'Select datasets and parameter configurations to perform co-localization analysis using multiple published methods.')
+        core.divider()
+        core.paragraph(
+            'Below is a unified interface to multiple previously published methods for statistical co-localization analysis. '
+            'All the methods can be used to analyze a <b> query track </b> against either a single <b> reference track </b> or a <b> reference track collection </b>. '
+            'Supported inputs are single datasets or collections of datasets. It can be run in a basic mode with default settings '
+            'or in an advanced mode that allows further customization. For each selection box, <u> <b> click on the information button </b> </u> for further explanation.')
+        return '__rawstr__', str(core)
+
+
+    @classmethod
+    def getOptionsBoxImportSampleData(cls, prevChoices):
         core = HtmlCore()
         core.divBegin(divClass='infomessagesmall')
         link = str(HtmlCore().link(

@@ -112,14 +112,10 @@
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
                             <h3>Documentation</h3>
-
-                            <div class = 'projectDesc'>
-                                ........
-                            </div>
                         </div>
                         <div class = 'projectDescSingle' >
-                            <h3>General</h3>
-
+                            <h3># What is co-localization analysis?</h3>
+                            <p></p>
                             <div class = 'projectDesc'>
                                 <h4 id="co-loc-analysis">Co-localization analysis</h4>
                                 <p>High-throughput sequencing methods assay various features of the genome
@@ -148,50 +144,207 @@
                                     is likely due to chance.</p>
                             </div>
                         </div>
-                        <div class = 'projectDescSingle'>
-                            <h3>Input</h3>
+                        <!--<div class = 'projectDescSingle'>-->
+                            <!--<h3>Input</h3>-->
 
-                            <div class = 'projectDesc'>
-                                ........
-                            </div>
-                        </div>
-                        <div class = 'projectDescSingle'>
-                            <h3>File formats</h3>
+                            <!--<div class = 'projectDesc'>-->
+                                <!--........-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class = 'projectDescSingle'>-->
+                            <!--<h3>File formats</h3>-->
 
-                            <div class = 'projectDesc'>
-                                Coloc-stats supports files only in BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the BED file format described on the UCSC browser page (https://genome.ucsc.edu/FAQ/FAQformat.html#format1)
-                            </div>
-                        </div>
-                        <div class = 'projectDescSingle'>
-                            <h3>Invalid file formats</h3>
+                            <!--<div class = 'projectDesc'>-->
+                                <!--Coloc-stats supports files only in BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the BED file format described on the UCSC browser page (https://genome.ucsc.edu/FAQ/FAQformat.html#format1)-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--<div class = 'projectDescSingle'>-->
+                            <!--<h3>Invalid file formats</h3>-->
 
-                            <div class = 'projectDesc'>
-                                Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.
-                            </div>
-                        </div>
+                            <!--<div class = 'projectDesc'>-->
+                                <!--Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.-->
+                            <!--</div>-->
+                        <!--</div>-->
 
-                        <div class = 'projectDescSingle'>
-                            <h3>File size limitations</h3>
-                            <div class = 'projectDesc'>
-                                We are not aware of any file size limitations as of now.
-                            </div>
-                        </div>
+                        <!--<div class = 'projectDescSingle'>-->
+                            <!--<h3>File size limitations</h3>-->
+                            <!--<div class = 'projectDesc'>-->
+                                <!--We are not aware of any file size limitations as of now.-->
+                            <!--</div>-->
+                        <!--</div>-->
 
-                        <div class = 'projectDescSingle'>
-                            <h3>Genome assemblies</h3>
+                        <!--<div class = 'projectDescSingle'>-->
+                            <!--<h3>Genome assemblies</h3>-->
 
-                            <div class = 'projectDesc'>
-                                Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.
-                            </div>
-                        </div>
+                            <!--<div class = 'projectDesc'>-->
+                                <!--Coloc-stats does not accept any other genomic track file formats other than BED format for now. Also, the BED format is required to adhere strictly to the file format specifications.-->
+                            <!--</div>-->
+                        <!--</div>-->
 
 
                     </div>
                 </div>
             </div>
         </div>
+            <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'project'>
+                        <div class = 'projectDescSingle'>
+                            <h3># What is coloc-stats and what can it do?</h3>
+                            <div class = 'projectDesc'>
+                                The existing co-localization analysis tools vary in the statistical methodology and analysis approaches,
+                                thus potentially providing different conclusions for the same research question. As the findings of
+                                co-localization analysis are often the basis for further follow-up experimental investigations,
+                                assessing the robustness of the findings is warranted. However, there exists no unified interface
+                                to perform co-localization analysis across a multitude of analytical methods and method-specific
+                                options (e.g., test statistics, resolution, null models, and whether or not they can handle local
+                                genomic heterogeneities and co-localizing confounding features). To address this gap, we propose
+                                coloc-stats, a single interface for multiple previously published co-localization analysis methods.
+                                <p></p>
+                                <div class = 'projectDesc'>
+                                        Coloc-stats allows a user:
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            To make the most appropriate analysis choices given their research question.
+                                        </li>
+                                        <li>
+                                            Find a relevant method (amongst several) that supports their analysis choices.
+                                        </li>
+                                        <li>
+                                            To assess the robustness of conclusions by running and inspecting results across several methods.
+                                        </li>
+                                        <li>
+                                             Extend methods that only support a pair of tracks to consider track collections.
+                                        </li>
+                                    </ul>
+                            </div>
+                        </div>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
+            <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'project'>
+                        <div class = 'projectDescSingle'>
+                            <h3># Input, File formats & Genome assemblies</h3>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4> Required files </h4>
 
+                            <div class = 'projectDesc'>
+                                For a typical pairwise co-localization analysis, a query track and a reference track are required.
+                                The genomic regions obtained through an experiment of your interest is usually used as a query track.
+                                Reference track usually contains genomic regions that you hypothesise as having an association with your
+                                query track. For example, a query track file could be the genomic regions of SNPs that reached certain
+                                significance level in GWAS and a reference track could be the genomic regions of gene promoters.
+                                <p></p>
+                                It is also possible to run co-localization analysis with one query track against a collection of reference tracks.
+                                For example, a query track file could be the genomic regions of SNPs that reached certain significance level in
+                                GWAS and the collection of reference tracks could contain the genomic regions of regulatory elements in multiple
+                                tissues (multiple tracks). For the ease of users, we provide collections of reference tracks that are of wide interest.
+                                We refer to these collections of reference tracks as core databases. Instead of selecting user-specific reference track
+                                collections, the user can choose one of the core databases for analysis.
+                                <p></p>
+                                Some tools (but not all) accept a third file, which typically contains an explicit set of background regions.
+                                Such background regions represent the universe of regions that could have possibly ended in the genomic tracks of
+                                interest being queried for co-localization. As an example, when testing the co-localization of a SNP set with other
+                                annotations, the background set could be all the SNPs covered by the technology platform, which are all assumed to
+                                have equal probability to be included in the SNP set of interest. As only a few tools accept this file, this file
+                                is not always required.
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4>File formats</h4>
+
+                            <div class = 'projectDesc'>
+                                Coloc-stats supports files only in BED format. BED is a standard file format to store genomic regions, where the first
+                                three fields are required to be chr, start and end. Please refer to the
+                                <a href='https://genome.ucsc.edu/FAQ/FAQformat.html#format1' target='_top'><font color="#0645AD">BED file format</font></a> described on the UCSC browser page.
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4>Invalid file formats</h4>
+                            <div class = 'projectDesc'>
+                                Coloc-stats does not accept any other genomic track file formats other than BED format for now.
+                                Also, the BED format is required to adhere strictly to the file format specifications.
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4>File size limitations</h4>
+                            <div class = 'projectDesc'>
+                                We did not encounter any file size limitations as of now during several tests.
+                            </div>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4>Genome assemblies</h4>
+                            <div class = 'projectDesc'>
+                                 Currently hg19, hg38, mm9 and mm10 are supported right away in the coloc-stats tool.
+                                However, all the genome assemblies of any species can be used to perform the analysis.
+                                To use coloc-stats for a genome assembly or species that is not installed on coloc-stats tool,
+                                all you need is a text file containing the chromosome lengths of that genome assembly.
+                                Select custom reference genome in the “reference genome” section of the tool, which will
+                                prompt you to upload a chromosome lengths file. Upload that file and continue with the remaining
+                                analysis choices normally.
+                            </div>
+                        </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+            <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'project'>
+                        <div class = 'projectDescSingle'>
+                            <h3># News</h3>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4>New features going to be implemented (during Feb-Mar 2018)</h4>
+                            <div class = 'projectDesc'>
+                                Some of the functionalities mentioned in the below list are implemented only in one or
+                                few tools (but not all) integrated in coloc-stats. Thus, we are working on the best ways
+                                to provide such functionalities in a unified interface to the users. Nevertheless, many
+                                of the features mentioned below are going to be implemented during Feb-Mar 2018.
+                                <ul>
+                                        <li>
+                                            Handling confounding feature tracks
+                                        </li>
+                                        <li>
+                                            Handling local heterogeneities using a third genomic track
+                                        </li>
+                                        <li>
+                                            Heatmaps for many-against-many analyses
+                                        </li>
+                                        <li>
+                                             Counting overlap with customizable flank size
+                                        </li>
+                                        <li>
+                                             Allowing the user to choose the coordinate to be used (start, midpoint or end) when computing distances
+                                        </li>
+                                        <li>
+                                             Allowing the user to choose among different distance metrics (currently only a default distance metric is being used)
+                                        </li>
+                                        <li>
+                                             Allowing the user to select among different types of correlation metrics
+                                        </li>
+                                    </ul>
+                            </div>
+                        </div>
+                        </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
         <div id="menu2" class="tab-pane fade">
         <div class="container">
             <div class="rowSpecial">
@@ -666,19 +819,19 @@
                             <b>Contact us</b>
                         </div>
                         <div class = 'description'>
-                            ..........
+                            For all questions, comments, functionality requests, please <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">contact us</font></a>
                         </div>
                         <div class = 'projectDesc' style="margin-top:20px">
                             <b>How to cite coloc-stats</b>
                         </div>
                         <div class = 'description'>
-                            ..........
+                            This information will be updated soon when a preprint is available.
                         </div>
                         <div class = 'projectDesc' style="margin-top:20px">
                             <b>Version history</b>
                         </div>
                         <div class = 'description'>
-                            ..........
+                            Current version: 1.0b1
                         </div>
                 </div>
                 </div>
