@@ -935,8 +935,7 @@ class CongloProtoTool(GeneralGuiTool):
             allPvals = wmo.getPValue()
             allTestStats = wmo.getTestStatistic()
             # TODO: temporary hack
-            from quick.congloproto import HBCongloMethod
-            if isinstance(wmo, HBCongloMethod):
+            if isinstance(wmo, HyperBrowser):
                 allFullResults = wmo.getFullResults(galaxyFn)
             else:
                 allFullResults = wmo.getFullResults()
