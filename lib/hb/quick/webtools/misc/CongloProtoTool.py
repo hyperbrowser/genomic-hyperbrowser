@@ -778,7 +778,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        LOAD_PICKLES = False #TODO: temp
+        LOAD_PICKLES = True #TODO: temp
         print HtmlCore().begin()
         if LOAD_PICKLES:
             pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
@@ -1448,7 +1448,7 @@ class CongloResultsGenerator:
         methods = [res.methodName for res in trackCombResults]
         sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
         sf.openRFigure()
-        r.plot_pvals(pvals, methods)
+        #r.plot_pvals(pvals, methods)
         sf.closeRFigure()
         return sf.getLink('Pvalue-plot')
 
@@ -1495,12 +1495,12 @@ class CongloResultsGenerator:
         The table can also be sorted based on method-specific rankings to see the individual ranks. ''')
         core.paragraph('Query track tested for co-localization: ' + someResult.trackCombination[0].split('/')[-1])
         rankTableDict = defaultdict(dict)
-        tsVals = [(res, res.testStat) for res in self._trackCombResults]
+        tsVals = [(res, res.testStat.numericResult) for res in self._trackCombResults]
 
         for res, val in tsVals:
             trackName = res.trackCombination[1].split('/')[-1]
             resultsForSameMethod = self._trackCombResults.getResultsForSpecifiedMethodName(res.methodName)
-            rankTableDict[trackName][res.methodName] = 1 + sum(r.testStat > val for r in resultsForSameMethod)
+            rankTableDict[trackName][res.methodName] = 1 + sum(r.testStat.numericResult > val for r in resultsForSameMethod)
 
         assert len(rankTableDict) > 1  # More than 1 ref track
         allWmoLabels = list(set([wmoLabel for row in rankTableDict.values() for wmoLabel in row.keys()]))
@@ -1524,6 +1524,7 @@ class CongloResultsGenerator:
 
     def createTableOfExtractedResultAttribute(self, attribute, headerLine):
         assert attribute in ['pval', 'testStat']
+        print 'TEMP3: ', attribute
         tableDict = defaultdict(dict)
         for res in self._trackCombResults:
             trackName = res.trackCombination[1].split('/')[-1]
@@ -1536,11 +1537,15 @@ class CongloResultsGenerator:
 
         if len(tableDict) > 1:  # More than 1 ref track
             allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
+            print 'TEMP1: ', allWmoLabels
+            print 'TEMP2: ', tableDict
             if attribute=='testStat':
                 allWmoClasses = [globals()[label] for label in allWmoLabels]
                 allWmoDescr = [wmo.getTestStatDescr() for wmo in allWmoClasses]
-                allWmoLabels = [label+'<br>('+descr+')' for label,descr in zip(allWmoLabels,allWmoDescr)]
-            core.tableHeader(['Reference track'] + allWmoLabels, sortable=True)
+                allWmoLabAndDescr = [label+'<br>('+descr+')' for label,descr in zip(allWmoLabels,allWmoDescr)]
+            else:
+                allWmoLabAndDescr = allWmoLabels
+            core.tableHeader(['Reference track'] + allWmoLabAndDescr, sortable=True)
             for trackName in tableDict:
                 valuesInRow = [tableDict[trackName][wmoLabel] if wmoLabel in tableDict[trackName] else 'N/A' \
                                for wmoLabel in allWmoLabels]
