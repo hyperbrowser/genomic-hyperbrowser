@@ -33,30 +33,19 @@
                 <div class="colAll">
                     <h1 class="projectTitle">coloc-stats</h1>
                     <div class = 'projectDescSingle'>
-                        a unified web interface to perform <a href="#co-loc-analysis"><font color="#0645AD">co-localization analysis</font></a> of genomic features
+                        - a unified web interface to perform co-localization analysis of genomic features
                     </div>
                     <div>
-                        <a href="https://player.vimeo.com/video/249248452"> <img border="0" alt="GettingStarted" src="hyperbrowser/images/videos/coloc_stats_screencast_image.jpg" style="float:right;width:250px;height:auto;"> </a>
-                        <br>
-                        <b>Getting started screencast</b>
+                        <a href="https://player.vimeo.com/video/249248452"> <figure><img border="0" alt="GettingStarted" src="hyperbrowser/images/videos/coloc_stats_screencast_image.jpg" style="float:center;width:200px;height:auto;"><figcaption align="left">-- Screencast on getting started</figcaption></figure> </a>
                     </div>
                     </div>
-                    <!--</div>-->
-                    <!--&lt;!&ndash;<div class = 'example'>&ndash;&gt;-->
-                        <!--&lt;!&ndash;<h4 class = 'exampleTitle'>Screencast:quick tutorial</h4>&ndash;&gt;-->
-                        <!--&lt;!&ndash;<p></p>&ndash;&gt;-->
-                    <!--&lt;!&ndash;&lt;!&ndash;<!–– <video controls="controls" width="200" height="150"&ndash;&gt;&ndash;&gt;-->
-                    <!--&lt;!&ndash;&lt;!&ndash;&lt;!&ndash;name="Video Name" src="images/gettingStartedWithColocStats.mov">&ndash;&gt;&ndash;&gt;&ndash;&gt;-->
-                    <!--&lt;!&ndash;<!–– </video>&ndash;&gt;-->
-                    <!--<a href="https://player.vimeo.com/video/249248452"> <img border="0" alt="GettingStarted" src="hyperbrowser/images/videos/coloc_stats_screencast_image.jpg" style="float:right;width:200px;height:200px;></a>-->
-                    <!--&lt;!&ndash;<iframe src="https://player.vimeo.com/video/249248452" width="300" height="300" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>&ndash;&gt;-->
-                    <!--</div>-->
+
                     <div class = 'project'>
                         <div class = 'projectDesc'>
                             <h4>Get started by:</h4>
                             <ol>
                                 <li>
-                                    <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Uploading datasets</a> of genomic locations (bed-files)
+                                    <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Uploading datasets</a> of genomic locations (bed-files) OR <a class="button" id="import_sample_data" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_import_sample_files_tool">import sample data</a> into galaxy history.
                                 </li>
                                 <li>
                                     Go to the <a class="button" id="coloc-tool" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> to analyze your datasets by multiple methods
@@ -77,10 +66,16 @@
                                     <a class="button" href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-example-analysis" target="_top">View an example analysis</a>
                                 </li>
                                 <li>
-                                    <a class="button" href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-sample-data" target='_top'>Load a history</a> with small sample datasets (in the next page, click "import history")
+                                    <a data-toggle="tab" href="#menu1" aria-expanded="false">Read documentation</a> for elaborate overview of the tool.
                                 </li>
                                 <li>
-                                    Look at the <a href='https://vimeo.com/249248452' target='_top'><font color="#0645AD">screencasts</font></a> below on how to use the system
+                                    <a data-toggle="tab" href="#menu2" aria-expanded="false">Look at the Manual</a> for quick help on tool parameters and selections.
+                                </li>
+                                <li>
+                                    <a data-toggle="tab" href="#menu3" aria-expanded="false">See our FAQ</a> for help on diverse topics related to coloc-stats.
+                                </li>
+                                <li>
+                                    Look at the <a href='https://vimeo.com/249248452' target='_top'>screencast</a> above on how to get started.
                                 </li>
                             </ul>
                         </div>
@@ -93,45 +88,9 @@
                         <!--</p>-->
                         <!--</div>-->
                     </div>
-                <!--</div>-->
-                <!--</div>-->
-                <!--<div class="col-sm-4">-->
-                    <!--<div class = 'example'>-->
-                        <!--<h4 class = 'exampleTitle'>Screencast:quick tutorial</h4>-->
-                        <!--<p></p>-->
-                    <!--&lt;!&ndash;<!–– <video controls="controls" width="200" height="150"&ndash;&gt;-->
-                    <!--&lt;!&ndash;name="Video Name" src="images/gettingStartedWithColocStats.mov">&ndash;&gt;-->
-                    <!--&lt;!&ndash;<!–– </video>&ndash;&gt;-->
-                    <!--<a href="https://player.vimeo.com/video/249248452"> <img border="0" alt="GettingStarted" src="hyperbrowser/images/videos/coloc_stats_screencast_image.jpg" width="200" height="200"></a>-->
-                    <!--&lt;!&ndash;<iframe src="https://player.vimeo.com/video/249248452" width="300" height="300" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>&ndash;&gt;-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
+
         </div>
-        <!--<div class="containerNext">-->
-            <!--<div class="containerNext">-->
-                <!--<div class="rowSpecialWithGap">-->
-                <!--<div class="colAll">-->
-                    <!--<div class = 'example'><h4 class = 'exampleTitle'>Screencast:quick tutorial</h4>-->
-                    <!--<!–– <video controls="controls" width="800" height="600"-->
-                    <!--name="Video Name" src="images/gettingStartedWithColocStats.mov">-->
-                    <!--<!–– </video>-->
-                    <!--<iframe src="https://player.vimeo.com/video/249248452" width="800" height="600" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>-->
-                    <!--</div>-->
-                <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-                        
-        <!--<div class="footer">-->
-            <!--<div class = 'contactInfo'>-->
-                <!--<div class = 'contactInfoDesc'>-->
-                    <!--All questions, requests or comments can be redirected to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'>Geir Kjetil Sandve.</a>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-        </div>
-            </div>
+
         </div>
         </div>
         <div id="menu1" class="tab-pane fade">
@@ -140,6 +99,9 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
+                            <ul>
+                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
+                            </ul>
                             <h3>Documentation</h3>
                         </div>
                         <div class = 'projectDescSingle' >
@@ -380,6 +342,9 @@
                                 of the features mentioned below are going to be implemented during Feb-Mar 2018.
                                 <ul>
                                         <li>
+                                            Although not a feature, we plan to add a lot of screencast tutorials to help the users with distinct use cases.
+                                        </li>
+                                        <li>
                                             Handling confounding feature tracks
                                         </li>
                                         <li>
@@ -415,6 +380,9 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
+                            <ul>
+                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
+                            </ul>
                             <h3># Legend of tool parameters & Output pages</h3>
                         </div>
                         <head>
@@ -546,41 +514,6 @@ tr:nth-child(even) {
                                         https://www.ncbi.nlm.nih.gov/pubmed/18691400
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>
-                                    </td>
-                                </tr>
                             </table>
                             </body>
                         </div>
@@ -595,6 +528,9 @@ tr:nth-child(even) {
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDesc'>
+                            <ul>
+                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
+                            </ul>
                             <h4>What is coloc-stats</h4>
                         </div>
                         <div class = 'projectDesc'>
@@ -808,6 +744,9 @@ tr:nth-child(even) {
                     <div class = 'project'>
                         <div class = 'projectDesc'>
                              <dl id="faqs">
+                                 <ul>
+                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
+                            </ul>
                                  <h3>Frequently asked questions</h3>
                                  (click on the question to see the answer)
                                  <p></p>
