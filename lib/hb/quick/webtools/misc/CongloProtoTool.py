@@ -938,7 +938,7 @@ class CongloProtoTool(GeneralGuiTool):
             allPvals = wmo.getPValue()
             allTestStats = wmo.getTestStatistic()
             # TODO: temporary hack
-            if wmo._methodCls.name == 'HyperBrowser':
+            if wmo._methodCls.__name__ == 'HyperBrowser':
                 allFullResults = wmo.getFullResults(galaxyFn)
             else:
                 allFullResults = wmo.getFullResults()
