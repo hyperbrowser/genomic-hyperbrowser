@@ -786,7 +786,8 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        LOAD_PICKLES = False #TODO: temp
+        # TODO: REMOVE
+        LOAD_PICKLES = False
         print HtmlCore().begin()
         if LOAD_PICKLES:
             pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
@@ -797,11 +798,10 @@ class CongloProtoTool(GeneralGuiTool):
             crg = CongloResultsGenerator(trackCombResults, [], [],galaxyFn)
             crg.outputResults()
             return
+        # TODO: /REMOVE
 
         print '<h1>Result page for coloc-stats analysis</h1>'
         print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
-        print '''Your analysis has been completed. You can now view the results.
-                You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element'''
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
@@ -824,13 +824,16 @@ class CongloProtoTool(GeneralGuiTool):
         trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods)
         trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
 
-        #TODO: Temp code:
+        # TODO: REMOVE
         sf = GalaxyRunSpecificFile(['trackComb.pickle'], galaxyFn)
         path = sf.getDiskPath(ensurePath=True)
         dump(trackCombResults, open(path, 'w'))
         print sf.getLink('Pickles')
+        # TODO: /REMOVE
 
-        #cls.outputResults(trackCombResults, trackCombErrors, keptWmos, keysWithVariation, galaxyFn)
+        print '''Your analysis has been completed and your results are available below.
+                You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element'''
+
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
         crg.outputResults()
 
