@@ -23,7 +23,7 @@ from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMea
 from conglomerate.tools.constants import VERBOSE_RUNNING
 from conglomerate.methods.interface import InvalidSpecification
 from gold.gsuite.GSuite import GSuite
-from proto.CommonFunctions import createGalaxyToolURL
+from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -70,7 +70,6 @@ class CongloProtoTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: []
         """
         return [("", 'toolDescTop'),
-                ('Import sample data to the history', 'importSampleData'),
                 ('Running mode: ', 'selectRunningMode'),
                 ('Reference genome: ', 'selectReferenceGenome'),
                 ('Upload your own genome chromosome lengths file', 'missingGenome'),
@@ -101,7 +100,8 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Handle confounding features ? ', 'confounding'),
                 ('Method of choice to handle confounding features : ', 'confounderHandler'),
                 ('Runtime mode : ', 'runtimeMode'),
-                ('Compatible methods : ', 'compatibleMethods')
+                ('Compatible methods : ', 'compatibleMethods'),
+                ('Import sample data to the history', 'importSampleData')
                 ]
 
     # @classmethod
@@ -149,7 +149,12 @@ class CongloProtoTool(GeneralGuiTool):
             'Below is a unified interface to multiple previously published methods for statistical co-localization analysis. '
             'All the methods can be used to analyze a <b> query track </b> against either a single <b> reference track </b> or a <b> reference track collection </b>. '
             'Supported inputs are single datasets or collections of datasets. It can be run in a basic mode with default settings '
-            'or in an advanced mode that allows further customization. For each selection box, <u> <b> click on the information button </b> </u> for further explanation.')
+            'or in an advanced mode that allows further customization. For each selection box, <b> click on the information button </b> for further explanation.')
+        core.divider()
+        link = str(HtmlCore().link('<b>Upload data</b>',
+                   createGalaxyToolURL('upload1'),
+                   args='onclick="{}"'.format(getGalaxyUploadLinkOnclick())))
+        core.paragraph('If you have not uploaded data already, do it here:  ' + link)
         return '__rawstr__', str(core)
 
 

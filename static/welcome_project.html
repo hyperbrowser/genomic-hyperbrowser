@@ -14,11 +14,15 @@
                 <a data-toggle="tab" href="#menu1">Documentation</a>
             </li>
             <li  value="tab2">
-                <a data-toggle="tab" href="#menu2">FAQ</a>
+                <a data-toggle="tab" href="#menu2">Manual</a>
             </li>
             <li  value="tab3">
-                <a data-toggle="tab" href="#menu3">About</a>
+                <a data-toggle="tab" href="#menu3">FAQ</a>
             </li>
+            <li  value="tab4">
+                <a data-toggle="tab" href="#menu4">About</a>
+            </li>
+
 
         </ul>
     </div>
@@ -65,7 +69,7 @@
                             </ul>
                         </div>
                         <div class ="projectDesc" style="margin: 20px 0px; font-style: italic;">
-                            Please feel free to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">contact us</font></a> with any questions.
+                            Please feel free to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">contact us</font></a> with any questions.
                         </div>
                         <!--<div class ="projectDesc">-->
                             <!--<p class="paragraph">-->
@@ -94,14 +98,11 @@
         <!--<div class="footer">-->
             <!--<div class = 'contactInfo'>-->
                 <!--<div class = 'contactInfoDesc'>-->
-                    <!--All questions, requests or comments can be redirected to <a href='mailto:geirska@ifi.uio.no' target='_top'>Geir Kjetil Sandve.</a>-->
+                    <!--All questions, requests or comments can be redirected to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'>Geir Kjetil Sandve.</a>-->
                 <!--</div>-->
             <!--</div>-->
         <!--</div>-->
         </div>
-
-
-
         <div id="menu1" class="tab-pane fade">
         <div class="container">
             <div class="rowSpecial">
@@ -302,6 +303,41 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
+                            <h3># Output</h3>
+                        </div>
+                        <div class = 'projectDescSingle'>
+                            <h4>Explaining the results pages</h4>
+                            <div class = 'projectDesc'>
+                                While the computations of various tools are ongoing, the results page shows statements indicating “in progress”.
+   Once the computations are completed, the results page is populated with the results from one or several tools,
+   depending upon the parameters and configurations chosen by the user.
+                                <p></p>
+                                When you run a pairwise co-localization analysis (between two genomic tracks), a plot is displayed
+   showing the negative logarithmic p-values obtained through different methods/configurations chosen. A simplistic indication
+   is also provided to the user on how to interpret the findings to allow the user to make an informed decision. A table showing
+   p-values, enrichment statistics and full results (as given out by the specific tool) of each tool/configuration is also provided.
+   If any chosen tool fails or reports an error, the error messages are shown in a separate table.
+                                <p></p>
+                                In a one-against-many analysis (where a query track is queried against a collection of reference tracks),
+                                the results page shows a main table of ranking the reference tracks by a consensus rank obtained
+                                through multiple methods/configurations chosen. For each reference track, separate tables also show the
+                                p-values, test statistics and full results obtained through each method.
+                                <p></p>
+                                <b>Note:</b> All the results tables are sortable on columns.
+
+                            </div>
+                        </div>
+                        </div>
+                </div>
+                </div>
+            </div>
+        </div>
+            <div class="containerNext">
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                <div class="colAll">
+                    <div class = 'project'>
+                        <div class = 'projectDescSingle'>
                             <h3># News</h3>
                         </div>
                         <div class = 'projectDescSingle'>
@@ -345,289 +381,184 @@
         <div id="menu2" class="tab-pane fade">
         <div class="container">
             <div class="rowSpecial">
-                <div class="colAll" style="padding-left: 0px">
+                <div class="colAll">
                     <div class = 'project'>
+                        <div class = 'projectDescSingle'>
+                            <h3># Legend of tool parameters & Output pages</h3>
+                        </div>
+                        <head>
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+</head>
+
                         <div class = 'projectDesc'>
-                             <dl id="faqs">
-                                 <h3>Frequently asked questions</h3>
-                                 (click on the question to see the answer)
-                                 <p></p>
-                                 <h4 style="margin-left: 40px;">## Why coloc-stats? When coloc-stats? How coloc-stats?</h4>
-                                 <p></p>
-                                 <ol>
-                                     <li>
-                                <dt><b>I know some co-localization analysis tools. What is the purpose of a new tool?</b></dt>
-                                <dd>
-                                    The existing co-localization analysis tools vary in the statistical methodology and analysis approaches,
-                                        thus potentially providing different conclusions for the same research question. As the findings of
-                                        co-localization analysis are often the basis for further follow-up experimental investigations, assessing
-                                        the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization
-                                        analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution,
-                                        null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features).
-                                        To address this gap, we propose coloc-stats, a single interface for multiple previously published co-localization analysis methods.
-                                </dd>
-                                     </li>
-                                <p></p>
-                                     <li>
-                                <dt><b>What can I achieve more with coloc-stats, than just running other co-localization analysis tools?</b></dt>
-                                <dd>
-                                    <div class = 'projectDesc'>
-                                        Coloc-stats allows a user:
-                                    </div>
-                                    <ul>
-                                        <li>
-                                            To make the most appropriate analysis choices given their research question.
-                                        </li>
-                                        <li>
-                                            Find a relevant method (amongst several) that supports their analysis choices.
-                                        </li>
-                                        <li>
-                                            To assess the robustness of conclusions by running and inspecting results across several methods.
-                                        </li>
-                                        <li>
-                                             Extend methods that only support a pair of tracks to consider track collections.
-                                        </li>
-                                    </ul>
-                                </dd>
-                                    </li>
-                                     <p></p>
-                                     <li>
-                                <dt><b>When and why should I use coloc-stats?</b></dt>
-                                <dd>
-                                    <div class = 'projectDesc'>
-                                        Coloc-stats is useful when:
-                                    </div>
-                                    <ul>
-                                        <li>
-                                            The user is not aware of all the analysis choices that would affect the conclusions of co-localization analysis
-                                        </li>
-                                        <li>
-                                            The user is not familiar of all the existing methods and tools that support their analysis choices and assumptions
-                                        </li>
-                                        <li>
-                                            The user is uncertain about the association between a pair of tracks, to assess the robustness of findings
-                                        </li>
-                                        <li>
-                                             The user wants to run existing pairwise co-localization analysis tools in one-against-many mode
-                                        </li>
-                                        <li>
-                                             The user wants to run several co-localization analysis tools at once
-                                        </li>
-                                    </ul>
-                                </dd>
-                                     <p></p>
-                                     <li>
-                                <dt><b>I do not know how to get started, please help me</b></dt>
-                                <dd>
-                                To perform co-localization analysis, you need a query track and reference track of interest in
-                                    BED format. Once you have the BED files, upload them using the
-                                    <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Upload button</a>
-                                    on the top left corner of the web page. If you  do not know how to upload files into a galaxy interface,
-                                    follow a <a href='https://galaxyproject.org/tutorials/upload/' target='_top'><font color="#0645AD">quick tutorial</font></a>
-                                    Once you upload the files, they will appear in your history (on the panel that appears as margin to the right). To know more
-                                    about histories in galaxy, <a href='https://galaxyproject.org/tutorials/histories/' target='_top'><font color="#0645AD">see a tutorial here</font></a>.
-                                    Then go to the <a class="button" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> and choose the relevant
-                                    parameter settings to execute. Once you execute the tool, the analysis will be performed by one or several tools in parallel depending upon the chosen
-                                    parameter settings. This may take from few minutes to several hours. The results element will be created in your history, which you can also monitor while
-                                    the analysis is in progress by clicking on the “eye” icon on the history element. Once all the computations are completed, the history element will turn green.
-                                    If the analysis is failed for some reason, it will turn red.
-
-                                </dd>
-                                     </li>
-                                <p></p>
-
-                                         <p></p>
-                                 <h4>## User interface and sharing results</h4>
-                                     <p></p>
-                                     <li>
-                                <dt><b>What is galaxy project ?</b></dt>
-                                <dd>
-                                If you are not familiar of galaxy project, you can <a href='https://academic.oup.com/nar/article/44/W1/W3/2499339' target='_top'><font color="#0645AD">read a < 10-sentence abstract </font></a>
-                                    and visit the <a href='https://usegalaxy.org/' target='_top'><font color="#0645AD">galaxy project homepage</font></a> to know more about it.
-                                </dd>
-                                     </li>
-                                <p></p>
-                                     <li>
-                                <dt><b>I am new to a galaxy interface; give me a quick overview on how to navigate.</b></dt>
-                                <dd>
-                                You can follow a quick and brief tutorial on <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">using a galaxy interface</font></a> (takes ~ 2 min).
-                                </dd>
-                                     </li>
-                                <p></p>
-                                     <li>
-                                <dt><b>Is coloc-stats available as a command line tool?</b></dt>
-                                <dd>
-                                    As of now, coloc-stats is available only through the web server. Command line tool might be a future possibility.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                  <li>
-                                <dt><b>Why is it taking ages to run a coloc-stats analysis?</b></dt>
-                                <dd>
-                                    Depending upon the number of genomic tracks being analysed and also depending upon the number of tools and tool-specific
-                                    configuration variants chosen, the analysis might take few minutes to several hours. Especially, some tools by nature are relatively
-                                    on a slower side. To quickly confirm that this is not  a server issue, you can run another analysis with less number of genomic tracks
-                                    and tools to check if the slowness persists. Depending upon the traffic to the server, sometimes the webpage might appear to be slow and
-                                    the computations might be queued. But this is supposed to be a temporary thing and the webpage should return to its original smoothness
-                                    within few minutes-hours. If that is not the case <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">you can report to us</font></a> to get support.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                 <li>
-                                <dt><b>Is there a way of programmatically accessing coloc-stats page?</b></dt>
-                                <dd>
-                                    We do not yet have a programming interface, but this will be a possibility in the near future.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>The coloc-stats webpage is quite slow. Is there something I can do to fix it?</b></dt>
-                                <dd>
-                                    Depending upon the traffic to the server, sometimes the webpage might appear to be slow. But this is supposed to be a temporary thing and the webpage should return to its original smoothness within few minutes-hours.
-                                    If that is not the case <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">you can report to us</font></a> to get support.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                     <h4>## Error messages </h4>
-                                     <p></p>
-                                <li>
-                                <dt><b>Something is causing an error, I do not know what it is. What do I do now?</b></dt>
-                                <dd>
-                                   We observed that some co-localization analysis tools throw errors sometimes because of various different reasons. However, the coloc-stats tool itself should run all the other methods (that pass) and show the results.
-                                    If this is not the case, (i.e., if coloc-stats tool itself throws error) then the history element will turn red. When the coloc-stats tool itself throws error, you can  <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">share the history with us</font></a> to get support.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>My input file is causing an error!</b></dt>
-                                <dd>
-                                    Be aware that coloc-stats currently accepts only BED files. If you have your genomic regions in other file formats, you have to convert them to BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the
-                                    <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">BED file format specifications</font></a> described on the UCSC browser page.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>I am using a BED file as input, still it shows an error!</b></dt>
-                                <dd>
-                                    Adhering to the BED format specifications is always recommended. Deviations from the file format specifications are a common cause for errors when running several of the bioinformatic tools.
-                                    See more about the BED format specifications in the previous question. If you are sure that you adhered to the file format specifications, but still encounter an error, please
-                                    <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report to us</font></a> and we would be very happy to help.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <h4> ## Results and results pages </h4>
-                                     <p></p>
-                                 <li>
-                                <dt><b>I am not sure if I completely understood the output page. Explain me.</b></dt>
-                                <dd>
-                                    While the computations of various tools are ongoing, the results page shows statements indicating “in progress”.
-                                    Once the computations are completed, the results page is populated with the results from one or several tools,
-                                    depending upon the parameters and configurations chosen by the user. The results page shows the parameters chosen
-                                    for the analysis. When you run a pairwise co-localization analysis (between two genomic tracks), a plot is displayed
-                                    showing the negative logarithmic p-values obtained through different methods/configurations chosen. A simplistic indication
-                                    is also provided to the user on how to interpret the findings to allow the user to make an informed decision. A table showing
-                                    p-values, enrichment statistics and full results (as given out by the specific tool) of each tool/configuration is also provided.
-                                    If any chosen tool fails or reports an error, the error messages are shown in a separate table.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>The links to the full results pages of individual tools are broken. What do I do now?</b></dt>
-                                <dd>
-                                    This is not the expected behaviour of coloc-stats tool.
-                                    Please take a minute to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
-                                    and we would be very happy to help.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>The p-values are set to NA for some methods. What does this mean?</b></dt>
-                                <dd>
-                                    Some tools by their nature (e.g., IntervalStats) do not return p-value for the overall association
-                                    between tracks as of now. Otherwise all the other tools should return p-value unless they throw an error
-                                    for the input genomic tracks. If this is the case, refer to the error messages table to see if an error message
-                                    was thrown for the tracks of interest. If you observe a trend of consistent error messages, you can suspect
-                                    something went wrong. If that is the case, please take a minute to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
-                                    and we would be very happy to help.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>Some tables are empty/contain empty fields. What does this mean?</b></dt>
-                                <dd>
-                                    If no errors are thrown, the table containing error messages would be empty.
-                                    This is expected behaviour. Other than that, the tables should not be empty or
-                                    contain empty fields. If that is the case, If that is the case, please take a
-                                    minute to <a href='mailto:geirska@ifi.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
-                                    and we would be very happy to help.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <h4> ## Reproducibility, replication and sharing results </h4>
-                                     <p></p>
-                                 <li>
-                                <dt><b>How can I share my analysis history with anyone?</b></dt>
-                                <dd>
-                                    See here on <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">how to share your analysis history with anyone</font></a>.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                 <li>
-                                <dt><b>I was not able to reproduce the analysis that I did earlier.</b></dt>
-                                <dd>
-                                    All the analyses you performed are stored in the history, if you choose to create a user account and store your analysis histories.
-                                    To know more about histories in galaxy, <a href='https://galaxyproject.org/tutorials/histories/' target='_top'><font color="#0645AD">see a brief tutorial </font></a> here.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>I was not able to replicate the findings. The p-values seem to change everytime I run the analysis.</b></dt>
-                                <dd>
-                                    This is quite expected behaviour in some types of statistical testing that involves permutations and random sampling.
-                                    As all the tools integrated into coloc-stats do not support setting a seed, we currently do not provide a functionality to set seed.
-                                    On the other hand, if the p-values do not stand significant at a given threshold, that finding should always be interpreted with caution.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                     <h4> ## Genome assemblies and species </h4>
-                                     <p></p>
-                                <li>
-                                <dt><b>Which genome assemblies are supported by coloc-stats?</b></dt>
-                                <dd>
-                                     Currently hg19, hg38, mm9 and mm10 are supported right away in the coloc-stats tool.
-                                    However, all the genome assemblies of any species can be used to perform the analysis.
-                                    For that, you only need a text file containing the chromosome lengths.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                <li>
-                                <dt><b>How can I use coloc-stats for a different species or genome assembly?</b></dt>
-                                <dd>
-                                     To use coloc-stats for a genome assembly or species that is not installed on coloc-stats tool,
-                                    all you need is a text file containing the chromosome lengths of that genome assembly.
-                                    Select custom reference genome in the “reference genome” section of the tool, which will prompt
-                                    you to upload a chromosome lengths file. Upload that file and continue with the remaining analysis choices normally.
-                                </dd>
-                                     </li>
-                                     <p></p>
-                                     </li>
-                            </dl>
-<script type="text/javascript">
-    $("#faqs dd").hide();
-    $("#faqs dt").click(function () {
-        $(this).next("#faqs dd").slideToggle(500);
-        $(this).toggleClass("expanded");
-    });
-</script>
-
+                            <body>
+                            <table>
+                                <col width="180">
+                                <tr>
+                                <th>Parameter</th>
+                                <th>Explanation</th>
+                                </tr>
+                                <tr>
+                                <td>Running mode:</td>
+                                <td>Basic mode with partly tool-specific defaults performs co-localization analysis with six different tools using partly their default settings. Only a few main selections need to be made by the user. Advanced mode allows the selection of co-localization analysis tools/methods based on detailed choices of parameters and methodological assumptions. After selecting one or many specific parameter values, a list of compatible tools will be shown.</td>
+                                </tr>
+                                <td>Reference genome:</td>
+                                <td>Support for hg19, hg38, mm9 and mm10 is integrated in the system. Analysis can be performed on other reference genomes by uploading a custom chromosome lengths file.</td>
+                                </tr>
+                                <tr>
+                                    <td>Custom reference genome:</td>
+                                    <td>Upload the chromosome lengths file of a reference genome of your choice, if the default reference genomes are not suitable for your analysis. The file should be tab separated with two fields; the first field should contain the chromosome name (e.g. chr22) and the second field should contain the length of the chromosome (e.g., 123456).</td>
+                                </tr>
+                                <tr>
+                                    <td>Type of co-localization analysis:</td>
+                                    <td>Here you can choose to perform the co-localization analysis either between a pair of genomic tracks or analyse a single genomic track against a large collection of genomic tracks.For more information about co-localization analysis, refer the following citations:
+                                        <br>
+                                        [1] https://doi.org/10.1186/gb-2010-11-12-r121<br>
+                                        [2] https://doi.org/10.1101/157735<br>
+                                        [3] 10.1093/bioinformatics/btv612</td>
+                                </tr>
+                                <tr>
+                                    <td>Upload files:</td>
+                                    <td>
+                                        Upload files through the upload button on the top left corner under the tools menu.
+                                        The file will appear under the galaxy history in the right menu panel.
+                                        For now, only BED files are supported. It is strongly advised to adhere to the BED file format specifications.
+                                        If you have a different file format other than BED, you can use the tool on the left-hand menu to convert between file formats.
+                                        Please see under the tools menu "Format and convert tracks".
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Query track:</td>
+                                    <td>The genomic regions obtained through an experiment of your interest is usually used as a query track.
+                                        For example, a query track file could be the genomic regions of SNPs that reached certain significance level in GWAS.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Reference track:</td>
+                                    <td>Reference track usually contains genomic regions that you hypothesise as having an association with your query track.
+                                        For example, a reference track could be the genomic regions of gene promoters.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Collections of reference tracks:</td>
+                                    <td>As the name explains, this means multiple reference tracks of interest. For example, the collection of reference tracks could contain the genomic regions of regulatory elements in multiple tissues (multiple tracks).
+                                    The large collection of genomic tracks can be a core database (see the next row), or build a custom collection of reference tracks.
+                                        For building a custom reference track collection, one can upload a bunch of BED files through the upload functionality (drag and drop works)
+                                        or a tar file containing several BED files further one can build a collection of genomic tracks (which we refer to as GSuite).
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Core databases:</td>
+                                    <td>For the ease of users, we provide collections of reference tracks that are of wide interest (largely curated by individual tools). We refer to these collections of reference tracks as core databases.
+                                        Instead of selecting user-specific reference track collections, the user can choose one of the core databases for analysis.
+                                    Examples of such core databases include data from ENCODE project, Roadmap Epigenomics project such as transcription factor binding sites, DNAse I hypersensitive sites and so on.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Background regions:</td>
+                                    <td>
+                                        The genomic regions in a genomic track file are typically a result of some form of genomic assay analysed on a high throughput sequencing or genotyping platform,
+                                        where some predefined regions of the genome are assayed (e.g., all the SNPs, transcripts, exonic regions and so on). The genomic regions found based on such assays
+                                        are thus restricted to the regions queried on the technology platform. Such background regions represent the universe of regions that could have possibly ended in
+                                        the genomic tracks of interest being queried for co-localization. As an example, when testing the co-localization of a SNP set with other annotations, the background
+                                        set could be all the SNPs covered by the technology platform, which are all assumed to have equal probability to be included in the SNP set of interest.
+                                        The statistical test (null model) should ideally restrict the analysis space to the regions queried on the technology platform. Some tools (but not all) provide the
+                                        possibility to restrict the analysis to background set of regions, by either excluding the regions supplied by the user or by performing the analysis only against an
+                                        explicit set of background regions supplied by the user. As only a few tools accept the supplying of background regions, supplying that file is not always required.
+                                        Only BED files are supported for now.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Runtime mode:</td>
+                                    <td>Depending upon the analysis choices and the run times of corresponding compatible methods, the run time can vary from minutes to hours.
+                                        Choosing a quick mode reduces the run time of the compatible methods,for instance, by reducing the number of permutations.</td>
+                                </tr>
+                                <tr>
+                                    <td>Test statistic:</td>
+                                    <td>A test statistic in co-localization analysis provides a quantitative summary of the relationship between a pair of genomic tracks. Typically, it can measure the overlap or distance or correlation between two genomic tracks.</td>
+                                </tr>
+                                <tr>
+                                    <td>Overlap:</td>
+                                    <td>Overlap measure can use counts (total number of overlapping intervals between two genomic tracks) or size (total number of overlapping base pairs between two files).</td>
+                                </tr>
+                                <tr>
+                                    <td>Proximity (distance):</td>
+                                    <td>Proximity (distance) can be computed to either start or midpoint or the closest coordinate.
+                                    It can either be an absolute distance or average log distance.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Correlation metric:</td>
+                                    <td>A correlation metric can be obtained genome-wide (overall relationship), at a fine-scale, or a local correlation (region-level).
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Clumping tendency:</td>
+                                    <td> Genome architecture is known to have quite complex dependency structure, where the genomic features are not uniformly distributed but known to co-occur in clumps.
+                                        This clumping tendency of genomic elements should ideally be handled by the statistical tests in the null model. As an example of the known clumping tendencies, refer to the following reference:
+                                        https://www.ncbi.nlm.nih.gov/pubmed/18691400
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                    </td>
+                                </tr>
+                            </table>
+                            </body>
+                        </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="menu3" class="tab-pane fade">
+        <div id="menu4" class="tab-pane fade">
         <div class="container">
             <div class="rowSpecial">
                 <div class="colAll">
@@ -839,6 +770,293 @@
 
 
     </div>
+        <div id="menu3" class="tab-pane fade">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAll" style="padding-left: 0px">
+                    <div class = 'project'>
+                        <div class = 'projectDesc'>
+                             <dl id="faqs">
+                                 <h3>Frequently asked questions</h3>
+                                 (click on the question to see the answer)
+                                 <p></p>
+                                 <h4 style="margin-left: 40px;">## Why coloc-stats? When coloc-stats? How coloc-stats?</h4>
+                                 <p></p>
+                                 <ol>
+                                     <li>
+                                <dt><b>I know some co-localization analysis tools. What is the purpose of a new tool?</b></dt>
+                                <dd>
+                                    The existing co-localization analysis tools vary in the statistical methodology and analysis approaches,
+                                        thus potentially providing different conclusions for the same research question. As the findings of
+                                        co-localization analysis are often the basis for further follow-up experimental investigations, assessing
+                                        the robustness of the findings is warranted. However, there exists no unified interface to perform co-localization
+                                        analysis across a multitude of analytical methods and method-specific options (e.g., test statistics, resolution,
+                                        null models, and whether or not they can handle local genomic heterogeneities and co-localizing confounding features).
+                                        To address this gap, we propose coloc-stats, a single interface for multiple previously published co-localization analysis methods.
+                                </dd>
+                                     </li>
+                                <p></p>
+                                     <li>
+                                <dt><b>What can I achieve more with coloc-stats, than just running other co-localization analysis tools?</b></dt>
+                                <dd>
+                                    <div class = 'projectDesc'>
+                                        Coloc-stats allows a user:
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            To make the most appropriate analysis choices given their research question.
+                                        </li>
+                                        <li>
+                                            Find a relevant method (amongst several) that supports their analysis choices.
+                                        </li>
+                                        <li>
+                                            To assess the robustness of conclusions by running and inspecting results across several methods.
+                                        </li>
+                                        <li>
+                                             Extend methods that only support a pair of tracks to consider track collections.
+                                        </li>
+                                    </ul>
+                                </dd>
+                                    </li>
+                                     <p></p>
+                                     <li>
+                                <dt><b>When and why should I use coloc-stats?</b></dt>
+                                <dd>
+                                    <div class = 'projectDesc'>
+                                        Coloc-stats is useful when:
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            The user is not aware of all the analysis choices that would affect the conclusions of co-localization analysis
+                                        </li>
+                                        <li>
+                                            The user is not familiar of all the existing methods and tools that support their analysis choices and assumptions
+                                        </li>
+                                        <li>
+                                            The user is uncertain about the association between a pair of tracks, to assess the robustness of findings
+                                        </li>
+                                        <li>
+                                             The user wants to run existing pairwise co-localization analysis tools in one-against-many mode
+                                        </li>
+                                        <li>
+                                             The user wants to run several co-localization analysis tools at once
+                                        </li>
+                                    </ul>
+                                </dd>
+                                     <p></p>
+                                     <li>
+                                <dt><b>I do not know how to get started, please help me</b></dt>
+                                <dd>
+                                To perform co-localization analysis, you need a query track and reference track of interest in
+                                    BED format. Once you have the BED files, upload them using the
+                                    <a  class = "button" href="javascript:void(0)" onclick="event.preventDefault(); jQuery('#tool-panel-upload-button', window.parent.jQuery(window.parent.document)).trigger('click');">Upload button</a>
+                                    on the top left corner of the web page. If you  do not know how to upload files into a galaxy interface,
+                                    follow a <a href='https://galaxyproject.org/tutorials/upload/' target='_top'><font color="#0645AD">quick tutorial</font></a>
+                                    Once you upload the files, they will appear in your history (on the panel that appears as margin to the right). To know more
+                                    about histories in galaxy, <a href='https://galaxyproject.org/tutorials/histories/' target='_top'><font color="#0645AD">see a tutorial here</font></a>.
+                                    Then go to the <a class="button" href="../tool_runner/data_source_redirect?tool_id=hb_conglo_proto_tool">coloc-stats tool</a> and choose the relevant
+                                    parameter settings to execute. Once you execute the tool, the analysis will be performed by one or several tools in parallel depending upon the chosen
+                                    parameter settings. This may take from few minutes to several hours. The results element will be created in your history, which you can also monitor while
+                                    the analysis is in progress by clicking on the “eye” icon on the history element. Once all the computations are completed, the history element will turn green.
+                                    If the analysis is failed for some reason, it will turn red.
+
+                                </dd>
+                                     </li>
+                                <p></p>
+
+                                         <p></p>
+                                 <h4>## User interface and sharing results</h4>
+                                     <p></p>
+                                     <li>
+                                <dt><b>What is galaxy project ?</b></dt>
+                                <dd>
+                                If you are not familiar of galaxy project, you can <a href='https://academic.oup.com/nar/article/44/W1/W3/2499339' target='_top'><font color="#0645AD">read a < 10-sentence abstract </font></a>
+                                    and visit the <a href='https://usegalaxy.org/' target='_top'><font color="#0645AD">galaxy project homepage</font></a> to know more about it.
+                                </dd>
+                                     </li>
+                                <p></p>
+                                     <li>
+                                <dt><b>I am new to a galaxy interface; give me a quick overview on how to navigate.</b></dt>
+                                <dd>
+                                You can follow a quick and brief tutorial on <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">using a galaxy interface</font></a> (takes ~ 2 min).
+                                </dd>
+                                     </li>
+                                <p></p>
+                                     <li>
+                                <dt><b>Is coloc-stats available as a command line tool?</b></dt>
+                                <dd>
+                                    As of now, coloc-stats is available only through the web server. Command line tool might be a future possibility.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                  <li>
+                                <dt><b>Why is it taking ages to run a coloc-stats analysis?</b></dt>
+                                <dd>
+                                    Depending upon the number of genomic tracks being analysed and also depending upon the number of tools and tool-specific
+                                    configuration variants chosen, the analysis might take few minutes to several hours. Especially, some tools by nature are relatively
+                                    on a slower side. To quickly confirm that this is not  a server issue, you can run another analysis with less number of genomic tracks
+                                    and tools to check if the slowness persists. Depending upon the traffic to the server, sometimes the webpage might appear to be slow and
+                                    the computations might be queued. But this is supposed to be a temporary thing and the webpage should return to its original smoothness
+                                    within few minutes-hours. If that is not the case <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">you can report to us</font></a> to get support.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                 <li>
+                                <dt><b>Is there a way of programmatically accessing coloc-stats page?</b></dt>
+                                <dd>
+                                    We do not yet have a programming interface, but this will be a possibility in the near future.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>The coloc-stats webpage is quite slow. Is there something I can do to fix it?</b></dt>
+                                <dd>
+                                    Depending upon the traffic to the server, sometimes the webpage might appear to be slow. But this is supposed to be a temporary thing and the webpage should return to its original smoothness within few minutes-hours.
+                                    If that is not the case <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">you can report to us</font></a> to get support.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     <h4>## Error messages </h4>
+                                     <p></p>
+                                <li>
+                                <dt><b>Something is causing an error, I do not know what it is. What do I do now?</b></dt>
+                                <dd>
+                                   We observed that some co-localization analysis tools throw errors sometimes because of various different reasons. However, the coloc-stats tool itself should run all the other methods (that pass) and show the results.
+                                    If this is not the case, (i.e., if coloc-stats tool itself throws error) then the history element will turn red. When the coloc-stats tool itself throws error, you can  <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">share the history with us</font></a> to get support.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>My input file is causing an error!</b></dt>
+                                <dd>
+                                    Be aware that coloc-stats currently accepts only BED files. If you have your genomic regions in other file formats, you have to convert them to BED format. BED is a standard file format to store genomic regions, where the first three fields are required to be chr, start and end. Please refer to the
+                                    <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">BED file format specifications</font></a> described on the UCSC browser page.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>I am using a BED file as input, still it shows an error!</b></dt>
+                                <dd>
+                                    Adhering to the BED format specifications is always recommended. Deviations from the file format specifications are a common cause for errors when running several of the bioinformatic tools.
+                                    See more about the BED format specifications in the previous question. If you are sure that you adhered to the file format specifications, but still encounter an error, please
+                                    <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">report to us</font></a> and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <h4> ## Results and results pages </h4>
+                                     <p></p>
+                                 <li>
+                                <dt><b>I am not sure if I completely understood the output page. Explain me.</b></dt>
+                                <dd>
+                                    While the computations of various tools are ongoing, the results page shows statements indicating “in progress”.
+                                    Once the computations are completed, the results page is populated with the results from one or several tools,
+                                    depending upon the parameters and configurations chosen by the user. The results page shows the parameters chosen
+                                    for the analysis. When you run a pairwise co-localization analysis (between two genomic tracks), a plot is displayed
+                                    showing the negative logarithmic p-values obtained through different methods/configurations chosen. A simplistic indication
+                                    is also provided to the user on how to interpret the findings to allow the user to make an informed decision. A table showing
+                                    p-values, enrichment statistics and full results (as given out by the specific tool) of each tool/configuration is also provided.
+                                    If any chosen tool fails or reports an error, the error messages are shown in a separate table.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>The links to the full results pages of individual tools are broken. What do I do now?</b></dt>
+                                <dd>
+                                    This is not the expected behaviour of coloc-stats tool.
+                                    Please take a minute to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
+                                    and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>The p-values are set to NA for some methods. What does this mean?</b></dt>
+                                <dd>
+                                    Some tools by their nature (e.g., IntervalStats) do not return p-value for the overall association
+                                    between tracks as of now. Otherwise all the other tools should return p-value unless they throw an error
+                                    for the input genomic tracks. If this is the case, refer to the error messages table to see if an error message
+                                    was thrown for the tracks of interest. If you observe a trend of consistent error messages, you can suspect
+                                    something went wrong. If that is the case, please take a minute to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
+                                    and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>Some tables are empty/contain empty fields. What does this mean?</b></dt>
+                                <dd>
+                                    If no errors are thrown, the table containing error messages would be empty.
+                                    This is expected behaviour. Other than that, the tables should not be empty or
+                                    contain empty fields. If that is the case, If that is the case, please take a
+                                    minute to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
+                                    and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <h4> ## Reproducibility, replication and sharing results </h4>
+                                     <p></p>
+                                 <li>
+                                <dt><b>How can I share my analysis history with anyone?</b></dt>
+                                <dd>
+                                    See here on <a href='https://galaxyproject.org/tutorials/g101/' target='_top'><font color="#0645AD">how to share your analysis history with anyone</font></a>.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                 <li>
+                                <dt><b>I was not able to reproduce the analysis that I did earlier.</b></dt>
+                                <dd>
+                                    All the analyses you performed are stored in the history, if you choose to create a user account and store your analysis histories.
+                                    To know more about histories in galaxy, <a href='https://galaxyproject.org/tutorials/histories/' target='_top'><font color="#0645AD">see a brief tutorial </font></a> here.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>I was not able to replicate the findings. The p-values seem to change everytime I run the analysis.</b></dt>
+                                <dd>
+                                    This is quite expected behaviour in some types of statistical testing that involves permutations and random sampling.
+                                    As all the tools integrated into coloc-stats do not support setting a seed, we currently do not provide a functionality to set seed.
+                                    On the other hand, if the p-values do not stand significant at a given threshold, that finding should always be interpreted with caution.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     <h4> ## Genome assemblies and species </h4>
+                                     <p></p>
+                                <li>
+                                <dt><b>Which genome assemblies are supported by coloc-stats?</b></dt>
+                                <dd>
+                                     Currently hg19, hg38, mm9 and mm10 are supported right away in the coloc-stats tool.
+                                    However, all the genome assemblies of any species can be used to perform the analysis.
+                                    For that, you only need a text file containing the chromosome lengths.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>How can I use coloc-stats for a different species or genome assembly?</b></dt>
+                                <dd>
+                                     To use coloc-stats for a genome assembly or species that is not installed on coloc-stats tool,
+                                    all you need is a text file containing the chromosome lengths of that genome assembly.
+                                    Select custom reference genome in the “reference genome” section of the tool, which will prompt
+                                    you to upload a chromosome lengths file. Upload that file and continue with the remaining analysis choices normally.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     </li>
+                            </dl>
+<script type="text/javascript">
+    $("#faqs dd").hide();
+    $("#faqs dt").click(function () {
+        $(this).next("#faqs dd").slideToggle(500);
+        $(this).toggleClass("expanded");
+    });
+</script>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 </div>
 </body>
 </html>
