@@ -912,8 +912,11 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def extractErrorFromFailingMethod(cls, wmo):
-        methodName = wmo._methodCls.__name__  # TODO: Make public method
-        return [TrackCombError(wmo.getErrorDetails(), methodName)]
+        try:
+            methodName = wmo._methodCls.__name__  # TODO: Make public method
+            return [TrackCombError(wmo.getErrorDetails(), methodName)]
+        except:
+            return []
 
     @classmethod
     def extractResultsFromWorkingMethodList(cls, wmoList):
@@ -921,28 +924,31 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def extractResultsFromWorkingMethod(cls, wmo):
-        if VERBOSE_RUNNING:
-            print 'Stdout of tool: ', wmo.getResultFilesDictList()
-        if not wmo.ranSuccessfully():
+        try:
             if VERBOSE_RUNNING:
-                print 'skipping result output for method', wmo
-            return
-        allPvals = wmo.getPValue()
-        allTestStats = wmo.getTestStatistic()
-        allFullResults = wmo.getFullResults()
-        assert len(allPvals) > 0, allPvals
-        assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
-        trackCombinations = allPvals.keys()
+                print 'Stdout of tool: ', wmo.getResultFilesDictList()
+            if not wmo.ranSuccessfully():
+                if VERBOSE_RUNNING:
+                    print 'skipping result output for method', wmo
+                return
+            allPvals = wmo.getPValue()
+            allTestStats = wmo.getTestStatistic()
+            allFullResults = wmo.getFullResults()
+            assert len(allPvals) > 0, allPvals
+            assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
+            trackCombinations = allPvals.keys()
 
-        results = []
-        for trackCombination in trackCombinations:
-            fullResult = allFullResults[trackCombination]
-            pval = allPvals[trackCombination]
-            testStat = allTestStats[trackCombination]
-            methodName = wmo._methodCls.__name__ #TODO: Make public method
-            annotatedChoices = wmo.annotatedChoices
-            results.append(TrackCombResult(testStat, pval, fullResult, trackCombination, methodName, annotatedChoices))
-        return results
+            results = []
+            for trackCombination in trackCombinations:
+                fullResult = allFullResults[trackCombination]
+                pval = allPvals[trackCombination]
+                testStat = allTestStats[trackCombination]
+                methodName = wmo._methodCls.__name__ #TODO: Make public method
+                annotatedChoices = wmo.annotatedChoices
+                results.append(TrackCombResult(testStat, pval, fullResult, trackCombination, methodName, annotatedChoices))
+            return results
+        except:
+            return []
 
     # @classmethod
     # def createMainTable(cls, galaxyFn, keptWmos, keysWithVariation):
@@ -1465,12 +1471,57 @@ class CongloResultsGenerator:
         methods = [res.methodName for res in trackCombResults]
         sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
         sf.openRFigure()
-        #r.plot_pvals(pvals, methods)
+        r.plot_pvals(pvals, methods)
         sf.closeRFigure()
         return sf.getLink('Pvalue-plot')
 
     def getSimplisticPvalIndication(self, trackCombResults):
-        return '''<b>Simplistic indication:</b> Based on the consensus of different statistical tests, there is NO strong evidence to conclude that there is a strong association between query and reference tracks. (we return this even when one of the null model does not indicate strong association - since it is always advised to believe on the worst p-value)'''
+        intro = '<b>Simplistic indication: </b>'
+        coreText = self._produceCorePvalIndication(trackCombResults)
+        if coreText is None:
+            return ''
+        else:
+            return intro+coreText
+
+    def _produceCorePvalIndication(self, trackCombResults):
+        pvals = [res.pval.numericResult for res in trackCombResults]
+        total = len(pvals)
+        strong = len([p for p in pvals if p is not None and p <= 0.01])
+        weak = len([p for p in pvals if p is not None and 0.01 < p <= 0.05])
+        accept = len([p for p in pvals if p is not None and p > 0.05])
+        nondef = len([p for p in pvals if p is None])
+        if nondef == total:
+            return "None of the selected tools provided a p-value for the relation between these two datasets"
+
+        if (strong + nondef == total) and strong >= 2:
+            return "There is a %sconsensus among the tools on concluding on a statistically significant association between the query and reference track" % (
+            'clear' if strong >= 3 else '')
+        if (accept + nondef == total) and accept >= 2:
+            return "There is a %sconsensus among the tools that there is <b>no</b> statistical support for an association between the query and reference track" % (
+            'clear' if strong >= 3 else '')
+
+        if total - nondef == 1:
+            return self._getOneConclusionPvalFormulation(accept, weak, strong)
+
+        if nondef > 0 and total - nondef == 1:
+            return "Only one of the selected tools provided a p-value, which suggests that: " + self._getOneConclusionPvalFormulation(accept, weak, strong)
+
+        if accept == 1 and weak == 0 and strong >= 3:
+            return "The majority of tools conclude on a statistically significant association between the query and reference track, but there is some disagreement between tools"
+        elif accept == 0 and weak == 1 and strong >= 3:
+            return "The majority of tools conclude on a statistically significant association between the query and reference track, but some at only weak levels of significance"
+        elif accept+weak>0 and strong > 0:
+            return "There is no clear consensus among tools regarding the presence of any statistically significant association between the query and reference track"
+
+        return None
+
+    def _getOneConclusionPvalFormulation(self, accept, weak, strong):
+        if strong == 1:
+            return 'The data indicate a statistically significant association between the query and reference track.'
+        if weak == 1:
+            return 'The data provide a weak indication (p-value between 0.01 and 0.05) for a statistically significant association between the query and reference track.'
+        if accept == 1:
+            return 'There is <b>no</b> statistical support for an association between the query and reference track.'
 
     def _generateOneVsManyResults(self):
         refTrackSet = self._trackCombResults.getSetOfAllRefTracks()
