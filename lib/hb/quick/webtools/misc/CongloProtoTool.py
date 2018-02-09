@@ -1486,9 +1486,9 @@ class CongloResultsGenerator:
         pvals = [res.pval for res in trackCombResults]
         methods = [res.methodName for res in trackCombResults]
         sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
-        sf.openRFigure()
-        r.plot_pvals(pvals, methods)
-        sf.closeRFigure()
+        #sf.openRFigure()
+        r.plot_pvals(pvals, methods,sf.getDiskPath(ensurePath=True))
+        #sf.closeRFigure()
         return sf.getLink('Pvalue-plot')
 
     def getSimplisticPvalIndication(self, trackCombResults):
@@ -1719,7 +1719,7 @@ R_PLOTTING_CODE = '''
 ## install.packages('ggthemes')
 ## input is a list of p-values and a list of corresponding tools/methods that produced the p-values.
 
-plot_pvals <- function(pvals_list,methods_list){
+plot_pvals <- function(pvals_list,methods_list,fn){
   library(ggplot2)
   library(ggthemes)
   pvals_list <- as.numeric(pvals_list)
@@ -1730,6 +1730,6 @@ plot_pvals <- function(pvals_list,methods_list){
   plot_data <- data.frame(pvals_list,methods_list)
   plot_object <- ggplot(data=plot_data,aes(x=methods_list,y=-log10(pvals_list)))
   final_plot <- plot_object+geom_bar(stat = 'identity',width=0.2)+coord_flip()+xlab('')+ylab('-log10(p-val)')+theme_minimal()
-  return(final_plot)
+  ggsave(filename=fn,plot=final_plot,dpi = 300)  
 }
 '''
