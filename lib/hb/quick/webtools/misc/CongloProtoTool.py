@@ -789,7 +789,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         # TODO: REMOVE
-        LOAD_PICKLES = False
+        LOAD_PICKLES = True
         print HtmlCore().begin(reloadTime=5)
         if LOAD_PICKLES:
             pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
@@ -1537,7 +1537,7 @@ class CongloResultsGenerator:
         refTrackSet = self._trackCombResults.getSetOfAllRefTracks()
         for refTrack in refTrackSet:
             resultsSubset = self._trackCombResults.getResultsForSpecifiedRefTrack(refTrack)
-            self._subPageStaticFiles[refTrack] = GalaxyRunSpecificFile(['oneVsOne',refTrack+'.html'],self._galaxyFn)
+            self._subPageStaticFiles[refTrack] = GalaxyRunSpecificFile(['oneVsOne'+'_'+refTrack+'.html'],self._galaxyFn)
             subPageHtml = HtmlCore()
             subPageHtml.begin()
             subPageHtml.append(self._generateOneVsOneResults(resultsSubset))
@@ -1568,6 +1568,8 @@ class CongloResultsGenerator:
         return core
 
     def createRankTable(self):
+        if len(self._trackCombResults)==0:
+            return ''
         someResult = self._trackCombResults[0]
         core = HtmlCore()
         core.header('Ranking of reference tracks')
@@ -1617,11 +1619,11 @@ class CongloResultsGenerator:
         core = HtmlCore()
         core.bigHeader(headerLine)
         if attribute == 'pval':
-            core.paragraph('The table below shows the reference tracks and their p-values (test statistic) of co-localization with query track, '
+            core.paragraph('The table below shows the reference tracks and their p-values for co-localization with query track, '
                            'obtained through each individual method/configuration chosen. The reference tracks are <b> not ordered </b> by any column. '
                            'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
         elif attribute == 'testStat':
-            core.paragraph('The table below shows the reference tracks and their co-localization enrichment (test statistic) obtained '
+            core.paragraph('The table below shows the reference tracks and their co-localization enrichment (effect size) obtained '
                            'through each individual method/configuration chosen. The reference tracks are <b> not ordered </b> by any column, '
                            'because the definition of test statistics varies in each individual tool and thus best not compared across tools. '
                            'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
@@ -1664,6 +1666,8 @@ class CongloResultsGenerator:
                 newTableDict = tableDict
             return core.tableFromDictionary(
                 newTableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
+        if len(trackCombResults)==0:
+            return ''
         someResult = trackCombResults[0]
         prettyTracks = someResult.getPrettyTrackNames()
         core = HtmlCore()
@@ -1675,7 +1679,7 @@ class CongloResultsGenerator:
         colNames = ['Method name'] + self._keysWithVariation + \
                    ['P-value','Co-localization enrichment', 'Detailed results']
         for j, res in enumerate(trackCombResults):
-            fullResultStaticFile = GalaxyRunSpecificFile(['details' + str(j) + '.html'], self._galaxyFn)
+            fullResultStaticFile = GalaxyRunSpecificFile([ '_'.join(['details', prettyTracks[1], str(j), '.html']) ], self._galaxyFn)
             fullResultStaticFile.writeTextToFile(res.fullResult)
             keyCols = (res.methodName,) + \
                       tuple([res.annotatedChoices.get(key) for key in
