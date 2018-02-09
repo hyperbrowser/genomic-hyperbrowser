@@ -814,9 +814,10 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
 
-        print '''<div id="progress"><a style="text-decoration:none;" href="#" onclick="$('progress').toggle()">'''
+        print HtmlCore.toggle('Toggle debug', styleId='progress', withDivider=True)
+        print '''<div id="progress">'''
         runAllMethodsInSequence(keptWmos)
-        print '''</a></div>'''
+        print '''</div>'''
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre><br>'
