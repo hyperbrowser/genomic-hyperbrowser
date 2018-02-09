@@ -790,7 +790,7 @@ class CongloProtoTool(GeneralGuiTool):
     def execute(cls, choices, galaxyFn=None, username=''):
         # TODO: REMOVE
         LOAD_PICKLES = False
-        print HtmlCore().begin()
+        print HtmlCore().begin(reloadTime=5)
         if LOAD_PICKLES:
             pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
             trackCombResults = load(open(pickleFn))
@@ -843,7 +843,7 @@ class CongloProtoTool(GeneralGuiTool):
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
         crg.outputResults()
 
-        print HtmlCore().end()
+        print HtmlCore().end(stopReload)
 
 
 
