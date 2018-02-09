@@ -188,11 +188,13 @@ class CongloProtoTool(GeneralGuiTool):
         # text += 'Simple mode with shared defaults runs the co-localization analysis tools with similar or same parameters/settings to allow comparison between the findings of the tools.'
         # text += '<br>'
 
+    HG19_CHR20 = 'Human chromosome 20 (hg19_chr20) [for testing]'
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
 
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls, prevChoices):  # Alt: getOptionsBox1()
-        return ['Human (hg19)', 'Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)', cls.CUSTOM_REFERENCE_GENOME]
+        return ['Human (hg19)', 'Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)',
+                cls.HG19_CHR20, cls.CUSTOM_REFERENCE_GENOME]
         # return '__genome__'
 
     @classmethod
@@ -703,6 +705,7 @@ class CongloProtoTool(GeneralGuiTool):
                             'hg38': cls._getCongloResourcePath('hg38.chrom.sizes'),
                             'mm9': cls._getCongloResourcePath('mm9.chrom.sizes'),
                             'mm10': cls._getCongloResourcePath('mm10.chrom.sizes'),
+                            'hg19_chr20': cls._getCongloResourcePath('hg19_chr20.chrom.sizes'),
                             }
         if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
             genomeName = 'Custom'
