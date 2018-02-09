@@ -1532,7 +1532,6 @@ class CongloResultsGenerator:
 
     def createTableOfExtractedResultAttribute(self, attribute, headerLine):
         assert attribute in ['pval', 'testStat']
-        print 'TEMP3: ', attribute
         tableDict = defaultdict(dict)
         for res in self._trackCombResults:
             trackName = res.trackCombination[1].split('/')[-1]
@@ -1545,8 +1544,6 @@ class CongloResultsGenerator:
 
         if len(tableDict) > 1:  # More than 1 ref track
             allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
-            print 'TEMP1: ', allWmoLabels
-            print 'TEMP2: ', tableDict
             if attribute=='testStat':
                 allWmoClasses = [globals()[label] for label in allWmoLabels]
                 allWmoDescr = [wmo.getTestStatDescr() for wmo in allWmoClasses]
