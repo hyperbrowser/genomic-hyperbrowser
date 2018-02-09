@@ -1584,7 +1584,7 @@ class CongloResultsGenerator:
         def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
             if isinstance(core, TextCore):
                 from third_party.mstripper import strip_tags
-                newTableDict = OrderedDict([(strip_tags(key), [strip_tags(v) for v in val])
+                newTableDict = OrderedDict([(key, [strip_tags(v) for v in val])
                                             for key, val in tableDict.iteritems()])
             else:
                 newTableDict = tableDict
