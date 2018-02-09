@@ -32,7 +32,7 @@ from quick.congloproto.HBCongloMethod import HyperBrowser
 
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
-ALL_METHOD_CLASSES = [GenometriCorr, StereoGene, Giggle, IntervalStats, LOLA, HyperBrowser]
+ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
 # [GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
 # debug3
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -1473,7 +1473,6 @@ class CongloResultsGenerator:
             #pass
             core.paragraph(str(self.plotPvals(trackCombResults)))
         except Exception as e:
-            raise #VERY TEMP
             if not CATCH_METHOD_EXCEPTIONS:
                 raise
             #core.smallHeader('Pval plotting error:')
@@ -1485,7 +1484,7 @@ class CongloResultsGenerator:
     def plotPvals(self, trackCombResults):
         from proto.RSetup import r
         r(R_PLOTTING_CODE)
-        pvals = [res.pval for res in trackCombResults]
+        pvals = [res.pval.numericResult for res in trackCombResults]
         methods = [res.methodName for res in trackCombResults]
         sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
         #sf.openRFigure()
