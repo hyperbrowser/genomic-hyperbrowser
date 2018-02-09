@@ -20,7 +20,7 @@ from conglomerate.tools.job import Job
 from conglomerate.methods.stereogene.stereogene import StereoGene
 from conglomerate.tools.runner import runAllMethodsInSequence
 from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
-from conglomerate.tools.constants import VERBOSE_RUNNING
+from conglomerate.tools.constants import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
 from conglomerate.methods.interface import InvalidSpecification
 from gold.gsuite.GSuite import GSuite
 from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL
@@ -789,10 +789,10 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         # TODO: REMOVE
-        LOAD_PICKLES = False
+        LOAD_PICKLES = True
         print HtmlCore().begin(reloadTime=5)
         if LOAD_PICKLES:
-            pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany.pickle'
+            pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany_v2.pickle'
             trackCombResults = load(open(pickleFn))
             if not type(trackCombResults)==TrackCombResultList:
                 trackCombResults = TrackCombResultList(trackCombResults)
@@ -917,6 +917,8 @@ class CongloProtoTool(GeneralGuiTool):
             methodName = wmo._methodCls.__name__  # TODO: Make public method
             return [TrackCombError(wmo.getErrorDetails(), methodName)]
         except:
+            if not CATCH_METHOD_EXCEPTIONS:
+                raise
             return []
 
     @classmethod
@@ -953,6 +955,8 @@ class CongloProtoTool(GeneralGuiTool):
                 results.append(TrackCombResult(testStat, pval, fullResult, trackCombination, methodName, annotatedChoices))
             return results
         except:
+            if not CATCH_METHOD_EXCEPTIONS:
+                raise
             return []
 
     # @classmethod
@@ -1465,10 +1469,13 @@ class CongloResultsGenerator:
         core = HtmlCore()
         core.append(str(self.createMainTable(trackCombResults)))
         try:
+            #pass
             core.paragraph(str(self.plotPvals(trackCombResults)))
         except Exception as e:
-            core.smallHeader('Pval plotting error:')
-            core.preformatted(e)
+            if not CATCH_METHOD_EXCEPTIONS:
+                raise
+            #core.smallHeader('Pval plotting error:')
+            #core.preformatted(e)
         core.paragraph(self.getSimplisticPvalIndication(trackCombResults))
         core.paragraph('Relevant FAQ: Why are the p-values of different methods different, when they are analysing the same research question?')
         return str(core)
