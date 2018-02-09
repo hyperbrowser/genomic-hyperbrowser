@@ -141,16 +141,13 @@ class CongloProtoTool(GeneralGuiTool):
 
         core = HtmlCore()
         core.bigHeader('coloc-stats')
-        core.smallHeader('.... a unified web interface to perform co-localization analysis of genomic features')
-        core.divider()
-        core.paragraph(
-            'Select datasets and parameter configurations to perform co-localization analysis using multiple published methods.')
+        core.smallHeader('- a unified web interface to perform co-localization analysis of genomic features')
         core.divider()
         core.paragraph(
             'Below is a unified interface to multiple previously published methods for statistical co-localization analysis. '
             'All the methods can be used to analyze a <b> query track </b> against either a single <b> reference track </b> or a <b> reference track collection </b>. '
             'Supported inputs are single datasets or collections of datasets. It can be run in a basic mode with default settings '
-            'or in an advanced mode that allows further customization. For each selection box, <b> click on the information button </b> for further explanation.')
+            'or in an advanced mode that allows further customization. <br><p></p> For each selection box, <b> click on the information button </b> for further explanation.')
         core.divider()
         link = str(HtmlCore().link('<b>Upload data</b>',
                    createGalaxyToolURL('upload1'),
@@ -1494,6 +1491,10 @@ class CongloResultsGenerator:
     def createDetailedResultsLinkTable(self):
         core = HtmlCore()
         core.header('Full results')
+        core.paragraph('The table below provides the full results for each reference track, '
+                       'obtained through all the methods/configurations chosen. '
+                       'Click on the reference track, which will redirect to a new page containing '
+                       'detailed results and visualizations.')
 
         core.tableHeader(['Detailed results per reference track'])
         for refTrack in self._trackCombResults.getSetOfAllRefTracks():
@@ -1507,10 +1508,11 @@ class CongloResultsGenerator:
         core = HtmlCore()
         core.header('Ranking of reference tracks')
         #by degree of co-localization according to each tool
-        core.paragraph('''Note: When multiple methods are used, reference tracks are ranked and sorted 
-        based on a consensus rank determined as a geometric mean of the individual ranks obtained through multiple methods. 
-        The table can also be sorted based on method-specific rankings to see the individual ranks. ''')
-        core.paragraph('Query track tested for co-localization: ' + someResult.trackCombination[0].split('/')[-1])
+        core.paragraph('''The table below shows the reference tracks ordered by the magnitude of their co-localization enrichment with the query track. 
+        Ranks are given to each reference track based on the co-localization enrichment determined by each individual tool/configuration chosen. 
+        A consensus rank is then obtained as a geometric mean of the individual ranks.The table can also be sorted based on method-specific rankings 
+        to see the individual ranks. The test statistic (co-localization enrichment), p-values, and full results of individual tools are shown further in the tables below.''')
+        core.paragraph('<b>Query track tested for co-localization:</b> ' + someResult.trackCombination[0].split('/')[-1])
         rankTableDict = defaultdict(dict)
         tsVals = [(res, res.testStat.numericResult) for res in self._trackCombResults]
 
@@ -1549,8 +1551,16 @@ class CongloResultsGenerator:
 
 
         core = HtmlCore()
-        core.header(headerLine)
-
+        core.bigHeader(headerLine)
+        if attribute == 'pval':
+            core.paragraph('The table below shows the reference tracks and their p-values (test statistic) of co-localization with query track, '
+                           'obtained through each individual method/configuration chosen. The reference tracks are <b> not ordered </b> by any column. '
+                           'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
+        elif attribute == 'testStat':
+            core.paragraph('The table below shows the reference tracks and their co-localization enrichment (test statistic) obtained '
+                           'through each individual method/configuration chosen. The reference tracks are <b> not ordered </b> by any column, '
+                           'because the definition of test statistics varies in each individual tool and thus best not compared across tools. '
+                           'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
         if len(tableDict) > 1:  # More than 1 ref track
             allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
             if attribute=='testStat':
