@@ -814,7 +814,7 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
 
-        print HtmlCore.toggle('Toggle debug', styleId='progress', withDivider=True)
+        print HtmlCore().toggle('Toggle debug', styleId='progress', withDivider=True)
         print '''<div id="progress">'''
         runAllMethodsInSequence(keptWmos)
         print '''</div>'''
