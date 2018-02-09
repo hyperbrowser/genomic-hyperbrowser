@@ -1473,6 +1473,7 @@ class CongloResultsGenerator:
             #pass
             core.paragraph(str(self.plotPvals(trackCombResults)))
         except Exception as e:
+            raise #VERY TEMP
             if not CATCH_METHOD_EXCEPTIONS:
                 raise
             #core.smallHeader('Pval plotting error:')
