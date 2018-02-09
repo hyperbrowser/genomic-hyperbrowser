@@ -121,7 +121,7 @@ class HyperBrowser(ManyVsManyMethod):
 
         if galaxyFn:
             from gold.result.ResultsViewer import ResultsViewerCollection
-            resColl = ResultsViewerCollection(self._results.keys(), galaxyFn)
+            resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
             for trackTuple, result in self._results.iteritems():
                 fullResult[trackTuple] = str(resColl)
         else:
