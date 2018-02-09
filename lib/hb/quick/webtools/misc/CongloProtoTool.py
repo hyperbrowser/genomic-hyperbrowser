@@ -23,8 +23,7 @@ from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMea
 from conglomerate.tools.constants import VERBOSE_RUNNING
 from conglomerate.methods.interface import InvalidSpecification
 from gold.gsuite.GSuite import GSuite
-from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL
-from proto.TextCore import TextCore
+from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -165,8 +164,7 @@ class CongloProtoTool(GeneralGuiTool):
         core.divBegin(divClass='infomessagesmall')
         link = str(HtmlCore().link(
             'Import sample data to Galaxy history',
-            # createGalaxyToolURL('hb_conglo_import_sample_files_tool', runtool_btn='yes')
-            createToolURL('hb_conglo_import_sample_files_tool'))
+            createGalaxyToolURL('hb_conglo_import_sample_files_tool', runtool_btn='yes'))
         )
         core.paragraph('For demonstration purposes, you can import sample data for use in this '
                        'tool here: ' + link)
@@ -805,8 +803,8 @@ class CongloProtoTool(GeneralGuiTool):
         print '<h1>Result page for coloc-stats analysis</h1>'
 
         print HtmlCore().toggle('Show/Hide progress', styleId='progress', withDivider=True)
-        print '''<div id="progress" style="display: block; background-color: lightgray; border-style: ridge; padding: 8px;">'''
-        print 'Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)<br>'
+        print HtmlCore().divBegin(divId="progress", style="display: block; background-color: lightgray; border-style: ridge; padding: 8px;")
+        print HtmlCore.paragraph('Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)')
         if VERBOSE_RUNNING:
             print '<pre>'
         workingMethodObjects = cls.getWorkingMethodObjects(choices)
@@ -819,7 +817,7 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
         runAllMethodsInSequence(keptWmos)
-        print '''</div>'''
+        print HtmlCore.divEnd()
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre><br>'
@@ -843,7 +841,7 @@ class CongloProtoTool(GeneralGuiTool):
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
         crg.outputResults()
 
-        print HtmlCore().end(stopReload)
+        print HtmlCore().end(stopReload=True)
 
 
 
@@ -1582,14 +1580,8 @@ class CongloResultsGenerator:
     def createMainTable(self, trackCombResults):
 
         def _produceTable(core, tableDict=None, columnNames=None, tableId=None, **kwArgs):
-            if isinstance(core, TextCore):
-                from third_party.mstripper import strip_tags
-                newTableDict = OrderedDict([(strip_tags(key), [strip_tags(v) for v in val])
-                                            for key, val in tableDict.iteritems()])
-            else:
-                newTableDict = tableDict
             return core.tableFromDictionary(
-                newTableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
+                tableDict, columnNames=columnNames, tableId=tableId, addInstruction=True, **kwArgs)
         someResult = trackCombResults[0]
         prettyTracks = someResult.getPrettyTrackNames()
         core = HtmlCore()
@@ -1621,10 +1613,10 @@ class CongloResultsGenerator:
         return core
 
 
-# def runResultOutputFromPickle(): #TODO: Temporary
-#     pickleFn = '/Users/sandve/Downloads/trackComb.pickle'
-#     trackCombResults = load(open(pickleFn))
-#     CongloProtoTool.outputResults(trackCombResults, None, [], '/software/galaxy/personal/geirksa/galaxy_dev/database/files/000/dataset_886.dat')
+def runResultOutputFromPickle(): #TODO: Temporary
+    pickleFn = '/Users/sandve/Downloads/trackComb.pickle'
+    trackCombResults = load(open(pickleFn))
+    CongloProtoTool.outputResults(trackCombResults, None, [], '/software/galaxy/personal/geirksa/galaxy_dev/database/files/000/dataset_886.dat')
 
 #runResultOutputFromPickle()
 
