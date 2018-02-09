@@ -1490,7 +1490,9 @@ class CongloResultsGenerator:
         #sf.openRFigure()
         r.plot_pvals(pvals, methods,sf.getDiskPath(ensurePath=True))
         #sf.closeRFigure()
-        return sf.getLink('Pvalue-plot')
+
+        return str(HtmlCore().image(os.path.basename(sf.getDiskPath())))
+        #return sf.getLink('Pvalue-plot')
 
     def getSimplisticPvalIndication(self, trackCombResults):
         intro = '<b>Simplistic indication: </b>'
