@@ -77,11 +77,11 @@ class CongloImportSampleFilesTool(GeneralGuiTool):
     # @classmethod
     # def getSubToolClasses(cls):
     #     return None
-    #
-    # @classmethod
-    # def isPublic(cls):
-    #     return False
-    #
+
+    @classmethod
+    def isPublic(cls):
+        return True
+
     # @classmethod
     # def isRedirectTool(cls):
     #     return False
