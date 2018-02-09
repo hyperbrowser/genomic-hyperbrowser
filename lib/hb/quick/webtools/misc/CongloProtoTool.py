@@ -819,7 +819,7 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
         runAllMethodsInSequence(keptWmos)
-        print HtmlCore.divEnd()
+        print HtmlCore().divEnd()
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
             print '</pre><br>'
