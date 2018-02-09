@@ -2,8 +2,8 @@
 <toolbox monitor="true">
 
 
-  <label text="coloc-stats tools" id="ch_tools" />
-  <section name="coloc-stats" id="my_tools">
+
+  <section name="coloc-stats tools" id="my_tools">
     <tool file="proto/hyperbrowser/misc/CongloProtoTool.xml" />
     <tool file="proto/hyperbrowser/misc/CongloImportSampleFilesTool.xml" />
   </section>
