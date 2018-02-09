@@ -789,17 +789,17 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         # TODO: REMOVE
-        LOAD_PICKLES = True
-        print HtmlCore().begin(reloadTime=5)
-        if LOAD_PICKLES:
-            pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany_v2.pickle'
-            trackCombResults = load(open(pickleFn))
-            if not type(trackCombResults)==TrackCombResultList:
-                trackCombResults = TrackCombResultList(trackCombResults)
-            #CongloProtoTool.outputResults(trackCombResults, [], None, [],galaxyFn)
-            crg = CongloResultsGenerator(trackCombResults, [], [],galaxyFn)
-            crg.outputResults()
-            return
+        # LOAD_PICKLES = True
+        # print HtmlCore().begin(reloadTime=5)
+        # if LOAD_PICKLES:
+        #     pickleFn = '/hyperbrowser/staticFiles/div/trackComb_oneMany_v2.pickle'
+        #     trackCombResults = load(open(pickleFn))
+        #     if not type(trackCombResults)==TrackCombResultList:
+        #         trackCombResults = TrackCombResultList(trackCombResults)
+        #     #CongloProtoTool.outputResults(trackCombResults, [], None, [],galaxyFn)
+        #     crg = CongloResultsGenerator(trackCombResults, [], [],galaxyFn)
+        #     crg.outputResults()
+        #     return
         # TODO: /REMOVE
 
         print '<h1>Result page for coloc-stats analysis</h1>'
@@ -832,10 +832,10 @@ class CongloProtoTool(GeneralGuiTool):
         trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
 
         # TODO: REMOVE
-        sf = GalaxyRunSpecificFile(['trackComb.pickle'], galaxyFn)
-        path = sf.getDiskPath(ensurePath=True)
-        dump(trackCombResults, open(path, 'w'))
-        print sf.getLink('Pickles')
+        # sf = GalaxyRunSpecificFile(['trackComb.pickle'], galaxyFn)
+        # path = sf.getDiskPath(ensurePath=True)
+        # dump(trackCombResults, open(path, 'w'))
+        # print sf.getLink('Pickles')
         # TODO: /REMOVE
 
         print '''Your analysis has been completed and your results are available below.
