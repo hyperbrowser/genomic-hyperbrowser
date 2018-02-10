@@ -373,7 +373,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
         if prevChoices.analysisType == cls.REFERENCE_TRACKS:
-            return [cls.CORE_DATABASE, cls.CUSTOM_DATABASE]
+            return [cls.CUSTOM_DATABASE, cls.CORE_DATABASE]
 
     @classmethod
     def getInfoForOptionsBoxTypeOfReferenceTrackCollection(cls, prevChoices):
@@ -1528,10 +1528,14 @@ class CongloResultsGenerator:
         if nondef > 0 and total - nondef == 1:
             return "Only one of the selected tools provided a p-value, which suggests that: " + self._getOneConclusionPvalFormulation(accept, weak, strong)
 
+        if accept == 0 and strong == 0 and weak>=2:
+            return "There is a consensus among tools of a weak indication of an association between the query and reference track"
         if accept == 1 and weak == 0 and strong >= 3:
             return "The majority of tools conclude on a statistically significant association between the query and reference track, but there is some disagreement between tools"
         elif accept == 0 and weak == 1 and strong >= 3:
             return "The majority of tools conclude on a statistically significant association between the query and reference track, but some at only weak levels of significance"
+        elif accept == 0 and weak > 0 and strong > 0:
+            return "All tools provide some indication of statistically significant association between the query and reference track, but with a mix of strong and weak levels of significance"
         elif accept+weak>0 and strong > 0:
             return "There is no clear consensus among tools regarding the presence of any statistically significant association between the query and reference track"
 
