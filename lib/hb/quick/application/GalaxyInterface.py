@@ -922,17 +922,23 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         print core
 
         #print runDescription
-        core = HtmlCore()
-        core.styleInfoBegin(styleId='run_description', styleClass='infomessagesmall rundescription')
-        core.line(runDescription)
-        core.styleInfoEnd()
-        runDescriptionBox = str(core)
+        runDescriptionBox = GalaxyInterface.getRunDescriptionBox(runDescription)
 
         res.setRunDescription(runDescriptionBox)
 
         GalaxyInterface._viewResults([res], galaxyFn)
 
-#        adj._endProgress()
+    @staticmethod
+    def getRunDescriptionBox(runDescription):
+        core = HtmlCore()
+        core.styleInfoBegin(styleId='run_description',
+                            styleClass='infomessagesmall rundescription')
+        core.line(runDescription)
+        core.styleInfoEnd()
+        runDescriptionBox = str(core)
+        return runDescriptionBox
+
+    #        adj._endProgress()
 
     @classmethod
     def runManual(cls, trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn=None, trackNameIntensity=None, username='', \
@@ -1752,8 +1758,9 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     @runtimeLogging
-    def getRunDescription(trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, \
-                          username='', trackNameIntensity=None, galaxyFn=None, showRandomSeed=False):
+    def getRunDescription(trackName1, trackName2, analysisDef, regSpec, binSpec,
+                          genome=DEFAULT_GENOME, username='', trackNameIntensity=None,
+                          galaxyFn=None, showRandomSeed=False, showBatchLine=True):
         #logMessage('getRunDescription: ' + regSpec + ' ' + binSpec + ' ' + analysisDef)
         #assert username != None
 
@@ -1778,20 +1785,21 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         else:
             manualSeed = None
 
-        try:
-            #if GalaxyInterface.userHasFullAccess(username):
-            revEngBatchLine = GalaxyInterface._revEngBatchLine(trackName1, trackName2, trackNameIntensity, \
-                                                               analysisDef, regSpec, binSpec, genome, \
-                                                               manualSeed=manualSeed)
-            if galaxyFn is not None:
-                batchLineStaticFile = GalaxyRunSpecificFile(['batchlines.txt'], galaxyFn).writeTextToFile(revEngBatchLine)
-            #else:
-                #revEngBatchLine = None
-        except Exception, e:
-            logException(e, message='Error in _revEngBatchLine')
-            revEngBatchLine = None
-        except:
-            revEngBatchLine = None
+        if showBatchLine:
+            try:
+                #if GalaxyInterface.userHasFullAccess(username):
+                revEngBatchLine = GalaxyInterface._revEngBatchLine(trackName1, trackName2, trackNameIntensity, \
+                                                                   analysisDef, regSpec, binSpec, genome, \
+                                                                   manualSeed=manualSeed)
+                if galaxyFn is not None:
+                    batchLineStaticFile = GalaxyRunSpecificFile(['batchlines.txt'], galaxyFn).writeTextToFile(revEngBatchLine)
+                #else:
+                    #revEngBatchLine = None
+            except Exception, e:
+                logException(e, message='Error in _revEngBatchLine')
+                revEngBatchLine = None
+            except:
+                revEngBatchLine = None
 
         realPreProc = False
         trackName1, trackName2, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackName1, trackName2, analysisDef)
