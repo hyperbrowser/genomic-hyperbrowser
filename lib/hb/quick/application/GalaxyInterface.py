@@ -2094,7 +2094,7 @@ setTimeout("if (!done) check_job();", 3000);
         core.script('done = true;')
         core.hideToggle(styleClass='debug')
         core.hideToggle(styleClass='explanation')
-        core.hideToggle(styleId='run_description')
+        core.hideToggle(styleClass='rundescription')
         core.end()
         return str(core)
 
