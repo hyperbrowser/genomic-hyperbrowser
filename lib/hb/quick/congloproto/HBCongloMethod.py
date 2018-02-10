@@ -13,7 +13,7 @@ from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.StatFacades import TpRawOverlapStat
 
 
-AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks'])
+AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome'])
 
 class HyperBrowser(ManyVsManyMethod):
 
@@ -47,7 +47,8 @@ class HyperBrowser(ManyVsManyMethod):
                 rTrack = self._processTrack(refTrack)
                 self._analyses[(queryTrack, refTrack)] = AnalysisObject(self._getAnalysisSpec(),
                                                                         self._binSource,
-                                                                        [qTrack, rTrack])
+                                                                        [qTrack, rTrack],
+                                                                        self._genome)
         return [HBJob(self._analyses)]
 
 
@@ -232,7 +233,7 @@ class HBJob(Job):
             runDescription = GalaxyInterface.getRunDescription(
                 analysisObj.tracks[0], analysisObj.tracks[1],
                 analysisObj.analysisSpec.getDef(),
-                self._genome, '*', self._genome)
+                analysisObj.genome, '*', analysisObj.genome)
             result.setRunDescription(runDescription)
             results[key] = result
         return results
