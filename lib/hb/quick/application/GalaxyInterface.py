@@ -1798,8 +1798,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             except Exception, e:
                 logException(e, message='Error in _revEngBatchLine')
                 revEngBatchLine = None
-            except:
-                revEngBatchLine = None
+        else:
+            revEngBatchLine = None
 
         realPreProc = False
         trackName1, trackName2, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackName1, trackName2, analysisDef)
