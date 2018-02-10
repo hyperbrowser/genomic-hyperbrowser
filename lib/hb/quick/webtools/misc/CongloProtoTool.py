@@ -101,8 +101,7 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Handle confounding features ? ', 'confounding'),
                 ('Method of choice to handle confounding features : ', 'confounderHandler'),
                 ('Runtime mode : ', 'runtimeMode'),
-                ('Compatible methods : ', 'compatibleMethods'),
-                ('Import sample data to the history', 'importSampleData')
+                ('Compatible methods : ', 'compatibleMethods')
                 ]
 
     # @classmethod
