@@ -135,7 +135,7 @@ class HyperBrowser(ManyVsManyMethod):
         from quick.application.GalaxyInterface import GalaxyInterface
 
         resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
-        resultPage = GalaxyInterface.getHtmlBeginForRuns()
+        resultPage = GalaxyInterface.getHtmlBeginForRuns(galaxyFn)
         resultPage += str(resColl)
         resultPage += GalaxyInterface.getHtmlEndForRuns()
 
