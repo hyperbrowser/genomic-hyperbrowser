@@ -1488,10 +1488,11 @@ class CongloResultsGenerator:
         methods = [res.methodName for res in trackCombResults]
         sf = GalaxyRunSpecificFile(['pvalPlot.png'],self._galaxyFn)
         #sf.openRFigure()
-        r.plot_pvals(pvals, methods,sf.getDiskPath(ensurePath=True))
+        rpvals = r.unlist(pvals)
+        r.plot_pvals(rpvals, methods,sf.getDiskPath(ensurePath=True))
         #sf.closeRFigure()
 
-        return str(HtmlCore().image(os.path.basename(sf.getDiskPath()),style='height:250px;width:auto'))
+        return str(HtmlCore().image(os.path.basename(sf.getDiskPath()),style='height:400px;width:auto'))
         #return sf.getLink('Pvalue-plot')
 
     def getSimplisticPvalIndication(self, trackCombResults):
