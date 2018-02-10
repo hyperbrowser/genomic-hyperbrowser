@@ -132,12 +132,13 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _generateResultPage(self, galaxyFn):
         from gold.result.ResultsViewer import ResultsViewerCollection
+        from quick.application.GalaxyInterface import GalaxyInterface
+
         resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
-        core = HtmlCore()
-        core.begin()
-        core.append(str(resColl))
-        core.end()
-        resultPage = str(core)
+        resultPage = GalaxyInterface.getHtmlBeginForRuns()
+        resultPage += str(resColl)
+        resultPage += GalaxyInterface.getHtmlEndForRuns()
+
         return resultPage
 
     def preserveClumping(self, preserve):
