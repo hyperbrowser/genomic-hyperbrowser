@@ -8,6 +8,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.track.Track import Track
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.StatFacades import TpRawOverlapStat
 
@@ -45,8 +46,8 @@ class HyperBrowser(ManyVsManyMethod):
             for refTrack in self._refTracks:
                 rTrack = self._processTrack(refTrack)
                 self._analyses[(queryTrack, refTrack)] = AnalysisObject(self._getAnalysisSpec(),
-                                                                                    self._binSource,
-                                                                                    [qTrack, rTrack])
+                                                                        self._binSource,
+                                                                        [qTrack, rTrack])
         return [HBJob(self._analyses)]
 
 
@@ -132,10 +133,10 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _generateResultPage(self, galaxyFn):
         from gold.result.ResultsViewer import ResultsViewerCollection
-        from quick.application.GalaxyInterface import GalaxyInterface
 
         resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
         resultPage = GalaxyInterface.getHtmlBeginForRuns(galaxyFn)
+        resultPage += GalaxyInterface.getHtmlForToggles(False)
         resultPage += str(resColl)
         resultPage += GalaxyInterface.getHtmlEndForRuns()
 
@@ -143,9 +144,14 @@ class HyperBrowser(ManyVsManyMethod):
 
     def preserveClumping(self, preserve):
         if preserve:
-            self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
+            self._randomizationAssumption = \
+                'PermutedSegsAndIntersegsTrack_:' \
+                'Preserve segments (T2), segment lengths and inter-segment gaps (T1); ' \
+                'randomize positions (T1) (MC)'
         else:
-            self._randomizationAssumption = 'PermutedSegsAndSampledIntersegsTrack_'
+            self._randomizationAssumption = \
+                'PermutedSegsAndSampledIntersegsTrack_:' \
+                'Preserve segments (T2) and segment lengths (T1); randomize positions (T1) (MC)'
 
     def setRestrictedAnalysisUniverse(self, restrictedAnalysisUniverse):
         assert restrictedAnalysisUniverse is None, restrictedAnalysisUniverse
@@ -185,26 +191,26 @@ class HyperBrowser(ManyVsManyMethod):
         analysisSpec.addParameter('tail', 'more')
         return analysisSpec
 
-    def _getTrackFromFilename(self, filePath):
-        import os
-        import shutil
-        from gold.util.CommonFunctions import convertTNstrToTNListFormat
-        relFilePath = os.path.relpath(filePath)
-        trackName = ':'.join(os.path.normpath(relFilePath).split(os.sep))
-        # trackName = _convertTrackName(trackName)
-        convertedTrackName = convertTNstrToTNListFormat(trackName, doUnquoting=True)
-
-        from gold.util.CommonFunctions import createOrigPath, ensurePathExists
-        origFn = createOrigPath(self._genome, convertedTrackName, os.path.basename(filePath))
-        if os.path.exists(origFn):
-            shutil.rmtree(os.path.dirname(origFn))
-        ensurePathExists(origFn)
-        shutil.copy(filePath, origFn)
-        os.chmod(origFn, 0664)
-
-        from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
-        PreProcessAllTracksJob(self._genome, convertedTrackName).process()
-        return Track(convertedTrackName, trackTitle=trackName.split(":")[-1])
+    # def _getTrackFromFilename(self, filePath):
+    #     import os
+    #     import shutil
+    #     from gold.util.CommonFunctions import convertTNstrToTNListFormat
+    #     relFilePath = os.path.relpath(filePath)
+    #     trackName = ':'.join(os.path.normpath(relFilePath).split(os.sep))
+    #     # trackName = _convertTrackName(trackName)
+    #     convertedTrackName = convertTNstrToTNListFormat(trackName, doUnquoting=True)
+    #
+    #     from gold.util.CommonFunctions import createOrigPath, ensurePathExists
+    #     origFn = createOrigPath(self._genome, convertedTrackName, os.path.basename(filePath))
+    #     if os.path.exists(origFn):
+    #         shutil.rmtree(os.path.dirname(origFn))
+    #     ensurePathExists(origFn)
+    #     shutil.copy(filePath, origFn)
+    #     os.chmod(origFn, 0664)
+    #
+    #     from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
+    #     PreProcessAllTracksJob(self._genome, convertedTrackName).process()
+    #     return Track(convertedTrackName, trackTitle=trackName.split(":")[-1])
 
     def _processTrack(self, trackFn):
         from os.path import splitext, basename
@@ -222,5 +228,11 @@ class HBJob(Job):
     def run(self):
         results = OrderedDict()
         for key, analysisObj in self._analyses.iteritems():
-            results[key] = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
+            result = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
+            runDescription = GalaxyInterface.getRunDescription(
+                analysisObj.tracks[0], analysisObj.tracks[1],
+                analysisObj.analysisSpec.getDef(),
+                self._genome, '*', self._genome)
+            result.setRunDescription(runDescription)
+            results[key] = result
         return results
