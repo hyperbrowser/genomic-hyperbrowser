@@ -149,10 +149,15 @@ class CongloProtoTool(GeneralGuiTool):
             'Supported inputs are single datasets or collections of datasets. It can be run in a basic mode with default settings '
             'or in an advanced mode that allows further customization. <br><p></p> For each selection box, <b> click on the information button </b> for further explanation.')
         core.divider()
-        link = str(HtmlCore().link('<b>Upload data</b>',
+        core.fieldsetBegin("Get data")
+        linkUpload = str(HtmlCore().link('<span style="color: maroon;"><b>Upload data</b></span>',
                    createGalaxyToolURL('upload1'),
                    args='onclick="{}"'.format(getGalaxyUploadLinkOnclick())))
-        core.paragraph('If you have not uploaded data already, do it here:  ' + link)
+        linkImport = str(HtmlCore().link('<span style="color: maroon;"><b>Import sample data</b></span>',
+                   createGalaxyToolURL('hb_conglo_import_sample_files_tool'),
+                   args='onclick="{}"'.format(getGalaxyUploadLinkOnclick())))
+        core.paragraph('If you have not uploaded data already, you can %s or %s'%(linkUpload, linkImport))
+        core.fieldsetEnd()
         return '__rawstr__', str(core)
 
 
