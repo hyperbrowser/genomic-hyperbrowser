@@ -137,7 +137,7 @@ class HyperBrowser(ManyVsManyMethod):
 
         resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
         resultPage = GalaxyInterface.getHtmlBeginForRuns(galaxyFn)
-        resultPage += GalaxyInterface.getHtmlForToggles(False)
+        resultPage += GalaxyInterface.getHtmlForToggles(withRunDescription=True)
         resultPage += str(resColl)
         resultPage += GalaxyInterface.getHtmlEndForRuns()
 
@@ -233,7 +233,7 @@ class HBJob(Job):
             runDescription = GalaxyInterface.getRunDescription(
                 analysisObj.tracks[0].trackName, analysisObj.tracks[1].trackName,
                 analysisObj.analysisSpec.getDef(),
-                analysisObj.genome, '*', analysisObj.genome)
+                analysisObj.genome + ':*', '*', analysisObj.genome)
             result.setRunDescription(runDescription)
             results[key] = result
         return results
