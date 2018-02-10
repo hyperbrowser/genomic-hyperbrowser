@@ -1,0 +1,20 @@
+##location: local
+##file format: primary
+##track type: unknown
+##genome: hg19_chr20
+###uri	title
+galaxy:/4d4dfa2e1ca8f430/1_TssA.bed	1 Active TSS
+galaxy:/4d4dfa2e1ca8f430/2_TssAFlnk.bed	2 Flanking Active TSS
+galaxy:/4d4dfa2e1ca8f430/3_TxFlnk.bed	3 Transcr. at gene 5' and 3'
+galaxy:/4d4dfa2e1ca8f430/4_Tx.bed	4 Strong transcription
+galaxy:/4d4dfa2e1ca8f430/5_TxWk.bed	5 Weak transcription
+galaxy:/4d4dfa2e1ca8f430/6_EnhG.bed	6 Genic enhancers
+galaxy:/4d4dfa2e1ca8f430/7_Enh.bed	7 Enhancers
+galaxy:/4d4dfa2e1ca8f430/8_ZNF/Rpts.bed	8 ZNF genes & repeats
+galaxy:/4d4dfa2e1ca8f430/9_Het.bed	9 Heterochromatin
+galaxy:/4d4dfa2e1ca8f430/10_TssBiv.bed	10 Bivalent/Poised TSS
+galaxy:/4d4dfa2e1ca8f430/11_BivFlnk.bed	11 Flanking Bivalent TSS/Enh
+galaxy:/4d4dfa2e1ca8f430/12_EnhBiv.bed	12 Bivalent Enhancer
+galaxy:/4d4dfa2e1ca8f430/13_ReprPC.bed	13 Repressed PolyComb
+galaxy:/4d4dfa2e1ca8f430/14_ReprPCWk.bed	14 Weak Repressed PolyComb
+galaxy:/4d4dfa2e1ca8f430/15_Quies.bed	15 Quiescent/Low
