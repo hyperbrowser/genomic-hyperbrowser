@@ -6,6 +6,7 @@ from conglomerate.tools.SingleResultValue import SingleResultValue
 from conglomerate.tools.job import Job
 from gold.application.HBAPI import doAnalysis
 from gold.track.Track import Track
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.UserBinSource import GlobalBinSource
 from quick.statistic.StatFacades import TpRawOverlapStat
@@ -120,15 +121,24 @@ class HyperBrowser(ManyVsManyMethod):
         fullResult = OrderedDict()
 
         if galaxyFn:
-            from gold.result.ResultsViewer import ResultsViewerCollection
-            resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
+            resultPage = self._generateResultPage(galaxyFn)
             for trackTuple, result in self._results.iteritems():
-                fullResult[trackTuple] = str(resColl)
+                fullResult[trackTuple] = resultPage
         else:
             for trackTuple, result in self._results.iteritems():
                 fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
                              "\t" + str(result.getGlobalResult()['P-value']) + " <br>" + linesep
         return self.getRemappedResultDict(fullResult)
+
+    def _generateResultPage(self, galaxyFn):
+        from gold.result.ResultsViewer import ResultsViewerCollection
+        resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
+        core = HtmlCore()
+        core.begin()
+        core.append(str(resColl))
+        core.end()
+        resultPage = str(core)
+        return resultPage
 
     def preserveClumping(self, preserve):
         if preserve:
@@ -197,10 +207,10 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _processTrack(self, trackFn):
         from os.path import splitext, basename
-        return Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome,
-                                                                    ['galaxy', 'bed', trackFn, 'dummy'],
-								    printErrors=False, printProgress=False),
-                                                                    splitext(basename(trackFn)))
+        return Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN
+                     (self._genome, ['galaxy', 'bed', trackFn, basename(trackFn)],
+                      printErrors=False, printProgress=False),
+                     splitext(basename(trackFn)))
 
 
 class HBJob(Job):
