@@ -24,7 +24,8 @@ class HyperBrowser(ManyVsManyMethod):
         self._refTracks = None
         self._allowOverlaps = False
         self._colocStatistic = "TpRawOverlapStat"
-        self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
+        # self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
+        self.preserveClumping(True)
         self._analyses = OrderedDict()
         self._results = None
         self._params = "Conglo Params not supported in HyperBrowser"
