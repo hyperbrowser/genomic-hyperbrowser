@@ -231,7 +231,7 @@ class HBJob(Job):
         for key, analysisObj in self._analyses.iteritems():
             result = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
             runDescription = GalaxyInterface.getRunDescription(
-                analysisObj.tracks[0], analysisObj.tracks[1],
+                analysisObj.tracks[0].trackName, analysisObj.tracks[1].trackName,
                 analysisObj.analysisSpec.getDef(),
                 analysisObj.genome, '*', analysisObj.genome)
             result.setRunDescription(runDescription)
