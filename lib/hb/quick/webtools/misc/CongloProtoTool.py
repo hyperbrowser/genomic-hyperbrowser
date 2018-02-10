@@ -154,8 +154,7 @@ class CongloProtoTool(GeneralGuiTool):
                    createGalaxyToolURL('upload1'),
                    args='onclick="{}"'.format(getGalaxyUploadLinkOnclick())))
         linkImport = str(HtmlCore().link('<span style="color: maroon;"><b>Import sample data</b></span>',
-                   createGalaxyToolURL('hb_conglo_import_sample_files_tool'),
-                   args='onclick="{}"'.format(getGalaxyUploadLinkOnclick())))
+                   createGalaxyToolURL('hb_conglo_import_sample_files_tool')))
         core.paragraph('If you have not uploaded data already, you can %s or %s'%(linkUpload, linkImport))
         core.fieldsetEnd()
         return '__rawstr__', str(core)
