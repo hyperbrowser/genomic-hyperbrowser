@@ -190,6 +190,15 @@ class HyperBrowser(ManyVsManyMethod):
         analysisSpec.addParameter('assumptions', self._randomizationAssumption)
         analysisSpec.addParameter('rawStatistic', self._colocStatistic)
         analysisSpec.addParameter('tail', 'more')
+        analysisSpec.addParameter('H0:_', 'The segments of track 1 are located independently '
+                                          'of the segments of track 2 with respect to overlap')
+        analysisSpec.addParameter('H1_more:_', 'The segments of track 1 tend to overlap the '
+                                               'segments of track 2')
+        analysisSpec.addParameter('H1_less:_', 'The segments of track 1 tend to avoid overlapping '
+                                               'the segments of track 2')
+        analysisSpec.addParameter('H1_different:_', 'The locations of the segments of track 1 '
+                                                    'are dependent on the locations of the '
+                                                    'segments of track 2 with respect to overlap')
         return analysisSpec
 
     # def _getTrackFromFilename(self, filePath):
