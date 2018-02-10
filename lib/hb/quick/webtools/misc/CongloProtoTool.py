@@ -154,25 +154,10 @@ class CongloProtoTool(GeneralGuiTool):
                    createGalaxyToolURL('upload1'),
                    args='onclick="{}"'.format(getGalaxyUploadLinkOnclick())))
         linkImport = str(HtmlCore().link('<span style="color: maroon;"><b>Import sample data</b></span>',
-                   createGalaxyToolURL('hb_conglo_import_sample_files_tool')))
+                   createToolURL('hb_conglo_import_sample_files_tool')))
         core.paragraph('If you have not uploaded data already, you can %s or %s'%(linkUpload, linkImport))
         core.fieldsetEnd()
         return '__rawstr__', str(core)
-
-
-    @classmethod
-    def getOptionsBoxImportSampleData(cls, prevChoices):
-        core = HtmlCore()
-        core.divBegin(divClass='infomessagesmall')
-        link = str(HtmlCore().link(
-            'Import sample data to Galaxy history',
-            # createGalaxyToolURL('hb_conglo_import_sample_files_tool', runtool_btn='yes')
-            createToolURL('hb_conglo_import_sample_files_tool'))
-        )
-        core.paragraph('For demonstration purposes, you can import sample data for use in this '
-                       'tool here: ' + link)
-        core.divEnd()
-        return '__rawStr__', str(core)
 
     ADVANCED = 'Advanced mode: unified selection of specific parameters'
     SIMPLE_WITH_SHARED_DEFAULTS = 'Simple mode: based on shared parameter settings'
