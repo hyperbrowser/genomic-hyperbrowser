@@ -72,6 +72,8 @@ class CongloProtoTool(GeneralGuiTool):
         """
         return [("", 'toolDescTop'),
                 ('Running mode: ', 'selectRunningMode'),
+                ("", 'divider'),
+                ("", 'toolDescMiddle'),
                 ('Reference genome: ', 'selectReferenceGenome'),
                 ('Upload your own genome chromosome lengths file', 'missingGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
@@ -136,12 +138,24 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxToolDescTop(cls):
-        from proto.hyperbrowser.HtmlCore import HtmlCore
-
         core = HtmlCore()
         core.bigHeader('coloc-stats')
         core.smallHeader('- a unified web interface to perform co-localization analysis of genomic features')
         core.divider()
+        return '__rawStr__', str(core)
+
+    @classmethod
+    def getOptionsBoxDivider(cls, prevChoices):
+        core = HtmlCore()
+        core.divider()
+        return '__rawStr__', str(core)
+
+    @classmethod
+    def getOptionsBoxToolDescMiddle(cls, prevChoices):
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return
+
+        core = HtmlCore()
         core.paragraph(
             'Below is a unified interface to multiple previously published methods for statistical co-localization analysis. '
             'All the methods can be used to analyze a <b> query track </b> against either a single <b> reference track </b> or a <b> reference track collection </b>. '
