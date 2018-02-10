@@ -2074,7 +2074,7 @@ setTimeout("if (!done) check_job();", 3000);
             innerCore.styleInfoBegin(style='text-align:right')
 
             innerCore.styleInfoBegin(styleClass='run_description_link', inline=True)
-            innerCore.toggle('Inspect parameters of the analysis', styleId='run_description', otherAnchor='debug')
+            innerCore.toggle('Inspect parameters of the analysis', styleClass='rundescription', otherAnchor='debug')
             innerCore.styleInfoEnd(inline=True)
 
             innerCore.toggle('Toggle debug', styleClass='debug', withDivider=True)
