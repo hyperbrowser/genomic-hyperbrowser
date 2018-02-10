@@ -1,5 +1,7 @@
-from collections import OrderedDict, namedtuple
+import sys
+import os
 
+from collections import OrderedDict, namedtuple
 from conglomerate.methods.interface import ColocMeasureOverlap
 from conglomerate.methods.method import ManyVsManyMethod
 from conglomerate.tools.SingleResultValue import SingleResultValue
@@ -225,10 +227,14 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _processTrack(self, trackFn):
         from os.path import splitext, basename
-        return Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN
-                     (self._genome, ['galaxy', 'bed', trackFn, basename(trackFn)],
-                      printErrors=False, printProgress=False),
-                     splitext(basename(trackFn)))
+        storedStdOut = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+        track = Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN
+                      (self._genome, ['galaxy', 'bed', trackFn, basename(trackFn)],
+                       printErrors=False, printProgress=False),
+                      splitext(basename(trackFn)))
+        sys.stdout = storedStdOut
+        return track
 
     @staticmethod
     def addRunDescriptionToResult(analysisObj, result):
