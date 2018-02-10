@@ -119,10 +119,6 @@ var Collection = Backbone.Collection.extend({
             title           : 'Help',
             tooltip         : 'Support, contact, and community hubs',
             menu            : [{
-                    title   : 'HyperBrowser help',
-                    url     : 'http://sites.google.com/site/hyperbrowserhelp/',
-                    target  : '_blank'
-                },{
                     title   : 'Support',
                     url     : options.support_url,
                     target  : '_blank'
