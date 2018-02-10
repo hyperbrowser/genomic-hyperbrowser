@@ -220,9 +220,18 @@ class HyperBrowser(ManyVsManyMethod):
                       printErrors=False, printProgress=False),
                      splitext(basename(trackFn)))
 
+    @staticmethod
+    def addRunDescriptionToResult(analysisObj, result):
+        runDescription = GalaxyInterface.getRunDescription(
+            analysisObj.tracks[0].trackName, analysisObj.tracks[1].trackName,
+            analysisObj.analysisSpec.getDef(),
+            analysisObj.genome + ':*', '*', analysisObj.genome,
+            showBatchLine=False)
+        runDescBox = GalaxyInterface.getRunDescriptionBox(runDescription)
+        result.setRunDescription(runDescBox)
+
 
 class HBJob(Job):
-
     def __init__(self, analyses):
         self._analyses = analyses
 
@@ -230,10 +239,6 @@ class HBJob(Job):
         results = OrderedDict()
         for key, analysisObj in self._analyses.iteritems():
             result = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
-            runDescription = GalaxyInterface.getRunDescription(
-                analysisObj.tracks[0].trackName, analysisObj.tracks[1].trackName,
-                analysisObj.analysisSpec.getDef(),
-                analysisObj.genome + ':*', '*', analysisObj.genome)
-            result.setRunDescription(runDescription)
+            HyperBrowser.addRunDescriptionToResult(analysisObj, result)
             results[key] = result
         return results
