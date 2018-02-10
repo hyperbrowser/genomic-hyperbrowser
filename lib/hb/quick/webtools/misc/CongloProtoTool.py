@@ -1480,7 +1480,7 @@ class CongloResultsGenerator:
             #core.smallHeader('Pval plotting error:')
             #core.preformatted(e)
         core.paragraph(self.getSimplisticPvalIndication(trackCombResults))
-        core.paragraph('Relevant FAQ: Why are the p-values of different methods different, when they are analysing the same research question?')
+        core.paragraph('Relevant FAQ (see under FAQ tab on homepage): Why are the p-values of different methods different, when they are analysing the same research question?')
         return str(core)
 
     def plotPvals(self, trackCombResults):

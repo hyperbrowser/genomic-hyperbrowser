@@ -63,16 +63,13 @@
                                     <a class="button" href="https://hyperbrowser.uio.no/coloc-stats/u/gsandve/h/coloc-stats-example-analysis" target="_top">View an example analysis</a>
                                 </li>
                                 <li>
-                                    <a data-toggle="tab" href="#menu1" aria-expanded="false">Read documentation</a> for elaborate overview of the tool.
+                                    Read <b>Documentation</b>, <b>Manual</b> and <b>FAQ</b> for elaborate help on diverse topics.
                                 </li>
                                 <li>
-                                    <a data-toggle="tab" href="#menu2" aria-expanded="false">Look at the Manual</a> for quick help on tool parameters and selections.
+                                    Look at the  <b>#News</b> section under Documentation tab to know more about upcoming features.
                                 </li>
                                 <li>
-                                    <a data-toggle="tab" href="#menu3" aria-expanded="false">See our FAQ</a> for help on diverse topics related to coloc-stats.
-                                </li>
-                                <li>
-                                    Look at the <a href='https://vimeo.com/249248452' target='_top'>screencast</a> above on how to get started.
+                                    Look at the <b>screencast</b> below on how to get started.
                                 </li>
                             </ul>
                         </div>
@@ -86,13 +83,13 @@
                                         </a>
                                         <p>Screencast on getting started</p>
                                     </td>
-                                    <td style="text-align: center; border: 0px">
-                                        <a href="https://player.vimeo.com/video/249248452">
-                                            <img alt="GettingStarted" src="hyperbrowser/images/videos/coloc_stats_screencast_image.png"
-                                                 style="width:200px;height:auto;border:1px solid black">
-                                        </a>
-                                        <p>Screencast on getting started</p>
-                                    </td>
+                                    <!--<td style="text-align: center; border: 0px">-->
+                                        <!--<a href="https://player.vimeo.com/video/249248452">-->
+                                            <!--<img alt="GettingStarted" src="hyperbrowser/images/videos/coloc_stats_screencast_image.png"-->
+                                                 <!--style="width:200px;height:auto;border:1px solid black">-->
+                                        <!--</a>-->
+                                        <!--<p>Screencast on getting started</p>-->
+                                    <!--</td>-->
                                 </tr>
                             </table>
                         </div>
@@ -116,9 +113,6 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
-                            <ul>
-                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
-                            </ul>
                             <h3>Documentation</h3>
                         </div>
                         <div class = 'projectDescSingle' >
@@ -397,9 +391,6 @@
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDescSingle'>
-                            <ul>
-                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
-                            </ul>
                             <h3># Legend of tool parameters & Output pages</h3>
                         </div>
                         <head>
@@ -545,9 +536,6 @@ tr:nth-child(even) {
                 <div class="colAll">
                     <div class = 'project'>
                         <div class = 'projectDesc'>
-                            <ul>
-                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
-                            </ul>
                             <h4>What is coloc-stats</h4>
                         </div>
                         <div class = 'projectDesc'>
@@ -761,9 +749,6 @@ tr:nth-child(even) {
                     <div class = 'project'>
                         <div class = 'projectDesc'>
                              <dl id="faqs">
-                                 <ul>
-                                <li><a data-toggle="tab" href="#menu0" aria-expanded="false">Go to Home page</a></li>
-                            </ul>
                                  <h3>Frequently asked questions</h3>
                                  (click on the question to see the answer)
                                  <p></p>
@@ -964,6 +949,17 @@ tr:nth-child(even) {
                                     was thrown for the tracks of interest. If you observe a trend of consistent error messages, you can suspect
                                     something went wrong. If that is the case, please take a minute to <a href='mailto:hyperbrowser-requests@usit.uio.no' target='_top'><font color="#0645AD">report this to us</font></a>
                                     and we would be very happy to help.
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                <li>
+                                <dt><b>Why are the p-values of different methods different, when they are analysing the same research question?</b></dt>
+                                <dd>
+                                    Many of the co-localization analysis methods use some form of statistical test to determine the significance of co-localization.
+                                    All the statistical tests assume some form of null model that can vary from being too simplistic to being too cautious.
+                                    How the null model is defined - i.e., what properties of the real data it preserves and how the remaining properties are distributed -
+                                    would affect the conclusions of a statistical test. Thus, it is not surprising to see different p-values when using different methods.
+                                    However, to be safe than sorry one should be cautious when interpreting a less robust finding.
                                 </dd>
                                      </li>
                                      <p></p>
