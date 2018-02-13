@@ -111,7 +111,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                     spec.addParameter('trackFilePath', fn)
                     spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
                     spec.addParameter('keepOnesProb', f)
-                    spec.addParameter('introduceZerosProb', s)
+                    spec.addParameter('introduceZerosProb', 1-s)
 
                     doAnalysis(spec, bins, [iTrack])
 
