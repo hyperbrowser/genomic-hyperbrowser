@@ -13,6 +13,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
     MAX_NUM_OF_COLS=15
     PHRASE = 'select phrase'
+    COMBINED_SIGN = '-----'
 
     @classmethod
     def getToolName(cls):
@@ -151,7 +152,8 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                 name = '-'.join(k)
 
                 attr[column] = str('-'.join(trackData))
-                attr['-'.join(excludedList)] = str(name)
+                for eNum, e in enumerate(excludedList):
+                    attr[e] = str(k[eNum])
 
                 pathTracks = []
                 for p in d:
