@@ -51,3 +51,17 @@ def addColumnToGSuite(gsuite, uri, attrName, gSuiteTitle):
         outGSuite.addTrack(gsTrack)
     composeToFile(outGSuite, uri)
     return outGSuite
+
+def concatenateGSuitesAddingCategories(gSuiteList, categoryColumnTitle, categoryList):
+    concatenatedGSuite = GSuite()
+
+    assert len(gSuiteList) == len(categoryList)
+    for i, gSuite in enumerate(gSuiteList):
+        tracksToAdd = [track for track in gSuite.allTracks()]
+
+        for track in tracksToAdd:
+            track.setAttribute(categoryColumnTitle, categoryList[i])
+
+        concatenatedGSuite.addTracks(tracksToAdd)
+
+    return concatenatedGSuite
