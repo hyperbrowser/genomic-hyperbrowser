@@ -1,0 +1,4 @@
+<tool id="hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool" name="Concatenate tracks in hGsuite according to parameters in the selected column" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool" proto_tool_class="ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool">
+  <description></description>
+</tool>

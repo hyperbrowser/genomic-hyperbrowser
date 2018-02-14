@@ -415,3 +415,4 @@ class HGsuite:
                 for i in range(int(cc.split('-')[0]) -1 , int(cc.split('-')[1])):
                     colNum.append(i)
         return colNum
+

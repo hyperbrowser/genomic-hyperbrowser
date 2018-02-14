@@ -19,8 +19,8 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
         return [#('Select file with data', 'selectedFile'),
                 ('Select gSuite:', 'gSuite'),
-                ('Possible columns', 'possibleColumns'),
-                ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns'),
+                ('Select columns', 'possibleColumns'),
+                ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns')
                 ]
 
     # @classmethod
