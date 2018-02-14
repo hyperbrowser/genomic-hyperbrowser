@@ -1,0 +1,4 @@
+<tool id="hb_divide_g_suite_according_to_column_in_the_track_tool" name="Divide tracks in gSuite according to the phrase in the title column and create hierarchical gSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.DivideGSuiteAccordingToColumnInTheTrackTool" proto_tool_class="DivideGSuiteAccordingToColumnInTheTrackTool">
+  <description></description>
+</tool>
