@@ -49,7 +49,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             for p in par:
 
                 attr = OrderedDict()
-                attr['mutation'] = str(p)
+                attr['dividedColumn'] = str(p)
+                attr['orginalTitle'] = str(trackTitle)
 
                 for k in attrMut.keys():
                     attr[k] = attrMut[k][i]
