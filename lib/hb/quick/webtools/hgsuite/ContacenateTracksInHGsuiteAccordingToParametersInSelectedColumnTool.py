@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from functools import partial
 
+import operator
+
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
@@ -168,9 +170,18 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                 ensurePathExists(outFn)
 
                 with open(outFn, 'wb') as newf:
+                    lines = []
                     for filename in pathTracks:
                         with open(filename, 'rb') as hf:
-                            newf.write(hf.read())
+                            #sorting bed file
+                            for l in hf.readlines():
+                                lines.append(l.strip('\n').split('\t'))
+                            # newf.write(hf.read())
+                    lines.sort(key=operator.itemgetter(0, 1, 2))
+                    for l in lines:
+                        newf.write(('\t').join(l)+'\n')
+
+
 
                 gs = GSuiteTrack(uri, title=''.join(
                     str(name) + '--' + str('-'.join(trackData))), genome=gSuite.genome,
