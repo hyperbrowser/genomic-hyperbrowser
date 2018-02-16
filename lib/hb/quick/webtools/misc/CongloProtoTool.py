@@ -14,7 +14,8 @@ from conglomerate.methods.lola.lola import LOLA
 from conglomerate.tools.method_compatibility import (getCompatibleMethodObjects,
                                                      getCollapsedConfigurationsPerMethod)
 from conglomerate.tools.runner import runAllMethodsInSequence
-from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL
+from proto.CommonFunctions import (createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL,
+                                   getGalaxyFilesDir)
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.TextCore import TextCore
@@ -811,7 +812,7 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
 
-        runAllMethodsInSequence(keptWmos)
+        runAllMethodsInSequence(keptWmos, jobOutputDir=getGalaxyFilesDir(galaxyFn))
         print HtmlCore().divEnd()
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
