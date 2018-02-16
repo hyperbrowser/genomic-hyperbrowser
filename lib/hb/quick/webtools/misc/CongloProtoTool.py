@@ -812,7 +812,8 @@ class CongloProtoTool(GeneralGuiTool):
         if VERBOSE_RUNNING:
             cls._printWmoInfo(keptWmos)
 
-        runAllMethodsInSequence(keptWmos, jobOutputDir=getGalaxyFilesDir(galaxyFn))
+        jobOutputDir = os.path.join(getGalaxyFilesDir(galaxyFn), 'cwl_output')
+        runAllMethodsInSequence(keptWmos, jobOutputDir=jobOutputDir)
         print HtmlCore().divEnd()
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
