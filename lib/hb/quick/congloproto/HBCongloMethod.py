@@ -33,7 +33,6 @@ class HyperBrowser(ManyVsManyMethod):
         self._params = "Conglo Params not supported in HyperBrowser"
         self._trackTitleMappings = {}
 
-
     def _getToolName(self):
         return 'hb_conglo'
 
@@ -43,7 +42,7 @@ class HyperBrowser(ManyVsManyMethod):
     def checkForAbsentMandatoryParameters(self):
         pass
 
-    def createJobs(self):
+    def createJobs(self, jobOutputDir):
         for queryTrack in self._queryTracks:
             qTrack = self._processTrack(queryTrack)
             for refTrack in self._refTracks:
@@ -54,14 +53,13 @@ class HyperBrowser(ManyVsManyMethod):
                                                                         self._genome)
         return [HBJob(self._analyses)]
 
-
     def setResultFilesDict(self, resultFilesDict):
         self._results = resultFilesDict
         self._ranSuccessfully = True
 
     def getResultFilesDict(self):
         return self._results
-	
+
     def _setDefaultParamValues(self):
         pass
 
