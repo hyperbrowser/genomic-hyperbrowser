@@ -28,6 +28,7 @@ cwltool>=1.0.20171107133715
 pyyaml>=3.12
 pytest>=3.0.5
 future>=0.16.0
+configparser>=3.0
 
 #Might be needed
 #pycairo>=1.8.10

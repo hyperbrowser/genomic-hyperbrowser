@@ -1,41 +1,31 @@
-from collections import OrderedDict, defaultdict
-from itertools import product
-from pickle import dump, load
-
 import os
+from collections import OrderedDict, defaultdict
 
 from config.Config import GALAXY_TOOL_DATA_PATH
-from conglomerate.methods.intervalstats.intervalstats import IntervalStats
-from conglomerate.methods.lola.lola import LOLA
-from conglomerate.tools.method_compatibility import getCompatibleMethodObjects, getCollapsedConfigurationsPerMethod
-from conglomerate.tools.TrackFile import TrackFile
-import pkg_resources
-
+from conglomerate.core.config import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
+from conglomerate.core.types import TrackFile
 from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
 from conglomerate.methods.giggle.giggle import Giggle
-from conglomerate.methods.interface import ColocMeasureOverlap, RestrictedAnalysisUniverse, RestrictedThroughExclusion, \
-    RestrictedThroughInclusion, ColocMeasureProximity
-from conglomerate.tools.job import Job
-
-from conglomerate.methods.stereogene.stereogene import StereoGene
+from conglomerate.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
+                                            RestrictedThroughExclusion, RestrictedThroughInclusion,
+                                            ColocMeasureProximity, InvalidSpecification)
+from conglomerate.methods.intervalstats.intervalstats import IntervalStats
+from conglomerate.methods.lola.lola import LOLA
+from conglomerate.tools.method_compatibility import (getCompatibleMethodObjects,
+                                                     getCollapsedConfigurationsPerMethod)
 from conglomerate.tools.runner import runAllMethodsInSequence
-from conglomerate.methods.interface import RestrictedThroughPreDefined, ColocMeasureCorrelation
-from conglomerate.tools.constants import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
-from conglomerate.methods.interface import InvalidSpecification
-from gold.gsuite.GSuite import GSuite
 from proto.CommonFunctions import createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL
-from proto.TextCore import TextCore
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
+from proto.TextCore import TextCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.congloproto.HBCongloMethod import HyperBrowser
-
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
 # [GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
 # debug3
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class CongloProtoTool(GeneralGuiTool):

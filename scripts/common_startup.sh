@@ -117,6 +117,12 @@ if [ $SET_VENV -eq 1 ]; then
     # should run this instance in.
     if [ -d "$GALAXY_VIRTUAL_ENV" ];
     then
+        # Conglomerate setup
+        if ! grep -q CONGLOMERATE_CONFIG "$GALAXY_VIRTUAL_ENV/bin/activate";
+        then
+            echo 'export CONGLOMERATE_CONFIG="$VIRTUAL_ENV/../config/conglomerate.ini"' >>$GALAXY_VIRTUAL_ENV/bin/activate
+        fi
+
         printf "Activating virtualenv at $GALAXY_VIRTUAL_ENV\n"
         . "$GALAXY_VIRTUAL_ENV/bin/activate"
 

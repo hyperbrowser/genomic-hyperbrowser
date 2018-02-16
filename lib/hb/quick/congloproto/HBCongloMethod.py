@@ -2,9 +2,9 @@ import sys
 import os
 
 from collections import OrderedDict, namedtuple
+from conglomerate.core.types import SingleResultValue
 from conglomerate.methods.interface import ColocMeasureOverlap
 from conglomerate.methods.method import ManyVsManyMethod
-from conglomerate.tools.SingleResultValue import SingleResultValue
 from conglomerate.tools.job import Job
 from gold.application.HBAPI import doAnalysis
 from gold.track.Track import Track
