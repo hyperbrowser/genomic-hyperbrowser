@@ -175,11 +175,19 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                         with open(filename, 'rb') as hf:
                             #sorting bed file
                             for l in hf.readlines():
-                                lines.append(l.strip('\n').split('\t'))
+                                lStrip = l.strip('\n').split('\t')
+                                lStripNew = []
+                                for l in lStrip:
+                                    try:
+                                        l = int(l)
+                                    except:
+                                        l = l
+                                    lStripNew.append(l)
+                                lines.append(lStripNew)
                             # newf.write(hf.read())
                     lines.sort(key=operator.itemgetter(0, 1, 2))
                     for l in lines:
-                        newf.write(('\t').join(l)+'\n')
+                        newf.write(('\t').join([str(ll) for ll in l ])+'\n')
 
 
 
