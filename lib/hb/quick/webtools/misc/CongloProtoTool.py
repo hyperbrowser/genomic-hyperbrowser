@@ -656,7 +656,10 @@ class CongloProtoTool(GeneralGuiTool):
         if cls.getValidationText(prevChoices) is not None:
             return None
 
-        workingMethodObjects = cls.getWorkingMethodObjects(prevChoices)
+        #workingMethodObjects = cls.getWorkingMethodObjects(prevChoices)
+        queryTrack, refTracks, selections = cls.extractFromChoices(prevChoices)
+        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selections.values()).getWorkingMethodObjects()
+
         if workingMethodObjects is None:
             return None
         methodChoices = getCollapsedConfigurationsPerMethod(workingMethodObjects)
@@ -666,13 +669,21 @@ class CongloProtoTool(GeneralGuiTool):
             return OrderedDict(zip(sorted(methodChoices), [True] * len(methodChoices)))
 
     @classmethod
-    def getWorkingMethodObjects(cls, choices):
+    def extractFromChoices(cls, choices):
         selections = cls.determine_selections(choices)
         queryTrack = ReferenceTrackParser.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
         refTrackParser = ReferenceTrackParser.createFromGUIChoices(choices)
         refTracks = refTrackParser.getRefTracksFromChoices()
-        wmoParser = WorkingMethodObjectParser(queryTrack, refTracks, selections.values())
-        return wmoParser.getWorkingMethodObjects()
+        return queryTrack, refTracks, selections
+
+    # @classmethod
+    # def getWorkingMethodObjects(cls, choices):
+    #     selections = cls.determine_selections(choices)
+    #     queryTrack = ReferenceTrackParser.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
+    #     refTrackParser = ReferenceTrackParser.createFromGUIChoices(choices)
+    #     refTracks = refTrackParser.getRefTracksFromChoices()
+    #     wmoParser = WorkingMethodObjectParser(queryTrack, refTracks, selections.values())
+    #     return wmoParser.getWorkingMethodObjects()
 
     @classmethod
     def determine_selections(cls, prevChoices):
@@ -807,7 +818,11 @@ class CongloProtoTool(GeneralGuiTool):
         print HtmlCore().paragraph('Analysis in progress (may take from minutes to hours - depending on selected datasets, tools and parameters)')
         if VERBOSE_RUNNING:
             print '<pre>'
-        workingMethodObjects = cls.getWorkingMethodObjects(choices)
+
+        #workingMethodObjects = cls.getWorkingMethodObjects(choices)
+        queryTrack, refTracks, selections = cls.extractFromChoices(choices)
+        WorkingMethodObjectParser(queryTrack, refTracks, selections.values()).getWorkingMethodObjects()
+
         methodSelectionStatus = dict(
             [(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName, selectionStatus in
              choices.compatibleMethods.items()])
@@ -1136,7 +1151,10 @@ class CongloProtoTool(GeneralGuiTool):
         except Exception, e:
             return e.message
 
-        workingMethodObjects = cls.getWorkingMethodObjects(choices)
+        #workingMethodObjects = cls.getWorkingMethodObjects(choices)
+        queryTrack, refTracks, selections = cls.extractFromChoices(choices)
+        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selections.values()).getWorkingMethodObjects()
+
         if workingMethodObjects is None:
             return "Unresolved error"
         elif len(workingMethodObjects) == 0:
