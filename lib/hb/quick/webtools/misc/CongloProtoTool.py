@@ -27,6 +27,29 @@ ALL_METHOD_CLASSES = ALL_CONGLOMERATE_METHOD_CLASSES + [HyperBrowser]
 # [GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
 # debug3
 
+def dump_args_and_more(func):
+    '''This decorator dumps out the arguments passed to a function before calling it,
+    as well as return value or any exception'''
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+
+    def echo_func(*args,**kwargs):
+        print fname, ":", ', '.join(
+            '%s=%r' % entry
+            for entry in zip(argnames,args) + kwargs.items())
+        try:
+            result = func(*args, **kwargs)
+            print "-> ", result
+            return result
+        except:
+            print '-> raised exception:'
+            import traceback
+            traceback.print_exc()
+            raise
+
+
+    return echo_func
+
 
 class CongloProtoTool(GeneralGuiTool):
     @classmethod
@@ -652,7 +675,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxCompatibleMethods(cls, prevChoices):
         if cls.getValidationText(prevChoices) is not None:
-            return None
+            return {}
 
         #workingMethodObjects = cls.getWorkingMethodObjects(prevChoices)
         queryTrack, refTracks, selectionValues = cls.extractFromChoices(prevChoices)
@@ -662,7 +685,7 @@ class CongloProtoTool(GeneralGuiTool):
             return None
         methodChoices = getCollapsedConfigurationsPerMethod(workingMethodObjects)
         if len(methodChoices) == 0:
-            return None
+            return {}
         else:
             return OrderedDict(zip(sorted(methodChoices), [True] * len(methodChoices)))
 
@@ -1068,6 +1091,7 @@ class CongloProtoTool(GeneralGuiTool):
         #                     if choices.distanceType is not None else[]
         # fullDistSpecs = product(distCoordSelected, distTypeSelected)
         # encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
+        assert all(val in [False,True] for val in choices.teststatType.values()), choices.teststatType.values()
         if choices.teststatType is not None and choices.teststatType[cls.DISTANCE] == True:
             encodedDistSpecs = [ColocMeasureProximity(None, None)]
         else:
@@ -1320,29 +1344,6 @@ class CongloProtoTool(GeneralGuiTool):
         #     the name of the tool.
         #     """
 
-
-def dump_args_and_more(func):
-    '''This decorator dumps out the arguments passed to a function before calling it,
-    as well as return value or any exception'''
-    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
-    fname = func.func_name
-
-    def echo_func(*args,**kwargs):
-        print fname, ":", ', '.join(
-            '%s=%r' % entry
-            for entry in zip(argnames,args) + kwargs.items())
-        try:
-            result = func(*args, **kwargs)
-            print "-> ", result
-            return result
-        except:
-            print '-> raised exception:'
-            import traceback
-            traceback.print_exc()
-            raise
-
-
-    return echo_func
 
 
 class TrackParser:
