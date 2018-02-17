@@ -4,13 +4,10 @@ from collections import OrderedDict, defaultdict
 from config.Config import GALAXY_TOOL_DATA_PATH
 from conglomerate.core.config import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
 from conglomerate.core.types import TrackFile
-from conglomerate.methods.genometricorr.genometricorr import GenometriCorr
-from conglomerate.methods.giggle.giggle import Giggle
 from conglomerate.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
                                             RestrictedThroughExclusion, RestrictedThroughInclusion,
                                             ColocMeasureProximity, InvalidSpecification)
-from conglomerate.methods.intervalstats.intervalstats import IntervalStats
-from conglomerate.methods.lola.lola import LOLA
+from conglomerate.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_CONGLOMERATE_METHOD_CLASSES
 from conglomerate.tools.method_compatibility import (getCompatibleMethodObjects,
                                                      getCollapsedConfigurationsPerMethod)
 from conglomerate.tools.runner import runAllMethodsInSequence
@@ -25,7 +22,8 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.CommonFunctions import silenceRWarnings
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
+#ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
+ALL_METHOD_CLASSES = ALL_CONGLOMERATE_METHOD_CLASSES + [HyperBrowser]
 # [GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
 # debug3
 
@@ -657,8 +655,8 @@ class CongloProtoTool(GeneralGuiTool):
             return None
 
         #workingMethodObjects = cls.getWorkingMethodObjects(prevChoices)
-        queryTrack, refTracks, selections = cls.extractFromChoices(prevChoices)
-        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selections.values()).getWorkingMethodObjects()
+        queryTrack, refTracks, selectionValues = cls.extractFromChoices(prevChoices)
+        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues, ALL_METHOD_CLASSES).getWorkingMethodObjects()
 
         if workingMethodObjects is None:
             return None
@@ -674,7 +672,7 @@ class CongloProtoTool(GeneralGuiTool):
         queryTrack = ReferenceTrackParser.getFnListFromTrackChoice(choices.chooseQueryTrackFile)
         refTrackParser = ReferenceTrackParser.createFromGUIChoices(choices)
         refTracks = refTrackParser.getRefTracksFromChoices()
-        return queryTrack, refTracks, selections
+        return queryTrack, refTracks, selections.values()
 
     # @classmethod
     # def getWorkingMethodObjects(cls, choices):
@@ -820,9 +818,10 @@ class CongloProtoTool(GeneralGuiTool):
             print '<pre>'
 
         #workingMethodObjects = cls.getWorkingMethodObjects(choices)
-        queryTrack, refTracks, selections = cls.extractFromChoices(choices)
-        WorkingMethodObjectParser(queryTrack, refTracks, selections.values()).getWorkingMethodObjects()
-
+        queryTrack, refTracks, selectionValues = cls.extractFromChoices(choices)
+        print 'FOR TEST TRANSFER - queryTrack, refTracks, selectionValues: ', '<br>', repr(queryTrack), '<br>', repr(refTracks), '<br>', selectionValues, '<br><br>'
+        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues,ALL_METHOD_CLASSES).getWorkingMethodObjects()
+        print 'FOR TEST TRANSFER - compatible methods classes:', set([wmo.getMethodName() for wmo in workingMethodObjects]), '<br><br>'
         methodSelectionStatus = dict(
             [(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName, selectionStatus in
              choices.compatibleMethods.items()])
@@ -1152,8 +1151,8 @@ class CongloProtoTool(GeneralGuiTool):
             return e.message
 
         #workingMethodObjects = cls.getWorkingMethodObjects(choices)
-        queryTrack, refTracks, selections = cls.extractFromChoices(choices)
-        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selections.values()).getWorkingMethodObjects()
+        queryTrack, refTracks, selectionValues = cls.extractFromChoices(choices)
+        workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues,ALL_METHOD_CLASSES).getWorkingMethodObjects()
 
         if workingMethodObjects is None:
             return "Unresolved error"
@@ -1345,27 +1344,6 @@ def dump_args_and_more(func):
 
     return echo_func
 
-class WorkingMethodObjectParser:
-
-    def __init__(self, queryTrack, refTracks, selectionVals):
-        assert type(selectionVals)==list
-        self._queryTrack = queryTrack
-        self._refTracks = refTracks
-        self._selectionVals = selectionVals
-
-    def getWorkingMethodObjects(self):
-        if self._queryTrack is None or self._refTracks is None:
-            if VERBOSE_RUNNING:
-                print 'No WMOs due to lacking tracks'
-            return None
-        if VERBOSE_RUNNING:
-            print 'Considered methods: ', ','.join([x.__name__ for x in ALL_METHOD_CLASSES])
-        # selectionVals = selections.values()
-        workingMethodObjects = getCompatibleMethodObjects(self._selectionVals, self._queryTrack, self._refTracks,
-                                                          ALL_METHOD_CLASSES)
-        if VERBOSE_RUNNING:
-            print 'Compatible methods: ', ','.join([str(x) for x in workingMethodObjects])
-        return workingMethodObjects
 
 class TrackParser:
     @classmethod
