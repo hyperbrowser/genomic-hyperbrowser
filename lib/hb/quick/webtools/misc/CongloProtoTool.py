@@ -1183,6 +1183,9 @@ class CongloProtoTool(GeneralGuiTool):
         elif len(workingMethodObjects) == 0:
             return "No method is compatible with current selections - please make further selections"
 
+        if not any(choices.compatibleMethods.items()):
+            return "You must select at least one method to run"
+
             # @classmethod
 
     # def getSubToolClasses(cls):
