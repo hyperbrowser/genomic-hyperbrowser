@@ -987,9 +987,9 @@ class CongloProtoTool(GeneralGuiTool):
                 fullResult = allFullResults[trackCombination]
                 pval = allPvals[trackCombination]
                 testStat = allTestStats[trackCombination]
-                methodName = wmo._methodCls.__name__ #TODO: Make public method
+                #methodName = wmo._methodCls.__name__ #TODO: Make public method
                 annotatedChoices = wmo.annotatedChoices
-                results.append(TrackCombResult(testStat, pval, fullResult, trackCombination, methodName, annotatedChoices))
+                results.append(TrackCombResult(testStat, pval, fullResult, trackCombination, wmo.getMethodClass(), annotatedChoices))
             return results
         except:
             if not CATCH_METHOD_EXCEPTIONS:
@@ -1428,13 +1428,14 @@ class TrackCombResultList(list):
 
 
 class TrackCombResult:
-    def __init__(self, testStat, pval, fullResult, trackCombination, methodName, annotatedChoices):
+    def __init__(self, testStat, pval, fullResult, trackCombination, methodClass, annotatedChoices):
         self.testStat = testStat
         self.pval = pval
         self.fullResult = fullResult
         assert len(trackCombination)==2, trackCombination
         self.trackCombination = trackCombination
-        self.methodName = methodName
+        self.methodClass = methodClass
+        self.methodName = methodClass.__name__
         self.annotatedChoices = annotatedChoices
 
     def getPrettyTrackNames(self):
@@ -1624,7 +1625,7 @@ class CongloResultsGenerator:
         for res in self._trackCombResults:
             trackName = res.trackCombination[1].split('/')[-1]
             #tableDict[trackName][res.methodName] = res.pval
-            tableDict[trackName][res.methodName] = getattr(res,attribute)
+            tableDict[trackName][res.methodClass] = getattr(res,attribute)
 
 
         core = HtmlCore()
@@ -1639,17 +1640,18 @@ class CongloResultsGenerator:
                            'because the definition of test statistics varies in each individual tool and thus best not compared across tools. '
                            'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
         if len(tableDict) > 1:  # More than 1 ref track
-            allWmoLabels = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
+            allWmoClasses = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
+            allWmoLabels = [wmoClass.__name__ for wmoClass in allWmoClasses]
             if attribute=='testStat':
-                allWmoClasses = [globals()[label] for label in allWmoLabels]
+                #allWmoClasses = [globals()[label] for label in allWmoLabels]
                 allWmoDescr = [wmo.getTestStatDescr() for wmo in allWmoClasses]
                 allWmoLabAndDescr = [label+'<br>('+descr+')' for label,descr in zip(allWmoLabels,allWmoDescr)]
             else:
                 allWmoLabAndDescr = allWmoLabels
             core.tableHeader(['Reference track'] + allWmoLabAndDescr, sortable=True)
             for trackName in tableDict:
-                valuesInRow = [tableDict[trackName][wmoLabel] if wmoLabel in tableDict[trackName] else 'N/A' \
-                               for wmoLabel in allWmoLabels]
+                valuesInRow = [tableDict[trackName][wmoClass] if wmoClass in tableDict[trackName] else 'N/A' \
+                               for wmoClass in allWmoClasses]
                 #trackNameLink = self._subPageStaticFiles[trackName].getLink(trackName)
                 core.tableLine([trackName] + [str(x) for x in valuesInRow])
             core.tableFooter()
