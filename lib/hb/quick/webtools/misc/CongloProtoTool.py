@@ -878,6 +878,7 @@ class CongloProtoTool(GeneralGuiTool):
                 You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element'''
 
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
+        print "TEMP1: ", str(globals())
         crg.outputResults()
 
         print HtmlCore().end(stopReload=True)
