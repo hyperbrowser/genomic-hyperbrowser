@@ -32,6 +32,7 @@ class HyperBrowser(ManyVsManyMethod):
         self._results = None
         self._params = "Conglo Params not supported in HyperBrowser"
         self._trackTitleMappings = {}
+        self._compatibilityState = True
 
     def _getToolName(self):
         return 'hb_conglo'
