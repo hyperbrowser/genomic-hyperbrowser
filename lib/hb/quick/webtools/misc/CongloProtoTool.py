@@ -1151,7 +1151,13 @@ class CongloProtoTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return cls.getValidationText(choices)
+        retStr = cls.getValidationText(choices)
+        if retStr:
+            return retStr
+        if not any(choices.compatibleMethods.values()):
+            return "You must select at least one method to run"
+
+
 
     @classmethod
     def getValidationText(cls, choices):
