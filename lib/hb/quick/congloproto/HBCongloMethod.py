@@ -157,7 +157,8 @@ class HyperBrowser(ManyVsManyMethod):
                 'Preserve segments (T2) and segment lengths (T1); randomize positions (T1) (MC)'
 
     def setRestrictedAnalysisUniverse(self, restrictedAnalysisUniverse):
-        assert restrictedAnalysisUniverse is None, restrictedAnalysisUniverse
+        if restrictedAnalysisUniverse is not None:
+            self.setNotCompatible()
 
 
     def setColocMeasure(self, colocMeasure):
@@ -165,7 +166,7 @@ class HyperBrowser(ManyVsManyMethod):
         if isinstance(colocMeasure, ColocMeasureOverlap):
             self._colocStatistic = "TpRawOverlapStat"
         else:
-            raise AssertionError('Overlap is the only supported measure')
+            self.setNotCompatible()
 
     def setHeterogeneityPreservation(self, preservationScheme, fn=None):
         pass
