@@ -24,7 +24,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
-        return "Create gSuite from subsetting using binomial distribution"
+        return "Create gSuite by subsetting other track"
 
     @classmethod
     def getInputBoxNames(cls):

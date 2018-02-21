@@ -1,0 +1,4 @@
+<tool id="hb_change_segment_g_suite_to_point_g_suite_tool" name="Convert segment gSuite into point gSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.smeasure.ChangeSegmentGSuiteToPointGSuiteTool" proto_tool_class="ChangeSegmentGSuiteToPointGSuiteTool">
+  <description></description>
+</tool>
