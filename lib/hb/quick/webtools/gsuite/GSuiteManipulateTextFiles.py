@@ -27,8 +27,8 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
                                   ('Remove duplicate lines', 'RemoveDuplicateLines'),
                                   ('Filter GTrack by segment length', 'FilterGTrackByGELength'),
                                   ('Expand all points and segments equally', 'ExpandBedSegments'),
-                                  ('Subsample elements of each track', 'SubsampleTracks')
-                                  ])
+                                  ('Subsample elements of each track', 'SubsampleTracks'),
+                                  ('Remove first lines of each track', 'RemoveFirstLine')])
 
     ALL_PRIVATE_OPERATIONS = dict([('Shuffle and add columns', 'ShuffleAndAddColumns'),
                                    ('Convert vcf to 3-column bed', 'ConvertVcfTo3ColBed'),

@@ -154,24 +154,19 @@ class GeneralTrackDataAdder(GeneralTrackDataModifier):
 class RemoveFirstLine(GeneralTrackDataModifier):
     "E.g. SNP-files from Sigve.."
     @classmethod
-    def parseFile(cls, inFn, outFn, trackName, **kwArgs):
-#        print inFn
-        inFile = open(inFn)
+    def parseFile(cls, inFn, outFn, trackName, numLines='1', **kwArgs):
+        numLines = int(numLines)
 
-        if not outFn.endswith('.bed'):
-            outFn += '.bed'
+        with open(inFn) as inFile:
+            # if not outFn.endswith('.bed'):
+            #     outFn += '.bed'
+            ensurePathExists(outFn)
 
-        ensurePathExists(outFn)
-        outFile = open(outFn,'w')
-
-        #ignore first line..
-        first = True
-
-        for line in inFile:
-            if first:
-                first = False
-                continue
-            outFile.write( line )
+            with open(outFn,'w') as outFile:
+                for i, line in enumerate(inFile):
+                    if i < numLines:
+                       continue
+                    outFile.write( line )
 
 class ImplicitChrSegments(GeneralTrackDataModifier):
     "E.g. methylation"
