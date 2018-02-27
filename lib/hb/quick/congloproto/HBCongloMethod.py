@@ -85,6 +85,7 @@ class HyperBrowser(ManyVsManyMethod):
         for trackFile in trackFileList:
             if trackFile in ['prebuilt', 'LOLACore_170206']:
                 self.setNotCompatible()
+                return
             self._addTrackTitleMapping(trackFile.path, trackFile.title)
             trackFnList.append(trackFile.path)
 
