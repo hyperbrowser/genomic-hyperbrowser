@@ -151,6 +151,25 @@ class GeneralTrackDataModifier(object):
 class GeneralTrackDataAdder(GeneralTrackDataModifier):
     pass
 
+class FilterLinesBySubstring(GeneralTrackDataModifier):
+
+    @classmethod
+    def parseFile(cls, inFn, outFn, trackName, filterString="Your string goes here", invertSelection="No", **kwArgs):
+        with open(inFn) as inFile:
+            # if not outFn.endswith('.bed'):
+            #     outFn += '.bed'
+            ensurePathExists(outFn)
+
+            with open(outFn,'w') as outFile:
+                for line in inFile:
+                    if str(invertSelection) in ["No", "no", "NO"]:
+                        if filterString not in line:
+                           continue
+                    else:
+                        if filterString in line:
+                           continue
+                    outFile.write( line )
+
 class RemoveFirstLine(GeneralTrackDataModifier):
     "E.g. SNP-files from Sigve.."
     @classmethod
