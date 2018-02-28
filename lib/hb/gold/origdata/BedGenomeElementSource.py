@@ -3,9 +3,10 @@ from gold.origdata.GenomeElement import GenomeElement
 from gold.util.CustomExceptions import InvalidFormatError
 import numpy
 
+
 class BedGenomeElementSource(GenomeElementSource):
     _VERSION = '1.2'
-    #FILE_SUFFIXES = ['bed']
+    # FILE_SUFFIXES = ['bed']
     FILE_FORMAT_NAME = 'BED'
     _numHeaderLines = 0
 
@@ -13,7 +14,6 @@ class BedGenomeElementSource(GenomeElementSource):
     MAX_NUM_COLS = 12
 
     BED_EXTRA_COLUMNS = ['thickstart', 'thickend', 'itemrgb', 'blockcount', 'blocksizes', 'blockstarts']
-
 
     def __new__(cls, *args, **kwArgs):
         return object.__new__(cls)
@@ -81,6 +81,7 @@ class BedGenomeElementSource(GenomeElementSource):
     def getValDataType(self):
         return 'int32'
 
+
 class PointBedGenomeElementSource(BedGenomeElementSource):
     FILE_SUFFIXES = ['point.bed']
     FILE_FORMAT_NAME = 'Point BED'
@@ -88,6 +89,7 @@ class PointBedGenomeElementSource(BedGenomeElementSource):
     def _parseEnd(self, ge, end):
         if end != ge.start + 1:
             raise InvalidFormatError('Error: point BED files can only have segments of length 1')
+
 
 class BedValuedGenomeElementSource(BedGenomeElementSource):
     _VERSION = '1.1'
@@ -104,6 +106,7 @@ class BedValuedGenomeElementSource(BedGenomeElementSource):
 
     def getValDataType(self):
         return 'float64'
+
 
 class BedCategoryGenomeElementSource(BedGenomeElementSource):
     _VERSION = '1.5'
@@ -123,3 +126,11 @@ class BedCategoryGenomeElementSource(BedGenomeElementSource):
 
     def getValDataType(self):
         return 'S'
+
+
+class GzipBedGenomeElementSource(BedGenomeElementSource):
+    FILE_SUFFIXES = ['bed.gz']
+
+    def _getFile(self):
+        import gzip
+        return gzip.open(self._fn, 'r')

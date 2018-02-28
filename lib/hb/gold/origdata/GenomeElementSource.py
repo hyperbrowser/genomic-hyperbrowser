@@ -342,7 +342,8 @@ def getGenomeElementSourceClass(fn, suffix=None, forPreProcessor=False):
 
 def getAllGenomeElementSourceClasses(forPreProcessor):
     from gold.origdata.BedGenomeElementSource import PointBedGenomeElementSource, BedValuedGenomeElementSource, \
-                                                     BedCategoryGenomeElementSource, BedGenomeElementSource
+                                                     BedCategoryGenomeElementSource, BedGenomeElementSource, \
+                                                     GzipBedGenomeElementSource
     from gold.origdata.GffGenomeElementSource import GffCategoryGenomeElementSource, GffGenomeElementSource
     from gold.origdata.FastaGenomeElementSource import FastaGenomeElementSource
     from gold.origdata.HBFunctionGenomeElementSource import HBFunctionGenomeElementSource
@@ -350,7 +351,7 @@ def getAllGenomeElementSourceClasses(forPreProcessor):
     from gold.origdata.MicroarrayGenomeElementSource import MicroarrayGenomeElementSource
 
     allGESourceClasses = [PointBedGenomeElementSource, BedCategoryGenomeElementSource, BedValuedGenomeElementSource, \
-                          BedGenomeElementSource, GffCategoryGenomeElementSource, GffGenomeElementSource, \
+                          BedGenomeElementSource, GzipBedGenomeElementSource, GffCategoryGenomeElementSource, GffGenomeElementSource, \
                           FastaGenomeElementSource, HBFunctionGenomeElementSource, \
                           BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource, MicroarrayGenomeElementSource]
 
