@@ -863,6 +863,8 @@ class CongloProtoTool(GeneralGuiTool):
         print '<h2>Results for each dataset and tool configuration</h2>'
         succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
                                           for state in [True,False]]
+        print "TEMP succeeding methods length: ", len(succeedingMethods)
+        print "TEMP failing methods length: ", len(failingMethods)
         # TODO: Adding galaxyFn is a temporary hack to allow full HyperBrowser output
         trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods, galaxyFn)
         trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
