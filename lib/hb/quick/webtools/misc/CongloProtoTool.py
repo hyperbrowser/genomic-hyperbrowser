@@ -965,7 +965,7 @@ class CongloProtoTool(GeneralGuiTool):
         if resList:
             return TrackCombResultList(reduce(lambda x,y:x+y, resList))
         else:
-            return []
+            return TrackCombResultList([])
 
     @classmethod
     def extractResultsFromWorkingMethod(cls, wmo, galaxyFn):
