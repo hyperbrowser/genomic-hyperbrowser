@@ -1470,7 +1470,7 @@ class CongloResultsGenerator:
             print str(self._createErrorTable())
 
     def _generateOneVsOneResults(self, trackCombResults):
-        print "TEMP111: trackCombResults"
+        print("TEMP111: ", trackCombResults)
         core = HtmlCore()
         core.append(str(self.createMainTable(trackCombResults)))
         try:
