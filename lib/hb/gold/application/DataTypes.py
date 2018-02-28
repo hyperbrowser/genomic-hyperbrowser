@@ -1,6 +1,6 @@
 def getSupportedFileSuffixesForBinning():
-    return ['gtrack', 'bed', 'point.bed', 'category.bed', 'valued.bed', 'wig', \
-            'targetcontrol.bedgraph', 'bedgraph', 'gff', 'gff3', 'category.gff', \
+    return ['gtrack', 'gtrack.gz', 'bed', 'bed.gz', 'point.bed', 'category.bed', 'valued.bed',
+            'wig', 'targetcontrol.bedgraph', 'bedgraph', 'gff', 'gff3', 'category.gff',
             'narrowpeak', 'broadpeak']
 
 
@@ -27,9 +27,9 @@ def getSupportedFileSuffixes():
 
 # Defined to stop searching for GTrackGenomeElementSource subtypes online.
 def getUnsupportedFileSuffixes():
-    return ['bam', 'bai', 'tab', 'tbi', 'bigwig', 'bw', 'bigbed', 'bb', 'fastq', 'fq', \
-            'csfasta', 'csqual', 'doc', 'docx', 'xls', 'xlsx', 'gp', 'gappedPeak', 'peaks', \
-            'bedcluster', 'bedlogr', 'bedrnaelement', 'bedrrbs', 'cel', 'matrix', \
-            'pdf', 'peptidemapping', 'shortfrags', 'spikeins', 'pair', 'txt', \
+    return ['bam', 'bai', 'tab', 'tbi', 'bigwig', 'bw', 'bigbed', 'bb', 'fastq', 'fq',
+            'csfasta', 'csqual', 'doc', 'docx', 'xls', 'xlsx', 'gp', 'gappedPeak', 'peaks',
+            'bedcluster', 'bedlogr', 'bedrnaelement', 'bedrrbs', 'cel', 'matrix',
+            'pdf', 'peptidemapping', 'shortfrags', 'spikeins', 'pair', 'txt', 'sam',
             'xml', 'svs', 'gz', 'tar', 'z', 'tgz', 'zip']
 #            'xml', 'svs', 'maf', 'gz', 'tar', 'z', 'tgz', 'zip']
