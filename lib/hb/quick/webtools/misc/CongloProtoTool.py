@@ -815,7 +815,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        DebugUtil.insertBreakPoint()
+        DebugUtil.insertBreakPoint(username=username, currentUser="borissim@ifi.uio.no")
         if not VERBOSE_RUNNING:
             silenceRWarnings()
 
