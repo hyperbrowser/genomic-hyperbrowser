@@ -865,8 +865,6 @@ class CongloProtoTool(GeneralGuiTool):
         print '<h2>Results for each dataset and tool configuration</h2>'
         succeedingMethods, failingMethods = [[wmo for wmo in keptWmos if wmo.ranSuccessfully()==state]
                                           for state in [True,False]]
-        print "TEMP succeeding methods length: ", len(succeedingMethods)
-        print "TEMP failing methods length: ", len(failingMethods)
         # TODO: Adding galaxyFn is a temporary hack to allow full HyperBrowser output
         trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods, galaxyFn)
         trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
@@ -963,7 +961,11 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def extractResultsFromWorkingMethodList(cls, wmoList, galaxyFn):
-        return TrackCombResultList(reduce(lambda x,y:x+y, [cls.extractResultsFromWorkingMethod(wmo, galaxyFn) for wmo in wmoList]))
+        resList = [cls.extractResultsFromWorkingMethod(wmo, galaxyFn) for wmo in wmoList]
+        if resList:
+            return TrackCombResultList(reduce(lambda x,y:x+y, resList))
+        else:
+            return []
 
     @classmethod
     def extractResultsFromWorkingMethod(cls, wmo, galaxyFn):
@@ -975,9 +977,7 @@ class CongloProtoTool(GeneralGuiTool):
                     print 'skipping result output for method', wmo
                 return
             allPvals = wmo.getPValue()
-            print("Temp: allPvals: ", allPvals)
             allTestStats = wmo.getTestStatistic()
-            print("Temp: allTestStats: ", allTestStats)
             # TODO: temporary hack
             if wmo._methodCls.__name__ == 'HyperBrowser':
                 allFullResults = wmo.getFullResults(galaxyFn)
@@ -1476,7 +1476,6 @@ class CongloResultsGenerator:
             print str(self._createErrorTable())
 
     def _generateOneVsOneResults(self, trackCombResults):
-        print("TEMP111: ", trackCombResults)
         core = HtmlCore()
         core.append(str(self.createMainTable(trackCombResults)))
         try:
