@@ -973,7 +973,9 @@ class CongloProtoTool(GeneralGuiTool):
                     print 'skipping result output for method', wmo
                 return
             allPvals = wmo.getPValue()
+            print("Temp: allPvals: ", allPvals)
             allTestStats = wmo.getTestStatistic()
+            print("Temp: allTestStats: ", allTestStats)
             # TODO: temporary hack
             if wmo._methodCls.__name__ == 'HyperBrowser':
                 allFullResults = wmo.getFullResults(galaxyFn)
