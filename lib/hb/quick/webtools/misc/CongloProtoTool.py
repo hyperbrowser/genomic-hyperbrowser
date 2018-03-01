@@ -20,6 +20,7 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.congloproto.HBCongloMethod import HyperBrowser
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.CommonFunctions import silenceRWarnings
+from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
@@ -814,6 +815,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        DebugUtil.insertBreakPoint(username=username, currentUser="borissim@ifi.uio.no")
         if not VERBOSE_RUNNING:
             silenceRWarnings()
 
