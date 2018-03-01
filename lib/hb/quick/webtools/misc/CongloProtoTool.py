@@ -881,7 +881,10 @@ class CongloProtoTool(GeneralGuiTool):
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
         crg.outputResults()
 
-        print HtmlCore().end(stopReload=True)
+        core = HtmlCore()
+        core.hideToggle(styleId='progress')
+        core.end(stopReload=True)
+        print core
 
 
 
