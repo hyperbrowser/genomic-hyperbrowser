@@ -1,0 +1,4 @@
+<tool id="hb_g_suite_change_file_type_tool" name="Change file type of primary tracks in a GSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.gsuite.GSuiteChangeFileTypeTool" proto_tool_class="GSuiteChangeFileTypeTool">
+  <description></description>
+</tool>
