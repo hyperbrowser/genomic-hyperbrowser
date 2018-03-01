@@ -1457,6 +1457,8 @@ class TrackCombError:
         self.methodName = methodName
 
 class CongloResultsGenerator:
+    MAX_TRACKCOUNT_FOR_PVAL_PLOTS = 20
+
     def __init__(self, trackCombResults, trackCombErrors, keysWithVariation, galaxyFn):
         self._trackCombResults = trackCombResults
         self._trackCombErrors = trackCombErrors
@@ -1479,7 +1481,8 @@ class CongloResultsGenerator:
         core.append(str(self.createMainTable(trackCombResults)))
         try:
             #pass
-            core.paragraph(str(self.plotPvals(trackCombResults)))
+            if len(trackCombResults.getSetOfAllRefTracks()) < self.MAX_TRACKCOUNT_FOR_PVAL_PLOTS:
+                core.paragraph(str(self.plotPvals(trackCombResults)))
         except Exception as e:
             if not CATCH_METHOD_EXCEPTIONS:
                 raise
