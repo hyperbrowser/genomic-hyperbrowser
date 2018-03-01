@@ -1471,17 +1471,18 @@ class CongloResultsGenerator:
         if len(refTrackSet)>1:
             print str(self._generateOneVsManyResults())
         else:
-            print str(self._generateOneVsOneResults(self._trackCombResults))
+            print str(self._generateOneVsOneResults(self._trackCombResults,
+                                                    numRefTracks=1))
 
         if len(self._trackCombErrors)>0:
             print str(self._createErrorTable())
 
-    def _generateOneVsOneResults(self, trackCombResults):
+    def _generateOneVsOneResults(self, trackCombResults, numRefTracks):
         core = HtmlCore()
         core.append(str(self.createMainTable(trackCombResults)))
         try:
             #pass
-            if len(trackCombResults.getSetOfAllRefTracks()) < self.MAX_TRACKCOUNT_FOR_PVAL_PLOTS:
+            if numRefTracks < self.MAX_TRACKCOUNT_FOR_PVAL_PLOTS:
                 core.paragraph(str(self.plotPvals(trackCombResults)))
         except Exception as e:
             if not CATCH_METHOD_EXCEPTIONS:
@@ -1565,7 +1566,8 @@ class CongloResultsGenerator:
             self._subPageStaticFiles[refTrack] = GalaxyRunSpecificFile(['oneVsOne'+'_'+refTrack+'.html'],self._galaxyFn)
             subPageHtml = HtmlCore()
             subPageHtml.begin()
-            subPageHtml.append(self._generateOneVsOneResults(resultsSubset))
+            subPageHtml.append(self._generateOneVsOneResults(resultsSubset,
+                                                             numRefTracks=len(refTrackSet)))
             subPageHtml.end()
             self._subPageStaticFiles[refTrack].writeTextToFile(str(subPageHtml))
 
