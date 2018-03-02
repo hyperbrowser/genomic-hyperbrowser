@@ -1,0 +1,47 @@
+##location: local
+##file format: preprocessed
+##track type: segments
+##genome: hg19
+###uri	title	dir_level_1	dir_level_2	dir_level_3	dir_level_4	dir_level_5	collection	dir_level_8
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_CTCF.bed	Gm12878_CTCF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_E.bed	Gm12878_E.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_PF.bed	Gm12878_PF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_R.bed	Gm12878_R.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_T.bed	Gm12878_T.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_TSS.bed	Gm12878_TSS.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Gm12878_WE.bed	Gm12878_WE.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_CTCF.bed	H1hesc_CTCF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_E.bed	H1hesc_E.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_PF.bed	H1hesc_PF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_R.bed	H1hesc_R.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_T.bed	H1hesc_T.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_TSS.bed	H1hesc_TSS.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/H1hesc_WE.bed	H1hesc_WE.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_CTCF.bed	Helas3_CTCF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_E.bed	Helas3_E.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_PF.bed	Helas3_PF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_R.bed	Helas3_R.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_T.bed	Helas3_T.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_TSS.bed	Helas3_TSS.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Helas3_WE.bed	Helas3_WE.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_CTCF.bed	Hepg2_CTCF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_E.bed	Hepg2_E.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_PF.bed	Hepg2_PF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_R.bed	Hepg2_R.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_T.bed	Hepg2_T.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_TSS.bed	Hepg2_TSS.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Hepg2_WE.bed	Hepg2_WE.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_CTCF.bed	Huvec_CTCF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_E.bed	Huvec_E.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_PF.bed	Huvec_PF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_R.bed	Huvec_R.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_T.bed	Huvec_T.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_TSS.bed	Huvec_TSS.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/Huvec_WE.bed	Huvec_WE.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_CTCF.bed	K562_CTCF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_E.bed	K562_E.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_PF.bed	K562_PF.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_R.bed	K562_R.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_T.bed	K562_T.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_TSS.bed	K562_TSS.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg19/encode_segmentation/regions/K562_WE.bed	K562_WE.bed	scratch	ns5bc	resources	regions	LOLACore	encode_segmentation	regions

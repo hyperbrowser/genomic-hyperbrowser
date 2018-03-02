@@ -1,0 +1,18 @@
+##location: local
+##file format: preprocessed
+##track type: segments
+##genome: hg38
+###uri	title	dir_level_1	dir_level_2	dir_level_3	dir_level_4	dir_level_5	collection	dir_level_8
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/coriellDelDup.bed	coriellDelDup.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/cpgIslandExt.bed	cpgIslandExt.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/evoCpg.bed	evoCpg.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/genomicSuperDups.bed	genomicSuperDups.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/laminB1.bed	laminB1.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/laminB1Lads.bed	laminB1Lads.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/microsat.bed	microsat.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/nestedRepeats.bed	nestedRepeats.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/numtSAssembled.bed	numtSAssembled.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/rmsk.bed	rmsk.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/simpleRepeat.bed	simpleRepeat.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/switchDbTss.bed	switchDbTss.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
+hb:/external/coloc-stats/32/326842bcf9f5d1c4/scratch/ns5bc/resources/regions/LOLACore/hg38/ucsc_features/regions/vistaEnhancers.bed	vistaEnhancers.bed	scratch	ns5bc	resources	regions	LOLACore	ucsc_features	regions
