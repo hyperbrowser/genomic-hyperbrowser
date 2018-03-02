@@ -205,7 +205,8 @@ class HyperBrowser(ManyVsManyMethod):
         return analysisSpec
 
     def _getAnalysisSpecNoPval(self):
-        return '-> ' + self._colocStatistic
+        from gold.description.AnalysisDefHandler import AnalysisDefHandler
+        return AnalysisDefHandler('-> ' + self._colocStatistic)
 
     # def _getTrackFromFilename(self, filePath):
     #     import os
