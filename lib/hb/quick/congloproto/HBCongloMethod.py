@@ -204,6 +204,9 @@ class HyperBrowser(ManyVsManyMethod):
                                                     'segments of track 2 with respect to overlap')
         return analysisSpec
 
+    def _getAnalysisSpecNoPval(self):
+        return '-> ' + self._colocStatistic
+
     # def _getTrackFromFilename(self, filePath):
     #     import os
     #     import shutil
@@ -228,14 +231,16 @@ class HyperBrowser(ManyVsManyMethod):
     def createJobs(self, jobOutputDir):
         if self._refTrackFiles == ['prebuilt', 'LOLACore_170206']:
             refTracks = self._readGsuiteAndRegisterTracks('LOLACore_170206', 'codex.gsuite')
+            analysisSpec = self._getAnalysisSpecNoPval()
         else:
             refTracks = [self._processTrack(refTrack) for refTrack in self._refTrackFiles]
+            analysisSpec = self._getAnalysisSpec()
 
         for queryTrackFile in self._queryTrackFiles:
             qTrack = self._registerTrackFileAndProcess(queryTrackFile)
             for rTrack in refTracks:
                 self._analyses[(queryTrackFile, self._getPathVersionOfTrackName(rTrack))] = \
-                    AnalysisObject(self._getAnalysisSpec(), self._binSource,
+                    AnalysisObject(analysisSpec, self._binSource,
                                    [qTrack, rTrack], self._genome)
         return [HBJob(self._analyses)]
 
@@ -246,8 +251,8 @@ class HyperBrowser(ManyVsManyMethod):
     def _readGsuiteAndRegisterTracks(self, trackIndex, trackCollection):
         refTracks = []
 
-        refGsuiteFn = os.path.join(self.REF_TRACK_GSUITE_DIR, 'LOLACore_170206',
-                                   'hg19', 'codex.gsuite')
+        refGsuiteFn = os.path.join(self.REF_TRACK_GSUITE_DIR, trackIndex,
+                                   self._genome, trackCollection)
         refGsuite = GSuiteParser.parse(refGsuiteFn)
         for gsuiteTrack in refGsuite.allTracks():
             self._addTrackTitleMapping(self._getPathVersionOfTrackName(gsuiteTrack), gsuiteTrack.title)
