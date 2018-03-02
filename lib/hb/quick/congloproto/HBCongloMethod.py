@@ -105,24 +105,22 @@ class HyperBrowser(ManyVsManyMethod):
     def getPValue(self):
         pvals = OrderedDict()
         for trackTuple, result in self._results.iteritems():
-            pval = result.getGlobalResult().get('P-value')
-            if pval is None:
+            globalResult = result.getGlobalResult()
+            if globalResult['NumResamplings'] == 0:
                 pvals[trackTuple] = SingleResultValue(None, 'N/A')
             else:
+                pval = globalResult['P-value']
                 pvals[trackTuple] = SingleResultValue(self._getNumericFromStr(pval), self._getFormattedVal(self._getNumericFromStr(pval)))
         return self.getRemappedResultDict(pvals)
 
     def getTestStatistic(self):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
-            globalRes = result.getGlobalResult()
-            testStatVal = None
-            for testStatName in [self._colocStatistic, 'TSMC_' + self._colocStatistic]:
-                if testStatName in globalRes:
-                    testStatVal = globalRes[testStatName]
-                    break
-
-            testStat = float(testStatVal) / result.getGlobalResult()['MeanOfNullDistr']
+            globalResult = result.getGlobalResult()
+            if globalResult['NumResamplings'] == 0:
+                testStat = float(globalResult['TSMC_' + self._colocStatistic])
+            else:
+                testStat = float(globalResult['TSMC_' + self._colocStatistic]) / globalResult['MeanOfNullDistr']
             svr = SingleResultValue(testStat, '<span title="' + \
                                     self.getTestStatDescr() \
                                     + '">' + self._getFormattedVal(testStat) + '</span>')
@@ -192,12 +190,17 @@ class HyperBrowser(ManyVsManyMethod):
         else:
             raise Exception("Invalid mode")
 
-    def _getAnalysisSpec(self):
+    def _getAnalysisSpec(self, withPval):
         from gold.description.AnalysisList import REPLACE_TEMPLATES
         from gold.description.AnalysisDefHandler import AnalysisDefHandler
 
-        analysisDefString = REPLACE_TEMPLATES[
-                                '$MCFDR$'] + ' -> RandomizationManagerStat'
+        if withPval:
+            mcString = REPLACE_TEMPLATES['$MCFDR$']
+        else:
+            mcString = '[numResamplings=0]'
+
+        analysisDefString = mcString + ' -> RandomizationManagerStat'
+
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', self._runtimeMode)
         analysisSpec.addParameter('assumptions', self._randomizationAssumption)
@@ -213,10 +216,6 @@ class HyperBrowser(ManyVsManyMethod):
                                                     'are dependent on the locations of the '
                                                     'segments of track 2 with respect to overlap')
         return analysisSpec
-
-    def _getAnalysisSpecNoPval(self):
-        from gold.description.AnalysisDefHandler import AnalysisDefHandler
-        return AnalysisDefHandler('-> ' + self._colocStatistic)
 
     # def _getTrackFromFilename(self, filePath):
     #     import os
@@ -242,11 +241,11 @@ class HyperBrowser(ManyVsManyMethod):
     def createJobs(self, jobOutputDir):
         if self._refTrackFiles == ['prebuilt', 'LOLACore_170206']:
             refTracks = self._readGsuiteAndRegisterTracks('LOLACore_170206', 'codex.gsuite')
-            analysisSpec = self._getAnalysisSpecNoPval()
+            analysisSpec = self._getAnalysisSpec(withPval=False)
         else:
             refTracks = [self._registerTrackFileAndProcess(refTrack)
                          for refTrack in self._refTrackFiles]
-            analysisSpec = self._getAnalysisSpec()
+            analysisSpec = self._getAnalysisSpec(withPval=True)
 
         for queryTrackFile in self._queryTrackFiles:
             qTrack = self._registerTrackFileAndProcess(queryTrackFile)
