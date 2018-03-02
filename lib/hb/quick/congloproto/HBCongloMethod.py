@@ -116,13 +116,12 @@ class HyperBrowser(ManyVsManyMethod):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             globalRes = result.getGlobalResult()
-            testStatVal = None
-            for testStatName in [self._colocStatistic, 'TSMC_' + self._colocStatistic]:
-                if testStatName in globalRes:
-                    testStatVal = globalRes[testStatName]
-                    break
+            if 'TSMC_' + self._colocStatistic in globalRes:
+                testStat = float(globalRes['TSMC_' + self._colocStatistic]) / \
+                           result.getGlobalResult()['MeanOfNullDistr']
+            else:
+                testStat = float(globalRes[self._colocStatistic])
 
-            testStat = float(testStatVal) / result.getGlobalResult()['MeanOfNullDistr']
             svr = SingleResultValue(testStat, '<span title="' + \
                                     self.getTestStatDescr() \
                                     + '">' + self._getFormattedVal(testStat) + '</span>')
@@ -216,7 +215,11 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _getAnalysisSpecNoPval(self):
         from gold.description.AnalysisDefHandler import AnalysisDefHandler
-        return AnalysisDefHandler('-> ' + self._colocStatistic)
+        analysisSpec = AnalysisDefHandler('-> DictZipperStat')
+        analysisSpec.addParameter('statClassList',
+                                  '^'.join([self._colocStatistic, 'TpRawOverlapStat',
+                                            'CountStat', 'CountElementStat']))
+        return analysisSpec
 
     # def _getTrackFromFilename(self, filePath):
     #     import os
