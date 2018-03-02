@@ -843,9 +843,9 @@ class CongloProtoTool(GeneralGuiTool):
 
         #workingMethodObjects = cls.getWorkingMethodObjects(choices)
         queryTrack, refTracks, selectionValues = cls.extractFromChoices(choices)
-        print 'FOR TEST TRANSFER - queryTrack, refTracks, selectionValues: ', '<br>', repr(queryTrack), '<br>', repr(refTracks), '<br>', selectionValues, '<br><br>'
+        # print 'FOR TEST TRANSFER - queryTrack, refTracks, selectionValues: ', '<br>', repr(queryTrack), '<br>', repr(refTracks), '<br>', selectionValues, '<br><br>'
         workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues,ALL_METHOD_CLASSES).getWorkingMethodObjects()
-        print 'FOR TEST TRANSFER - compatible methods classes:', set([wmo.getMethodName() for wmo in workingMethodObjects]), '<br><br>'
+        # print 'FOR TEST TRANSFER - compatible methods classes:', set([wmo.getMethodName() for wmo in workingMethodObjects]), '<br><br>'
         methodSelectionStatus = dict(
             [(extendedMethodName.split(' ')[0], selectionStatus) for extendedMethodName, selectionStatus in
              choices.compatibleMethods.items()])
