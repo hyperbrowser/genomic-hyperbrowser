@@ -30,7 +30,8 @@ class HyperBrowser(ManyVsManyMethod):
         self._queryTrackFiles = None
         self._refTrackFiles = None
         self._allowOverlaps = False
-        self._colocStatistic = "ObservedVsExpectedStat"
+        self._colocStatistic = "DerivedOverlapStat"
+        self._colocStatResultKey = 'overlapToExpOverlapRatio'
         # self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
         self.preserveClumping(True)
         self._analyses = OrderedDict()
@@ -118,7 +119,7 @@ class HyperBrowser(ManyVsManyMethod):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             globalRes = result.getGlobalResult()
-            for key in [self._colocStatistic, 'TSMC_' + self._colocStatistic]:
+            for key in [self._colocStatResultKey, 'TSMC_' + self._colocStatistic]:
                 if key in globalRes:
                     testStatVal = globalRes[key]
                     break
