@@ -105,7 +105,7 @@ class HyperBrowser(ManyVsManyMethod):
     def getPValue(self):
         pvals = OrderedDict()
         for trackTuple, result in self._results.iteritems():
-            pval = result.getGlobalResult()['P-value']
+            pval = result.getGlobalResult().get('P-value')
             pvals[trackTuple] = SingleResultValue(self._getNumericFromStr(pval), self._getFormattedVal(self._getNumericFromStr(pval)))
         return self.getRemappedResultDict(pvals)
 
@@ -234,13 +234,14 @@ class HyperBrowser(ManyVsManyMethod):
             refTracks = self._readGsuiteAndRegisterTracks('LOLACore_170206', 'codex.gsuite')
             analysisSpec = self._getAnalysisSpecNoPval()
         else:
-            refTracks = [self._processTrack(refTrack) for refTrack in self._refTrackFiles]
+            refTracks = [self._registerTrackFileAndProcess(refTrack)
+                         for refTrack in self._refTrackFiles]
             analysisSpec = self._getAnalysisSpec()
 
         for queryTrackFile in self._queryTrackFiles:
             qTrack = self._registerTrackFileAndProcess(queryTrackFile)
             for rTrack in refTracks:
-                self._analyses[(queryTrackFile, self._getPathVersionOfTrackName(rTrack))] = \
+                self._analyses[(queryTrackFile.path, self._getPathVersionOfTrackName(rTrack))] = \
                     AnalysisObject(analysisSpec, self._binSource,
                                    [qTrack, rTrack], self._genome)
         return [HBJob(self._analyses)]
