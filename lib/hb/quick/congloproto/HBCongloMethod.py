@@ -105,7 +105,7 @@ class HyperBrowser(ManyVsManyMethod):
         pvals = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             pval = result.getGlobalResult()['P-value']
-            pvals[trackTuple] = SingleResultValue(self._getNumericFromStr(pval), '<%.4f' % pval)
+            pvals[trackTuple] = SingleResultValue(self._getNumericFromStr(pval), self._getFormattedVal(self._getNumericFromStr(pval)))
         return self.getRemappedResultDict(pvals)
 
 
@@ -115,7 +115,7 @@ class HyperBrowser(ManyVsManyMethod):
             testStat = float(result.getGlobalResult()['TSMC_' + self._colocStatistic]) / result.getGlobalResult()['MeanOfNullDistr']
             svr = SingleResultValue(testStat, '<span title="' + \
                                     self.getTestStatDescr() \
-                                    + '">' + ('%.2f' % testStat) + '</span>')
+                                    + '">' + self._getFormattedVal(testStat) + '</span>')
             testStats[trackTuple] = svr
         return self.getRemappedResultDict(testStats)
 
