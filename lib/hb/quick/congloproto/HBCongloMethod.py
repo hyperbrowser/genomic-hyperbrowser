@@ -30,7 +30,7 @@ class HyperBrowser(ManyVsManyMethod):
         self._queryTrackFiles = None
         self._refTrackFiles = None
         self._allowOverlaps = False
-        self._colocStatistic = "TpRawOverlapStat"
+        self._colocStatistic = "ObservedVsExpectedStat"
         # self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
         self.preserveClumping(True)
         self._analyses = OrderedDict()
@@ -109,19 +109,20 @@ class HyperBrowser(ManyVsManyMethod):
             if pval is None:
                 pvals[trackTuple] = SingleResultValue(None, 'N/A')
             else:
-                pvals[trackTuple] = SingleResultValue(self._getNumericFromStr(pval), self._getFormattedVal(self._getNumericFromStr(pval)))
+                pvals[trackTuple] = \
+                    SingleResultValue(self._getNumericFromStr(pval),
+                                      self._getFormattedVal(self._getNumericFromStr(pval)))
         return self.getRemappedResultDict(pvals)
 
     def getTestStatistic(self):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
             globalRes = result.getGlobalResult()
-            if 'TSMC_' + self._colocStatistic in globalRes:
-                testStat = float(globalRes['TSMC_' + self._colocStatistic]) / \
-                           result.getGlobalResult()['MeanOfNullDistr']
-            else:
-                testStat = float(globalRes[self._colocStatistic])
-
+            for key in [self._colocStatistic, 'TSMC_' + self._colocStatistic]:
+                if key in globalRes:
+                    testStatVal = globalRes[key]
+                    break
+            testStat = float(testStatVal)
             svr = SingleResultValue(testStat, '<span title="' + \
                                     self.getTestStatDescr() \
                                     + '">' + self._getFormattedVal(testStat) + '</span>')
@@ -130,7 +131,7 @@ class HyperBrowser(ManyVsManyMethod):
 
     @classmethod
     def getTestStatDescr(cls):
-        return 'ratio of observed/expected'
+        return 'Forbes coefficient: ratio of observed to expected overlap'
 
     def getFullResults(self, galaxyFn=None):
         from os import linesep
@@ -215,8 +216,8 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _getAnalysisSpecNoPval(self):
         from gold.description.AnalysisDefHandler import AnalysisDefHandler
-        analysisSpec = AnalysisDefHandler('-> DictZipperStat')
-        analysisSpec.addParameter('statClassList',
+        analysisSpec = AnalysisDefHandler('-> GenericResultsCombinerStat')
+        analysisSpec.addParameter('rawStatistics',
                                   '^'.join([self._colocStatistic, 'TpRawOverlapStat',
                                             'CountStat', 'CountElementStat']))
         return analysisSpec
