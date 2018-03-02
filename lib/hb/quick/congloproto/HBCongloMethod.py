@@ -2,11 +2,14 @@ import sys
 import os
 
 from collections import OrderedDict, namedtuple
+
+from config.Config import HB_SOURCE_DATA_BASE_DIR
 from conglomerate.core.types import SingleResultValue
 from conglomerate.methods.interface import ColocMeasureOverlap
 from conglomerate.methods.method import ManyVsManyMethod
 from conglomerate.tools.job import Job
 from gold.application.HBAPI import doAnalysis
+from gold.gsuite import GSuiteParser
 from gold.track.Track import Track
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
@@ -17,13 +20,15 @@ from quick.statistic.StatFacades import TpRawOverlapStat
 
 AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome'])
 
+
 class HyperBrowser(ManyVsManyMethod):
+    REF_TRACK_GSUITE_DIR = os.path.join(HB_SOURCE_DATA_BASE_DIR, 'conglomerate')
 
     def __init__(self):
         self._parsedResults = None
         self._genome = None
-        self._queryTracks = None
-        self._refTracks = None
+        self._queryTrackFiles = None
+        self._refTrackFiles = None
         self._allowOverlaps = False
         self._colocStatistic = "TpRawOverlapStat"
         # self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
@@ -42,17 +47,6 @@ class HyperBrowser(ManyVsManyMethod):
 
     def checkForAbsentMandatoryParameters(self):
         pass
-
-    def createJobs(self, jobOutputDir):
-        for queryTrack in self._queryTracks:
-            qTrack = self._processTrack(queryTrack)
-            for refTrack in self._refTracks:
-                rTrack = self._processTrack(refTrack)
-                self._analyses[(queryTrack, refTrack)] = AnalysisObject(self._getAnalysisSpec(),
-                                                                        self._binSource,
-                                                                        [qTrack, rTrack],
-                                                                        self._genome)
-        return [HBJob(self._analyses)]
 
     def setResultFilesDict(self, resultFilesDict):
         self._results = resultFilesDict
@@ -74,22 +68,29 @@ class HyperBrowser(ManyVsManyMethod):
     def _setQueryTrackFileNames(self, trackFileList):
         # self._queryTracks = [self._getTrackFromFilename(trackFn) for trackFn in trackFnList]
         # self._queryTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
-        trackFnList = []
-        for trackFile in trackFileList:
-            self._addTrackTitleMapping(trackFile.path, trackFile.title)
-            trackFnList.append(trackFile.path)
-        self._queryTracks = trackFnList
+        # trackFnList = []
+        # for trackFile in trackFileList:
+        #     self._addTrackTitleMapping(trackFile.path, trackFile.title)
+        #     trackFnList.append(trackFile.path)
+        # self._queryTracks = trackFnList
+        self._queryTrackFiles = trackFileList
 
     def _setReferenceTrackFileNames(self, trackFileList):
-        trackFnList = []
-        for trackFile in trackFileList:
-            if trackFile in ['prebuilt', 'LOLACore_170206']:
-                self.setNotCompatible()
-                return
-            self._addTrackTitleMapping(trackFile.path, trackFile.title)
-            trackFnList.append(trackFile.path)
-
-        self._refTracks = trackFnList
+        # trackFnList = []
+        # for trackFile in trackFileList:
+        #     if trackFile in ['prebuilt', 'LOLACore_170206']:
+        #         refGsuiteFn = os.path.join(self.REF_TRACK_GSUITE_DIR, 'LOLACore_170206',
+        #                                    'hg19', 'codex.gsuite')
+        #         refGsuite = GSuiteParser.parse(refGsuiteFn)
+        #         for track in refGsuite.allTracks():
+        #             self._addTrackTitleMapping('/'.join(track.trackName), track.title)
+        #             trackFnList.append(track.trackName)
+        #     else:
+        #         self._addTrackTitleMapping(trackFile.path, trackFile.title)
+        #         trackFnList.append(trackFile.path)
+        #
+        # self._refTracks = trackFnList
+        self._refTrackFiles = trackFileList
         # self._refTracks = [ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(self._genome, ['galaxy', 'bed', trackFn, 'dummy']) for trackFn in trackFnList]
         # self._refTracks = [self._getTrackFromFilename(trackFn) for trackFn in trackFnList]
         # self._refTracks = [Track(ExternalTrackManager.constructGalaxyTnFromSuitedFn(trackFn),
@@ -107,7 +108,6 @@ class HyperBrowser(ManyVsManyMethod):
             pval = result.getGlobalResult()['P-value']
             pvals[trackTuple] = SingleResultValue(self._getNumericFromStr(pval), self._getFormattedVal(self._getNumericFromStr(pval)))
         return self.getRemappedResultDict(pvals)
-
 
     def getTestStatistic(self):
         testStats = OrderedDict()
@@ -163,9 +163,7 @@ class HyperBrowser(ManyVsManyMethod):
         if restrictedAnalysisUniverse is not None:
             self.setNotCompatible()
 
-
     def setColocMeasure(self, colocMeasure):
-
         if isinstance(colocMeasure, ColocMeasureOverlap):
             self._colocStatistic = "TpRawOverlapStat"
         else:
@@ -185,7 +183,6 @@ class HyperBrowser(ManyVsManyMethod):
             raise Exception("Invalid mode")
 
     def _getAnalysisSpec(self):
-
         from gold.description.AnalysisList import REPLACE_TEMPLATES
         from gold.description.AnalysisDefHandler import AnalysisDefHandler
 
@@ -227,6 +224,40 @@ class HyperBrowser(ManyVsManyMethod):
     #     from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
     #     PreProcessAllTracksJob(self._genome, convertedTrackName).process()
     #     return Track(convertedTrackName, trackTitle=trackName.split(":")[-1])
+
+    def createJobs(self, jobOutputDir):
+        if self._refTrackFiles == ['prebuilt', 'LOLACore_170206']:
+            refTracks = self._readGsuiteAndRegisterTracks('LOLACore_170206', 'codex.gsuite')
+        else:
+            refTracks = [self._processTrack(refTrack) for refTrack in self._refTrackFiles]
+
+        for queryTrackFile in self._queryTrackFiles:
+            qTrack = self._registerTrackFileAndProcess(queryTrackFile)
+            for rTrack in refTracks:
+                self._analyses[(queryTrackFile, self._getPathVersionOfTrackName(rTrack))] = \
+                    AnalysisObject(self._getAnalysisSpec(), self._binSource,
+                                   [qTrack, rTrack], self._genome)
+        return [HBJob(self._analyses)]
+
+    def _registerTrackFileAndProcess(self, trackFile):
+        self._addTrackTitleMapping(trackFile.path, trackFile.title)
+        return self._processTrack(trackFile.path)
+
+    def _readGsuiteAndRegisterTracks(self, trackIndex, trackCollection):
+        refTracks = []
+
+        refGsuiteFn = os.path.join(self.REF_TRACK_GSUITE_DIR, 'LOLACore_170206',
+                                   'hg19', 'codex.gsuite')
+        refGsuite = GSuiteParser.parse(refGsuiteFn)
+        for gsuiteTrack in refGsuite.allTracks():
+            self._addTrackTitleMapping(self._getPathVersionOfTrackName(gsuiteTrack), gsuiteTrack.title)
+            refTracks.append(Track(gsuiteTrack.trackName))
+
+        return refTracks
+
+    @staticmethod
+    def _getPathVersionOfTrackName(track):
+        return '/'.join(track.trackName)
 
     def _processTrack(self, trackFn):
         from os.path import splitext, basename
