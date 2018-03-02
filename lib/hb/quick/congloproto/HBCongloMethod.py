@@ -115,7 +115,14 @@ class HyperBrowser(ManyVsManyMethod):
     def getTestStatistic(self):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
-            testStat = float(result.getGlobalResult()['TSMC_' + self._colocStatistic]) / result.getGlobalResult()['MeanOfNullDistr']
+            globalRes = result.getGlobalResult()
+            testStatVal = None
+            for testStatName in [self._colocStatistic, 'TSMC_' + self._colocStatistic]:
+                if testStatName in globalRes:
+                    testStatVal = globalRes[testStatName]
+                    break
+
+            testStat = float(testStatVal) / result.getGlobalResult()['MeanOfNullDistr']
             svr = SingleResultValue(testStat, '<span title="' + \
                                     self.getTestStatDescr() \
                                     + '">' + self._getFormattedVal(testStat) + '</span>')
