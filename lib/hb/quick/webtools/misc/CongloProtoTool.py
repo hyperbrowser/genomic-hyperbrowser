@@ -1100,6 +1100,14 @@ class CongloProtoTool(GeneralGuiTool):
         #                     if choices.distanceType is not None else[]
         # fullDistSpecs = product(distCoordSelected, distTypeSelected)
         # encodedDistSpecs = ['-'.join(spec) for spec in fullDistSpecs]
+        for key in choices.teststatType:
+            if isinstance(choices.teststatType[key],basestring):
+                if choices.teststatType[key] == 'True':
+                    choices.teststatType[key] = True
+                elif choices.teststatType[key] == 'False':
+                    choices.teststatType[key] = False
+                else:
+                    raise Exception('Unexpected test stat selection: ' + choices.teststatType[key])
         assert all(val in [False,True] for val in choices.teststatType.values()), choices.teststatType.values()
         if choices.teststatType is not None and choices.teststatType[cls.DISTANCE] == True:
             encodedDistSpecs = [ColocMeasureProximity(None, None)]
