@@ -270,7 +270,7 @@ class HyperBrowser(ManyVsManyMethod):
 
     def _registerTrackFileAndProcess(self, trackFile):
         self._addTrackTitleMapping(trackFile.path, trackFile.title)
-        return self._processTrack(trackFile.path)
+        return self._processTrack(trackFile)
 
     def _readGsuiteAndRegisterTracks(self, trackIndex, trackCollection):
         refTracks = []
@@ -288,14 +288,14 @@ class HyperBrowser(ManyVsManyMethod):
     def _getPathVersionOfTrackName(track):
         return '/'.join(track.trackName)
 
-    def _processTrack(self, trackFn):
-        from os.path import splitext, basename
+    def _processTrack(self, trackFile):
+        from os.path import splitext
         storedStdOut = sys.stdout
         sys.stdout = open(os.devnull, 'w')
         track = Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN
-                      (self._genome, ['galaxy', 'bed', trackFn, basename(trackFn)],
+                      (self._genome, ['galaxy', 'bed', trackFile.path, trackFile.title],
                        printErrors=False, printProgress=False),
-                      splitext(basename(trackFn)))
+                      splitext(trackFile.path))
         sys.stdout = storedStdOut
         return track
 
