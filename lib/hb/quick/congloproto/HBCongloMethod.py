@@ -11,11 +11,10 @@ from conglomerate.tools.job import Job
 from gold.application.HBAPI import doAnalysis
 from gold.gsuite import GSuiteParser
 from gold.track.Track import Track
-from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import GlobalBinSource
-from quick.statistic.StatFacades import TpRawOverlapStat
+from conglomerate.tools.tracks import refTrackCollRegistry
 
 
 AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome'])
@@ -249,8 +248,11 @@ class HyperBrowser(ManyVsManyMethod):
     #     return Track(convertedTrackName, trackTitle=trackName.split(":")[-1])
 
     def createJobs(self, jobOutputDir):
-        if self._refTrackFiles == ['prebuilt', 'LOLACore_170206']:
-            refTracks = self._readGsuiteAndRegisterTracks('LOLACore_170206', 'codex.gsuite')
+        registry = refTrackCollRegistry
+        if registry.isTrackCollSpec(self._refTrackFiles):
+            trackIndex, trackCollection = \
+                registry.getTrackIndexAndCollFromTrackCollSpec(self._refTrackFiles)
+            refTracks = self._readGsuiteAndRegisterTracks(trackIndex, trackCollection + '.gsuite')
             refTrackPaths = [self._getPathVersionOfTrackName(rTrack) for rTrack in refTracks]
             analysisSpec = self._getAnalysisSpecNoPval()
         else:

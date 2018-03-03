@@ -8,8 +8,7 @@ from conglomerate.methods.interface import (ColocMeasureCorrelation, ColocMeasur
                                             RestrictedThroughExclusion, RestrictedThroughInclusion,
                                             ColocMeasureProximity, InvalidSpecification)
 from conglomerate.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_CONGLOMERATE_METHOD_CLASSES
-from conglomerate.tools.method_compatibility import (getCompatibleMethodObjects,
-                                                     getCollapsedConfigurationsPerMethod)
+from conglomerate.tools.method_compatibility import (getCollapsedConfigurationsPerMethod)
 from conglomerate.tools.runner import runAllMethodsInSequence
 from proto.CommonFunctions import (createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL,
                                    getGalaxyFilesDir)
@@ -18,9 +17,9 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.TextCore import TextCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.congloproto.HBCongloMethod import HyperBrowser
+from conglomerate.tools.tracks import refTrackCollRegistry
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.CommonFunctions import silenceRWarnings
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
@@ -409,15 +408,10 @@ class CongloProtoTool(GeneralGuiTool):
         text += '[3] 10.1093/bioinformatics/btv612'
         return text
 
-    LOLA_COLLECTION = 'LOLA data collection'
-    GIGGLE_COLLECTION = 'GIGGLE data collection'
-    HB_COLLECTION = 'GSuite Hyperbrowser data collection'
-
     @classmethod
     def getOptionsBoxChoiceOfCoreDatabase(cls, prevChoices):
         if prevChoices.typeOfReferenceTrackCollection == cls.CORE_DATABASE:
-            return [cls.LOLA_COLLECTION]
-            # return [cls.LOLA_COLLECTION, cls.GIGGLE_COLLECTION, cls.HB_COLLECTION]
+            return refTrackCollRegistry.getTrackCollectionList(cls._getGenomeName(prevChoices))
 
     @classmethod
     def getOptionsBoxChooseCustomTrackCollection(cls, prevChoices):
@@ -741,13 +735,17 @@ class CongloProtoTool(GeneralGuiTool):
                 else None
 
         else:
-            genomeName = prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
+            genomeName = cls._getGenomeName(prevChoices)
             chrLenFn = chrLenFnMappings[genomeName]
 
         selections['setGenomeName'] = [('setGenomeName', genomeName)]
         selections['setChromLenFileName'] = [('setChromLenFileName', chrLenFn)]
         selections['setRuntimeMode'] = [('setRuntimeMode', prevChoices.runtimeMode)]
         return selections
+
+    @classmethod
+    def _getGenomeName(cls, prevChoices):
+        return prevChoices.selectReferenceGenome.split('(')[-1].split(')')[0]
 
     @classmethod
     def _getCongloResourcePath(cls, resourceFn):
@@ -1175,15 +1173,14 @@ class CongloProtoTool(GeneralGuiTool):
             return "You must select at least one method to run"
 
 
-
     @classmethod
     def getValidationText(cls, choices):
         if choices.allowOverlaps and choices.allowOverlaps[cls.DETERMINE_FROM_SUBMITTED_TRACKS]:
             if choices.allowOverlaps[cls.MAY_OVERLAP] or choices.allowOverlaps[cls.NOT_ALLOWED]:
                 return "%s can only be selected as a single choice" % cls.DETERMINE_FROM_SUBMITTED_TRACKS
         else:
-            if choices.allowOverlaps and not choices.allowOverlaps[cls.NOT_ALLOWED] and not choices.allowOverlaps[
-                cls.MAY_OVERLAP]:
+            if choices.allowOverlaps and not choices.allowOverlaps[cls.NOT_ALLOWED] \
+                    and not choices.allowOverlaps[cls.MAY_OVERLAP]:
                 return "Please select whether or not to allow genomic regions to overlap within track"
         if choices.clumping and not any(choices.clumping.values()):
             return "Please select whether or not to handle clumping"
@@ -1206,9 +1203,12 @@ class CongloProtoTool(GeneralGuiTool):
         elif len(workingMethodObjects) == 0:
             return "No method is compatible with current selections - please make further selections"
 
+        if choices.typeOfReferenceTrackCollection == cls.CORE_DATABASE \
+                and not choices.choiceOfCoreDatabase:
+            return "No core databases have been configured for the genome. Please select " \
+                   "reference track(s) from the history instead."
 
-            # @classmethod
-
+    # @classmethod
     # def getSubToolClasses(cls):
     #     """
     #     Specifies a list of classes for subtools of the main tool. These
@@ -1390,6 +1390,7 @@ class TrackParser:
             print 'ERROR: ', filetype, ExternalTrackManager.extractFnFromGalaxyTN(trackChoice)
         return fnList
 
+
 class ReferenceTrackParser(TrackParser):
     @classmethod
     def createFromGUIChoices(cls, choices):
@@ -1405,8 +1406,9 @@ class ReferenceTrackParser(TrackParser):
         self._chooseCustomTrackCollection = chooseCustomTrackCollection
 
     def getRefTracksFromChoices(self):
-        if self._analysisType == CongloProtoTool.REFERENCE_TRACKS and self._choiceOfCoreDatabase == CongloProtoTool.LOLA_COLLECTION:
-            return ['prebuilt', 'LOLACore_170206']
+        if self._analysisType == CongloProtoTool.REFERENCE_TRACKS:
+            return refTrackCollRegistry.getTrackCollSpecFromCollStr(
+                self._choiceOfCoreDatabase)
 
         referenceTrackChoice = self._getRefTrackChoice()
         refTracks = self.getFnListFromTrackChoice(referenceTrackChoice)
@@ -1417,7 +1419,8 @@ class ReferenceTrackParser(TrackParser):
     def _getRefTrackChoice(self):
         typeOfAnalysis = self._analysisType
         choiceOfCoreDatabase = self._choiceOfCoreDatabase
-        assert not (typeOfAnalysis == CongloProtoTool.REFERENCE_TRACKS and choiceOfCoreDatabase == CongloProtoTool.LOLA_COLLECTION)
+        # assert not (typeOfAnalysis == CongloProtoTool.REFERENCE_TRACKS
+        #             and choiceOfCoreDatabase == CongloProtoTool.LOLA_COLLECTION)
         if typeOfAnalysis == CongloProtoTool.TWO_GENOMIC_TRACKS:
             referenceTrackChoice = self._chooseReferenceTrackFile
         elif typeOfAnalysis == CongloProtoTool.REFERENCE_TRACKS:
