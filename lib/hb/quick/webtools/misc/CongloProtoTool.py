@@ -1406,7 +1406,7 @@ class ReferenceTrackParser(TrackParser):
         self._chooseCustomTrackCollection = chooseCustomTrackCollection
 
     def getRefTracksFromChoices(self):
-        if self._analysisType == CongloProtoTool.REFERENCE_TRACKS:
+        if self._analysisType == CongloProtoTool.REFERENCE_TRACKS and self._choiceOfCoreDatabase:
             return refTrackCollRegistry.getTrackCollSpecFromCollStr(
                 self._choiceOfCoreDatabase)
 
