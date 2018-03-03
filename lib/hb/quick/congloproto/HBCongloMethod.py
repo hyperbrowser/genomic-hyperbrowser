@@ -135,7 +135,7 @@ class HyperBrowser(ManyVsManyMethod):
 
     @classmethod
     def getTestStatDescr(cls):
-        return 'Ratio of observed to expected (Forbes)'
+        return 'Obs/exp overlap (Forbes)'
 
     def getFullResults(self, galaxyFn=None):
         from os import linesep
