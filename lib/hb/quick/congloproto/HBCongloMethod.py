@@ -135,7 +135,7 @@ class HyperBrowser(ManyVsManyMethod):
 
     @classmethod
     def getTestStatDescr(cls):
-        return 'Obs/exp overlap (Forbes)'
+        return 'Obs/exp overlap [Forbes]'
 
     def getFullResults(self, galaxyFn=None):
         from os import linesep
@@ -293,7 +293,7 @@ class HyperBrowser(ManyVsManyMethod):
         sys.stdout = open(os.devnull, 'w')
         track = Track(ExternalTrackManager.getPreProcessedTrackFromGalaxyTN
                       (self._genome, ['galaxy', 'bed', trackFile.path, trackFile.title],
-                       printErrors=False, printProgress=False),
+                       printErrors=False, printProgress=False, renameExistingTracksIfNeeded=False),
                       splitext(trackFile.path))
         sys.stdout = storedStdOut
         return track
