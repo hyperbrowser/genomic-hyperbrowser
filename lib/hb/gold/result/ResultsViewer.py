@@ -38,7 +38,7 @@ Noticable methods:
     __str__: overrides str function and returns a html representation of a collection of *ResultViewer objects
 '''
 class ResultsViewerCollection(object):
-    def __init__(self, resultsList, galaxyFn):
+    def __init__(self, resultsList, galaxyFn, presCollectionType=None):
         self._viewers = []
         self._resultsList = resultsList
         self._galaxyFn = galaxyFn
@@ -47,7 +47,8 @@ class ResultsViewerCollection(object):
         if len(resultsList) > 1:
             self._viewers.append(MultiBatchResultsViewer(resultsList, baseDir))
         for i,results in enumerate(resultsList):
-            self._viewers.append(ResultsViewer(results, os.sep.join([baseDir, str(i)]) ))
+            self._viewers.append(ResultsViewer(results, os.sep.join([baseDir, str(i)]),
+                                               presCollectionType=presCollectionType))
 
     def __str__(self):
         core = HtmlCore()
@@ -83,11 +84,14 @@ kind of subclass ResultsViewer object. It does so by inspecting the results-obje
 this type to a corresponding resultsViewer class
 '''
 class ResultsViewer(object):
-    def __new__(self, results, baseDir):
-        presCollectionType = results.getPresCollectionType()
+    def __new__(self, results, baseDir, presCollectionType=None):
+        if not presCollectionType:
+            presCollectionType = results.getPresCollectionType()
         #print 'presCollectionType: ',presCollectionType 
         if presCollectionType == 'standard':
             return StandardResultsViewer.__new__(StandardResultsViewer, results, baseDir)
+        elif presCollectionType == 'standardnoplots':
+            return StandardNoPlotsResultsViewer.__new__(StandardNoPlotsResultsViewer, results, baseDir)
         elif presCollectionType == 'venndata':
             return VennResultsViewer.__new__(VennResultsViewer, results, baseDir)
         elif presCollectionType == 'global':
@@ -124,10 +128,10 @@ Noticable methods:
     _addPresenter: adds presenters
 '''
 class ResultsViewerBase(ResultsViewer):
-    def __new__(cls, results, baseDir):
+    def __new__(cls, results, baseDir, *args, **kwArgs):
         return object.__new__(cls)
     
-    def __init__(self, results, baseDir):
+    def __init__(self, results, baseDir, *args, **kwArgs):
         self._results = results
         self._baseDir = baseDir
         self._str = None
@@ -471,7 +475,7 @@ Significance testing evaluates a <b>null hypothesis (H0)</b> versus an <b>altern
         return core
 
     def _writetableHeader(self, core):
-        if self._presCollectionType in ['standard']:
+        if self._presCollectionType in ['standard', 'standardnoplots']:
             core.tableHeader(*zip(*[['Results','rowspan=2']] +\
                                ([['Global analysis', 'rowspan=2']] if self._results.getGlobalResult() not in [None,{}] else []) +\
                                [['Local analysis', 'colspan='+ str(len(self._presenters)-1)]]))
@@ -587,6 +591,13 @@ class StandardResultsViewer(ResultsViewerBase):
             self._addPresenter(PixelBasedLocalResultsPresenter, True)
         #self._addPresenter(FDRSummaryPresenter)
         #self._addPresenter(WigPresenter)
+
+
+class StandardNoPlotsResultsViewer(ResultsViewerBase):
+    def _addAllPresenters(self):
+        self._presCollectionType = 'standardnoplots'
+        self._addPresenter(GlobalValuePresenter)
+        self._addPresenter(TablePresenter, True)
 
 
 class VennResultsViewer(ResultsViewerBase):
