@@ -180,7 +180,7 @@ class HyperBrowser(ManyVsManyMethod):
 
     def setColocMeasure(self, colocMeasure):
         if isinstance(colocMeasure, ColocMeasureOverlap):
-            self._colocStatistic = "TpRawOverlapStat"
+            self._colocStatistic = "ObservedVsExpectedStat"
         else:
             self.setNotCompatible()
 
