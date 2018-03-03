@@ -30,7 +30,7 @@ class GenericResultsCombinerStatUnsplittable(Statistic):
                 childRes = {getClassName(childStat).replace('Unsplittable','').replace('Splittable',''):childRes}
             #print '2',str(self._region), str(childRes)
             for key in childRes:
-                assert not key in res
+                assert not key in res, key + ' not in: ' + repr(res)
                 res[key] = childRes[key]
             #print '3',str(self._region), str(res)
             #res.update(  childRes)
