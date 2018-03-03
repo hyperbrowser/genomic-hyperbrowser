@@ -818,7 +818,7 @@ class CongloProtoTool(GeneralGuiTool):
         if not VERBOSE_RUNNING:
             silenceRWarnings()
 
-        print HtmlCore().begin(reloadTime=10)
+        print HtmlCore().begin(reloadTime=7)
         # TODO: REMOVE
         # LOAD_PICKLES = True
         #
