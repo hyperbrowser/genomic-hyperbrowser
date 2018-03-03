@@ -224,8 +224,8 @@ class HyperBrowser(ManyVsManyMethod):
         from gold.description.AnalysisDefHandler import AnalysisDefHandler
         analysisSpec = AnalysisDefHandler('-> GenericResultsCombinerStat')
         analysisSpec.addParameter('rawStatistics',
-                                  '^'.join([self._colocStatistic, 'TpRawOverlapStat',
-                                            'CountStat', 'CountElementStat']))
+                                  '^'.join([self._colocStatistic, 'RawOverlapStat',
+                                            'CountPointBothTracksStat']))
         return analysisSpec
 
     # def _getTrackFromFilename(self, filePath):
