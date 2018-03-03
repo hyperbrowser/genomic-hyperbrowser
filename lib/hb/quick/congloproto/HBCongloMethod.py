@@ -127,7 +127,6 @@ class HyperBrowser(ManyVsManyMethod):
 
     def getTestStatVal(self, result):
         globalRes = result.getGlobalResult()
-        print globalRes
         for key in [self._colocStatResultKey, 'TSMC_' + self._colocStatistic]:
             if key in globalRes:
                 testStatVal = globalRes[key]
@@ -136,7 +135,7 @@ class HyperBrowser(ManyVsManyMethod):
 
     @classmethod
     def getTestStatDescr(cls):
-        return 'Forbes coefficient: ratio of observed to expected overlap'
+        return 'Ratio of observed to expected (Forbes)'
 
     def getFullResults(self, galaxyFn=None):
         from os import linesep
