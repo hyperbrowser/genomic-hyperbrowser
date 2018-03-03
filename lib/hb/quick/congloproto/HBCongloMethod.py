@@ -225,7 +225,7 @@ class HyperBrowser(ManyVsManyMethod):
         analysisSpec = AnalysisDefHandler('-> GenericResultsCombinerStat')
         analysisSpec.addParameter('rawStatistics',
                                   '^'.join([self._colocStatistic, 'RawOverlapStat',
-                                            'CountPointBothTracksStat']))
+                                            'CountElementBothTracksStat']))
         return analysisSpec
 
     # def _getTrackFromFilename(self, filePath):
