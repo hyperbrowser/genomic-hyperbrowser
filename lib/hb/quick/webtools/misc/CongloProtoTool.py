@@ -1655,7 +1655,7 @@ class CongloResultsGenerator:
         for res in self._trackCombResults:
             trackName = res.trackCombination[1].split('/')[-1]
             #tableDict[trackName][res.methodName] = res.pval
-            tableDict[trackName][res.methodClass] = getattr(res,attribute)
+            tableDict[trackName][(res.methodClass,res.methodName)] = getattr(res,attribute)
 
 
         core = HtmlCore()
@@ -1670,18 +1670,21 @@ class CongloResultsGenerator:
                            'because the definition of test statistics varies in each individual tool and thus best not compared across tools. '
                            'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
         if len(tableDict) > 1:  # More than 1 ref track
-            allWmoClasses = list(set([wmoLabel for row in tableDict.values() for wmoLabel in row.keys()]))
-            allWmoLabels = [wmoClass.__name__ for wmoClass in allWmoClasses]
+            allWmoClassAndNames = list(set([(wmoClass,wmoName) for row in tableDict.values() for wmoClass,wmoName in row.keys()]))
+            allWmoClasses = [wmoClass for wmoClass,wmoName in allWmoClassAndNames]
+            allWmoLabels =[wmoName for wmoClass,wmoName in allWmoClassAndNames]
+            #allWmoLabels= list(set([wmoClass for row in tableDict.values() for wmoClass,wmoName in row.keys()]))
+            #allWmoLabels = [wmoClass.__name__ for wmoClass in allWmoClasses]
             if attribute=='testStat':
                 #allWmoClasses = [globals()[label] for label in allWmoLabels]
-                allWmoDescr = [wmo.getTestStatDescr() for wmo in allWmoClasses]
+                allWmoDescr = [wmoClass.getTestStatDescr() for wmoClass in allWmoClasses]
                 allWmoLabAndDescr = [label+'<br>('+descr+')' for label,descr in zip(allWmoLabels,allWmoDescr)]
             else:
                 allWmoLabAndDescr = allWmoLabels
             core.tableHeader(['Reference track'] + allWmoLabAndDescr, sortable=True)
             for trackName in tableDict:
-                valuesInRow = [tableDict[trackName][wmoClass] if wmoClass in tableDict[trackName] else 'N/A' \
-                               for wmoClass in allWmoClasses]
+                valuesInRow = [tableDict[trackName][wmoClassAndName] if wmoClassAndName in tableDict[trackName] else 'N/A' \
+                               for wmoClassAndName in allWmoClasses]
                 #trackNameLink = self._subPageStaticFiles[trackName].getLink(trackName)
                 core.tableLine([trackName] + [str(x) for x in valuesInRow])
             core.tableFooter()
