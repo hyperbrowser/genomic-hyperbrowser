@@ -878,6 +878,7 @@ class CongloProtoTool(GeneralGuiTool):
         print '''Your analysis has been completed and your results are available below.
                 You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element'''
 
+        trackCombResults.makeAllMethodNamesUnique()
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
         crg.outputResults()
 
@@ -1429,6 +1430,15 @@ class TrackList:
 class TrackCombResultList(list):
     # def __init__(self):
     #     list.__init__(self)
+    def makeAllMethodNamesUnique(self):
+        if len([res.methodName for res in self]) != len(set([res.methodName for res in self])):
+            processedMethodNames = []
+            for res in self:
+                name = res.methodName
+                numBefore = processedMethodNames.count(name)
+                if numBefore>0:
+                    res.methodName += ' (v%i)' % (numBefore+1)
+                processedMethodNames.append(name)
 
     def getSetOfAllRefTracks(self):
         return set([res.trackCombination[1] for res in self])
@@ -1758,3 +1768,4 @@ plot_pvals <- function(pvals_list,methods_list,fn){
   ggsave(filename=fn,plot=final_plot,dpi = 300)  
 }
 '''
+
