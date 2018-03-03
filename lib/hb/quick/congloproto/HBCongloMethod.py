@@ -30,8 +30,8 @@ class HyperBrowser(ManyVsManyMethod):
         self._queryTrackFiles = None
         self._refTrackFiles = None
         self._allowOverlaps = False
-        self._colocStatistic = "DerivedOverlapStat"
-        self._colocStatResultKey = 'overlapToExpOverlapRatio'
+        self._colocStatistic = "ObservedVsExpectedStat"
+        self._colocStatResultKey = 'SingleValExtractorStat'
         # self._randomizationAssumption = 'PermutedSegsAndIntersegsTrack_'
         self.preserveClumping(True)
         self._analyses = OrderedDict()
@@ -118,17 +118,21 @@ class HyperBrowser(ManyVsManyMethod):
     def getTestStatistic(self):
         testStats = OrderedDict()
         for trackTuple, result in self._results.iteritems():
-            globalRes = result.getGlobalResult()
-            for key in [self._colocStatResultKey, 'TSMC_' + self._colocStatistic]:
-                if key in globalRes:
-                    testStatVal = globalRes[key]
-                    break
-            testStat = float(testStatVal)
+            testStat = float(self.getTestStatVal(result))
             svr = SingleResultValue(testStat, '<span title="' + \
                                     self.getTestStatDescr() \
                                     + '">' + self._getFormattedVal(testStat) + '</span>')
             testStats[trackTuple] = svr
         return self.getRemappedResultDict(testStats)
+
+    def getTestStatVal(self, result):
+        globalRes = result.getGlobalResult()
+        print globalRes
+        for key in [self._colocStatResultKey, 'TSMC_' + self._colocStatistic]:
+            if key in globalRes:
+                testStatVal = globalRes[key]
+                break
+        return testStatVal
 
     @classmethod
     def getTestStatDescr(cls):
@@ -144,14 +148,15 @@ class HyperBrowser(ManyVsManyMethod):
                 fullResult[trackTuple] = resultPage
         else:
             for trackTuple, result in self._results.iteritems():
-                fullResult[trackTuple] = str(result.getGlobalResult()['TSMC_' + self._colocStatistic]) + \
+                fullResult[trackTuple] = str(self.getTestStatVal(result)) + \
                              "\t" + str(result.getGlobalResult()['P-value']) + " <br>" + linesep
         return self.getRemappedResultDict(fullResult)
 
     def _generateResultPage(self, galaxyFn):
         from gold.result.ResultsViewer import ResultsViewerCollection
 
-        resColl = ResultsViewerCollection(self._results.values(), galaxyFn)
+        resColl = ResultsViewerCollection(self._results.values(), galaxyFn,
+                                          presCollectionType='standardnoplots')
         resultPage = GalaxyInterface.getHtmlBeginForRuns(galaxyFn)
         resultPage += GalaxyInterface.getHtmlForToggles(withRunDescription=True)
         resultPage += str(resColl)
@@ -247,16 +252,18 @@ class HyperBrowser(ManyVsManyMethod):
     def createJobs(self, jobOutputDir):
         if self._refTrackFiles == ['prebuilt', 'LOLACore_170206']:
             refTracks = self._readGsuiteAndRegisterTracks('LOLACore_170206', 'codex.gsuite')
+            refTrackPaths = [self._getPathVersionOfTrackName(rTrack) for rTrack in refTracks]
             analysisSpec = self._getAnalysisSpecNoPval()
         else:
             refTracks = [self._registerTrackFileAndProcess(refTrack)
                          for refTrack in self._refTrackFiles]
+            refTrackPaths = [refTrack.path for refTrack in self._refTrackFiles]
             analysisSpec = self._getAnalysisSpec()
 
         for queryTrackFile in self._queryTrackFiles:
             qTrack = self._registerTrackFileAndProcess(queryTrackFile)
-            for rTrack in refTracks:
-                self._analyses[(queryTrackFile.path, self._getPathVersionOfTrackName(rTrack))] = \
+            for i, rTrack in enumerate(refTracks):
+                self._analyses[(queryTrackFile.path, refTrackPaths[i])] = \
                     AnalysisObject(analysisSpec, self._binSource,
                                    [qTrack, rTrack], self._genome)
         return [HBJob(self._analyses)]
