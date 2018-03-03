@@ -1692,7 +1692,7 @@ class CongloResultsGenerator:
             core.tableHeader(['Reference track'] + allWmoLabAndDescr, sortable=True)
             for trackName in tableDict:
                 valuesInRow = [tableDict[trackName][wmoClassAndName] if wmoClassAndName in tableDict[trackName] else 'N/A' \
-                               for wmoClassAndName in allWmoClasses]
+                               for wmoClassAndName in allWmoClassAndNames]
                 #trackNameLink = self._subPageStaticFiles[trackName].getLink(trackName)
                 core.tableLine([trackName] + [str(x) for x in valuesInRow])
             core.tableFooter()
