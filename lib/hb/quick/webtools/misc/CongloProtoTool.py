@@ -1431,14 +1431,16 @@ class TrackCombResultList(list):
     # def __init__(self):
     #     list.__init__(self)
     def makeAllMethodNamesUnique(self):
-        if len([res.methodName for res in self]) != len(set([res.methodName for res in self])):
-            processedMethodNames = []
-            for res in self:
-                name = res.methodName
-                numBefore = processedMethodNames.count(name)
-                if numBefore>0:
-                    res.methodName += ' (v%i)' % (numBefore+1)
-                processedMethodNames.append(name)
+        allRefTracks = set([res.trackCombination[1] for res in self])
+        for refTrack in allRefTracks:
+            if len([res.methodName for res in self.getResultsForSpecifiedRefTrack(refTrack)]) != len(set([res.methodName for res in self.getResultsForSpecifiedRefTrack(refTrack)])):
+                processedMethodNames = []
+                for res in self.getResultsForSpecifiedRefTrack(refTrack):
+                    name = res.methodName
+                    numBefore = processedMethodNames.count(name)
+                    if numBefore>0:
+                        res.methodName += ' (v%i)' % (numBefore+1)
+                    processedMethodNames.append(name)
 
     def getSetOfAllRefTracks(self):
         return set([res.trackCombination[1] for res in self])
