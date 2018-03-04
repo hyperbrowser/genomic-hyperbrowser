@@ -97,6 +97,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Select track to track similarity/distance measure', 'similarityFunc'),
              ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
+             ('Select the randomization strategy', 'randStrat'),
+             ('Select an intensity track', 'intensityTrack'),
              ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
             cls.getInputBoxNamesForAttributesSelection() + \
             cls.getInputBoxNamesForUserBinSelection() + \
@@ -206,6 +208,30 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxReversed(prevChoices):
         if not prevChoices.isBasic:
             return False
+
+    @classmethod
+    def getOptionsBoxRandStrat(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
+            return GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING.keys()
+
+    @classmethod
+    def getInfoForOptionsBoxRandStrat(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
+            return '''
+                T1 denotes your query track.
+                T2 denotes the reference track.
+                The selection of a randomization strategy determines the null model used in the Monte Carlo permutation 
+                test.               
+            '''
+
+    @classmethod
+    def getOptionsBoxIntensityTrack(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
+                prevChoices.randStrat in ["Preserve elements of T2 and number of elements of T1; randomize positions (T1) according to an intensity track",
+                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) according to an intensity track",
+                                          "Preserve elements of T1 and number of elements of T2; randomize positions (T2) among locations provided in a universe track",
+                                          "Preserve elements of T2 and number of elements of T1; randomize positions (T1) among locations provided in a universe track"]:
+            return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
@@ -320,10 +346,18 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
                                                                                      printErrors=False,
                                                                                      printProgress=False)
+        if choices.intensityTrack:
+            intensityTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.intensityTrack,
+                                                                                     printErrors=False,
+                                                                                     printProgress=False)
+        else:
+            intensityTrackNameAsList = None
         analysisQuestion = choices.analysisQName
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
         reverse = 'Yes' if choices.reversed else 'No'
+        if analysisQuestion in [cls.Q2, cls.Q3]:
+            randStrat = 'PermutedSegsAndIntersegsTrack_' if choices.isBasic else GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING[choices.randStrat]
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
@@ -360,7 +394,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core = cls.generateQ1output(additionalResultsDict, analysisQuestion, choices, galaxyFn, gsPerTrackResults,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
-            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles)
+            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles, randStrat,
+                                         intensityTrackNameAsList)
 
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
@@ -368,7 +403,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                         analysisQuestion, choices, galaxyFn, queryTrackTitle,
                                         gsuite, results, similarityStatClassName)
         else:  # Q3
-            analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc)
+            analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc, randStrat)
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
             core = cls.generateQ3output(analysisQuestion, queryTrackTitle, results, similarityStatClassName)
 
@@ -422,14 +457,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ2(cls, choices, similarityStatClassName, trackTitles):
+    def prepareQ2(cls, choices, similarityStatClassName, trackTitles, randStrat, intensityTrackNameAsList=[]):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('assumptions', randStrat)
         analysisSpec.addParameter('rawStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
         analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
@@ -437,6 +472,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('tail', 'more')
         analysisSpec.addParameter('trackTitles', trackTitles)
         analysisSpec.addParameter('queryTracksNum', str(1))
+        if intensityTrackNameAsList:
+            analysisSpec.addParameter('trackNameIntensity', '|'.join(intensityTrackNameAsList))
         return analysisSpec
 
     @classmethod
@@ -492,14 +529,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
+    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc, randStrat):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('assumptions', randStrat)
         analysisSpec.addParameter('rawStatistic', 'SummarizedInteractionWithOtherTracksV2Stat')
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
