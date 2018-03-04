@@ -640,20 +640,23 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.selectRunningMode == cls.ADVANCED:
             return OrderedDict([(cls.UNIFORMLY_DISTRIBUTED, False), (cls.PRESERVE_EMPIRIC_DISTRIBUTION, False)])
 
-    CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
+    # CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
     LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
 
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.selectRunningMode == cls.ADVANCED:
-            return ['No, I am not aware of any potential confounding feature for this analysis']
+        #Temporarily OFF
+        return None
+        #if prevChoices.selectRunningMode == cls.ADVANCED:
+         #   return ['No, I am not aware of any potential confounding feature for this analysis']
             # return ['No, I am not aware of any potential confounding feature for this analysis',cls.CONFOUNDING_FEATURE]
 
     @classmethod
     def getOptionsBoxConfounderHandler(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.confounding == cls.CONFOUNDING_FEATURE:
-            return ['Shuffle genomic locations according to a non-homogenous Poisson process',
-                    'Partial correlation', 'Stratified sampling']
+        return None
+        # if prevChoices.confounding == cls.CONFOUNDING_FEATURE:
+        #     return ['Shuffle genomic locations according to a non-homogenous Poisson process',
+        #             'Partial correlation', 'Stratified sampling']
 
     @classmethod
     def getOptionsBoxRuntimeMode(cls, prevChoices):
