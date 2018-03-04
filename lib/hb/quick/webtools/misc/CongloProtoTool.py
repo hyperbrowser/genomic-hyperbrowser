@@ -1677,12 +1677,12 @@ class CongloResultsGenerator:
         if attribute == 'pval':
             core.paragraph('The table below shows the reference tracks and their p-values for co-localization with query track, '
                            'obtained through each individual method/configuration chosen. The reference tracks are <b> not ordered </b> by any column. '
-                           'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
+                           'However, the table can be sorted based on the findings of each individual tool to get tool-specific orderings.')
         elif attribute == 'testStat':
             core.paragraph('The table below shows the reference tracks and their co-localization enrichment (effect size) obtained '
                            'through each individual method/configuration chosen. The reference tracks are <b> not ordered </b> by any column, '
                            'because the definition of test statistics varies in each individual tool and thus best not compared across tools. '
-                           'However, the table cab be sorted based on the findings of each individual tool to get tool-specific orderings.')
+                           'However, the table can be sorted based on the findings of each individual tool to get tool-specific orderings.')
         if len(tableDict) > 1:  # More than 1 ref track
             allWmoClassAndNames = list(set([(wmoClass,wmoName) for row in tableDict.values() for wmoClass,wmoName in row.keys()]))
             allWmoClasses = [wmoClass for wmoClass,wmoName in allWmoClassAndNames]
