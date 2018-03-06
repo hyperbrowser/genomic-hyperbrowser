@@ -1,0 +1,4 @@
+<tool id="hb_plot_denisty_tool" name="Plot chart with density per bin" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.smeasure.PlotDenistyTool" proto_tool_class="PlotDenistyTool">
+  <description></description>
+</tool>
