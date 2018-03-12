@@ -72,15 +72,9 @@ class HGsuite:
 
     @classmethod
     def checkWhichColumnNeedToBeSplitted(cls, dataCollection, headerSelected):
-   #
         mapOfPossibleCombinationDict = cls.getMapOfPossibleCombinations(dataCollection, headerSelected)
-        # print 'mapOfPossibleCombinationDict', mapOfPossibleCombinationDict, '<br />'
-        #
         mapOfPossibleCombinationDescList = cls.getAllPossibilitiesForInitialData(mapOfPossibleCombinationDict, headerSelected)
-        # # print 'mapOfPossibleCombinationDescList', mapOfPossibleCombinationDescList, '<br />'
-        #
         groupColumn = cls.buildGroupedColumn(mapOfPossibleCombinationDescList, headerSelected)
-        # # print 'groupColumn', groupColumn, '<br />'
 
         return groupColumn
 
@@ -368,37 +362,7 @@ class HGsuite:
 
         return headerSelected, dataCollection, separateColumnList, allData
 
-    # @classmethod
-    # def readCsvFile(cls, colNum, gSuite):
-    #
-    #     separateColumnList = []
-    #     dataCollection = []
-    #     i = 0
-    #     with open(ExternalTrackManager.extractFnFromGalaxyTN(fileName.split(':')), 'r') as f:
-    #         reader = csv.reader(f, delimiter=';')
-    #         for r in reader:
-    #             if i == 0:
-    #                 header = r
-    #                 headerSelected = []
-    #                 for c in colNum:
-    #                     headerSelected.append(header[c])
-    #             else:
-    #                 dataCollectionPart = []
-    #                 for c in colNum:
-    #                     if r[c] != '':
-    #                         dataCollectionPart.append(header[c])
-    #
-    #                 if len(dataCollectionPart) == 0:
-    #                     dataCollectionPart = [None]
-    #
-    #                 if len(dataCollectionPart) >= 2:
-    #                     for dcp in dataCollectionPart:
-    #                         if not dcp in separateColumnList:
-    #                             separateColumnList.append(dcp)
-    #
-    #                 dataCollection.append(dataCollectionPart)
-    #             i += 1
-    #     return headerSelected, dataCollection, separateColumnList
+
 
     @classmethod
     def parseColumnResponse(cls, selectedColumns):

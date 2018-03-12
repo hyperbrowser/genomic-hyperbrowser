@@ -1,0 +1,4 @@
+<tool id="hb_count_descriptive_statistic_between_h_gsuite_tool" name="Count descriptive statistic between hGsuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool" proto_tool_class="CountDescriptiveStatisticBetweenHGsuiteTool">
+  <description></description>
+</tool>
