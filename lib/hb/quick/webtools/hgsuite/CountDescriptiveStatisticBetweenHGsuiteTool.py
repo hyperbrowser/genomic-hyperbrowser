@@ -10,11 +10,13 @@ from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.RawOverlapAllowSingleTrackOverlapsStat import \
     RawOverlapAllowSingleTrackOverlapsStat
+from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS
+from quick.statistic.SingleTSStat import SingleTSStat
 
 class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
@@ -194,7 +196,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     analysisSpec.addParameter('rawStatistic', RawOverlapStat.__name__)
                     selectedAnalysis.append(RawOverlapStat)
                 else:
-                    selectedAnalysis.append(RawOverlapAllowSingleTrackOverlapsStat)
+                    analysisSpec = AnalysisSpec(SingleTSStat)
+                    analysisSpec.addParameter('rawStatistic', RawOverlapAllowSingleTrackOverlapsStat.__name__)
 
         for groupKey, groupItem in whichGroups.iteritems():
             print 'group', groupKey, len(groupItem)
@@ -221,7 +224,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 cls.buildAttrTuple(attrTuple, secondColumnList, trackFromSecond)
                 attrTuple = tuple(attrTuple)
                 print '[trackFromFirst, trackFromSecond]', [trackFromFirst.trackName,trackFromSecond.trackName], [Track(trackFromFirst.trackName), Track(trackFromSecond.trackName)]
-                whichGroups[attrTuple].append([Track(trackFromFirst.trackName), Track(trackFromSecond.trackName)])
+                realTS = TrackStructureV2()
+                realTS["query"] = SingleTrackTS(PlainTrack(trackFromFirst.trackName),OrderedDict(title=trackFromFirst.title, genome=str(firstGSuite.genome)))
+                realTS["reference"] = SingleTrackTS(PlainTrack(trackFromSecond.trackName),OrderedDict(title=trackFromSecond.title, genome=str(firstGSuite.genome)))
+                whichGroups[attrTuple].append(realTS)
         return whichGroups
 
     @classmethod
