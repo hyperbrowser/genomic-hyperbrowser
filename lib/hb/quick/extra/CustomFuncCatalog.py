@@ -1,20 +1,4 @@
 #!/usr/bin/env python
-# Copyright (C) 2009, Geir Kjetil Sandve, Sveinung Gundersen and Morten Johansen
-# This file is part of The Genomic HyperBrowser.
-#
-#    The Genomic HyperBrowser is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    The Genomic HyperBrowser is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-
 import ast
 import copy
 import math
@@ -32,7 +16,6 @@ from gold.description.AnalysisManager import AnalysisManager
 from gold.description.TrackInfo import TrackInfo
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import PlainTrack
-from gold.util.CommonConstants import LICENSE_STMT
 from quick.application.AutoBinner import AutoBinner
 from quick.origdata.OrigTrackFnSource import OrigTrackNameSource
 from quick.util.GenomeInfo import GenomeInfo
@@ -492,26 +475,6 @@ def countAnalyses():
         print 'Considering the category: ', cat
         _countAnalyses(analyses, True)
         _countAnalyses(analyses, False)
-    
-def insertLicenceStatements(basePath='.'):
-    for root, dirs, files in os.walk(basePath,topdown=True):
-        for fn in files:            
-            if fn.endswith('.py') and not fn == '__init__.py':
-                fullFn = root + os.sep + fn
-                lines = open(fullFn).readlines()
-                if len(lines) == 0:
-                    print 'Warning: ignoring empty file: ', fullFn
-                    continue                
-                if not 'copyright' in lines[0].lower():
-                    if 'third_party' in fullFn:
-                        print 'Ignoring third-pary file: ',fullFn
-                        continue
-                    print 'Adding licence statement to file: ',fullFn
-                    outF = open(fullFn,'w')
-                    outF.write(LICENSE_STMT)
-                    outF.writelines(lines)
-                    outF.close()
-                    
 
 def allBatchTrackNames(genome='hg18'):
     """[genome]"""
@@ -932,8 +895,8 @@ if __name__ == "__main__":
     #'subtypesAsCategories'
     #funcList = ['allBatchTrackNames','preDiseaseStepwise','fixTrackInfo','showCodeSize','countAnalyses',\
     #            'makeInitFromParamList','createCategoryBedFileFromUCSCRepeats','createChromosomeFile','createSplittedChrArms', \
-    #            'createAssemblyGapsFile', 'gwPlotting', 'insertLicenceStatements', \
-    #            'copyAndFilterSubtypes', 'createSubtypeDirsFromFileList', 'createMappingsFromMeshAsciiFile', 'createMeshHierarchyMappings', \
+    #            'createAssemblyGapsFile', 'gwPlotting', 'copyAndFilterSubtypes', \
+    #            'createSubtypeDirsFromFileList', 'createMappingsFromMeshAsciiFile', 'createMeshHierarchyMappings', \
     #            'createAllNodesAndLeaves','getCategorySetForSubTracks','parseMatrixTextFileToShelf', 'parseMatrixTextFileTo1dShelf', \
     #            'makeLowercaseName2NameShelfFromTnSubTypes', 'mergeShelvesTransitively', 'reverseMappingHavingListValues', \
     #            'getLengthOfValueListDistribution', 'mergeSubtypeTracksToNewCategoryTrack', \

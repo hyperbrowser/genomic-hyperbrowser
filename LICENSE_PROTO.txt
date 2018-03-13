@@ -1,4 +1,4 @@
-Copyright (c) 2005-2015 Galaxy Contributors (see CONTRIBUTORS.md)
+Copyright (c) 2008-2017 Galaxy ProTo Contributors (see PROTO_CONTRIBUTORS.md)
 
 Licensed under the Academic Free License version 3.0
 
@@ -174,13 +174,8 @@ Licensed under the Academic Free License version 3.0
     Source Initiative (OSI) and You comply with its license review and 
     certification process.
 
+--
 
-Some icons found in Galaxy are from the Silk Icons set, available under
-the Creative Commons Attribution 2.5 License, from:
-
-http://www.famfamfam.com/lab/icons/silk/
-
-
-Other images and documentation are licensed under the Creative Commons Attribution 3.0 (CC BY 3.0) License.   See 
-
-http://creativecommons.org/licenses/by/3.0/
+Images and documentation related to Galaxy ProTo are licensed under
+the Creative Commons Attribution 4.0 (CC BY 4.0) License.
+See http://creativecommons.org/licenses/by/4.0/

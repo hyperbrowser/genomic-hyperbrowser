@@ -1,4 +1,5 @@
 from galaxy.webapps.galaxy.controllers import proto
+from galaxy.web.base.controller import web
 
 
 class HyperController(proto.ProtoController):
@@ -15,3 +16,8 @@ class HyperController(proto.ProtoController):
         from gold.application.GalaxyInterface import GalaxyInterface
         return trans.fill_template(template_mako, trans=trans,
                                    hyper=GalaxyInterface, control=tool_controller)
+
+    @web.expose
+    def index(self, trans, mako='/hyperbrowser/analyze', **kwd):
+        return self._index(trans, mako, **kwd)
+
