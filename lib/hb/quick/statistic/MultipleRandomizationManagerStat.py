@@ -21,8 +21,8 @@ class MultipleRandomizationManagerStat(MagicStatFactory):
 class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
 
     def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, maxSamples, **kwArgs):
-        if type(evaluatorFunc) is str:
-            evaluatorFunc = globals()[evaluatorFunc]
+        if isinstance(evaluatorFunc, basestring):
+            evaluatorFunc = globals()[str(evaluatorFunc)]
         self._evaluatorFunc = evaluatorFunc
 
         if isinstance(mcSamplerClass, basestring):
@@ -39,6 +39,12 @@ class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
         self._kwArgs = kwArgs
 
     def _compute(self):
+        """
+        self._trackStructure contain hypothesis track structure as first level children. Each hypothesis ts has two children
+        real and rand, that contain the ts used for calculation in self._rawStatistic.
+        For each child in self._trackStructure, one MC result is produced.
+        :return: TSResult
+        """
 
         mcSamplersDict = self._computeSamples()
         tsRes = TSResult(self._trackStructure)

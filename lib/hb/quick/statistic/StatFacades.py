@@ -67,7 +67,7 @@ class MeanSegDistStat(StatFacade):
 class LogSumDistStat(StatFacade):
     def __new__(cls, region, track1, track2, **kwArgs):
         return ListCollapserStat(region, track1, track2, NearestPointDistsStat, \
-                                 lambda l:sum(math.log(el) if el is not None else 0 for el in l), **kwArgs)
+                                 lambda l:sum(math.log(el) if el not in [None,0] else 0 for el in l), **kwArgs)
 
 class LogMeanDistStat(StatFacade):
     def __new__(cls, region, track1, track2, **kwArgs):

@@ -1,16 +1,9 @@
-"""
-Created on Nov 3, 2015
-
-@author: boris
-"""
 from gold.track.TSResult import TSResult
-from gold.util.CommonFunctions import smartMeanWithNones, smartSum
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.StatisticV2 import StatisticV2
-from gold.util.CustomExceptions import ShouldNotOccurError, InvalidStatArgumentError
+from gold.util.CustomExceptions import InvalidStatArgumentError
 from gold.statistic.MagicStatFactory import MagicStatFactory
-from gold.track.TrackStructure import TrackStructureV2
-from quick.util.CommonFunctions import minAndMax, minLqMedUqMax
+from quick.util.StatUtils import getFilteredSummaryFunctionDict, resolveSummaryFunctionFromLabel
 
 
 class SummarizedInteractionWithOtherTracksV2Stat(MagicStatFactory):
@@ -31,37 +24,26 @@ class SummarizedInteractionWithOtherTracksV2Stat(MagicStatFactory):
 
 class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
 
-    functionDict = {
-                    'sum': smartSum,
-                    'avg': smartMeanWithNones,
-                    'max': max,
-                    'min': min,
-                    'minAndMax': minAndMax,
-                    'raw': 'RawResults',
-                    'minLqMedUqMax': minLqMedUqMax
-                    }
+    functionDict = getFilteredSummaryFunctionDict([
+                    'sum',
+                    'avg',
+                    'max',
+                    'min',
+                    'minAndMax',
+                    'raw',
+                    'minLqMedUqMax'
+                    ])
     
     def _init(self, pairwiseStatistic=None, summaryFunc=None, reverse='No', **kwArgs):
         #NB! Any received parameter termed rawStatistic is ignored, as pairwiseStatistic will take this role in children
         self._pairwiseStatistic = self.getRawStatisticClass(pairwiseStatistic)
 
-        self._summaryFunction = self._resolveFunction(summaryFunc)
-        #self._summaryFunction = self[summaryFunc] #TODO: Should we replace the whole _resolveFunction with this one. Is such an error not clear enough?
+        self._summaryFunction = resolveSummaryFunctionFromLabel(summaryFunc, self.functionDict)
         self._reversed = reverse
         self._kwArgs = kwArgs
-    
-    def _resolveFunction(self, summaryFunc):
-        if summaryFunc not in self.functionDict:
-            raise ShouldNotOccurError(str(summaryFunc) + 
-                                      ' not in list, must be one of ' + 
-                                      str(sorted(self.functionDict.keys())))
-        else: 
-            return self.functionDict[summaryFunc]
-        
+
     def _compute(self):
-        resTs = TSResult(self._computeTrackStructure)
-        #listOfPairRTSs = [child.getResult() for child in self._children]
-        # fullTs = TrackStructureV2()
+        resTs = TSResult(self._trackStructure)
         rawResults = []
         for key, child in self._childrenDict.iteritems():
             pairRTS = child.getResult()
@@ -86,5 +68,3 @@ class SummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
         self._childrenDict = {}
         for pairTSKey in pairedTS:
             self._childrenDict[pairTSKey] = self._addChild(PairedTSStat(self._region, pairedTS[pairTSKey], pairedTsRawStatistic=self._pairwiseStatistic, **self._kwArgs))
-
-        self._computeTrackStructure = pairedTS

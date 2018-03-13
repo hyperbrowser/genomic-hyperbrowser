@@ -219,6 +219,10 @@ def minAndMax(li):
 def minLqMedUqMax(li):
     return (min(li), numpy.percentile(li, 25), numpy.percentile(li, 50), numpy.percentile(li, 75), max(li))
 
+def smartDiff(li):
+    assert len(li) == 2, "Difference defined over two operands only. %s" % str(li)
+    return smartSum([li[0], -li[1]])
+
 def isIter(obj):
     from numpy import memmap
     if isinstance(obj, memmap):
@@ -725,3 +729,26 @@ def cleanUpTrackType(trackTypeStr):
         trackTypeStr = trackTypeStr.replace(old, new).strip()
 
     return trackTypeStr
+
+def dump_args_and_more(func):
+    '''This decorator dumps out the arguments passed to a function before calling it,
+    as well as return value or any exception'''
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+
+    def echo_func(*args,**kwargs):
+        print fname, ":", ', '.join(
+            '%s=%r' % entry
+            for entry in zip(argnames,args) + kwargs.items())
+        try:
+            result = func(*args, **kwargs)
+            print "-> ", result
+            return result
+        except:
+            print '-> raised exception:'
+            import traceback
+            traceback.print_exc()
+            raise
+
+
+    return echo_func

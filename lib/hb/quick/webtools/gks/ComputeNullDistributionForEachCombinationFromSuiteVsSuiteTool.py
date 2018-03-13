@@ -1,20 +1,21 @@
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
+from gold.util.Profiler import Profiler
+from config.DebugConfig import DebugConfig
+from quick.application.GalaxyInterface import GalaxyInterface
+from quick.gsuite import GuiBasedTsFactory
+from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
 
-from quick.util.debug import DebugUtil
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
-from quick.application.UserBinSource import UserBinSource
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
-import quick.gsuite.GuiBasedTsFactory as factory
 from gold.track.TrackStructure import TrackStructureV2
-from gold.application.HBAPI import doAnalysis
-from gold.description.AnalysisDefHandler import AnalysisSpec
-from quick.statistic.StatFacades import ObservedVsExpectedStat
+from gold.application.HBAPI import doAnalysis, doAnalysisWithProfiling
+from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from quick.webtools.mixin.DebugMixin import DebugMixin
-from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
-class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
+
+class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTool, DebugMixin, GenomeMixin, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gsuite1','gsuite2']
     @classmethod
     def getToolName(cls):
         """
@@ -23,7 +24,7 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
 
         Mandatory method for all ProTo tools.
         """
-        return "TS experiment"
+        return "Sandboxing"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -46,88 +47,53 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select categorical GSuite of 4 tracks', 'gsuite')
+        return [('Select GSuite 1', 'gsuite1'),
+                 ('Select GSuite 2', 'gsuite2')
                 ] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
-                [('Select query track', 'query'),
-                 ('Select category', 'cat')
-                ] + \
+               cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
 
     @classmethod
-    def getOptionsBoxGsuite(cls):
+    def getOptionsBoxGsuite1(cls):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxQuery(cls, prevChoices):
-        return GeneralGuiToolMixin.getHistorySelectionElement()
+    def getOptionsBoxGsuite2(cls, prevChoices):
+        return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
-    @classmethod
-    def getOptionsBoxCat(cls, prevChoices):
-
-        if prevChoices.gsuite:
-            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return gSuiteTN.attributes
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        #cls._setDebugModeIfSelected(choices)
-        # from config.DebugConfig import DebugConfig
-        # from config.DebugConfig import DebugModes
-        # DebugConfig.changeMode(DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE)
+        cls._setDebugModeIfSelected(choices)
+        #from time import time
+        #startTime = time()
+        analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
+                                                         genome=choices.genome)
+        queryTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.gsuite1)
+        refTS = GuiBasedTsFactory.getFlatTracksTS(choices.genome, choices.gsuite2)
+        ts = TrackStructureV2([("query", queryTS), ("reference", refTS)])
 
-        # DebugUtil.insertBreakPoint(5678, suspend=False)
+        analysisSpec = AnalysisSpec(SummarizedInteractionWithOtherTracksV2Stat)
+        analysisSpec.addParameter('numResamplings','5')
+        analysisSpec.addParameter('rawStatistic', 'LogSumDistStat')
+        analysisSpec.addParameter('pairwiseStatistic', 'RandomizationManagerStat')
+        analysisSpec.addParameter('summaryFunc','raw')
+        analysisSpec.addParameter('tails', 'left-tail')
+        analysisSpec.addParameter('includeFullNullDistribution','yes')
+        analysisSpec.addParameter('assumptions','PermutedSegsAndIntersegsTrack_')
 
-        choices_gsuite = choices.gsuite
-        selected_metadata= choices.cat
-        choices_queryTrack = choices.query
-        #genome = 'hg19'
-        genome =  choices.genome
+        if DebugConfig.USE_PROFILING:
+            resObj = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn)
+        else:
+            resObj = doAnalysis(analysisSpec, analysisBins, ts)
+        tsRes = resObj.getGlobalResult()['Result']
 
-        queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
-        refTS = factory.getFlatTracksTS(genome, choices_gsuite)
+#        print 'Elapsed time: ', (time()-startTime)/3600.0, ' hours'
 
-        categoricalTS = refTS.getSplittedByCategoryTS(selected_metadata)
 
-        fullTS = TrackStructureV2()
-        fullTS['query'] = queryTS
-        fullTS['reference'] = categoricalTS
-        spec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
-
-        parameter = 'minLqMedUqMax'
-
-        spec.addParameter('pairwiseStatistic', ObservedVsExpectedStat.__name__)
-        spec.addParameter('summaryFunc',parameter)
-        spec.addParameter('segregateNodeKey', 'reference')
-        bins = UserBinSource('chr1','*',genome=genome)
-        res = doAnalysis(spec, bins, fullTS)
-        tsRes = res.getGlobalResult()['Result']
-
-        htmlCore = HtmlCore()
-        htmlCore.begin()
-
-        if parameter == 'minAndMax':
-            htmlCore.tableHeader(['Track', 'min-max'], sortable=False, tableId='tab1')
-            for k, it in tsRes.iteritems():
-                htmlCore.tableLine([k, str("%.2f" % it.getResult()[0]) + '-' + str("%.2f" % it.getResult()[1])])
-            htmlCore.tableFooter()
-
-        if parameter == 'minLqMedUqMax':
-
-            dataList = []
-            categories = []
-            for keyE, itE in tsRes.iteritems():
-                categories.append(keyE)
-                dataList.append(list(itE.getResult()))
-
-            from quick.webtools.restricted.visualization.visualizationGraphs import \
-                visualizationGraphs
-            vg = visualizationGraphs()
-            res = vg.drawBoxPlotChart(dataList, categories=categories, seriesName=selected_metadata)
-            htmlCore.line(res)
-
-        htmlCore.end()
-        print htmlCore
+        for key in tsRes:
+            print key, '\t', tsRes[key]._result['fullNullDistribution']
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -262,8 +228,9 @@ class TSExperimentTool(GeneralGuiTool, DebugMixin, GenomeMixin):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
+    @classmethod
+    def isDebugMode(cls):
+        return True
     #     """
     #     Specifies whether the debug mode is turned on. Debug mode is
     #     currently mostly used within the Genomic HyperBrowser and will make

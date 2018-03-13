@@ -1,22 +1,11 @@
-from gold.util.CommonFunctions import smartMeanWithNones
 from quick.statistic.StatisticV2 import StatisticV2
-from gold.track.TrackStructure import TrackStructure
-from quick.util.debug import DebugUtil
-from quick.statistic.RawDBGCodedEventsStat import RawDBGCodedEventsStat
+from quick.util.StatUtils import getFilteredSummaryFunctionDict, resolveSummaryFunctionFromLabel
 import numpy as np
-from _collections import defaultdict
 from quick.statistic.BinSizeStat import BinSizeStat
 from gold.statistic.RawOverlapCodedEventsStat import RawOverlapCodedEventsStat
-from gold.track.Track import Track
-'''
-Created on Nov 3, 2015
-
-@author: boris
-'''
 
 
 from gold.util.CustomExceptions import ShouldNotOccurError
-from numpy import mean
 from gold.statistic.MagicStatFactory import MagicStatFactory
 
 
@@ -31,16 +20,15 @@ class MultitrackRawBinnedOverlapV2Stat(MagicStatFactory):
 class MultitrackRawBinnedOverlapV2StatUnsplittable(StatisticV2):
     
 
-    functionDict = {
-                    'sum': sum,
-                    'avg': smartMeanWithNones,
-                    'max': max,
-                    'min': min
-                    }
+    functionDict = getFilteredSummaryFunctionDict([
+                    'sum',
+                    'avg',
+                    'max',
+                    'min'])
 
     def _init(self, localBinSize='1000000',summaryFunc=None,  **kwArgs):
         self._localBinSize = int(localBinSize)
-        self._summaryFunction = self._resolveFunction(summaryFunc)
+        self._summaryFunction = resolveSummaryFunctionFromLabel(summaryFunc, self.functionDict)
 
     def chiSquare(self, O,E):
         if not E>0:
@@ -96,14 +84,6 @@ class MultitrackRawBinnedOverlapV2StatUnsplittable(StatisticV2):
         E = np.mean(O)
         return (O,E)
 
-    def _resolveFunction(self, summaryFunc):
-        if summaryFunc not in self.functionDict:
-            raise ShouldNotOccurError(str(summaryFunc) + 
-                                      ' not in list, must be one of ' + 
-                                      str(sorted(self.functionDict.keys())))
-        else: 
-            return self.functionDict[summaryFunc]
-        
     def _compute(self):
         allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus = self._children[0].getResult()
         O,E = self.question8stat(allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus)
@@ -116,4 +96,3 @@ class MultitrackRawBinnedOverlapV2StatUnsplittable(StatisticV2):
         self._addChild(RawOverlapCodedEventsStat(self._region, t1, t2, extraTracks = tuple(tracks[2:]), **self._kwArgs))
         self._binSizeStat = self._addChild(BinSizeStat(self._region,t1))
 
-#        self._binSizeStat = self._addChild( BinSizeStat(self._region, t1))

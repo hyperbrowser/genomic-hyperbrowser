@@ -33,15 +33,46 @@ class PairedTSStat(MagicStatFactory):
 
 
 class PairedTSStatUnsplittable(StatisticV2):
-    def _init(self, pairedTsRawStatistic, **kwArgs):
+
+    PROGRESS_COUNT = 1
+    PROGRESS_START_TIME = None
+
+    def _init(self, pairedTsRawStatistic, progressPoints=None, progressStyle='html', **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(pairedTsRawStatistic)
+        self._progressPoints = progressPoints
+        self._progressStyle = progressStyle
 
     def _compute(self):
         #ts = self._trackStructure._copyTreeStructure()
         #ts.result = self._children[0].getResult()
         #return ts
-        return TSResult(self._trackStructure, self._children[0].getResult())
+        tsResult = TSResult(self._trackStructure, self._children[0].getResult())
+        self._printProgress()
+        return tsResult
 
+
+    def _printProgress(self):
+        if self._progressPoints:
+            import time
+            if PairedTSStatUnsplittable.PROGRESS_COUNT == 1:
+                PairedTSStatUnsplittable.PROGRESS_START_TIME = time.time()
+                if self._progressStyle == 'html':
+                    print '<br>'
+                    print "<p>Progress output (expected points: %s)</p>" % self._progressPoints
+                else:
+                    print
+                    print "Progress output (expected points: %s)" % self._progressPoints
+            print ".",
+            if PairedTSStatUnsplittable.PROGRESS_COUNT % 100 == 0:
+                print PairedTSStatUnsplittable.PROGRESS_COUNT,
+                elapsed = time.time() - PairedTSStatUnsplittable.PROGRESS_START_TIME
+                # PairedTSStatUnsplittable.PROGRESS_START_TIME = time.time()
+                m, s = divmod(elapsed, 60)
+                h, m = divmod(m, 60)
+                print " (%d:%02d:%02d)" % (h, m, s)
+                if self._progressStyle == 'html':
+                    print '<br>'
+            PairedTSStatUnsplittable.PROGRESS_COUNT += 1
 
     def _createChildren(self):
         assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure?

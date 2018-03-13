@@ -1,21 +1,7 @@
-from gold.util.CommonFunctions import smartMeanWithNones
 from quick.statistic.StatisticV2 import StatisticV2
-from gold.track.TrackStructure import TrackStructure
-from quick.util.debug import DebugUtil
+from quick.util.StatUtils import getFilteredSummaryFunctionDict, resolveSummaryFunctionFromLabel
 from quick.statistic.RawDBGCodedEventsStat import RawDBGCodedEventsStat
 import numpy as np
-from _collections import defaultdict
-from quick.statistic.BinSizeStat import BinSizeStat
-from gold.track.Track import Track
-'''
-Created on Nov 3, 2015
-
-@author: boris
-'''
-
-
-from gold.util.CustomExceptions import ShouldNotOccurError
-from numpy import mean
 from gold.statistic.MagicStatFactory import MagicStatFactory
 
 
@@ -26,18 +12,16 @@ class MultitrackRawSingleBinV2Stat(MagicStatFactory):
 
 #class SummarizedInteractionWithOtherTracksStatSplittable(StatisticSumResSplittable):
 #    pass
-            
+
 class MultitrackRawSingleBinV2StatUnsplittable(StatisticV2):
-    
 
-    functionDict = {
-                    'sum': sum,
-                    'avg': smartMeanWithNones,
-                    'max': max,
-                    'min': min
-                    }
 
-    
+    functionDict = getFilteredSummaryFunctionDict([
+                    'sum',
+                    'avg',
+                    'max',
+                    'min'])
+
     def question6stat(self, O,E):
         if not E>0:
             T = 0
@@ -47,7 +31,7 @@ class MultitrackRawSingleBinV2StatUnsplittable(StatisticV2):
 
     def question7stat(self,O,E):
         if E==0:
-            return 0 
+            return 0
         T = np.max(O)/E
         return T
 
@@ -57,18 +41,10 @@ class MultitrackRawSingleBinV2StatUnsplittable(StatisticV2):
             'question 6':self.question6stat,
             'question 7':self.question7stat,
             }
-        
-        self._summaryFunction = self._resolveFunction(summaryFunc)
+
+        self._summaryFunction = resolveSummaryFunctionFromLabel(summaryFunc, self.functionDict)
         self._statistic = statFuncDict[question]
-    
-    def _resolveFunction(self, summaryFunc):
-        if summaryFunc not in self.functionDict:
-            raise ShouldNotOccurError(str(summaryFunc) + 
-                                      ' not in list, must be one of ' + 
-                                      str(sorted(self.functionDict.keys())))
-        else: 
-            return self.functionDict[summaryFunc]
-        
+
     def _compute(self):
         O,E = self._children[0].getResult()
         return [self._statistic(O,E)]

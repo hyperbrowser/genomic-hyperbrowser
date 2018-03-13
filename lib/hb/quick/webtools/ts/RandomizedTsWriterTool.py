@@ -15,6 +15,7 @@ from gold.track.RandomizedSegsTvProvider import PermutedSegsAndIntersegsTrackVie
 from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider, \
     CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
     SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
+from gold.track.ShuffleTracksTvProvider import ShuffleTracksTvProvider
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
     ShuffleElementsBetweenTracksAndBinsTvProvider
@@ -34,6 +35,7 @@ class RandomizedTsWriterTool(GeneralGuiTool):
                                         ('Shuffle between tracks', ShuffleElementsBetweenTracksTvProvider),
                                         ('Shuffle between tracks, preserve number of segments per track', SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider),
                                         ('Shuffle between tracks, preserve base pair coverage per track', CoveragePreservedShuffleElementsBetweenTracksTvProvider),
+                                        ('Shuffle whole tracks (for categorical gsuites)', ShuffleTracksTvProvider),
                                         ('Randomize between tracks and bins', ShuffleElementsBetweenTracksAndBinsTvProvider)]))])
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]

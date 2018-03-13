@@ -24,6 +24,7 @@ class RandomizedTrack(Track):
         self.trackName = origTrack.trackName + ['Randomized', str(randIndex)]
         self.trackTitle = origTrack.trackTitle
 #        self._origRegion = origRegion
+        self._randIndex = randIndex #Only for backwards compatibility!?
         self._trackFormatReq = NeutralTrackFormatReq()
         self._cachedTV = None
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)

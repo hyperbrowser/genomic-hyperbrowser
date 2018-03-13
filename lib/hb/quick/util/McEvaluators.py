@@ -26,7 +26,7 @@ def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatis
     if isinstance(observation, TrackStructureV2):
         observation = observation.result
         mcSamples = [ts.result for ts in mcSamples]
-    assert isinstance(observation, (int, float, long))
+    assert isinstance(observation, (int, float, long)), [type(observation), observation]
     assert all([isinstance(mcSample, (int, float, long)) for mcSample in mcSamples])
 
     return _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisticMainClassName, tail)

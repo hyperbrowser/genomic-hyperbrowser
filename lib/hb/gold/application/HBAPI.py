@@ -60,6 +60,31 @@ def doAnalysis(analysisSpec, analysisBins, trackStructure):
     return res
 
 
+@takes((AnalysisSpec, AnalysisDefHandler, basestring), collections.Iterable, TrackStructureV2)
+def doAnalysisWithProfiling(analysisSpec, analysisBins, trackStructure, galaxyFn):
+    '''Version of doAnalysis supporting profiling.
+    Since it requires extra parameter and is a bit peripheral, didn't want to make regular doAnalysis more complex due to this
+    After removing dependence on galaxyFn, could be merged with doAnalysis
+    '''
+    silenceRWarnings()
+    silenceNumpyWarnings()
+    analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
+    statClass = analysisDef._statClassList[0]
+    validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True) )
+    job = StatJob(analysisBins, trackStructure, validStatClass)
+
+    from config.DebugConfig import DebugConfig
+    assert DebugConfig.USE_PROFILING
+    from gold.util.Profiler import Profiler
+    profiler = Profiler()
+    resDict = {}
+    profiler.run('resDict[0] = job.run(printProgress=False)', globals(), locals())
+    res = resDict[0]
+    profiler.printStats()
+    if DebugConfig.USE_CALLGRAPH and galaxyFn:
+        profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+
+    return res
 # @sdl.takes(Track, GenomeRegion)
 # @sdl.returns(TrackView)
 def getTrackData(track, region):
