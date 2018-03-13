@@ -2,19 +2,32 @@ from collections import OrderedDict
 
 import itertools
 
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.statistic.RawOverlapStat import RawOverlapStat
+from gold.track.Track import Track, PlainTrack
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.RawOverlapAllowSingleTrackOverlapsStat import \
+    RawOverlapAllowSingleTrackOverlapsStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS
 
-
-class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
+class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
     MAX_NUM_OF_COLS = 15
     MAX_NUM_OF_COLS_IN_GSUITE = 1
     MERGED_SIGN = ' - '
     PHRASE = '-- SELECT --'
-    STAT_LIST = ['Count overlap (bps)']
+    STAT_LIST = {'Count overlap (bps)': STAT_OVERLAP_COUNT_BPS}
     FIRST_GSUITE = 'First GSuite'
     SECOND_GSUITE = 'Second GSuite'
+
+    MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
+    ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
 
 
     @classmethod
@@ -24,30 +37,33 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select first gSuite', 'firstGSuite'),
-                ('Select column from first gSuite', 'firstGSuiteColumn'),
+        return [('Select first gSuite', 'gsuite')] + \
+               cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select column from first gSuite', 'firstGSuiteColumn'),
                 ('Select second gSuite', 'secondGSuite'),
                 ('Select column from second gSuite', 'secondGSuiteColumn')
                 ] + \
                [('Select statistic %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_COLS)] + \
+               [('Select overlap handling', 'intraOverlap')] + \
                [('Select column from first gSuite %s' % (i + 1) +  ' which you would like to treat as unique',
-                 'selectedFirstColumn%s' % i) for i \
-                in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+                 'selectedFirstColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Select column from second gSuite %s' % (i + 1) +  ' which you would like to treat as unique',
-                 'selectedSecondColumn%s' % i) for i \
-                in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+                 'selectedSecondColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               cls.getInputBoxNamesForUserBinSelection()+ \
+               cls.getInputBoxNamesForDebug()
+
 
 
     @classmethod
-    def getOptionsBoxFirstGSuite(cls):
+    def getOptionsBoxGsuite(cls):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
     def getOptionsBoxFirstGSuiteColumn(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.firstGSuite:
-            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.firstGSuite)
+        if prevChoices.gsuite:
+            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             return ['None'] + gSuiteTN.attributes
 
     @classmethod
@@ -62,12 +78,12 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def _getOptionsBoxForSelectedStat(cls, prevChoices, index):
-        if prevChoices.firstGSuite and prevChoices.secondGSuite:
+        if prevChoices.gsuite and prevChoices.secondGSuite:
             selectionList = []
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedStat%s' % i) for i in
                            xrange(index)):
                 attrList = [getattr(prevChoices, 'selectedStat%s' % i) for i in xrange(index)]
-                selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST) - set(attrList))
+                selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
             if selectionList:
                 return selectionList
 
@@ -79,13 +95,21 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
                 partial(cls._getOptionsBoxForSelectedStat, index=i))
 
     @classmethod
+    def getOptionsBoxIntraOverlap(cls, prevChoices):
+        statList = cls._getSelectedStat(prevChoices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
+        for a in statList:
+            if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
+                return [CountDescriptiveStatisticBetweenHGsuiteTool.MERGE_INTRA_OVERLAPS,
+                CountDescriptiveStatisticBetweenHGsuiteTool.ALLOW_MULTIPLE_OVERLAP]
+
+    @classmethod
     def _getOptionsBoxForSelectedFirstColumn(cls, prevChoices, index):
-        if prevChoices.firstGSuite and prevChoices.secondGSuite:
+        if prevChoices.gsuite and prevChoices.secondGSuite:
             selectionList = []
 
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
                        xrange(index)):
-                gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.firstGSuite)
+                gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                 selectionList += gSuiteTNFirst.attributes
 
                 attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in xrange(index)]
@@ -103,7 +127,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
 
     @classmethod
     def _getOptionsBoxForSelectedSecondColumn(cls, prevChoices, index):
-        if prevChoices.firstGSuite and prevChoices.secondGSuite:
+        if prevChoices.gsuite and prevChoices.secondGSuite:
             selectionList = []
 
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
@@ -127,10 +151,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        firstGSuite = getGSuiteFromGalaxyTN(choices.firstGSuite)
+        DebugMixin._setDebugModeIfSelected(choices)
+
+        firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
         secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
         secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
+
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=firstGSuite.genome)
 
         print firstGSuite, '<br>'
         print firstGSuiteColumn, '<br>'
@@ -138,10 +167,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
         print secondGSuiteColumn, '<br>'
         print choices
 
-        statList = [a.strip(' ').split(',') for a in cls._getSelectedStat(choices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)]
+        statList = cls._getSelectedStat(choices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
         firstColumnList = cls._getSelectedStat(choices, 'selectedFirstColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
         secondColumnList = cls._getSelectedStat(choices, 'selectedSecondColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
-
 
         print statList, '<br>'
         print 'firstColumnList', firstColumnList, '<br>'
@@ -153,16 +181,54 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
         print 'firstOutput', firstOutput, '<br>'
         secondOutput = cls._getAttributes(secondGSuite, secondColumnList)
         print 'secondOutput', secondOutput, '<br>'
-        listOfLists = firstOutput + secondOutput
-        print cls._getCombinations(listOfLists)
+        whichGroups = cls.createGroups(firstColumnList, firstGSuite, firstOutput, secondColumnList,
+                                       secondGSuite, secondOutput)
+
+        print 'which groups', whichGroups
+
+        selectedAnalysis = []
+        for a in statList:
+            if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
+                if choices.intraOverlap == CountDescriptiveStatisticBetweenHGsuiteTool.MERGE_INTRA_OVERLAPS:
+                    analysisSpec = AnalysisSpec(SingleTSStat)
+                    analysisSpec.addParameter('rawStatistic', RawOverlapStat.__name__)
+                    selectedAnalysis.append(RawOverlapStat)
+                else:
+                    selectedAnalysis.append(RawOverlapAllowSingleTrackOverlapsStat)
+
+        for groupKey, groupItem in whichGroups.iteritems():
+            print 'group', groupKey, len(groupItem)
+            for gi in groupItem:
+                for sa in selectedAnalysis:
+                    print 'gi', gi
+                    result = doAnalysis(AnalysisSpec(sa), analysisBins, gi)
+                    print result
+                exit()
 
 
-
-
-
+    @classmethod
+    def createGroups(cls, firstColumnList, firstGSuite, firstOutput, secondColumnList,
+                     secondGSuite, secondOutput):
+        whichGroups = OrderedDict()
+        for wg in cls._getCombinations(firstOutput, secondOutput):
+            whichGroups[wg] = []
+        print 'Count for groups: ', whichGroups
         outputGSuites = OrderedDict()
-        for iTrackFromFirst, trackFromFirst in firstGSuite.allTracks():
-            pass
+        for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
+            for iTrackFromSecond, trackFromSecond in enumerate(secondGSuite.allTracks()):
+                attrTuple = []
+                cls.buildAttrTuple(attrTuple, firstColumnList, trackFromFirst)
+                cls.buildAttrTuple(attrTuple, secondColumnList, trackFromSecond)
+                attrTuple = tuple(attrTuple)
+                print '[trackFromFirst, trackFromSecond]', [trackFromFirst.trackName,trackFromSecond.trackName], [Track(trackFromFirst.trackName), Track(trackFromSecond.trackName)]
+                whichGroups[attrTuple].append([Track(trackFromFirst.trackName), Track(trackFromSecond.trackName)])
+        return whichGroups
+
+    @classmethod
+    def buildAttrTuple(cls, attrTuple, firstColumnList, trackFromFirst):
+        for attrName in firstColumnList:
+            attrTuple.append(trackFromFirst.getAttribute(attrName))
+        return attrTuple
 
 
     @classmethod
@@ -171,14 +237,16 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
             firstOutput = []
             for fCol in firstColumnList:
                 at = firstGSuite.getAttributeValueList(fCol)
-                print at
-                firstOutput.append(list(set(at)))
+                listOfUniqueElements = list(set(at))
+                firstOutput.append(listOfUniqueElements)
             return firstOutput
-        return []
+        return None
 
     @classmethod
-    def _getCombinations(cls, listOfLists):
-        return list(itertools.product(*listOfLists))
+    def _getCombinations(cls, firstOutput, secondOutput):
+        listOfLists = firstOutput + secondOutput
+        listOfListsCombinations = itertools.product(*listOfLists)
+        return listOfListsCombinations
 
     @classmethod
     def _getSelectedStat(cls, choices, division, num):
@@ -192,9 +260,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
         selectedCols = []
         if len(cols) >=1:
             for c in cols:
-                c = c.encode('utf-8')
-                if c != cls.PHRASE and c != '':
-                    selectedCols.append(c)
+                if c != None:
+                    c = c.encode('utf-8')
+                    if c != cls.PHRASE and c != '':
+                        selectedCols.append(c)
         return selectedCols
 
     @classmethod
@@ -330,16 +399,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isDebugMode(cls):
+        return True
     #
     # @classmethod
     # def getOutputFormat(cls, choices):
