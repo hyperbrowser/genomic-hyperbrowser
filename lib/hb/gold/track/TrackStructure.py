@@ -1,9 +1,11 @@
 from collections import OrderedDict
-
+from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
 from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError
-from quick.application.SignatureDevianceLogging import takes
 import copy
+from quick.application.SignatureDevianceLogging import takes
+from test.gold.track.common.SampleTrack import SampleTrack
+from third_party.typecheck import anything, dict_of, list_of
 
 class TrackStructure(dict):
     '''
@@ -67,10 +69,10 @@ class TrackStructureV2(dict):
     #A disadvantage is that it becomes less clear that such an attribute might exist,
     # and its existence has to be checked with hasattr(ts,'results')
 
-    #@takes(object, str, TrackStructureV2)
+    TRACK_NAME_SEPARATOR = "#&&#"
+
+    @takes('TrackStructureV2', basestring, 'TrackStructureV2')
     def __setitem__(self, key, value):
-        assert isinstance(key, str)
-        assert isinstance(value, TrackStructureV2)
         dict.__setitem__(self, key, value)
 
 
@@ -81,13 +83,15 @@ class TrackStructureV2(dict):
             return self._inferResult()
 
     def _inferResult(self):
-        return dict([(cat,self[cat].result) for cat in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+        return dict([(childTSKey, self[childTSKey].result) for childTSKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
 
+    @takes('TrackStructureV2', anything)
     def _setResult(self, value):
         self._result = value
 
     result = property(_getResult, _setResult)
 
+    @takes('TrackStructureV2', anything)
     def __eq__(self, other):
         if type(self) != type(other):
             return False
@@ -126,13 +130,19 @@ class TrackStructureV2(dict):
                and isinstance(self['query'], SingleTrackTS) \
                and isinstance(self['reference'], SingleTrackTS)
 
+    def isSingleTs(self):
+        return isinstance(self, SingleTrackTS)
+
     def _copyTreeStructure(self):
         newCopy = copy.copy(self)
         for key in self.keys():
             newCopy[key] = newCopy[key]._copyTreeStructure()
         return newCopy
 
+    @takes('TrackStructureV2', 'TrackStructureV2', basestring)
     def _copySegregatedSubtree(self, nodeToSplitOn, subCategoryKey):
+       # assert isinstance(nodeToSplitOn, TrackStructureV2) # should be a subtree
+
         newCopy = copy.copy(self)
         for key, value in self.items():
             if value == nodeToSplitOn:
@@ -141,26 +151,25 @@ class TrackStructureV2(dict):
                 newCopy[key] = value._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
         return newCopy
 
-
+    @takes('TrackStructureV2', 'TrackStructureV2')
     def makeTreeSegregatedByCategory(self, nodeToSplitOn):
-        # TODO Lonneke: what if root is given, how to split?
-
+        assert isinstance(nodeToSplitOn, TrackStructureV2) # should be a subtree
         assert len(nodeToSplitOn.items()) > 0
-        #if self == nodeToSplitOn:
-        #    return self._copyTreeStructure()
+        assert nodeToSplitOn != self
 
         newRoot = TrackStructureV2()
         for subCategoryKey, subtree in nodeToSplitOn.items():
             newRoot[subCategoryKey] = self._copySegregatedSubtree(nodeToSplitOn, subCategoryKey)
         return newRoot
 
-    def _getLeafNodes(self):
+    def getLeafNodes(self):
         leafNodes = []
         for subtree in self.values():
-            leafNodes += subtree._getLeafNodes()
+            leafNodes += subtree.getLeafNodes()
         return leafNodes
 
-    def _getOriginalNodeName(self, originalName, usedNames):
+    @takes('TrackStructureV2', (basestring, list_of(basestring)), list_of(basestring))
+    def _getUniqueNodeKey(self, originalName, usedNames):
         nodeName = str(originalName)
 
         counter = 2
@@ -180,20 +189,18 @@ class TrackStructureV2(dict):
         # this way all other (metadata) fields won't be removed
         newRoot = FlatTracksTS()
 
-        for leafNode in self._getLeafNodes():
+        for leafNode in self.getLeafNodes():
             # TODO Lonneke use a better, original key to represent the tracks
-            newRoot[self._getOriginalNodeName(leafNode.track.trackName, newRoot.keys())] = leafNode
+            newRoot[self._getUniqueNodeKey(leafNode.track.trackName, newRoot.keys())] = leafNode
 
         return newRoot
 
-
+    @takes('TrackStructureV2', 'TrackStructureV2')
     def makePairwiseCombinations(self, referenceTS):
-        # Not necessary? See Trello
-        # assert self.isFlat()
-        # assert referenceTS.isFlat()
+        assert isinstance(referenceTS, TrackStructureV2)
 
-        queryLeafNodes = self._getLeafNodes()
-        referenceLeafNodes = referenceTS._getLeafNodes()
+        queryLeafNodes = self.getLeafNodes()
+        referenceLeafNodes = referenceTS.getLeafNodes()
 
         root = TrackStructureV2()
 
@@ -202,17 +209,31 @@ class TrackStructureV2(dict):
                 newPair = TrackStructureV2()
                 newPair['query'] = query
                 newPair['reference'] = reference
-                root[str(query.track.trackName) + "_" + str(reference.track.trackName)] = newPair
+                root[str(query.track.trackName) + self.TRACK_NAME_SEPARATOR + str(reference.track.trackName)] = newPair
         return root
 
+    # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
+    # @takes('TrackStructureV2', type, anything, 'TrackStructureV2', bool, int)
+    def getRandomizedVersion(self, randTvProviderClass, binSource=None, excludedTs=None, allowOverlaps=False, randIndex=0):
+        return self._getRandomizedVersion(randTvProviderClass(self, binSource=binSource, excludedTs=excludedTs, allowOverlaps=allowOverlaps), randIndex)
+
+    @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)
+    def _getRandomizedVersion(self, randTvProvider, randIndex):
+        newCopy = copy.copy(self)
+        for key in self.keys():
+            newCopy[key] = newCopy[key]._getRandomizedVersion(randTvProvider, randIndex)
+        return newCopy
+
+    @takes('TrackStructureV2', int)
+    def updateRandIndex(self, randIndex):
+        for sts in self.getLeafNodes():
+            sts.track.setRandIndex(randIndex)
+
+
+
 class SingleTrackTS(TrackStructureV2):
-    @takes(object, Track, dict)
+    @takes('SingleTrackTS', (Track, SampleTrack), dict_of(basestring, basestring))
     def __init__(self, track, metadata):
-        assert isinstance(track, Track), track
-        assert isinstance(metadata, dict)
-        for key, value in metadata.items():
-            assert isinstance(key, str)
-            assert isinstance(value, str)
         self.track = track
         self.metadata = metadata
 
@@ -230,19 +251,25 @@ class SingleTrackTS(TrackStructureV2):
     def _copyTreeStructure(self):
         return self
 
+    @takes('SingleTrackTS', 'TrackStructureV2', basestring)
     def _copySegregatedSubtree(self, nodeToSplitOn, keyOfSubtree):
         return self
 
-    def _getLeafNodes(self):
+    def getLeafNodes(self):
         return [self]
 
+    @takes('SingleTrackTS', 'TsBasedRandomTrackViewProvider', int)
+    def _getRandomizedVersion(self, randTvProvider, randIndex):
+        newCopy = copy.copy(self)
+        newCopy.track = TsBasedRandomizedTrack(self.track, randTvProvider, randIndex)
+        return newCopy
 
 class FlatTracksTS(TrackStructureV2):
-    pass
+#    pass
     # def __init__(self):
     #     pass
 
-    #@takes(object, str, TrackStructureV2)
+    @takes('FlatTracksTS', str, 'SingleTrackTS')
     def __setitem__(self, key, value):
         assert isinstance(key, str)
         assert isinstance(value, SingleTrackTS)
@@ -257,32 +284,32 @@ class FlatTracksTS(TrackStructureV2):
 
         return allMetadataFields.keys()
 
+    @takes('FlatTracksTS', basestring)
     def getAllValuesForMetadataField(self, metadataField):
         return set([str(ts.metadata.get(metadataField)) for ts in self.values() if metadataField in ts.metadata.keys()])
 
 
+    @takes('FlatTracksTS', basestring, basestring)
     def getTrackSubsetTS(self, metadataField, selectedValue):
         assert isinstance(metadataField, (str,unicode)), (metadataField, type(metadataField))
 
         subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():
-            assert isinstance(ts, SingleTrackTS)
             if metadataField in [str(field) for field in ts.metadata] and str(ts.metadata.get(metadataField)) == str(selectedValue):
                 subsetTS[key] = ts
         return subsetTS
 
+    @takes('FlatTracksTS', basestring)
     def getSplittedByCategoryTS(self, metadataField):
         '''
         Returns a categorical TS, containing a separate MultipleTracksTS per value in selected
         metadata field. Nodes that do not contain the given metadata field are not returned.
         '''
-        categoricalTS = CategoricalTS()
+        catTS = TrackStructureV2()
         catValues = self.getAllValuesForMetadataField(metadataField)
         for cat in catValues:
-            categoricalTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
-        return categoricalTS
+            catTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
+        return catTS
 
-
-class CategoricalTS(TrackStructureV2):
+class MultipleHypothesisTrackStructure(TrackStructureV2):
     pass
-

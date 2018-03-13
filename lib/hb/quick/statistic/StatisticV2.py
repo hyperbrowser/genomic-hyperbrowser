@@ -1,19 +1,16 @@
-'''
-Created on Sep 24, 2015
-
-@author: boris
-'''
-
-
-from config.Config import DebugConfig
 from gold.application.LogSetup import logging, logMessage
-from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.statistic.Statistic import Statistic, StatisticSplittable
+from gold.track.GenomeRegion import GenomeRegion
+from gold.track.TrackStructure import TrackStructureV2
 from gold.util.CommonFunctions import getClassName, isIter
-from gold.util.CustomExceptions import ShouldNotOccurError, CentromerError, NoneResultError
+from gold.util.CustomExceptions import ShouldNotOccurError
+from quick.application.SignatureDevianceLogging import takes
+
 
 class StatisticV2(Statistic):
-    
+    # @takes("StatisticV2",GenomeRegion, (TrackStructure,TrackStructureV2) ) #TODO: Remove TrackStructure when bw compatibility fixed
+    @takes("StatisticV2", (GenomeRegion, isIter), TrackStructureV2)
+    #@takes("StatisticV2",anything, TrackStructureV2)
     def __init__(self, region, trackStructure, *args, **kwArgs):
         from config.Config import IS_EXPERIMENTAL_INSTALLATION  # @UnresolvedImport
         if 'isExperimental' in kwArgs:
@@ -32,8 +29,12 @@ class StatisticV2(Statistic):
         
         #TODO:boris 20150924, Code for checking if query and reference (track and track2) are the same track.
         #We should decide if we will allow this in the future.
-        
+
+        #TODO: This should probably instead happen in the default _init method, so that when this is
+        # overridden, one needs to explicitly store kwArgs if desired.
+        #As it is now, parameters will be handled explicitly in _init while still becoming part of self_kwArgs
         self._kwArgs = kwArgs
+
         self._init(**kwArgs)
 
         self._trace('__init__')
@@ -59,25 +60,6 @@ class StatisticV2(Statistic):
         
         #TODO: boris 20150924, check if the caching works with this
         return (hash(str(cls)), Statistic._constructConfigKey(kwArgs), hash(reg), hash(trackStructure))
-    
-    def _getSingleResult(self, region):
-        #print 'Kw Here: ', self._kwArgs, 'args here: ', self._args
-        
-        stat = self._statClass(region, self._trackStructure, *self._args, **self._kwArgs)
-        try:
-            res = stat.getResult()
-        except (CentromerError, NoneResultError):
-            res = None
-            if DebugConfig.PASS_ON_NONERESULT_EXCEPTIONS:  # @UndefinedVariable
-                raise
-            
-        #if not isinstance(res, dict):
-        if not getClassName(res) in ['dict', 'OrderedDict']:
-            res = {} if res is None else {self.GENERAL_RESDICTKEY : res}
-            #res = {self.GENERAL_RESDICTKEY : res}
-
-        ResultsMemoizer.flushStoredResults()
-        return res, stat
 
     
 class StatisticV2Splittable(StatisticV2, StatisticSplittable):

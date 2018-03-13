@@ -21,7 +21,7 @@ class GeneralGuiToolMixin(object):
 
     #TODO: boris 20141001: move this function
     @staticmethod
-    @takes(list_of(str))
+    @takes(str) #TODO: Determine how to handle *args - is this correct (does it check every argument sent in - is this the intended way to specify?
     @returns(tuple)
     def getHistorySelectionElement(*args):
         '''

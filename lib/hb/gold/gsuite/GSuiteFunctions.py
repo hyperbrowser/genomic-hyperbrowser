@@ -49,7 +49,7 @@ def changeSuffixIfPresent(text, oldSuffix=None, newSuffix=None):
     assert newSuffix
     prefix, suffix = os.path.splitext(text)
 
-    if suffix and oldSuffix is None or suffix == '.' + oldSuffix:
+    if suffix and (oldSuffix is None or suffix == '.' + oldSuffix):
         return prefix + '.' + newSuffix
     else:
         return text

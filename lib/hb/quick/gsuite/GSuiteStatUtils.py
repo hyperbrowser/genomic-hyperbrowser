@@ -6,6 +6,8 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.track.Track import Track
 from gold.util import CommonConstants
+from quick.statistic.MultipleSingleTrackStatsForTsStat import MultipleSingleTrackStatsForTsStat
+from quick.statistic.MultipleSingleValStatPerPairInQueryRefTsStat import MultipleSingleValStatPerPairInQueryRefTsStat
 
 T1_RATIO_OF_SECOND_INSIDE_FIRST = 'Proportion of the query track base-pairs coinciding with base-pairs from the reference track'
 T2_RATIO_OF_SECOND_INSIDE_UNION = 'Proportion of the union of base-pairs of the two tracks that are covered by the reference track'
@@ -35,7 +37,7 @@ SUMMARY_FUNCTIONS_MAPPER = OrderedDict([('average', 'avg'), ('maximum', 'max'), 
 SUMMARY_FUNCTIONS_LABELS = SUMMARY_FUNCTIONS_MAPPER.keys()
 
 
-def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None):
+def runMultipleSingleValStatsOnTracks(ts, stats, analysisBins):
     '''
     gsuite: The gsuite of tracks
     stats: List of statistics
@@ -47,29 +49,54 @@ def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=No
                                     Stat name -> single value'''
 
     assert stats is not None, 'stats argument not defined'
-    assert type(stats) in [str, list], '''stats argument must be a list of statistics
+    assert type(stats) in [basestring, list], '''stats argument must be a list of statistics
                                          or ^-separated string of statistic names'''
 
     resultsDict = OrderedDict()
 
-    from quick.statistic.GenericResultsCombinerStat import GenericResultsCombinerStat
-    additionalAnalysisSpec = AnalysisSpec(GenericResultsCombinerStat)
+    res = runMultipleSingleValSingleTrackStats(ts, stats, analysisBins)
+    for k, v in res.iteritems():
+        for statClassName, res in v.getResult().iteritems():
+            statPrettyName = CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT[
+                statClassName] if statClassName in CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT else statClassName
+            if k not in resultsDict:
+                resultsDict[k] = OrderedDict()
+            resultsDict[k][statPrettyName] = res
+    return resultsDict
+
+
+def runMultipleSingleValPairwiseStats(trackStructure, stats, analysisBins):
+    return _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, MultipleSingleValStatPerPairInQueryRefTsStat)
+
+
+def runMultipleSingleValSingleTrackStats(trackStructure, stats, analysisBins):
+    return _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, MultipleSingleTrackStatsForTsStat)
+
+
+def _runMultipleSingleValStatsCommon(trackStructure, stats, analysisBins, stat):
+    assert stats is not None, 'stats argument not defined'
+    assert type(stats) in [str, list], '''stats argument must be a list of statistics
+                                         or ^-separated string of statistic names'''
+    additionalAnalysisSpec = AnalysisSpec(stat)
 
     statsParam = stats if isinstance(stats, basestring) else "^".join([x.__name__ for x in stats])
 
-    additionalAnalysisSpec.addParameter('rawStatistics', statsParam)  #use ^ separator to add additional stat classes.
-    for refTrack in gsuite.allTracks():
-        if refTrack.title not in resultsDict:
-            resultsDict[refTrack.title] = OrderedDict()
-        tracks = [Track(refTrack.trackName), queryTrack] if queryTrack else [Track(refTrack.trackName)]
-        additionalResult = doAnalysis(additionalAnalysisSpec,
-                                      analysisBins, tracks).getGlobalResult()
-        for statClassName, res in additionalResult.iteritems():
-            statPrettyName = CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT[
-                statClassName] if statClassName in CommonConstants.STATISTIC_CLASS_NAME_TO_NATURAL_NAME_DICT else statClassName
-            resultsDict[refTrack.title][statPrettyName] = res
+    additionalAnalysisSpec.addParameter('rawStatistics', statsParam)  # use ^ separator to add additional stat classes.
+    return doAnalysis(additionalAnalysisSpec, analysisBins, trackStructure).getGlobalResult()["Result"]
 
-    return resultsDict
+
+def prettifyKeysInDict(sourceDict, prettyDict):
+    def _prettify(val):
+        return prettyDict[val] if val in prettyDict else val
+
+    prettifiedDict = OrderedDict()
+    for k, v in sourceDict.iteritems():
+        if isinstance(v, dict):
+            prettifiedDict[_prettify(k)] = prettifyKeysInDict(v, prettyDict=prettyDict)
+        else:
+            prettifiedDict[_prettify(k)] = v
+
+    return prettifiedDict
 
 
 def addResultsToInputGSuite(gsuite, results, attrNames, outputGSuiteFN):

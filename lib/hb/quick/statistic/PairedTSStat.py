@@ -16,6 +16,7 @@
 
 
 from gold.statistic.MagicStatFactory import MagicStatFactory
+from gold.track.TSResult import TSResult
 from quick.statistic.GenericRelativeToGlobalStat import GenericRelativeToGlobalStat, GenericRelativeToGlobalStatUnsplittable
 from quick.statistic.GenericRelativeToGlobalV2Stat import GenericRelativeToGlobalV2Stat, \
     GenericRelativeToGlobalV2StatUnsplittable
@@ -32,16 +33,18 @@ class PairedTSStat(MagicStatFactory):
 
 
 class PairedTSStatUnsplittable(StatisticV2):
-    def _init(self, rawStatistic, **kwArgs):
-        self._rawStatistic = self.getRawStatisticClass(rawStatistic)
+    def _init(self, pairedTsRawStatistic, **kwArgs):
+        self._rawStatistic = self.getRawStatisticClass(pairedTsRawStatistic)
 
     def _compute(self):
-        ts = self._trackStructure._copyTreeStructure()
-        ts.result = self._children[0].getResult()
-        return ts
+        #ts = self._trackStructure._copyTreeStructure()
+        #ts.result = self._children[0].getResult()
+        #return ts
+        return TSResult(self._trackStructure, self._children[0].getResult())
+
 
     def _createChildren(self):
         assert self._trackStructure.isPairedTs() #TODO: Should PairedTS be a subclass of TrackStructure?
         t1 = self._trackStructure['query'].track
         t2 = self._trackStructure['reference'].track
-        self._addChild(self._rawStatistic(self._region, t1, t2))
+        self._addChild(self._rawStatistic(self._region, t1, t2, **self._kwArgs))

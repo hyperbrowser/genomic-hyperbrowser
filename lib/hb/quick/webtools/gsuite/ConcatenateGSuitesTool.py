@@ -1,10 +1,33 @@
+import itertools
+import re
+
+from gold.gsuite.GSuiteEditor import concatenateGSuitesAddingCategories
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
 
 class ConcatenateGSuitesTool(GeneralGuiTool):
-    MAX_NUM_OF_GSUITES_TO_ORDER = 20
+    MAX_NUM_OF_GSUITES_TO_ORDER = 50
+    MAX_NUM_OF_GSUITES_TO_CATEGORIZE = 50
+
+    def __new__(cls, *args, **kwargs):
+        cls._setupExtraBoxes()
+        return GeneralGuiTool.__new__(cls, *args, **kwargs)
+
+    @classmethod
+    def _setupExtraBoxes(cls):
+        from functools import partial
+
+        for i in xrange(cls.MAX_NUM_OF_GSUITES_TO_ORDER):
+            setattr(cls, 'getOptionsBoxSelectGsuite%s' % i,
+                    partial(cls._getOptionsBoxForSelectGsuite, index=i))
+
+        for j in xrange(cls.MAX_NUM_OF_GSUITES_TO_CATEGORIZE):
+            setattr(cls, 'getOptionsBoxLabelForCategoryEntry%s' % j,
+                    partial(cls._getOptionBoxLabelForCategoryEntry, index=j))
+            setattr(cls, 'getOptionsBoxCategoryEntry%s' % j,
+                    partial(cls._getOptionBoxCategoryEntry, index=j))
 
     @staticmethod
     def getToolName():
@@ -13,6 +36,14 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
         page.
         '''
         return "Concatenate two or more GSuites"
+
+    @classmethod
+    def _getCategoryInputBoxes(cls):
+        inputBoxes = []
+        for i in xrange(cls.MAX_NUM_OF_GSUITES_TO_CATEGORIZE):
+            inputBoxes.append(('', 'labelForCategoryEntry%s' % i))
+            inputBoxes.append(('', 'categoryEntry%s' % i))
+        return inputBoxes
 
     @classmethod
     def getInputBoxNames(cls):
@@ -32,10 +63,13 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
 
         Note: the key has to be camelCase (e.g. "firstKey")
         '''
-        return [('Select GSuite files from history', 'gsuites'), \
-                ('Specify order of GSuite files?', 'order')] +\
-                [('Select GSuite number %s' % (i+1), 'selectGsuite%s' % i) for i \
-                 in range(cls.MAX_NUM_OF_GSUITES_TO_ORDER)]
+        return [('Select GSuite files from history', 'gsuites'),
+                ('Specify order of GSuite files?', 'order')] + \
+               [('Select GSuite number %s' % (i+1), 'selectGsuite%s' % i) for i
+                in xrange(cls.MAX_NUM_OF_GSUITES_TO_ORDER)] + \
+               [('Categorize GSuite files in a new metadata column?', 'categorize'),
+                ('Title of category column', 'columnTitle')] + \
+               cls._getCategoryInputBoxes()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -97,6 +131,11 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
         return '__multihistory__', 'gsuite'
 
     @classmethod
+    def _getNumSelectedGSuites(cls, prevChoices):
+        numSeletedGSuites = sum(1 for tn in cls._getAllSelectedGsuiteGalaxyTNs(prevChoices))
+        return numSeletedGSuites
+
+    @classmethod
     def getOptionsBoxOrder(cls, prevChoices): # Alternatively: getOptionsBox2()
         '''
         See getOptionsBoxFirstKey().
@@ -107,14 +146,12 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
         prevChoices[0] for the result of input box 1, or by key, e.g.
         prevChoices.key (case 2).
         '''
-        numSeletedGSuites = sum(1 for tn in cls._getAllSelectedGsuiteGalaxyTNs(prevChoices))
-        if numSeletedGSuites >= 2:
+        if cls._getNumSelectedGSuites(prevChoices) >= 2:
             return ['No', 'Yes']
 
     @staticmethod
     def _getAllSelectedGsuiteGalaxyTNs(prevChoices):
         return [x for x in prevChoices.gsuites.values() if x is not None]
-
 
     @classmethod
     def _getOptionsBoxForSelectGsuite(cls, prevChoices, index):
@@ -132,10 +169,53 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
                 return selectionList
 
     @classmethod
-    def setupSelectGSuiteMethods(cls):
-        from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_GSUITES_TO_ORDER):
-            setattr(cls, 'getOptionsBoxSelectGsuite%s' % i, partial(cls._getOptionsBoxForSelectGsuite, index=i))
+    def getOptionsBoxCategorize(cls, prevChoices):
+        if cls._getNumSelectedGSuites(prevChoices) >= 2:
+            return ['No', 'Yes']
+
+    @classmethod
+    def getOptionsBoxColumnTitle(cls, prevChoices):
+        if prevChoices.categorize == 'Yes':
+            return 'source'
+
+    @classmethod
+    def _getSelectedGsuiteGalaxyTNsInOrder(cls, prevChoices):
+        from quick.application.ExternalTrackManager import ExternalTrackManager
+
+        allSelectedGsuiteGalaxyTNs = cls._getAllSelectedGsuiteGalaxyTNs(prevChoices)
+        numSelectedGSuites = len(allSelectedGsuiteGalaxyTNs)
+
+        if prevChoices.order == 'No':
+            return allSelectedGsuiteGalaxyTNs
+        else:  # Yes
+            if numSelectedGSuites <= cls.MAX_NUM_OF_GSUITES_TO_ORDER:
+                nameToSelectedGalaxyTN = dict(
+                    [(ExternalTrackManager.extractNameFromHistoryTN(galaxyTN), galaxyTN) \
+                     for galaxyTN in allSelectedGsuiteGalaxyTNs])
+                selectedGsuiteNamesInOrder = [getattr(prevChoices, 'selectGsuite%s' % i) \
+                                              for i in xrange(numSelectedGSuites)]
+                return [nameToSelectedGalaxyTN[name] for name in selectedGsuiteNamesInOrder]
+
+    @classmethod
+    def _getTitleForSelectedGsuite(cls, prevChoices, index):
+        if prevChoices.columnTitle:
+            gSuites = cls._getSelectedGsuiteGalaxyTNsInOrder(prevChoices)
+            if gSuites and index < len(gSuites):
+                return ExternalTrackManager.extractNameFromHistoryTN(gSuites[index])
+
+    @classmethod
+    def _getOptionBoxLabelForCategoryEntry(cls, prevChoices, index):
+        title = cls._getTitleForSelectedGsuite(prevChoices, index)
+        if title:
+            core = HtmlCore()
+            core.highlight('Enter category value for GSuite titled "%s"' % title)
+            return '__rawstr__', str(core)
+
+    @classmethod
+    def _getOptionBoxCategoryEntry(cls, prevChoices, index):
+        title = cls._getTitleForSelectedGsuite(prevChoices, index)
+        if title:
+            return (str(index), 1)
 
     #@staticmethod
     #def getInfoForOptionsBoxKey(prevChoices):
@@ -148,21 +228,6 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
     #@staticmethod
     #def getDemoSelections():
     #    return ['testChoice1','..']
-
-    @classmethod
-    def _getSelectedGsuiteGalaxyTNsInOrder(cls, choices):
-        from quick.application.ExternalTrackManager import ExternalTrackManager
-
-        allSelectedGsuiteGalaxyTNs = cls._getAllSelectedGsuiteGalaxyTNs(choices)
-
-        if choices.order == 'No':
-            return allSelectedGsuiteGalaxyTNs
-        else: #Yes
-            nameToSelectedGalaxyTN = dict([(ExternalTrackManager.extractNameFromHistoryTN(galaxyTN), galaxyTN) \
-                                           for galaxyTN in allSelectedGsuiteGalaxyTNs])
-            selectedGsuiteNamesInOrder = [getattr(choices, 'selectGsuite%s' % i) \
-                                          for i in range(len(allSelectedGsuiteGalaxyTNs))]
-            return [nameToSelectedGalaxyTN[name] for name in selectedGsuiteNamesInOrder]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -182,8 +247,16 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
         gSuiteList = [getGSuiteFromGalaxyTN(galaxyTn) for galaxyTn in \
                       cls._getSelectedGsuiteGalaxyTNsInOrder(choices)]
 
-        concatenatedGSuite = concatenateGSuites(gSuiteList)
+        if choices.categorize == 'No':
+            concatenatedGSuite = concatenateGSuites(gSuiteList)
+        else:
+            categoryList = [getattr(choices, 'categoryEntry%s' % i).strip()
+                            for i in xrange(len(gSuiteList))]
+            concatenatedGSuite = concatenateGSuitesAddingCategories(
+                gSuiteList, choices.columnTitle, categoryList)
+
         composeToFile(concatenatedGSuite, galaxyFn)
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -198,18 +271,38 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
             return 'Please add at least two GSuite files to your history'
 
         allSelectedGsuiteGalaxyTNs = cls._getAllSelectedGsuiteGalaxyTNs(choices)
-        numSeletedGSuites = len(allSelectedGsuiteGalaxyTNs)
-        if numSeletedGSuites < 2:
+        numSelectedGSuites = len(allSelectedGsuiteGalaxyTNs)
+        if numSelectedGSuites < 2:
             return 'Please select at least two GSuites'
 
-        if choices.order == 'Yes' and numSeletedGSuites > cls.MAX_NUM_OF_GSUITES_TO_ORDER:
-            return 'Ordering of GSuite files is only possible for up to %s ' % cls.MAX_NUM_OF_GSUITES_TO_ORDER +\
-                   'selection. You have selected %s GSuite files' % numSeletedGSuites
+        if choices.order == 'Yes' and numSelectedGSuites > cls.MAX_NUM_OF_GSUITES_TO_ORDER:
+            return 'Ordering of GSuite files is only possible for up to ' + \
+                   '%s selections. You have selected %s GSuite files' % \
+                   (cls.MAX_NUM_OF_GSUITES_TO_ORDER, numSelectedGSuites)
 
         for selectedGsuiteGalaxyTN in allSelectedGsuiteGalaxyTNs:
             errorStr = cls._validateGSuiteFile(selectedGsuiteGalaxyTN)
             if errorStr:
                 return errorStr
+
+        if choices.categorize == 'Yes':
+            if numSelectedGSuites > cls.MAX_NUM_OF_GSUITES_TO_CATEGORIZE:
+                return 'Categorization of GSuite files is only possible for up to ' + \
+                       '%s selections. You have selected %s GSuite files' % \
+                       (cls.MAX_NUM_OF_GSUITES_TO_CATEGORIZE, numSelectedGSuites)
+
+            if not re.match(r'[a-z_]+$', choices.columnTitle):
+                return 'Only lowercase and underscore characters are allowed for the ' \
+                       'category column title. Current title: ' + repr(choices.columnTitle)
+
+            for i in xrange(numSelectedGSuites):
+                catValue = getattr(choices, 'categoryEntry%s' % i)
+                if (not catValue) or (catValue and catValue.strip() == ''):
+                    title = cls._getTitleForSelectedGsuite(choices, i)
+                    if title:
+                        return 'Category value for GSuite titled "%s" ' % title + \
+                            'is not set. Please type in a value.'
+
 
     #@staticmethod
     #def getSubToolClasses():
@@ -317,5 +410,3 @@ class ConcatenateGSuitesTool(GeneralGuiTool):
         history item box.
         '''
         return 'gsuite'
-
-ConcatenateGSuitesTool.setupSelectGSuiteMethods()

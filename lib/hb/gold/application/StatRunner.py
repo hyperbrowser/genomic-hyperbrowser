@@ -5,21 +5,14 @@ import datetime
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.util.CustomExceptions import SplittableStatNotAvailableError
 from gold.result.Results import Results
-from config.Config import PRINT_PROGRESS, MAX_LOCAL_RESULTS_IN_TABLE, MAX_NUM_USER_BINS, USE_PARALLEL, DebugConfig
+from config.Config import PRINT_PROGRESS, MAX_NUM_USER_BINS, USE_PARALLEL, DebugConfig
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
-from quick.application.UserBinSource import UserBinSource
-from gold.origdata.GenomeElementSource import GenomeElementSource
-from gold.origdata.GECategoryFilter import GECategoryFilter
 from gold.util.CustomExceptions import CentromerError, NoneResultError, InvalidFormatError
 from quick.util.GenomeInfo import GenomeInfo
 from gold.statistic.AssemblyGapCoverageStat import AssemblyGapCoverageStat
-#from quick.statistic.CountPointBothTracksStat import CountPointBothTracksStat
-from gold.statistic.Statistic import Statistic
-from gold.track.Track import PlainTrack, Track
+from gold.track.Track import PlainTrack
 from gold.application.LogSetup import logException, logMessage, logging
 from gold.util.CommonFunctions import getClassName
-from quick.application.SignatureDevianceLogging import takes,returns
-from gold.statistic.RandomizationManagerStat import RandomizationManagerStat
 
 class StatJob(object):
     GENERAL_RESDICTKEY = 'Result'
@@ -121,6 +114,11 @@ class StatJob(object):
         startLocal = time.time()
         
         while True:
+            stats = []
+            if hasattr(self._statClass, 'keywords'):
+                runLocal = self._statClass.keywords.get('runLocalAnalysis') if 'runLocalAnalysis' in self._statClass.keywords else None
+                if runLocal == "No":
+                    break
             stats = self._doLocalAnalysis(results, stats=[])
             #stats[0] is used to call class method
             if self._kwArgs.get('minimal') == True:
@@ -143,7 +141,7 @@ class StatJob(object):
         # self._progress.globalAnalysisStarted()
         # self._progress.printMessage('\nPerforming global analysis...')
         while True:
-            stat = self._doGlobalAnalysis(results, stats)
+            stat = self._doGlobalAnalysis(results, stats=None)
             if stat is None:                
                 break
             nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)

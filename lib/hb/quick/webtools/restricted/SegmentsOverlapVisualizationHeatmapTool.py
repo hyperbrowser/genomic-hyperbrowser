@@ -1,4 +1,6 @@
+
 from gold.gsuite import GSuiteConstants
+from proto.CommonFunctions import ensurePathExists
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -105,8 +107,8 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxColorMapSelectList(prevChoices): # Alternatively: getOptionsBox1()
         return colorMaps.keys()
 
-    @staticmethod
-    def execute(choices, galaxyFn=None, username=''):
+    @classmethod
+    def execute(cls, choices, galaxyFn=None, username=''):
         genome = choices.genome
          
 
@@ -136,7 +138,7 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         
         results = []
         for refTrack in refTrackNameList:
-            analysisDef = '-> ProportionCountStat'
+            analysisDef = '-> ProportionCountStat' #ProportionCountStat #CountStat
             res = GalaxyInterface.runManual([refTrack], analysisDef, regSpec, binSpec, genome, username=username, galaxyFn=galaxyFn, printRunDescription=False, printResults=False, printProgress=False)
             segCoverageProp = [res[seg]['Result'] for seg in res.getAllRegionKeys()]
             results.append(segCoverageProp)
@@ -152,6 +154,8 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
             selected = refGSuite.getAttributeValueList(choices.selectColumns)
 
         yAxisNameOverMouse=[]
+        metadataAll =[]
+
         for x in range(0, len(selected)):
             if selected[x] == None:
                 yAxisNameOverMouse.append(str(trackTitles[x]) + ' --- ' + 'None')
@@ -159,8 +163,18 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
                 if TITLE_COL == choices.selectColumns:
                     yAxisNameOverMouse.append(selected[x].replace('\'', '').replace('"', ''))
                 else:
-                    yAxisNameOverMouse.append(str(trackTitles[x]) + ' --- ' + '<b>' + str(selected[x].replace('\'', '').replace('"', '')))
+                    metadata = str(selected[x].replace('\'', '').replace('"', ''))
+                    yAxisNameOverMouse.append(str(trackTitles[x]) + ' --- ' + metadata)
+                    metadataAll.append(metadata)
 
+        colorListForYAxisNameOverMouse = []
+        if len(metadataAll) > 0:
+            import quick.webtools.restricted.visualization.visualizationGraphs as vg
+            cList = vg.colorList().fullColorList()
+            uniqueCList = list(set(metadataAll))
+
+            for m in metadataAll:
+                colorListForYAxisNameOverMouse.append(cList[uniqueCList.index(m)])
 
         #startEnd - order in res
         startEndInterval = []
@@ -208,50 +222,124 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         htmlCore.line(vp._addGuidelineV1())
 
         htmlCore.line(vp.addJSlibsHeatmap())
-        
-        
-        hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
-                                                results,
-                                                colorMaps[choices.colorMapSelectList],
-                                                label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion: <b>'" + ' + this.point.value + ' + "'</b>'",
-                                                yAxisTitle= 'Reference tracks',
-                                                categories=rowLabel,
-                                                tickInterval=1,
-                                                plotNumber=3,
-                                                interaction=True,
-                                                otherPlotNumber=1,
-                                                titleText='Overlap with reference tracks for each local region',
-                                                otherPlotData=[startEnd, startEndInterval],
-                                                overMouseAxisX=True,
-                                                overMouseAxisY=True,
-                                                yAxisNameOverMouse=yAxisNameOverMouse,
-                                                overMouseLabelY=" + 'Track: '" + ' + this.value + ' + "' '" + ' + yAxisNameOverMouse[this.value] + ',
-                                                overMouseLabelX = ' + this.value.substring(0, 20) +',
-                                                extrOp = staticFile
-                                                )
-        htmlCore.line(hm)
-        htmlCore.line(vp.drawChartInteractionWithHeatmap(
-            [startEndInterval, startEnd],
-            tickInterval=1,
-            type='line',
-            categories=[rowLabel, rowLabel],
-            seriesType=['line', 'column'],
-            minWidth=300,
-            height=500,
-            lineWidth=3,
-            titleText=['Lengths of segments (local regions)','Gaps between consecutive segments'],
-            label=['<b>Length: </b>{point.y}<br/>', '<b>Gap length: </b>{point.y}<br/>'],
-            subtitleText=['',''],
-            yAxisTitle=['Lengths','Gap lengths'],
-            seriesName=['Lengths','Gap lengths'],
-            xAxisRotation=90,
-            legend=False,
-            extraXAxis=extraXAxis,
-            heatmapPlot=heatmapPlot,
-            heatmapPlotNumber=heatmapPlotNumber,
-            overMouseAxisX=True,
-            overMouseLabelX = ' + this.value.substring(0, 20) +'
-            ))
+
+        from config.Config import DATA_FILES_PATH
+
+        from proto.StaticFile import StaticFile, GalaxyRunSpecificFile
+
+        #sf = GalaxyRunSpecificFile(['result.txt'], galaxyFn)
+        #outFile = sf.getDiskPath(ensurePath=True)
+
+        htmlCore.divBegin()
+        writeFile = open(
+            cls.makeHistElement(galaxyExt='tabular',
+                                title='result'), 'w')
+        # htmlCore.link('Get all results', sf.getURL())
+        htmlCore.divEnd()
+
+        i = 0
+
+        writeFile.write('Track' + '\t' + '\t'.join(rowLabel)+ '\n')
+        for rList in results:
+            writeFile.write(str(yAxisNameOverMouse[i]) + '\t' + '\t'.join([str(r) for r in rList]) + '\n')
+            i+=1
+
+
+
+
+        fileOutput = GalaxyRunSpecificFile(['heatmap.png'],
+                                           galaxyFn)
+        ensurePathExists(fileOutput.getDiskPath())
+
+        fileOutputPdf = GalaxyRunSpecificFile(['heatmap.pdf'],
+                                              galaxyFn)
+        ensurePathExists(fileOutputPdf.getDiskPath())
+
+        cls.generateStaticRPlot(results, colorListForYAxisNameOverMouse, rowLabel, yAxisNameOverMouse,
+                                colorMaps[choices.colorMapSelectList],
+                                fileOutput.getDiskPath(), fileOutputPdf.getDiskPath())
+
+
+        htmlCore.divBegin(divId='heatmap', style="padding: 10px 0 px 10 px 0px;margin: 10px 0 px 10 px 0px")
+        htmlCore.link('Download heatmap image', fileOutputPdf.getURL())
+        htmlCore.divEnd()
+
+        if len(results) * len(results[1]) >= 10000:
+            htmlCore.image(fileOutput.getURL())
+
+
+        else:
+
+            min = 1000000000
+            max = -1000000000
+            for rList in results:
+                for r in rList:
+                    if min > r:
+                        min = r
+                    if max < r:
+                        max = r
+
+
+
+
+            if max-min != 0:
+                resultNormalised = []
+                for rList in results:
+                    resultNormalisedPart = []
+                    for r in rList:
+                        resultNormalisedPart.append((r-min)/(max-min))
+                    resultNormalised.append(resultNormalisedPart)
+
+                addText = '(normalised to [0, 1])'
+            else:
+                resultNormalised = results
+                addText = ''
+
+
+            hm, heatmapPlotNumber, heatmapPlot = vp.drawHeatMap(
+                                                    resultNormalised,
+                                                    colorMaps[choices.colorMapSelectList],
+                                                    label='this.series.xAxis.categories[this.point.x] + ' + "'<br >'" + ' + yAxisNameOverMouse[this.point.y] + ' + "'<br>Overlap proportion" + str(addText) + ": <b>'" + ' + this.point.value + ' + "'</b>'",
+                                                    yAxisTitle= 'Reference tracks',
+                                                    categories=rowLabel,
+                                                    tickInterval=1,
+                                                    plotNumber=3,
+                                                    interaction=True,
+                                                    otherPlotNumber=1,
+                                                    titleText='Overlap with reference tracks for each local region',
+                                                    otherPlotData=[startEnd, startEndInterval],
+                                                    overMouseAxisX=True,
+                                                    overMouseAxisY=True,
+                                                    yAxisNameOverMouse=yAxisNameOverMouse,
+                                                    overMouseLabelY=" + 'Track: '" + ' + this.value + ' + "' '" + ' + yAxisNameOverMouse[this.value] + ',
+                                                    overMouseLabelX = ' + this.value.substring(0, 20) +',
+                                                    extrOp = staticFile
+                                                    )
+            htmlCore.line(hm)
+            htmlCore.line(vp.drawChartInteractionWithHeatmap(
+                [startEndInterval, startEnd],
+                tickInterval=1,
+                type='line',
+                categories=[rowLabel, rowLabel],
+                seriesType=['line', 'column'],
+                minWidth=300,
+                height=500,
+                lineWidth=3,
+                titleText=['Lengths of segments (local regions)','Gaps between consecutive segments'],
+                label=['<b>Length: </b>{point.y}<br/>', '<b>Gap length: </b>{point.y}<br/>'],
+                subtitleText=['',''],
+                yAxisTitle=['Lengths','Gap lengths'],
+                seriesName=['Lengths','Gap lengths'],
+                xAxisRotation=90,
+                legend=False,
+                extraXAxis=extraXAxis,
+                heatmapPlot=heatmapPlot,
+                heatmapPlotNumber=heatmapPlotNumber,
+                overMouseAxisX=True,
+                overMouseLabelX = ' + this.value.substring(0, 20) +'
+                ))
+
+
         htmlCore.divEnd()
         htmlCore.divEnd()
         htmlCore.divEnd()
@@ -266,6 +354,101 @@ class SegmentsOverlapVisualizationHeatmapTool(GeneralGuiTool, UserBinMixin,
         #tmp = tempfile.NamedTemporaryFile(delete = False, suffix='.png')
         #plt.savefig(tmp.name)
         #os.rename(tmp.name,galaxyFn)
+
+
+    @classmethod
+    def generateStaticRPlot(cls, inputData, colorListForYAxisNameOverMouse, colDataLabel, rowDatalabel, colorMap, pathOutput, pathOutputPdf):
+
+        from proto.RSetup import r
+
+        colorList = []
+        for c in colorMap:
+            colorList.append(c[1])
+
+        rCode = """
+
+        suppressMessages(library(gplots));
+
+         myHeatmap <- function(inputData, colorListForYAxisNameOverMouse, colDataLabel, rowDataLabel,colorList,  pathOutput, pathOutputPdf){
+
+         dt <- inputData
+
+         hscale=2+0.09*nrow(dt)
+         wscale=2+0.09*ncol(dt)
+
+         rownames(dt) <- as.array(rowDataLabel)
+         colnames(dt) <- as.array(colDataLabel)
+         dt <- as.matrix(dt)
+
+
+
+         my_palette <- colorRampPalette(colorList)
+
+         png(pathOutput, width=1000, height=max(hscale*100, 1000))
+
+
+         colorListForYAxisNameOverMouseWhite <- colorListForYAxisNameOverMouse
+         colorListForYAxisNameOverMouseBlack <- colorListForYAxisNameOverMouse
+
+         if (length(colorListForYAxisNameOverMouse) == 0 || length(colorListForYAxisNameOverMouse) != nrow(dt)) {
+            colorListForYAxisNameOverMouseWhite <- rep("#FFFFFF", nrow(dt))
+            colorListForYAxisNameOverMouseBlack <- rep("#000000", nrow(dt))
+         }
+
+
+
+        heatmap.2(
+          dt,
+          Colv=NA,
+          margins=c(20,30),
+          xlab="SNPs",
+          ylab="DNase",
+          trace="none",
+          labCol=NA,
+          keysize=0.6,
+          key.title=NA, # no title
+          key.xlab=NA,  # no xlab
+          dendrogram="row",
+          col=my_palette,
+          cexRow=0.4 + 1/log2(nrow(dt)),
+          cexCol=0.4 + 1/log2(ncol(dt)),
+          RowSideColors=colorListForYAxisNameOverMouseWhite,
+          colRow=colorListForYAxisNameOverMouseBlack,
+          )
+
+        dev.off()
+
+        pdf(pathOutputPdf, width=max(wscale, 10), height=max(hscale,10))
+
+
+        heatmap.2(
+          dt,
+          Colv=NA,
+          margins=c(20,30),
+          xlab="SNPs",
+          ylab="DNase",
+          trace="none",
+          keysize=0.6,
+          key.title=NA, # no title
+          key.xlab=NA,  # no xlab
+          dendrogram="row",
+          col=my_palette,
+          cexRow=0.4 + 1/log2(nrow(dt)),
+          cexCol=0.4 + 1/log2(ncol(dt)),
+          RowSideColors=colorListForYAxisNameOverMouseWhite,
+          colRow=colorListForYAxisNameOverMouseBlack,
+          )
+
+
+        dev.off()
+
+        }
+
+        """
+
+        r(rCode)(inputData, colorListForYAxisNameOverMouse, colDataLabel, rowDatalabel, colorList, pathOutput, pathOutputPdf)
+
+        return 1
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

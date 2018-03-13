@@ -2,7 +2,7 @@
 
 ##### 1. _Use of Service:_
 - The Genomic HyperBrowser Web Portal is a free, public, Internet accessible resource (the "Service"). The Service makes use of the Galaxy platform ("Galaxy") in the core of its web framework, and is subject to limitations inherent in Galaxy.
-- All use of the Service also assumes that you comply with the University of Oslo ("UiO") regulations for usage of IT at UiO (http://www.uio.no/english/services/it/username-password/rules/index.html)
+- All use of the Service also assumes that you comply with the University of Oslo ("UiO") regulations for usage of IT at UiO (http://www.uio.no/english/about/regulations/it/)
 - Data transfer and data storage are not encrypted. If there are restrictions on the way your research data can be stored and used, please consult your local institutional review board or the project principal investigator before uploading it to any public site, including this Service. If you have protected data or large data storage requirements, you are encouraged to set up your own local Genomic HyperBrowser instance and not use this Service.
 - The Service may not be used for storing or processing sensitive data, meaning that for instance human health data and personal DNA sequences should not be used here. For research on sensitive data or related questions, please contact tsd-drift@hjelp.uio.no.
 - We do not give any guarantees with respect to data integrity. In particular, we do not recommend that data is stored within the Service without an external copy or backup.

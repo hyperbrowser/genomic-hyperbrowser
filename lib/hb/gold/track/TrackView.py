@@ -187,7 +187,7 @@ class TrackView(object):
 
         for i, list in enumerate([self._startList, self._endList, self._valList, self._strandList, self._idList, self._edgesList, self._weightsList] \
             + [extraList for extraList in self._extraLists.values()]):
-                assert list is None or len(list) == self._numListElements, 'List (%s): ' % i + str(list) + ' (expected %s elements, found %s)' % (self._numListElements, len(list))
+            assert list is None or len(list) == self._numListElements, 'List (%s): ' % i + str(list) + ' (expected %s elements, found %s)' % (self._numListElements, len(list))
 
     def __iter__(self):
         self._trackElement._index = -1
@@ -422,6 +422,18 @@ class TrackView(object):
 
     def hasExtra(self, key):
         return key in self._extraLists
+
+    def getNumpyArrayFromPrefix(self, prefix):
+        if prefix not in ['edges', 'weights']:
+            asNumpyArrayMethodName = prefix + 'sAsNumpyArray'
+        else:
+            asNumpyArrayMethodName = prefix + 'AsNumpyArray'
+
+        if hasattr(self, asNumpyArrayMethodName):
+            return getattr(self, asNumpyArrayMethodName)()
+        else:
+            return self.extrasAsNumpyArray(prefix)
+
 
 class TrackViewSlider(object):
     def __init__(self, fullTV):

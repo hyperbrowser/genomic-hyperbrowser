@@ -4,6 +4,8 @@ import re
 import urllib
 import contextlib
 import traceback
+
+import itertools
 import numpy
 import functools
 import operator
@@ -17,6 +19,7 @@ from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
 from proto.CommonFunctions import *
+from third_party.typecheck import list_of
 
 
 def createDirPath(trackName, genome, chr=None, allowOverlaps=False, basePath=PROCESSED_DATA_PATH):
@@ -46,7 +49,7 @@ def createMemoPath(region, statId, configHash, track1Hash, track2Hash):
                         [str(configHash), chr] ).replace('-','_') #replace('-','_') because hashes can be minus, and minus sign makes problems with file handling
 
 
-@takes(str,(list,tuple),(str,type(None)))
+@takes(basestring, list_of(basestring),(basestring,type(None)))
 def createOrigPath(genome, trackName, fn=None):
     #print 'genome:',genome
     #print 'trackName:',trackName
@@ -63,7 +66,7 @@ def createParsingErrorPath(genome, trackName, fn=None):
     return os.sep.join([PARSING_ERROR_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
 
-@takes(str)
+@takes(basestring)
 def getFileSuffix(fn):
     from gold.application.DataTypes import getSupportedFileSuffixes
     for suffix in getSupportedFileSuffixes():
@@ -212,6 +215,9 @@ def smartMin(li, ignoreNans=False):
 
 def minAndMax(li):
     return ( min(li), max(li) )
+
+def minLqMedUqMax(li):
+    return (min(li), numpy.percentile(li, 25), numpy.percentile(li, 50), numpy.percentile(li, 75), max(li))
 
 def isIter(obj):
     from numpy import memmap
@@ -403,6 +409,16 @@ def flattenList(list):
         return flattenList(reduce(lambda x, y: x + y, list))
 
 
+def allElementsVersusRest(inList):
+    """
+    :return: list of tuples, where first element of each tuple is each element in inList in turn,
+             while the second element of the tuple is a tuple of the rest of the elements of
+             inList. Example: inList = [1,2,3] ->  returns [(1, (2, 3)), (2, (1, 3), (3, (1, 2))]
+    """
+    return zip([inList[x] for x in range(len(inList))],
+               reversed(list(itertools.combinations(inList, len(inList)-1))))
+
+
 def listStartsWith(a, b):
     return len(a) > len(b) and a[:len(b)] == b
 
@@ -413,7 +429,12 @@ def isListType(x):
 
 
 def ifDictConvertToList(d):
-    return [(x, d[x]) for x in sorted(d.keys())] if isinstance(d, dict) else d
+    if isinstance(d, OrderedDict):
+        return [(x, d[x]) for x in d.keys()] if isinstance(d, dict) else d
+    elif isinstance(d, dict):
+        return [(x, d[x]) for x in sorted(d.keys())] if isinstance(d, dict) else d
+    else:
+        return d
 
 
 def smartRecursiveAssertList(x, y, assertEqualFunc, assertAlmostEqualFunc):

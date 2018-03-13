@@ -5,28 +5,25 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
-from gold.gsuite.GSuiteConstants import GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME, \
-    GSUITE_SUFFIX
 from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
+from gold.track.TrackStructure import TrackStructureV2, FlatTracksTS
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
+from gold.util.TSResultUtil import dictifyTSResult
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
-from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName, \
-    addTableWithTabularAndGsuiteImportButtons
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
 from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats
 from quick.application.UserBinManager import UserBinSourceRegistryForHypothesisTests
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
-from quick.statistic.GSuiteRepresentativenessOfTracksRankingsWrapperStat import \
-    GSuiteRepresentativenessOfTracksRankingsWrapperStat
+from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2Stat
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
-from quick.webtools.GeneralGuiTool import GeneralGuiTool, HistElement
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.gsuite.GSuiteTracksCoincidingWithQueryTrackTool import GSuiteTracksCoincidingWithQueryTrackTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
@@ -36,6 +33,8 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
+from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
+
 
 class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                                                 GenomeMixin, GSuiteResultsTableMixin,
@@ -97,7 +96,9 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                 ('Select track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
                 ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
-                ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+                ('Select MCFDR sampling depth', 'mcfdrDepth'),
+                ('Type of randomization', 'randType'),
+                ('Randomization algorithm', 'randAlg')] + \
                cls.getInputBoxNamesForAttributesSelection() + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
@@ -201,11 +202,32 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         if not prevChoices.isBasic:
             return False
 
+    # @classmethod
+    # def getOptionsBoxMcfdrDepth(cls, prevChoices):
+    #     if not prevChoices.isBasic and prevChoices.analysisName in [cls.Q3, cls.Q4]:
+    #         analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$'])
+    #         return analysisSpec.getOptionsAsText().values()[0]
+
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
-        if not prevChoices.isBasic and prevChoices.analysisName in [cls.Q3, cls.Q4]:
-            analysisSpec = AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$'])
-            return analysisSpec.getOptionsAsText().values()[0]
+        if not prevChoices.isBasic:
+            if prevChoices.analysisName == cls.Q3:
+                return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+            elif prevChoices.analysisName == cls.Q4:
+                return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0]
+
+    @classmethod
+    def getOptionsBoxRandType(cls, prevChoices):
+        if prevChoices.analysisName in [cls.Q3, cls.Q4]:
+            return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys()
+
+    @classmethod
+    def getOptionsBoxRandAlg(cls, prevChoices):
+        if prevChoices.analysisName in [cls.Q3, cls.Q4]:
+            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+                if prevChoices.randType == definedRandType:
+                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
+            return '__hidden__', None
 
     #@staticmethod
     #def getInfoForOptionsBoxKey(prevChoices):
@@ -233,7 +255,6 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         import numpy
         numpy.seterr(all='raise')
         cls._setDebugModeIfSelected(choices)
-        # DebugUtil.insertBreakPoint(username=username, currentUser='boris.simovski@gmail.com')
         genome = choices.genome
         analysisQuestion = choices.analysisName
         similaryStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
@@ -246,22 +267,26 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         tracks = [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join([quote(x.title, safe='') for x in gsuite.allTracks()])
 
+        import quick.gsuite.GuiBasedTsFactory as factory
+        ts = factory.getFlatTracksTS(genome=genome, guiSelectedGSuite=choices.gsuite)
+
         additionalResultsDict = OrderedDict()
         additionalAttributesDict = OrderedDict()
         if analysisQuestion in [cls.Q1, cls.Q2, cls.Q3]:
             additionalAttributesDict = cls.getSelectedAttributesForEachTrackDict(choices.additionalAttributes, gsuite)
             #additional analysis
             stats = [CountStat, CountElementStat]
-            additionalResultsDict = runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None)
+            additionalResultsDict = runMultipleSingleValStatsOnTracks(ts, stats, analysisBins)
 
         if analysisQuestion == cls.Q1:
-            analysisSpec = AnalysisSpec(GSuiteRepresentativenessOfTracksRankingsWrapperStat)
+            analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionV2Stat)
+            analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             analysisSpec.addParameter('reverse', reverse)
             analysisSpec.addParameter('ascending', 'No')
             analysisSpec.addParameter('trackTitles', trackTitles)
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            results = dictifyTSResult(doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result'])
 
             gsPerTrackResultsModel = GSuitePerTrackResultModel(
                 results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc],
@@ -362,23 +387,44 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         #             cls.extraGalaxyFn[GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME])
         elif analysisQuestion == cls.Q3:
 
-            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+            q2TS = TrackStructureV2()
+            tsRand = ts.getRandomizedVersion(
+                RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg],
+                binSource=analysisBins, allowOverlaps=False, randIndex=0)
+            for key in ts.keys():
+                realTS = TrackStructureV2()
+                realTS['query'] = ts[key]
+                realTS['reference'] = FlatTracksTS(dict([(refKey, refSTS) for refKey, refSTS in ts.iteritems() if refKey != key]))
+                randTS = TrackStructureV2()
+                randTS['query'] = tsRand[key]
+                randTS['reference'] = FlatTracksTS([(refKey, refSTS) for refKey, refSTS in tsRand.iteritems() if refKey != key])
+                hypothesisTS = TrackStructureV2()
+                hypothesisTS['real'] = realTS
+                hypothesisTS['rand'] = randTS
+                q2TS[key] = hypothesisTS
 
-            analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> GSuiteRepresentativenessOfTracksRankingsAndPValuesWrapperStat'
+            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+            analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack')
             analysisSpec.addParameter('rawStatistic', SummarizedInteractionWithOtherTracksV2Stat.__name__)
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
+            analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
             analysisSpec.addParameter('tail', 'right-tail')
-            analysisSpec.addParameter('trackTitles', trackTitles)
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+            results = doAnalysis(analysisSpec, analysisBins, q2TS).getGlobalResult()
+            resultsTuples = []
+            for key, res in results['Result'].iteritems():
+                curRes = res.getResult()
+                curPval = curRes['P-value']
+                curTestStat = curRes['TSMC_' + SummarizedInteractionWithOtherTracksV2Stat.__name__]
+                resultsTuples.append((key, [curTestStat, curPval]))
+            resultsDict = OrderedDict(sorted(resultsTuples, key = lambda t: (-t[1][1], t[1][0]), reverse = True))
             core = HtmlCore()
-
             gsPerTrackResultsModel = GSuitePerTrackResultModel(
-                results, ['Similarity to rest of tracks in suite (%s)' % summaryFunc, 'P-value'],
+                resultsDict, ['Similarity to rest of tracks in suite (%s)' % summaryFunc, 'P-value'],
                 additionalResultsDict=additionalResultsDict,
                 additionalAttributesDict=additionalAttributesDict)
             if choices.leadAttribute and choices.leadAttribute != GSuiteConstants.TITLE_COL:
@@ -392,35 +438,53 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             core.divBegin(divId='results-page')
             core.divBegin(divClass='results-section')
             core.header(analysisQuestion)
-            topTrackTitle = results.keys()[0]
+            topTrackTitle = resultsDict.keys()[0]
             core.paragraph('''
                 The track "%s" has the lowest P-value of %s corresponding to %s %s similarity to the rest of the tracks
                 as measured by "%s" track similarity measure.
-            ''' % (topTrackTitle, strWithNatLangFormatting(results[topTrackTitle][1]),
-                   strWithNatLangFormatting(results[topTrackTitle][0]), summaryFunc, similaryStatClassName))
+            ''' % (topTrackTitle, strWithNatLangFormatting(resultsDict[topTrackTitle][1]),
+                   strWithNatLangFormatting(resultsDict[topTrackTitle][0]), summaryFunc, similaryStatClassName))
             # core.tableFromDictionary(results, columnNames=['Track title', 'Similarity to rest of tracks in suite (' + summaryFunc+')', 'P-value'], sortable=False)
 
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, cls.Q3_SHORT, decoratedResultsDict, columnTitles,
-                gsuite=gsuite, results=results, gsuiteAppendAttrs=['similarity_score', 'p_value'],
+                gsuite=gsuite, results=resultsDict, gsuiteAppendAttrs=['similarity_score', 'p_value'],
                 sortable=True)
 
             core.divEnd()
             core.divEnd()
             core.end()
         else: # Q4
+            # mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+            #     AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
+            # analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> CollectionSimilarityHypothesisWrapperStat'
+            # analysisSpec = AnalysisDefHandler(analysisDefString)
+            # analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+            # analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack')
+            # analysisSpec.addParameter('rawStatistic', 'MultitrackSummarizedInteractionV2Stat')
+            # analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
+            # analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
+            # analysisSpec.addParameter('multitrackSummaryFunc', 'avg')  # should it be a choice?
+            # analysisSpec.addParameter('tail', 'right-tail')
+            # results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+
             mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
-            analysisDefString = REPLACE_TEMPLATES['$MCFDRv3$'] + ' -> CollectionSimilarityHypothesisWrapperStat'
+                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0][0]
+            analysisDefString = REPLACE_TEMPLATES[
+                                    '$MCFDRv4$'] + ' -> RandomizationManagerV3Stat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack')
             analysisSpec.addParameter('rawStatistic', 'MultitrackSummarizedInteractionV2Stat')
-            analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
-            analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
+            analysisSpec.addParameter('pairwiseStatistic',
+                                      GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                          similaryStatClassName])  # needed for call of non randomized stat for assertion
+            analysisSpec.addParameter('summaryFunc',
+                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             analysisSpec.addParameter('multitrackSummaryFunc', 'avg')  # should it be a choice?
             analysisSpec.addParameter('tail', 'right-tail')
-            results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
+            analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
+
             pval = results['P-value']
             observed = results['TSMC_MultitrackSummarizedInteractionV2Stat']
             significanceLevel = 'strong' if pval < 0.01 else ('weak' if pval < 0.05 else 'no')

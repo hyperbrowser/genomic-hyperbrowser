@@ -12,7 +12,6 @@ from urllib import unquote, quote
 from config.Config import DebugConfig, DEFAULT_GENOME, STATIC_REL_PATH,\
     IS_EXPERIMENTAL_INSTALLATION, ORIG_DATA_PATH, HB_VERSION, DATA_FILES_PATH, USE_PARALLEL, \
     URL_PREFIX
-from config.Config import ALLOW_COMP_BIN_SPLITTING as CFG_ALLOW_COMP_BIN_SPLITTING
 from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from gold.application.LogSetup import logging, HB_LOGGER, usageAndErrorLogging, \
     runtimeLogging, logException, detailedJobRunHandler, logMessage, logLackOfSupport
@@ -871,11 +870,15 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @staticmethod
     def _tempAnalysisDefHacks(analysisDef):
         # fixme: Temporary hack, so that CompBinSplitting can be turned off in most cases.
+        # note: Changes here have consequences for setting ALLOW_COMP_BIN_SPLITTING elsewhere,
+        #   e.g., inGalaxyIntegrationTest, where one needs to set the constant in config.Config
+        #   because of this method.
         import gold.util.CompBinManager
         if any(x in analysisDef for x in ['CategoryDivergenceMatrixStat', 'CategoryPointCountInSegsMatrixStat']):
             logMessage('hack')
             gold.util.CompBinManager.CompBinManager.ALLOW_COMP_BIN_SPLITTING = True
         else:
+            from config.Config import ALLOW_COMP_BIN_SPLITTING as CFG_ALLOW_COMP_BIN_SPLITTING
             gold.util.CompBinManager.CompBinManager.ALLOW_COMP_BIN_SPLITTING = CFG_ALLOW_COMP_BIN_SPLITTING
 
     @staticmethod
@@ -1718,8 +1721,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         #return text.split(':')[-1]
 
     @staticmethod
-    @takes(str, list)
-    @returns(str)
+    @takes(basestring, list)
+    @returns(basestring)
     def getTrackInfo(genome, trackName):
         #genome ='hg18'
         #return 'further info on ' + ':'.join(trackName) + ' will come..'
@@ -1734,8 +1737,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         #    return str(e.__class__) + str(e) + str(trackName) + str(genome)
 
     @staticmethod
-    @takes(str)
-    @returns(str)
+    @takes(basestring)
+    @returns(basestring)
     def getGenomeInfo(genome):
         #return GenomeInfo(genome).allInfo().decode('ascii','ignore')
         if genome:
