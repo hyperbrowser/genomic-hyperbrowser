@@ -1,4 +1,9 @@
+from proto.CommonFunctions import ensurePathExists
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from proto.RSetup import r
 
 
 class PlotDenistyTool(GeneralGuiTool):
@@ -10,9 +15,10 @@ class PlotDenistyTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         return [('Select file ', 'selFile'),
                 ('Select bin', 'bin'),
-                ('Description for label x', 'xlabel'),
+                ('Description for label x', 'xLabel'),
                 ('Description for label y', 'yLabel'),
                 ('Title', 'title'),
+                ('Extra option', 'selColor'),
                 ]
 
     @classmethod
@@ -35,25 +41,93 @@ class PlotDenistyTool(GeneralGuiTool):
     def getOptionsBoxTitle(cls, prevChoices):  # Alt: getOptionsBox2()
         return ''
 
+    @classmethod
+    def getOptionsBoxSelColor(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['color black-blue', 'colorful', 'colorful with contour']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-
         selFile = choices.selFile
         bin = int(choices.bin)
         xLabel = choices.xLabel.encode('utf-8')
         yLabel = choices.yLabel.encode('utf-8')
-        title = choices.title.encode('utf-8')
+        imgTitle = choices.title.encode('utf-8')
+        selColor = choices.selColor.encode('utf-8')
 
-        rCode = """dataRPois <- function(vec) {
-                data=sort(runif(vec[1], 0, vec[2]));
+        pathInput = ExternalTrackManager.extractFnFromGalaxyTN(selFile.split(':'))
 
-                histData=data[2:vec[1]]-data[1:vec[1]-1];
-                hist(histData);
+        filename = 'output'
+        fileOutputPdf = GalaxyRunSpecificFile([filename, filename + '.pdf'], galaxyFn)
+        ensurePathExists(fileOutputPdf.getDiskPath())
+        pathOutputPdf = fileOutputPdf.getDiskPath()
+
+        fileOutputPng = GalaxyRunSpecificFile([filename, filename + '.png'], galaxyFn)
+        ensurePathExists(fileOutputPng.getDiskPath())
+        pathOutputPng = fileOutputPng.getDiskPath()
+
+        cls.prepareDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+                               yLabel, imgTitle)
+
+        htmlCore = HtmlCore()
+        htmlCore.paragraph('Selection')
+        htmlCore.line('Bin: ' + str(bin))
+        htmlCore.line('Extra option: ' + str(selColor))
+        htmlCore.paragraph('Image PNG')
+        htmlCore.link('Download', fileOutputPng.getURL())
+        htmlCore.paragraph('Image PDF')
+        htmlCore.link('Download', fileOutputPdf.getURL())
+        htmlCore.paragraph('Plot')
+        htmlCore.image(fileOutputPng.getURL())
+        print htmlCore
+
+    @classmethod
+    def prepareDensityPlot(cls, pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+                           yLabel, imgTitle):
+        rCode = """
+                suppressMessages(library(ggplot2));
+                suppressMessages(library(hexbin));
+
+                plotDraw <- function(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle) {
+                data <- read.table(pathInput, sep='\t', header = F)
+                df <- data.frame(t(data))
+                head(df)
+                ## Use densCols() output to get density at each point
+                x1<-df$X1
+                x2<-df$X2
+
+                p <- ggplot(df, aes(x = x1, y = x2))
+                bins <- bin
+                if (selColor == "color black-blue")
+                {
+                    p1 <- p + stat_binhex(bins = bins) + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
+                } else {
+                    myColor <- rev(RColorBrewer::brewer.pal(11, "Spectral"))
+                    myColor_scale_fill_sqrt <- scale_fill_gradientn(colours = myColor, trans = "sqrt")
+
+                    if (selColor == "colorful")
+                    {
+                        p1 <- p + myColor_scale_fill_sqrt + stat_binhex(bins = bins) + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
+                    } else {
+                        p <- p + myColor_scale_fill
+                        p1 <- p + stat_binhex(bins = bins) + geom_density2d(colour = "black") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
+                    }
+                }
+
+                png(pathOutputPng)
+                plot(p1)
+                dev.off()
+
+                pdf(pathOutputPdf)
+                plot(p1)
+                dev.off()
+
+
+                #ggsave(pathOutputPdf, width = 6, height = 4)
+                #ggsave(pathOutputPng)
+
             }
             """
-
-
+        r(rCode)(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -84,6 +158,7 @@ class PlotDenistyTool(GeneralGuiTool):
     @classmethod
     def isPublic(cls):
         return True
+
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -195,13 +270,13 @@ class PlotDenistyTool(GeneralGuiTool):
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
-    #
-    # @classmethod
-    # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
-    #     """
-    #     The title (name) of the main output history element.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     the name of the tool.
-    #     """
+        #
+        # @classmethod
+        # def getOutputName(cls, choices=None):
+        #     return cls.getToolSelectionName()
+        #     """
+        #     The title (name) of the main output history element.
+        #
+        #     Optional method. Default return value if method is not defined:
+        #     the name of the tool.
+        #     """
