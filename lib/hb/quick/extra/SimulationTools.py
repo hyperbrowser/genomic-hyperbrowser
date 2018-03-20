@@ -28,8 +28,8 @@ class OrigWriter:
         #ensurePathExists(outFn)
         #print elTupleIter
         
-        outF = open(outFn,'w')
-        cls._writeHeader(outF, chr)
+        outF = open(outFn,'a')
+        # cls._writeHeader(outF, chr)
         numPrintedDots = 0
         
         for el in elTupleIter:
@@ -358,7 +358,17 @@ class SimulationPointIter:
         writerClass.writeChrAdd(genome, chr, 'trackName', iter, outFn)
 
 
+class SimulationSegIter:
+    @classmethod
+    def createGwTrack(cls, genome, outFn, interRate, intraRate, interProb, minSegLen, maxSegLen):
+        for chr in GenomeInfo.getChrList(genome):
+            cls.createChrTrack(genome, chr, outFn, interRate, intraRate, interProb, minSegLen, maxSegLen)
 
+    @staticmethod
+    def createChrTrack(genome, chr, outFn, interRate, intraRate, interProb, minSegLen, maxSegLen):
+        segIter = SegIter(genome, chr, interRate, intraRate, interProb, minSegLen, maxSegLen)
+        writerClass = OrigBedWriter
+        writerClass.writeChrAdd(genome, chr, 'trackName', segIter, outFn)
 
 #def createClusteredPointTrack(outFn, interRate, intraRate):
 #    pos = 0
