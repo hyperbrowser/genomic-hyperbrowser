@@ -42,6 +42,13 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
         """
         return [('Number of track', 'nrTracks'),
                 ('Select genome', 'genome'),
+                #0.000001, 0.000001, 1.0, 100, 1000
+                #interRate, intraRate, interProb, minSegLen, maxSegLen
+                ('Inter-rate', 'interRate'),
+                ('Intra-rate', 'intraRate'),
+                ('Inter-probability', 'interProb'),
+                ('Minimum segment length', 'minSegLen'),
+                ('Maximum segment length', 'maxSegLen')
                 ]
 
     # @classmethod
@@ -183,6 +190,28 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
         """
         return '__genome__'
 
+    @classmethod
+    def getOptionsBoxInterRate(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '0.000001'
+
+    @classmethod
+    def getOptionsBoxIntraRate(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '0.000001'
+
+    @classmethod
+    def getOptionsBoxInterProb(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '1.0'
+
+    @classmethod
+    def getOptionsBoxMinSegLen(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '100'
+
+    @classmethod
+    def getOptionsBoxMaxSegLen(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '1000'
+
+
+
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -245,6 +274,11 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
         """
         n = int(choices.nrTracks)
         genome = choices.genome
+        interRate = float(choices.interRate)
+        intraRate = float(choices.intraRate)
+        interProb = float(choices.interProb)
+        segMinLen = int(choices.minSegLen)
+        segMaxLen = int(choices.maxSegLen)
 
         gsuite = GSuite()
         simSegIter = SimulationSegIter()
@@ -257,7 +291,7 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
             outFn = gSuiteTrack.path
             ensurePathExists(outFn)
 
-            simSegIter.createGwTrack(genome, outFn, 0.000001, 0.000001, 1.0, 100, 1000)
+            simSegIter.createGwTrack(genome, outFn, interRate, intraRate, interProb, segMinLen, segMaxLen)
 
             gsuite.addTrack(gSuiteTrack)
         GSuiteComposer.composeToFile(gsuite, galaxyFn)
