@@ -72,6 +72,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
         outGSuite = GSuite()
 
+        k = 0
         for i, iTrack in enumerate(gSuite.allTracks()):
             trackTitle = iTrack.title
             trackPath = iTrack.path
@@ -89,7 +90,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
 
                     uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                         extraFileName=trackTitle + '--' + str(
-                                                            i) + '-' + str(f) + '-' + str(s),
+                                                            k) + '-' + str(f) + '-' + str(s),
                                                         suffix='bed')
                     gSuiteTrack = GSuiteTrack(uri)
                     outFn = gSuiteTrack.path
@@ -116,10 +117,11 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
                     doAnalysis(spec, bins, [iTrack])
 
                     gs = GSuiteTrack(uri, title=''.join(
-                        trackTitle + '--' + str(i) + '-' + str(f) + '-' + str(s)), genome=genome,
+                        trackTitle + '--' + str(k) + '-' + str(f) + '-' + str(s)), genome=genome,
                                      attributes=attr)
 
                     outGSuite.addTrack(gs)
+                    k = k + 1
 
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
 
