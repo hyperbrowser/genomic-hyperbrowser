@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
 from gold.track.Track import Track
-from gold.util.CustomExceptions import LackingTsResultsError
+from gold.util.CustomExceptions import LackingTsResultsError, NotSupportedError
 import copy
 from quick.application.SignatureDevianceLogging import takes
 from test.gold.track.common.SampleTrack import SampleTrack
@@ -240,7 +240,7 @@ class SingleTrackTS(TrackStructureV2):
         self.metadata = metadata
 
     def __setitem__(self, key, value):
-        raise
+        raise NotSupportedError('__setitem__ not supported')
 
     def _inferResult(self):
         raise LackingTsResultsError
