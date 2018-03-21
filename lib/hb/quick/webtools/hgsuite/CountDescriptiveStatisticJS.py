@@ -21,6 +21,8 @@ class Cube():
 
         js += cls._addExtraJS(len(fileNameList))
 
+        js += cls._summarizeTable()
+
         return js
 
     @classmethod
@@ -37,8 +39,8 @@ class Cube():
             idNum) + '''(this.selectedIndex)" style="width: 150px">
         <option value="0">---Select---</option>
         <option value="1">Select one value</option>
-        <option value="2">Show results for each value</option>
-        <option value="3">Sum across this dimension</option>
+        <option value="-2">Show results for each value</option>
+        <option value="-1">Sum across this dimension</option>
         </select>
         '''
         return js
@@ -63,7 +65,7 @@ class Cube():
             for(i=0;i<folderValue"""+str(index)+"""Unique.length;i++)
             {
                 j=i+1
-                fV"""+str(index)+"""U[j] = folderValue"""+str(index)+"""Unique[i] +'|' + j
+                fV"""+str(index)+"""U[j] = folderValue"""+str(index)+"""Unique[i] +'|' + folderValue"""+str(index)+"""Unique[i]
             }
             j=j+1
             """
@@ -185,31 +187,12 @@ class Cube():
                     }
                 }
             }
-            function showAllRowsColumn(selDim, selCh)
-            {
-                var childDivs = document.getElementById('results').getElementsByTagName('div');
-                for( i=0; i< childDivs.length; i++ )
-                {
-                    var childDiv = childDivs[i];
-                    temp = childDiv.id
-                    temp = temp.replace("[", "");
-                    temp = temp.replace("]", "");
-                    var tab = new Array();
-                    tab = temp.split(",");
-
-
-                    if(tab[0] == selDim && tab[1] == selCh)
-                    {
-                        var resultsDiv = document.getElementById(childDiv.id);
-                        resultsDiv.setAttribute('class', 'visible');
-                    }
-                }
-            }"""
+            """
 
         js += """
             function onClickChoices()
             {
-                hideTable();
+                //hideTable();
 
                 """
         for index in range(0, indexLen):
@@ -218,54 +201,34 @@ class Cube():
         for index in range(0, indexLen):
             js += cls._addSelectedDimension(index)
 
-
-        #""" folderValue"""+str(index)+"""Unique[selCh""" folderValue"""+str(index)+"""Unique-1]
-
-        js += """var divName = '[' """
+        js+= """ if (  """
         for index in range(0, indexLen):
-            js += """ + selDim"""+str(index)+""" + ', ' + selCh"""+str(index)
-            if indexLen-1 != index:
-                js += """ + ', ' """
-        js += """+ ']';"""
+            js += """selDim"""+str(index)+""" !=0  """
+            if indexLen -1 != index:
+                js += " && "
+        js += """ )
+                {
+                """
+        js += """var divName = []; """
+        for index in range(0, indexLen):
+            js += """ divName.push(selDim"""+str(index) + """);"""
 
         js += """
-                //var divName = '[' + selDim0 + ', ' + selCh0 + ', ' + selDim1 + ', ' + selCh1 +  ']';
+        
+                tab = summarizeTable(data, divName);
+                tab = changeDataIntoProperTable(tab);
+                console.log('tab', tab);
+                generateTable(tab);
+              }
+              """
+
+        js += """
                 console.log(divName);
-                var resultsDiv = document.getElementById(divName);
-                resultsDiv.setAttribute('class', 'visible');
+                //var resultsDiv = document.getElementById(divName);
+                //resultsDiv.setAttribute('class', 'visible');
             }
 
-            function onClickChoicesRowColumn(dimensions, choices, choicesRowColumnIndex)
-            {
-                if(choicesRowColumnIndex>0)
-                {
-                    numEl=choicesRowColumn[dimensions-1][choices].length
-                    numEl=numEl-1
-
-                    if(choicesRowColumnIndex!=numEl)
-                    {
-                        choicesRowColumnIndex = choicesRowColumnIndex - 1
-                        var divName = '[' + dimensions + ', ' + choices + ', ' + choicesRowColumnIndex + ']'
-                        var resultsDiv = document.getElementById(divName);
-                        resultsDiv.setAttribute('class', 'visible');
-
-                        var childDivs = document.getElementById('results').getElementsByTagName('div');
-                        for( i=0; i< childDivs.length; i++ )
-                        {
-                            var childDiv = childDivs[i];
-                            if(childDiv.id != divName)
-                            {
-                                var resultsDiv = document.getElementById(childDiv.id);
-                                resultsDiv.setAttribute('class', 'hidden');
-                            }          
-                        }
-                    }
-                    else
-                    {
-                        showAllRowsColumn(dimensions, choices)
-                    }
-                }
-            }
+            
 
             </script>
             """
@@ -275,23 +238,24 @@ class Cube():
     def _addSelectedIndex(cls, index):
         return """
                 var ch"""+str(index)+""" = document.getElementById('choices"""+str(index)+"""');
-                var selCh"""+str(index)+""" = ch"""+str(index)+""".selectedIndex
+                var selCh"""+str(index)+""" = ch"""+str(index)+""".value
                 """
 
     @classmethod
     def _addSelectedDimension(cls, index):
         js = """var dim"""+str(index)+""" = document.getElementById('dimensions"""+str(index)+"""');
-                var selDim"""+str(index)+""" = dim"""+str(index)+""".selectedIndex"""
+                var selDim"""+str(index)+""" = dim"""+str(index)+""".value"""
         js+= """
-                if(selCh"""+str(index)+"""!=-1)
+                if (selDim"""+str(index)+""" == -2 || selDim"""+str(index)+""" == -1) 
                 {
-                    selCh"""+str(index)+""" = selCh"""+str(index)+"""-1;
+                	selDim"""+str(index)+""" = parseInt(selDim"""+str(index)+""");
                 }
-        """
-        js+= """
-                if (selDim"""+str(index)+""" == 2 || selDim"""+str(index)+""" == 3)
+                else if (selDim"""+str(index)+""" == 1)
                 {
-                    selCh"""+str(index)+"""=-1;
+                	if(selCh"""+str(index)+""" != 0)
+                	{
+                		selDim"""+str(index)+""" = """ + """selCh"""+str(index) + """;
+                	}
                 }
         """
         return js
@@ -299,87 +263,111 @@ class Cube():
     @classmethod
     def _summarizeTable(cls):
         js = """
+        <script type = "text/javascript" >
         var data = [['ata', '1 - 243-2--eta-.bed--TG', 863], ['ata', '1 - 243-2--eta-.bed--TA', 781]];
         console.log(data);
         
-        var flat = data;
-        var operations = [-1, -1, -2];
+        function changeDataIntoProperTable(data)
+       {
+       	   res = {};
+       	   for (var d in data)
+       	   {
+                if not d[0] in res.keys():
+                    res[d[0]] = OrderedDict()
+                if not d[1] in res[d[0]].keys():
+                    res[d[0]][d[1]] = 0
+                res[d[0]][d[1]] = d[2]
+            }
+       }
+        
+       function generateTable(tab) 
+       {
+		  var body = document.getElementsByTagName("body")[0];
+		  var div = document.createElement("div");
+		  div.setAttribute('id', 'results');
+		  body.appendChild(div);
+ 		  var tbl = document.createElement("table");
+  		  var tblBody = document.createElement("tbody");
+ 	      
+ 	      for (var i = 0; i < tab.length; i++) 
+  			{
+    			var row = document.createElement("tr");
+	    		for (var j = 0; j < tab[i].length; j++) 
+    			{
+     			   var cell = document.createElement("td");
+      		   	   var cellText = document.createTextNode(tab[i][j]);
+      			   cell.appendChild(cellText);
+      		   	   row.appendChild(cell);
+    		     }
+		       tblBody.appendChild(row);
+  			}
+ 
+  			tbl.appendChild(tblBody);
+  	
+  			body.appendChild(tbl);
+
+		}
+		
         function summarizeTable(flat, operations)
         {
-        	console.log('flat', flat);
-        	console.log('operations', operations);
-        	
         	var operationsReverse = operations.reverse()
-        	console.log('operationsReverse', operationsReverse, operationsReverse.length);
         	
         	var i = operationsReverse.length-1;
         	for (var k = 0; k < operationsReverse.length; k++) 
         	{	
         		var op = operationsReverse[k];
         		
-        		console.log('op', op, 'i', i);
-        		
-        		if (op >= 0)
-        		{
+        		if ((op >= 0) || (op.length >= 0))
+        		{	
+        			var partFlat = [];
         			for (j = 0; j < flat.length; j++) 
         			{
-        				if(flat[j] == op)
+        				if(flat[j][i] == op)
         				{
-        					flat = [flat[j].slice(0,i) + flat[j].slice(i+1,flat.length)];
+        					var part = (flat[j].slice(0,i)).concat(flat[j].slice(i+1,flat.length));	
+        					partFlat.push(part);
         				}
         			}
+        			flat = partFlat;
         		}
         		else if(op == -1)
         		{
         			var partFlat = [];
-        			console.log('flat.length', flat.length, flat);
         			for (var j = 0; j < flat.length; j++) 
         			{
-        				//console.log('flat[j]', flat[j], flat[j].slice(0,i), flat[j].slice(i+1,flat.length+1), 0, i, i+1,flat.length);
         				partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat.length+1));
-        				console.log(i, 'partFlat', partFlat, flat[j].slice(0,i), flat[j].slice(i+1,flat.length+1));
         			}
         			flat = partFlat;
-        			console.log('-----', flat, flat.length);
-        			
         			
         			var myDict = {};
-        			for (var j = 0; j < flat.length; j++) 
+        			for (var x in flat) 
         			{
-        				//console.log('j-beforeFirst', j, myDict[ key ], key, value);
-        				var value = parseFloat(flat[j][flat.length-1]);
-        				var key = flat[j].slice(0,flat.length-1);
-        				//console.log('j-beforeSecond', j, myDict[ key ], key, value);
+        				var value = parseFloat(flat[x][flat[x].length-1]);
+        				var key = flat[x].slice(0,flat[x].length-1);
         				if (myDict[ key ] == undefined)
         				{
         					myDict[ key ] = 0;
         				}
-        				//console.log('j-afterFirst', j, myDict[ key ], key, value);
 	        			myDict[ key ] += value;
-    	    			//console.log('j-afterSecond', j, myDict[ key ], key, value);
-        								
         			}
         			
-        			console.log('myDict', myDict, myDict.length);
         			partFlat = [];
         			var c = 0;
         			
         			for (var x in myDict)
         			{
-        				console.log('x', x, myDict[x], Array(x, myDict[x]));
         				if ( x == "")
         				{
         					partFlat[c] = [myDict[x]];
         				}
         				else
         				{
-        					partFlat[c] = Array(x, myDict[x]);
+        					partFlat[c] = x.split(',');
+        					partFlat[c].push(myDict[x]);
         				}
         				c = c+1;
         			}
         			flat = partFlat;
-        			
-        			console.log('i=' ,i, 'flat', flat);
         			
         		}
         		i = i - 1;
@@ -387,9 +375,7 @@ class Cube():
         	return flat;
         }
         
+        </script>
         
-        
-        aa = summarizeTable(flat, operations);
-        console.log('flatAfter', aa);
         """
         return js
