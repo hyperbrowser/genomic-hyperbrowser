@@ -78,51 +78,52 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             trackPath = iTrack.path
             #spec = AnalysisSpec(NoisyPointTrackGenerationStat)
 
+            for n in range(0, number):
+                for numF, f in enumerate(firstProb):
+                    s =  secondProb[numF]
 
-            for numF, f in enumerate(firstProb):
-                s =  secondProb[numF]
+                    #build track
+                    attr = OrderedDict()
+                    attr['originalTrackName'] = str(trackTitle)
+                    attr['trackVersion'] = str(n)
+                    attr['R=1 and Y=1'] = str(f)
+                    attr['R=0 and Y=0'] = str(s)
 
-                #build track
-                attr = OrderedDict()
-                attr['originalTrackName'] = str(trackTitle)
-                attr['trackVersion'] = str(i)
-                attr['R=1 and Y=1'] = str(f)
-                attr['R=0 and Y=0'] = str(s)
-
-                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                    extraFileName=trackTitle + '--' + str(
-                                                        k) + '-' + str(f) + '-' + str(s),
-                                                    suffix='bed')
-                gSuiteTrack = GSuiteTrack(uri)
-                outFn = gSuiteTrack.path
-                ensurePathExists(outFn)
-
-
-
-
-                # from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-                # sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
-                # fn = sf.getDiskPath(ensurePath=True)
-                import urllib
-                fn = urllib.quote(outFn, safe='')
-                # print sf.getLink('My file')
+                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                        extraFileName=trackTitle + '--' + str(
+                                                            k) + '-'+ str(
+                                                            n) + '-' + str(f) + '-' + str(s),
+                                                        suffix='bed')
+                    gSuiteTrack = GSuiteTrack(uri)
+                    outFn = gSuiteTrack.path
+                    ensurePathExists(outFn)
 
 
 
-                spec = AnalysisSpec(StatTvOutputWriterStat)
-                spec.addParameter('trackFilePath', fn)
-                spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
-                spec.addParameter('keepOnesProb', f)
-                spec.addParameter('introduceZerosProb', 1-s)
 
-                doAnalysis(spec, bins, [iTrack])
+                    # from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+                    # sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
+                    # fn = sf.getDiskPath(ensurePath=True)
+                    import urllib
+                    fn = urllib.quote(outFn, safe='')
+                    # print sf.getLink('My file')
 
-                gs = GSuiteTrack(uri, title=''.join(
-                    trackTitle + '--' + str(k) + '-' + str(f) + '-' + str(s)), genome=genome,
-                                 attributes=attr)
 
-                outGSuite.addTrack(gs)
-                k = k + 1
+
+                    spec = AnalysisSpec(StatTvOutputWriterStat)
+                    spec.addParameter('trackFilePath', fn)
+                    spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
+                    spec.addParameter('keepOnesProb', f)
+                    spec.addParameter('introduceZerosProb', 1-s)
+
+                    doAnalysis(spec, bins, [iTrack])
+
+                    gs = GSuiteTrack(uri, title=''.join(
+                        trackTitle + '--' + str(k) + '-'+ str(n) + '-' + str(f) + '-' + str(s)), genome=genome,
+                                     attributes=attr)
+
+                    outGSuite.addTrack(gs)
+                    k = k + 1
 
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
 
