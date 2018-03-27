@@ -1,9 +1,11 @@
 from gold.track.Track import Track
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool):
+class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin):
     @classmethod
     def getToolName(cls):
         return "Simulate two level GSuite from a base track"
@@ -13,7 +15,10 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool):
         return [('Select the base track', 'baseTrack'),
                 ('Select the genome build', 'genome'),
                 ('Nr. of simulated sub-GSuites', 'nrSubGsuites'),
-                ('Nr. of tracks per group', 'nrTracks')]
+                ('Nr. of tracks per group', 'nrTracks'),
+                ('True positive probability', 'tpProb'),
+                ('True negative probability', 'tnProb')] + \
+                cls.getInputBoxNamesForUserBinSelection()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -38,6 +43,12 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxNrTracks(cls, prevChoices):
         return '10'
+    @classmethod
+    def getOptionsBoxTpProb(cls, prevChoices):
+        return '0.5'
+    @classmethod
+    def getOptionsBoxTnProb(cls, prevChoices):
+        return '0.99'
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -59,10 +70,18 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool):
         baseTrack = Track(trackName)
         nrSubGSuites = int(choices.nrSubGSuites)
         nrTracks = int(choices.nrTracks)
+        tpProb = float(choices.tpProb)
+        tnProb = float(choices.tnProb)
+
+        analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
+                                                         genome=genome)
 
         #TODO: implement
-        cls._generateGSuite(baseTrack, nrSubGSuites, nrTracks)
+        cls._execute(baseTrack, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn)
 
+    @classmethod
+    def _execute(cls, baseTrack, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn):
+        pass
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -90,6 +109,15 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool):
         except:
             return "Nr. of tracks per group must be a valid integer."
 
+        probErr = "The probabilities must be real numbers between 0.0 and 1.0."
+        try:
+            tpProb = float(choices.tpProb)
+            tnProb = float(choices.tnProb)
+        except:
+            return probErr
+        else:
+            if tnProb > 1 or tnProb < 0 or tpProb > 1 or tnProb < 0:
+                return probErr
 
     # @classmethod
     # def getSubToolClasses(cls):
