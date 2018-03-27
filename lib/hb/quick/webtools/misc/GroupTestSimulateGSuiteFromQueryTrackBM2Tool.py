@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import time
+
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteComposer
@@ -97,21 +99,26 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
     @classmethod
     def _execute(cls, baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn):
-        import time
         startTime = time.time()
         gsuite = GSuite()
         groupOne = "A"
         groupTwo = "B"
         for i in xrange(nrSubGSuites):
             for j in xrange(nrTracks):
-                for trackGroup in [groupOne, groupTwo]:
-                    cls._addSimulatedTrackToGSuite(gsuite, str(i), str(j), trackGroup, baseTrackSTS, genome,
-                                                   analysisBins, tpProb, tnProb, galaxyFn)
-                    m, s = divmod(time.time() - startTime, 60)
-                    h, m = divmod(m, 60)
-                    print("%d:%02d:%02d" % (h, m, s))
+                cls._addSubGSuite(analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j,
+                                  startTime, tnProb, tpProb)
 
         GSuiteComposer.composeToFile(gsuite, cls.extraGalaxyFn('Simulated GSuite (BM2)'))
+
+    @classmethod
+    def _addSubGSuite(cls, analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j, startTime,
+                      tnProb, tpProb):
+        for trackGroup in [groupOne, groupTwo]:
+            cls._addSimulatedTrackToGSuite(gsuite, str(i), str(j), trackGroup, baseTrackSTS, genome,
+                                           analysisBins, tpProb, tnProb, galaxyFn)
+            m, s = divmod(time.time() - startTime, 60)
+            h, m = divmod(m, 60)
+            print("%d:%02d:%02d" % (h, m, s))
 
     @classmethod
     def _addSimulatedTrackToGSuite(cls, gsuite, subGSuiteLabel, trackIndex, trackGroupLabel, baseTrackSTS, genome,
