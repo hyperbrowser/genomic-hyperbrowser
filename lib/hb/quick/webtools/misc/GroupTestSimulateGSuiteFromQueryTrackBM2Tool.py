@@ -108,7 +108,7 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
                 cls._addSubGSuite(analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j,
                                   startTime, tnProb, tpProb)
 
-        GSuiteComposer.composeToFile(gsuite, cls.extraGalaxyFn('Simulated GSuite (BM2)'))
+        GSuiteComposer.composeToFile(gsuite, cls.extraGalaxyFn['Simulated GSuite (BM2)'])
 
     @classmethod
     def _addSubGSuite(cls, analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j, startTime,
