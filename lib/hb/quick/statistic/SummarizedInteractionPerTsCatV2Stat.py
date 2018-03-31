@@ -57,8 +57,10 @@ class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
             res2 = 0
             for key, res in rawResultsDict.iteritems():
                 if key == self._selectedCategory:
+                    print('res1=', key)
                     res1 = res
                 else:
+                    print('res2=', key)
                     res2 = res
                 tsResult.setResult(res1 - res2)
         else:

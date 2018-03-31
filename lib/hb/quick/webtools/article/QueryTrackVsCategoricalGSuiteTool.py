@@ -20,12 +20,14 @@ from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 import quick.gsuite.GuiBasedTsFactory as factory
 
 
-class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
+class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin,
+                                        QueryTrackVsCategoricalGSuiteMixin):
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
@@ -74,18 +76,11 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return [('Use a GSuite of randomized query track', 'isQueryGSuite'),
                 ('Select query from history', 'queryTrack'),
                 ('Select reference GSuite', 'gsuite'),
-                ('Select category column', 'categoryName'),
-                ('Select primary group category value', 'categoryVal'),
-                ('Select track to track similarity/distance measure', 'similarityFunc'),
-                ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                ('Type of randomization', 'randType'),
-                ('Select summary function groups', 'catSummaryFunc'),
-                ('Select MCFDR sampling depth', 'mcfdrDepth'),
-                ('Select alternative for the wilcoxon test', 'wilcoxonTail'),
-                ('Randomization algorithm', 'randAlg')] + \
-               cls.getInputBoxNamesForGenomeSelection() + \
-               cls.getInputBoxNamesForUserBinSelection() + \
-               cls.getInputBoxNamesForDebug()
+                ('Select category column', cls.CAT_LBL_KEY)] + \
+                cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                cls.getInputBoxNamesForUserBinSelection() + \
+                cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsQueryGSuite():
@@ -236,46 +231,46 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             return gsuite.attributes
 
-    @staticmethod
-    def getOptionsBoxCategoryVal(prevChoices):
-        if prevChoices.gsuite and prevChoices.categoryName:
-            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-            gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
-
-    @staticmethod
-    def getOptionsBoxSimilarityFunc(prevChoices):
-        return GSuiteStatUtils.PAIRWISE_STAT_LABELS
-
-    @staticmethod
-    def getOptionsBoxSummaryFunc(prevChoices):
-        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
-
-    @staticmethod
-    def getOptionsBoxRandType(prevChoices):
-        return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
-
-    @staticmethod
-    def getOptionsBoxCatSummaryFunc(prevChoices):
-        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
-
-    @staticmethod
-    def getOptionsBoxMcfdrDepth(prevChoices):
-        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
-
-    @staticmethod
-    def getOptionsBoxWilcoxonTail(prevChoices):
-        if prevChoices.randType == "Wilcoxon":
-            return ['two.sided', 'less', 'greater']
-
-    @staticmethod
-    def getOptionsBoxRandAlg(prevChoices):
-        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
-                if prevChoices.randType == definedRandType:
-                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
+    # @staticmethod
+    # def getOptionsBoxCategoryVal(prevChoices):
+    #     if prevChoices.gsuite and prevChoices.categoryName:
+    #         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+    #         gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+    #         return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
+    #
+    # @staticmethod
+    # def getOptionsBoxSimilarityFunc(prevChoices):
+    #     return GSuiteStatUtils.PAIRWISE_STAT_LABELS
+    #
+    # @staticmethod
+    # def getOptionsBoxSummaryFunc(prevChoices):
+    #     return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
+    #
+    # @staticmethod
+    # def getOptionsBoxRandType(prevChoices):
+    #     return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
+    #
+    # @staticmethod
+    # def getOptionsBoxCatSummaryFunc(prevChoices):
+    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+    #         return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
+    #
+    # @staticmethod
+    # def getOptionsBoxMcfdrDepth(prevChoices):
+    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+    #         return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+    #
+    # @staticmethod
+    # def getOptionsBoxWilcoxonTail(prevChoices):
+    #     if prevChoices.randType == "Wilcoxon":
+    #         return ['two.sided', 'less', 'greater']
+    #
+    # @staticmethod
+    # def getOptionsBoxRandAlg(prevChoices):
+    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+    #         for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+    #             if prevChoices.randType == definedRandType:
+    #                 return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -419,7 +414,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                       choices.similarityFunc])
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('segregateNodeKey', 'reference')
-        analysisSpec.addParameter('alternative', choices.wilcoxonTail)
+        analysisSpec.addParameter('alternative', choices.tail)
+        analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
         return results
 
@@ -557,7 +553,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tail', choices.tail)
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
@@ -574,6 +570,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
         if choices.randType == "Wilcoxon":
             analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+            analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
         else:
             analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
