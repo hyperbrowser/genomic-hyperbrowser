@@ -73,7 +73,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
                 ('Select primary group category value', 'categoryVal'),
                 ('Select track to track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                ('Select summary function groups', 'catSummaryFunc'),
+                ('Select summary function per group', 'catSummaryFunc'),
                 ('Select the tail alternative', 'tail')
 
                 ] + \
