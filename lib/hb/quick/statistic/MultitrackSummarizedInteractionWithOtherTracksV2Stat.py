@@ -20,7 +20,7 @@ class MultitrackSummarizedInteractionWithOtherTracksV2Stat(MagicStatFactory):
 class MultitrackSummarizedInteractionWithOtherTracksV2StatUnsplittable(StatisticV2):
 
     functionDict = getFilteredSummaryFunctionDict([
-                'diff',
+                # 'diff',
                 'avg',
                 'max',
                 'min',

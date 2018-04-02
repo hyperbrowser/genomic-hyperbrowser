@@ -157,7 +157,7 @@ REPLACE_TEMPLATES['$MCFDRv4$']=\
 
 REPLACE_TEMPLATES['$MCFDRv5$']=\
 '''
- [setup:_MCFDR sampling depth=robust:Fixed 10 000 samples (slow)/high:Fixed 1 000 samples/medium:Fixed 100 samples (less stable indication)/low:Fixed 20 samples (less indication used for testing)/scratch:Fixed 3 samples (unstable indication used for testing)]
+ [setup:_MCFDR sampling depth=robust:Fixed 10 000 samples (slow)/high:Fixed 1 000 samples/medium:Fixed 100 samples (less stable indication)/low:Fixed 20 samples (less indication used for testing)/scratch:Fixed 2 samples (unstable indication used for testing)]
 
  [mcSamplerClass:<setup--scratch>=NaiveMCSampler:]
  [numSamplesPerChunk:<setup--scratch>=2:]

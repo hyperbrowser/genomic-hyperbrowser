@@ -19,11 +19,12 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
+from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
-class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin, QueryTrackVsCategoricalGSuiteMixin):
+class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
 
     GSUITE_FILE_OPTIONS_BOX_KEYS = ['queryGsuite', 'refGsuite']
     ALLOW_UNKNOWN_GENOME = False
@@ -353,18 +354,12 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
         assert choices.categoryVal in catTS
 
-        core = HtmlCore()
-        core.begin()
-        core.divBegin(divId="progress-output")
-        print str(core)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices, isMC=False)
+        cls._startProgressOutput()
         ts = cls.prepareTrackStructure(queryTS, catTS)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
         analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        core = HtmlCore()
-        core.divEnd()
-        core.hideToggle(styleId="progress-output")
-        print str(core)
+        cls._endProgressOutput()
 
         core = HtmlCore()
         core.divBegin()
@@ -398,22 +393,6 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         Optional method. Default return value if method is not defined: None
         """
         return None
-
-    @classmethod
-    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices, isMC=True):
-        n = len(queryTS.getLeafNodes())
-        m = len(catTS.getLeafNodes())
-        cat_m = len(catTS[choices.categoryVal].getLeafNodes())
-        k = 1  # len(list(analysisBins)) + 1 #currently local analysis is turned of
-        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
-        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
-        analysisSpec = AnalysisDefHandler(analysisDefString)
-        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
-        aDChoicec = analysisDef.getChoices(filterByActivation=True)
-        maxSamples = int(aDChoicec['maxSamples']) if isMC else 0
-        return n * m * k * (maxSamples + 1)
 
     @classmethod
     def prepareTrackStructure(cls, queryTS, catTS):

@@ -21,13 +21,14 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
+from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 import quick.gsuite.GuiBasedTsFactory as factory
 
 
 class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin,
-                                        QueryTrackVsCategoricalGSuiteMixin):
+                                        QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
@@ -350,18 +351,12 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        core = HtmlCore()
-        core.begin()
-        core.divBegin(divId="progress-output")
-        print str(core)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices, isMC=False)
+        cls._startProgressOutput()
         ts = cls.prepareTrackStructure(queryTS, catTS)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
         analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        core = HtmlCore()
-        core.divEnd()
-        core.hideToggle(styleId="progress-output")
-        print str(core)
+        cls._endProgressOutput()
         cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
 
     @classmethod
@@ -389,20 +384,14 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
         wilcoxonResults = None
         resultsMC = None
-        core = HtmlCore()
-        core.begin()
+        cls._startProgressOutput()
         results = cls._getResults(queryTS, catTS, analysisBins, choices)
         if choices.randType == "Wilcoxon":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
             wilcoxonResults = cls.getWilcoxonResults(analysisBins, catTS, choices, queryTS).getResult()
         else:
-            core.divBegin(divId="progress-output")
-            print str(core)
             resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices)
-            core = HtmlCore()
-            core.divEnd()
-            core.hideToggle(styleId="progress-output")
-        print str(core)
+        cls._endProgressOutput()
         cls._printResultsHtml(choices, results, resultsMC, wilcoxonResults, galaxyFn)
 
     @classmethod
@@ -427,26 +416,10 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return results
 
     @classmethod
-    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices, isMC=True):
-        n = len(queryTS.getLeafNodes())
-        m = len(catTS.getLeafNodes())
-        cat_m = len(catTS[choices.categoryVal].getLeafNodes())
-        k = 1  # len(list(analysisBins)) + 1 #currently local analysis is turned of
-        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
-        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
-        analysisSpec = AnalysisDefHandler(analysisDefString)
-        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
-        aDChoicec = analysisDef.getChoices(filterByActivation=True)
-        maxSamples = int(aDChoicec['maxSamples']) if isMC else 0
-        return n * m * k * (maxSamples + 1)
-
-    @classmethod
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
         tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
                                            choices.categoryVal)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(tsMC.values()[0]['real'], analysisBins, choices)
         analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount)
         resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()['Result']
         return resultsMC

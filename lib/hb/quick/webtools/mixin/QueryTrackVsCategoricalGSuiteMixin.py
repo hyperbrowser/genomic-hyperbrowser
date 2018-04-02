@@ -1,8 +1,5 @@
-from gold.description.AnalysisDefHandler import AnalysisDefHandler
-from gold.description.AnalysisList import REPLACE_TEMPLATES
 from quick.gsuite import GSuiteStatUtils
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
 class QueryTrackVsCategoricalGSuiteMixin(object):
@@ -47,6 +44,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @staticmethod
     def getOptionsBoxRandType(prevChoices):
+        from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
         return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
 
     @staticmethod
@@ -57,6 +55,8 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
     @staticmethod
     def getOptionsBoxMcfdrDepth(prevChoices):
         if prevChoices.randType not in ["Wilcoxon"]:
+            from gold.description.AnalysisDefHandler import AnalysisDefHandler
+            from gold.description.AnalysisList import REPLACE_TEMPLATES
             return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
 
     @staticmethod
@@ -67,6 +67,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
     @staticmethod
     def getOptionsBoxRandAlg(prevChoices):
         if prevChoices.randType not in ["Wilcoxon"]:
+            from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
             for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
                 if prevChoices.randType == definedRandType:
                     return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()

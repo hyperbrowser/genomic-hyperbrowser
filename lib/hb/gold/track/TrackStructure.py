@@ -231,6 +231,13 @@ class TrackStructureV2(dict):
         for sts in self.getLeafNodes():
             sts.track.setRandIndex(randIndex)
 
+    def getQueryTS(self):
+        if self.QUERY_KEY in self:
+            return self[self.QUERY_KEY]
+
+    def getReferenceTS(self):
+        if self.REF_KEY in self:
+            return self[self.REF_KEY]
 
 
 class SingleTrackTS(TrackStructureV2):
