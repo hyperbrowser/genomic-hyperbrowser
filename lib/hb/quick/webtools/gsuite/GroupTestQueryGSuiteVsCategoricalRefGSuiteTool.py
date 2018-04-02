@@ -336,7 +336,8 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
     def _execute(cls, querySTS, queryTS, catTS, analysisBins, choices, galaxyFn):
         cls._startProgressOutput()
         ts = cls.prepareTrackStructure(querySTS, queryTS, catTS)
-        analysisSpec = cls.prepareAnalysis(choices)
+        opCount = cls._getOperationCount(ts, analysisBins, choices)
+        analysisSpec = cls.prepareAnalysis(choices, opCount)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
         print results
         cls._endProgressOutput()
@@ -351,7 +352,14 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         return ts
 
     @classmethod
-    def prepareAnalysis(cls, choices):
+    def _getOperationCount(cls, ts, analysisBins, choices):
+        opCount = 0
+        for _ in ts['randQuery']:
+            opCount += cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
+        return opCount
+
+    @classmethod
+    def prepareAnalysis(cls, choices, opCount):
         analysisSpec = AnalysisSpec(QueryTrackVsRefGSuiteWithExternalRandGSuiteStat)
         analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
@@ -364,6 +372,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+        analysisSpec.addParameter('progressPoints', opCount)
         return analysisSpec
 
     @classmethod
