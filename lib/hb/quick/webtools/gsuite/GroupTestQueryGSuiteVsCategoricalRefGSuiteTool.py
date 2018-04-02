@@ -73,7 +73,8 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
                 ('Select primary group category value', 'categoryVal'),
                 ('Select track to track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                ('Select summary function groups', 'catSummaryFunc')
+                ('Select summary function groups', 'catSummaryFunc'),
+                ('Select the tail alternative', 'tail')
 
                 ] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
@@ -249,6 +250,10 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
     def getOptionsBoxCatSummaryFunc(prevChoices):
         return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
 
+    @staticmethod
+    def getOptionsBoxTail(prevChoices):
+        return ['right-tail', 'left-tail', 'two-tail']
+
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -381,7 +386,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         core.divBegin()
         observedAndMcSamplesTuple = tuple([results['real'].getResult(), results['rand'].getResult()])
         hypothesisTestingResults = McEvaluators.evaluatePvalueAndNullDistribution(
-            observedAndMcSamplesTuple, 'two-tail',
+            observedAndMcSamplesTuple, str(choices.tail),
             GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[choices.similarityFunc])
         resTableDict = OrderedDict()
         # if choices.randType == "Wilcoxon":
