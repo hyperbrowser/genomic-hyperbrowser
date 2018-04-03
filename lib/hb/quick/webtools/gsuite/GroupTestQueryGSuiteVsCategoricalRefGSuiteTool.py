@@ -378,6 +378,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
         analysisSpec.addParameter('progressPoints', opCount)
+        analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         return analysisSpec
 
     @classmethod
