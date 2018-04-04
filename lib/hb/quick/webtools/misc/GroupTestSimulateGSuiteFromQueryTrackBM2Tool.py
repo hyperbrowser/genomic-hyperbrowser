@@ -143,6 +143,7 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
         import urllib
         fn = urllib.quote(trackFN, safe='')
+        print("Writing track data to: ", fn)
 
         spec = AnalysisSpec(StatTvOutputWriterWrapperV2Stat)
         spec.addParameter('trackFilePath', fn)
@@ -162,13 +163,13 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
         if not choices.genome or choices.genome == '--- Select ---':
             return "Please select a genome build."
-
-        if choices.baseTrack and choices.genome:
-            try:
-                ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.baseTrack,
-                                                                      printProgress=False)
-            except:
-                return "Please select a valid base track (BED, GTrack...)."
+        #
+        # if choices.baseTrack and choices.genome:
+        #     try:
+        #         ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.baseTrack,
+        #                                                               printProgress=False)
+        #     except:
+        #         return "Please select a valid base track (BED, GTrack...)."
 
         try:
             int(choices.nrSubGSuites)

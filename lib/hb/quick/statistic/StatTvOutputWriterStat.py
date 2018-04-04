@@ -26,16 +26,14 @@ class StatTvOutputWriterStatUnsplittable(Statistic):
 
     def _compute(self):
         ensurePathExists(self._trackFilePath)
-        outputFile = open(self._trackFilePath, 'a')
+        print("Statistic writing to: ", self._trackFilePath)
+        with open(self._trackFilePath, 'a') as outputFile:
+            trackView = self._children[0].getResult()
+            starts = trackView.startsAsNumpyArray()
+            ends = trackView.endsAsNumpyArray()
+            for segmentIndex in range(0, len(starts)):
+                outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
 
-        trackView = self._children[0].getResult()
-        starts = trackView.startsAsNumpyArray()
-        ends = trackView.endsAsNumpyArray()
-
-        for segmentIndex in range(0, len(starts)):
-            outputFile.write('\t'.join([self._region.chr, str(starts[segmentIndex]), str(ends[segmentIndex])]) + '\n')
-
-        outputFile.close()
         return quote(self._trackFilePath)
 
     def _createChildren(self):

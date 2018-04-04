@@ -408,6 +408,8 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
             analysisSpec.addParameter('summaryFunc',
                                       GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+            analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+            analysisSpec.addParameter('tail', choices.tail)
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
         analysisSpec.addParameter('pairwiseStatistic',
@@ -416,6 +418,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         return analysisSpec
 
     # @classmethod
