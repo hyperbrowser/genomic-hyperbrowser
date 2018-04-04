@@ -6,7 +6,6 @@ class GroupTestBenchmarkThreeTool(GroupTestBenchmarkTwoTool):
     def getToolName(cls):
         return "Group difference test - Benchmark three"
 
-
     @staticmethod
     def getOptionsBoxRandType(prevChoices):
         return '__hidden__', 'Between tracks'

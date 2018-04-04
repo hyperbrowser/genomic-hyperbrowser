@@ -293,7 +293,6 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            # analysisSpec.addParameter('genericTSChildrenRawStatistic', MultipleRandomizationManagerStat.__name__)
             analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
             analysisSpec.addParameter('tail', choices.tail)
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
@@ -306,7 +305,6 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-            # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         analysisSpec.addParameter('runLocalAnalysis', "No")
 
