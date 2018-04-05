@@ -1,6 +1,8 @@
+import multiprocessing
 from collections import OrderedDict
 
 import time
+from contextlib import contextmanager
 
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
@@ -18,6 +20,60 @@ from quick.statistic.StatTvOutputWriterWrapperV2Stat import StatTvOutputWriterWr
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+
+@contextmanager
+def poolcontext(*args, **kwargs):
+    pool = multiprocessing.Pool(*args, **kwargs)
+    yield pool
+    pool.terminate()
+
+
+def _addSubGSuiteUnpack(args):
+    _addSubGSuite(*args)
+
+
+def _addSubGSuite(analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gtracks, subGSuiteLabel, j, startTime,
+                  tnProb, tpProb):
+    for trackGroup in [groupOne, groupTwo]:
+        _addSimulatedTrackToGSuite(gtracks, subGSuiteLabel, str(j), trackGroup, baseTrackSTS, genome, analysisBins, tpProb,
+                                   tnProb, galaxyFn)
+        # m, s = divmod(time.time() - startTime, 60)
+        # h, m = divmod(m, 60)
+        # print("%d:%02d:%02d" % (h, m, s))
+
+
+def _addSimulatedTrackToGSuite(gtracks, subGSuiteLabel, trackIndex, trackGroupLabel, baseTrackSTS, genome,
+                               analysisBins, tpProb, tnProb, galaxyFn):
+    trackTitle = "{}--{}-{}-{}".format(baseTrackSTS.metadata["title"], subGSuiteLabel, trackIndex, trackGroupLabel)
+    attr = OrderedDict()
+    attr['originalTrackName'] = trackTitle
+    attr['sub-gsuite-label'] = subGSuiteLabel
+    attr['track-index'] = trackIndex
+    attr['group-label'] = trackGroupLabel
+    attr['tp'] = str(tpProb)
+    attr['tn'] = str(tnProb)
+
+    extraFN = "{}-{:f}-{:f}".format(trackTitle, tpProb, tnProb)
+
+    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                        extraFileName=extraFN,
+                                        suffix='bed')
+    gSuiteTrack = GSuiteTrack(uri, title=extraFN, genome=genome, attributes=attr)
+    trackFN = gSuiteTrack.path
+    ensurePathExists(trackFN)
+
+    import urllib
+    fn = urllib.quote(trackFN, safe='')
+
+    spec = AnalysisSpec(StatTvOutputWriterWrapperV2Stat)
+    spec.addParameter('trackFilePath', fn)
+    spec.addParameter('trackGenerationStat', 'NoisyPointTrackGenerationStat')
+    spec.addParameter('keepOnesProb', tpProb)
+    spec.addParameter('introduceZerosProb', 1 - tnProb)
+
+    doAnalysis(spec, analysisBins, baseTrackSTS)
+
+    gtracks.append(gSuiteTrack)
 
 
 class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin):
@@ -94,65 +150,42 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=genome)
 
+        # DebugUtil.insertBreakPoint(5678)
+
         #TODO: implement
         cls._execute(baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn)
+
+    @classmethod
+    def _generateArgTupleList(cls, nrTracks, analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gtracks,
+                              subGSuiteLabel, startTime, tnProb, tpProb):
+        return [(analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gtracks, subGSuiteLabel, x, startTime,
+                 tnProb, tpProb) for x in xrange(nrTracks)]
 
     @classmethod
     def _execute(cls, baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn):
         startTime = time.time()
         gsuite = GSuite()
+        m = multiprocessing.Manager()
+        gtracks = m.list()
         groupOne = "A"
         groupTwo = "B"
         for i in xrange(nrSubGSuites):
-            for j in xrange(nrTracks):
-                cls._addSubGSuite(analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j,
-                                  startTime, tnProb, tpProb)
+            argTupleList = cls._generateArgTupleList(nrTracks, analysisBins, baseTrackSTS, galaxyFn, genome, groupOne,
+                                                     groupTwo, gtracks, str(i), startTime, tnProb, tpProb)
+            with poolcontext(processes=2) as pool:
+                pool.map(_addSubGSuiteUnpack, argTupleList)
+                pool.close()
+                pool.join()
 
+            # for j in xrange(nrTracks):
+            #     argTuple = (analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j,\
+            #                       startTime, tnProb, tpProb)
+            #     cls._addSubGSuiteUnpack(argTuple)
+
+        for gtrack in gtracks:
+            gsuite.addTrack(gtrack)
         GSuiteComposer.composeToFile(gsuite, cls.extraGalaxyFn['Simulated GSuite (BM2)'])
 
-    @classmethod
-    def _addSubGSuite(cls, analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j, startTime,
-                      tnProb, tpProb):
-        for trackGroup in [groupOne, groupTwo]:
-            cls._addSimulatedTrackToGSuite(gsuite, str(i), str(j), trackGroup, baseTrackSTS, genome,
-                                           analysisBins, tpProb, tnProb, galaxyFn)
-            m, s = divmod(time.time() - startTime, 60)
-            h, m = divmod(m, 60)
-            print("%d:%02d:%02d" % (h, m, s))
-
-    @classmethod
-    def _addSimulatedTrackToGSuite(cls, gsuite, subGSuiteLabel, trackIndex, trackGroupLabel, baseTrackSTS, genome,
-                                   analysisBins, tpProb, tnProb, galaxyFn):
-        trackTitle = "{}--{}-{}-{}".format(baseTrackSTS.metadata["title"], subGSuiteLabel, trackIndex, trackGroupLabel)
-        attr = OrderedDict()
-        attr['originalTrackName'] = trackTitle
-        attr['sub-gsuite-label'] = subGSuiteLabel
-        attr['track-index'] = trackIndex
-        attr['group-label'] = trackGroupLabel
-        attr['tp'] = str(tpProb)
-        attr['tn'] = str(tnProb)
-
-        extraFN = "{}-{:f}-{:f}".format(trackTitle, tpProb, tnProb)
-
-        uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                            extraFileName=extraFN,
-                                            suffix='bed')
-        gSuiteTrack = GSuiteTrack(uri, title=extraFN, genome=genome, attributes=attr)
-        trackFN = gSuiteTrack.path
-        ensurePathExists(trackFN)
-
-        import urllib
-        fn = urllib.quote(trackFN, safe='')
-
-        spec = AnalysisSpec(StatTvOutputWriterWrapperV2Stat)
-        spec.addParameter('trackFilePath', fn)
-        spec.addParameter('trackGenerationStat', 'NoisyPointTrackGenerationStat')
-        spec.addParameter('keepOnesProb', tpProb)
-        spec.addParameter('introduceZerosProb', 1 - tnProb)
-
-        doAnalysis(spec, analysisBins, baseTrackSTS)
-
-        gsuite.addTrack(gSuiteTrack)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
