@@ -26,7 +26,6 @@ class StatTvOutputWriterStatUnsplittable(Statistic):
 
     def _compute(self):
         ensurePathExists(self._trackFilePath)
-        print("Statistic writing to: ", self._trackFilePath)
         with open(self._trackFilePath, 'a') as outputFile:
             trackView = self._children[0].getResult()
             starts = trackView.startsAsNumpyArray()
