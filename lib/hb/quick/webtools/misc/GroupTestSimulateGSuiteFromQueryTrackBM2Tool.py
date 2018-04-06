@@ -143,7 +143,6 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
         import urllib
         fn = urllib.quote(trackFN, safe='')
-        print("Writing track data to: ", fn)
 
         spec = AnalysisSpec(StatTvOutputWriterWrapperV2Stat)
         spec.addParameter('trackFilePath', fn)
