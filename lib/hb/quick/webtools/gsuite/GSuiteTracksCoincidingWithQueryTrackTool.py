@@ -1,6 +1,4 @@
 from collections import OrderedDict
-from urllib import quote
-
 from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments, \
     getSupportedFileSuffixesForFunction
 from gold.application.HBAPI import doAnalysis
@@ -27,8 +25,7 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
 from quick.gsuite.GSuiteStatUtils import runMultipleSingleValPairwiseStats, \
-    runMultipleSingleValSingleTrackStats, prettifyKeysInDict, RAND_BY_INTENSITY_TEXT, \
-    RAND_BY_UNIVERSE_TEXT
+    runMultipleSingleValSingleTrackStats, prettifyKeysInDict
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.SingleValueOverlapStat import SingleValueOverlapStat
@@ -109,7 +106,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
              # ('Select the randomization strategy', 'randStrat'),
-             ('Select a universe track', 'intensityTrack'),
+             # ('Select a universe track', 'intensityTrack'),
              ('Select MCFDR sampling depth', 'mcfdrDepth'),
              ('Type of randomization', 'randType'),
              ('Randomization algorithm', 'randAlg'),
@@ -225,28 +222,28 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if not prevChoices.isBasic:
             return False
 
-    @classmethod
-    def getOptionsBoxRandStrat(cls, prevChoices):
-        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
-            return GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING.keys()
-
-    @classmethod
-    def getInfoForOptionsBoxRandStrat(cls, prevChoices):
-        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
-            return '''
-                T1 denotes your query track.
-                T2 denotes the reference track.
-                The selection of a randomization strategy determines the null model used in the Monte Carlo permutation 
-                test.               
-            '''
-
-    @classmethod
-    def getOptionsBoxIntensityTrack(cls, prevChoices):
-        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
-                prevChoices.randStrat in [RAND_BY_UNIVERSE_TEXT]:
-            return GeneralGuiTool.getHistorySelectionElement(
-                *getSupportedFileSuffixesForPointsAndSegments()
-            )
+    # @classmethod
+    # def getOptionsBoxRandStrat(cls, prevChoices):
+    #     if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
+    #         return GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING.keys()
+    #
+    # @classmethod
+    # def getInfoForOptionsBoxRandStrat(cls, prevChoices):
+    #     if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
+    #         return '''
+    #             T1 denotes your query track.
+    #             T2 denotes the reference track.
+    #             The selection of a randomization strategy determines the null model used in the Monte Carlo permutation
+    #             test.
+    #         '''
+    #
+    # @classmethod
+    # def getOptionsBoxIntensityTrack(cls, prevChoices):
+    #     if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
+    #             prevChoices.randStrat in [RAND_BY_UNIVERSE_TEXT]:
+    #         return GeneralGuiTool.getHistorySelectionElement(
+    #             *getSupportedFileSuffixesForPointsAndSegments()
+    #         )
 
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
@@ -363,18 +360,19 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if choices.excludedRegions:
             excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
-        if choices.intensityTrack:
-            intensityTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.intensityTrack,
-                                                                                     printErrors=False,
-                                                                                     printProgress=False)
-        else:
-            intensityTrackNameAsList = None
+        # TODO: bs, gks, Broken after merge. Fix later.
+        # if choices.intensityTrack:
+        #     intensityTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.intensityTrack,
+        #                                                                              printErrors=False,
+        #                                                                              printProgress=False)
+        # else:
+        #     intensityTrackNameAsList = None
         analysisQuestion = choices.analysisQName
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
         reverse = 'Yes' if choices.reversed else 'No'
-        if analysisQuestion in [cls.Q2, cls.Q3]:
-            randStrat = 'PermutedSegsAndIntersegsTrack_' if choices.isBasic else GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING[choices.randStrat]
+        # if analysisQuestion in [cls.Q2, cls.Q3]:
+        #     randStrat = 'PermutedSegsAndIntersegsTrack_' if choices.isBasic else GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING[choices.randStrat]
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
@@ -420,8 +418,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core = cls.generateQ1output(additionalResultsDict, analysisQuestion, choices, galaxyFn, gsPerTrackResults,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
-            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles, randStrat,
-                                         intensityTrackNameAsList)
+            # analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles, randStrat,
+            #                              intensityTrackNameAsList)
 
             q2TS = cls.prepareQ2TrackStructure(queryTS, refTS, choices.randType, choices.randAlg, analysisBins, excludedTs)
             analysisSpec = cls.prepareQ2(choices, similarityStatClassName)
@@ -519,8 +517,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('summaryFunc', 'raw')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
-        if intensityTrackNameAsList:
-            analysisSpec.addParameter('trackNameIntensity', '|'.join(intensityTrackNameAsList))
+        # if intensityTrackNameAsList:
+        #     analysisSpec.addParameter('trackNameIntensity', '|'.join(intensityTrackNameAsList))
         return analysisSpec
 
     @classmethod
@@ -582,7 +580,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc, randStrat):
+    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES[
@@ -671,35 +669,36 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if errorString:
             return errorString
 
-        if choices.randStrat in [RAND_BY_UNIVERSE_TEXT]:
-            errorString = cls._checkTrack(choices, 'intensityTrack', 'genome')
-            if errorString:
-                return errorString
-
-            if choices.queryTrack and choices.intensityTrack:
-                basicTFQuery = cls._getBasicTrackFormat(choices, 'queryTrack')[-1]
-                basicTFIntensity = cls._getBasicTrackFormat(choices, 'intensityTrack')[-1]
-
-                if not all(_ == 'points' for _ in [basicTFQuery, basicTFIntensity]):
-                    core = HtmlCore()
-                    core.paragraph('The selected randomization strategy requires the query and '
-                                   'the universe track to both be of type "Points". One or both '
-                                   'of these tracks have the incorrect track type.')
-                    core.descriptionLine('Current track type of query track', basicTFQuery)
-                    core.descriptionLine('Current track type of universe track', basicTFIntensity)
-                    core.paragraph('The only file formats (Galaxy datatypes) that '
-                                   'support the "Points" track type is "gtrack" and "bed.points". '
-                                   'To fix your input track(s), do as follows:')
-                    core.orderedList([
-                        'If you currently have a segment track (with segment lengths > 1), '
-                        'please convert it into points tracks by using the tool "Expand or '
-                        'contract points/segments" under the "Customize tracks" submenu.',
-                        'If you currently have a "bed" file where all segments have '
-                        'length one, possibly as the result of step 1, you will need to '
-                        'change the Galaxy datatype to "point.bed". To do this, click the '
-                        '"pencil" icon of the history element, select the "Datatypes" tab '
-                        'and select "point.bed".'])
-                    return str(core)
+        #TODO: bs, gks, Broken after merge. Fix later.
+        # if choices.randStrat in [RAND_BY_UNIVERSE_TEXT]:
+        #     errorString = cls._checkTrack(choices, 'intensityTrack', 'genome')
+        #     if errorString:
+        #         return errorString
+        #
+        #     if choices.queryTrack and choices.intensityTrack:
+        #         basicTFQuery = cls._getBasicTrackFormat(choices, 'queryTrack')[-1]
+        #         basicTFIntensity = cls._getBasicTrackFormat(choices, 'intensityTrack')[-1]
+        #
+        #         if not all(_ == 'points' for _ in [basicTFQuery, basicTFIntensity]):
+        #             core = HtmlCore()
+        #             core.paragraph('The selected randomization strategy requires the query and '
+        #                            'the universe track to both be of type "Points". One or both '
+        #                            'of these tracks have the incorrect track type.')
+        #             core.descriptionLine('Current track type of query track', basicTFQuery)
+        #             core.descriptionLine('Current track type of universe track', basicTFIntensity)
+        #             core.paragraph('The only file formats (Galaxy datatypes) that '
+        #                            'support the "Points" track type is "gtrack" and "bed.points". '
+        #                            'To fix your input track(s), do as follows:')
+        #             core.orderedList([
+        #                 'If you currently have a segment track (with segment lengths > 1), '
+        #                 'please convert it into points tracks by using the tool "Expand or '
+        #                 'contract points/segments" under the "Customize tracks" submenu.',
+        #                 'If you currently have a "bed" file where all segments have '
+        #                 'length one, possibly as the result of step 1, you will need to '
+        #                 'change the Galaxy datatype to "point.bed". To do this, click the '
+        #                 '"pencil" icon of the history element, select the "Datatypes" tab '
+        #                 'and select "point.bed".'])
+        #             return str(core)
 
         errorString = cls.validateUserBins(choices)
         if errorString:
