@@ -3,18 +3,15 @@ from collections import OrderedDict
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteEditor import concatenateGSuitesAddingCategories
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-from proto.CommonFunctions import ensurePathExists
-from proto.tools.GeneralGuiTool import HistElement
+from gold.gsuite.GSuiteTrack import GSuiteTrack
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
-class GroupTestBM1ShuffleGroupsInGSuiteTool(GeneralGuiTool):
+class GroupTestBM3ShuffleGroupsInGSuiteTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Group difference test - Shuffle group labels in GSuite (BM1)"
+        return "Group difference test - Shuffle group labels in GSuite (BM3)"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -82,18 +79,12 @@ class GroupTestBM1ShuffleGroupsInGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def _generateNewGSuite(cls, gsuite, subGSuiteIndex, catLbl, categoryVals, galaxyFn):
-        import shutil
         newTracks = []
         for track, newCategoryVal in zip(list(gsuite.allTracks()), categoryVals):
             extraFN = "simulated_" + track.title + "_" + str(subGSuiteIndex)
-            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                extraFileName=extraFN,
-                                                suffix=track.suffix if track.suffix else "bed")
             newAttrs = OrderedDict([(x,y,) for x, y in track.attributes.items()])
             newAttrs[catLbl] = newCategoryVal
-            gSuiteTrack = GSuiteTrack(uri, title=extraFN, genome=gsuite.genome, attributes=newAttrs)
-            ensurePathExists(gSuiteTrack.path)
-            shutil.copy(track.path, gSuiteTrack.path)
+            gSuiteTrack = GSuiteTrack(track.uri, title=extraFN, genome=gsuite.genome, attributes=newAttrs)
             newTracks.append(gSuiteTrack)
 
         return GSuite(trackList=newTracks)
