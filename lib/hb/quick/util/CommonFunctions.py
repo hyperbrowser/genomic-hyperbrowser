@@ -190,7 +190,7 @@ def smartMean(li, ignoreNans=False, excludeNonesFromMean=False, returnZeroForEmp
     smrtSum = smartSum(li, ignoreNans=ignoreNans)
     if smrtSum is not None:
         if excludeNonesFromMean:
-            return float(smrtSum)/len(resultsWithoutNone(li, ignoreNans=ignoreNans))
+            return float(smrtSum)/sum(1 for res in resultsWithoutNone(li, ignoreNans=ignoreNans))
         else:
             return float(smrtSum)/len(li)
     if returnZeroForEmpty:
