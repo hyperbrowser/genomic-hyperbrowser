@@ -53,8 +53,8 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
         return [('Select GSuite 1', 'gsuite1'),
                  ('Select GSuite 2', 'gsuite2'),
                 ('Number of samples from each null model','samples'),
-                ('Universe track', 'universe')
-
+                ('Universe track', 'universe'),
+                ('Pairwise statistic', 'rawStatisticName')
                 ] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                cls.getInputBoxNamesForUserBinSelection() + \
@@ -77,14 +77,20 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
         return GeneralGuiTool.getHistorySelectionElement(
                 *getSupportedFileSuffixesForPointsAndSegments())
 
+    @classmethod
+    def getOptionsBoxRawStatisticName(cls, prevChoices):
+        return ['GeometricMeanDistStat', 'LogMeanDistStat', 'MeanDistStat']
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         cls._setDebugModeIfSelected(choices)
+        observationsFn = cls.makeHistElement(galaxyExt='tabular', title='Observed test statistic')
         #from time import time
         #startTime = time()
         numSamples = int(choices.samples)
         genome = choices.genome
+        rawStatisticName = choices.rawStatisticName
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
         queryTS = GuiBasedTsFactory.getFlatTracksTS(genome, choices.gsuite1)
@@ -97,7 +103,10 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
 
         analysisSpec = AnalysisSpec(SummarizedInteractionWithOtherTracksV2Stat)
         analysisSpec.addParameter('numResamplings',numSamples)
-        analysisSpec.addParameter('rawStatistic', 'LogSumDistStat')
+        #rawStatisticName = 'LogMeanDistStat'
+        #rawStatisticName = 'GeometricMeanDistStat'
+        #rawStatisticName = 'MeanDistStat'
+        analysisSpec.addParameter('rawStatistic', rawStatisticName )
         analysisSpec.addParameter('pairwiseStatistic', 'RandomizationManagerStat')
         analysisSpec.addParameter('summaryFunc','raw')
         analysisSpec.addParameter('tails', 'left-tail')
@@ -113,9 +122,19 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
 
 #        print 'Elapsed time: ', (time()-startTime)/3600.0, ' hours'
 
-
+        outF = open(galaxyFn,'w')
+        observationsF = open(observationsFn,'w')
         for key in tsRes:
-            print key, '\t', tsRes[key]._result['fullNullDistribution']
+            t1, t2 = key.split('#&&#')
+            tNames = [t.split('--')[-1] for t in [t1, t2]]
+            head = '\t'.join(tNames)
+            #print key, '\t', tsRes[key]._result['fullNullDistribution']
+            outF.write(head+ '\t'+ str(tsRes[key]._result['fullNullDistribution'])+'\n')
+            testStatResDictKey = 'TSMC_' + rawStatisticName
+            assert testStatResDictKey in tsRes[key]._result, tsRes[key]._result
+            observationsF.write(head+ '\t'+ str(tsRes[key]._result[testStatResDictKey])+'\n')
+        outF.close()
+        observationsF.close()
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -264,7 +283,7 @@ class ComputeNullDistributionForEachCombinationFromSuiteVsSuiteTool(GeneralGuiTo
     #
     @classmethod
     def getOutputFormat(cls, choices):
-        return 'customhtml'
+        return 'tabular'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

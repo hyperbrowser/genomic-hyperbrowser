@@ -9,6 +9,8 @@ from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from quick.statistic.SingleValExtractorStat import SingleValExtractorStat
 # from gold.statistic.DerivedOverlapStat import DerivedOverlapStat
+from quick.util.CommonFunctions import smartMean, smartSum, resultsWithoutNone
+
 
 class StatFacade(object):
     pass
@@ -75,11 +77,34 @@ class LogMeanDistStat(StatFacade):
                                  lambda l:(1.0*sum(math.log(el) if el not in [None, 0] else 0 for el in l)/len(l) \
                                            if len(l) != 0 else None), **kwArgs)
 
+def smartGeometricMean(li, ignoreNans=False, excludeNonesFromMean=False, returnZeroForEmpty=False):
+    try:
+        resultsWithoutNone(li, ignoreNans).next()
+    except StopIteration:
+        if returnZeroForEmpty:
+            return 0.0
+        else:
+            return None
+
+    #essentially treating dist zero as dist one - if not geometric mean would be zero..
+    smrtLogSum = sum(math.log(res) if res != 0 else 0 for res in resultsWithoutNone(li, ignoreNans))
+
+    if excludeNonesFromMean:
+        logMean = float(smrtLogSum)/sum(1 for res in resultsWithoutNone(li, ignoreNans=ignoreNans))
+    else:
+        logMean = float(smrtLogSum)/len(li)
+    return math.exp(logMean)
+
+class GeometricMeanDistStat(StatFacade):
+    def __new__(cls, region, track1, track2, **kwArgs):
+        return ListCollapserStat(region, track1, track2, NearestPointDistsStat, \
+                                 lambda l: smartGeometricMean(l,True,True,True), **kwArgs)
+
+
 class MeanDistStat(StatFacade):
     def __new__(cls, region, track1, track2, **kwArgs):
         return ListCollapserStat(region, track1, track2, NearestPointDistsStat, \
-                                 lambda l:(1.0*sum(l)/len(l) \
-                                           if len(l) != 0 else None), **kwArgs)
+                                 lambda l:smartMean(l,True,True,True), **kwArgs)
 
 #class MeanInsideOutsideTwoTailRandStat(StatFacade):
 #    def __new__(cls, region, track1, track2, **kwArgs):
