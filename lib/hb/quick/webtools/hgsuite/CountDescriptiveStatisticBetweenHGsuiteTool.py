@@ -337,7 +337,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             # print 'optionData', optionData
 
             statKeyOrginal = str(statKey)
-            statKey = statKey.replace(' ', '-').replace('(', '').replace(')', '')
+            statKey = statKey.replace(' ', '').replace('(', '').replace(')', '')
 
             #sth is wrong with url to file!
             fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
