@@ -10,6 +10,7 @@ from quick.statistic.GenericTSChildrenV2Stat import GenericTSChildrenV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
@@ -17,7 +18,7 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
-class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
+class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin, DebugMixin):
 
     CAT_LBL_KEY = 'catTwoLbl'
 
@@ -58,7 +59,8 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             [('Select first level category', 'catOneLbl'),
              ('Select second level category', 'catTwoLbl')] + \
             cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
-            cls.getInputBoxNamesForUserBinSelection()
+            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForDebug()
              # ('Select primary group category value', 'categoryVal'),
              # ('Select track to track similarity/distance measure', 'similarityFunc'),
              # ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
@@ -224,6 +226,9 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         Mandatory unless isRedirectTool() returns True.
         """
+
+        cls._setDebugModeIfSelected(choices)
+
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
         querySTS = GuiBasedTsFactory.getSingleTrackTS(choices.genome, choices.queryTrack)
@@ -236,8 +241,20 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         operationCount = cls._getOpertationsCount(analysisBins, choices, ts)
         analysisSpec = cls._prepareAnalysis(choices, operationCount)
         cls._startProgressOutput()
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        cls._endProgressOutput()
+        from config.DebugConfig import DebugConfig
+        if DebugConfig.USE_PROFILING:
+            from gold.util.Profiler import Profiler
+            profiler = Profiler()
+            resDict = {}
+            profiler.run('resDict[0] = doAnalysis(analysisSpec, analysisBins, ts)', globals(), locals())
+            res = resDict[0]
+            results = res.getGlobalResult()['Result']
+            profiler.printStats()
+            if DebugConfig.USE_CALLGRAPH and galaxyFn:
+                profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+        else:
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        cls._endProgressOutput(hidden=(not DebugConfig.USE_PROFILING))
         cls._printResults(results, choices, galaxyFn)
 
     @classmethod
@@ -475,16 +492,16 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
     #
     @classmethod
     def getOutputFormat(cls, choices):
@@ -503,7 +520,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         Optional method. Default return value if method is not defined:
         'html'
         """
-        return 'customhtml'
+        return 'html'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

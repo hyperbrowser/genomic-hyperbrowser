@@ -1,6 +1,5 @@
 from gold.track.TrackStructure import TrackStructureV2
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable, \
-    SummarizedInteractionPerTsCatV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable
 
 
 class QueryTrackVsCategoricalGSuiteMixin(object):
@@ -89,6 +88,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def _getSubGSuiteResults(cls, mcResult, galaxyFn, subGSuiteLbl):
+        from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
         from quick.util import McEvaluators
         rawNDResultsFile = cls._getNullDistributionFile(galaxyFn, mcResult)
         return [mcResult['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
