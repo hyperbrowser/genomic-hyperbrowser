@@ -165,8 +165,8 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         Mandatory unless isRedirectTool() returns True.
         """
 
-        from quick.util.debug import DebugUtil
-        DebugUtil.insertBreakPoint(5678)
+        # from quick.util.debug import DebugUtil
+        # DebugUtil.insertBreakPoint(5678)
 
         cls._setDebugModeIfSelected(choices)
 
