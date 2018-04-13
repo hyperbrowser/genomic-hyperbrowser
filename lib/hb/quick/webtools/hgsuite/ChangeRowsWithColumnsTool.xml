@@ -1,0 +1,4 @@
+<tool id="hb_change_rows_with_columns_tool" name="Change rows with columns" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ChangeRowsWithColumnsTool" proto_tool_class="ChangeRowsWithColumnsTool">
+  <description></description>
+</tool>

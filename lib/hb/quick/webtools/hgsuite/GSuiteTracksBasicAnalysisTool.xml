@@ -1,0 +1,4 @@
+<tool id="hb_g_suite_tracks_basic_analysis_tool" name="Compute basic analysis for tracks in gSsuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.GSuiteTracksBasicAnalysisTool" proto_tool_class="GSuiteTracksBasicAnalysisTool">
+  <description></description>
+</tool>

@@ -1,0 +1,4 @@
+<tool id="hb_create_histogram_tool" name="Create descriptive results for tabular file" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CreateHistogramTool" proto_tool_class="CreateHistogramTool">
+  <description></description>
+</tool>
