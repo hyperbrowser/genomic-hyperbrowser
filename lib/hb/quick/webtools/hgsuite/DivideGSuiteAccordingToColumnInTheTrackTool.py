@@ -17,7 +17,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
         return [('Select gSuite', 'gSuite'),
-                ('Select phrases (use colon to provide more than one phrase)', 'param')
+                ('Select phrases (use colon to provide more than one phrase)', 'param'),
+                ('Add phrases separately', 'add')
                 ]
 
     @classmethod
@@ -26,7 +27,26 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
-        return ''
+        if prevChoices.gSuite:
+            return ''
+
+    @classmethod
+    def getOptionsBoxAdd(cls, prevChoices):
+        if prevChoices.gSuite and prevChoices.param:
+            par = prevChoices.param.replace(' ', '').split(',')
+            lenPar = 0
+            tf = False
+            for pNum, p in enumerate(par):
+                if pNum == 0:
+                    lenPar = len(p)
+                if lenPar == len(p):
+                    tf = True
+                else:
+                    tf = False
+
+            if tf == True:
+                return ['yes', 'no']
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -35,6 +55,10 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
         attrMut = OrderedDict()
 
+        if choices.add in ['yes', 'no']:
+            add = choices.add
+        else:
+            add = 'no'
 
         for a in gSuite.attributes:
             attrMut[a] = gSuite.getAttributeValueList(a)
@@ -49,11 +73,15 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             for p in par:
 
                 attr = OrderedDict()
-                attr['dividedColumn'] = str(p)
-                attr['orginalTitle'] = str(trackTitle)
-
                 for k in attrMut.keys():
                     attr[k] = attrMut[k][i]
+                attr['orginalTitle'] = str(trackTitle)
+                if add == 'yes':
+                    for numPEl, pEl in enumerate(p):
+                        attr['attribute'+str(numPEl)] = str(pEl)
+                else:
+                    attr['attribute'] = str(p)
+
 
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                     extraFileName=str(trackTitle) + '--' + str(p), suffix='bed')
@@ -115,13 +143,6 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     #
     @classmethod
     def isPublic(cls):
-        """
-        Specifies whether the tool is accessible to all users. If False, the
-        tool is only accessible to a restricted set of users as well as admin
-        users, as defined in the galaxy.ini file.
-
-        Optional method. Default return value if method is not defined: False
-        """
         return True
     #
     # @classmethod
