@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # This script runs the hyperbrowser in a docker environment to
-# provides all required library dependencies. 
+# provides all required library dependencies.
 
-set -e
+trap 'exit' ERR
 
 #-------------------------------------------------------------------------------
 
@@ -11,7 +11,7 @@ declare -r GALAXY_HTTP_PORT=8080
 declare -r DOCKERIMGAGE_NAME="hyperbrowser/gsuite"
 declare -r DOCKER_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # we assume DOCKER_DIR is [...]/lib/hb/docs/docker/
-declare -r HB_DIR="$( cd "${DOCKER_DIR}/../../../.." && pwd )" 
+declare -r HB_DIR="$( cd "${DOCKER_DIR}/../../../.." && pwd )"
 
 #-------------------------------------------------------------------------------
 
