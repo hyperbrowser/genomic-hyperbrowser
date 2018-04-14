@@ -12,7 +12,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.RawOverlapAllowSingleTrackOverlapsStat import \
     RawOverlapAllowSingleTrackOverlapsStat
-from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTracksTS
+#from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTracksTS
 from quick.util import TrackReportCommon
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticJS import Cube
@@ -70,6 +70,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def getOptionsBoxGsuite(cls):
+        aa = TrackStructureV2()
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
