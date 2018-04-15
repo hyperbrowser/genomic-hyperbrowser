@@ -848,7 +848,8 @@ class Cube():
                     }, \
                     xAxis: { \
                         categories: [" + categories + "], \
-                        crosshair: true \
+                        crosshair: true, \
+                        labels: { rotation: 90, } \
                     }, \
                     yAxis: { \
                         min: 0, \
