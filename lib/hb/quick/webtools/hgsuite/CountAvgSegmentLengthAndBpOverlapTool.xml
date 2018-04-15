@@ -1,0 +1,4 @@
+<tool id="hb_count_avg_segment_length_and_bp_overlap_tool" name="Count average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.assemblygap.CountAvgSegmentLengthAndBpOverlapTool" proto_tool_class="CountAvgSegmentLengthAndBpOverlapTool">
+  <description></description>
+</tool>

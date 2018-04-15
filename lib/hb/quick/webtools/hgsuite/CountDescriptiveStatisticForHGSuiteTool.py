@@ -1,12 +1,37 @@
-from quick.application import GalaxyInterface
+from collections import OrderedDict
+
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.statistic.CountStat import CountStat
+from gold.track.Track import PlainTrack
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool import \
+    CountDescriptiveStatisticBetweenHGsuiteTool
+from quick.webtools.hgsuite.CountDescriptiveStatisticJS import Cube
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTracksTS
 
 class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
+
+    COUNT = 'Count'
+    MAX_NUM_OF_COLS_IN_GSUITE = 10
+    MAX_NUM_OF_COLS = 10
+    PHRASE = '-- SELECT --'
+
+    COUNTSTAT = 'Count (bps)'
+    NORMALIZESTAT = 'Normalize (bps)'
+    OBSVSEXPECTEDSTAT = 'Observed/expected'
+
+    SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max'}
+    STAT_LIST = {COUNTSTAT: 'CountStat', NORMALIZESTAT: 'Count/SumStat', OBSVSEXPECTEDSTAT: 'ObsVsExpStat'}
+
     @classmethod
     def getToolName(cls):
         return "Count descriptive statistic for hGSuite"
@@ -16,9 +41,17 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
         return [('Select gSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
-                [('Select column 1', 'col1'),
-                ('Select column 2', 'col2')] + \
-                [('Select statistic', 'stat')] + \
+               [('Select statistic %s' % (i + 1) + '',
+                 'selectedStat%s' % i) for i \
+                in range(cls.MAX_NUM_OF_COLS)] + \
+               [('Summarize within groups', 'summarize')] + \
+               [('Select column %s' % (
+               i + 1) + ' which you would like to group',
+                 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('Do you want to do above summarize data for column %s' % (
+               i + 1) + ' from gSuite ',
+                 'selectedColumnOption%s' % i) for i in
+                range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                 cls.getInputBoxNamesForUserBinSelection() + \
                 cls.getInputBoxNamesForDebug()
 
@@ -27,84 +60,327 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxCol1(cls, prevChoices):
+    def _getOptionsBoxForSelectedStat(cls, prevChoices, index):
         if prevChoices.gsuite:
-            return ''
+            selectionList = []
+            if not any(cls.PHRASE in getattr(prevChoices, 'selectedStat%s' % i) for i in
+                       xrange(index)):
+                attrList = [getattr(prevChoices, 'selectedStat%s' % i) for i in xrange(index)]
+                selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
+            if selectionList:
+                return selectionList
 
     @classmethod
-    def getOptionsBoxCol2(cls, prevChoices):
-        if prevChoices.gsuite:
-            return ''
+    def setupSelectedStatMethods(cls):
+        from functools import partial
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            setattr(cls, 'getOptionsBoxSelectedStat%s' % i,
+                    partial(cls._getOptionsBoxForSelectedStat, index=i))
 
-    # @classmethod
-    # def getInfoForOptionsBoxKey(cls, prevChoices):
-    #     """
-    #     If not None, defines the string content of an clickable info box
-    #     beside the corresponding input box. HTML is allowed.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getDemoSelections(cls):
-    #     """
-    #     Defines a set of demo inputs to the option boxes in the
-    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
-    #     If not None, a Demo button appears in the interface. Clicking the
-    #     button fills the option boxed with the defined demo values.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return ['testChoice1', '..']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+    @classmethod
+    def getOptionsBoxSummarize(cls, prevChoices):
+        return cls.SUMMARIZE.keys()
+
+    @classmethod
+    def _getOptionsBoxForSelectedColumn(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            selectionList = []
+
+            if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                       xrange(index)):
+                gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                selectionList += gSuiteTNFirst.attributes
+
+                attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                            xrange(index)]
+                selectionList = [cls.PHRASE] + list(
+                    set(selectionList) - set(attrList))
+
+            if selectionList:
+                return selectionList
+
+    @classmethod
+    def setupSelectedColumnMethods(cls):
+        from functools import partial
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            setattr(cls, 'getOptionsBoxSelectedColumn%s' % i,
+                    partial(cls._getOptionsBoxForSelectedColumn, index=i))
+
+    @classmethod
+    def _getOptionsBoxForSelectedColumnOption(cls, prevChoices, index):
+        if prevChoices.gsuite and prevChoices.summarize != 'no':
+            selectionList = []
+
+            if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                       xrange(index)):
+                selectionList = ''
+
+                return selectionList
+
+            if selectionList:
+                return selectionList
+
+    @classmethod
+    def setupSelectedColumnOptionMethods(cls):
+        from functools import partial
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            setattr(cls, 'getOptionsBoxSelectedColumnOption%s' % i,
+                    partial(cls._getOptionsBoxForSelectedColumnOption, index=i))
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        col1 = choices.col1.encode('utf-8')
-        col2 = choices.col2.encode('utf-8')
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        summarize = choices.summarize.encode('utf-8')
+
+        if summarize != 'no':
+            colList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            columnOptionsDict = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedColumnOptions(choices, 'selectedColumnOption%s',cls.MAX_NUM_OF_COLS_IN_GSUITE, colList)
+
+        else:
+            colList = []
+            columnOptionsDict = {}
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
-                                                         genome=firstGSuite.genome)
+                                                         genome=gSuite.genome)
 
-        for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
-            realTS = TrackStructureV2()
+        statList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
+        selectedAnalysis = cls.addStat(choices, statList)
 
+        gsuiteOutput = CountDescriptiveStatisticBetweenHGsuiteTool._getAttributes(gSuite, colList)
+
+        whichGroups = cls.createGroups(gSuite, colList, gsuiteOutput)
+
+        resultsDict = OrderedDict()
+
+        sumBp = OrderedDict()
+        for saNum, sa in enumerate(selectedAnalysis):
+            stat = statList[saNum]
+            if not stat in resultsDict.keys():
+                resultsDict[stat] = OrderedDict()
+            if not cls.SUMMARIZE[summarize] in resultsDict[stat].keys():
+                resultsDict[stat][cls.SUMMARIZE[summarize]] = OrderedDict()
+
+            if not stat in sumBp.keys():
+                sumBp[stat] = 0
+            for groupKey, groupItem in whichGroups.iteritems():
+
+                if cls.SUMMARIZE[summarize] != 'no':
+                    groupKey = CountDescriptiveStatisticBetweenHGsuiteTool.changeOptions(columnOptionsDict, groupKey)
+
+                if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
+                    resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
+
+                for gi in groupItem:
+
+                    res = doAnalysis(sa, analysisBins, gi)
+                    countPerTrack = res.getGlobalResult()['Result'].getResult()
+
+                    if stat == cls.NORMALIZESTAT or stat == cls.OBSVSEXPECTEDSTAT:
+                        sumBp[stat] += countPerTrack
+
+                    if cls.SUMMARIZE[choices.summarize] == 'no':
+                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append([gi.metadata['title'], gi.metadata['title'], countPerTrack])
+                    else:
+                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(countPerTrack)
+
+
+
+        htmlCore = HtmlCore()
+        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'])
+
+        htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
+        htmlCore.header('Description')
+        htmlCore.paragraph(
+            'You can see results in two ways: table and plot... Click on the following table to see results for statistics. ')
+        htmlCore.header('Interpretation of results')
+        htmlCore.paragraph('Click here to see how to ...')
+
+        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp)
+        htmlCore.end()
+        print htmlCore
+
+    @classmethod
+    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList, summarize, sumBp):
+
+        cube = Cube()
+        statNum = 0
+
+        expectedDict = OrderedDict()
+        expectedOrderedDict = OrderedDict()
+        for statKey, statItem in resultsDict.iteritems():
+
+            if sumBp[statKey] == 0:
+                sumBp[statKey] = 1
+
+            if statKey == cls.OBSVSEXPECTEDSTAT:
+                for summarizeKey, summarizeItem in statItem.iteritems():
+                    for groupKey, groupItem in summarizeItem.iteritems():
+                        for g in groupKey:
+                            if not g in expectedDict.keys():
+                                expectedDict[g] = 0
+                            expectedDict[g] += float(eval('sum' + "(" + str(groupItem) + ")"))/sumBp[statKey]
+
+
+                for summarizeKey, summarizeItem in statItem.iteritems():
+                    for groupKey, groupItem in summarizeItem.iteritems():
+                        for g in groupKey:
+                            if not groupKey in expectedOrderedDict.keys():
+                                expectedOrderedDict[groupKey] = 1
+                            expectedOrderedDict[groupKey] *= expectedDict[g]
+
+            data = []
+            for summarizeKey, summarizeItem in statItem.iteritems():
+                # print 'summarizeKey', summarizeKey
+                # print 'summarizeItem', summarizeItem
+
+                for groupKey, groupItem in summarizeItem.iteritems():
+                    # print 'groupKey', list(groupKey)
+                    # print 'groupItem', groupItem
+
+                    if summarizeKey == 'no':
+                        data += groupItem
+                    else:
+                        if statKey == cls.OBSVSEXPECTEDSTAT:
+                            data.append(
+                                list(groupKey) + [
+                                    (float(eval(summarizeKey + "(" + str(groupItem) + ")")) / sumBp[
+                                        statKey]) / expectedOrderedDict[groupKey]
+                            ])
+                        else:
+                            data.append(
+                                list(groupKey) + [
+                                    (float(eval(summarizeKey + "(" + str(groupItem) + ")"))/sumBp[statKey])
+                            ])
+
+
+            if summarizeKey == 'no':
+                header = ['Column 1', 'Column 2', 'Value']
+                dataToPresent, headerToPresent = cls.flatResults(header, data)
+                dp = zip(*data)
+            else:
+                header = firstColumnList + secondColumnList + [summarizeKey]
+                dataToPresent = data
+                headerToPresent = header
+                dp = zip(*dataToPresent)
+
+            optionData = []
+            for z in range(0, len(dp) - 1):
+                pl = []
+                for d in dp[z]:
+                    if not d in pl:
+                        pl.append(d)
+                optionData.append(pl)
+
+            statKeyOrginal = str(statKey)
+            statKey = statKey.replace(' ', '').replace('(', '').replace(')', '').replace('/', '')
+
+            # sth is wrong with url to file!
+            fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
+            fileStatPath = fileStat.getDiskPath(ensurePath=True)
+            wf = open(fileStatPath, 'w')
+            for d in data:
+                wf.write('\t'.join([str(dd) for dd in d]) + '\n')
+
+            divId = 'results' + str(statKey)
+
+            jsCode = """
+                        <script>
+                        $(document).ready(function(){
+                            $('#""" + 'showDetailed-' + str(statKey) + """').click(function (){
+                                var el = $('#""" + 'detailed-' + str(statKey) + """');
+                                if (el.attr('class') == "hidden") {
+                                    el.removeClass("hidden").addClass("visible");
+                                } else {
+                                    el.removeClass("visible").addClass("hidden");
+                                }
+                                //console.log('el', el.attr('class'));
+                            });
+                            $('#""" + 'resultsHeader-' + str(statKey) + """').click(function ()
+                            {
+                                var children = $('#""" + 'results' + str(statKey) + """').children();
+                                for (i = 0; i < children.length; i++)
+                                {
+                                  var el = children[i];
+                                  if (el  == 'undefined')
+                                  {
+                                  }
+                                  else
+                                  {
+                                      if (el.tagName == 'DIV' && el.id != 'resultsHeader-""" + str(statKey) + """')
+                                      {
+                                          if ($(el).attr('class') == "hidden") 
+                                          {
+                                            $(el).removeClass("hidden").addClass("visible");
+                                          } 
+                                          else 
+                                          {
+                                            $(el).removeClass("visible").addClass("hidden");
+                                          }
+                                      }
+                                  }
+                                }
+                                
+                            });
+                        });
+                        </script>
+                        """
+
+            htmlCore.divBegin(divId, 'resultsAll')
+            htmlCore.line(jsCode)
+
+            htmlCore.divBegin(divId='resultsHeader-' + str(statKey), divClass='resultsHeader')
+            htmlCore.header('Results for: ' + str(statKeyOrginal))
+            htmlCore.divEnd()
+
+            htmlCore.divBegin(divId='resultsDesc-' + str(statKey), divClass='hidden')
+            htmlCore.divBegin(divClass='resultsDescription')
+            htmlCore.divBegin(divId='showDetailed-' + str(statKey), divClass='showDetailed')
+            htmlCore.header('Detailed information about results')
+            htmlCore.divEnd()
+            htmlCore.divBegin(divId='detailed-' + str(statKey), divClass='hidden')
+            htmlCore.divBegin(divClass='detailed')
+            htmlCore.link('Download raw file: ' + statKey, fileStat.getURL())
+            htmlCore.divEnd()
+            htmlCore.divEnd()
+            htmlCore.divEnd()
+            htmlCore.line(
+                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum))
+            htmlCore.divEnd()
+            htmlCore.divEnd()
+
+            statNum += 1
+
+    @classmethod
+    def addStat(cls, choices, statList):
+        selectedAnalysis = []
+        for a in statList:
+            if cls.STAT_LIST[a] == 'CountStat' or cls.STAT_LIST[a] == 'Count/SumStat' or cls.STAT_LIST[a] == 'ObsVsExpStat':
+                analysisSpec = AnalysisSpec(SingleTSStat)
+                analysisSpec.addParameter('rawStatistic', CountStat.__name__)
+                selectedAnalysis.append(analysisSpec)
+        return selectedAnalysis
+
+    @classmethod
+    def createGroups(cls, gSuite, colList, gsuiteOutput):
+
+        whichGroups = OrderedDict()
+        for wg in CountDescriptiveStatisticBetweenHGsuiteTool._getCombinations(gsuiteOutput, []):
+            whichGroups[wg] = []
+
+        for iTrackFromFirst, track in enumerate(gSuite.allTracks()):
+            attrTuple = []
+            CountDescriptiveStatisticBetweenHGsuiteTool.buildAttrTuple(attrTuple, colList, track)
+            attrTuple = tuple(attrTuple)
+
+            sts = SingleTrackTS(PlainTrack(track.trackName),
+                          OrderedDict(title=track.title, genome=str(gSuite.genome)))
+            whichGroups[attrTuple].append(sts)
+        return whichGroups
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        """
-        Should validate the selected input parameters. If the parameters are
-        not valid, an error text explaining the problem should be returned.
-        The GUI then shows this text to the user (if not empty) and greys
-        out the execute button (even if the text is empty). If all
-        parameters are valid, the method should return None, which enables
-        the execute button.
-
-        Optional method. Default return value if method is not defined: None
-        """
         return None
 
     # @classmethod
@@ -237,24 +513,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'customhtml'
+
+
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
@@ -265,3 +529,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+
+CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnMethods()
+CountDescriptiveStatisticForHGSuiteTool.setupSelectedStatMethods()
+CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnOptionMethods()

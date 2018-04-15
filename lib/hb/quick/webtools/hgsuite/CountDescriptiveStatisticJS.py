@@ -645,7 +645,7 @@ class Cube():
     				    	{
     							if (j == tab[i].length-1)
     				        	{
-    				        		var numDist = 0.5 + howManyPlotLines;
+    				        		var numDist = 0.25 + howManyPlotLines;
     				        	    if (zeros == true)
                                     {
                                         if (parseFloat(el) == 0)
@@ -663,12 +663,13 @@ class Cube():
     				        		else
     				        		{
     				        		    s += el + ",";
+    				        		    c += categories[j-1];
     				        		    howManyPlotLines += 1;
     				        		    ifLineHaveZeros = 1;
     				        		}
     				        		if (ifLineHaveZeros > 0)
     				        		{
-    				        		    plotLines += "{ id: '"+i+"', color: '#1ebff0', dashStyle: 'solid', value: "+numDist+", width: 2, label: { text: '"+elHeader+"', style: { color:'#1ebff0' }} },"
+    				        		    plotLines += "{ id: '"+i+"', color: '#3d70b2', dashStyle: 'solid', value: "+numDist+", width: 1, label: { y: 20, textAlign: 'left', text: '"+elHeader+"', style: { color:'#3d70b2' }} },"
     				        		    ifLineHaveZeros = 0;
     				        	    }
     				        	}
@@ -696,7 +697,7 @@ class Cube():
     								    else
     								    {
     				        			    s += el + ",";
-    				        			    c += categories[j];
+    				        			    c += categories[j-1];
     				        			    howManyPlotLines += 1;
     				        			    ifLineHaveZeros +=1
     				        			}
@@ -1011,20 +1012,20 @@ class Cube():
         function readDataFromTable (divId, statNum, trans = false)
         {    
         
-            //console.log('a', statNum);
+            console.log('a', statNum);
             var tt = document.getElementsByClassName("table");
             var t = []
             for (var i = 0; i < tt.length; ++i) 
             {
     			var item = tt[i];
-    			//console.log('----', item.id, divId.id, item.id.indexOf(divId.id));
+    			console.log('----', item.id, divId.id, item.id.indexOf(divId.id));
     			if (item.id.indexOf(divId.id) >= 0)
     			{
     				t.push(item);
     			}
 			} 
     		
-    		//console.log(t);
+    		console.log(t);
     		var y = '';
     		
     		var allTabs = []
@@ -1063,7 +1064,7 @@ class Cube():
 			}
 			hideTable(statNum);
 			
-			
+			console.log('divId', divId);
 			var body = divId;
 		    var div = document.createElement("div");
 		    div.setAttribute('id', 'results'+statNum);

@@ -61,7 +61,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                  'selectedFirstColumnOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Select column from second gSuite %s' % (i + 1) +  ' which you would like to treat as unique',
                  'selectedSecondColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-                [('Do you want todo above summarize for column %s' % (i + 1) + ' from second gSuite ',
+                [('Do you want to do above summarize for column %s' % (i + 1) + ' from second gSuite ',
                  'selectedSecondColumnOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                cls.getInputBoxNamesForUserBinSelection()+ \
                cls.getInputBoxNamesForDebug()
@@ -117,6 +117,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def getOptionsBoxSummarize(cls, prevChoices):
         return cls.SUMMARIZE.keys()
+
     @classmethod
     def _getOptionsBoxForSelectedFirstColumn(cls, prevChoices, index):
         if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
@@ -337,7 +338,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             # print 'optionData', optionData
 
             statKeyOrginal = str(statKey)
-            statKey = statKey.replace(' ', '').replace('(', '').replace(')', '')
+            statKey = statKey.replace(' ', '').replace('(', '').replace(')', '').replace('/', '')
 
             #sth is wrong with url to file!
             fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
@@ -361,16 +362,32 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                             }
                             //console.log('el', el.attr('class'));
                         });
-                        $('#""" + 'resultsHeader-' + str(statKey) + """').click(function (){
-                            var el = $('#""" + 'resultsDesc-' + str(statKey) + """');
-                            //console.log('el', el.attr('class'));
-                            if (el.attr('class') == "hidden") {
-                                el.removeClass("hidden").addClass("visible");
-                            } else {
-                                el.removeClass("visible").addClass("hidden");
-                            }
-                            //console.log('el', el.attr('class'));
-                        });
+                        $('#""" + 'resultsHeader-' + str(statKey) + """').click(function ()
+                            {
+                                var children = $('#""" + 'results' + str(statKey) + """').children();
+                                for (i = 0; i < children.length; i++)
+                                {
+                                  var el = children[i];
+                                  if (el  == 'undefined')
+                                  {
+                                  }
+                                  else
+                                  {
+                                      if (el.tagName == 'DIV' && el.id != 'resultsHeader-""" + str(statKey) + """')
+                                      {
+                                          if ($(el).attr('class') == "hidden") 
+                                          {
+                                            $(el).removeClass("hidden").addClass("visible");
+                                          } 
+                                          else 
+                                          {
+                                            $(el).removeClass("visible").addClass("hidden");
+                                          }
+                                      }
+                                  }
+                                }
+                                
+                            });
                     });
                     </script>
                     """
