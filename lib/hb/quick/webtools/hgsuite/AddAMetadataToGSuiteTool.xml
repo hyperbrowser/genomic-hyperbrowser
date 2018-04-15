@@ -1,0 +1,4 @@
+<tool id="hb_add_a_metadata_to_g_suite_tool" name="Add a metadata column in a GSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.AddAMetadataToGSuiteTool" proto_tool_class="AddAMetadataToGSuiteTool">
+  <description></description>
+</tool>

@@ -1,7 +1,12 @@
+from quick.application import GalaxyInterface
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTracksTS
 
-
-class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool):
+class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
         return "Count descriptive statistic for hGSuite"
@@ -9,10 +14,13 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select gSuite', 'gsuite'),
-                ('Select column 1', 'col1'),
-                ('Select column 2', 'col2')]
-
+        return [('Select gSuite', 'gsuite')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select column 1', 'col1'),
+                ('Select column 2', 'col2')] + \
+                [('Select statistic', 'stat')] + \
+                cls.getInputBoxNamesForUserBinSelection() + \
+                cls.getInputBoxNamesForDebug()
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -73,18 +81,17 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        """
-        Is called when execute-button is pushed by web-user. Should print
-        output as HTML to standard out, which will be directed to a results
-        page in Galaxy history. If getOutputFormat is anything else than
-        'html', the output should be written to the file with path galaxyFn.
-        If needed, StaticFile can be used to get a path where additional
-        files can be put (cls, e.g. generated image files). choices is a list
-        of selections made by web-user in each options box.
+        firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        col1 = choices.col1.encode('utf-8')
+        col2 = choices.col2.encode('utf-8')
 
-        Mandatory unless isRedirectTool() returns True.
-        """
-        print 'Executing...'
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
+                                                         genome=firstGSuite.genome)
+
+        for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
+            realTS = TrackStructureV2()
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

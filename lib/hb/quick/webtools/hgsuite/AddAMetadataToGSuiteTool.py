@@ -1,130 +1,129 @@
-from collections import OrderedDict
+from ast import literal_eval
+from functools import partial
 
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-from proto.CommonFunctions import ensurePathExists
+from gold.gsuite.GSuiteConstants import TITLE_COL
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.origdata.UcscHandler import UcscHandler
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
-class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
+class AddAMetadataToGSuiteTool(GeneralGuiTool):
+    MAX_NUM_OF_TRACKS = 100
+
     @classmethod
     def getToolName(cls):
-        return "Divide tracks in gSuite according to the phrase in the title column and create hierarchical gSuite"
+        return "Add a metadata column in a GSuite"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select gSuite', 'gSuite'),
-                ('Select phrases (use colon to provide more than one phrase)', 'param'),
-                ('Add phrases separately', 'add')
-                ]
+        return [('Select GSuite', 'gsuite'),
+                ('Add meta-data column', 'attrName'),
+                ('', 'gsuiteTitles'),
+                ('', 'gsuiteAttributeValues')] + \
+               [('', 'selectAttribute%s' % i) for i
+                in range((cls.MAX_NUM_OF_TRACKS * 2))]
 
     @classmethod
-    def getOptionsBoxGSuite(cls):
+    def getOptionsBoxGsuite(cls):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxParam(cls, prevChoices):
-        if prevChoices.gSuite:
-            return ''
+    def getOptionsBoxAttrName(cls, prevChoices):
+        return ''
 
     @classmethod
-    def getOptionsBoxAdd(cls, prevChoices):
-        if prevChoices.gSuite and prevChoices.param:
-            par = prevChoices.param.replace(' ', '').split(',')
-            lenPar = 0
-            tf = False
-            for pNum, p in enumerate(par):
-                if pNum == 0:
-                    lenPar = len(p)
-                if lenPar == len(p):
-                    tf = True
-                else:
-                    tf = False
+    def getOptionsBoxGsuiteTitles(cls, prevChoices):
+        if prevChoices.gsuite:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            return '__hidden__', gSuite.allTrackTitles()
 
-            if tf == True:
-                return ['yes', 'no']
+    @classmethod
+    def _getGsuiteTitles(cls, prevChoices):
+        gsuiteTitles = prevChoices.gsuiteTitles
+        if isinstance(gsuiteTitles, basestring):
+            gsuiteTitles = literal_eval(gsuiteTitles)
+        return gsuiteTitles
+
+    @classmethod
+    def getOptionsBoxGsuiteAttributeValues(cls, prevChoices):
+        if prevChoices.gsuite:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            return '__hidden__', [track.getAttribute(prevChoices.attrName)
+                                  for track in gSuite.allTracks()]
+
+    @classmethod
+    def _getGsuiteAttributeValues(cls, prevChoices):
+        gsuiteAttributeValues = prevChoices.gsuiteAttributeValues
+        if isinstance(gsuiteAttributeValues, basestring):
+            gsuiteAttributeValues = literal_eval(gsuiteAttributeValues)
+        return gsuiteAttributeValues
+
+    @classmethod
+    def _getOptionsBoxLabel(cls, prevChoices, index):
+        if not prevChoices.gsuite or not prevChoices.attrName:
+            return
+
+        gSuiteTitles = cls._getGsuiteTitles(prevChoices)
+        if index < len(gSuiteTitles) * 2:
+            return '__rawstr__', '<b>Add value for track nr. %s with title "%s":</b>' % (
+            (index / 2) + 1, gSuiteTitles[index / 2])
+
+
+    @classmethod
+    def _getOptionsBoxForSelectAttribute(cls, prevChoices, index):
+        if not prevChoices.gsuite or not prevChoices.attrName:
+            return
+        gSuiteTitles = cls._getGsuiteTitles(prevChoices)
+        gSuiteAttributeValues = cls._getGsuiteAttributeValues(prevChoices)
+        attrName = prevChoices.attrName
+        if index < len(gSuiteTitles) * 2:
+            if attrName == TITLE_COL:
+                attrValue = gSuiteTitles[index / 2]
+            else:
+                attrValue = gSuiteAttributeValues[index / 2]
+            return str(attrValue)
+
+    @classmethod
+    def setupSelectGSuiteMethods(cls):
+        for i in xrange(cls.MAX_NUM_OF_TRACKS * 2):
+            """setattr(cls, 'getOptionsBoxSelectAttribute%s' % i, partial(cls._getOptionsBoxLabel, index=i))
+            setattr(cls, 'getOptionsBoxSelectAttribute%s' % i, partial(cls._getOptionsBoxForSelectAttribute, index=i))"""
+            if (i % 2 == 0):
+                setattr(cls, 'getOptionsBoxSelectAttribute%s' % i,
+                        partial(cls._getOptionsBoxLabel, index=i))
+            else:
+                setattr(cls, 'getOptionsBoxSelectAttribute%s' % i,
+                        partial(cls._getOptionsBoxForSelectAttribute, index=i))
 
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-
-        par = choices.param.replace(' ','').split(',')
-        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        attrMut = OrderedDict()
-
-        if choices.add in ['yes', 'no']:
-            add = choices.add
-        else:
-            add = 'no'
-
-        for a in gSuite.attributes:
-            attrMut[a] = gSuite.getAttributeValueList(a)
-
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        attrName = choices.attrName
         outputGSuite = GSuite()
 
-        for i, iTrack in enumerate(gSuite.allTracks()):
+        for i, track in enumerate(gSuite.allTracks()):
+            if i < cls.MAX_NUM_OF_TRACKS:
+                newAttrValue = getattr(choices, 'selectAttribute%s' % ((i*2)+1))
+                if(attrName == TITLE_COL):
+                    track.title = newAttrValue
+                else:
+                    track.setAttribute(attrName, newAttrValue)
+            outputGSuite.addTrack(track)
 
-            trackTitle = iTrack.title
-            trackPath = iTrack.path
-
-            for p in par:
-
-                attr = OrderedDict()
-                for k in attrMut.keys():
-                    attr[k] = attrMut[k][i]
-                attr['orginalTitle'] = str(trackTitle)
-                if add == 'yes':
-                    for numPEl, pEl in enumerate(p):
-                        attr['attribute'+str(numPEl)] = str(pEl)
-                attr['attribute'] = str(p)
-
-
-                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                    extraFileName=str(trackTitle) + '--' + str(p), suffix='bed')
-                gSuiteTrack = GSuiteTrack(uri)
-                outFn = gSuiteTrack.path
-                ensurePathExists(outFn)
-
-                lineAll = []
-                with open(trackPath, 'r') as f:
-                    for l in f.readlines():
-                        line = l.split('\t')
-                        if p in line[3]:
-                            lineAll.append(l)
-
-                with open(outFn, 'w') as contentFile:
-                    contentFile.write(''.join(lineAll))
-                contentFile.close()
-
-                gs = GSuiteTrack(uri, title=''.join(
-                    str(trackTitle) + '--' + str(p)), genome=gSuite.genome,
-                                 attributes=attr)
-
-                outputGSuite.addTrack(gs)
-
+        #Creates the new GSuite
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
-    def selectColumns(cls):
-        return ''
-
-    @classmethod
     def validateAndReturnErrors(cls, choices):
-
-        if not choices.gSuite:
+        if not choices.gsuite:
             return 'Select gSuite'
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        if not choices.param:
-            return 'Select phrases'
-
-        if choices.gSuite:
-            gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-            for i, iTrack in enumerate(gSuite.allTracks()):
-                if iTrack.suffix != 'bed':
-                    return 'Your tracks need to be in .bed format'
+        if choices.attrName:
+            if choices.attrName in gSuite.attributes:
+                return 'Attribute with that name has been already in the gsuite'
 
         return None
 
@@ -264,3 +263,4 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+AddAMetadataToGSuiteTool.setupSelectGSuiteMethods()
