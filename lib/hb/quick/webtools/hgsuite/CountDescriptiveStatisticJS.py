@@ -645,7 +645,6 @@ class Cube():
     				    	{
     							if (j == tab[i].length-1)
     				        	{
-    				        		var numDist = 0.25 + howManyPlotLines;
     				        	    if (zeros == true)
                                     {
                                         if (parseFloat(el) == 0)
@@ -669,6 +668,7 @@ class Cube():
     				        		}
     				        		if (ifLineHaveZeros > 0)
     				        		{
+    				        		    var numDist = 0.25 + howManyPlotLines - 1;
     				        		    plotLines += "{ id: '"+i+"', color: '#3d70b2', dashStyle: 'solid', value: "+numDist+", width: 1, label: { y: 20, textAlign: 'left', text: '"+elHeader+"', style: { color:'#3d70b2' }} },"
     				        		    ifLineHaveZeros = 0;
     				        	    }

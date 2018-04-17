@@ -95,7 +95,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                             if not attr in allData.keys():
                                 allData[attr]=[]
                                 categories.append(attr.encode('utf-8'))
-                            allData[attr].append(float(l[k]))
+                            if l[k] == 'nan':
+                                allData[attr].append(0)
+                            else:
+                                allData[attr].append(float(l[k]))
 
                         except:
                             pass
@@ -121,7 +124,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                     if l != ['']:
                         for k in allData.keys():
                             try:
-                                allData[k].append(float(l[k]))
+                                if l[k] == 'nan':
+                                    allData[k].append(0)
+                                else:
+                                    allData[k].append(float(l[k]))
                             except:
                                 pass
                 i += 1
@@ -143,7 +149,6 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
         prettyResults = {}
         i = 0
 
-
         for data in dataAll.itervalues():
 
             if resValue == 'no':
@@ -158,8 +163,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             i += 1
 
         vg = visualizationGraphs()
-        plot = vg.drawBoxPlotChart(dataForBoxPlot,
-                                   categories=categories,
+        categoriesSorted, dataForBoxPlotSorted = (list(t) for t in zip(*sorted(zip(categories, dataForBoxPlot))))
+
+        plot = vg.drawBoxPlotChart(dataForBoxPlotSorted,
+                                   categories=categoriesSorted,
                                    seriesName='values',
                                    xAxisRotation=90)
 
