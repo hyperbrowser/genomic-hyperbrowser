@@ -33,7 +33,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
     def getInputBoxNames(cls):
         return [('Select gSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
-               [('Select statistic %s' % (i + 1) + '',
+               [('Select measure %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_COLS)] + \
                [('Select column %s' % (

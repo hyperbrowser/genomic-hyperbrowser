@@ -15,7 +15,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Filter hgSuite according to values in selected column"
+        return "Filter according to values in selected column"
 
     @classmethod
     def getInputBoxNames(cls):
