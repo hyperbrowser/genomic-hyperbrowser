@@ -15,11 +15,12 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Filter categorical gSuite"
+        return "Filter hgSuite according to values in selected column"
 
     @classmethod
     def getInputBoxNames(cls):
-        return ['Select gSuite: '] + ['Select column: ', 'Select action: ', 'Select value: '] * cls.NUM_CATEGORY_FIELDS
+        return ['Select gSuite: '] + \
+               ['Select column: ', 'Select action: ', 'Select value: '] * cls.NUM_CATEGORY_FIELDS
 
     @classmethod
     def getOptionsBox1(cls):
