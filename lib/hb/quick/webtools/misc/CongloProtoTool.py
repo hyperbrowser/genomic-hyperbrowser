@@ -1073,7 +1073,7 @@ class CongloProtoTool(GeneralGuiTool):
             if choices.restrictedRegionFileUpload in [None, '', []]:
                 fn = None
             else:
-                fn = TrackFile(ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload), '')
+                fn = TrackFile(ExternalTrackManager.extractFnFromGalaxyTN(choices.restrictedRegionFileUpload), ExternalTrackManager.extractNameFromHistoryTN(choices.restrictedRegionFileUpload))
 
             if choices.restrictRegions == cls.EXCLUDE_SUPPLIED_BY_THE_USER:
                 restrictRegions = RestrictedThroughExclusion(fn)
@@ -1197,7 +1197,7 @@ class CongloProtoTool(GeneralGuiTool):
         except Exception, e:
             return e.message
 
-        #workingMethodObjects = cls.getWorkingMethodObjects(choices)
+	#workingMethodObjects = cls.getWorkingMethodObjects(choices)
         queryTrack, refTracks, selectionValues = cls.extractFromChoices(choices)
         workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues,ALL_METHOD_CLASSES).getWorkingMethodObjects()
 
