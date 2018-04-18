@@ -1,4 +1,4 @@
-<tool id="hb_divide_hg_suite_according_to_column_tool" name="Divide hgSuite according to values in the selected column" version="1.0.0"
+<tool id="hb_divide_hg_suite_according_to_column_tool" name="Divide hgSuite" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.DivideHgSuiteAccordingToColumnTool" proto_tool_class="DivideHgSuiteAccordingToColumnTool">
   <description></description>
 </tool>

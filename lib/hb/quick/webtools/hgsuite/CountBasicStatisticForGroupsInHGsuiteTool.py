@@ -20,9 +20,11 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     NUMTRACK = 'Number of tracks'
     NUMELEMENTS = 'Number of elements in track'
-    STAT_LIST = {
+    STAT_LIST_NOT_PPREPROCESSED = {
         NUMTRACK: 'NumberOfTracks',
-        #NUMELEMENTS: 'NumElements'
+    }
+    STAT_LIST = {
+        NUMELEMENTS: 'NumElements'
     }
 
     @classmethod
@@ -51,7 +53,12 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedStat%s' % i) for i in
                        xrange(index)):
                 attrList = [getattr(prevChoices, 'selectedStat%s' % i) for i in xrange(index)]
-                selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
+
+                gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                if gsuite.isPreprocessed():
+                    selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST_NOT_PPREPROCESSED.keys() + cls.STAT_LIST.keys()) - set(attrList))
+                else:
+                    selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST_NOT_PPREPROCESSED.keys()) - set(attrList))
             if selectionList:
                 return selectionList
 
@@ -108,9 +115,12 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         for iTrack in gSuite.allTracks():
             for stat in statList:
                 tupleList = []
-                for attrName in attrNameList:
-                    tupleList.append(iTrack.getAttribute(attrName))
-                tupleList = tuple(tupleList)
+                if len(attrNameList) == 0:
+                    tupleList = tuple(iTrack.title)
+                else:
+                    for attrName in attrNameList:
+                        tupleList.append(iTrack.getAttribute(attrName))
+                    tupleList = tuple(tupleList)
                 if not tupleList in resDict[stat].keys():
                     resDict[stat][tupleList] = 0
 
@@ -120,9 +130,8 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         ########################################################################
         ###################### SUMMARIZE RESULTS ###############################
         ########################################################################
-
-
         #Overview table
+
 
         #build results
         outGSuite = GSuite()
@@ -135,11 +144,18 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                 attr[str(a)] = str(iTrack.getAttribute(a))
 
             tupleList = []
-            for attrName in attrNameList:
-                tupleList.append(iTrack.getAttribute(attrName))
-            tupleList = tuple(tupleList)
+            if len(attrNameList) == 0:
+                tupleList = tuple(trackTitle)
+            else:
+                for attrName in attrNameList:
+                    tupleList.append(iTrack.getAttribute(attrName))
+                tupleList = tuple(tupleList)
             for s in resDict.keys():
-                attr[str(s)] = str(resDict[s][tupleList])
+                attrChange = str(s)
+                if attrChange in attr.keys():
+                    attrChange = attrChange + str('-') + str(len(attr.keys()))
+
+                attr[attrChange] = str(resDict[s][tupleList])
 
             trackType = iTrack.trackType
 

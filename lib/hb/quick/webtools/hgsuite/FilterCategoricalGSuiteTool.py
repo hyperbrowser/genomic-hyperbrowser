@@ -9,18 +9,23 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class FilterCategoricalGSuiteTool(GeneralGuiTool):
+
     NUM_CATEGORY_FIELDS = 5
     NULL_OPTION = '-- select --'
     ACTION = ['<', '<=', '=', '>=', '>']
+    FILTER_BY_VAl = 'leave tracks by value'
+    FILTER_BY_DATA = 'leave tracks by data in column'
+    TITLE = 'title'
 
     @classmethod
     def getToolName(cls):
-        return "Filter according to values in selected column"
+        return "Filter hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
         return ['Select gSuite: '] + \
-               ['Select column: ', 'Select action: ', 'Select value: '] * cls.NUM_CATEGORY_FIELDS
+               ['Select operation:'] + \
+               ['Select column: ', 'Select: ', 'Select value: '] * cls.NUM_CATEGORY_FIELDS
 
     @classmethod
     def getOptionsBox1(cls):
@@ -30,54 +35,72 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
     def getOptionsBox2(cls, prevChoices):
         if not prevChoices[0]:
             return
-
-        return cls._getNotStringColumns(prevChoices[0])
+        return [cls.FILTER_BY_VAl, cls.FILTER_BY_DATA]
 
     @classmethod
     def getOptionsBox3(cls, prevChoices):
-        if not prevChoices[1]:
+        if not prevChoices[0]:
             return
 
-        if prevChoices[1] == cls.NULL_OPTION:
-            return
+        if prevChoices[1] == cls.FILTER_BY_VAl:
+            return cls._getNotStringColumns(prevChoices[0])
+        if prevChoices[1] == cls.FILTER_BY_DATA:
+            return cls._getAllColumns(prevChoices[0], prevChoices, None)
 
-        return cls.ACTION
 
     @classmethod
     def getOptionsBox4(cls, prevChoices):
-        if not prevChoices[1]:
+        if not prevChoices[2]:
             return
 
-        if prevChoices[1] == cls.NULL_OPTION:
+        if prevChoices[2] == cls.NULL_OPTION:
             return
 
-        return ''
+        if prevChoices[1] == cls.FILTER_BY_VAl:
+            return cls.ACTION
+        if prevChoices[1] == cls.FILTER_BY_DATA:
+            return cls._getAllUniqueData(prevChoices[0], prevChoices[2])
+
+    @classmethod
+    def getOptionsBox5(cls, prevChoices):
+        if not prevChoices[2]:
+            return
+
+        if prevChoices[2] == cls.NULL_OPTION:
+            return
+
+        if prevChoices[1] == cls.FILTER_BY_VAl:
+            return ''
+        return
 
     @classmethod
     def setupCategoryFields(cls):
         for i in xrange(cls.NUM_CATEGORY_FIELDS):
-            setattr(cls, 'getOptionsBox%i' % (i * 3 + 5),
-                    partial(cls._getColumn, index=i * 3 + 5))
-            setattr(cls, 'getOptionsBox%i' % (i * 3 + 5 + 1),
-                    partial(cls._getAction, index=i * 3 + 5 + 1))
-            setattr(cls, 'getOptionsBox%i' % (i * 3 + 5 + 2),
-                    partial(cls._getValue, index=i * 3 + 5 + 2))
+            setattr(cls, 'getOptionsBox%i' % (i * 3 + 6),
+                    partial(cls._getColumn, index=i * 3 + 6))
+            setattr(cls, 'getOptionsBox%i' % (i * 3 + 6 + 1),
+                    partial(cls._getAction, index=i * 3 + 6 + 1))
+            setattr(cls, 'getOptionsBox%i' % (i * 3 + 6 + 2),
+                    partial(cls._getValue, index=i * 3 + 6 + 2))
 
     @classmethod
     def _getColumn(cls, prevChoices, index):
         if not prevChoices[0]:
             return
 
-        if prevChoices[1] == cls.NULL_OPTION:
+        if prevChoices[2] == cls.NULL_OPTION:
             return
 
         dd=''
         for i in range(0, int(index/3)):
-            dd += str(prevChoices[i*3+5-4])
-            if prevChoices[i*3+5-4] == cls.NULL_OPTION:
+            dd += str(prevChoices[i*3+6-4])
+            if prevChoices[i*3+6-4] == cls.NULL_OPTION:
                 return
 
-        return cls._getNotStringColumns(prevChoices[0])
+        if prevChoices[1] == cls.FILTER_BY_VAl:
+            return cls._getNotStringColumns(prevChoices[0])
+        if prevChoices[1] == cls.FILTER_BY_DATA:
+            return cls._getAllColumns(prevChoices[0], prevChoices, index)
 
 
     @classmethod
@@ -85,24 +108,29 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
         if not prevChoices[0]:
             return
 
-        for i in range(1, index):
-            if i - 2 % 3 != 0:
+        for i in range(2, index):
+            if i - 3 % 3 != 0:
                 if prevChoices[i] == cls.NULL_OPTION:
                     return
 
-        return cls.ACTION
+        if prevChoices[1] == cls.FILTER_BY_VAl:
+            return cls.ACTION
+        if prevChoices[1] == cls.FILTER_BY_DATA:
+            return cls._getAllUniqueData(prevChoices[0], prevChoices[index-2])
 
     @classmethod
     def _getValue(cls, prevChoices, index):
         if not prevChoices[0]:
             return
 
-        for i in range(1, index):
-            if i - 3 % 3 != 0:
+        for i in range(2, index):
+            if i - 4 % 3 != 0:
                 if prevChoices[i] == cls.NULL_OPTION:
                     return
 
-        return ''
+        if prevChoices[1] == cls.FILTER_BY_VAl:
+            return ''
+        return
 
     @classmethod
     def _getNotStringColumns(cls, choice):
@@ -124,13 +152,55 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
         return [cls.NULL_OPTION] + attributeFilteredList
 
     @classmethod
+    def _getAllColumns(cls, choice, prevChoices, index):
+        gSuite = getGSuiteFromGalaxyTN(choice)
+        attributeList = gSuite.attributes
+
+        attributeFilteredList = []
+        for i, iTrack in enumerate(gSuite.allTracks()):
+            if i == 0:
+                previousColumn = []
+                if index != None:
+                    for i in range(0, index-1):
+                        if (i + 1) % 3 == 0:
+                            previousColumn.append(prevChoices[i])
+
+                for aN, a in enumerate(attributeList):
+                    if not a in attributeFilteredList:
+                        attributeFilteredList.append(a)
+
+                attributeFilteredList = list(set(attributeFilteredList) - set(previousColumn))
+
+        return [cls.NULL_OPTION] + [cls.TITLE] + attributeFilteredList
+
+    @classmethod
+    def _getAllUniqueData(cls, gsuite, column):
+        gSuite = getGSuiteFromGalaxyTN(gsuite)
+        d = OrderedDict()
+        if column != cls.NULL_OPTION and column!= None:
+            if column == cls.TITLE:
+                data = gSuite.allTrackTitles()
+            else:
+                data = list(set(gSuite.getAttributeValueList(column)))
+            for l in data:
+                d[str(l)] = str(l)
+
+            return d
+
+    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
         gSuite = getGSuiteFromGalaxyTN(choices[0])
-        filterQuestionsDict = cls._parseQuestions(choices)
-        trackDict = cls._parseGsuiteByQuestion(choices, gSuite, filterQuestionsDict)
 
-        filterResult = cls._filterResults(filterQuestionsDict, trackDict)
+        if choices[1] == cls.FILTER_BY_VAl:
+            filterQuestionsDict = cls._parseQuestions(choices)
+            trackDict = cls._parseGsuiteByQuestion(choices, gSuite, filterQuestionsDict)
+            filterResult = cls._filterResults(filterQuestionsDict, trackDict)
+
+        if choices[1] == cls.FILTER_BY_DATA:
+            filterQuestionsDict = cls._parseQuestionsData(choices)
+            filterResult = cls._parseGsuiteByQuestionData(gSuite, filterQuestionsDict)
+
         filteredGSuite = cls._selectRowsFromGSuiteByTitle(gSuite, filterResult)
         composeToFile(filteredGSuite, galaxyFn)
 
@@ -168,6 +238,21 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
         else:
             return 0
 
+    @classmethod
+    def _parseGsuiteByQuestionData(cls, gSuite, filterQuestionsDict):
+
+        trackTitleList = []
+        allTracksToNotInclude = []
+        for i, iTrack in enumerate(gSuite.allTracks()):
+            trackTitle = str(iTrack.title)
+            for fq in filterQuestionsDict.keys():
+                if iTrack.getAttribute(fq) in filterQuestionsDict[fq]:
+                    allTracksToNotInclude.append(trackTitle)
+                else:
+                    if not trackTitle in allTracksToNotInclude:
+                        trackTitleList.append(trackTitle)
+
+        return list(set(trackTitleList) - set(allTracksToNotInclude))
 
     @classmethod
     def _parseGsuiteByQuestion(cls, choices, gSuite, filterQuestionsDict):
@@ -183,11 +268,23 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
         return trackDict
 
     @classmethod
+    def _parseQuestionsData(cls, choices):
+
+        filterQuestionsDict = OrderedDict()
+        for i in xrange(2, cls.NUM_CATEGORY_FIELDS * 3 + 1):
+            if (i - 2) % 3 == 0:
+                if choices[i] != cls.NULL_OPTION and choices[i] != '':
+                    option = choices[i].encode('utf-8')
+                    filterQuestionsDict[option] = [kCh for kCh, iCh in choices[i + 1].iteritems() if iCh == False]
+
+        return filterQuestionsDict
+
+    @classmethod
     def _parseQuestions(cls, choices):
 
         filterQuestionsDict = OrderedDict()
-        for i in xrange(1, cls.NUM_CATEGORY_FIELDS * 3):
-            if (i - 1) % 3 == 0:
+        for i in xrange(2, cls.NUM_CATEGORY_FIELDS * 3 + 1):
+            if (i - 2) % 3 == 0:
                 if choices[i] != cls.NULL_OPTION and choices[i] != '':
                     option = choices[i].encode('utf-8')
                     if not option in filterQuestionsDict.keys():
@@ -207,7 +304,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
             if len(cls._getNotStringColumns(choices[0])) == 1:
                 return 'The gSuite does not contain any numbered column'
             else:
-                if choices[1] == cls.NULL_OPTION:
+                if choices[2] == cls.NULL_OPTION:
                     return 'Select at least one column'
                 else:
                     if choices[3] == '':

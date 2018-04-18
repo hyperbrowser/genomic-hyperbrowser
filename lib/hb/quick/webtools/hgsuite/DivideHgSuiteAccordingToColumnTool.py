@@ -9,15 +9,23 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
+
+    DIVISION_BY_COLUMN = 'divideSelColumn'
+    DIVISION = {
+        DIVISION_BY_COLUMN: 'by metadata',
+        'divide': 'by phrase'
+    }
+
+
     @classmethod
     def getToolName(cls):
-
-        return "Divide hgSuite according to values in the selected column"
+        return "Divide hgSuite"
 
     @classmethod
     def getInputBoxNames(cls):
         return [('Select gSuite', 'gSuite'),
-                ('Select column to split by', 'column')
+                ('Select', 'division'),
+                ('Select column', 'column')
                 ]
 
     @classmethod
@@ -25,51 +33,49 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
+    def getOptionsBoxDivision(cls, prevChoices):
+        return cls.DIVISION.values()
+
+    @classmethod
     def getOptionsBoxColumn(cls, prevChoices):
         if prevChoices.gSuite:
-            gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
-            return gSuite.attributes
+            if prevChoices.division == cls.DIVISION_BY_COLUMN:
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
+                return gSuite.attributes
+        return
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        column = choices.column.encode('utf-8')
 
-        trackList = {}
-        for i, iTrack in enumerate(gSuite.allTracks()):
-            attr = iTrack.getAttribute(column)
-            if not attr in trackList.keys():
-                trackList[attr] = []
-            trackList[attr].append(i)
+        if choices.division == cls.DIVISION_BY_COLUMN:
+            column = choices.column.encode('utf-8')
 
-        for tl in trackList.keys():
+            trackList = {}
+            for i, iTrack in enumerate(gSuite.allTracks()):
+                attr = iTrack.getAttribute(column)
+                if not attr in trackList.keys():
+                    trackList[attr] = []
+                trackList[attr].append(i)
 
-            outputGSuite = GSuite()
-            url = cls.makeHistElement(galaxyExt='gsuite',
-                                title=str(tl))
+            for tl in trackList.keys():
 
-            for t in trackList[tl]:
-                track = gSuite.getTrackFromIndex(t)
-                attributes = OrderedDict([(key, track.attributes[key]) for key in gSuite.attributes])
-                gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome, attributes=attributes)
+                outputGSuite = GSuite()
+                url = cls.makeHistElement(galaxyExt='gsuite',
+                                    title=str(tl))
 
-                outputGSuite.addTrack(gs)
+                for t in trackList[tl]:
+                    track = gSuite.getTrackFromIndex(t)
+                    attributes = OrderedDict([(key, track.attributes[key]) for key in gSuite.attributes])
+                    gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome, attributes=attributes)
 
-            GSuiteComposer.composeToFile(outputGSuite, url)
+                    outputGSuite.addTrack(gs)
+
+                GSuiteComposer.composeToFile(outputGSuite, url)
 
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        """
-        Should validate the selected input parameters. If the parameters are
-        not valid, an error text explaining the problem should be returned.
-        The GUI then shows this text to the user (if not empty) and greys
-        out the execute button (even if the text is empty). If all
-        parameters are valid, the method should return None, which enables
-        the execute button.
-
-        Optional method. Default return value if method is not defined: None
-        """
         return None
 
     # @classmethod
@@ -84,16 +90,9 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):

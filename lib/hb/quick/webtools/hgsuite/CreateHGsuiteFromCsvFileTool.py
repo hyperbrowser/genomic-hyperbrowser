@@ -12,7 +12,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
 
-        return "Create hGsuite from file"
+        return "Combain metadata for hGsuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -108,7 +108,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         #dataFromFile, header, message = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
         dataFromFile, header, message = hGSuite.parseGSuiteFileBasedOnColumsNumber(gSuiteTN, selCol)
 
-        extraGalaxyElement = cls.extraGalaxyFn['HGSuite']
+        extraGalaxyElement = cls.extraGalaxyFn['hGSuite']
 
         #refTS = factory.getFlatTracksTS(gSuiteTN.genome, gSuite)
         #iteration through refTS did not support the proper order of tracks
@@ -143,7 +143,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
     @classmethod
     def getExtraHistElements(cls, choices):
-        return [HistElement('HGSuite', 'gsuite')]
+        return [HistElement('hGSuite', 'gsuite')]
 
 
     @classmethod
