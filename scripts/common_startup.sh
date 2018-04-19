@@ -117,10 +117,10 @@ if [ $SET_VENV -eq 1 ]; then
     # should run this instance in.
     if [ -d "$GALAXY_VIRTUAL_ENV" ];
     then
-        # Conglomerate setup
-        if ! grep -q CONGLOMERATE_CONFIG "$GALAXY_VIRTUAL_ENV/bin/activate";
+        # pycolocstats setup
+        if ! grep -q PYCOLOCSTATS_CONFIG "$GALAXY_VIRTUAL_ENV/bin/activate";
         then
-            echo 'export CONGLOMERATE_CONFIG="$VIRTUAL_ENV/../config/pycolocstats.ini"' >>$GALAXY_VIRTUAL_ENV/bin/activate
+            echo 'export PYCOLOCSTATS_CONFIG="$VIRTUAL_ENV/../config/pycolocstats.ini"' >>$GALAXY_VIRTUAL_ENV/bin/activate
         fi
 
         printf "Activating virtualenv at $GALAXY_VIRTUAL_ENV\n"
@@ -134,7 +134,7 @@ if [ $SET_VENV -eq 1 ]; then
         then
             printf "Setting up R in virtualenv at $GALAXY_VIRTUAL_ENV\n"
 
-            echo 'export R_LIBS=$VIRTUAL_ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
+            echo 'export R_LIBS=$VIRTUAL_§ENV/R/library' >>$GALAXY_VIRTUAL_ENV/bin/activate
             for LIB in $GALAXY_VIRTUAL_ENV/lib/python*
             do
                 echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py

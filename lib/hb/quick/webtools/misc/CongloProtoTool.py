@@ -7,7 +7,7 @@ from pycolocstats.core.types import TrackFile
 from pycolocstats.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
                                             RestrictedThroughExclusion, RestrictedThroughInclusion,
                                             ColocMeasureProximity, InvalidSpecification)
-from pycolocstats.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_CONGLOMERATE_METHOD_CLASSES
+from pycolocstats.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_PYCOLOCSTATS_METHOD_CLASSES
 from pycolocstats.tools.method_compatibility import (getCollapsedConfigurationsPerMethod)
 from pycolocstats.tools.runner import runAllMethodsInSequence
 from proto.CommonFunctions import (createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL,
@@ -23,7 +23,7 @@ from quick.util.CommonFunctions import silenceRWarnings
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
-ALL_METHOD_CLASSES = ALL_CONGLOMERATE_METHOD_CLASSES + [HyperBrowser]
+ALL_METHOD_CLASSES = ALL_PYCOLOCSTATS_METHOD_CLASSES + [HyperBrowser]
 # [GenometriCorr, LOLA, StereoGene, Giggle, IntervalStats, HyperBrowser]
 # debug3
 
