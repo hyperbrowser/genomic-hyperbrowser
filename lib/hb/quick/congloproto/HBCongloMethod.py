@@ -4,24 +4,24 @@ import os
 from collections import OrderedDict, namedtuple
 
 from config.Config import HB_SOURCE_DATA_BASE_DIR
-from conglomerate.core.types import SingleResultValue
-from conglomerate.methods.interface import ColocMeasureOverlap
-from conglomerate.methods.method import ManyVsManyMethod
-from conglomerate.tools.job import Job
+from pycolocstats.core.types import SingleResultValue
+from pycolocstats.methods.interface import ColocMeasureOverlap
+from pycolocstats.methods.method import ManyVsManyMethod
+from pycolocstats.tools.job import Job
 from gold.application.HBAPI import doAnalysis
 from gold.gsuite import GSuiteParser
 from gold.track.Track import Track
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import GlobalBinSource
-from conglomerate.tools.tracks import refTrackCollRegistry
+from pycolocstats.tools.tracks import refTrackCollRegistry
 
 
 AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome'])
 
 
 class HyperBrowser(ManyVsManyMethod):
-    REF_TRACK_GSUITE_DIR = os.path.join(HB_SOURCE_DATA_BASE_DIR, 'conglomerate')
+    REF_TRACK_GSUITE_DIR = os.path.join(HB_SOURCE_DATA_BASE_DIR, 'pycolocstats')
 
     def __init__(self):
         self._parsedResults = None

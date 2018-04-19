@@ -74,7 +74,7 @@ config/plugins/tours/*
 
 static/welcome.html.*
 static/welcome.html
-lib/conglomerate_submodule/*
+lib/pycolocstats_submodule/*
 
 # Tool data.
 tool-data/annotation_profiler_options.xml

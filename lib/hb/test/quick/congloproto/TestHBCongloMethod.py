@@ -1,7 +1,7 @@
 import pkg_resources
 import pytest
 
-from conglomerate.tools import runner
+from pycolocstats.tools import runner
 from quick.congloproto.HBCongloMethod import HyperBrowser
 
 

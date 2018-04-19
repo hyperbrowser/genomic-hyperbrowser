@@ -2,14 +2,14 @@ import os
 from collections import OrderedDict, defaultdict
 
 from config.Config import GALAXY_TOOL_DATA_PATH
-from conglomerate.core.config import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
-from conglomerate.core.types import TrackFile
-from conglomerate.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
+from pycolocstats.core.config import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
+from pycolocstats.core.types import TrackFile
+from pycolocstats.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
                                             RestrictedThroughExclusion, RestrictedThroughInclusion,
                                             ColocMeasureProximity, InvalidSpecification)
-from conglomerate.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_CONGLOMERATE_METHOD_CLASSES
-from conglomerate.tools.method_compatibility import (getCollapsedConfigurationsPerMethod)
-from conglomerate.tools.runner import runAllMethodsInSequence
+from pycolocstats.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_CONGLOMERATE_METHOD_CLASSES
+from pycolocstats.tools.method_compatibility import (getCollapsedConfigurationsPerMethod)
+from pycolocstats.tools.runner import runAllMethodsInSequence
 from proto.CommonFunctions import (createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL,
                                    getGalaxyFilesDir)
 from proto.HtmlCore import HtmlCore
@@ -17,7 +17,7 @@ from proto.StaticFile import GalaxyRunSpecificFile
 from proto.TextCore import TextCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.congloproto.HBCongloMethod import HyperBrowser
-from conglomerate.tools.tracks import refTrackCollRegistry
+from pycolocstats.tools.tracks import refTrackCollRegistry
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.CommonFunctions import silenceRWarnings
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -752,7 +752,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def _getCongloResourcePath(cls, resourceFn):
-        return os.path.join(*[GALAXY_TOOL_DATA_PATH, 'conglomerate', 'resources', resourceFn])
+        return os.path.join(*[GALAXY_TOOL_DATA_PATH, 'pycolocstats', 'resources', resourceFn])
 
     @classmethod
     def parseSimpleModeBgOptions(cls, prevChoices):

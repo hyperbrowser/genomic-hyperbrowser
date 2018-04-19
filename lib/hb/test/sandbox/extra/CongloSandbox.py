@@ -1,13 +1,13 @@
-from conglomerate.methods.giggle.giggle import Giggle
-from conglomerate.methods.interface import RestrictedThroughInclusion
-from conglomerate.methods.lola.lola import LOLA
-from conglomerate.methods.stereogene.stereogene import StereoGene
+from pycolocstats.methods.giggle.giggle import Giggle
+from pycolocstats.methods.interface import RestrictedThroughInclusion
+from pycolocstats.methods.lola.lola import LOLA
+from pycolocstats.methods.stereogene.stereogene import StereoGene
 
 import pkg_resources
 
-from conglomerate.tools.method_compatibility import getCompatibleMethodObjects
-from conglomerate.tools.runner import runAllMethodsInSequence
-from conglomerate.tools.constants import VERBOSE_RUNNING
+from pycolocstats.tools.method_compatibility import getCompatibleMethodObjects
+from pycolocstats.tools.runner import runAllMethodsInSequence
+from pycolocstats.tools.constants import VERBOSE_RUNNING
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.webtools.misc.CongloProtoTool import ALL_METHOD_CLASSES

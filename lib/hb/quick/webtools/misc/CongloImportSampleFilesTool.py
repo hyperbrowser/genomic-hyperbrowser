@@ -9,7 +9,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class CongloImportSampleFilesTool(GeneralGuiTool):
-    SAMPLE_DATA_PATH = os.path.join(GALAXY_TOOL_DATA_PATH, 'conglomerate', 'sampledata')
+    SAMPLE_DATA_PATH = os.path.join(GALAXY_TOOL_DATA_PATH, 'pycolocstats', 'sampledata')
     SAMPLE_FILES = sorted(os.listdir(SAMPLE_DATA_PATH))
 
     @classmethod

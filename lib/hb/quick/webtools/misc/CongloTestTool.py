@@ -9,7 +9,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 class CongloTestTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Run all conglomerate tests"
+        return "Run all pycolocstats tests"
 
     @classmethod
     def getInputBoxNames(cls):
