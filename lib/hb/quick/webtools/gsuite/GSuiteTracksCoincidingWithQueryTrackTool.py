@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from urllib import quote
 
+from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments, \
+    getSupportedFileSuffixesForFunction
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -18,7 +20,8 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
-from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks
+from quick.gsuite.GSuiteStatUtils import runMultipleSingleValStatsOnTracks, RAND_BY_INTENSITY_TEXT, \
+    RAND_BY_UNIVERSE_TEXT
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.GSuiteSimilarityToQueryTrackRankingsWrapperStat import \
@@ -97,6 +100,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Select track to track similarity/distance measure', 'similarityFunc'),
              ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
+             ('Select the randomization strategy', 'randStrat'),
+             ('Select a universe track', 'intensityTrack'),
              ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
             cls.getInputBoxNamesForAttributesSelection() + \
             cls.getInputBoxNamesForUserBinSelection() + \
@@ -172,7 +177,9 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         - Returns: OrderedDict from key to selection status (bool).
         :param prevChoices:
         """
-        return GeneralGuiTool.getHistorySelectionElement()
+        return GeneralGuiTool.getHistorySelectionElement(
+            *getSupportedFileSuffixesForPointsAndSegments()
+        )
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):  # Alternatively: getOptionsBox2()
@@ -206,6 +213,29 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxReversed(prevChoices):
         if not prevChoices.isBasic:
             return False
+
+    @classmethod
+    def getOptionsBoxRandStrat(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
+            return GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING.keys()
+
+    @classmethod
+    def getInfoForOptionsBoxRandStrat(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3]:
+            return '''
+                T1 denotes your query track.
+                T2 denotes the reference track.
+                The selection of a randomization strategy determines the null model used in the Monte Carlo permutation 
+                test.               
+            '''
+
+    @classmethod
+    def getOptionsBoxIntensityTrack(cls, prevChoices):
+        if not prevChoices.isBasic and prevChoices.analysisQName in [cls.Q2, cls.Q3] and \
+                prevChoices.randStrat in [RAND_BY_UNIVERSE_TEXT]:
+            return GeneralGuiTool.getHistorySelectionElement(
+                *getSupportedFileSuffixesForPointsAndSegments()
+            )
 
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
@@ -320,10 +350,18 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
                                                                                      printErrors=False,
                                                                                      printProgress=False)
+        if choices.intensityTrack:
+            intensityTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.intensityTrack,
+                                                                                     printErrors=False,
+                                                                                     printProgress=False)
+        else:
+            intensityTrackNameAsList = None
         analysisQuestion = choices.analysisQName
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
         summaryFunc = choices.summaryFunc if choices.summaryFunc else 'average'
         reverse = 'Yes' if choices.reversed else 'No'
+        if analysisQuestion in [cls.Q2, cls.Q3]:
+            randStrat = 'PermutedSegsAndIntersegsTrack_' if choices.isBasic else GSuiteStatUtils.PAIRWISE_RAND_CLS_MAPPING[choices.randStrat]
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
@@ -360,7 +398,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             core = cls.generateQ1output(additionalResultsDict, analysisQuestion, choices, galaxyFn, gsPerTrackResults,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
-            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles)
+            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, trackTitles, randStrat,
+                                         intensityTrackNameAsList)
 
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
@@ -368,7 +407,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                         analysisQuestion, choices, galaxyFn, queryTrackTitle,
                                         gsuite, results, similarityStatClassName)
         else:  # Q3
-            analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc)
+            analysisSpec = cls.prepareQ3(choices, similarityStatClassName, summaryFunc, randStrat)
             results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
             core = cls.generateQ3output(analysisQuestion, queryTrackTitle, results, similarityStatClassName)
 
@@ -422,14 +461,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ2(cls, choices, similarityStatClassName, trackTitles):
+    def prepareQ2(cls, choices, similarityStatClassName, trackTitles, randStrat, intensityTrackNameAsList=[]):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDR$'] + ' -> GSuiteSimilarityToQueryTrackRankingsAndPValuesWrapperStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('assumptions', randStrat)
         analysisSpec.addParameter('rawStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
         analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
@@ -437,6 +476,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('tail', 'more')
         analysisSpec.addParameter('trackTitles', trackTitles)
         analysisSpec.addParameter('queryTracksNum', str(1))
+        if intensityTrackNameAsList:
+            analysisSpec.addParameter('trackNameIntensity', '|'.join(intensityTrackNameAsList))
         return analysisSpec
 
     @classmethod
@@ -492,14 +533,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc):
+    def prepareQ3(cls, choices, similarityStatClassName, summaryFunc, randStrat):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDR$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES[
                                 '$MCFDRv3$'] + ' -> TrackSimilarityToCollectionHypothesisWrapperStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
+        analysisSpec.addParameter('assumptions', randStrat)
         analysisSpec.addParameter('rawStatistic', 'SummarizedInteractionWithOtherTracksV2Stat')
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
@@ -553,7 +594,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if not choices.gsuite:
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT], choices.isBasic)
 
-        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
+        errorString = cls._checkGSuiteFile(choices.gsuite)
         if errorString:
             return errorString
 
@@ -561,13 +602,13 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if errorString:
             return errorString
 
-        errorString = GeneralGuiTool._checkTrack(choices, 'queryTrack', 'genome')
+        errorString = cls._checkTrack(choices, 'queryTrack', 'genome')
         if errorString:
             return errorString
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        errorString = GeneralGuiTool._checkGSuiteRequirements \
+        errorString = cls._checkGSuiteRequirements \
             (gsuite,
              cls.GSUITE_ALLOWED_FILE_FORMATS,
              cls.GSUITE_ALLOWED_LOCATIONS,
@@ -577,9 +618,39 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         if errorString:
             return errorString
 
-        errorString = GeneralGuiTool._checkGSuiteTrackListSize(gsuite)
+        errorString = cls._checkGSuiteTrackListSize(gsuite)
         if errorString:
             return errorString
+
+        if choices.randStrat in [RAND_BY_UNIVERSE_TEXT]:
+            errorString = cls._checkTrack(choices, 'intensityTrack', 'genome')
+            if errorString:
+                return errorString
+
+            if choices.queryTrack and choices.intensityTrack:
+                basicTFQuery = cls._getBasicTrackFormat(choices, 'queryTrack')[-1]
+                basicTFIntensity = cls._getBasicTrackFormat(choices, 'intensityTrack')[-1]
+
+                if not all(_ == 'points' for _ in [basicTFQuery, basicTFIntensity]):
+                    core = HtmlCore()
+                    core.paragraph('The selected randomization strategy requires the query and '
+                                   'the universe track to both be of type "Points". One or both '
+                                   'of these tracks have the incorrect track type.')
+                    core.descriptionLine('Current track type of query track', basicTFQuery)
+                    core.descriptionLine('Current track type of universe track', basicTFIntensity)
+                    core.paragraph('The only file formats (Galaxy datatypes) that '
+                                   'support the "Points" track type is "gtrack" and "bed.points". '
+                                   'To fix your input track(s), do as follows:')
+                    core.orderedList([
+                        'If you currently have a segment track (with segment lengths > 1), '
+                        'please convert it into points tracks by using the tool "Expand or '
+                        'contract points/segments" under the "Customize tracks" submenu.',
+                        'If you currently have a "bed" file where all segments have '
+                        'length one, possibly as the result of step 1, you will need to '
+                        'change the Galaxy datatype to "point.bed". To do this, click the '
+                        '"pencil" icon of the history element, select the "Datatypes" tab '
+                        'and select "point.bed".'])
+                    return str(core)
 
         errorString = cls.validateUserBins(choices)
         if errorString:

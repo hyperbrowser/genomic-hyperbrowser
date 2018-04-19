@@ -9,6 +9,7 @@ from gold.track.ShuffledMarksTrack import ShuffledMarksTrack
 from gold.track.SegsSampledByIntensityTrack import SegsSampledByIntensityTrack
 from gold.track.RandomGenomeLocationTrack import RandomGenomeLocationTrack
 #from quick.track.SegsSampledByDistanceToReferenceTrack import SegsSampledByDistanceToReferenceTrack
+from quick.track.PointsSampledFromBinaryIntensityTrack import PointsSampledFromBinaryIntensityTrack
 from quick.track.SegsSampledByDistanceToReferenceTrack import SegsSampledByDistanceToReferenceTrack
 from gold.util.CompBinManager import CompBinManager
 from gold.util.CustomExceptions import ArgumentValueError
@@ -213,7 +214,6 @@ class RandomizationManagerStatUnsplittable(Statistic):
         return [(1 if not statDetermined else 0), mVal, M_THRESHOLD, pval, GLOBAL_PVAL_THRESHOLD]
         
     def __init__(self, region, track, track2, rawStatistic, randTrackClass=None, assumptions=None, tails=None, numResamplings=2000, randomSeed=None, **kwArgs):
-        #print 'TEMP RM:',kwArgs
         if tails==None:
             if 'tail' in kwArgs:
                 tailTranslator = {'more':'right-tail', 'less':'left-tail', 'different':'two-tail'}
@@ -256,7 +256,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         assert not (randTrackClass1 is None and randTrackClass2 is None)
         for cls in [self._randTrackClass1, self._randTrackClass2]:
             assert cls in [None, PermutedSegsAndSampledIntersegsTrack, \
-                           PermutedSegsAndIntersegsTrack, RandomGenomeLocationTrack, SegsSampledByIntensityTrack, ShuffledMarksTrack, SegsSampledByDistanceToReferenceTrack]
+                           PermutedSegsAndIntersegsTrack, RandomGenomeLocationTrack, SegsSampledByIntensityTrack, ShuffledMarksTrack, SegsSampledByDistanceToReferenceTrack, PointsSampledFromBinaryIntensityTrack]
             
         #print self._randTrackClass1, self._randTrackClass2
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)
@@ -317,9 +317,6 @@ class RandomizationManagerStatUnsplittable(Statistic):
             #self._pointCount2 = None
         #logMessage('AFTER: '+str(self._track._trackFormatReq)+ ' AND '+str(self._track2._trackFormatReq))
 
-    #from gold.util.CommonFunctions import repackageException
-    #from gold.util.CustomExceptions import ShouldNotOccurError
-    #@repackageException(Exception, ShouldNotOccurError)
     def _compute(self):
         #if any([randTrackClass==SegsSampledByIntensityTrack for randTrackClass in [self._randTrackClass1, self._randTrackClass2]]) \
         #    and self._kwArgs.get('trackNameIntensity') in [None,'']:
@@ -349,7 +346,6 @@ class RandomizationManagerStatUnsplittable(Statistic):
 
         #logMessage(','.join([str(x) for x in randResults]))       
         numpyRandResults = array(self._randResults)
-
         if self._observation is None:
             self._observation = self._realChild.getResult()
             

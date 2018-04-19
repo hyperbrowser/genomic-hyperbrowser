@@ -8,7 +8,6 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
 class GSuite(object):
     def __init__(self, trackList=[]):
         self._trackList = []
-        self._uriToTrackDict = {}
         self._titleToTrackDict = {}
         self._updatedHeaders = False
 
@@ -102,9 +101,6 @@ class GSuite(object):
         return any(track.title != track.uri for track in self.allTracks())
 
     def addTrack(self, track, allowDuplicateTitles=True):
-        if track.uri in self._uriToTrackDict:
-            raise InvalidFormatError('Multiple tracks with same URI is not allowed: ' + track.uri)
-
         if track.title in self._titleToTrackDict:
             if allowDuplicateTitles:
                 for i in range(self.numTracks()):
@@ -116,7 +112,6 @@ class GSuite(object):
                 raise InvalidFormatError('Multiple tracks with the same title is not allowed: ' + track.title)
 
         self._updatedHeaders = False
-        self._uriToTrackDict[track.uri] = track
         self._titleToTrackDict[track.title] = track
         self._trackList.append(track)
 
@@ -152,9 +147,6 @@ class GSuite(object):
 
     def getTrackFromTitle(self, title):
         return self._titleToTrackDict[title]
-
-    def getTrackFromUri(self, uri):
-        return self._uriToTrackDict[uri]
 
     def setGenomeOfAllTracks(self, genome):
         for track in self.allTracks():

@@ -7,6 +7,7 @@ from gold.gsuite.GSuite import GSuite
 from gold.track.Track import Track
 from gold.util import CommonConstants
 
+
 T1_RATIO_OF_SECOND_INSIDE_FIRST = 'Proportion of the query track base-pairs coinciding with base-pairs from the reference track'
 T2_RATIO_OF_SECOND_INSIDE_UNION = 'Proportion of the union of base-pairs of the two tracks that are covered by the reference track'
 T3_RATIO_OF_INTERSECTION_TO_UNION = 'Jaccard index: ratio of overlapping base-pairs relative to the union base-pairs'
@@ -34,6 +35,19 @@ PAIRWISE_STAT_LABELS = PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING.keys()
 SUMMARY_FUNCTIONS_MAPPER = OrderedDict([('average', 'avg'), ('maximum', 'max'), ('minimum', 'min')])
 SUMMARY_FUNCTIONS_LABELS = SUMMARY_FUNCTIONS_MAPPER.keys()
 
+RAND_BY_UNIVERSE_TEXT = "Preserve elements of T2 and number of points of T1; randomize positions (T1) among locations provided in a universe track (type: points)"
+RAND_BY_INTENSITY_TEXT = "Preserve elements of T2 and number of points of T1; randomize positions (T1) according to an intensity track (type: function)"
+
+PAIRWISE_RAND_CLS_MAPPING = OrderedDict(
+    [
+        ("Preserve elements of T2 and inter-element distances of T1; randomize positions (T1) (MC)", "PermutedSegsAndIntersegsTrack_"),
+        ("Preserve elements of T2 and number of elements of T1; randomize positions (T1) (MC)", "PermutedSegsAndSampledIntersegsTrack_"),
+        ("Preserve elements of T1 and inter-element distances of T2; randomize positions (T2) (MC)", "_PermutedSegsAndIntersegsTrack"),
+        ("Preserve elements of T1 and number of elements of T2; randomize positions (T2) (MC)", "_PermutedSegsAndSampledIntersegsTrack"),
+        # (RAND_BY_INTENSITY_TEXT, "SegsSampledByIntensityTrack_"),
+        (RAND_BY_UNIVERSE_TEXT, "PointsSampledFromBinaryIntensityTrack_")
+     ]
+)
 
 def runMultipleSingleValStatsOnTracks(gsuite, stats, analysisBins, queryTrack=None):
     '''
