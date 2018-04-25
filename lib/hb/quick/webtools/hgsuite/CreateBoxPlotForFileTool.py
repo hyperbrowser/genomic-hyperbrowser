@@ -6,9 +6,14 @@ from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportB
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.util.CommonFunctions import extractFileSuffixFromDatasetInfo
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 
 
 class CreateBoxPlotForFileTool(GeneralGuiTool):
+
+    TITLE = 'title'
+
     @classmethod
     def getToolName(cls):
         return "Create box plot for file"
@@ -16,7 +21,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select tabular file from history', 'selFile'),
+        return [('Select file', 'selFile'),
                 ('Do you want to have box plot separately for category', 'response'),
                 ('Select category', 'responseValue'),
                 ('Select column', 'selCol'),
@@ -25,7 +30,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
 
     @staticmethod
     def getOptionsBoxSelFile():
-        return GeneralGuiTool.getHistorySelectionElement('txt', 'tabular')
+        return GeneralGuiTool.getHistorySelectionElement('tabular', 'gsuite')
 
     @classmethod
     def getOptionsBoxResponse(cls, prevChoices):
@@ -35,15 +40,34 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
     def getOptionsBoxResponseValue(cls, prevChoices):
         if prevChoices.response == 'yes':
             if prevChoices.selFile:
-                return cls.returnColFile(prevChoices.selFile, asListResponse=True)
+                suffixForFile = extractFileSuffixFromDatasetInfo(prevChoices.selFile)
+                if suffixForFile == 'tabular':
+                    return cls.returnColFile(prevChoices.selFile, asListResponse=True)
+                if suffixForFile == 'gsuite':
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
+                    return cls.returnColFile(prevChoices.selFile, asListResponse=True, gSuiteAttributes=gSuite.attributes+[cls.TITLE])
+
 
     @classmethod
     def getOptionsBoxSelCol(cls, prevChoices):
         if prevChoices.selFile:
+            suffixForFile = extractFileSuffixFromDatasetInfo(prevChoices.selFile)
             if prevChoices.response == 'yes':
-                return cls.returnColFile(prevChoices.selFile, asListResponse=True)
+                if suffixForFile == 'tabular':
+                    return cls.returnColFile(prevChoices.selFile, asListResponse=True)
+                if suffixForFile == 'gsuite':
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
+                    return cls.returnColFile(prevChoices.selFile, asListResponse=True,
+                                      gSuiteAttributes=gSuite.attributes + [cls.TITLE])
             else:
-                return cls.returnColFile(prevChoices.selFile)
+                if suffixForFile == 'tabular':
+                    return cls.returnColFile(prevChoices.selFile)
+                if suffixForFile == 'gsuite':
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
+                    return cls.returnColFile(prevChoices.selFile,
+                                      gSuiteAttributes=gSuite.attributes + [cls.TITLE])
+
+
 
     @classmethod
     def getOptionsBoxResValue(cls, prevChoices):
@@ -52,22 +76,50 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
 
 
     @classmethod
-    def returnColFile(cls, selFile2, asListResponse=False):
-        with open(ExternalTrackManager.extractFnFromGalaxyTN(selFile2.split(':')),
-                  'r') as f:
-            header = f.readline()
-            header = header.strip('\n').split('\t')
+    def returnColFile(cls, selFile2, asListResponse=False, gSuiteAttributes=None):
+        if gSuiteAttributes != None:
+            header = gSuiteAttributes
+        else:
+            with open(ExternalTrackManager.extractFnFromGalaxyTN(selFile2.split(':')),
+                      'r') as f:
+                header = f.readline()
+                header = header.strip('\n').split('\t')
 
-            if asListResponse == False:
-                hDict = OrderedDict()
-                for h in header:
-                    hDict[h] = False
-            if asListResponse == True:
-                hDict = []
-                for h in header:
-                    hDict.append(h)
+        if asListResponse == False:
+            hDict = OrderedDict()
+            for h in header:
+                hDict[h] = False
+        if asListResponse == True:
+            hDict = []
+            for h in header:
+                hDict.append(h)
 
-            return hDict
+        return hDict
+
+    @classmethod
+    def openGSuiteFileWithCategories(cls, fileName, selCol, colNameAttributes):
+
+        gSuite = getGSuiteFromGalaxyTN(fileName)
+        attributeList = gSuite.attributes
+
+        dataAll = OrderedDict()
+
+        categories = list(set(gSuite.getAttributeValueList(colNameAttributes)))
+        for i, iTrack in enumerate(gSuite.allTracks()):
+
+            attr = iTrack.getAttribute(colNameAttributes)
+            if not attr in dataAll.keys():
+                dataAll[attr] = []
+            val = iTrack.getAttribute(selCol)
+            try:
+                if val == 'nan' or val == None:
+                    dataAll[attr].append(0)
+                else:
+                    dataAll[attr].append(float(val))
+            except:
+                pass
+
+        return dataAll, categories
 
     @classmethod
     def openFileWithCategories(cls, fileName, colName, colNameAttributes):
@@ -124,7 +176,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                     if l != ['']:
                         for k in allData.keys():
                             try:
-                                if l[k] == 'nan':
+                                if l[k] == 'nan' or l[k] == None:
                                     allData[k].append(0)
                                 else:
                                     allData[k].append(float(l[k]))
@@ -139,11 +191,22 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
         selCol = choices.selCol
         resValue = choices.resValue
         response = choices.response
+
+        suffixForFile = extractFileSuffixFromDatasetInfo(choices.selFile)
+
         if response == "yes":
             responseValue = choices.responseValue
-            dataAll, categories = cls.openFileWithCategories(selFile, selCol, responseValue)
+            if suffixForFile == 'tabular':
+                dataAll, categories = cls.openFileWithCategories(selFile, selCol, responseValue)
+
+            if suffixForFile == 'gsuite':
+                dataAll, categories = cls.openGSuiteFileWithCategories(selFile, selCol, responseValue)
         else:
-            dataAll, categories = cls.openFile(selFile, selCol)
+            if suffixForFile == 'tabular':
+                dataAll, categories = cls.openFile(selFile, selCol)
+            if suffixForFile == 'gsuite':
+                dataAll, categories = cls.openGSuiteFile(selFile, selCol)
+
 
         dataForBoxPlot = []
         prettyResults = {}
@@ -187,6 +250,34 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
         core.line(plot)
         core.end()
         print core
+
+    @classmethod
+    def openGSuiteFile(cls, selFile, selCol):
+        gSuite = getGSuiteFromGalaxyTN(selFile)
+        attributeList = gSuite.attributes
+
+        dataAll = OrderedDict()
+        categories = []
+        for k, it in selCol.iteritems():
+            if it != False:
+                inxColName = attributeList.index(k.encode('utf-8'))
+                if k == cls.TITLE:
+                    dataAll[inxColName] = gSuite.allTrackTitles()
+                else:
+                    if not inxColName in dataAll.keys():
+                        dataAll[inxColName] = []
+                    for val in gSuite.getAttributeValueList(k):
+                        try:
+                            if val == 'nan' or val == None:
+                                dataAll[inxColName].append(0)
+                            else:
+                                dataAll[inxColName].append(float(val))
+                        except:
+                            pass
+
+                categories.append(k.encode('utf-8'))
+
+        return dataAll, categories
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

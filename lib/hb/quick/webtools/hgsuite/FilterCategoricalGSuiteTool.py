@@ -13,8 +13,8 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
     NUM_CATEGORY_FIELDS = 5
     NULL_OPTION = '-- select --'
     ACTION = ['<', '<=', '=', '>=', '>']
-    FILTER_BY_VAl = 'leave tracks by value'
-    FILTER_BY_DATA = 'leave tracks by data in column'
+    FILTER_BY_VAl = 'select tracks by value'
+    FILTER_BY_DATA = 'select data in column'
     TITLE = 'title'
 
     @classmethod
@@ -193,7 +193,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
         gSuite = getGSuiteFromGalaxyTN(choices[0])
 
         if choices[1] == cls.FILTER_BY_VAl:
-            filterQuestionsDict = cls._parseQuestions(choices)
+            filterQuestionsDict = cls._parseQuestions(choices, gSuite)
             trackDict = cls._parseGsuiteByQuestion(choices, gSuite, filterQuestionsDict)
             filterResult = cls._filterResults(filterQuestionsDict, trackDict)
 
@@ -214,7 +214,10 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
                     valTrack = trackDict[trackName][fq]
                     valUser = filterQuestionsDict[fq][f]
 
-                    countResults += cls._filterValues(valTrack, f, valUser)
+                    if valTrack == None or valTrack == 'nan':
+                        countResults += 1
+                    else:
+                        countResults += cls._filterValues(valTrack, f, valUser)
 
             if countResults == 0:
                 filterResult.append(trackName)
@@ -280,7 +283,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
         return filterQuestionsDict
 
     @classmethod
-    def _parseQuestions(cls, choices):
+    def _parseQuestions(cls, choices, gSuite):
 
         filterQuestionsDict = OrderedDict()
         for i in xrange(2, cls.NUM_CATEGORY_FIELDS * 3 + 1):
@@ -289,7 +292,18 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
                     option = choices[i].encode('utf-8')
                     if not option in filterQuestionsDict.keys():
                         filterQuestionsDict[option] = {}
-                    filterQuestionsDict[option][choices[i + 1].encode('utf-8')] = float(choices[i + 2])
+                    if '%' in choices[i + 2]:
+                        numPercentage = float(choices[i + 2].replace('%',''))
+                        allValues = []
+                        for v in gSuite.getAttributeValueList(choices[i]):
+                            if v != None and v != 'null':
+                                allValues.append(float(v))
+                        allValues = sorted(allValues, reverse=False)
+                        howManyFromPercentage = int(numPercentage/100 * len(allValues))
+                        filterQuestionsDict[option][choices[i + 1].encode('utf-8')] = float(allValues[howManyFromPercentage])
+
+                    else:
+                        filterQuestionsDict[option][choices[i + 1].encode('utf-8')] = float(choices[i + 2])
 
         return filterQuestionsDict
 
@@ -300,15 +314,15 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
             return 'Select gSuite'
 
         if choices[0]:
-
-            if len(cls._getNotStringColumns(choices[0])) == 1:
-                return 'The gSuite does not contain any numbered column'
-            else:
-                if choices[2] == cls.NULL_OPTION:
-                    return 'Select at least one column'
+            if choices[1] == cls.FILTER_BY_VAl:
+                if len(cls._getNotStringColumns(choices[0])) == 1:
+                    return 'The gSuite does not contain any numbered column'
                 else:
-                    if choices[3] == '':
-                        return 'Define value'
+                    if choices[3] == cls.NULL_OPTION:
+                        return 'Select at least one column'
+                    else:
+                        if choices[4] == '':
+                            return 'Define value'
 
         return None
 

@@ -116,7 +116,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def getOptionsBoxSummarize(cls, prevChoices):
-        return cls.SUMMARIZE.keys()
+        if prevChoices.gsuite and prevChoices.secondGSuite:
+            return cls.SUMMARIZE.keys()
 
     @classmethod
     def _getOptionsBoxForSelectedFirstColumn(cls, prevChoices, index):

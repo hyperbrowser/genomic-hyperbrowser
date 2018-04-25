@@ -10,11 +10,11 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
-    DIVISION_BY_COLUMN = 'divideSelColumn'
-    DIVISION = {
-        DIVISION_BY_COLUMN: 'by metadata',
-        'divide': 'by phrase'
-    }
+    DIVISION_BY_COLUMN = 'by column'
+    DIVISION_BY_PHRASE = 'by phrase in data'
+    TITLE = 'title'
+
+    DIVISION = [DIVISION_BY_COLUMN, DIVISION_BY_PHRASE]
 
 
     @classmethod
@@ -25,7 +25,9 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         return [('Select gSuite', 'gSuite'),
                 ('Select', 'division'),
-                ('Select column', 'column')
+                ('Select column', 'column'),
+                ('Select phrases (use colon to provide more than one phrase)', 'param'),
+                ('Add phrases separately', 'add')
                 ]
 
     @classmethod
@@ -34,62 +36,108 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxDivision(cls, prevChoices):
-        return cls.DIVISION.values()
+        return cls.DIVISION
 
     @classmethod
     def getOptionsBoxColumn(cls, prevChoices):
         if prevChoices.gSuite:
-            if prevChoices.division == cls.DIVISION_BY_COLUMN:
-                gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
+            if prevChoices.division.encode('utf-8') == cls.DIVISION_BY_COLUMN:
                 return gSuite.attributes
+            if prevChoices.division.encode('utf-8') == cls.DIVISION_BY_PHRASE:
+                return [cls.TITLE] + gSuite.attributes
         return
+
+    @classmethod
+    def getOptionsBoxParam(cls, prevChoices):
+        if prevChoices.gSuite and prevChoices.division == cls.DIVISION_BY_PHRASE:
+            return ''
+
+    @classmethod
+    def getOptionsBoxAdd(cls, prevChoices):
+        if prevChoices.gSuite and prevChoices.param and prevChoices.division == cls.DIVISION_BY_PHRASE:
+            par = prevChoices.param.replace(' ', '').split(',')
+            #
+            # lenPar = 0
+            # tf = False
+            # for pNum, p in enumerate(par):
+            #     if pNum == 0:
+            #         lenPar = len(p)
+            #     if lenPar == len(p):
+            #         tf = True
+            #     else:
+            #         tf = False
+            #
+            # if tf == True:
+            if len(par) >= 2:
+                return ['yes', 'no']
+
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        column = choices.column.encode('utf-8')
 
+        trackList = {}
         if choices.division == cls.DIVISION_BY_COLUMN:
-            column = choices.column.encode('utf-8')
-
-            trackList = {}
             for i, iTrack in enumerate(gSuite.allTracks()):
                 attr = iTrack.getAttribute(column)
                 if not attr in trackList.keys():
                     trackList[attr] = []
                 trackList[attr].append(i)
 
-            for tl in trackList.keys():
+        if choices.division == cls.DIVISION_BY_PHRASE:
+            par = choices.param.replace(' ', '').split(',')
 
-                outputGSuite = GSuite()
-                url = cls.makeHistElement(galaxyExt='gsuite',
-                                    title=str(tl))
+            if choices.add in ['yes', 'no']:
+                add = choices.add
+            else:
+                add = 'no'
 
-                for t in trackList[tl]:
-                    track = gSuite.getTrackFromIndex(t)
-                    attributes = OrderedDict([(key, track.attributes[key]) for key in gSuite.attributes])
-                    gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome, attributes=attributes)
+            if add == 'yes':
+                trackList[('-'.join(par.encode('utf-8')))] = []
+            else:
+                for p in par:
+                    trackList[p.encode('utf-8')] = []
 
-                    outputGSuite.addTrack(gs)
+            for i, iTrack in enumerate(gSuite.allTracks()):
+                if column == cls.TITLE:
+                    t = iTrack.title
+                else:
+                    t = iTrack.getAttribute(column)
 
-                GSuiteComposer.composeToFile(outputGSuite, url)
+                for p in par:
+                    if p in t:
+                        if add == 'yes':
+                            trackList[('-'.join(par))].append(i)
+                        else:
+                            trackList[p].append(i)
 
+            cls.buildNewGsuites(gSuite, trackList)
+
+    @classmethod
+    def buildNewGsuites(cls, gSuite, trackList):
+        for tl in trackList.keys():
+
+            outputGSuite = GSuite()
+            url = cls.makeHistElement(galaxyExt='gsuite', title=str(tl))
+
+            for t in trackList[tl]:
+                track = gSuite.getTrackFromIndex(t)
+                attributes = OrderedDict(
+                    [(key, track.attributes[key]) for key in gSuite.attributes])
+                gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome,
+                                 attributes=attributes)
+
+                outputGSuite.addTrack(gs)
+
+            GSuiteComposer.composeToFile(outputGSuite, url)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
         return None
 
-    # @classmethod
-    # def getSubToolClasses(cls):
-    #     """
-    #     Specifies a list of classes for subtools of the main tool. These
-    #     subtools will be selectable from a selection box at the top of the
-    #     page. The input boxes will change according to which subtool is
-    #     selected.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
     @classmethod
     def isPublic(cls):
         return True
