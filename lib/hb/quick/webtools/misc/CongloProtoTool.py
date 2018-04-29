@@ -9,17 +9,18 @@ from pycolocstats.methods.interface import (ColocMeasureCorrelation, ColocMeasur
                                             ColocMeasureProximity, InvalidSpecification)
 from pycolocstats.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_PYCOLOCSTATS_METHOD_CLASSES
 from pycolocstats.tools.method_compatibility import (getCollapsedConfigurationsPerMethod)
-from pycolocstats.tools.runner import runAllMethodsInSequence
 from proto.CommonFunctions import (createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL,
                                    getGalaxyFilesDir)
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.TextCore import TextCore
+from pycolocstats.tools.runner import runAllMethods
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.congloproto.HBCongloMethod import HyperBrowser
 from pycolocstats.tools.tracks import refTrackCollRegistry
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.util.CommonFunctions import silenceRWarnings
+from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #ALL_METHOD_CLASSES = [GenometriCorr, Giggle, IntervalStats, LOLA, HyperBrowser]
@@ -613,11 +614,14 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.restrictRegions in [cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]:
             return ('__history__', 'bed')
 
+    LOCAL_HETEROGENEITY_PRESERVE_BIN = 'Yes, restrict genomic elements to bins in the null model'
+    LOCAL_HETEROGENEITY_WHOLE_GENOME = 'No, distribute genomic elements across the whole genome in the null model'
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
             # return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
-            return ['No, distribute genomic regions across the whole genome']
+            return [cls.LOCAL_HETEROGENEITY_WHOLE_GENOME,
+                    cls.LOCAL_HETEROGENEITY_PRESERVE_BIN]
 
     FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
     SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
@@ -816,6 +820,7 @@ class CongloProtoTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+
         if not VERBOSE_RUNNING:
             silenceRWarnings()
 
@@ -856,7 +861,7 @@ class CongloProtoTool(GeneralGuiTool):
             cls._printWmoInfo(keptWmos)
 
         jobOutputDir = os.path.join(getGalaxyFilesDir(galaxyFn), 'cwl_output')
-        runAllMethodsInSequence(keptWmos, jobOutputDir=jobOutputDir)
+        runAllMethods(keptWmos, jobOutputDir=jobOutputDir)
         print HtmlCore().divEnd()
         if VERBOSE_RUNNING:
             print 'Success states: ', [wmo.ranSuccessfully() for wmo in keptWmos]
