@@ -196,7 +196,7 @@
                 </div>
             </div>
         </div>
-            <div class="containerNext">
+            <!--<div class="containerNext">-->
             <div class="containerNext">
                 <div class="rowSpecialWithGap">
                 <div class="colAll">
@@ -236,7 +236,6 @@
                 </div>
             </div>
         </div>
-    </div>
             <div class="containerNext">
             <div class="containerNext">
                 <div class="rowSpecialWithGap">
@@ -845,6 +844,54 @@ tr:nth-child(even) {
                                 <p></p>
 
                                          <p></p>
+                                 <h4>## Good analysis practice </h4>
+                                     <p></p>
+                                     <li>
+                                <dt><b>Is it okay to try out different methods and parameters until I get a significant result?</b></dt>
+                                <dd>
+                                    The goal and necessity of running multiple colocalization analysis tools is NOT to find a single method
+                                    or parameter choices that would give a significant p-value to report in a manuscript. Rather, it is to
+                                    be doubtful of any significant finding reported by a single method/parameter combinations.
+                                    It is NOT advisable to hunt for a desriable p-value that can be used as basis for claiming a
+                                    significant finding (a bad practice known as p-value hacking).
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     <li>
+                                <dt><b>Is it okay to use and report the results of only one method?</b></dt>
+                                <dd>
+                                    The existing colocalization analysis tools vary to a large extent in the statistical
+                                    methodology and analysis approaches, thus potentially providing different conclusions
+                                    for the same research question. Therefore, it is highly recommended to assess the
+                                    robustness of the findings across different tools and parameter choices. It is also a
+                                    good practice to report the results of all tools. If the results of only one method are
+                                    to be reported, that should be based on explicit reasoning in terms of which analytical
+                                    assumptions are reasonable, not based on which p-values are desirable in themselves
+                                    (a bad practice known as p-value hacking).
+                                </dd>
+                                     </li>
+                                     <p></p>
+                                     <li>
+                                <dt><b>What should I do if different methods give disagreeing results?</b></dt>
+                                <dd>
+                                    Different methods may not necessarily agree on what may be considered as a
+                                    significant finding. They may provide potentially different conclusions for
+                                    the same research question. This is not surprising since the different tools
+                                    use different statistical methodologies and analysis approaches. Before reporting
+                                    a finding, it is thus our opinion that researchers should check whether the finding
+                                    also holds when applying alternative methodologies.There are
+                                    in statistical testing no simple context-free rules for how to conclude when
+                                    alternative methodologies give disagreeing results, since some underlying
+                                    assumptions may be more appropriate for the analytical scenario than others.
+                                    In the article on <a href='https://projecteuclid.org/euclid.ss/1425492440' target='_top'><font color="#0645AD">null models for genomic data</font></a>,
+                                    we motivated a general advice of being conservative and conclude based on the
+                                    weakest significance level achieved. If one is to deviate from this and rather
+                                    trust the results of other particular methods, one should have (and provide to readers)
+                                    explicit reasons for considering the underlying assumptions of these to match
+                                    the analytical scenario.
+                                </dd>
+                                     </li>
+                                     <p></p>
                                  <h4>## User interface and sharing results</h4>
                                      <p></p>
                                      <li>
@@ -1030,6 +1077,7 @@ tr:nth-child(even) {
                                      </li>
                                      <p></p>
                                      </li>
+                                     </ol>
                             </dl>
 <script type="text/javascript">
     $("#faqs dd").hide();
