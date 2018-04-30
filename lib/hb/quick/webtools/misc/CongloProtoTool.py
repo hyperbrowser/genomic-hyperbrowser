@@ -100,8 +100,8 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Use one of the default core databases as reference collection ? ', 'optionalUseOfCoreDatabase'),
                 ('Choose a query track collection: ', 'chooseQueryTrackCollection'),
                 ('Choose a reference track collection: ', 'chooseReferenceTrackCollection'),
-                ('Analyse against background regions? (optional)', 'analyseInBackground'),
-                ('Select the uploaded file of background regions', 'backgroundRegionFileUpload'),
+                ('Restrict to specific analysis regions? (optional)', 'analyseInBackground'),
+                ('Select a track of analysis regions', 'backgroundRegionFileUpload'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
                 ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
@@ -109,7 +109,7 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Type of correlation metric : ', 'correlation'),
                 ('Allow genomic regions to overlap within track ? ', 'allowOverlaps'),
                 ('Restrict the analysis to specific parts of the genome ? ', 'restrictRegions'),
-                ('Select the uploaded file to restrict the analysis space : ', 'restrictedRegionFileUpload'),
+                ('Select a track of analysis regions: ', 'restrictedRegionFileUpload'),
                 ('Preserve local heterogeneity ? ', 'localHeterogeneity'),
                 ('Method of choice to preserve local heterogeneity : ', 'localHandler'),
                 ('Select the uploaded file to preserve local heterogeneity : ', 'preserveLocalFileUpload'),
@@ -447,11 +447,11 @@ class CongloProtoTool(GeneralGuiTool):
     # OVERLAP_MEASURES = [COUNTS, BASES]
 
 
-    SIMPLEMODE_ONLY_WHOLE_GENOME = 'No, use only methods that can use the whole genome as background'
-    SIMPLEMODE_OPTIONALLY_EXPLICIT_BG = 'Yes, provide an explicit set of background regions to tools that can take it as input (using whole genome for others)'
-    SIMPLEMODE_ONLY_EXPLICIT_BG = 'Yes, use only methods that can take an explicit set of background regions as input'
+    SIMPLEMODE_ONLY_WHOLE_GENOME = 'No, use only methods that can use the whole genome as analysis regions'
+    SIMPLEMODE_OPTIONALLY_EXPLICIT_BG = 'Yes, provide an explicit set of analysis regions to tools that can take it as input (using whole genome for others)'
+    SIMPLEMODE_ONLY_EXPLICIT_BG = 'Yes, use only methods that can take an explicit set of analysis regions as input'
 
-    EXPLICIT_NEGATIVE_SET = 'Perform the analysis only in the explicit set of background regions supplied'
+    EXPLICIT_NEGATIVE_SET = 'Yes, perform the analysis only in the explicit set of analysis regions supplied'
     EXCLUDE_SUPPLIED_BY_THE_USER = 'Yes, exclude specified regions supplied by the user'
     WHOLE_GENOME = 'No, use the whole genome'
 
@@ -614,8 +614,8 @@ class CongloProtoTool(GeneralGuiTool):
         if prevChoices.restrictRegions in [cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]:
             return ('__history__', 'bed')
 
-    LOCAL_HETEROGENEITY_PRESERVE_BIN = 'Yes, restrict genomic elements to bins in the null model'
-    LOCAL_HETEROGENEITY_WHOLE_GENOME = 'No, distribute genomic elements across the whole genome in the null model'
+    LOCAL_HETEROGENEITY_PRESERVE_BIN = 'Yes, distribute genomic elements within their original analysis regions in the null model'
+    LOCAL_HETEROGENEITY_WHOLE_GENOME = 'No, distribute genomic elements across all analysis regions in the null model'
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
@@ -623,18 +623,20 @@ class CongloProtoTool(GeneralGuiTool):
             return [cls.LOCAL_HETEROGENEITY_WHOLE_GENOME,
                     cls.LOCAL_HETEROGENEITY_PRESERVE_BIN]
 
-    FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
-    SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
+    # FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
+    # SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
 
     @classmethod
     def getOptionsBoxLocalHandler(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.localHeterogeneity == cls.LOCAL_HETEROGENEITY:
-            return [cls.FIXED_SIZE_NEIGHBOURHOOD, cls.SET_OF_LOCAL_REGIONS_]
+        return None
+    #     if prevChoices.localHeterogeneity == cls.LOCAL_HETEROGENEITY:
+    #         return [cls.FIXED_SIZE_NEIGHBOURHOOD, cls.SET_OF_LOCAL_REGIONS_]
 
     @classmethod
     def getOptionsBoxPreserveLocalFileUpload(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.localHandler == cls.SET_OF_LOCAL_REGIONS_:
-            return '__track__'
+        return None
+        # if prevChoices.localHandler == cls.SET_OF_LOCAL_REGIONS_:
+        #     return '__track__'
 
     PRESERVE_EMPIRIC_DISTRIBUTION = 'Yes, preserve empiric distribution of distances between genomic regions'
     UNIFORMLY_DISTRIBUTED = 'No, assume that genomic features are uniformly distributed'
@@ -645,7 +647,7 @@ class CongloProtoTool(GeneralGuiTool):
             return OrderedDict([(cls.UNIFORMLY_DISTRIBUTED, False), (cls.PRESERVE_EMPIRIC_DISTRIBUTION, False)])
 
     # CONFOUNDING_FEATURE = 'Yes, handle the specified confounding feature'
-    LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
+    #LOCAL_HETEROGENEITY = 'Yes, handle local heterogeneity'
 
     @classmethod
     def getOptionsBoxConfounding(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -766,7 +768,7 @@ class CongloProtoTool(GeneralGuiTool):
             bgOptions.append(('setRestrictedAnalysisUniverse', None))
         if prevChoices.analyseInBackground in [cls.SIMPLEMODE_ONLY_EXPLICIT_BG, cls.SIMPLEMODE_OPTIONALLY_EXPLICIT_BG]:
             if prevChoices.backgroundRegionFileUpload in [None, '']:
-                spec = InvalidSpecification('No background region file selected in GUI.')
+                spec = InvalidSpecification('No analysis region file selected in GUI.')
             else:
                 bgFns = TrackParser.getFnListFromTrackChoice(prevChoices.backgroundRegionFileUpload)
                 assert len(bgFns) == 1
