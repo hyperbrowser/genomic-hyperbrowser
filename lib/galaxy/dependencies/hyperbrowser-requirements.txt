@@ -30,6 +30,7 @@ pytest>=3.0.5
 future>=0.16.0
 configparser>=3.0
 pydevd>=1.1.1
+futures>=3.2.0
 
 #Might be needed
 #pycairo>=1.8.10
