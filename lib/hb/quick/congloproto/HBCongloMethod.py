@@ -184,7 +184,8 @@ class HyperBrowser(ManyVsManyMethod):
             self.setNotCompatible()
 
     def setHeterogeneityPreservation(self, preservationScheme, fn=None):
-        pass
+        if preservationScheme != self.PRESERVE_HETEROGENEITY_WITHIN_SUPPLIED_REGIONS:
+            self.setNotCompatible()
 
     def setRuntimeMode(self, mode):
         if mode =='quick':
