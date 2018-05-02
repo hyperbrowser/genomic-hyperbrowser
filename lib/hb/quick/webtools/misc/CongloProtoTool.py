@@ -103,6 +103,7 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Restrict to specific analysis regions? (optional)', 'analyseInBackground'),
                 ('Select a track of analysis regions', 'backgroundRegionFileUpload'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
+                ("", 'infoAboutMultipleCheckBoxes'),
                 ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
                 ('Type of distance to use : ', 'distanceType'),
@@ -508,10 +509,21 @@ class CongloProtoTool(GeneralGuiTool):
         getInputBoxNames(), if any.
         """
         if prevChoices.selectRunningMode == cls.ADVANCED:
-            return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)])
+            return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)]),
 
     BASES = 'total number of overlapping bases'
     COUNTS = 'number of overlapping regions (counts)'
+
+    @classmethod
+    def getOptionsBoxInfoAboutMultipleCheckBoxes(cls, prevChoices):  # Alt: getOptionsBox2()
+
+        core = HtmlCore()
+        core.smallHeader('Note about multiple selections:')
+        core.paragraph('The tool deliberately allows the selection of multiple check boxes here. When multiple check boxes are selected, all the methods that are compatible with the selections are run in. This will allow the assessment of robustness of a finding across different methods and/or method-specific parameters. ')
+
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return '__rawStr__', str(core)
+
 
     @classmethod
     def getInfoForOptionsBoxTeststatType(cls, prevChoices):
