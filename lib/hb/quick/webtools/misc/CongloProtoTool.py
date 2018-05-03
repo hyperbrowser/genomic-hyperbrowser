@@ -86,6 +86,7 @@ class CongloProtoTool(GeneralGuiTool):
         """
         return [("", 'toolDescTop'),
                 ('Running mode: ', 'selectRunningMode'),
+                ("", 'infoAboutMultipleCheckBoxes'),
                 ("", 'divider'),
                 ("", 'toolDescMiddle'),
                 ('Reference genome: ', 'selectReferenceGenome'),
@@ -103,7 +104,6 @@ class CongloProtoTool(GeneralGuiTool):
                 ('Restrict to specific analysis regions? (optional)', 'analyseInBackground'),
                 ('Select a track of analysis regions', 'backgroundRegionFileUpload'),
                 ('Type of co-localization measure (test statistic): ', 'teststatType'),
-                ("", 'infoAboutMultipleCheckBoxes'),
                 ('Type of overlap measure : ', 'overlapMeasure'),
                 ('Type of coordinate to use when computing distance : ', 'distanceCoordinate'),
                 ('Type of distance to use : ', 'distanceType'),
@@ -204,6 +204,17 @@ class CongloProtoTool(GeneralGuiTool):
         return text
         # text += 'Simple mode with shared defaults runs the co-localization analysis tools with similar or same parameters/settings to allow comparison between the findings of the tools.'
         # text += '<br>'
+
+    @classmethod
+    def getOptionsBoxInfoAboutMultipleCheckBoxes(cls, prevChoices):  # Alt: getOptionsBox2()
+
+        core = HtmlCore()
+        core.smallHeader('Note about multiple selections in advanced mode:')
+        core.paragraph('The tool deliberately allows the selection of multiple check boxes for each parameter. When multiple check boxes are selected, all the methods that are compatible with the selections are run in parallel. This will allow the assessment of robustness of a findings across different methods and/or method-specific parameters.')
+
+        if prevChoices.selectRunningMode == cls.ADVANCED:
+            return '__rawStr__', str(core)
+
 
     HG19_CHR20 = 'Human chromosome 20 (hg19_chr20) [for testing]'
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
@@ -509,21 +520,10 @@ class CongloProtoTool(GeneralGuiTool):
         getInputBoxNames(), if any.
         """
         if prevChoices.selectRunningMode == cls.ADVANCED:
-            return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)]),
+            return OrderedDict([(cls.OVERLAP, False), (cls.DISTANCE, False), (cls.CORRELATION, False)])
 
     BASES = 'total number of overlapping bases'
     COUNTS = 'number of overlapping regions (counts)'
-
-    @classmethod
-    def getOptionsBoxInfoAboutMultipleCheckBoxes(cls, prevChoices):  # Alt: getOptionsBox2()
-
-        core = HtmlCore()
-        core.smallHeader('Note about multiple selections:')
-        core.paragraph('The tool deliberately allows the selection of multiple check boxes here. When multiple check boxes are selected, all the methods that are compatible with the selections are run in. This will allow the assessment of robustness of a finding across different methods and/or method-specific parameters. ')
-
-        if prevChoices.selectRunningMode == cls.ADVANCED:
-            return '__rawStr__', str(core)
-
 
     @classmethod
     def getInfoForOptionsBoxTeststatType(cls, prevChoices):
@@ -622,6 +622,20 @@ class CongloProtoTool(GeneralGuiTool):
             return [cls.WHOLE_GENOME, cls.EXPLICIT_NEGATIVE_SET]
 
     @classmethod
+    def getInfoForOptionsBoxRestrictRegions(cls, prevChoices):
+        text = 'The genomic regions in a genomic track file are typically a result of some form of genomic assay ' \
+               'analysed on a high throughput sequencing or genotyping platform, where some predefined regions ' \
+               'of the genome are assayed (e.g., all the SNPs, transcripts, exonic regions and so on). The genomic ' \
+               'regions found based on such assays are thus restricted to the regions queried on the technology platform. ' \
+               'The statistical test (null model) should ideally restrict the analysis space to the regions queried on the ' \
+               'technology platform. Some tools provide the possibility to restrict the analysis to specific set of regions, ' \
+               'by either excluding the regions supplied by the user or by performing the analysis only against an explicit set ' \
+               'of analysis regions supplied by the user. Only BED files are supported for now.'
+        text += '<br>'
+        return text
+
+
+    @classmethod
     def getOptionsBoxRestrictedRegionFileUpload(cls, prevChoices):
         if prevChoices.restrictRegions in [cls.EXCLUDE_SUPPLIED_BY_THE_USER, cls.EXPLICIT_NEGATIVE_SET]:
             return ('__history__', 'bed')
@@ -634,6 +648,25 @@ class CongloProtoTool(GeneralGuiTool):
             # return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
             return [cls.LOCAL_HETEROGENEITY_WHOLE_GENOME,
                     cls.LOCAL_HETEROGENEITY_PRESERVE_BIN]
+
+    @classmethod
+    def getInfoForOptionsBoxLocalHeterogeneity(cls, prevChoices):
+        text = ' - Some analysis scenarios would require the restriction of distribution of genomic elements ' \
+                   'to local blocks/bins. A simple example is randomizing the genomic positions within the same ' \
+                   'chromosome, but not across chromosomes. Another example is the randomization of SNP positions ' \
+                   'matched by local genomic properties such as LD, minor allele frequency and so on.'
+        text += '<br>'
+        text += '<br>'
+        text += ' - If chosen to preserve local heterogeneity, distribution of genomic regions will be restricted ' \
+                    'to the bins defined in "analysis regions track". Be noted that in that case, the resolution of the ' \
+                    'analysis regions should not be too small (e.g., single base or few bases) to avoid false negatives.'
+        text += '<br>'
+        text += '<br>'
+        text += ' - If the analysis is not restricted to an explicit set of analysis regions, and instead performed ' \
+                    'against the whole genome - but chosen to preserve the local heterogeneity, then the distribution of ' \
+                    'genomic regions is preserved within each chromosome.'
+        text += '<br>'
+        return text
 
     # FIXED_SIZE_NEIGHBOURHOOD = 'each genomic region restricted to a fixed size neighbourhood'
     # SET_OF_LOCAL_REGIONS_ = 'distribute within a specified set of local regions '
