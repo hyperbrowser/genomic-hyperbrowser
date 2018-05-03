@@ -2,6 +2,7 @@ import os
 from collections import OrderedDict, defaultdict
 
 from config.Config import GALAXY_TOOL_DATA_PATH
+from proto.config.Config import URL_PREFIX
 from pycolocstats.core.config import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
 from pycolocstats.core.types import TrackFile
 from pycolocstats.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
@@ -1039,7 +1040,7 @@ class CongloProtoTool(GeneralGuiTool):
             if wmo._methodCls.__name__ == 'HyperBrowser':
                 allFullResults = wmo.getFullResults(galaxyFn)
             else:
-                allFullResults = wmo.getFullResults()
+                allFullResults = wmo.getFullResults(urlPrefix=URL_PREFIX)
             assert len(allPvals) > 0, allPvals
             assert len(allPvals) == len(allTestStats), (allPvals, allTestStats)
             trackCombinations = allPvals.keys()
