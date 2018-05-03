@@ -6,7 +6,7 @@ from pycolocstats.core.config import VERBOSE_RUNNING, CATCH_METHOD_EXCEPTIONS
 from pycolocstats.core.types import TrackFile
 from pycolocstats.methods.interface import (ColocMeasureCorrelation, ColocMeasureOverlap,
                                             RestrictedThroughExclusion, RestrictedThroughInclusion,
-                                            ColocMeasureProximity, InvalidSpecification)
+                                            ColocMeasureProximity, InvalidSpecification, UniformInterface)
 from pycolocstats.tools.WorkingMethodObjectParser import WorkingMethodObjectParser, ALL_PYCOLOCSTATS_METHOD_CLASSES
 from pycolocstats.tools.method_compatibility import (getCollapsedConfigurationsPerMethod)
 from proto.CommonFunctions import (createGalaxyToolURL, getGalaxyUploadLinkOnclick, createToolURL,
@@ -641,13 +641,14 @@ class CongloProtoTool(GeneralGuiTool):
             return ('__history__', 'bed')
 
     LOCAL_HETEROGENEITY_PRESERVE_BIN = 'Yes, distribute genomic elements within their original analysis regions in the null model'
+    LOCAL_HETEROGENEITY_FIXED_SIZE_NEIGHBOURHOOD = 'Yes, distribute each genomic element within a fixed size neighbourhood in the null model'
     LOCAL_HETEROGENEITY_WHOLE_GENOME = 'No, distribute genomic elements across all analysis regions in the null model'
     @classmethod
     def getOptionsBoxLocalHeterogeneity(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.selectRunningMode == cls.ADVANCED:
             # return ['No, distribute genomic regions across the whole genome', cls.LOCAL_HETEROGENEITY]
-            return [cls.LOCAL_HETEROGENEITY_WHOLE_GENOME,
-                    cls.LOCAL_HETEROGENEITY_PRESERVE_BIN]
+            return {cls.LOCAL_HETEROGENEITY_WHOLE_GENOME:False,
+                    cls.LOCAL_HETEROGENEITY_PRESERVE_BIN:False, cls.LOCAL_HETEROGENEITY_FIXED_SIZE_NEIGHBOURHOOD:False}
 
     @classmethod
     def getInfoForOptionsBoxLocalHeterogeneity(cls, prevChoices):
@@ -896,7 +897,7 @@ class CongloProtoTool(GeneralGuiTool):
 
         #workingMethodObjects = cls.getWorkingMethodObjects(choices)
         queryTrack, refTracks, selectionValues = cls.extractFromChoices(choices)
-        # print 'FOR TEST TRANSFER - queryTrack, refTracks, selectionValues: ', '<br>', repr(queryTrack), '<br>', repr(refTracks), '<br>', selectionValues, '<br><br>'
+        #print 'FOR TEST TRANSFER - queryTrack, refTracks, selectionValues: ', '<br>', repr(queryTrack), '<br>', repr(refTracks), '<br>', selectionValues, '<br><br>'
         workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues,ALL_METHOD_CLASSES).getWorkingMethodObjects()
         # print 'FOR TEST TRANSFER - compatible methods classes:', set([wmo.getMethodName() for wmo in workingMethodObjects]), '<br><br>'
         methodSelectionStatus = dict(
@@ -1143,7 +1144,9 @@ class CongloProtoTool(GeneralGuiTool):
         # selections['setHeterogeneityPreservation'] = hetero
         # CHECKBOXES
         choiceValueMappings = OrderedDict()
-        selectionMapping = {'clumping': 'preserveClumping'}
+        selectionMapping = {}
+        selectionMapping['clumping'] = 'preserveClumping'
+        selectionMapping['localHeterogeneity'] = 'setHeterogeneityPreservation'
         # 'allowOverlaps': 'setAllowOverlaps',
         # 'choiceOfCoreDatabase': 'setPredefinedTrackIndexAndCollection'}
         # TestStat
@@ -1190,6 +1193,7 @@ class CongloProtoTool(GeneralGuiTool):
         #     choiceValueMappings['allowOverlaps'] = {cls.NOT_ALLOWED: False, cls.MAY_OVERLAP: True}
 
         choiceValueMappings['clumping'] = {cls.UNIFORMLY_DISTRIBUTED: False, cls.PRESERVE_EMPIRIC_DISTRIBUTION: True}
+        choiceValueMappings['localHeterogeneity'] = {cls.LOCAL_HETEROGENEITY_WHOLE_GENOME : UniformInterface.PRESERVE_HETEROGENEITY_NOT, cls.LOCAL_HETEROGENEITY_FIXED_SIZE_NEIGHBOURHOOD:UniformInterface.PRESERVE_HETEROGENEITY_AS_NEIGHBORHOOD, cls.LOCAL_HETEROGENEITY_PRESERVE_BIN : UniformInterface.PRESERVE_HETEROGENEITY_WITHIN_SUPPLIED_REGIONS}
         # choiceValueMappings['choiceOfCoreDatabase'] = {cls.LOLA_COLLECTION: {'trackIndex':'LOLACore_170206', 'trackCollection':'codex'} }
         for guiKey, selectionKey in selectionMapping.items():
             currSelection = cls.getSelectionsFromCheckboxParam(choiceValueMappings[guiKey], choices, guiKey,
