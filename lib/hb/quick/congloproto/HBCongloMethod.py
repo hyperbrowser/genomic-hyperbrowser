@@ -5,7 +5,7 @@ from collections import OrderedDict, namedtuple
 
 from config.Config import HB_SOURCE_DATA_BASE_DIR
 from pycolocstats.core.types import SingleResultValue
-from pycolocstats.methods.interface import ColocMeasureOverlap
+from pycolocstats.methods.interface import ColocMeasureOverlap, RestrictedThroughInclusion
 from pycolocstats.methods.method import ManyVsManyMethod
 from pycolocstats.tools.job import Job
 from gold.application.HBAPI import doAnalysis
@@ -13,11 +13,11 @@ from gold.gsuite import GSuiteParser
 from gold.track.Track import Track
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
-from quick.application.UserBinSource import GlobalBinSource
+from quick.application.UserBinSource import GlobalBinSource, UserBinSource
 from pycolocstats.tools.tracks import refTrackCollRegistry
 
 
-AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome'])
+AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome', 'regSpec', 'binSpec'])
 
 
 class HyperBrowser(ManyVsManyMethod):
@@ -26,6 +26,9 @@ class HyperBrowser(ManyVsManyMethod):
     def __init__(self):
         self._parsedResults = None
         self._genome = None
+        self._binSource = None
+        self._regSpec = None
+        self._binSpec = None
         self._queryTrackFiles = None
         self._refTrackFiles = None
         self._allowOverlaps = False
@@ -38,6 +41,7 @@ class HyperBrowser(ManyVsManyMethod):
         self._params = "Conglo Params not supported in HyperBrowser"
         self._trackTitleMappings = {}
         self._compatibilityState = True
+        self._restrictedRegionsFn = None
 
     def _getToolName(self):
         return 'hb_conglo'
@@ -60,7 +64,14 @@ class HyperBrowser(ManyVsManyMethod):
 
     def setGenomeName(self, genomeName):
         self._genome = genomeName.split('(')[-1].split(')')[0]
-        self._binSource = GlobalBinSource(self._genome)
+        if not self._binSource and self._restrictedRegionsFn:
+            self._binSource = UserBinSource('bed', self._restrictedRegionsFn, genome=self._genome)
+            self._regSpec = 'bed'
+            self._binSpec = self._restrictedRegionsFn
+        elif not self._binSource:
+            self._binSource = GlobalBinSource(self._genome)
+            self._regSpec = self._genome + ':*'
+            self._binSpec = '*'
 
     def setChromLenFileName(self, chromLenFileName):
         pass
@@ -174,8 +185,16 @@ class HyperBrowser(ManyVsManyMethod):
                 'Preserve segments (T2) and segment lengths (T1); randomize positions (T1) (MC)'
 
     def setRestrictedAnalysisUniverse(self, restrictedAnalysisUniverse):
-        if restrictedAnalysisUniverse is not None:
+        if restrictedAnalysisUniverse and not isinstance(restrictedAnalysisUniverse, RestrictedThroughInclusion):
             self.setNotCompatible()
+        elif restrictedAnalysisUniverse:
+            if self._genome: #needs the genome to be set first
+                self._binSource = UserBinSource('bed', restrictedAnalysisUniverse.trackFile.path, genome=self._genome)
+                self._regSpec = 'bed'
+                self._binSpec = restrictedAnalysisUniverse.trackFile.path
+            else:
+                self._restrictedRegionsFn = restrictedAnalysisUniverse.trackFile.path
+
 
     def setColocMeasure(self, colocMeasure):
         if isinstance(colocMeasure, ColocMeasureOverlap):
@@ -267,7 +286,7 @@ class HyperBrowser(ManyVsManyMethod):
             for i, rTrack in enumerate(refTracks):
                 self._analyses[(queryTrackFile.path, refTrackPaths[i])] = \
                     AnalysisObject(analysisSpec, self._binSource,
-                                   [qTrack, rTrack], self._genome)
+                                   [qTrack, rTrack], self._genome, self._regSpec, self._binSpec)
         return [HBJob(self._analyses)]
 
     def _registerTrackFileAndProcess(self, trackFile):
@@ -306,7 +325,7 @@ class HyperBrowser(ManyVsManyMethod):
         runDescription = GalaxyInterface.getRunDescription(
             analysisObj.tracks[0].trackName, analysisObj.tracks[1].trackName,
             analysisObj.analysisSpec.getDef(),
-            analysisObj.genome + ':*', '*', analysisObj.genome,
+            analysisObj.regSpec, analysisObj.binSpec, analysisObj.genome,
             showBatchLine=False)
         runDescBox = GalaxyInterface.getRunDescriptionBox(runDescription)
         result.setRunDescription(runDescBox)
