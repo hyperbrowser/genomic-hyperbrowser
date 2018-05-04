@@ -1255,7 +1255,11 @@ class CongloProtoTool(GeneralGuiTool):
         except Exception, e:
             return e.message
 
-	#workingMethodObjects = cls.getWorkingMethodObjects(choices)
+        if choices.restrictRegions == cls.EXPLICIT_NEGATIVE_SET and \
+                not choices.restrictedRegionFileUpload:
+            return "Please select a track of analysis regions"
+
+        # workingMethodObjects = cls.getWorkingMethodObjects(choices)
         queryTrack, refTracks, selectionValues = cls.extractFromChoices(choices)
         workingMethodObjects = WorkingMethodObjectParser(queryTrack, refTracks, selectionValues,ALL_METHOD_CLASSES).getWorkingMethodObjects()
 
