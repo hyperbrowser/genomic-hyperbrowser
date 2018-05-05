@@ -940,9 +940,9 @@ class CongloProtoTool(GeneralGuiTool):
         # print sf.getLink('Pickles')
         # TODO: /REMOVE
 
-        print '''Your analysis has been completed and your results are available below.
-                You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element'''
-        print '''If not certain how to interpret and report on significance from multiple methods for the same analysis setup, please consult the <b>Good analysis practice</b> section in the FAQ on the main page.'''
+        print '''<p>Your analysis has been completed and your results are available below.
+                You can see the parameters used for the run (in the originally GUI layout) by clicking the "rerun" icon on this history element.</p>'''
+        print '''<p><i>If not certain how to interpret and report on significance from multiple methods for the same analysis setup, please consult the <b>Good analysis practice</b> section in the FAQ on the main page.</i></p>'''
 
         trackCombResults.makeAllMethodNamesUnique()
         crg = CongloResultsGenerator(trackCombResults, trackCombErrors, keysWithVariation, galaxyFn)
