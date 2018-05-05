@@ -567,7 +567,7 @@ class CongloProtoTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxOverlapMeasure(cls, prevChoices):
         if prevChoices.teststatType and prevChoices.teststatType[cls.OVERLAP]:
-            return OrderedDict([(cls.COUNTS, False), (cls.BASES, False)])
+            return OrderedDict([(cls.COUNTS, True), (cls.BASES, True)])
 
     # @classmethod
     # def getOptionsBoxDirectOverlap(cls, prevChoices):
