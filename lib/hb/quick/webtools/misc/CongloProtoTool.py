@@ -1253,6 +1253,10 @@ class CongloProtoTool(GeneralGuiTool):
             if choices.allowOverlaps and not choices.allowOverlaps[cls.NOT_ALLOWED] \
                     and not choices.allowOverlaps[cls.MAY_OVERLAP]:
                 return "Please select whether or not to allow genomic regions to overlap within track"
+
+        if choices.localHeterogeneity and not any(choices.localHeterogeneity.values()):
+            return "Please select whether to preserve local heterogeneity"
+
         if choices.clumping and not any(choices.clumping.values()):
             return "Please select whether or not to handle clumping"
 
