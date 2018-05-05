@@ -17,7 +17,7 @@ from quick.application.UserBinSource import GlobalBinSource, UserBinSource
 from pycolocstats.tools.tracks import refTrackCollRegistry
 
 
-AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'binSource', 'tracks', 'genome', 'regSpec', 'binSpec'])
+AnalysisObject = namedtuple('AnalysisObject', ['analysisSpec', 'tracks', 'genome', 'regSpec', 'binSpec'])
 
 
 class HyperBrowser(ManyVsManyMethod):
@@ -26,7 +26,6 @@ class HyperBrowser(ManyVsManyMethod):
     def __init__(self):
         self._parsedResults = None
         self._genome = None
-        self._binSource = None
         self._regSpec = None
         self._binSpec = None
         self._queryTrackFiles = None
@@ -64,12 +63,10 @@ class HyperBrowser(ManyVsManyMethod):
 
     def setGenomeName(self, genomeName):
         self._genome = genomeName.split('(')[-1].split(')')[0]
-        if not self._binSource and self._restrictedRegionsFn:
-            self._binSource = UserBinSource('bed', self._restrictedRegionsFn, genome=self._genome)
+        if self._restrictedRegionsFn:
             self._regSpec = 'bed'
             self._binSpec = self._restrictedRegionsFn
-        elif not self._binSource:
-            self._binSource = GlobalBinSource(self._genome)
+        elif not self._regSpec or not self._binSpec:
             self._regSpec = self._genome + ':*'
             self._binSpec = '*'
 
@@ -188,8 +185,10 @@ class HyperBrowser(ManyVsManyMethod):
         if restrictedAnalysisUniverse and not isinstance(restrictedAnalysisUniverse, RestrictedThroughInclusion):
             self.setNotCompatible()
         elif restrictedAnalysisUniverse:
+            if os.path.getsize(restrictedAnalysisUniverse.trackFile.path) > 10000:
+                self.setNotCompatible()
+                return
             if self._genome: #needs the genome to be set first
-                self._binSource = UserBinSource('bed', restrictedAnalysisUniverse.trackFile.path, genome=self._genome)
                 self._regSpec = 'bed'
                 self._binSpec = restrictedAnalysisUniverse.trackFile.path
             else:
@@ -285,8 +284,7 @@ class HyperBrowser(ManyVsManyMethod):
             qTrack = self._registerTrackFileAndProcess(queryTrackFile)
             for i, rTrack in enumerate(refTracks):
                 self._analyses[(queryTrackFile.path, refTrackPaths[i])] = \
-                    AnalysisObject(analysisSpec, self._binSource,
-                                   [qTrack, rTrack], self._genome, self._regSpec, self._binSpec)
+                    AnalysisObject(analysisSpec, [qTrack, rTrack], self._genome, self._regSpec, self._binSpec)
         return [HBJob(self._analyses)]
 
     def _registerTrackFileAndProcess(self, trackFile):
@@ -338,7 +336,8 @@ class HBJob(Job):
     def run(self):
         results = OrderedDict()
         for key, analysisObj in self._analyses.iteritems():
-            result = doAnalysis(analysisObj.analysisSpec, analysisObj.binSource, analysisObj.tracks)
+            binSource = UserBinSource(analysisObj.regSpec, analysisObj.binSpec)
+            result = doAnalysis(analysisObj.analysisSpec, binSource, analysisObj.tracks)
             HyperBrowser.addRunDescriptionToResult(analysisObj, result)
             results[key] = result
         return results
