@@ -52,6 +52,15 @@ def dump_args_and_more(func):
 
     return echo_func
 
+def returnTracebackString(func):
+    def echo_func(*args,**kwargs):
+        try:
+            result = func(*args, **kwargs)
+            return result
+        except:
+            import traceback
+            return '-> raised exception:' + traceback.format_exc()
+    return echo_func
 
 class CongloProtoTool(GeneralGuiTool):
     @classmethod
@@ -922,7 +931,8 @@ class CongloProtoTool(GeneralGuiTool):
         # TODO: Adding galaxyFn is a temporary hack to allow full HyperBrowser output
         trackCombResults = cls.extractResultsFromWorkingMethodList(succeedingMethods, galaxyFn)
         trackCombErrors = cls.extractErrorFromFailingMethodList(failingMethods)
-
+        if VERBOSE_RUNNING and len(failingMethods)!=len(trackCombErrors):
+            print 'WARNING: Error entry is lacking for some failing methods - only %i errors for %i failing methods!' % (len(trackCombErrors), len(failingMethods))
         # TODO: REMOVE
         # sf = GalaxyRunSpecificFile(['trackComb.pickle'], galaxyFn)
         # path = sf.getDiskPath(ensurePath=True)
