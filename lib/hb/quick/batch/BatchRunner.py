@@ -2,7 +2,7 @@ import sys
 import os
 import time
 
-from gold.application.StatRunner import AnalysisDefJob, AssemblyGapJob
+from quick.deprecated.StatRunner import AnalysisDefJob, AssemblyGapJob
 from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.result.Results import Results
 from gold.track.Track import Track

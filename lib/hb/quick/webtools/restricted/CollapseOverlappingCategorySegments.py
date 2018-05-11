@@ -12,13 +12,9 @@ from quick.util.GenomeInfo import GenomeInfo
 import time
 from config.Config import NONSTANDARD_DATA_PATH
 from quick.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import *
-#This is a template prototyping GUI that comes together with a corresponding web page.
-#
+
 
 class CollapseOverlappingCategorySegments(GeneralGuiTool):
-    
-    
     @staticmethod
     def getToolName():
         return "Collapse overlapping category segments to track"
@@ -140,4 +136,3 @@ class CollapseOverlappingCategorySegments(GeneralGuiTool):
     @staticmethod    
     def getOutputFormat(choices):
         return 'bedgraph'
-    

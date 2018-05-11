@@ -21,7 +21,7 @@ class NormalizedBinValueStatUnsplittable(Statistic):
         if minimal == True:
             self._globalSource = MinimalBinSource(region.genome)
         else:
-            from gold.application.StatRunner import StatJob
+            from quick.deprecated.StatRunner import StatJob
             assert StatJob.USER_BIN_SOURCE is not None
             self._globalSource = StatJob.USER_BIN_SOURCE
         

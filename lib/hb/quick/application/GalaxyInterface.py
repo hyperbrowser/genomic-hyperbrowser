@@ -15,7 +15,7 @@ from config.Config import DebugConfig, DEFAULT_GENOME, STATIC_REL_PATH,\
 from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from gold.application.LogSetup import logging, HB_LOGGER, usageAndErrorLogging, \
     runtimeLogging, logException, detailedJobRunHandler, logMessage, logLackOfSupport
-from gold.application.StatRunner import AnalysisDefJob, AssemblyGapJob #, CountBothTracksJob
+from quick.deprecated.StatRunner import AnalysisDefJob, AssemblyGapJob #, CountBothTracksJob
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.TrackInfo import TrackInfo
 from gold.extra.nmers.NmerManager import NmerManager
