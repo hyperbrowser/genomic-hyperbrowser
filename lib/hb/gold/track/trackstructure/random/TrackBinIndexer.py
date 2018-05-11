@@ -34,14 +34,14 @@ class SimpleTrackBinIndexer(TrackBinIndexer):
         self._origTrackBinPairToTrackBinIndexDict = {}
 
         trackBinIndex = 0
-        for track in self._tracks:
-            for curBin in self._bins:
+        for curBin in self._bins:
+            for track in self._tracks:
                 self._origTrackBinPairToTrackBinIndexDict[TrackBinPair(track, curBin)] = trackBinIndex
                 trackBinIndex += 1
 
     def _getTrackAndBinIndexFromTrackBinIndex(self, trackBinIndex):
-        trackIndex = trackBinIndex / len(self._bins)
-        binIndex = trackBinIndex % len(self._bins)
+        trackIndex = trackBinIndex % len(self._tracks)
+        binIndex = trackBinIndex / len(self._tracks)
         return trackIndex, binIndex
 
     def allTrackBinIndexes(self):
@@ -85,10 +85,10 @@ class TrackBinPair(object):
         return hash((self.track.getUniqueKey(self.bin.genome), self.bin))
 
     def __eq__(self, other):
-        return self.track == other.track and self.bin == other.bin
+        return hash(self) == hash(other)
 
     def __ne__(self, other):
-        return not(self == other)
+        return hash(self) != hash(other)
 
     def getTrackView(self):
         return self.track.getTrackView(self.bin)
