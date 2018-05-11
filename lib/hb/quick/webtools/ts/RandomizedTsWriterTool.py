@@ -16,18 +16,17 @@ from quick.application.UserBinSource import GlobalBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.TsWriterStat import TsWriterStat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 
 
-class RandomizedTsWriterTool(GeneralGuiTool):
+class RandomizedTsWriterTool(GeneralGuiTool, RandAlgorithmMixin):
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
                                   GSuiteConstants.VALUED_SEGMENTS]
     GSUITE_DISALLOWED_GENOMES = []
-    
-    SELECT_CHOICE_STR = '--- Select ---'
-    NO_CATEGORY_STR = 'None'
 
+    NO_CATEGORY_STR = 'None'
 
     @classmethod
     def getToolName(cls):
@@ -60,48 +59,23 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        #return [('First header', 'firstKey'),
-        #        ('Second Header', 'secondKey')]
-        return [('Select a GSuite', 'gs'),
-                ('Type of randomization', 'randType'),
-                ('Randomization algorithm', 'randAlg'),
-                ('Excluded regions track', 'excludedRegions'),
-                ('Category to randomize within (set to \'None\' in order to randomize between all tracks in the GSuite)', 'category')]
+        return [('Select a GSuite', 'gs')] + \
+               cls.getInputBoxNamesForRandAlgSelection() + \
+               [('Category to randomize within (set to \'None\' in order to '
+                 'randomize between all tracks in the GSuite)', 'category')]
 
     @staticmethod
     def isPublic():
-        '''
+        """
         Specifies whether the tool is accessible to all users. If False, the
         tool is only accessible to a restricted set of users as defined in
         LocalOSConfig.py.
-        '''
+        """
         return True
 
     @classmethod
     def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
-
-    @classmethod
-    def getOptionsBoxRandType(cls, prevChoices):
-        return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
-
-    @classmethod
-    def getOptionsBoxRandAlg(cls, prevChoices):
-        for definedRandType in TsRandAlgReg.getCategories():
-            if prevChoices.randType == definedRandType:
-                return [cls.SELECT_CHOICE_STR] + \
-                       TsRandAlgReg.getAlgorithmList(definedRandType)
-
-    @classmethod
-    def getOptionsBoxExcludedRegions(cls, prevChoices):
-        randType = prevChoices.randType
-        randAlg = prevChoices.randAlg
-
-        if randType in TsRandAlgReg.getCategories() and \
-                randAlg in TsRandAlgReg.getAlgorithmList(randType):
-            if TsRandAlgReg.EXCLUDED_TS_ARG in \
-                    TsRandAlgReg.getRequiredArgsForAlgorithm(randType, randAlg):
-                return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
     def getOptionsBoxCategory(cls, prevChoices):
@@ -142,11 +116,11 @@ class RandomizedTsWriterTool(GeneralGuiTool):
             ts = ts.getSplittedByCategoryTS(choices.category)
             randomizedTs = TrackStructureV2()
             for subTsKey, subTs in ts.items():
-                tvProvider = cls._createTrackViewProvider(choices, subTs, bins, genome)
+                tvProvider = cls.createTrackViewProvider(choices, subTs, bins, genome)
                 randomizedTs[subTsKey] = getRandomizedVersionOfTs(subTs, tvProvider, randIndex)
             randomizedTs = randomizedTs.getFlattenedTS()
         else:
-            tvProvider = cls._createTrackViewProvider(choices, ts, bins, genome)
+            tvProvider = cls.createTrackViewProvider(choices, ts, bins, genome)
             randomizedTs = getRandomizedVersionOfTs(ts, tvProvider, randIndex)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
@@ -162,28 +136,6 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, randomizedTs)
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
-
-    @classmethod
-    def _createTrackViewProvider(cls, choices, origTs, binSource, genome):
-        reqArgs = TsRandAlgReg.getRequiredArgsForAlgorithm(choices.randType, choices.randAlg)
-        kwArgs = TsRandAlgReg.getKwArgsForAlgorithm(choices.randType, choices.randAlg)
-
-        args = []
-        for arg in reqArgs:
-            if arg == TsRandAlgReg.EXCLUDED_TS_ARG:
-                excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
-                args.append(excludedTs)
-            if arg == TsRandAlgReg.BIN_SOURCE_ARG:
-                args.append(binSource)
-
-        tvProvider = TsRandAlgReg.createTrackViewProvider(
-            choices.randType, choices.randAlg, *args, **kwArgs
-        )
-
-        tvProvider.setOrigTrackStructure(origTs)
-        tvProvider.setBinSource(binSource)
-
-        return tvProvider
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -219,9 +171,9 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         if errorString:
             return errorString
 
-        for requiredParameter in (choices.randType, choices.randAlg):
-            if requiredParameter in [None, '', '--- Select ---']:
-                return ''
+        errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
 
     @classmethod
     def getOutputFormat(cls, choices):

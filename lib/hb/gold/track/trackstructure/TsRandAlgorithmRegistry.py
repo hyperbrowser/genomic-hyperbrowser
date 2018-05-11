@@ -20,7 +20,8 @@ WITHIN_TRACKS_CATEGORY = u'Within tracks'
 
 BETWEEN_TRACKS_CATEGORY = u'Between tracks'
 
-SHUFFLE_BETWEEN_TRACKS_AND_BINS_STR = u'Shuffle between tracks and bins'
+SHUFFLE_BETWEEN_TRACKS_AND_BINS_STR = u'Shuffle between tracks and bins, ' \
+                                      u'possibly avoiding segments from a specified track'
 
 SHUFFLE_BETWEEN_TRACKS_PRESERVE_COVERAGE_STR = u'Shuffle between tracks, ' \
                                                u'preserve base pair coverage per track'
