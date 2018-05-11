@@ -7,8 +7,10 @@ from gold.formatconversion.AllFormatConverters import getFormatConverters, getFo
 from gold.description.TrackInfo import TrackInfo
 from quick.application.ExternalTrackManager import ExternalTrackManager
 
+
 class Track(object):
     IS_MEMOIZABLE = True
+    
     def __new__(cls, trackName, trackTitle=None):
         if trackName == [] or trackName is None:
             return None
@@ -85,6 +87,7 @@ class Track(object):
     def setRandIndex(self, randIndex):
         pass #used only by TsBasedRandomTrack
 
+
 class PlainTrack(Track):
     '''
     Track with the allowOverlaps requirement set to false, using the version
@@ -113,6 +116,7 @@ class PlainTrack(Track):
 
         return hash((tuple(self.trackName), self._trackId, self._trackFormatReq.allowOverlaps(), \
                      self._trackFormatReq.borderHandling()))
+
 
 class VirtualMinimalTrack(Track):
     def __new__(cls):
@@ -174,6 +178,7 @@ class VirtualMinimalTrack(Track):
                 extraLists[prefix] = np.array([''] * numEls, dtype='S1')
 
         return TrackView(region, startList, endList, valList, strandList, idList, edgesList, weightsList, borderHandling, allowOverlaps, extraLists)
+
 
 class VirtualMinimalPlainTrack(VirtualMinimalTrack, PlainTrack):
     def __new__(cls):

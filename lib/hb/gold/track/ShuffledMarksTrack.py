@@ -1,8 +1,8 @@
 import numpy
-from gold.track.RandomizedTrack import RandomizedTrack
+from gold.track.SingleRandomizedTrack import SingleRandomizedTrack
 
 
-class ShuffledMarksTrack(RandomizedTrack):
+class ShuffledMarksTrack(SingleRandomizedTrack):
     @classmethod
     def supportsTrackFormat(cls, origTrackFormat):
         return origTrackFormat.isValued()
@@ -11,7 +11,8 @@ class ShuffledMarksTrack(RandomizedTrack):
     def supportsOverlapMode(cls, allowOverlaps):
         return True
 
-    def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
+    def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids,
+                                     edges, weights, extras, region):
         newVals = numpy.copy(vals)
         numpy.random.shuffle(newVals)
 

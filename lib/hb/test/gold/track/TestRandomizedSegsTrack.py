@@ -9,6 +9,7 @@ from test.gold.track.common.SampleTrack import SampleTrack
 from test.gold.track.common.SampleTrackView import SampleTV, SampleTV_Num
 from test.util.Asserts import TestCaseWithImprovedAsserts
 
+
 class MyPlainTrack(object):
     _origTV = None
     
@@ -18,6 +19,7 @@ class MyPlainTrack(object):
     def getTrackView(self, region):
         assert region == self._origTV.genomeAnchor
         return self._origTV
+
 
 class TestRandomizedSegsTrack(TestCaseWithImprovedAsserts):
     def setUp(self):
@@ -35,11 +37,11 @@ class TestRandomizedSegsTrack(TestCaseWithImprovedAsserts):
         interSegs.append(binLen-prevEnd)
         return sorted(interSegs)
 
-    #def _createValAndStrandDict(self, tv):
+    # def _createValAndStrandDict(self, tv):
     #    mapping = {}
     #    for el in tv:
     #        mapping[len(el)] = (el.val(), el.strand())
-    #        
+    #
     #    return mapping
     
     def _createSortedContents(self, tv):
@@ -54,7 +56,7 @@ class TestRandomizedSegsTrack(TestCaseWithImprovedAsserts):
         
     def _doRandTest(self, origTV, randTrackClasses):
         anchor = [origTV.genomeAnchor.start, origTV.genomeAnchor.end]
-        intensityTV = SampleTV_Num(vals=range(anchor[1]-anchor[0]), anchor=anchor ) #fixme: not yet used..
+        intensityTV = SampleTV_Num(vals=range(anchor[1]-anchor[0]), anchor=anchor)  # fixme: not yet used..
         MyPlainTrack._origTV = intensityTV
         gold.track.SegsSampledByIntensityTrack.PlainTrack = MyPlainTrack
         origTrack = SampleTrack(origTV)
@@ -76,7 +78,7 @@ class TestRandomizedSegsTrack(TestCaseWithImprovedAsserts):
                 for el in randTV:
                     assert(0 <= el.start() < el.end() <= binLen)
                 
-                #self.assertEqual(self._createValAndStrandDict(origTV), self._createValAndStrandDict(randTV))
+                # self.assertEqual(self._createValAndStrandDict(origTV), self._createValAndStrandDict(randTV))
                 self.assertListsOrDicts(self._createSortedContents(origTV), self._createSortedContents(randTV))
 
     def testRandomization(self):
@@ -89,7 +91,8 @@ class TestRandomizedSegsTrack(TestCaseWithImprovedAsserts):
 
     def runTest(self):
         pass
-    
+
+
 if __name__ == "__main__":
-    #TestPermutedSegsAndIntersegsRandomizedTrack().debug()
+    # TestPermutedSegsAndIntersegsRandomizedTrack().debug()
     unittest.main()

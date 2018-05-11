@@ -1,13 +1,11 @@
-import numpy
+from abc import ABCMeta, abstractmethod
 
-from abc import abstractmethod, ABCMeta
-
-from gold.track.TrackView import TrackView
+from gold.formatconversion.FormatConverter import TrivialFormatConverter
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.Track import Track
 from gold.track.TrackFormat import NeutralTrackFormatReq
-from gold.util.CustomExceptions import AbstractClassError, NotSupportedError
-from quick.util.CommonFunctions import getClassName, prettyPrintTrackName
+from gold.util.CustomExceptions import NotSupportedError
+from quick.util.CommonFunctions import prettyPrintTrackName
 
 
 class TrackRandomizer(object):
@@ -44,8 +42,6 @@ class RandomizedTrack(Track, TrackRandomizer):
         self._trackFormatReq = NeutralTrackFormatReq()
         self._cachedTV = None
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)
-
-        from gold.formatconversion.FormatConverter import TrivialFormatConverter
         self.formatConverters = [TrivialFormatConverter]  # To allow construction of uniqueID
         self._trackId = None  # To allow construction of uniqueID
 
@@ -61,45 +57,9 @@ class RandomizedTrack(Track, TrackRandomizer):
 
         return randTV
 
+    @abstractmethod
     def _getRandTrackView(self, region):
-        # if self._cachedTV is None:
-
-        origTV = self._origTrack.getTrackView(region)
-
-        starts, ends, vals, strands, ids, edges, weights, extras = \
-            self._createRandomizedNumpyArrays(len(origTV.genomeAnchor), origTV.startsAsNumpyArray(), \
-                                              origTV.endsAsNumpyArray(), origTV.valsAsNumpyArray(), \
-                                              origTV.strandsAsNumpyArray(), origTV.idsAsNumpyArray(), \
-                                              origTV.edgesAsNumpyArray(), origTV.weightsAsNumpyArray(), \
-                                              origTV.allExtrasAsDictOfNumpyArrays(), region)
-
-        starts, ends, vals, strands, ids, edges, weights, extras = \
-            self._undoTrackViewChanges(starts, ends, vals, strands, ids, edges, weights, extras, origTV)
-
-        self._cachedTV = TrackView(origTV.genomeAnchor, starts, ends, vals, strands, ids, edges, weights, \
-                                   origTV.borderHandling, origTV.allowOverlaps, extraLists=extras)
-
-        return self._cachedTV
-
-    @classmethod
-    def _undoTrackViewChanges(cls, starts, ends, vals, strands, ids, edges, weights, extras, origTV):
-        if origTV.trackFormat.isPoints():
-            ends = None
-
-        elif origTV.trackFormat.isPartitionOrStepFunction():
-            ends = numpy.append([0], ends)
-            starts = None
-
-        if starts is not None:
-            starts += origTV.genomeAnchor.start
-
-        if ends is not None:
-            ends += origTV.genomeAnchor.start
-
-        return starts, ends, vals, strands, ids, edges, weights, extras
-
-    def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
-        raise AbstractClassError
+        pass
 
 
 class OrigTrackWrapper(Track):
@@ -109,8 +69,6 @@ class OrigTrackWrapper(Track):
     def __init__(self, origTrack, trackRandomizer):
         self._origTrack = origTrack
         self._trackRandomizer = trackRandomizer
-
-        # super(OrigTrackWrapper, self).__init__(origTrack.trackName, trackTitle=origTrack.trackTitle)
 
     @property
     def trackName(self):
