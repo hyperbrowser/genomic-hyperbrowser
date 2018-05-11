@@ -133,14 +133,13 @@ class RandomizedTrackDataStorage(object):
     #     return self._dataFrame
 
     def _getDataFrameView(self, trackBinIndex):
-        indices = self._dataFrame.getArray(NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
-
         sortOrder = [START_KEY] if self._dataFrame.hasArray(START_KEY) else [] + \
             [END_KEY] if self._dataFrame.hasArray(END_KEY) else []
         if sortOrder:
             self._dataFrame.sort(sortOrder)
         # if no start or end key is present, we assume that the data is in sorted order already
 
+        indices = self._dataFrame.getArrayNoMask(NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
         return self._dataFrame[indices]
 
     def getTrackView(self, trackBinIndex):

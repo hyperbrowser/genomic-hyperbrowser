@@ -46,6 +46,9 @@ class NumpyDataFrame(object):
         else:
             return array
 
+    def getArrayNoMask(self, key):
+        return self._arrayDict[key]
+
     def asArrayDict(self):
         return OrderedDict([(key, self.getArray(key)) for key in self.arrayKeys()])
 

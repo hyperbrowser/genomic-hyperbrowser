@@ -265,6 +265,7 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
         self.assertListsOrDicts(npDataFrame.asArrayDict(),
                                 OrderedDict([('a', np.array([0, 1, 3])),
                                              ('b', np.array(['a', 'b', 'd']))]))
+        self.assertListsOrDicts(npDataFrame.getArrayNoMask('a'), np.array([0, 1, 2, 3, 4]))
         self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([0, 1, 3]))
         self.assertEquals(len(npDataFrame), 5)
 
@@ -273,6 +274,7 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
         self.assertListsOrDicts(slicedDataFrame.asArrayDict(),
                                 OrderedDict([('a', np.array([1, 3])),
                                              ('b', np.array(['b', 'd']))]))
+        self.assertListsOrDicts(slicedDataFrame.getArrayNoMask('a'), np.array([1, 2, 3]))
         self.assertListsOrDicts(slicedDataFrame.getArray('a'), np.array([1, 3]))
         self.assertEquals(len(slicedDataFrame), 3)
 
@@ -280,6 +282,7 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
 
         self.assertListsOrDicts(npDataFrame.asArrayDict(),
                                 OrderedDict([('a', np.array([3])), ('b', np.array(['d']))]))
+        self.assertListsOrDicts(npDataFrame.getArrayNoMask('a'), np.array([0, 1, 2, 3, 4]))
         self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([3]))
         self.assertEquals(len(npDataFrame), 5)
 
