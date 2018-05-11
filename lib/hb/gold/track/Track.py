@@ -78,8 +78,7 @@ class Track(object):
                      getClassName(self.formatConverters[0]) if self.formatConverters else '',
                      self.formatConverters[0].VERSION if self.formatConverters else '',
                      self._trackFormatReq.allowOverlaps() if self._trackFormatReq.allowOverlaps() else '',
-                     self._trackFormatReq.borderHandling() if self._trackFormatReq.borderHandling() else '',
-                     self._randIndex if self._randIndex else ""))
+                     self._trackFormatReq.borderHandling() if self._trackFormatReq.borderHandling() else ''))
 
     def resetTrackSource(self):
         self._trackSource = TrackSource()
