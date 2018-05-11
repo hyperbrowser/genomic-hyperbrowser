@@ -1,18 +1,24 @@
-from config.Config import DebugConfig
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.RandomizedTrack import RandomizedTrack
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CustomExceptions import CentromerError, TooLargeBinError
-from gold.statistic.RawDataStat import RawDataStat
 from gold.util.RandomUtil import random
-from copy import copy
 from gold.util.CommonFunctions import getClassName
+
 
 class RandomGenomeLocationTrack(RandomizedTrack):
     MIN_SOURCE_TO_SAMPLE_SIZE_RATIO = 4#10
     WORKS_WITH_MINIMAL = False
 
-    def _getTrackView(self, region):
+    @classmethod
+    def supportsTrackFormat(cls, origTrackFormat):
+        return not origTrackFormat.isDense()
+
+    @classmethod
+    def supportsOverlapMode(cls, allowOverlaps):
+        return not allowOverlaps
+
+    def _getRandTrackView(self, region):
         #if not hasattr(self, '_minimalRegion'):
         #    from quick.application.UserBinSource import MinimalBinSource
         #    minimalBinList = MinimalBinSource(region.genome)

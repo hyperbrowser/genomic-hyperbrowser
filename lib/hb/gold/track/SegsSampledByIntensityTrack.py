@@ -1,11 +1,9 @@
 import numpy
 from gold.track.RandomizedTrack import RandomizedTrack
-from gold.util.CustomExceptions import IncompatibleTracksError, InvalidRunSpecException
+from gold.util.CustomExceptions import InvalidRunSpecException
 from gold.track.Track import PlainTrack
-from collections import OrderedDict
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from urllib import unquote
-from config.Config import IS_EXPERIMENTAL_INSTALLATION
 
 class SegsSampledByIntensityTrack(RandomizedTrack):
     WORKS_WITH_MINIMAL = False
@@ -20,18 +18,13 @@ class SegsSampledByIntensityTrack(RandomizedTrack):
         #self._trackNameIntensity = [unquote(x) for x in convertTNstrToTNListFormat(trackNameIntensity)]
         self._trackNameIntensity = convertTNstrToTNListFormat(trackNameIntensity)
 
-    def _checkTrackFormat(self, origTV):
-        # Commented out, as segments are not currently supported at all (end list is never returned)
-        #
-        #if origTV.trackFormat.isDense():
-        #    raise IncompatibleTracksError()
-        #
-        #if origTV.trackFormat.isInterval():
-        #    if not IS_EXPERIMENTAL_INSTALLATION:
-        #        raise IncompatibleTracksError
+    @classmethod
+    def supportsTrackFormat(cls, origTrackFormat):
+        return origTrackFormat.isPoints()
 
-        if origTV.trackFormat.isDense() or origTV.trackFormat.isInterval():
-            raise IncompatibleTracksError()
+    @classmethod
+    def supportsOverlapMode(cls, allowOverlaps):
+        return not allowOverlaps
 
     def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
         intensityTV = PlainTrack(self._trackNameIntensity).getTrackView(region)

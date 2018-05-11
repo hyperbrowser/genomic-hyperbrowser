@@ -63,18 +63,18 @@ class TestRandomizedSegsTrack(TestCaseWithImprovedAsserts):
         
         for randClass in randTrackClasses:
             for i in range(100):
-                randTrack = randClass(origTrack, anchorReg, i, trackNameIntensity='dummy_intensity')
+                randTrack = randClass(origTrack, i, trackNameIntensity='dummy_intensity')
                 randTV = randTrack.getTrackView(anchorReg)
                 
-                self.assertListsOrDicts(sorted( len(el) for el in origTV ), sorted( len(el) for el in randTV ))
+                self.assertListsOrDicts(sorted(len(el) for el in origTV), sorted(len(el) for el in randTV))
                 
                 if isinstance(randClass, PermutedSegsAndIntersegsTrack):
-                    self.assertEqual( self._getInterSegLens(origTV, binLen), self._getInterSegLens(randTV, binLen) )
+                    self.assertEqual(self._getInterSegLens(origTV, binLen), self._getInterSegLens(randTV, binLen))
                 else:    
-                    self.assertEqual( sum(self._getInterSegLens(origTV, binLen)), sum(self._getInterSegLens(randTV, binLen)) )
+                    self.assertEqual(sum(self._getInterSegLens(origTV, binLen)), sum(self._getInterSegLens(randTV, binLen)))
                             
                 for el in randTV:
-                    assert( 0 <= el.start() < el.end() <= binLen)
+                    assert(0 <= el.start() < el.end() <= binLen)
                 
                 #self.assertEqual(self._createValAndStrandDict(origTV), self._createValAndStrandDict(randTV))
                 self.assertListsOrDicts(self._createSortedContents(origTV), self._createSortedContents(randTV))

@@ -1,11 +1,15 @@
 import numpy
 from gold.track.RandomizedTrack import RandomizedTrack
-from gold.util.CustomExceptions import IncompatibleTracksError
+
 
 class RandomizedSegsTrack(RandomizedTrack):
-    def _checkTrackFormat(self, origTV):
-        if origTV.trackFormat.isDense():
-            raise IncompatibleTracksError()
+    @classmethod
+    def supportsTrackFormat(cls, origTrackFormat):
+        return not origTrackFormat.isDense()
+
+    @classmethod
+    def supportsOverlapMode(cls, allowOverlaps):
+        return not allowOverlaps
 
     def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
         if len(starts)==0:
