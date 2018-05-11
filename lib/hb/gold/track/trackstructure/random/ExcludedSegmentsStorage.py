@@ -10,12 +10,17 @@ class ExcludedSegmentsStorage(object):
 
     def _initExcludedRegions(self):
         # for now we only support a single exclusion track
-        assert isinstance(self._excludedTS, SingleTrackTS), "Only Single track TS supported for exclusion track."
+        assert isinstance(self._excludedTS, SingleTrackTS), \
+            "Only Single track TS supported for exclusion track."
         self._excludedSegmentsDict = dict()
 
         for region in self._binSource:
             excludedTV = self._excludedTS.track.getTrackView(region)
-            self._excludedSegmentsDict[region] = zip(excludedTV.startsAsNumpyArray(), excludedTV.endsAsNumpyArray())
+            assert not excludedTV.allowOverlaps, \
+                "Only non-overlapping exclusion track elements make sense"
+            self._excludedSegmentsDict[region] = \
+                zip(excludedTV.startsAsNumpyArray() + excludedTV.genomeAnchor.start,
+                    excludedTV.endsAsNumpyArray() + excludedTV.genomeAnchor.start)
 
     def getExcludedSegmentsIter(self, region):
         if not self._excludedSegmentsDict:
