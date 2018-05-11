@@ -208,7 +208,11 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
 
         from numpy import random
         random.seed(0)
-        self.assertNotEquals(random.shuffle(npDataFrame), npDataFrame)
+        from copy import deepcopy
+        randomNpDataFrame = deepcopy(npDataFrame)
+        random.shuffle(randomNpDataFrame)
+        self.assertEquals(len(randomNpDataFrame), len(npDataFrame))
+        self.assertFalse(all((randomNpDataFrame == npDataFrame).all().values()))
 
     def testCopy(self):
         from copy import copy, deepcopy
@@ -278,6 +282,16 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
                                 OrderedDict([('a', np.array([3])), ('b', np.array(['d']))]))
         self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([3]))
         self.assertEquals(len(npDataFrame), 5)
+
+    def testMaskSorting(self):
+        npDataFrame = NumpyDataFrame(dict(a=range(5), b='e d c b a'.split(' ')))
+        npDataFrame.mask = [False, False, True, False, True]
+        npDataFrame.sort(['b'])
+
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([3, 1, 0]))
+
+        npDataFrame.mask = [False, False, False, False, False]
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([4, 3, 2, 1, 0]))
 
 
 if __name__ == "__main__":
