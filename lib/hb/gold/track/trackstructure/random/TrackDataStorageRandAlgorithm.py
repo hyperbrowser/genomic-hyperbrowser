@@ -86,6 +86,7 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
         trackProbabilities = self._getTrackProbabilites(len(self._trackBinIndexer.allTracks()))
         binProbabilities = self._getBinProbabilites(self._trackBinIndexer.allBins())
 
+        trackDataStorage.setMask(None)
         trackDataStorage.shuffle()
 
         # for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
@@ -93,14 +94,14 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
 
         lengthsArray = trackDataStorage.getArray(LENGTH_KEY)
         allowOverlaps = trackDataStorage.allowOverlaps
-        startsArray, newTrackBinIndexArray = \
+        newStartsArray, newTrackBinIndexArray = \
             self._generateRandomArrays(lengthsArray, trackProbabilities,
                                        binProbabilities, allowOverlaps)
 
-        trackDataStorage.updateArray(START_KEY, startsArray)
+        trackDataStorage.updateArray(START_KEY, newStartsArray)
         trackDataStorage.updateArray(NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
 
-        maskArray = generateMaskArray(trackDataStorage.getArray(START_KEY), self.MISSING_EL)
+        maskArray = generateMaskArray(trackDataStorage.getArray(NEW_TRACK_BIN_INDEX_KEY), self.MISSING_EL)
         trackDataStorage.setMask(maskArray)
 
         # trackDataStorage.sort([RandomizedTrackDataStorage.START_KEY, self.NEW_TRACK_BIN_INDEX_KEY])
@@ -122,7 +123,7 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
 
     def _generateRandomArrays(self, lengthsArray, trackProbabilities,
                               binProbabilities, allowOverlaps):
-        startsArray = np.zeros(len(lengthsArray), dtype='int32')
+        newStartsArray = np.zeros(len(lengthsArray), dtype='int32')
         newTrackBinIndexArray = np.zeros(len(lengthsArray), dtype='int32')
 
         # Update probabilities of track and bin after each element is added, in order to, as closely as possible, have the same probabilty of filling each base pair. Discuss
@@ -153,15 +154,20 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
 
                     if not allowOverlaps:
                         overlapDetector.addSegment(newStartPos, newStartPos + segLen)
+                    newStartsArray[i] = newStartPos
+
+                    newTrackBinIndex = \
+                        self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
+                    newTrackBinIndexArray[i] = newTrackBinIndex
+
                     break
                 except InvalidPositionException:
-                    newStartPos = self.MISSING_EL
+                    pass
+            else:
+                newStartsArray[i] = self.MISSING_EL
+                newTrackBinIndexArray[i] = self.MISSING_EL
 
-            startsArray[i] = newStartPos
-            newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
-            newTrackBinIndexArray[i] = newTrackBinIndex if newStartPos != self.MISSING_EL else self.MISSING_EL
-
-        return startsArray, newTrackBinIndexArray
+        return newStartsArray, newTrackBinIndexArray
 
     def _selectRandomValidStartPosition(self, overlapDetector, segLen, targetGenomeRegion):
         '''
