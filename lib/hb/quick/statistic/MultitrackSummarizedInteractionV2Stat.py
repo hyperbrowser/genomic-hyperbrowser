@@ -89,7 +89,7 @@ class MultitrackSummarizedInteractionV2StatUnsplittable(StatisticV2):
             refTS = TrackStructureV2()
             for currentSts in tsLeafNodes[:i] + tsLeafNodes[i+1:]:
                 refTS[currentSts.metadata['title']] = currentSts
-            currentTS = TrackStructureV2({TrackStructure.QUERY_KEY:queryTS, TrackStructure.REF_KEY:refTS})
+            currentTS = TrackStructureV2([(TrackStructure.QUERY_KEY, queryTS), (TrackStructure.REF_KEY, refTS)])
             queryTrackTitle = queryTS.metadata['title']
             self._childrenDict[queryTrackTitle] = self._addChild(SummarizedInteractionWithOtherTracksV2Stat(self._region, currentTS, **self._kwArgs))
             self._computeTrackStructure[queryTrackTitle] = currentTS
