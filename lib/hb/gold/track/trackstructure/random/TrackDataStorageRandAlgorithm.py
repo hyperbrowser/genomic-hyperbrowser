@@ -42,15 +42,20 @@ class TrackDataStorageRandAlgorithm(TrackRandomizer):
 class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm):
     MISSING_EL = -1
 
-    def __init__(self, excludedTS, binSource, maxSampleCount=25, overlapDetectorCls=IntervalTreeOverlapDetector):
+    def __init__(self, excludedTS, binSource, maxSampleCount=25,
+                 overlapDetectorCls=IntervalTreeOverlapDetector):
+        self._maxSampleCount = maxSampleCount
+        self._trackBinIndexer = None
         self._excludedSegmentsStorage = ExcludedSegmentsStorage(excludedTS, binSource) \
             if excludedTS is not None else None
-        # self._trackIdToExcludedRegions = defaultdict(dict)
-        self._maxSampleCount = maxSampleCount
-        # self._excludedRegions = None
         self._overlapDetectorCls = overlapDetectorCls
-        self._trackBinIndexer = None
-        self._newTrackBinIndexToOverlapDetectorDict = {}
+
+    def _getOverlapDetectorForTrackBinPair(self, newTrackBinPair):
+        if self._excludedSegmentsStorage:
+            exclSegs = self._excludedSegmentsStorage.getExcludedSegmentsIter(newTrackBinPair.bin)
+        else:
+            exclSegs = None
+        return self._overlapDetectorCls(exclSegs)
 
     @classmethod
     def supportsTrackFormat(cls, origTrackFormat):
@@ -130,11 +135,17 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
         # When using exclusion track, one could simply handle redefine the bins accordingly. In this way IntervalTrees should not
         # be needed. Also, the probability of a bps being filled should be even (except perhaps start/end of bins).
 
+        trackBinPairToOverlapDetectorDict = {}
+
         for i, segLen in enumerate(lengthsArray):
             for sampleCount in xrange(self._maxSampleCount):
                 newTrackBinPair = TrackBinPair(self._trackBinIndexer.selectRandomTrack(trackProbabilities),
-                                            self._trackBinIndexer.selectRandomBin(binProbabilities))
-                overlapDetector = self._getOverlapDetectorForTrackBinPair(newTrackBinPair)
+                                               self._trackBinIndexer.selectRandomBin(binProbabilities))
+                if newTrackBinPair not in trackBinPairToOverlapDetectorDict:
+                    overlapDetector = self._getOverlapDetectorForTrackBinPair(newTrackBinPair)
+                    trackBinPairToOverlapDetectorDict[newTrackBinPair] = overlapDetector
+                else:
+                    overlapDetector = trackBinPairToOverlapDetectorDict[newTrackBinPair]
 
                 try:
                     newStartPos = self._selectRandomValidStartPosition(overlapDetector, segLen,
@@ -151,20 +162,6 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
             newTrackBinIndexArray[i] = newTrackBinIndex if newStartPos != self.MISSING_EL else self.MISSING_EL
 
         return startsArray, newTrackBinIndexArray
-
-    def _getOverlapDetectorForTrackBinPair(self, newTrackBinPair):
-        newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
-        if newTrackBinIndex not in self._newTrackBinIndexToOverlapDetectorDict:
-            if self._excludedSegmentsStorage:
-                excludedSegments = \
-                    self._excludedSegmentsStorage.getExcludedSegmentsIter(newTrackBinPair.bin)
-            else:
-                excludedSegments = None
-            self._newTrackBinIndexToOverlapDetectorDict[newTrackBinIndex] = \
-                self._overlapDetectorCls(excludedSegments)
-
-        overlapDetector = self._newTrackBinIndexToOverlapDetectorDict[newTrackBinIndex]
-        return overlapDetector
 
     def _selectRandomValidStartPosition(self, overlapDetector, segLen, targetGenomeRegion):
         '''
