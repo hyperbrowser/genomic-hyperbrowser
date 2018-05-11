@@ -1,6 +1,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 
 from quick.application.SignatureDevianceLogging import takes, classType
 from quick.util.CommonFunctions import getClassName
@@ -72,11 +73,12 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
     def _createRandomizedStat(self, i):
         # Refactor the first argument after a better track input handling is in place..
         if 'reference' in self._trackStructure:
-            randomizedTrackStructure = self._trackStructure
-            randomizedTrackStructure['reference'] = randomizedTrackStructure['reference'].getRandomizedVersion(self._tvProviderClass, False,i)  # TODO: Handle AllowOverlaps
+            randTs = self._trackStructure
+            randTs['reference'] = getRandomizedVersionOfTs(randTs['reference'],
+                                                           self._tvProviderClass, i)
         else:
-            randomizedTrackStructure = self._trackStructure.getRandomizedVersion(self._tvProviderClass, False,i)
-        return self._rawStatistic(self._region, randomizedTrackStructure, **self._kwArgs)
+            randTs = getRandomizedVersionOfTs(self._trackStructure, self._tvProviderClass, i)
+        return self._rawStatistic(self._region, randTs, **self._kwArgs)
         # return createRandomizedTrackStructureStat(self._trackStructure, self._randTrackStructureClassDict, self._rawStatistic, self._region, self._kwArgs, i)
 
     def _compute(self):

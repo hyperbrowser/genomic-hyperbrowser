@@ -212,18 +212,6 @@ class TrackStructureV2(dict):
                 root[str(query.track.trackName) + self.TRACK_NAME_SEPARATOR + str(reference.track.trackName)] = newPair
         return root
 
-    # TODO: write unit test! also test if original ts and its subclasses/tracks were not altered
-    # @takes('TrackStructureV2', type, anything, 'TrackStructureV2', bool, int)
-    def getRandomizedVersion(self, randTvProviderClass, binSource=None, excludedTs=None, allowOverlaps=False, randIndex=0):
-        return self._getRandomizedVersion(randTvProviderClass(self, binSource=binSource, excludedTs=excludedTs, allowOverlaps=allowOverlaps), randIndex)
-
-    @takes('TrackStructureV2', 'TsBasedRandomTrackViewProvider', int)
-    def _getRandomizedVersion(self, randTvProvider, randIndex):
-        newCopy = copy.copy(self)
-        for key in self.keys():
-            newCopy[key] = newCopy[key]._getRandomizedVersion(randTvProvider, randIndex)
-        return newCopy
-
     @takes('TrackStructureV2', int)
     def updateRandIndex(self, randIndex):
         for sts in self.getLeafNodes():
@@ -258,11 +246,6 @@ class SingleTrackTS(TrackStructureV2):
     def getLeafNodes(self):
         return [self]
 
-    @takes('SingleTrackTS', 'TsBasedRandomTrackViewProvider', int)
-    def _getRandomizedVersion(self, randTvProvider, randIndex):
-        newCopy = copy.copy(self)
-        newCopy.track = TsBasedRandomizedTrack(self.track, randTvProvider, randIndex)
-        return newCopy
 
 class FlatTracksTS(TrackStructureV2):
 #    pass

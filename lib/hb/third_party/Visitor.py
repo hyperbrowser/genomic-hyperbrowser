@@ -2,6 +2,7 @@
 # Fetched from: http://peter-hoffmann.com/2010/extrinsic-visitor-pattern-python-inheritance.html
 # and edited for CamelCase
 
+
 class Visitor(object):
     def visit(self, node, *args, **kwargs):
         meth = None
