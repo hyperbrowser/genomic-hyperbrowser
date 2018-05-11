@@ -1668,7 +1668,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #    return q.getOptionLabelsAsText(), q.getOptionsAsText()
 
     @staticmethod
-    @takes(str, dict)
+    @takes(basestring, dict)
     def setConfigChoices(analysisDef, optionsDict):
         intensityTrigger = '_intensityTN'
         if intensityTrigger in optionsDict:
@@ -1707,7 +1707,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #    return analysisDef
 
     @staticmethod
-    @takes(str, str, list, list)
+    @takes(basestring, basestring, list, list)
     @returns(str)
     def getTextFromAnalysisDef(analysisDef, genome, trackName1, trackName2):
         realPreProc = False

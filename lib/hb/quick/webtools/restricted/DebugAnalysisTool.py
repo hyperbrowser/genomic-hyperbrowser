@@ -37,6 +37,7 @@ class DebugAnalysisTool(GeneralGuiTool):
     @classmethod
     def updateCacheDict(cls, stat):
         DebugInfoShelve = safeshelve.open(cls.SHELVE_FN, 'c')
+        stat = str(stat)
         if stat in DebugInfoShelve and type(DebugInfoShelve[stat]).__name__=='dict':
             cls._cacheDict = DebugInfoShelve[stat]
         DebugInfoShelve.close()
