@@ -1,5 +1,4 @@
-from collections import OrderedDict
-from gold.track.TsBasedRandomizedTrack import TsBasedRandomizedTrack
+from collections import OrderedDict, MutableMapping
 from gold.track.Track import Track
 from gold.util.CustomExceptions import LackingTsResultsError, InvalidOperationError
 import copy
@@ -7,11 +6,12 @@ from quick.application.SignatureDevianceLogging import takes
 from test.gold.track.common.SampleTrack import SampleTrack
 from third_party.typecheck import anything, dict_of, list_of
 
+
 class TrackStructure(dict):
-    '''
+    """
     Dictionary-like object that contains lists of tracks.
     For now only query and reference track lists are supported.
-    '''
+    """
     QUERY_KEY = 'query'
     REF_KEY = 'reference'
     
@@ -52,29 +52,49 @@ class TrackStructure(dict):
         return hash(self) == hash(other)
 
     def __hash__(self):
-        '''
+        """
         Pre-sort the keys to always get the same order of the track lists in the Track structure.
         Return the hash of the tuple whose elements are tuples created from the lists of tracks.
-        '''
+        """
         keys = sorted(self.keys())
-        #TODO: boris 20150924, is Track.getUniqueKey a good candidate for hashing and equality check?
-        #It doesn't work without specifying a genome
-        #return hash(tuple([tuple([x.getUniqueKey() for x in self[k]]) for k in keys]))
+        # TODO: boris 20150924, is Track.getUniqueKey a good candidate for hashing and equal check?
+        # It doesn't work without specifying a genome
+        # return hash(tuple([tuple([x.getUniqueKey() for x in self[k]]) for k in keys]))
         return hash(tuple([tuple([tuple(x.trackName) for x in self[k]]) for k in keys]))
 
-class TrackStructureV2(dict):
-    #Note: we might want an init method here that creates an attribute "results"
-    #For now, this attribute is created when assigned a value
-    #An advantage of this is that it distinguished lack of result from a result that has value None (if that might be relevant)
-    #A disadvantage is that it becomes less clear that such an attribute might exist,
+
+class TrackStructureV2(MutableMapping):
+    # Note: we might want an init method here that creates an attribute "results"
+    # For now, this attribute is created when assigned a value
+    # An advantage of this is that it distinguished lack of result from a result that
+    # has value None (if that might be relevant)
+    # A disadvantage is that it becomes less clear that such an attribute might exist,
     # and its existence has to be checked with hasattr(ts,'results')
 
     TRACK_NAME_SEPARATOR = "#&&#"
 
+    def __init__(self, *args, **kwargs):
+        self._dict = OrderedDict()
+        self.update(OrderedDict(*args, **kwargs))  # use the free update to set keys
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
     @takes('TrackStructureV2', basestring, 'TrackStructureV2')
     def __setitem__(self, key, value):
-        dict.__setitem__(self, key, value)
+        self._dict[key] = value
 
+    def __delitem__(self, key):
+        del self._dict[key]
+
+    def __iter__(self):
+        return iter(self._dict)
+
+    def __len__(self):
+        return len(self._dict)
+
+    def __copy__(self):
+        return type(self)(self._dict)
 
     def _getResult(self):
         if hasattr(self, '_result'):
@@ -83,7 +103,7 @@ class TrackStructureV2(dict):
             return self._inferResult()
 
     def _inferResult(self):
-        return dict([(childTSKey, self[childTSKey].result) for childTSKey in self.keys()]) #TODO: if the class itself is changed to become OrderedDict, then also this should be an OrderedDict
+        return OrderedDict([(childTSKey, self[childTSKey].result) for childTSKey in self.keys()])
 
     @takes('TrackStructureV2', anything)
     def _setResult(self, value):
@@ -106,12 +126,12 @@ class TrackStructureV2(dict):
         return hash(self) == hash(other)
 
     def __hash__(self):
-        '''
+        """
         Pre-sort the keys to always get the same order of the track lists in the Track structure.
         Return the hash of the tuple with the hash values of self.values (recursive)
         The recursion ends at a TrackStructure without children (returns hash of empty tuple),
         or at a SingleTrackStructure (returns the hash of the track name and title)
-        '''
+        """
         keys = sorted(self.keys())
         return hash(tuple([hash(self[key]) for key in keys]))
 
@@ -141,7 +161,7 @@ class TrackStructureV2(dict):
 
     @takes('TrackStructureV2', 'TrackStructureV2', basestring)
     def _copySegregatedSubtree(self, nodeToSplitOn, subCategoryKey):
-       # assert isinstance(nodeToSplitOn, TrackStructureV2) # should be a subtree
+        # assert isinstance(nodeToSplitOn, TrackStructureV2) # should be a subtree
 
         newCopy = copy.copy(self)
         for key, value in self.items():
@@ -180,8 +200,10 @@ class TrackStructureV2(dict):
         return nodeName
 
     def getFlattenedTS(self):
-        '''Returns a flattened (FlatTracksTS) copy of the TrackStructure, does not alter the
-        TrackStructure itself. Only the metadata in leaf nodes is preserved.'''
+        """
+        :return: A flattened (FlatTracksTS) copy of the TrackStructure, does not alter the
+        TrackStructure itself. Only the metadata in leaf nodes is preserved.
+        """
         if self.isFlat():
             return self._copyTreeStructure()
 
@@ -209,7 +231,9 @@ class TrackStructureV2(dict):
                 newPair = TrackStructureV2()
                 newPair['query'] = query
                 newPair['reference'] = reference
-                root[str(query.track.trackName) + self.TRACK_NAME_SEPARATOR + str(reference.track.trackName)] = newPair
+                root[str(query.track.trackName)
+                     + self.TRACK_NAME_SEPARATOR
+                     + str(reference.track.trackName)] = newPair
         return root
 
     @takes('TrackStructureV2', int)
@@ -218,12 +242,15 @@ class TrackStructureV2(dict):
             sts.track.setRandIndex(randIndex)
 
 
-
 class SingleTrackTS(TrackStructureV2):
     @takes('SingleTrackTS', (Track, SampleTrack), dict_of(basestring, basestring))
-    def __init__(self, track, metadata):
+    def __init__(self, track, metadata, *args, **kwArgs):
         self.track = track
         self.metadata = metadata
+        super(SingleTrackTS, self).__init__(*args, **kwArgs)
+
+    def __copy__(self):
+        return type(self)(self.track, self.metadata, self._dict)
 
     def __setitem__(self, key, value):
         raise InvalidOperationError('SingleTrackTS is a leaf node and does not support children')
@@ -248,15 +275,11 @@ class SingleTrackTS(TrackStructureV2):
 
 
 class FlatTracksTS(TrackStructureV2):
-#    pass
-    # def __init__(self):
-    #     pass
-
     @takes('FlatTracksTS', str, 'SingleTrackTS')
     def __setitem__(self, key, value):
         assert isinstance(key, str)
         assert isinstance(value, SingleTrackTS)
-        dict.__setitem__(self, key, value)
+        super(FlatTracksTS, self).__setitem__(key, value)
 
     def getMetadataFields(self):
         allMetadataFields = OrderedDict()
@@ -269,8 +292,8 @@ class FlatTracksTS(TrackStructureV2):
 
     @takes('FlatTracksTS', basestring)
     def getAllValuesForMetadataField(self, metadataField):
-        return set([str(ts.metadata.get(metadataField)) for ts in self.values() if metadataField in ts.metadata.keys()])
-
+        return set([str(ts.metadata.get(metadataField)) for ts in self.values()
+                    if metadataField in ts.metadata.keys()])
 
     @takes('FlatTracksTS', basestring, basestring)
     def getTrackSubsetTS(self, metadataField, selectedValue):
@@ -278,7 +301,8 @@ class FlatTracksTS(TrackStructureV2):
 
         subsetTS = FlatTracksTS()
         for key, ts in self.iteritems():
-            if metadataField in [str(field) for field in ts.metadata] and str(ts.metadata.get(metadataField)) == str(selectedValue):
+            if metadataField in [str(field) for field in ts.metadata] and \
+                    str(ts.metadata.get(metadataField)) == str(selectedValue):
                 subsetTS[key] = ts
         return subsetTS
 
@@ -293,6 +317,7 @@ class FlatTracksTS(TrackStructureV2):
         for cat in catValues:
             catTS[str(cat)] = self.getTrackSubsetTS(metadataField, cat)
         return catTS
+
 
 class MultipleHypothesisTrackStructure(TrackStructureV2):
     pass
