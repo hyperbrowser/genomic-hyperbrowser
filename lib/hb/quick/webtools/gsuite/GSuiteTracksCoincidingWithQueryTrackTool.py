@@ -1,4 +1,8 @@
+import quick.gsuite.GuiBasedTsFactory as factory
+
 from collections import OrderedDict
+
+from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -8,6 +12,7 @@ from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from gold.util import CommonConstants
 from gold.util.CommonClasses import OrderedDefaultDict
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
@@ -32,19 +37,15 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.application.UserBinManager import UserBinSourceRegistryForDescriptiveStats, \
     UserBinSourceRegistryForHypothesisTests
 
 
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
-
-
 class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                                GenomeMixin, GSuiteResultsTableMixin,
-                                               DebugMixin):
+                                               DebugMixin, RandAlgorithmMixin):
     Q1 = "Rank suite tracks by similarity to query track"
     Q1_SHORT = "similarity to query track [rank]"
     Q2 = "Calculate p-values per track in suite: Is a track in the suite " \
@@ -103,10 +104,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
              ('Select track to track similarity/distance measure', 'similarityFunc'),
              ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
              ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
-             ('Select MCFDR sampling depth', 'mcfdrDepth'),
-             ('Type of randomization', 'randType'),
-             ('Randomization algorithm', 'randAlg'),
-             ('Select the excluded regions track', 'excludedRegions')] + \
+             ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+            cls.getInputBoxNamesForRandAlgSelection() + \
             cls.getInputBoxNamesForAttributesSelection() + \
             cls.getInputBoxNamesForUserBinSelection() + \
             cls.getInputBoxNamesForDebug()
@@ -129,8 +128,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     def getOptionsBoxBasicQuestionId(prevChoices):
         return '__hidden__', None
 
-    @staticmethod
-    def getOptionsBoxQueryTrack(prevChoices):
+    @classmethod
+    def getOptionsBoxQueryTrack(cls, prevChoices):
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to other
@@ -181,7 +180,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         - Returns: OrderedDict from key to selection status (bool).
         :param prevChoices:
         """
-        return GeneralGuiTool.getHistorySelectionElement()
+        return cls.getHistorySelectionElement(*getSupportedFileSuffixesForPointsAndSegments())
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):  # Alternatively: getOptionsBox2()
@@ -227,20 +226,14 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
     @classmethod
     def getOptionsBoxRandType(cls, prevChoices):
         if prevChoices.analysisQName == cls.Q2:
-            return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys()
+            return super(GSuiteTracksCoincidingWithQueryTrackTool, cls).\
+                getOptionsBoxRandType(prevChoices)
 
     @classmethod
     def getOptionsBoxRandAlg(cls, prevChoices):
         if prevChoices.analysisQName == cls.Q2:
-            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
-                if prevChoices.randType == definedRandType:
-                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
-            return '__hidden__', None
-
-    @classmethod
-    def getOptionsBoxExcludedRegions(cls, prevChoices):
-        if prevChoices.randAlg in ["Randomize between tracks and bins"]:
-            return GeneralGuiTool.getHistorySelectionElement()
+            return super(GSuiteTracksCoincidingWithQueryTrackTool, cls).\
+                getOptionsBoxRandAlg(prevChoices)
 
     @classmethod
     def getOptionsBoxResultsExplanation(cls, prevChoices):
@@ -326,10 +319,6 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         queryTrackNameAsList = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genome, choices.queryTrack,
                                                                                      printErrors=False,
                                                                                      printProgress=False)
-        excludedTs=None
-        import quick.gsuite.GuiBasedTsFactory as factory
-        if choices.excludedRegions:
-            excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
         analysisQuestion = choices.analysisQName
         similarityStatClassName = choices.similarityFunc if choices.similarityFunc else GSuiteStatUtils.T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP
@@ -381,8 +370,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                         queryTrackTitle, gsuite, results, similarityStatClassName)
         elif analysisQuestion == cls.Q2:
 
-            q2TS = cls.prepareQ2TrackStructure(queryTS, refTS, choices.randType, choices.randAlg, analysisBins, excludedTs)
-            analysisSpec = cls.prepareQ2(choices, similarityStatClassName)
+            q2TS, localAnalysis = cls.prepareQ2TrackStructure(choices, queryTS, refTS, analysisBins)
+            analysisSpec = cls.prepareQ2(choices, similarityStatClassName, localAnalysis)
             results = doAnalysis(analysisSpec, analysisBins, q2TS).getGlobalResult()["Result"]
             core = cls.generateQ2Output(additionalAttributesDict, additionalResultsDict,
                                         analysisQuestion, choices, galaxyFn, queryTrackTitle,
@@ -395,12 +384,13 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         print str(core)
 
     @classmethod
-    def prepareQ2TrackStructure(cls, queryTS, refTS, randType, randAlg, analysisBins, excludedTs):
+    def prepareQ2TrackStructure(cls, choices, queryTS, refTS, analysisBins):
         q2TS = TrackStructureV2()
         randQueryTS = queryTS
-        randRefTS = refTS.getRandomizedVersion(
-            RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg],
-            binSource=analysisBins, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
+        randTvProvider = cls.createTrackViewProvider(choices, refTS, analysisBins, choices.genome)
+        randRefTS = getRandomizedVersionOfTs(refTS, randTvProvider)
+        localAnalysis = randTvProvider.supportsLocalAnalysis()
+
         hypothesisKeyList = [sts.metadata["title"] for sts in randRefTS.values()]
         for hypothesisKey in hypothesisKeyList:
             realTS = TrackStructureV2()
@@ -413,7 +403,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             hypothesisTS["real"] = realTS
             hypothesisTS["rand"] = randTS
             q2TS[hypothesisKey] = hypothesisTS
-        return q2TS
+        return q2TS, localAnalysis
 
     @classmethod
     def prepareQ1(cls, reverse, similarityStatClassName):
@@ -464,7 +454,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         return core
 
     @classmethod
-    def prepareQ2(cls, choices, similarityStatClassName):
+    def prepareQ2(cls, choices, similarityStatClassName, localAnalysis):
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
@@ -476,7 +466,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('summaryFunc', 'raw')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
-        analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
+        analysisSpec.addParameter('runLocalAnalysis', 'Yes' if localAnalysis else 'No')
         return analysisSpec
 
     @classmethod
@@ -552,7 +542,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
         analysisSpec.addParameter('tail', 'right-tail')
-        analysisSpec.addParameter('tvProviderClass',ShuffleElementsBetweenTracksTvProvider)
+        analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksTvProvider)
         return analysisSpec
 
     @classmethod
@@ -628,6 +618,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             return errorString
 
         errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateRandAlgorithmSelection(choices)
         if errorString:
             return errorString
 
