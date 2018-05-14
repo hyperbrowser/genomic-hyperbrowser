@@ -1,6 +1,8 @@
 import quick.gsuite.GuiBasedTsFactory as factory
+
 from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.track.trackstructure import TsRandAlgorithmRegistry as TsRandAlgReg
+from proto.tools.GeneralGuiTool import BoxGroup
 
 
 class RandAlgorithmMixin(object):
@@ -24,6 +26,20 @@ class RandAlgorithmMixin(object):
                 ('Randomization algorithm', 'randAlg'),
                 ('Avoid segments from a specified track', 'selectExcludedTrack'),
                 ('Select track with segments to avoid', 'excludedTrack')]
+
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        prevBoxGroups = None
+        if hasattr(super(RandAlgorithmMixin, cls), 'getInputBoxGroups'):
+            prevBoxGroups = super(RandAlgorithmMixin, cls).getInputBoxGroups(choices)
+
+        if choices.compareIn:
+            if not prevBoxGroups:
+                prevBoxGroups = []
+            return prevBoxGroups + \
+                   [BoxGroup(label='Randomization algorithm', first='randType', last='excludedTrack')]
+        else:
+            return prevBoxGroups
 
     @classmethod
     def getOptionsBoxRandType(cls, prevChoices):
