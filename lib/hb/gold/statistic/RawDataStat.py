@@ -47,4 +47,4 @@ class RawDataStatUnsplittable(Statistic):
         # Strange super is due to staticmethod. TODO: Consider changing into classmethod
         superKeyTuple = super(RawDataStatUnsplittable, RawDataStatUnsplittable).\
             constructUniqueKey(cls, region, track, *args, **kwArgs)
-        return tuple([getClassName(track)] + list(superKeyTuple))
+        return tuple([list(superKeyTuple) + getClassName(track)])
