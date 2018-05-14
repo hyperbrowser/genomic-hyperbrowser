@@ -229,17 +229,17 @@ class UserBinMixin(object):
         return regSpec, binSpec
 
     @classmethod
+    def getUserBinSource(cls, choices):
+        regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
+        return cls._getUserBinSourceRegistry(choices).getUserBinSource(regSpec, binSpec)
+
+    @classmethod
     def validateUserBins(cls, choices):
         if cls._isBasicMode(choices):
             return None
 
         regSpec, binSpec = cls.getRegsAndBinsSpec(choices)
         return cls._getUserBinSourceRegistry(choices).validateRegAndBinSpec(regSpec, binSpec)
-
-        errorString = GalaxyInterface._validateRegAndBinSpec(regSpec, binSpec, genome,
-                                                             [trackName1, trackName2])
-        if errorString:
-            return errorString
 
     @classmethod
     def _getGenome(cls, choices):

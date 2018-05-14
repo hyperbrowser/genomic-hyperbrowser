@@ -327,8 +327,8 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
 
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
+        analysisBins = UserBinMixin.getUserBinSource(choices)
+
         queryTrack = Track(queryTrackNameAsList)
 
         queryTS = factory.getSingleTrackTS(genome, choices_queryTrack)
