@@ -55,7 +55,10 @@ class SimpleTrackBinIndexer(TrackBinIndexer):
         return self._tracks
 
     def getTrackBinIndexForTrackBinPair(self, trackBinPair):
-        return self._origTrackBinPairToTrackBinIndexDict[trackBinPair]
+        try:
+            return self._origTrackBinPairToTrackBinIndexDict[trackBinPair]
+        except KeyError:
+            raise
 
     def getTrackBinPairForTrackBinIndex(self, trackBinIndex):
         trackIndex, binIndex = self._getTrackAndBinIndexFromTrackBinIndex(trackBinIndex)
@@ -85,10 +88,10 @@ class TrackBinPair(object):
         return hash((self.track.getUniqueKey(self.bin.genome), self.bin))
 
     def __eq__(self, other):
-        return hash(self) == hash(other)
+        return self.track == other.track and self.bin == other.bin
 
     def __ne__(self, other):
-        return hash(self) != hash(other)
+        return not self == other
 
     def getTrackView(self):
         return self.track.getTrackView(self.bin)

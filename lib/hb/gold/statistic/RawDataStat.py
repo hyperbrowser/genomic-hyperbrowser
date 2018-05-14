@@ -1,8 +1,11 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
+from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from gold.util.CustomExceptions import SplittableStatNotAvailableError
 from gold.util.CommonFunctions import isIter
+from quick.util.CommonFunctions import getClassName
+
 
 class RawDataStat(MagicStatFactory):
     def __new__(cls, region, track, trackFormatReq, **kwArgs):
@@ -38,3 +41,10 @@ class RawDataStatUnsplittable(Statistic):
     
     def _updateInMemoDict(self, statKwUpdateDict):
         pass
+
+    @staticmethod
+    def constructUniqueKey(cls, region, track, *args, **kwArgs):
+        # Strange super is due to staticmethod. TODO: Consider changing into classmethod
+        superKeyTuple = super(RawDataStatUnsplittable, RawDataStatUnsplittable).\
+            constructUniqueKey(cls, region, track, *args, **kwArgs)
+        return tuple([getClassName(track)] + list(superKeyTuple))

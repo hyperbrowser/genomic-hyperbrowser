@@ -63,6 +63,8 @@ class RandomizedTrack(Track, TrackRandomizer):
 
 
 class OrigTrackWrapper(Track):
+    IS_MEMOIZABLE = False
+
     def __new__(cls, *args, **kwArgs):
         return object.__new__(cls)
 
@@ -118,10 +120,19 @@ class OrigTrackWrapper(Track):
         self._origTrack.setFormatConverter(converterClassName)
 
     def getUniqueKey(self, genome):
-        return hash('OrigTrackWrapper_{}'.format(self._origTrack.getUniqueKey(genome)))
+        return self._origTrack.getUniqueKey(genome)
 
     def resetTrackSource(self):
         self._origTrack.resetTrackSource()
 
     def setRandIndex(self, randIndex):
         self._origTrack.setRandIndex()
+
+    def __eq__(self, other):
+        if isinstance(other, OrigTrackWrapper):
+            return self._origTrack == other._origTrack
+        else:
+            return self._origTrack == other
+
+    def __ne__(self, other):
+        return not self == other
