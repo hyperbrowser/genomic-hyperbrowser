@@ -118,7 +118,7 @@ class OrigTrackWrapper(Track):
         self._origTrack.setFormatConverter(converterClassName)
 
     def getUniqueKey(self, genome):
-        return self._origTrack.getUniqueKey(genome)
+        return hash('OrigTrackWrapper_{}'.format(self._origTrack.getUniqueKey(genome)))
 
     def resetTrackSource(self):
         self._origTrack.resetTrackSource()
