@@ -24,6 +24,10 @@ class TsBasedRandomTrackViewProvider(TrackRandomizer):
     def _NEEDS_BIN_SOURCE(self):
         pass
 
+    @abstractproperty
+    def _SUPPORTS_LOCAL_ANALYSIS(self):
+        pass
+
     def __init__(self):
         self._origTs = None
         self._binSource = None
@@ -36,6 +40,9 @@ class TsBasedRandomTrackViewProvider(TrackRandomizer):
     @takes('TsBasedRandomTrackViewProvider', Iterable)
     def setBinSource(self, binSource):
         self._binSource = binSource
+
+    def supportsLocalAnalysis(self):
+        return self._SUPPORTS_LOCAL_ANALYSIS
 
     @takes('TsBasedRandomTrackViewProvider', 'GenomeRegion', (Track, SampleTrack), int)
     def getTrackView(self, region, origTrack, randIndex):

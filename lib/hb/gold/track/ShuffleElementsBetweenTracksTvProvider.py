@@ -14,6 +14,7 @@ from third_party.typecheck import optional, list_of, anything, one_of
 class ShuffleElementsBetweenTracksTvProvider(BetweenTracksRandomTvProvider):
     _NEEDS_ORIG_TRACK_SOURCE = True
     _NEEDS_BIN_SOURCE = False
+    _SUPPORTS_LOCAL_ANALYSIS = False
     _PRESERVATION_METHOD = None
 
     def __init__(self):

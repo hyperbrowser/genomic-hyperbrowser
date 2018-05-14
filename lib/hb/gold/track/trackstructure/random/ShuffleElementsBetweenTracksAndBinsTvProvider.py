@@ -14,6 +14,7 @@ from test.gold.track.common.SampleTrack import SampleTrack
 class ShuffleElementsBetweenTracksAndBinsTvProvider(BetweenTracksRandomTvProvider):
     _NEEDS_ORIG_TRACK_SOURCE = True
     _NEEDS_BIN_SOURCE = True
+    _SUPPORTS_LOCAL_ANALYSIS = False
 
     def __init__(self, randAlgorithm):
         self._randAlgorithm = randAlgorithm
