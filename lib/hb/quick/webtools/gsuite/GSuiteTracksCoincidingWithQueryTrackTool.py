@@ -533,7 +533,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
         analysisSpec.addParameter('tail', 'right-tail')
-        analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksTvProvider)
+        analysisSpec.addParameter('tvProviderClass', 'ShuffleElementsBetweenTracksTvProvider')
         return analysisSpec
 
     @classmethod

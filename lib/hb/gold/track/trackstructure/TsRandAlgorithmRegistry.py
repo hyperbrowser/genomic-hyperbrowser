@@ -83,6 +83,15 @@ def getAlgorithmList(category):
     return _RAND_ALGORITHM_REGISTRY[category].keys()
 
 
+@takes(basestring)
+def getTvProviderClsFromName(tvProviderClsName):
+    for category in getCategories():
+        for algSpec in _RAND_ALGORITHM_REGISTRY[category].values():
+            if tvProviderClsName == algSpec.trackViewProviderCls.__name__:
+                return algSpec.trackViewProviderCls
+    else:
+        raise KeyError('TrackViewProvider class named "{}" not found.'.format(tvProviderClsName))
+
 @takes(basestring, basestring)
 def getRequiredArgsForAlgorithm(category, algorithm):
     argSpec = _getArgSpecForAlgorithmInit(category, algorithm)

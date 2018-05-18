@@ -1,6 +1,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
+from gold.track.trackstructure.TsRandAlgorithmRegistry import getTvProviderClsFromName
 from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 
 from quick.application.SignatureDevianceLogging import takes, classType
@@ -11,8 +12,6 @@ from collections import OrderedDict
 from gold.track.TrackStructure import TrackStructure
 from quick.util.debug import DebugUtil
 from __builtin__ import str
-
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
 class GenericMCSamplesV2Stat(MagicStatFactory):
@@ -47,13 +46,7 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         self._numMcSamples = int(numMcSamples)
         self._tvProviderClass = tvProviderClass
         if isinstance(self._tvProviderClass, basestring):
-            #TODO should within tracks also be supported?
-            #TODO: nameToClassDict should probably be moved to a more generic place, from where it can be imported to wherever needed..
-            nameToClassDict = {repr(subclass): subclass for subclass in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Between tracks'].values() + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Within tracks'].values()}
-            self._tvProviderClass = nameToClassDict[self._tvProviderClass]
-
-
-
+            self._tvProviderClass = getTvProviderClsFromName(self._tvProviderClass)
 
         #TODO: Boris double check that code below is not needed in new version..
         # assert (randTrackStructureClassDict is None) ^ (assumptions is None) # xor, corresponding to two alternative specs of the same
