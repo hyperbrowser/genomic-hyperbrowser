@@ -1,5 +1,5 @@
 from gold.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import AnalysisDefJob
+from quick.deprecated.StatRunner import AnalysisDefJob
 
 trackName1 = ['Sequence','Repeating elements','LINE'] 
 trackName2 = ['Sequence','Repeating elements','SINE']

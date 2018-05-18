@@ -7,14 +7,14 @@ from config.Config import DebugConfig
 from gold.util.CustomExceptions import IncompatibleTracksError, ShouldNotOccurError, \
                                        IncompatibleAssumptionsError, IdenticalTrackNamesError
 from gold.util.RandomUtil import initSeed
-from gold.application.StatRunner import StatJob
+from quick.deprecated.StatRunner import StatJob
 from gold.description.TrackInfo import TrackInfo
 from quick.application.UserBinSource import MinimalBinSource
 from quick.util.CommonFunctions import wrapClass, allElementsVersusRest
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.AnalysisOption import AnalysisOption
 from gold.application.LogSetup import logging, HB_LOGGER, logException, logMessage
-import gold.application.StatRunner as StatRunnerModule
+import quick.deprecated.StatRunner as StatRunnerModule
 
 def noProgress(func):
     def decoratedFunc(*args):

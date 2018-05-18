@@ -277,10 +277,10 @@ class RandomizationManagerStatUnsplittable(Statistic):
     def _createRandomizedStat(self, i):
         "Creates a randChild where certain tracks are randomized"
         tr1 = self._track if self._randTrackClass1 is None else \
-              self._randTrackClass1(self._track, self._region, i, **self._kwArgs)
+              self._randTrackClass1(self._track, i, **self._kwArgs)
         
         tr2 = self._track2 if self._randTrackClass2 is None else \
-              self._randTrackClass2(self._track2, self._region, i, **self._kwArgs)
+              self._randTrackClass2(self._track2, i, **self._kwArgs)
 
         return self._rawStatistic(self._region, tr1, tr2, **self._kwArgs)
 

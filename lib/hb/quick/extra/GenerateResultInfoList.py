@@ -1,6 +1,6 @@
 import os
 from gold.statistic.AllStatistics import STAT_CLASS_DICT
-from gold.application.StatRunner import StatJob
+from quick.deprecated.StatRunner import StatJob
 from test.gold.track.common.SampleTrack import SampleTrack
 from test.gold.track.common.SampleTrackView import SampleTV, SampleTV_Num
 from gold.track.GenomeRegion import GenomeRegion

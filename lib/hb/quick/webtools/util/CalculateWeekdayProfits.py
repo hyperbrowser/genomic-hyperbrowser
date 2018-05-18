@@ -66,8 +66,7 @@ class CalculateWeekdayProfits(GeneralGuiTool):
         from quick.application.ProcTrackOptions import ProcTrackOptions
         
         from quick.application.GalaxyInterface import GalaxyInterface
-        import gold.application.StatRunner
-        
+
         analysisDef = 'dummy -> PercentageChangeStat'
         genome = choices[0]
         binSpec = '*'

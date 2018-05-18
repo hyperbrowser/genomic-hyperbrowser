@@ -1,5 +1,4 @@
 import os
-from collections import OrderedDict
 
 from proto.tools.hyperbrowser.GeneralGuiTool import GeneralGuiTool
 
@@ -10,38 +9,24 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
-from gold.track.RandomizedSegsTvProvider import PermutedSegsAndIntersegsTrackViewProvider, \
-    PermutedSegsAndSampledIntersegsTrackViewProvider
-from gold.track.ShuffleElementsBetweenTracksTvProvider import ShuffleElementsBetweenTracksTvProvider, \
-    CoveragePreservedShuffleElementsBetweenTracksTvProvider, \
-    SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider
 from gold.track.TrackStructure import TrackStructureV2
-from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
-    ShuffleElementsBetweenTracksAndBinsTvProvider
+from gold.track.trackstructure import TsRandAlgorithmRegistry as TsRandAlgReg
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from quick.application.UserBinSource import GlobalBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.TsWriterStat import TsWriterStat
 from quick.webtools.GeneralGuiTool import GeneralGuiToolMixin
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 
 
-class RandomizedTsWriterTool(GeneralGuiTool):
-    # IMPORTANT: if extra algorithms are added to this dict, add them after the existing algorithms!
-    RANDOMIZATION_ALGORITHM_DICT = OrderedDict([
-                                    ('Within tracks', OrderedDict([
-                                        ('Permute segments and inter-segment regions (size of inter-segment regions remains constant)', PermutedSegsAndIntersegsTrackViewProvider),
-                                        ('Permute segments and sampled inter-segment regions (size of inter-segment regions is random)', PermutedSegsAndSampledIntersegsTrackViewProvider)])),
-                                    ('Between tracks', OrderedDict([
-                                        ('Shuffle between tracks', ShuffleElementsBetweenTracksTvProvider),
-                                        ('Shuffle between tracks, preserve number of segments per track', SegmentNumberPreservedShuffleElementsBetweenTracksTvProvider),
-                                        ('Shuffle between tracks, preserve base pair coverage per track', CoveragePreservedShuffleElementsBetweenTracksTvProvider),
-                                        ('Randomize between tracks and bins', ShuffleElementsBetweenTracksAndBinsTvProvider)]))])
-
+class RandomizedTsWriterTool(GeneralGuiTool, RandAlgorithmMixin):
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
     GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
     GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.SEGMENTS,
                                   GSuiteConstants.VALUED_SEGMENTS]
     GSUITE_DISALLOWED_GENOMES = []
 
+    NO_CATEGORY_STR = 'None'
 
     @classmethod
     def getToolName(cls):
@@ -74,22 +59,18 @@ class RandomizedTsWriterTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        #return [('First header', 'firstKey'),
-        #        ('Second Header', 'secondKey')]
-        return [('Select a GSuite', 'gs'),
-                ('Type of randomization', 'randType'),
-                ('Randomization algorithm', 'randAlg'),
-                ('Allow overlaps', 'allowOverlaps'),
-                ('Excluded regions track', 'excludedRegions'),
-                ('Category to randomize within (set to \'None\' in order to randomize between all tracks in the GSuite)', 'category')]
+        return [('Select a GSuite', 'gs')] + \
+               cls.getInputBoxNamesForRandAlgSelection() + \
+               [('Category to randomize within (set to \'None\' in order to '
+                 'randomize between all tracks in the GSuite)', 'category')]
 
     @staticmethod
     def isPublic():
-        '''
+        """
         Specifies whether the tool is accessible to all users. If False, the
         tool is only accessible to a restricted set of users as defined in
         LocalOSConfig.py.
-        '''
+        """
         return True
 
     @classmethod
@@ -97,39 +78,14 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
-    def getOptionsBoxRandType(cls, prevChoices):
-        return ['--- Select ---'] + cls.RANDOMIZATION_ALGORITHM_DICT.keys()
-
-    @classmethod
-    def getOptionsBoxRandAlg(cls, prevChoices):
-        for definedRandType in cls.RANDOMIZATION_ALGORITHM_DICT.keys():
-            if prevChoices.randType == definedRandType:
-                return cls.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
-        return '__hidden__', None
-
-    @classmethod
-    def getOptionsBoxAllowOverlaps(cls, prevChoices):
-        if prevChoices.randType == cls.RANDOMIZATION_ALGORITHM_DICT.keys()[1]:
-            return ['No', 'Yes']
-        else:
-            return '__hidden__', 'No'
-
-    @classmethod
-    def getOptionsBoxExcludedRegions(cls, prevChoices):
-        if prevChoices.randAlg in ["Randomize between tracks and bins"]:
-            return GeneralGuiTool.getHistorySelectionElement()
-
-    @classmethod
-    def getOptionsBoxCategory(cls, prevChoices):  # Alt: getOptionsBox4()
-        if prevChoices.randType == cls.RANDOMIZATION_ALGORITHM_DICT.keys()[1]:
+    def getOptionsBoxCategory(cls, prevChoices):
+        if prevChoices.randType == TsRandAlgReg.BETWEEN_TRACKS_CATEGORY:
             try:
                 gSuite = getGSuiteFromGalaxyTN(prevChoices.gs)
                 if len(gSuite.attributes) > 0:
-                    return [None] + gSuite.attributes
+                    return [cls.NO_CATEGORY_STR] + gSuite.attributes
             except:
-                return '__hidden__', None
-        return '__hidden__', None
-
+                return
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -147,29 +103,25 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         #TODO: add functionality for single gtrack within-track randomization
 
         print 'Executing...'
+
         inputGsuite = getGSuiteFromGalaxyTN(choices.gs)
         outputGSuite = GSuite()
         genome = inputGsuite.genome
         ts = factory.getFlatTracksTS(genome, choices.gs)
-        randIndex = 1
+        randIndex = 0
         bins = GlobalBinSource(genome)
 
-        allowOverlaps = True if choices.allowOverlaps == 'Yes' else False
-
-        excludedTs = None
-        if choices.excludedRegions:
-            excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
-
-        tvProvider = cls.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg]
-
-        if choices.randType == cls.RANDOMIZATION_ALGORITHM_DICT.keys()[1] and choices.category not in [None, 'None']:
+        if choices.randType == TsRandAlgReg.BETWEEN_TRACKS_CATEGORY and \
+                choices.category not in [None, 'None']:
             ts = ts.getSplittedByCategoryTS(choices.category)
             randomizedTs = TrackStructureV2()
             for subTsKey, subTs in ts.items():
-                randomizedTs[subTsKey] = subTs.getRandomizedVersion(tvProvider, binSource=bins, excludedTs=excludedTs, allowOverlaps=allowOverlaps, randIndex=randIndex)
+                tvProvider = cls.createTrackViewProvider(choices, subTs, bins, genome)
+                randomizedTs[subTsKey] = getRandomizedVersionOfTs(subTs, tvProvider, randIndex)
             randomizedTs = randomizedTs.getFlattenedTS()
         else:
-            randomizedTs = ts.getRandomizedVersion(tvProvider, binSource=bins, excludedTs=excludedTs, allowOverlaps=allowOverlaps, randIndex=randIndex)
+            tvProvider = cls.createTrackViewProvider(choices, ts, bins, genome)
+            randomizedTs = getRandomizedVersionOfTs(ts, tvProvider, randIndex)
 
         for singleTrackTs in randomizedTs.getLeafNodes():
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
@@ -184,7 +136,6 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         spec = AnalysisSpec(TsWriterStat)
         res = doAnalysis(spec, bins, randomizedTs)
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
-
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -220,9 +171,9 @@ class RandomizedTsWriterTool(GeneralGuiTool):
         if errorString:
             return errorString
 
-        for requiredParameter in (choices.randType, choices.randAlg):
-            if requiredParameter in [None, '', '--- Select ---']:
-                return ''
+        errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
 
     @classmethod
     def getOutputFormat(cls, choices):

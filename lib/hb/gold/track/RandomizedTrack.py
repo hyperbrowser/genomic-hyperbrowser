@@ -1,18 +1,34 @@
-#Untested, to be rewritten
-#import stats
-from gold.util.RandomUtil import random
-import numpy
-from numpy import array
-from gold.track.TrackView import TrackView
+from abc import ABCMeta, abstractmethod
+
+from gold.formatconversion.FormatConverter import TrivialFormatConverter
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.Track import Track
 from gold.track.TrackFormat import NeutralTrackFormatReq
-from test.gold.track.common.SampleTrackView import SampleTV_Num
-from gold.util.CommonFunctions import isIter
-from gold.util.CustomExceptions import AbstractClassError
-from config.Config import DebugConfig
+from gold.util.CustomExceptions import NotSupportedError
+from quick.util.CommonFunctions import prettyPrintTrackName
 
-class RandomizedTrack(Track):
+
+class TrackRandomizer(object):
+    __metaclass__ = ABCMeta
+
+    @classmethod
+    @abstractmethod
+    def supportsTrackFormat(cls, origTrackFormat):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def supportsOverlapMode(cls, allowOverlaps):
+        pass
+
+    @classmethod
+    def getDescription(cls):
+        return cls.__name__
+
+
+class RandomizedTrack(Track, TrackRandomizer):
+    __metaclass__ = ABCMeta
+
     IS_MEMOIZABLE = False
     WORKS_WITH_MINIMAL = True
 
@@ -20,76 +36,108 @@ class RandomizedTrack(Track):
         return object.__new__(cls)
 
     def __init__(self, origTrack, randIndex, **kwArgs):
-        self._origTrack = origTrack
+        self._origTrack = OrigTrackWrapper(origTrack, trackRandomizer=self)
         self.trackName = origTrack.trackName + ['Randomized', str(randIndex)]
         self.trackTitle = origTrack.trackTitle
-#        self._origRegion = origRegion
         self._trackFormatReq = NeutralTrackFormatReq()
         self._cachedTV = None
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)
+        self.formatConverters = [TrivialFormatConverter]  # To allow construction of uniqueID
+        self._trackId = None  # To allow construction of uniqueID
 
-        from gold.formatconversion.FormatConverter import TrivialFormatConverter
-        self.formatConverters = [TrivialFormatConverter] #To allow construction of uniqueID
-        self._trackId = None #To allow construction of uniqueID
+        self._init(origTrack, randIndex, **kwArgs)
 
-    def _checkTrackFormat(self, origTV):
+    def _init(self, origTrack, randIndex, **kwArgs):
         pass
 
     def getTrackView(self, region):
-        #print 'TEMP5: get tv for reg: ',region, ' for TrackName: ', self.trackName
-        #print str(type(self._origRegion)) + " and " + str(type(region))
-#        if DebugConfig.USE_SLOW_DEFENSIVE_ASSERTS:
-#            assert (not isIter(self._origRegion) and self._origRegion  == region) or \
-#                    (isIter(self._origRegion) and region in self._origRegion)
-
         if self._minimal and not self.WORKS_WITH_MINIMAL:
             return self._origTrack.getTrackView(region)
 
-        return self._getTrackView(region)
+        randTV = self._getRandTrackView(region)
 
-    def _getTrackView(self, region):
-        #if self._cachedTV is None:
-        rawData = RawDataStat(region, self._origTrack, self._trackFormatReq)
-        origTV = rawData.getResult()
+        assert self._trackFormatReq.isCompatibleWith(randTV.trackFormat), \
+            'Incompatible track-format: ' + str(self._trackFormatReq) + \
+            ' VS ' + str(randTV.trackFormat)
 
-        self._checkTrackFormat(origTV)
-        assert(not origTV.allowOverlaps)
-        assert(origTV.borderHandling == 'crop')
-        assert region == origTV.genomeAnchor
+        return randTV
 
-        starts, ends, vals, strands, ids, edges, weights, extras = \
-            self._createRandomizedNumpyArrays(len(origTV.genomeAnchor), origTV.startsAsNumpyArray(), \
-                                              origTV.endsAsNumpyArray(), origTV.valsAsNumpyArray(), \
-                                              origTV.strandsAsNumpyArray(), origTV.idsAsNumpyArray(), \
-                                              origTV.edgesAsNumpyArray(), origTV.weightsAsNumpyArray(), \
-                                              origTV.allExtrasAsDictOfNumpyArrays(), region)
+    @abstractmethod
+    def _getRandTrackView(self, region):
+        pass
 
-        starts, ends, vals, strands, ids, edges, weights, extras = \
-            self._undoTrackViewChanges(starts, ends, vals, strands, ids, edges, weights, extras, origTV)
 
-        from gold.util.CommonFunctions import getClassName
-        self._cachedTV = TrackView(origTV.genomeAnchor, starts, ends, vals, strands, ids, edges, weights, \
-                                   origTV.borderHandling, origTV.allowOverlaps, extraLists=extras)
+class OrigTrackWrapper(Track):
+    IS_MEMOIZABLE = False
 
-        assert self._trackFormatReq.isCompatibleWith(self._cachedTV.trackFormat), 'Incompatible track-format: '\
-               + str(self._trackFormatReq) + ' VS ' + str(self._cachedTV.trackFormat)
-        return self._cachedTV
+    def __new__(cls, *args, **kwArgs):
+        return object.__new__(cls)
 
-    def _undoTrackViewChanges(self, starts, ends, vals, strands, ids, edges, weights, extras, origTV):
-        if origTV.trackFormat.isPoints():
-            ends = None
+    def __init__(self, origTrack, trackRandomizer):
+        self._origTrack = origTrack
+        self._trackRandomizer = trackRandomizer
 
-        elif origTV.trackFormat.isPartitionOrStepFunction():
-            ends = numpy.append([0], ends)
-            starts = None
+    @property
+    def trackName(self):
+        return self._origTrack.trackName
 
-        if starts is not None:
-            starts += origTV.genomeAnchor.start
+    @property
+    def trackTitle(self):
+        return self._origTrack.trackTitle
 
-        if ends is not None:
-            ends += origTV.genomeAnchor.start
+    @property
+    def formatConverters(self):
+        return self._origTrack.formatConverters
 
-        return starts, ends, vals, strands, ids, edges, weights, extras
+    def getTrackView(self, region):
+        # To make sure that the origTrack is only read once across randomizations
+        rawData = RawDataStat(region, self._origTrack, NeutralTrackFormatReq())
+        origTv = rawData.getResult()
 
-    def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
-        raise AbstractClassError
+        if not self._trackRandomizer.supportsTrackFormat(origTv.trackFormat):
+            raise NotSupportedError(
+                'The original track "{}" has format "{}", '
+                'which is not supported by "{}".'.format(
+                    prettyPrintTrackName(self.trackName),
+                    str(origTv.trackFormat),
+                    self._trackRandomizer.getDescription()
+                )
+            )
+
+        if not self._trackRandomizer.supportsOverlapMode(origTv.allowOverlaps):
+            raise NotSupportedError(
+                'The original track "{}" has "allowOverlaps={}", '
+                'which is not supported by "{}".'.format(
+                    prettyPrintTrackName(self.trackName),
+                    origTv.allowOverlaps,
+                    self._trackRandomizer.getDescription()
+                )
+            )
+
+        assert origTv.borderHandling == 'crop'
+
+        return origTv
+
+    def addFormatReq(self, requestedTrackFormat):
+        self._origTrack.addFormatReq(requestedTrackFormat)
+
+    def setFormatConverter(self, converterClassName):
+        self._origTrack.setFormatConverter(converterClassName)
+
+    def getUniqueKey(self, genome):
+        return self._origTrack.getUniqueKey(genome)
+
+    def resetTrackSource(self):
+        self._origTrack.resetTrackSource()
+
+    def setRandIndex(self, randIndex):
+        self._origTrack.setRandIndex()
+
+    def __eq__(self, other):
+        if isinstance(other, OrigTrackWrapper):
+            return self._origTrack == other._origTrack
+        else:
+            return self._origTrack == other
+
+    def __ne__(self, other):
+        return not self == other

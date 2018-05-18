@@ -16,7 +16,7 @@ class TestRandomGenomeLocationTrack(unittest.TestCase):
         queryReg = GenomeRegion('TestGenome','chr21',100,400)
         for randClass in [RandomGenomeLocationTrack]:
             for i in range(10):
-                randTrack = randClass(origTrack, queryReg, i)
+                randTrack = randClass(origTrack, i)
                 randTV = randTrack.getTrackView(queryReg)
                 self.assertEqual(len(queryReg), len(randTV))
 

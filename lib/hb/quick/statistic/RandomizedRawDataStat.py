@@ -31,5 +31,5 @@ class RandomizedRawDataStatUnsplittable(Statistic):
         
     def _createChildren(self):
         randomizedTrack = self._track if self._randTrackClass is None else \
-                          self._randTrackClass(self._track, self._region, 0, **self._kwArgs)
+                          self._randTrackClass(self._track, 0, **self._kwArgs)
         self._addChild( RawDataStat(self._region, randomizedTrack, TrackFormatReq()) )

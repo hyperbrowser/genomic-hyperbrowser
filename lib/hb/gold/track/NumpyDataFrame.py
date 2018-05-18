@@ -10,7 +10,7 @@ class NumpyDataFrame(object):
 
         for key, iterable in dictOfIterables.iteritems():
             self.addArray(key, iterable)
-        self.mask = mask
+        self.mask = mask  # Calls the @property setter to set self._mask
 
     def hasArray(self, key):
         return key in self._arrayDict
@@ -46,6 +46,9 @@ class NumpyDataFrame(object):
         else:
             return array
 
+    def getArrayNoMask(self, key):
+        return self._arrayDict[key]
+
     def asArrayDict(self):
         return OrderedDict([(key, self.getArray(key)) for key in self.arrayKeys()])
 
@@ -74,6 +77,8 @@ class NumpyDataFrame(object):
         indices = np.lexsort([self._arrayDict[key] for key in reversed(order)])
         for array in self._arrayDict.values():
             array[:] = array[indices]
+        if self.mask is not None:
+            self.mask[:] = self.mask[indices]
 
     def __len__(self):
         if len(self._arrayDict) > 0:
@@ -153,13 +158,13 @@ NDARRAY_SPECIAL_ATTRIBUTES_TO_OVERRIDE = [
     '__abs__',
     '__add__',
     '__and__',
-    '__array__',
-    '__array_finalize__',
-    '__array_interface__',
-    '__array_prepare__',
-    '__array_priority__',
-    '__array_struct__',
-    '__array_wrap__',
+    # '__array__',
+    # '__array_finalize__',
+    # '__array_interface__',
+    # '__array_prepare__',
+    # '__array_priority__',
+    # '__array_struct__',
+    # '__array_wrap__',
     '__contains__',
     '__delitem__',
     '__delslice__',
