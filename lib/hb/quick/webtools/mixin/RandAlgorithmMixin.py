@@ -111,11 +111,12 @@ class RandAlgorithmMixin(object):
 
     @classmethod
     def validateRandAlgorithmSelection(cls, choices):
-        for requiredParameter in (choices.randType, choices.randAlg):
-            if requiredParameter in [None, '', '--- Select ---']:
-                return ''
+        if cls._showExcludedTrackSelection(choices):
+            for requiredParameter in (choices.randType, choices.randAlg):
+                if requiredParameter in [None, '', '--- Select ---']:
+                    return 'Please select all randomization parameters'
 
-        if choices.selectExcludedTrack == cls.YES:
-            if not choices.excludedTrack:
-                return 'Please select a track with the regions to be excluded in the ' \
-                       'randomization algorithm.'
+            if choices.selectExcludedTrack == cls.YES:
+                if not choices.excludedTrack:
+                    return 'Please select a track with the regions to be excluded in the ' \
+                           'randomization algorithm.'
