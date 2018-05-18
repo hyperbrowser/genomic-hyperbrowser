@@ -216,6 +216,10 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
             return False
 
     @classmethod
+    def _showRandAlgorithmChoices(cls, prevChoices):
+        return prevChoices.analysisQName == cls.Q2
+
+    @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
         if not prevChoices.isBasic:
             if prevChoices.analysisQName == cls.Q2:
@@ -224,20 +228,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                 return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0]
 
     @classmethod
-    def getOptionsBoxRandType(cls, prevChoices):
-        if prevChoices.analysisQName == cls.Q2:
-            return super(GSuiteTracksCoincidingWithQueryTrackTool, cls).\
-                getOptionsBoxRandType(prevChoices)
-
-    @classmethod
-    def getOptionsBoxRandAlg(cls, prevChoices):
-        if prevChoices.analysisQName == cls.Q2:
-            return super(GSuiteTracksCoincidingWithQueryTrackTool, cls).\
-                getOptionsBoxRandAlg(prevChoices)
-
-    @classmethod
     def getOptionsBoxResultsExplanation(cls, prevChoices):
-
         if prevChoices.gsuite and prevChoices.analysisQName in [cls.Q1, cls.Q2]:
             return GSuiteResultsTableMixin.getOptionsBoxResultsExplanation(prevChoices)
 

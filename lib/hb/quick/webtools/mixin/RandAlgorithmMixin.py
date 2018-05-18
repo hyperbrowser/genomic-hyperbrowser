@@ -33,7 +33,7 @@ class RandAlgorithmMixin(object):
         if hasattr(super(RandAlgorithmMixin, cls), 'getInputBoxGroups'):
             prevBoxGroups = super(RandAlgorithmMixin, cls).getInputBoxGroups(choices)
 
-        if choices.compareIn:
+        if cls._showRandAlgorithmChoices(choices):
             if not prevBoxGroups:
                 prevBoxGroups = []
             return prevBoxGroups + \
@@ -42,15 +42,27 @@ class RandAlgorithmMixin(object):
             return prevBoxGroups
 
     @classmethod
+    def _showRandAlgorithmChoices(cls, prevChoices):
+        """
+        Override this method in the tool if the randomization algorithm option boxes should not be
+        shown for certain settings in choices.
+        :param: The selected choices selected by the user before the first rand alg option box
+        :return: True if the randomization algorithm option boxes should be shown, else False
+        """
+        return True
+
+    @classmethod
     def getOptionsBoxRandType(cls, prevChoices):
-        return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
+        if cls._showRandAlgorithmChoices(prevChoices):
+            return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
 
     @classmethod
     def getOptionsBoxRandAlg(cls, prevChoices):
-        for definedRandType in TsRandAlgReg.getCategories():
-            if prevChoices.randType == definedRandType:
-                return [cls.SELECT_CHOICE_STR] + \
-                       TsRandAlgReg.getAlgorithmList(definedRandType)
+        if cls._showRandAlgorithmChoices(prevChoices):
+            for definedRandType in TsRandAlgReg.getCategories():
+                if prevChoices.randType == definedRandType:
+                    return [cls.SELECT_CHOICE_STR] + \
+                           TsRandAlgReg.getAlgorithmList(definedRandType)
 
     @classmethod
     def getOptionsBoxSelectExcludedTrack(cls, prevChoices):
