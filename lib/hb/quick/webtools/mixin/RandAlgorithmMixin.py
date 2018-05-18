@@ -2,6 +2,7 @@ import quick.gsuite.GuiBasedTsFactory as factory
 
 from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.track.trackstructure import TsRandAlgorithmRegistry as TsRandAlgReg
+from gold.track.trackstructure.TsRandAlgorithmRegistry import createDefaultTrackViewProvider
 from proto.tools.GeneralGuiTool import BoxGroup
 
 
@@ -33,7 +34,7 @@ class RandAlgorithmMixin(object):
         if hasattr(super(RandAlgorithmMixin, cls), 'getInputBoxGroups'):
             prevBoxGroups = super(RandAlgorithmMixin, cls).getInputBoxGroups(choices)
 
-        if cls._showRandAlgorithmChoices(choices):
+        if cls._showRandAlgorithmChoices(choices) and not choices.isBasic:
             if not prevBoxGroups:
                 prevBoxGroups = []
             return prevBoxGroups + \
@@ -54,15 +55,17 @@ class RandAlgorithmMixin(object):
     @classmethod
     def getOptionsBoxRandType(cls, prevChoices):
         if cls._showRandAlgorithmChoices(prevChoices):
-            return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
+            if not prevChoices.isBasic:
+                return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
 
     @classmethod
     def getOptionsBoxRandAlg(cls, prevChoices):
         if cls._showRandAlgorithmChoices(prevChoices):
-            for definedRandType in TsRandAlgReg.getCategories():
-                if prevChoices.randType == definedRandType:
-                    return [cls.SELECT_CHOICE_STR] + \
-                           TsRandAlgReg.getAlgorithmList(definedRandType)
+            if not prevChoices.isBasic:
+                for definedRandType in TsRandAlgReg.getCategories():
+                    if prevChoices.randType == definedRandType:
+                        return [cls.SELECT_CHOICE_STR] + \
+                               TsRandAlgReg.getAlgorithmList(definedRandType)
 
     @classmethod
     def getOptionsBoxSelectExcludedTrack(cls, prevChoices):
@@ -86,6 +89,9 @@ class RandAlgorithmMixin(object):
 
     @classmethod
     def createTrackViewProvider(cls, choices, origTs, binSource, genome):
+        if choices.isBasic:
+            return createDefaultTrackViewProvider()
+
         reqArgs = TsRandAlgReg.getRequiredArgsForAlgorithm(choices.randType, choices.randAlg)
         kwArgs = TsRandAlgReg.getKwArgsForAlgorithm(choices.randType, choices.randAlg)
 

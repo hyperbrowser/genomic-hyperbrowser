@@ -11,7 +11,7 @@ from test.gold.track.common.SampleTrack import SampleTrack
 class RandTrackBasedTrackViewProvider(WithinTrackRandomTvProvider):
     __metaclass__ = ABCMeta
 
-    _NEEDS_ORIG_TRACK_SOURCE = True
+    _NEEDS_ORIG_TRACK_SOURCE = False
     _NEEDS_BIN_SOURCE = False
     _SUPPORTS_LOCAL_ANALYSIS = False
 

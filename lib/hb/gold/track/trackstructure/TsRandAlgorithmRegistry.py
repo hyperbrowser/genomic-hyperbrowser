@@ -129,3 +129,7 @@ def createTrackViewProvider(category, algorithm, *args, **kwArgs):
         )
     else:
         return randAlgSpec.trackViewProviderCls()
+
+
+def createDefaultTrackViewProvider():
+    return PermutedSegsAndIntersegsTrackViewProvider()
