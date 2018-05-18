@@ -9,15 +9,7 @@ from quick.util.CommonFunctions import convertTNstrToTNListFormat
 class SegsSampledByIntensityTrack(SingleRandomizedTrack):
     WORKS_WITH_MINIMAL = False
 
-    def __init__(self, origTrack, randIndex, trackNameIntensity="", **kwArgs):
-        #from gold.util.CommonFunctions import isIter
-        #from gold.util.CustomExceptions import SplittableStatNotAvailableError
-        #if isIter(origRegion):
-        #    raise SplittableStatNotAvailableError
-        super(SegsSampledByIntensityTrack, self).__init__(
-            origTrack, randIndex, trackNameIntensity=trackNameIntensity, **kwArgs)
-        # self._trackNameIntensity = [unquote(x) for x in
-        #                             convertTNstrToTNListFormat(trackNameIntensity)]
+    def _init(self, origTrack, randIndex, trackNameIntensity="", **kwArgs):
         self._trackNameIntensity = convertTNstrToTNListFormat(trackNameIntensity)
 
     @classmethod

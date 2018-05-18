@@ -45,6 +45,11 @@ class RandomizedTrack(Track, TrackRandomizer):
         self.formatConverters = [TrivialFormatConverter]  # To allow construction of uniqueID
         self._trackId = None  # To allow construction of uniqueID
 
+        self._init(origTrack, randIndex, **kwArgs)
+
+    def _init(self, origTrack, randIndex, **kwArgs):
+        pass
+
     def getTrackView(self, region):
         if self._minimal and not self.WORKS_WITH_MINIMAL:
             return self._origTrack.getTrackView(region)
