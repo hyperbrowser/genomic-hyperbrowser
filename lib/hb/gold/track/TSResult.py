@@ -30,6 +30,13 @@ class TSResult(MutableMapping):
     def __copy__(self):
         return type(self)(self._ts, self._result, self._dict)
 
+    def __nonzero__(self):
+        """
+        Seems the safest thing to do. If not, TSResult objects with no children will fail
+        tests like "if ts:", which often leads to hard-to-find bugs.
+        """
+        return True
+
     def setResult(self, result):
         self._result = result
 

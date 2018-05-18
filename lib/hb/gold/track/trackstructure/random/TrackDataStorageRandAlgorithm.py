@@ -46,8 +46,8 @@ class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm
                  overlapDetectorCls=IntervalTreeOverlapDetector):
         self._maxSampleCount = maxSampleCount
         self._trackBinIndexer = None
-        self._excludedSegmentsStorage = ExcludedSegmentsStorage(excludedTS, binSource) \
-            if excludedTS is not None else None
+        self._excludedSegmentsStorage = \
+            ExcludedSegmentsStorage(excludedTS, binSource) if excludedTS else None
         self._overlapDetectorCls = overlapDetectorCls
 
     def _getOverlapDetectorForTrackBinPair(self, newTrackBinPair):

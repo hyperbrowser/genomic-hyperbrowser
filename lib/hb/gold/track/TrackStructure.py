@@ -96,6 +96,13 @@ class TrackStructureV2(MutableMapping):
     def __copy__(self):
         return type(self)(self._dict)
 
+    def __nonzero__(self):
+        """
+        Seems the safest thing to do. If not, track structure objects with no children will fail
+        tests like "if ts:", which often leads to hard-to-find bugs.
+        """
+        return True
+
     def _getResult(self):
         if hasattr(self, '_result'):
             return self._result
