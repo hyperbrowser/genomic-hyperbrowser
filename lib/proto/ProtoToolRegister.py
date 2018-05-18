@@ -226,8 +226,9 @@ def _getModuleNameFromPath(fn):
 def _findInfoForAllClasses(fn):
     with open(fn) as f:
         class_info_list = []
-        for line in f:
-            match = re.match(r'class +(\w+) *\(([\w ,]+)\)', line)
+        contents = f.read()
+        matchiter = re.finditer(r'class +(\w+) *\(([\w\s,]+)\)', contents)
+        for match in matchiter:
             if match:
                 class_name = match.group(1)
                 super_class_list = [super_cls.strip() for super_cls in match.group(2).split(',')]
