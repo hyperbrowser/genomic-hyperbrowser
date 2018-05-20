@@ -151,7 +151,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def _determineMethod(cls, choices):
-        if choices.catSummaryFunc not in ['Difference of rank sums']:
+        if choices.catSummaryFunc not in [cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL]:
             if choices.randType == "Wilcoxon":
                 return 1
             elif choices.randType == 'Within tracks':
@@ -160,6 +160,8 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
                 else:
                     return 3
         else:
-            #TODO: not implemented
-            return 5
+            if choices.randInput == "query":
+                return 5
+            else:
+                return 6
 
