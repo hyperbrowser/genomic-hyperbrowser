@@ -23,7 +23,7 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin):
     @classmethod
     def getToolName(cls):
-        return "Simulate two level GSuite from a base track"
+        return "Simulate two level GSuite from a base track (Benchmark 2)"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -31,8 +31,10 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
                 ('Select the genome build', 'genome'),
                 ('Nr. of simulated sub-GSuites', 'nrSubGSuites'),
                 ('Nr. of tracks per group', 'nrTracks'),
-                ('True positive probability', 'tpProb'),
-                ('True negative probability', 'tnProb')] + \
+                ('True positive probability (group A)', 'tpProbGroup1'),
+                ('True negative probability (group A)', 'tnProbGroup1'),
+                ('True positive probability (group B)', 'tpProbGroup2'),
+                ('True negative probability (group B)', 'tnProbGroup2')] + \
                 cls.getInputBoxNamesForUserBinSelection()
 
     # @classmethod
@@ -58,11 +60,21 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
     @classmethod
     def getOptionsBoxNrTracks(cls, prevChoices):
         return '10'
+
     @classmethod
-    def getOptionsBoxTpProb(cls, prevChoices):
+    def getOptionsBoxTpProbGroup1(cls, prevChoices):
         return '0.5'
+
     @classmethod
-    def getOptionsBoxTnProb(cls, prevChoices):
+    def getOptionsBoxTnProbGroup1(cls, prevChoices):
+        return '0.99'
+
+    @classmethod
+    def getOptionsBoxTpProbGroup2(cls, prevChoices):
+        return '0.5'
+
+    @classmethod
+    def getOptionsBoxTnProbGroup2(cls, prevChoices):
         return '0.99'
 
     # @classmethod
@@ -88,17 +100,22 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
         nrSubGSuites = int(choices.nrSubGSuites)
         nrTracks = int(choices.nrTracks)
-        tpProb = float(choices.tpProb)
-        tnProb = float(choices.tnProb)
+        tpProbGroup1 = float(choices.tpProbGroup1)
+        tnProbGroup1 = float(choices.tnProbGroup1)
+
+        tpProbGroup2 = float(choices.tpProbGroup2)
+        tnProbGroup2 = float(choices.tnProbGroup2)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=genome)
 
         #TODO: implement
-        cls._execute(baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn)
+        cls._execute(baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProbGroup1, tnProbGroup1,
+                     tpProbGroup2, tnProbGroup2, galaxyFn)
 
     @classmethod
-    def _execute(cls, baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProb, tnProb, galaxyFn):
+    def _execute(cls, baseTrackSTS, genome, analysisBins, nrSubGSuites, nrTracks, tpProbGroup1, tnProbGroup1,
+                 tpProbGroup2, tnProbGroup2, galaxyFn):
         startTime = time.time()
         gsuite = GSuite()
         groupOne = "A"
@@ -106,14 +123,20 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
         for i in xrange(nrSubGSuites):
             for j in xrange(nrTracks):
                 cls._addSubGSuite(analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j,
-                                  startTime, tnProb, tpProb)
+                                  startTime, tnProbGroup1, tpProbGroup1, tpProbGroup2, tnProbGroup2)
 
         GSuiteComposer.composeToFile(gsuite, cls.extraGalaxyFn['Simulated GSuite (BM2)'])
 
     @classmethod
     def _addSubGSuite(cls, analysisBins, baseTrackSTS, galaxyFn, genome, groupOne, groupTwo, gsuite, i, j, startTime,
-                      tnProb, tpProb):
+                      tnProbGroup1, tpProbGroup1, tpProbGroup2, tnProbGroup2):
         for trackGroup in [groupOne, groupTwo]:
+            if trackGroup == groupOne:
+                tpProb = tpProbGroup1
+                tnProb = tnProbGroup1
+            else:
+                tpProb = tpProbGroup2
+                tnProb = tnProbGroup2
             cls._addSimulatedTrackToGSuite(gsuite, str(i), str(j), trackGroup, baseTrackSTS, genome,
                                            analysisBins, tpProb, tnProb, galaxyFn)
             m, s = divmod(time.time() - startTime, 60)
@@ -162,13 +185,13 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
         if not choices.genome or choices.genome == '--- Select ---':
             return "Please select a genome build."
-
-        if choices.baseTrack and choices.genome:
-            try:
-                ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.baseTrack,
-                                                                      printProgress=False)
-            except:
-                return "Please select a valid base track (BED, GTrack...)."
+        #
+        # if choices.baseTrack and choices.genome:
+        #     try:
+        #         ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.baseTrack,
+        #                                                               printProgress=False)
+        #     except:
+        #         return "Please select a valid base track (BED, GTrack...)."
 
         try:
             int(choices.nrSubGSuites)
@@ -182,12 +205,16 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
         probErr = "The probabilities must be real numbers between 0.0 and 1.0."
         try:
-            tpProb = float(choices.tpProb)
-            tnProb = float(choices.tnProb)
+            tpProb1 = float(choices.tpProbGroup1)
+            tnProb1 = float(choices.tnProbGroup1)
+            tpProb2 = float(choices.tpProbGroup2)
+            tnProb2 = float(choices.tnProbGroup2)
         except:
             return probErr
         else:
-            if tnProb > 1 or tnProb < 0 or tpProb > 1 or tnProb < 0:
+            if tnProb1 > 1 or tnProb1 < 0 or tpProb1 > 1 or tnProb1 < 0:
+                return probErr
+            if tnProb2 > 1 or tnProb2 < 0 or tpProb2 > 1 or tnProb2 < 0:
                 return probErr
 
 

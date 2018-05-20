@@ -1,20 +1,20 @@
 from collections import OrderedDict
 
 from gold.application.HBAPI import doAnalysis
-from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
+from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.tools.GeneralGuiTool import HistElement
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
-from quick.statistic import SummarizedInteractionPerTsCatV2Stat
+from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
     MultitrackSummarizedInteractionWithOtherTracksV2Stat
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -77,142 +77,12 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         return [('Select the query GSuite', 'queryGsuite'),
                 ('Select the categorical reference GSuite', 'refGsuite'),
                 ('Select category column', 'categoryName'),
-                # ('Select primary group category value', 'categoryVal'),
-                # ('Select track to track similarity/distance measure', 'similarityFunc'),
-                # ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                # ('Type of randomization', 'randType'),
-                # ('Select summary function groups', 'catSummaryFunc'),
-                # ('Select MCFDR sampling depth', 'mcfdrDepth'),
-                # ('Select alternative for the wilcoxon test', 'wilcoxonTail'),
-                # ('Randomization algorithm', 'randAlg')
                 ] + \
-                cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
                cls.getInputBoxNamesForGenomeSelection() + \
+                cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
 
-    # @classmethod
-    # def getInputBoxOrder(cls):
-    #     """
-    #     Specifies the order in which the input boxes should be displayed,
-    #     as a list. The input boxes are specified by index (starting with 1)
-    #     or by key. If None, the order of the input boxes is in the order
-    #     specified by getInputBoxNames().
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getInputBoxGroups(cls, choices=None):
-    #     """
-    #     Creates a visual separation of groups of consecutive option boxes
-    #     from the rest (fieldset). Each such group has an associated label
-    #     (string), which is shown to the user. To define groups of option
-    #     boxes, return a list of BoxGroup namedtuples with the label, the key
-    #     (or index) of the first and last options boxes (inclusive).
-    #
-    #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey',
-    #                         last='secondKey')]
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-
-    # @classmethod
-    # def getOptionsBoxQueryTrack(cls):  # Alt: getOptionsBox1()
-    #     """
-    #     Defines the type and contents of the input box. User selections are
-    #     returned to the tools in the prevChoices and choices attributes to
-    #     other methods. These are lists of results, one for each input box
-    #     (in the order specified by getInputBoxOrder()).
-    #
-    #     Mandatory for the first key defined in getInputBoxNames(), if any.
-    #
-    #     The input box is defined according to the following syntax:
-    #
-    #     Selection box:          ['choice1','choice2']
-    #     - Returns: string
-    #
-    #     Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-    #     - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-    #     - The contents is the default value shown inside the text area
-    #     - Returns: string
-    #
-    #     Raw HTML code:          '__rawstr__', 'HTML code'
-    #     - This is mainly intended for read only usage. Even though more
-    #       advanced hacks are possible, it is discouraged.
-    #
-    #     Password field:         '__password__'
-    #     - Returns: string
-    #
-    #     Genome selection box:   '__genome__'
-    #     - Returns: string
-    #
-    #     Track selection box:    '__track__'
-    #     - Requires genome selection box.
-    #     - Returns: colon-separated string denoting track name
-    #
-    #     History selection box:  ('__history__',) |
-    #                             ('__history__', 'bed', 'wig')
-    #     - Only history items of specified types are shown.
-    #     - Returns: colon-separated string denoting Galaxy dataset info, as
-    #         described below.
-    #
-    #     History check box list: ('__multihistory__', ) |
-    #                             ('__multihistory__', 'bed', 'wig')
-    #     - Only history items of specified types are shown.
-    #     - Returns: OrderedDict with Galaxy dataset ids as key (the number YYYY
-    #         as described below), and the associated Galaxy dataset info as the
-    #         values, given that the history element is ticked off by the user.
-    #         If not, the value is set to None. The Galaxy dataset info structure
-    #         is described below.
-    #
-    #     Hidden field:           ('__hidden__', 'Hidden value')
-    #     - Returns: string
-    #
-    #     Table:                  [['header1','header2'], ['cell1_1','cell1_2'],
-    #                              ['cell2_1','cell2_2']]
-    #     - Returns: None
-    #
-    #     Check box list:         OrderedDict([('key1', True), ('key2', False),
-    #                                          ('key3', False)])
-    #     - Returns: OrderedDict from key to selection status (bool).
-    #
-    #
-    #     ###
-    #     Note about the "Galaxy dataset info" data structure:
-    #     ###
-    #
-    #     "Galaxy dataset info" is a list of strings coding information about a
-    #     Galaxy history element and its associated dataset, typically used to
-    #     provide info on the history element selected by the user as input to a
-    #     ProTo tool.
-    #
-    #     Structure:
-    #         ['galaxy', fileFormat, path, name]
-    #
-    #     Optionally encoded as a single string, delineated by colon:
-    #
-    #         'galaxy:fileFormat:path:name'
-    #
-    #     Where:
-    #         'galaxy' used for assertions in the code
-    #         fileFormat (or suffix) contains the file format of the dataset, as
-    #             encoded in the 'format' field of a Galaxy history element.
-    #         path (or file name/fn) is the disk path to the dataset file.
-    #             Typically ends with 'XXX/dataset_YYYY.dat'. XXX and YYYY are
-    #             numbers which are extracted and used as an unique id  of the
-    #             dataset in the form [XXX, YYYY]
-    #         name is the title of the history element
-    #
-    #     The different parts can be extracted using the functions
-    #     extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
-    #     extractNameFromDatasetInfo() from the module CommonFunctions.py.
-    #     """
-    #     return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
     def getOptionsBoxQueryGsuite(cls):  # Alt: getOptionsBox2()
@@ -241,52 +111,6 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             gsuite = getGSuiteFromGalaxyTN(prevChoices.refGsuite)
             return gsuite.attributes
 
-    # @staticmethod
-    # def getOptionsBoxCategoryVal(prevChoices):
-    #     if prevChoices.refGsuite and prevChoices.categoryName:
-    #         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-    #         gsuite = getGSuiteFromGalaxyTN(prevChoices.refGsuite)
-    #         return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
-
-    # @staticmethod
-    # def getOptionsBoxSimilarityFunc(prevChoices):
-    #     return GSuiteStatUtils.PAIRWISE_STAT_LABELS
-
-    # @staticmethod
-    # def getOptionsBoxSummaryFunc(prevChoices):
-    #     return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
-
-    # @staticmethod
-    # def getOptionsBoxCatSummaryFunc(prevChoices):
-    #     return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
-
-    # @staticmethod
-    # def getOptionsBoxRandType(prevChoices):
-    #     return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
-
-    # @staticmethod
-    # def getOptionsBoxCatSummaryFunc(prevChoices):
-    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-    #         return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
-
-    # @staticmethod
-    # def getOptionsBoxMcfdrDepth(prevChoices):
-    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-    #         return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
-
-    # @staticmethod
-    # def getOptionsBoxWilcoxonTail(prevChoices):
-    #     if prevChoices.randType == "Wilcoxon":
-    #         return ['two.sided', 'less', 'greater']
-
-    # @staticmethod
-    # def getOptionsBoxRandAlg(prevChoices):
-    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-    #         for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
-    #             if prevChoices.randType == definedRandType:
-    #                 return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
-
-    # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
     #     If not None, defines the string content of an clickable info box
@@ -307,27 +131,27 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
     #     Optional method. Default return value if method is not defined: None
     #     """
     #     return ['testChoice1', '..']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+
+    @classmethod
+    def getExtraHistElements(cls, choices):
+        """
+        Defines extra history elements to be created when clicking execute.
+        This is defined by a list of HistElement objects, as in the
+        following example:
+
+           from proto.GeneralGuiTool import HistElement
+           return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
+
+        It is good practice to use class constants for longer strings.
+
+        In the execute() method, one typically needs to fetch the path to
+        the dataset referred to by the extra history element. To fetch the
+        path, use the dict cls.extraGalaxyFn with the defined history title
+        as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return [HistElement("BM1 Info", "txt")]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -343,6 +167,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         Mandatory unless isRedirectTool() returns True.
         """
 
+        # from quick.util.debug import DebugUtil
         # DebugUtil.insertBreakPoint(5678)
 
         cls._setDebugModeIfSelected(choices)
@@ -355,8 +180,8 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         assert choices.categoryVal in catTS
 
         cls._startProgressOutput()
-        ts = cls.prepareTrackStructure(queryTS, catTS)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
+        ts = cls.prepareTrackStructure(queryTS, catTS, analysisBins, choices)
+        operationCount = cls._calculateNrOfOperations(ts, analysisBins, choices)
         analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
         cls._endProgressOutput()
@@ -371,14 +196,17 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
             # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
         else:
-            for key, val in results.iteritems():
-                resTableDict[key] = val.getResult()
-            columnNames = ["Query track"] + catTS.keys()
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+            cls._multipleMCResultsToHtmlCore(core, choices, results, galaxyFn)
             # core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
         core.divEnd()
         core.end()
         print str(core)
+
+        cls._writeInfoBM1(choices, results, cls.extraGalaxyFn["BM1 Info"])
+
+    @classmethod
+    def _writeInfoBM1(cls, choices, results, fn):
+        cls._writeInfo(1, choices, results, fn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -395,28 +223,99 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         return None
 
     @classmethod
-    def prepareTrackStructure(cls, queryTS, catTS):
-        return TrackStructureV2(dict([("query", queryTS), ("reference", catTS)]))
+    def prepareTrackStructure(cls, queryTS, catTS, analysisBins, choices):
+        if choices.randType == "Wilcoxon":
+            return cls._prepareQueryRefTrackStructure(queryTS, catTS)
+        else:
+            ts = TrackStructureV2()
+            randAlgorithm = RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg]
+            for queryTitle, querySTS in queryTS.items():
+                randQuerySTS = querySTS
+                randCatTS = catTS
+                if choices.randInput == TrackStructureV2.QUERY_KEY:
+                    randQuerySTS = querySTS.getRandomizedVersion(
+                        randAlgorithm,
+                        binSource=analysisBins)
+                elif choices.randInput == TrackStructureV2.REF_KEY:
+                    randCatTS = catTS.getRandomizedVersion(
+                        randAlgorithm,
+                        binSource=analysisBins)
+                else:
+                    raise ValueError("Randomization input must be one of {}".format(str(cls.RANDOMIZABLE_INPUTS)))
+                ts[queryTitle] = cls._prepareHypothesisTS(catTS, querySTS, randCatTS, randQuerySTS)
+            return ts
+
+    @classmethod
+    def _prepareHypothesisTS(cls, refTS, queryTS, randRefTS, randQueryTS):
+        realTS = cls._prepareQueryRefTrackStructure(queryTS, refTS)
+        randTS = cls._prepareQueryRefTrackStructure(randQueryTS, randRefTS)
+        hypothesisTS = TrackStructureV2()
+        hypothesisTS["real"] = realTS
+        hypothesisTS["rand"] = randTS
+        return hypothesisTS
+
+    @classmethod
+    def _prepareQueryRefTrackStructure(cls, queryTS, refTS):
+        return TrackStructureV2(dict([("query", queryTS), ("reference", refTS)]))
+
+    @classmethod
+    def _calculateNrOfOperations(cls, ts, analysisBins, choices):
+        if choices.randType == "Wilcoxon":
+            return cls._calculateNrOfOperationsForProgresOutput(ts,
+                                                                analysisBins,
+                                                                choices,
+                                                                isMC=False)
+        else:
+            operationCount = 0
+            for subIndex, subTS in ts.items():
+                currTS = subTS['real']
+                operationCount += cls._calculateNrOfOperationsForProgresOutput(currTS,
+                                                                               analysisBins,
+                                                                               choices,
+                                                                               isMC=True)
+            return operationCount
 
     @classmethod
     def prepareMultiQueryAnalysis(cls, choices, opCount):
-        analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
         if choices.randType == "Wilcoxon":
+            analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
             analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
             analysisSpec.addParameter('alternative', choices.tail)
-        else:
-            analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
-            analysisSpec.addParameter('summaryFunc',
-                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
-        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
+            analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
-        analysisSpec.addParameter('pairwiseStatistic',
-                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
-                                      choices.similarityFunc])
-        analysisSpec.addParameter('segregateNodeKey', 'reference')
-        analysisSpec.addParameter('progressPoints', opCount)
-        analysisSpec.addParameter('runLocalAnalysis', "No")
-        return analysisSpec
+            analysisSpec.addParameter('pairwiseStatistic',
+                                      GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                          choices.similarityFunc])
+            analysisSpec.addParameter('segregateNodeKey', 'reference')
+            analysisSpec.addParameter('progressPoints', opCount)
+            analysisSpec.addParameter('runLocalAnalysis', "No")
+            analysisSpec.addParameter('selectedCategory', choices.categoryVal)
+            return analysisSpec
+        else:
+            mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
+                AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
+            analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
+            analysisSpec = AnalysisDefHandler(analysisDefString)
+            analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
+            if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+                analysisSpec.addParameter('rawStatistic', DiffOfSummarizedRanksPerTsCatV2Stat.__name__)
+            else:
+                analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+                analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+                analysisSpec.addParameter('summaryFunc',
+                                          GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+            analysisSpec.addParameter('tail', choices.tail)
+            analysisSpec.addParameter('progressPoints', opCount)
+            analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+            analysisSpec.addParameter('segregateNodeKey', 'reference')
+
+            analysisSpec.addParameter('pairwiseStatistic',
+                                      GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+                                          choices.similarityFunc])
+            analysisSpec.addParameter('selectedCategory', choices.categoryVal)
+            analysisSpec.addParameter('runLocalAnalysis', "No")
+
+            return analysisSpec
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -430,16 +329,16 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):

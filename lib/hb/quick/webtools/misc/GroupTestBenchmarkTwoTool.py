@@ -4,16 +4,15 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.track.TrackStructure import TrackStructureV2
-from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from proto.tools.GeneralGuiTool import HistElement
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
+from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.GenericTSChildrenV2Stat import GenericTSChildrenV2Stat
-from quick.statistic.MultipleRandomizationManagerStat import MultipleRandomizationManagerStat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
-from quick.util import McEvaluators
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
@@ -21,9 +20,10 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
-class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
+class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin, DebugMixin):
 
     CAT_LBL_KEY = 'catTwoLbl'
+    INFO_HIST_ELEMENT = 'BM2 info'
 
     @classmethod
     def getToolName(cls):
@@ -62,7 +62,8 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             [('Select first level category', 'catOneLbl'),
              ('Select second level category', 'catTwoLbl')] + \
             cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
-            cls.getInputBoxNamesForUserBinSelection()
+            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForDebug()
              # ('Select primary group category value', 'categoryVal'),
              # ('Select track to track similarity/distance measure', 'similarityFunc'),
              # ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
@@ -216,6 +217,27 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             return [x for x in gsuite.attributes if x != prevChoices.catOneLbl]
 
     @classmethod
+    def getExtraHistElements(cls, choices):
+        """
+        Defines extra history elements to be created when clicking execute.
+        This is defined by a list of HistElement objects, as in the
+        following example:
+
+           from proto.GeneralGuiTool import HistElement
+           return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
+
+        It is good practice to use class constants for longer strings.
+
+        In the execute() method, one typically needs to fetch the path to
+        the dataset referred to by the extra history element. To fetch the
+        path, use the dict cls.extraGalaxyFn with the defined history title
+        as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return [HistElement(cls.INFO_HIST_ELEMENT, "txt")]
+
+    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         """
         Is called when execute-button is pushed by web-user. Should print
@@ -228,6 +250,9 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         Mandatory unless isRedirectTool() returns True.
         """
+
+        cls._setDebugModeIfSelected(choices)
+
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
         querySTS = GuiBasedTsFactory.getSingleTrackTS(choices.genome, choices.queryTrack)
@@ -236,13 +261,31 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         for key, val in catTS.items():
             catTS[key] = val.getSplittedByCategoryTS(choices.catTwoLbl)
 
-        ts = cls._prepareTrackStructure(querySTS, catTS, choices.randType, choices.randAlg, analysisBins)
+        ts = cls._prepareTrackStructure(querySTS, catTS, choices.randType, choices.randAlg, choices.randInput, analysisBins)
         operationCount = cls._getOpertationsCount(analysisBins, choices, ts)
         analysisSpec = cls._prepareAnalysis(choices, operationCount)
         cls._startProgressOutput()
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        cls._endProgressOutput()
+        from config.DebugConfig import DebugConfig
+        if DebugConfig.USE_PROFILING:
+            from gold.util.Profiler import Profiler
+            profiler = Profiler()
+            resDict = {}
+            profiler.run('resDict[0] = doAnalysis(analysisSpec, analysisBins, ts)', globals(), locals())
+            res = resDict[0]
+            results = res.getGlobalResult()['Result']
+            profiler.printStats()
+            if DebugConfig.USE_CALLGRAPH and galaxyFn:
+                profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+        else:
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        cls._endProgressOutput(hidden=(not DebugConfig.USE_PROFILING))
         cls._printResults(results, choices, galaxyFn)
+
+        cls._writeInfoBMLocal(choices, results, cls.extraGalaxyFn[cls.INFO_HIST_ELEMENT])
+
+    @classmethod
+    def _writeInfoBMLocal(cls, choices, results, fn):
+        cls._writeInfo(2, choices, results, fn)
 
     @classmethod
     def _getOpertationsCount(cls, analysisBins, choices, ts):
@@ -257,19 +300,29 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         return operationCount
 
     @classmethod
-    def _prepareTrackStructure(cls, querySTS, catTS, randType, randAlg, analysisBins):
+    def _prepareTrackStructure(cls, querySTS, catTS, randType, randAlg, randInput, analysisBins):
 
         ts = TrackStructureV2()
         if randType == 'Wilcoxon':
             for cat, subTS in catTS.items():
                 ts[cat] = cls._prepareQueryRefTrackStructure(querySTS, subTS)
         else:
+            randAlgorithm = RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg]
             for cat, subTS in catTS.items():
-                randCatTS = subTS.getRandomizedVersion(
-                    RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg],
-                    binSource=analysisBins)
+                randQuerySTS = querySTS
+                randCatTS = subTS
+                if randInput == TrackStructureV2.QUERY_KEY:
+                    randQuerySTS = querySTS.getRandomizedVersion(
+                        randAlgorithm,
+                        binSource=analysisBins)
+                elif randInput == TrackStructureV2.REF_KEY:
+                    randCatTS = subTS.getRandomizedVersion(
+                        randAlgorithm,
+                        binSource=analysisBins)
+                else:
+                    raise ValueError("Randomization input must be one of {}".format(str(cls.RANDOMIZABLE_INPUTS)))
                 realTS = cls._prepareQueryRefTrackStructure(querySTS, subTS)
-                randTS = cls._prepareQueryRefTrackStructure(querySTS, randCatTS)
+                randTS = cls._prepareQueryRefTrackStructure(randQuerySTS, randCatTS)
                 hypothesisTS = TrackStructureV2()
                 hypothesisTS["real"] = realTS
                 hypothesisTS["rand"] = randTS
@@ -293,20 +346,21 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            # analysisSpec.addParameter('genericTSChildrenRawStatistic', MultipleRandomizationManagerStat.__name__)
-            analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+            if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+                analysisSpec.addParameter('rawStatistic', DiffOfSummarizedRanksPerTsCatV2Stat.__name__)
+            else:
+                analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+                analysisSpec.addParameter('summaryFunc',
+                                          GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+                analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
             analysisSpec.addParameter('tail', choices.tail)
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
-            analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
-            analysisSpec.addParameter('summaryFunc',
-                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('segregateNodeKey', 'reference')
 
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-            # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         analysisSpec.addParameter('runLocalAnalysis', "No")
 
@@ -332,38 +386,11 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
             # core.tableFromDictionary(resTableDict, columnNames=columnNames)
         else:
-            core.paragraph('The similarity score for each group is measured as the <b>{}</b> of the "<b>{}</b>".'.format(
-                choices.summaryFunc, choices.similarityFunc))
-            resTableDict = OrderedDict()
-            for subGSuiteIndex, subGSuiteTSResult in results.items():
-                resTableDict[subGSuiteIndex] = cls._getSubGSuiteResults(subGSuiteTSResult.getResult(), galaxyFn, subGSuiteIndex)
-            columnNames = ["GSuite index", choices.catSummaryFunc, "P-value", "Mean score for null distribution",
-                             "Std. deviation of score for null distribution", "Null distribution"]
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+            cls._multipleMCResultsToHtmlCore(core, choices, results, galaxyFn)
 
         core.divEnd()
         core.end()
         print str(core)
-
-    @classmethod
-    def _getSubGSuiteResults(cls, mcResult, galaxyFn, subGSuiteLbl):
-
-        rawNDResultsFile = cls._getNullDistributionFile(galaxyFn, mcResult)
-
-        return [mcResult['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
-                mcResult[McEvaluators.PVAL_KEY],
-                mcResult[McEvaluators.MEAN_OF_NULL_DIST_KEY],
-                mcResult[McEvaluators.SD_OF_NULL_DIST_KEY],
-                rawNDResultsFile.getLink("ND {}".format(subGSuiteLbl))]
-
-    @classmethod
-    def _getNullDistributionFile(cls, galaxyFn, mcResult):
-        nullRawResults = mcResult[McEvaluators.RAND_RESULTS_KEY]
-        rawNDResultsFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
-        with rawNDResultsFile.getFile() as f:
-            line = "\t".join([str(_) for _ in nullRawResults]) + "\n"
-            f.write(line)
-        return rawNDResultsFile
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -498,16 +525,16 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
     #
     @classmethod
     def getOutputFormat(cls, choices):
@@ -526,7 +553,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         Optional method. Default return value if method is not defined:
         'html'
         """
-        return 'customhtml'
+        return 'html'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

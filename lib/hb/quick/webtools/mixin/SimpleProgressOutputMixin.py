@@ -22,11 +22,12 @@ class SimpleProgressOutputMixin(object):
 
 
     @classmethod
-    def _endProgressOutput(cls):
+    def _endProgressOutput(cls, hidden=True):
         from proto.hyperbrowser.HtmlCore import HtmlCore
         core = HtmlCore()
         core.divEnd()
-        core.hideToggle(styleId="progress-output")
+        if hidden:
+            core.hideToggle(styleId="progress-output")
         print str(core)
 
     @classmethod
