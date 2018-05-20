@@ -4,8 +4,10 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.track.TrackStructure import TrackStructureV2
+from proto.tools.GeneralGuiTool import HistElement
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
+from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.GenericTSChildrenV2Stat import GenericTSChildrenV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
@@ -21,6 +23,7 @@ from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin, DebugMixin):
 
     CAT_LBL_KEY = 'catTwoLbl'
+    INFO_HIST_ELEMENT = 'BM2 info'
 
     @classmethod
     def getToolName(cls):
@@ -214,6 +217,27 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             return [x for x in gsuite.attributes if x != prevChoices.catOneLbl]
 
     @classmethod
+    def getExtraHistElements(cls, choices):
+        """
+        Defines extra history elements to be created when clicking execute.
+        This is defined by a list of HistElement objects, as in the
+        following example:
+
+           from proto.GeneralGuiTool import HistElement
+           return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
+
+        It is good practice to use class constants for longer strings.
+
+        In the execute() method, one typically needs to fetch the path to
+        the dataset referred to by the extra history element. To fetch the
+        path, use the dict cls.extraGalaxyFn with the defined history title
+        as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return [HistElement(cls.INFO_HIST_ELEMENT, "txt")]
+
+    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         """
         Is called when execute-button is pushed by web-user. Should print
@@ -256,6 +280,12 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
         cls._endProgressOutput(hidden=(not DebugConfig.USE_PROFILING))
         cls._printResults(results, choices, galaxyFn)
+
+        cls._writeInfoBMLocal(choices, results, cls.extraGalaxyFn[cls.INFO_HIST_ELEMENT])
+
+    @classmethod
+    def _writeInfoBMLocal(cls, choices, results, fn):
+        cls._writeInfo(2, choices, results, fn)
 
     @classmethod
     def _getOpertationsCount(cls, analysisBins, choices, ts):
@@ -316,12 +346,15 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-            analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+            if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+                analysisSpec.addParameter('rawStatistic', DiffOfSummarizedRanksPerTsCatV2Stat.__name__)
+            else:
+                analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+                analysisSpec.addParameter('summaryFunc',
+                                          GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+                analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
             analysisSpec.addParameter('tail', choices.tail)
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
-            analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
-            analysisSpec.addParameter('summaryFunc',
-                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('segregateNodeKey', 'reference')
 

@@ -108,7 +108,7 @@ class GroupTestBM3ShuffleGroupsInGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def isPublic(cls):
-        return False
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):

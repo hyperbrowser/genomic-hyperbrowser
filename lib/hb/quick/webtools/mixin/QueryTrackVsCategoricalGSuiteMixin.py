@@ -9,14 +9,15 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
     CAT_GSUITE_KEY = 'gsuite'
     CAT_LBL_KEY = 'categoryName'
     SUMMARY_FUNC_DICT = SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
+    DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL = "Difference of rank averages"
 
     @classmethod
     def getInputBoxNamesForQueryTrackVsCatGSuite(cls):
         return [('Select primary group category value', 'categoryVal'),
                 ('Type of randomization', 'randType'),
                 ('Select track to track similarity/distance measure', 'similarityFunc'),
-                ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                ('Select summary function groups', 'catSummaryFunc'),
+                ('Select categorical summary function (between groups)', 'catSummaryFunc'),
+                ('Select summary function (for tracks in group)', 'summaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Select tail alternative for the hypothesis test', 'tail'),
                 ('Randomization algorithm', 'randAlg'),
@@ -48,15 +49,17 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         from quick.gsuite import GSuiteStatUtils
         return GSuiteStatUtils.PAIRWISE_STAT_LABELS
 
-    @staticmethod
-    def getOptionsBoxSummaryFunc(prevChoices):
-        from quick.gsuite import GSuiteStatUtils
-        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
-
-    @staticmethod
-    def getOptionsBoxCatSummaryFunc(prevChoices):
+    @classmethod
+    def getOptionsBoxCatSummaryFunc(cls, prevChoices):
         if prevChoices.randType not in ["Wilcoxon"]:
-            return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
+            return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys() + \
+                   [cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL]
+
+    @classmethod
+    def getOptionsBoxSummaryFunc(cls, prevChoices):
+        if prevChoices.catSummaryFunc not in [cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL]:
+            from quick.gsuite import GSuiteStatUtils
+            return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
 
 
     @staticmethod
@@ -87,22 +90,26 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
 
     @classmethod
-    def _getSubGSuiteResults(cls, mcResult, galaxyFn, subGSuiteLbl):
+    def _getSubGSuiteResults(cls, mcResult, galaxyFn, subGSuiteLbl, catSummaryFunc):
         from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
+        from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
         from quick.util import McEvaluators
-        rawNDResultsFile = cls._getNullDistributionFile(galaxyFn, mcResult)
-        return [mcResult['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
+        rawNDResultsFile = cls._getNullDistributionFile(galaxyFn, subGSuiteLbl, mcResult)
+        testStatLbl = 'TSMC_' + DiffOfSummarizedRanksPerTsCatV2Stat.__name__ if \
+            catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL else \
+            'TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__
+        return [mcResult[testStatLbl],
                 mcResult[McEvaluators.PVAL_KEY],
                 mcResult[McEvaluators.MEAN_OF_NULL_DIST_KEY],
                 mcResult[McEvaluators.SD_OF_NULL_DIST_KEY],
                 rawNDResultsFile.getLink("ND {}".format(subGSuiteLbl))]
 
     @classmethod
-    def _getNullDistributionFile(cls, galaxyFn, mcResult):
+    def _getNullDistributionFile(cls, galaxyFn, subGSuiteLbl, mcResult):
         from quick.util import McEvaluators
         from proto.StaticFile import GalaxyRunSpecificFile
         nullRawResults = mcResult[McEvaluators.RAND_RESULTS_KEY]
-        rawNDResultsFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
+        rawNDResultsFile = GalaxyRunSpecificFile(["NullDist", subGSuiteLbl, "table.txt"], galaxyFn)
         with rawNDResultsFile.getFile() as f:
             line = "\t".join([str(_) for _ in nullRawResults]) + "\n"
             f.write(line)
@@ -117,8 +124,42 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         resTableDict = OrderedDict()
         for subGSuiteLbl, subGSuiteTSResult in results.items():
             resTableDict[subGSuiteLbl] = cls._getSubGSuiteResults(subGSuiteTSResult.getResult(), galaxyFn,
-                                                                    subGSuiteLbl)
+                                                                  subGSuiteLbl, choices.catSummaryFunc)
         columnNames = ["GSuite index", choices.catSummaryFunc, "P-value", "Mean score for null distribution",
                        "Std. deviation of score for null distribution", "Null distribution"]
         from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
         addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+
+    @classmethod
+    def _writeInfo(cls, benchmark, choices, results, fn):
+        from os import linesep
+        from quick.util import McEvaluators
+        strOut = ""
+        strOut += "benchmark={}".format(benchmark) + linesep
+        strOut += "method={}".format(cls._determineMethod(choices)) + linesep
+        strOut += "simMeasure={}".format(choices.similarityFunc) + linesep
+        strOut += "catSummaryFunc={}".format(choices.catSummaryFunc) + linesep
+        if choices.randType == "Wilcoxon":
+            for key, val in results.iteritems():
+                strOut += "pval_{}={}".format(key, val.getResult()['p.value']) + linesep
+        else:
+            for key, res in results.items():
+                strOut += "pval_{}={}".format(key, res.getResult()[McEvaluators.PVAL_KEY]) + linesep
+
+        with open(fn, "wt") as f:
+            f.write(strOut)
+
+    @classmethod
+    def _determineMethod(cls, choices):
+        if choices.catSummaryFunc not in ['Difference of rank sums']:
+            if choices.randType == "Wilcoxon":
+                return 1
+            elif choices.randType == 'Within tracks':
+                if choices.randInput == "query":
+                    return 2
+                else:
+                    return 3
+        else:
+            #TODO: not implemented
+            return 5
+
