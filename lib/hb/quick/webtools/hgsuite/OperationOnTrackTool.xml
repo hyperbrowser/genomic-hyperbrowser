@@ -1,0 +1,4 @@
+<tool id="hb_operation_on_track_tool" name="Operations on track" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.OperationOnTrackTool" proto_tool_class="OperationOnTrackTool">
+  <description></description>
+</tool>

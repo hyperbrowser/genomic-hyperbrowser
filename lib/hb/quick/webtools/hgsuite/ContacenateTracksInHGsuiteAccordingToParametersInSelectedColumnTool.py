@@ -117,7 +117,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
         cols = [getattr(choices, 'excludedColumns%s' % i) for i in range(0, cls.MAX_NUM_OF_COLS)]
         excludedCols = []
         for c in cols:
-            if c != None and c!= '':
+            if c != 'None' and c!= '':
                 c = c.encode('utf-8')
                 excludedCols.append(c)
 
