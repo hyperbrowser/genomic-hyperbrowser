@@ -74,9 +74,9 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select the query GSuite', 'queryGsuite'),
-                ('Select the categorical reference GSuite', 'refGsuite'),
-                ('Select category column', 'categoryName'),
+        return [('Select GSuite of simulate query tracks', 'queryGsuite'),
+                ('Select categorical GSuite of real reference tracks', 'refGsuite'),
+                ('Select GSuite column with group labels', 'categoryName'),
                 ] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                 cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \

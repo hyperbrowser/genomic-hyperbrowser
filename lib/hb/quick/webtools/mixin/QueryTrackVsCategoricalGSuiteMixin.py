@@ -13,15 +13,15 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def getInputBoxNamesForQueryTrackVsCatGSuite(cls):
-        return [('Select primary group category value', 'categoryVal'),
-                ('Type of randomization', 'randType'),
-                ('Select track to track similarity/distance measure', 'similarityFunc'),
-                ('Select categorical summary function (between groups)', 'catSummaryFunc'),
-                ('Select summary function (for tracks in group)', 'summaryFunc'),
+        return [('Select primary group label', 'categoryVal'),
+                ('Null model', 'randType'),
+                ('Select pairwise similarity measure', 'similarityFunc'),
+                ('Select between group summary function', 'catSummaryFunc'),
+                ('Select within group summary function', 'summaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Select tail alternative for the hypothesis test', 'tail'),
-                ('Randomization algorithm', 'randAlg'),
-                ('Randomized input (for MC)', 'randInput')
+                ('Select preservation and randomization scheme', 'randAlg'),
+                ('Randomize query or reference?', 'randInput')
                 ]
 
     @classmethod

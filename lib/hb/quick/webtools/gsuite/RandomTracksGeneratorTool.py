@@ -40,13 +40,13 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Number of track', 'nrTracks'),
+        return [('Number of tracks', 'nrTracks'),
                 ('Select genome', 'genome'),
                 #0.000001, 0.000001, 1.0, 100, 1000
                 #interRate, intraRate, interProb, minSegLen, maxSegLen
-                ('Inter-rate', 'interRate'),
-                ('Intra-rate', 'intraRate'),
-                ('Inter-probability', 'interProb'),
+                ('Specify inter-cluster Poisson process rate', 'interRate'),
+                ('Specify intra-cluster Poisson process rate', 'intraRate'),
+                ('Specify probability of cluster initialization', 'interProb'),
                 ('Minimum segment length', 'minSegLen'),
                 ('Maximum segment length', 'maxSegLen')
                 ]

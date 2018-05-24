@@ -24,6 +24,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
     CAT_LBL_KEY = 'catTwoLbl'
     INFO_HIST_ELEMENT = 'BM2 info'
+    REF_GSUITE_INPUT_LBL = 'Select a GSuite of reference tracks simulated from the query'
 
     @classmethod
     def getToolName(cls):
@@ -56,11 +57,11 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select query track', 'queryTrack'),
-               ('Select a GSuite', 'gsuite')] + \
+        return [('Select query track (simulated or real)', 'queryTrack'),
+               (cls.REF_GSUITE_INPUT_LBL, 'gsuite')] + \
             cls.getInputBoxNamesForGenomeSelection() + \
-            [('Select first level category', 'catOneLbl'),
-             ('Select second level category', 'catTwoLbl')] + \
+            [('Select GSuite column with sub-GSuite labels', 'catOneLbl'),
+             ('Select GSuite column with group labels', 'catTwoLbl')] + \
             cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
             cls.getInputBoxNamesForUserBinSelection() + \
             cls.getInputBoxNamesForDebug()

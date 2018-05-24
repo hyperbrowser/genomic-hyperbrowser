@@ -4,6 +4,7 @@ from quick.webtools.misc.GroupTestBenchmarkTwoTool import GroupTestBenchmarkTwoT
 
 class GroupTestBenchmarkThreeTool(GroupTestBenchmarkTwoTool):
     INFO_HIST_ELEMENT = "BM3 Info"
+    REF_GSUITE_INPUT_LBL = 'Select a GSuite of reference tracks with randomized group labels'
 
     @classmethod
     def getExtraHistElements(cls, choices):
