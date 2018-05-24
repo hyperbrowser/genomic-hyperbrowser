@@ -52,6 +52,7 @@ class PointsSampledFromBinaryIntensityTrack(SegsSampledByIntensityTrack):
         assert ends is None or all(ends==starts+1)
 
         sampledStarts = numpy.random.choice(universeStarts, len(starts), replace=False)
+        sampledStarts.sort()
         sampledEnds = None if ends is None else sampledStarts+1
 
         return sampledStarts, sampledEnds, vals, strands, ids, edges, weights, extras
