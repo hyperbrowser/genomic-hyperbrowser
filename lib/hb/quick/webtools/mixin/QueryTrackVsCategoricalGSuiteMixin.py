@@ -1,4 +1,5 @@
 from gold.track.TrackStructure import TrackStructureV2
+from quick.extra.plot import RPlotUtil
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable
 
 
@@ -130,6 +131,10 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
         addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
 
+        pvals = [x[1] for x in resTableDict.values()]
+        nameList = ["Monte_Carlo", "qqplot.png"]
+        cls._addQQPlot(core, pvals, nameList, galaxyFn)
+
     @classmethod
     def _writeInfo(cls, benchmark, choices, results, fn):
         from os import linesep
@@ -165,3 +170,19 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
             else:
                 return 6
 
+    @classmethod
+    def _addQQPlot(cls, core, pvals, nameList, galaxyFn):
+        import numpy as np
+        from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+        n = len(pvals)
+        theoreticalVals = np.random.uniform(0, 1, n)
+        plotOutput = GalaxyRunSpecificFile(nameList, galaxyFn)
+        plotOutput.openRFigure()
+        mainTitle = 'Uniform Q-Q Plot of the P-values'
+        xTitle = 'Theoretical Quantiles'
+        yTitle = 'Sample Quantiles'
+        RPlotUtil.drawQQPlot(theoreticalVals, pvals, [0, 1], [0, 1], mainTitle, xTitle, yTitle)
+        RPlotUtil.rDevOff()
+        core.divBegin()
+        core.image(plotOutput.getURL())
+        core.divEnd()

@@ -385,13 +385,21 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
             columnNames = ["GSuite index", "Wilcoxon statistic", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+
+            nameList = ['Wilcoxon', 'qqplot.png']
+            pvals = [x[1] for x in resTableDict.values()]
+
+            cls._addQQPlot(core, pvals, nameList, galaxyFn)
             # core.tableFromDictionary(resTableDict, columnNames=columnNames)
         else:
             cls._multipleMCResultsToHtmlCore(core, choices, results, galaxyFn)
 
         core.divEnd()
+
         core.end()
         print str(core)
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

@@ -194,6 +194,12 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
             columnNames = ["Query track", "Wilcoxon score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+
+            nameList = ['Wilcoxon', 'qqplot.png']
+            pvals = [x[1] for x in resTableDict.values()]
+
+            cls._addQQPlot(core, pvals, nameList, galaxyFn)
+
             # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
         else:
             cls._multipleMCResultsToHtmlCore(core, choices, results, galaxyFn)
