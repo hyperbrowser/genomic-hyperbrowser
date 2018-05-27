@@ -21,8 +21,9 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS, processResult
 
-class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
+class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
+                                                  DebugMixin):
     MAX_NUM_OF_COLS = 15
     MAX_NUM_OF_COLS_IN_GSUITE = 2
     MERGED_SIGN = ' - '
@@ -30,12 +31,11 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     STAT_LIST = {'Count overlap (bps)': STAT_OVERLAP_COUNT_BPS}
     FIRST_GSUITE = 'First GSuite'
     SECOND_GSUITE = 'Second GSuite'
-    SUMMARIZE = {'no':'no', 'sum':'sum', 'average':'avg', 'minimum':'min', 'maximum':'max'}
+    SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max'}
     TITLE = 'title'
 
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
-
 
     @classmethod
     def getToolName(cls):
@@ -46,7 +46,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         return [('Select first gSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
-                [('Select column from first gSuite', 'firstGSuiteColumn'),
+               [('Select column from first gSuite', 'firstGSuiteColumn'),
                 ('Select second gSuite', 'secondGSuite'),
                 ('Select column from second gSuite', 'secondGSuiteColumn')
                 ] + \
@@ -55,18 +55,22 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 in range(cls.MAX_NUM_OF_COLS)] + \
                [('Select overlap handling', 'intraOverlap')] + \
                [('Summarize within groups', 'summarize')] + \
-               [('Select column from first gSuite %s' % (i + 1) +  ' which you would like to treat as unique',
+               [('Select column from first gSuite %s' % (
+               i + 1) + ' which you would like to treat as unique',
                  'selectedFirstColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Do you want to do above summarize data for column %s' % (i + 1) + ' from first gSuite ',
-                 'selectedFirstColumnOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Select column from second gSuite %s' % (i + 1) +  ' which you would like to treat as unique',
+               [('Do you want to do above summarize data for column %s' % (
+               i + 1) + ' from first gSuite ',
+                 'selectedFirstColumnOption%s' % i) for i in
+                range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('Select column from second gSuite %s' % (
+               i + 1) + ' which you would like to treat as unique',
                  'selectedSecondColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-                [('Do you want to do above summarize for column %s' % (i + 1) + ' from second gSuite ',
-                 'selectedSecondColumnOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               cls.getInputBoxNamesForUserBinSelection()+ \
+               [('Do you want to do above summarize for column %s' % (
+               i + 1) + ' from second gSuite ',
+                 'selectedSecondColumnOption%s' % i) for i in
+                range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
-
-
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -86,14 +90,14 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     def getOptionsBoxSecondGSuiteColumn(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.secondGSuite:
             gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
-            return ['None']+ [cls.TITLE] + gSuiteTN.attributes
+            return ['None'] + [cls.TITLE] + gSuiteTN.attributes
 
     @classmethod
     def _getOptionsBoxForSelectedStat(cls, prevChoices, index):
         if prevChoices.gsuite and prevChoices.secondGSuite:
             selectionList = []
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedStat%s' % i) for i in
-                           xrange(index)):
+                       xrange(index)):
                 attrList = [getattr(prevChoices, 'selectedStat%s' % i) for i in xrange(index)]
                 selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
             if selectionList:
@@ -104,7 +108,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         from functools import partial
         for i in xrange(cls.MAX_NUM_OF_COLS):
             setattr(cls, 'getOptionsBoxSelectedStat%s' % i,
-                partial(cls._getOptionsBoxForSelectedStat, index=i))
+                    partial(cls._getOptionsBoxForSelectedStat, index=i))
 
     @classmethod
     def getOptionsBoxIntraOverlap(cls, prevChoices):
@@ -112,7 +116,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         for a in statList:
             if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
                 return [CountDescriptiveStatisticBetweenHGsuiteTool.MERGE_INTRA_OVERLAPS,
-                CountDescriptiveStatisticBetweenHGsuiteTool.ALLOW_MULTIPLE_OVERLAP]
+                        CountDescriptiveStatisticBetweenHGsuiteTool.ALLOW_MULTIPLE_OVERLAP]
 
     @classmethod
     def getOptionsBoxSummarize(cls, prevChoices):
@@ -129,8 +133,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                 selectionList += gSuiteTNFirst.attributes
 
-                attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in xrange(index)]
-                selectionList = [cls.PHRASE]+ [cls.TITLE] + list(set(selectionList) - set(attrList))
+                attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+                            xrange(index)]
+                selectionList = [cls.PHRASE] + [cls.TITLE] + list(
+                    set(selectionList) - set(attrList))
 
             if selectionList:
                 return selectionList
@@ -173,8 +179,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 gSuiteTNSecond = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
                 selectionList += gSuiteTNSecond.attributes
 
-                attrList = [getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in xrange(index)]
-                selectionList = [cls.PHRASE] + [cls.TITLE] + list(set(selectionList) - set(attrList))
+                attrList = [getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+                            xrange(index)]
+                selectionList = [cls.PHRASE] + [cls.TITLE] + list(
+                    set(selectionList) - set(attrList))
 
             if selectionList:
                 return selectionList
@@ -219,7 +227,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         summarize = choices.summarize.encode('utf-8')
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=firstGSuite.genome)
+        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
+                                                         genome=firstGSuite.genome)
 
         # print firstGSuite, '<br>'
         # print firstGSuiteColumn, '<br>'
@@ -228,32 +237,39 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         statList = cls._getSelectedOptions(choices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
         if summarize != 'no':
-            firstColumnList = cls._getSelectedOptions(choices, 'selectedFirstColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
-            columnOptionsDict = cls._getSelectedColumnOptions(choices, 'selectedFirstColumnOption%s',cls.MAX_NUM_OF_COLS_IN_GSUITE, firstColumnList)
-            secondColumnList = cls._getSelectedOptions(choices, 'selectedSecondColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            firstColumnList = cls._getSelectedOptions(choices, 'selectedFirstColumn%s',
+                                                      cls.MAX_NUM_OF_COLS_IN_GSUITE)
             columnOptionsDict = cls._getSelectedColumnOptions(choices,
-                                                                   'selectedSecondColumnOption%s',
-                                                                   cls.MAX_NUM_OF_COLS_IN_GSUITE,
-                                                                   secondColumnList, columnOptionsDict, st = len(firstColumnList))
+                                                              'selectedFirstColumnOption%s',
+                                                              cls.MAX_NUM_OF_COLS_IN_GSUITE,
+                                                              firstColumnList)
+            secondColumnList = cls._getSelectedOptions(choices, 'selectedSecondColumn%s',
+                                                       cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            columnOptionsDict = cls._getSelectedColumnOptions(choices,
+                                                              'selectedSecondColumnOption%s',
+                                                              cls.MAX_NUM_OF_COLS_IN_GSUITE,
+                                                              secondColumnList, columnOptionsDict,
+                                                              st=len(firstColumnList))
 
         else:
             firstColumnList = []
             secondColumnList = []
             columnOptionsDict = {}
 
-
-
         # print statList, '<br>'
+        # print 'firstColumnList', firstColumnList, '<br>'
+        # print 'secondColumnList', secondColumnList, '<br>'
         # print 'columnOptionsDict', columnOptionsDict, '<br>'
 
 
-        #As many unique columns from: firstColumnList and secondColumnList as many outputGSuites
+        # As many unique columns from: firstColumnList and secondColumnList as many outputGSuites
         firstOutput = cls._getAttributes(firstGSuite, firstColumnList)
         # print 'firstOutput', firstOutput, '<br>'
         secondOutput = cls._getAttributes(secondGSuite, secondColumnList)
         # print 'secondOutput', secondOutput, '<br>'
         whichGroups = cls.createGroups(firstColumnList, firstGSuite, firstOutput, secondColumnList,
-                                       secondGSuite, secondOutput, firstGSuiteColumn, secondGSuiteColumn)
+                                       secondGSuite, secondOutput, firstGSuiteColumn,
+                                       secondGSuiteColumn)
 
         # print 'which groups', whichGroups
 
@@ -274,16 +290,19 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
         htmlCore.header('Description')
-        htmlCore.paragraph('You can see results in two ways: table and plot... Click on the following table to see results for statistics. ')
+        htmlCore.paragraph(
+            'You can see results in two ways: table and plot... Click on the following table to see results for statistics. ')
         htmlCore.header('Interpretation of results')
         htmlCore.paragraph('Click here to see how to ...')
 
-        cls.writeResults(galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList, summarize)
+        cls.writeResults(galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
+                         summarize)
         htmlCore.end()
         print htmlCore
 
     @classmethod
-    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList, summarize):
+    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
+                     summarize):
 
         # print '--- resultsDictFinal --- ', resultsDict
         # print 'firstColumnList, secondColumnList', firstColumnList, secondColumnList
@@ -305,10 +324,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     if summarizeKey == 'no':
                         data += groupItem
                     else:
-                        data.append(list(groupKey) + [eval(summarizeKey + "(" + str(groupItem) + ")")])
+                        data.append(
+                            list(groupKey) + [eval(summarizeKey + "(" + str(groupItem) + ")")])
 
-
-            #print 'data=', data
+            # print 'data=', data
 
 
             if summarizeKey == 'no':
@@ -322,15 +341,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 dp = zip(*dataToPresent)
 
             optionData = []
-            for z in range(0, len(dp)-1):
+            for z in range(0, len(dp) - 1):
                 pl = []
                 for d in dp[z]:
                     if not d in pl:
                         pl.append(d)
                 optionData.append(pl)
 
-            #operations = [-2 for i in range(0, elNum-3)] + [-1,-1, -2]
-            #data = cls.summarizeTable(statItem, operations)
+            # operations = [-2 for i in range(0, elNum-3)] + [-1,-1, -2]
+            # data = cls.summarizeTable(statItem, operations)
 
             # print 'header', header
             # print 'data', data
@@ -341,14 +360,14 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             statKeyOrginal = str(statKey)
             statKey = statKey.replace(' ', '').replace('(', '').replace(')', '').replace('/', '')
 
-            #sth is wrong with url to file!
+            # sth is wrong with url to file!
             fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
             fileStatPath = fileStat.getDiskPath(ensurePath=True)
             wf = open(fileStatPath, 'w')
             for d in data:
-                wf.write('\t'.join([str(dd) for dd in d ]) + '\n')
+                wf.write('\t'.join([str(dd) for dd in d]) + '\n')
 
-            divId = 'results'+str(statKey)
+            divId = 'results' + str(statKey)
 
             jsCode = """
                     <script>
@@ -374,7 +393,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                                   }
                                   else
                                   {
-                                      if (el.tagName == 'DIV' && el.id != 'resultsHeader-""" + str(statKey) + """')
+                                      if (el.tagName == 'DIV' && el.id != 'resultsHeader-""" + str(
+                statKey) + """')
                                       {
                                           if ($(el).attr('class') == "hidden") 
                                           {
@@ -387,12 +407,11 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                                       }
                                   }
                                 }
-                                
+
                             });
                     });
                     </script>
                     """
-
 
             htmlCore.divBegin(divId, 'resultsAll')
             htmlCore.line(jsCode)
@@ -403,16 +422,17 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
             htmlCore.divBegin(divId='resultsDesc-' + str(statKey), divClass='hidden')
             htmlCore.divBegin(divClass='resultsDescription')
-            htmlCore.divBegin(divId='showDetailed-'+str(statKey), divClass='showDetailed')
+            htmlCore.divBegin(divId='showDetailed-' + str(statKey), divClass='showDetailed')
             htmlCore.header('Detailed information about results')
             htmlCore.divEnd()
-            htmlCore.divBegin(divId = 'detailed-'+str(statKey), divClass='hidden')
+            htmlCore.divBegin(divId='detailed-' + str(statKey), divClass='hidden')
             htmlCore.divBegin(divClass='detailed')
             htmlCore.link('Download raw file: ' + statKey, fileStat.getURL())
             htmlCore.divEnd()
             htmlCore.divEnd()
             htmlCore.divEnd()
-            htmlCore.line(cube.addSelectList(header[:len(header)-1], optionData, data, divId, statNum))
+            htmlCore.line(
+                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum))
             htmlCore.divEnd()
             htmlCore.divEnd()
 
@@ -463,9 +483,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 selectedAnalysis.append(analysisSpec)
         return selectedAnalysis, statIndex
 
-
-    #print summarizeTable([['ata', '1 - 243-2--eta-.bed--TG', 863], ['ata', '1 - 243-2--eta-.bed--TA', 781]], [-1, -1, -2])
-    #[[1644]]
+    # print summarizeTable([['ata', '1 - 243-2--eta-.bed--TG', 863], ['ata', '1 - 243-2--eta-.bed--TA', 781]], [-1, -1, -2])
+    # [[1644]]
     @classmethod
     def summarizeTable(cls, flat, operations):
         for i, op in reversed(list(enumerate(operations))):
@@ -480,7 +499,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         return flat
 
     @classmethod
-    def countStat(cls, analysisBins, selectedAnalysis, statIndex, whichGroups, statList, summarize, columnOptionsDict):
+    def countStat(cls, analysisBins, selectedAnalysis, statIndex, whichGroups, statList, summarize,
+                  columnOptionsDict):
         resultsDict = OrderedDict()
 
         # print 'analysisBins', analysisBins, '<br>'
@@ -508,7 +528,6 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
                     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
 
-
                 # print 'group', groupKey, len(groupItem)
                 for gi in groupItem:
                     result = doAnalysis(sa, analysisBins, gi)
@@ -520,21 +539,21 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     # refTrack = res.getTrackStructure()['reference'].track
                     refTrackTitle = res.getTrackStructure()['reference'].metadata['title']
 
-
                     # IS there a bug ? - consult it with GKS
                     # print 'allResults', allResults
                     # print 'statIndex', statIndex
                     # print 'processResult(allResults)', processResult(allResults)
-                    #resVal = processResult(allResults)[statIndex]
+                    # resVal = processResult(allResults)[statIndex]
                     resVal = int(allResults['Both'])
                     # print sa, queryTrackTitle, refTrackTitle, resVal
 
                     # print [queryTrackTitle, refTrackTitle, resVal], '<br>'
 
                     if cls.SUMMARIZE[summarize] == 'no':
-                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append([queryTrackTitle, refTrackTitle, resVal])
+                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
+                            [queryTrackTitle, refTrackTitle, resVal])
                     else:
-                        #groupKey = cls.changeOptions(columnOptionsDict, groupKey)
+                        # groupKey = cls.changeOptions(columnOptionsDict, groupKey)
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(resVal)
 
         return resultsDict
@@ -556,7 +575,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         # print 'itCoOp', itCoOp, 'groupKey[int(kCo)]', groupKey[int(kCo)], '<br>'
                         if itCoOp.index(groupKey[int(kCo)]) != 0:
                             # print 'groupKey, int(kCo), itCoOp[0]', groupKey, int(kCo), itCoOp[0], '<br>'
-                            groupKey = cls._replacementForTupleAtPosition(groupKey, int(kCo), itCoOp[0])
+                            groupKey = cls._replacementForTupleAtPosition(groupKey, int(kCo),
+                                                                          itCoOp[0])
                             # print 'gr', groupKey, '<br>'
                             changeElement = True
         return groupKey
@@ -564,6 +584,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def createGroups(cls, firstColumnList, firstGSuite, firstOutput, secondColumnList,
                      secondGSuite, secondOutput, firstGSuiteColumn, secondGSuiteColumn):
+
+        # print firstColumnList, firstGSuite, firstOutput, secondColumnList,
+        # print secondGSuite, secondOutput, firstGSuiteColumn, secondGSuiteColumn
 
         whichGroups = OrderedDict()
         # print firstOutput, secondOutput
@@ -575,8 +598,20 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
             for iTrackFromSecond, trackFromSecond in enumerate(secondGSuite.allTracks()):
-                # print 'attr', trackFromFirst.getAttribute(firstGSuiteColumn), trackFromSecond.getAttribute(secondGSuiteColumn)
-                if trackFromFirst.getAttribute(firstGSuiteColumn) == trackFromSecond.getAttribute(secondGSuiteColumn):
+
+                if firstGSuiteColumn == 'title':
+                    attr1 = trackFromFirst.title
+                else:
+                    attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
+
+                if secondGSuiteColumn == 'title':
+                    attr2 = trackFromSecond.title
+                else:
+                    attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
+
+                # print 'attr', attr1, attr2, firstGSuiteColumn, secondGSuiteColumn, '<br>'
+
+                if attr1 == attr2:
                     attrTuple = []
                     cls.buildAttrTuple(attrTuple, firstColumnList, trackFromFirst)
                     cls.buildAttrTuple(attrTuple, secondColumnList, trackFromSecond)
@@ -584,8 +619,13 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     # print 'attrTuple', attrTuple, '<br>'
                     # print '[trackFromFirst, trackFromSecond]', [trackFromFirst.trackName,trackFromSecond.trackName], '<br>', '<br>'
                     realTS = TrackStructureV2()
-                    realTS["query"] = SingleTrackTS(PlainTrack(trackFromFirst.trackName),OrderedDict(title=trackFromFirst.title, genome=str(firstGSuite.genome)))
-                    realTS["reference"] = SingleTrackTS(PlainTrack(trackFromSecond.trackName),OrderedDict(title=trackFromSecond.title, genome=str(firstGSuite.genome)))
+                    realTS["query"] = SingleTrackTS(PlainTrack(trackFromFirst.trackName),
+                                                    OrderedDict(title=trackFromFirst.title,
+                                                                genome=str(firstGSuite.genome)))
+                    realTS["reference"] = SingleTrackTS(PlainTrack(trackFromSecond.trackName),
+                                                        OrderedDict(title=trackFromSecond.title,
+                                                                    genome=str(
+                                                                        firstGSuite.genome)))
                     whichGroups[attrTuple].append(realTS)
         return whichGroups
 
@@ -598,7 +638,6 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 at = trackFromFirst.getAttribute(attrName)
             attrTuple.append(at)
         return attrTuple
-
 
     @classmethod
     def _getAttributes(cls, firstGSuite, firstColumnList):
@@ -617,15 +656,16 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def _getCombinations(cls, firstOutput, secondOutput):
         listOfLists = []
-        if firstOutput!=None:
+        if firstOutput != None:
             listOfLists = firstOutput
-        if secondOutput!=None:
+        if secondOutput != None:
             listOfLists += secondOutput
         listOfListsCombinations = itertools.product(*listOfLists)
         return listOfListsCombinations
 
     @classmethod
-    def _getSelectedColumnOptions(cls, choices, division, num, columnList, columnOptionsList={}, st=0):
+    def _getSelectedColumnOptions(cls, choices, division, num, columnList, columnOptionsList={},
+                                  st=0):
         cols = []
         for i in range(0, num):
             cols.append(getattr(choices, division % i))
@@ -638,10 +678,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 if c != None:
                     c = c.encode('utf-8')
                     if c != cls.PHRASE and c != '':
-                        if not str(numC+st) in selColumn.keys():
-                            selColumn[str(numC+st)] = []
+                        if not str(numC + st) in selColumn.keys():
+                            selColumn[str(numC + st)] = []
                         for el in c.split(';'):
-                            selColumn[str(numC+st)].append(el.split(','))
+                            selColumn[str(numC + st)].append(el.split(','))
         return selColumn
 
     @classmethod
@@ -654,7 +694,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def _getDatafromSelectedStat(cls, cols):
         selectedCols = []
-        if len(cols) >=1:
+        if len(cols) >= 1:
             for c in cols:
                 if c != None:
                     c = c.encode('utf-8')
@@ -802,16 +842,18 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
-    #
-    # @classmethod
-    # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
-    #     """
-    #     The title (name) of the main output history element.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     the name of the tool.
-    #     """
+        #
+        # @classmethod
+        # def getOutputName(cls, choices=None):
+        #     return cls.getToolSelectionName()
+        #     """
+        #     The title (name) of the main output history element.
+        #
+        #     Optional method. Default return value if method is not defined:
+        #     the name of the tool.
+        #     """
+
+
 CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedStatMethods()
 CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedFirstColumnMethods()
 CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedFirstColumnOptionMethods()
