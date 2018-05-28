@@ -160,15 +160,24 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
             if choices.randType == "Wilcoxon":
                 return 1
             elif choices.randType == 'Within tracks':
-                if choices.randInput == "query":
-                    return 2
-                else:
-                    return 3
+                if choices.randAlg == \
+                        'Permute segments and inter-segment regions (size of inter-segment regions remains constant)':
+                    if choices.randInput == "query":
+                        return 2
+                    else:
+                        return 3
+            elif choices.randType == 'Between tracks':
+                if choices.randAlg == 'Shuffle between tracks':
+                    if choices.randInput == "reference":
+                        return 4
         else:
             if choices.randInput == "query":
-                return 5
-            else:
                 return 6
+            elif choices.randType == 'Between tracks':
+                if choices.randAlg == 'Shuffle between tracks':
+                    return 5
+
+        return -1
 
     @classmethod
     def _addQQPlot(cls, core, pvals, nameList, galaxyFn):
