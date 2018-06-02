@@ -172,7 +172,10 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
                         return 4
         else:
             if choices.randInput == "query":
-                return 6
+                if choices.randAlg == \
+                        'Permute segments and inter-segment regions (size of inter-segment regions remains constant)':
+
+                    return 6
             elif choices.randType == 'Between tracks':
                 if choices.randAlg == 'Shuffle between tracks':
                     return 5
