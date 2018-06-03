@@ -161,7 +161,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
                 return 1
             elif choices.randType == 'Within tracks':
                 if choices.randAlg == \
-                        'Permute segments and inter-segment regions (size of inter-segment regions remains constant)':
+                        'Permute segments and sampled inter-segment regions (size of inter-segment regions is random)':
                     if choices.randInput == "query":
                         return 2
                     else:
@@ -173,7 +173,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         else:
             if choices.randInput == "query":
                 if choices.randAlg == \
-                        'Permute segments and inter-segment regions (size of inter-segment regions remains constant)':
+                        'Permute segments and sampled inter-segment regions (size of inter-segment regions is random)':
 
                     return 6
             elif choices.randType == 'Between tracks':
