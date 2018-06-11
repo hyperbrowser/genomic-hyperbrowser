@@ -6,7 +6,6 @@ from quick.application.UserBinSource import UserBinSource
 from quick.extra.TrackExtractor import TrackExtractor
 import time
 from quick.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import *
 from gold.util.CustomExceptions import InvalidFormatError
 from quick.util.GenomeInfo import GenomeInfo
 from gold.origdata.GenomeElementSource import GenomeElementSource

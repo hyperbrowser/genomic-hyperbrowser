@@ -11,11 +11,12 @@ class TestNeighborhoodCorrespondenceDistribution3dStatUnsplittable(StatUnitTest)
     #    self._assertIncompatibleTracks(SampleTV(  ))
 
     def test_compute(self):
-        from gold.application.StatRunner import StatJob
-        #from quick.application.UserBinSource import UserBinSource
-        from gold.track.GenomeRegion import GenomeRegion
-        
-        StatJob.USER_BIN_SOURCE = [GenomeRegion('TestGenome', 'chr21', 0, 100), GenomeRegion('TestGenome', 'chr21', 100, 200)]
+        # from gold.application.StatRunner import StatJob
+        # from quick.application.UserBinSource import UserBinSource
+        # from gold.track.GenomeRegion import GenomeRegion
+
+        # Unneeded?
+        # StatJob.USER_BIN_SOURCE = [GenomeRegion('TestGenome', 'chr21', 0, 100), GenomeRegion('TestGenome', 'chr21', 100, 200)]
         self._assertCompute([2.0,None], \
                             SampleTV( starts=[0,10,120,130], ids=['a','b','c','d'], edges=[['d'],['d'],['d'],list('abc')], anchor=[0,200] ), \
                             globalSource='userbins', weightThreshold='0')

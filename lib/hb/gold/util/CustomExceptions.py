@@ -81,3 +81,6 @@ class LackingTsResultsError(Exception):
 
 class InvalidStatArgumentError(Exception):
     pass
+
+class InvalidOperationError(Exception):
+    pass

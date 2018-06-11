@@ -24,8 +24,7 @@ class ArrayInfoStorage(object):
         track = trackBinPair.track
         curBin = trackBinPair.bin
 
-        trackData = TrackSource().getTrackData(track.trackName, curBin.genome,
-                                               curBin.chr, trackView.allowOverlaps)
+        trackData = self._getTrackData(track, curBin, trackView.allowOverlaps)
         prefixList = [_ for _ in trackData.keys() if _ not in self.IGNORE_PREFIXES]
 
         if self._initialized:
@@ -37,6 +36,10 @@ class ArrayInfoStorage(object):
                 self._arrayInfoDict[prefix] = arrayInfo
             else:
                 self._updateInfoForPrefix(prefix, arrayInfo)
+
+    def _getTrackData(self, track, curBin, allowOverlaps):
+        return TrackSource().getTrackData(track.trackName, curBin.genome,
+                                          curBin.chr, allowOverlaps)
 
     def _getArrayInfo(self, prefix, trackData):
         smartMemmap = trackData[prefix]

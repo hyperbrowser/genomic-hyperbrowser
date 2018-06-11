@@ -8,7 +8,7 @@ import config.Config
 LOG_PATH = HB_SOURCE_CODE_BASE_DIR + os.sep + '.testlogs'
 
 import gold.statistic.Statistic
-import gold.application.StatRunner
+import quick.deprecated.StatRunner
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.application.GalaxyInterface import GalaxyInterface
 
@@ -16,7 +16,7 @@ import gold.description.Analysis
 from test.util.Asserts import smartRecursiveAssertList
 from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
 
-gold.application.StatRunner.PRINT_PROGRESS = False
+quick.deprecated.StatRunner.PRINT_PROGRESS = False
 #gold.description.Analysis.PASS_ON_VALIDSTAT_EXCEPTIONS = True
 from config.Config import DebugConfig
 DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True

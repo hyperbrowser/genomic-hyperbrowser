@@ -1,50 +1,70 @@
-from random import randint
+from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 
 import numpy as np
+import random
 
+from gold.track.RandomizedTrack import TrackRandomizer
 from gold.track.trackstructure.random.Constants import LENGTH_KEY, START_KEY, NEW_TRACK_BIN_INDEX_KEY
+from gold.track.trackstructure.random.ExcludedSegmentsStorage import ExcludedSegmentsStorage
 from gold.track.trackstructure.random.OverlapDetector import IntervalTreeOverlapDetector
-from gold.track.trackstructure.random.RandomizedTrackDataStorage import RandomizedTrackDataStorage
 from gold.track.trackstructure.random.TrackBinIndexer import TrackBinPair, SimpleTrackBinIndexer
-from gold.util.CustomExceptions import AbstractClassError
 
 
 class InvalidPositionException(Exception):
     pass
 
 
-class TrackDataStorageRandAlgorithm(object):
+class TrackDataStorageRandAlgorithm(TrackRandomizer):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def getReadFromDiskTrackColumns(self):
-        raise AbstractClassError()
+        pass
 
+    @abstractmethod
     def getInitTrackColumns(self):
-        raise AbstractClassError()
+        pass
 
+    @abstractmethod
     def needsMask(self):
-        raise AbstractClassError()
+        pass
 
+    @abstractmethod
     def getTrackBinIndexer(self):
-        raise AbstractClassError()
+        pass
 
+    @abstractmethod
     def randomize(self, trackDataStorage, trackBinIndexer):
-        raise AbstractClassError()
+        pass
 
 
-class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm):
+class CollisionDetectionTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgorithm):
     MISSING_EL = -1
 
-    def __init__(self, allowOverlaps, excludedSegmentsStorage=None, maxSampleCount=25, overlapDetectorCls=IntervalTreeOverlapDetector):
-        self._allowOverlaps = allowOverlaps
-        self._excludedSegmentsStorage = excludedSegmentsStorage
-        # self._trackIdToExcludedRegions = defaultdict(dict)
+    def __init__(self, excludedTS, binSource, maxSampleCount=25,
+                 overlapDetectorCls=IntervalTreeOverlapDetector):
         self._maxSampleCount = maxSampleCount
-        # self._excludedRegions = None
-        self._overlapDetectorCls = overlapDetectorCls
         self._trackBinIndexer = None
-        self._newTrackBinIndexToOverlapDetectorDict = {}
+        self._excludedSegmentsStorage = \
+            ExcludedSegmentsStorage(excludedTS, binSource) if excludedTS else None
+        self._overlapDetectorCls = overlapDetectorCls
 
-    def allowOverlaps(self):
-        return self._allowOverlaps
+    def _getOverlapDetectorForTrackBinPair(self, newTrackBinPair):
+        if self._excludedSegmentsStorage:
+            exclSegs = self._excludedSegmentsStorage.getExcludedSegmentsIter(newTrackBinPair.bin)
+        else:
+            exclSegs = None
+        return self._overlapDetectorCls(exclSegs)
+
+    @classmethod
+    def supportsTrackFormat(cls, origTrackFormat):
+        # TODO: Fix support for all track formats
+        return origTrackFormat.isInterval()
+
+    @classmethod
+    def supportsOverlapMode(cls, allowOverlaps):
+        return True
 
     def getReadFromDiskTrackColumns(self):
         return [LENGTH_KEY]
@@ -66,27 +86,33 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         trackProbabilities = self._getTrackProbabilites(len(self._trackBinIndexer.allTracks()))
         binProbabilities = self._getBinProbabilites(self._trackBinIndexer.allBins())
 
+        trackDataStorage.setMask(None)
         trackDataStorage.shuffle()
 
         # for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
         #     trackDataStorageView = trackDataStorage.getView(trackBinIndex)
 
         lengthsArray = trackDataStorage.getArray(LENGTH_KEY)
-        startsArray, newTrackBinIndexArray = \
-            self._generateRandomArrays(lengthsArray, trackProbabilities, binProbabilities)
+        allowOverlaps = trackDataStorage.allowOverlaps
+        newStartsArray, newTrackBinIndexArray = \
+            self._generateRandomArrays(lengthsArray, trackProbabilities,
+                                       binProbabilities, allowOverlaps)
 
-        trackDataStorage.updateArray(START_KEY, startsArray)
+        trackDataStorage.updateArray(START_KEY, newStartsArray)
         trackDataStorage.updateArray(NEW_TRACK_BIN_INDEX_KEY, newTrackBinIndexArray)
 
-        maskArray = generateMaskArray(trackDataStorage.getArray(START_KEY), self.MISSING_EL)
+        maskArray = generateMaskArray(trackDataStorage.getArray(NEW_TRACK_BIN_INDEX_KEY), self.MISSING_EL)
         trackDataStorage.setMask(maskArray)
 
         # trackDataStorage.sort([RandomizedTrackDataStorage.START_KEY, self.NEW_TRACK_BIN_INDEX_KEY])
 
-        from gold.application.LogSetup import logMessage, logging
-        logMessage("Discarded %i elements out of %i possible." %
-                   (trackDataStorage.getMask().sum(), len(trackDataStorage)),
-                   level=logging.WARN)
+        numDiscarded = trackDataStorage.getMask().sum()
+
+        if numDiscarded:
+            from gold.application.LogSetup import logMessage, logging
+            logMessage("Discarded %i elements out of %i possible." %
+                       (trackDataStorage.getMask().sum(), len(trackDataStorage)),
+                       level=logging.WARN)
 
     def _getTrackProbabilites(self, numTracks):
         return [1.0 / numTracks] * numTracks
@@ -95,8 +121,9 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         binsLen = sum([(x.end - x.start) for x in allBins])
         return [float(x.end - x.start) / binsLen for x in allBins]
 
-    def _generateRandomArrays(self, lengthsArray, trackProbabilities, binProbabilities):
-        startsArray = np.zeros(len(lengthsArray), dtype='int32')
+    def _generateRandomArrays(self, lengthsArray, trackProbabilities,
+                              binProbabilities, allowOverlaps):
+        newStartsArray = np.zeros(len(lengthsArray), dtype='int32')
         newTrackBinIndexArray = np.zeros(len(lengthsArray), dtype='int32')
 
         # Update probabilities of track and bin after each element is added, in order to, as closely as possible, have the same probabilty of filling each base pair. Discuss
@@ -109,51 +136,54 @@ class ShuffleElementsBetweenTracksAndBinsRandAlgorithm(TrackDataStorageRandAlgor
         # When using exclusion track, one could simply handle redefine the bins accordingly. In this way IntervalTrees should not
         # be needed. Also, the probability of a bps being filled should be even (except perhaps start/end of bins).
 
+        trackBinPairToOverlapDetectorDict = {}
+
         for i, segLen in enumerate(lengthsArray):
             for sampleCount in xrange(self._maxSampleCount):
                 newTrackBinPair = TrackBinPair(self._trackBinIndexer.selectRandomTrack(trackProbabilities),
-                                            self._trackBinIndexer.selectRandomBin(binProbabilities))
-                overlapDetector = self._getOverlapDetectorForTrackBinPair(newTrackBinPair)
+                                               self._trackBinIndexer.selectRandomBin(binProbabilities))
+                if newTrackBinPair not in trackBinPairToOverlapDetectorDict:
+                    overlapDetector = self._getOverlapDetectorForTrackBinPair(newTrackBinPair)
+                    trackBinPairToOverlapDetectorDict[newTrackBinPair] = overlapDetector
+                else:
+                    overlapDetector = trackBinPairToOverlapDetectorDict[newTrackBinPair]
 
                 try:
-                    newStartPos = self._selectRandomValidStartPosition(overlapDetector, segLen, newTrackBinPair.bin)
-                    if not self._allowOverlaps:
+                    newStartPos = self._selectRandomValidStartPosition(overlapDetector, segLen,
+                                                                       newTrackBinPair.bin)
+
+                    if not allowOverlaps:
                         overlapDetector.addSegment(newStartPos, newStartPos + segLen)
+                    newStartsArray[i] = newStartPos
+
+                    newTrackBinIndex = \
+                        self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
+                    newTrackBinIndexArray[i] = newTrackBinIndex
+
                     break
                 except InvalidPositionException:
-                    newStartPos = self.MISSING_EL
+                    pass
+            else:
+                newStartsArray[i] = self.MISSING_EL
+                newTrackBinIndexArray[i] = self.MISSING_EL
 
-            startsArray[i] = newStartPos
-            newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
-            newTrackBinIndexArray[i] = newTrackBinIndex if newStartPos != self.MISSING_EL else self.MISSING_EL
-
-        return startsArray, newTrackBinIndexArray
-
-    def _getOverlapDetectorForTrackBinPair(self, newTrackBinPair):
-        newTrackBinIndex = self._trackBinIndexer.getTrackBinIndexForTrackBinPair(newTrackBinPair)
-        if newTrackBinIndex not in self._newTrackBinIndexToOverlapDetectorDict:
-            self._newTrackBinIndexToOverlapDetectorDict[newTrackBinIndex] = self._overlapDetectorCls(
-                self._excludedSegmentsStorage.getExcludedSegmentsIter(newTrackBinPair.bin))
-
-        overlapDetector = self._newTrackBinIndexToOverlapDetectorDict[newTrackBinIndex]
-        return overlapDetector
+        return newStartsArray, newTrackBinIndexArray
 
     def _selectRandomValidStartPosition(self, overlapDetector, segLen, targetGenomeRegion):
         '''
         Randomly select a start position.
         For it to be valid, it must not overlap any of the excluded regions.
         If no valid position is found after maxSampleCount attempts, None is returned
+        :param overlapDetector OverlapDetector object, containing intervals that must be avoided
         :param segLen: The length of the track element
-        :param targetGenomeRegion: The genome region to sample
-        :param excludedRegions: IntervalTree object containing all intervals that must be avoided
-        :param maxSampleCount: Nr of times the sampling is done if no valid position is selected.
-        :return:
+        :param targetGenomeRegion: The target genome region in which to create the sample
+        :return: New start position
         '''
 
         if targetGenomeRegion.end - targetGenomeRegion.start < segLen:
             raise InvalidPositionException('Segment is larger than bin')
 
-        candidateStartPos = randint(targetGenomeRegion.start, targetGenomeRegion.end - segLen)
+        candidateStartPos = random.randint(targetGenomeRegion.start, targetGenomeRegion.end - segLen)
         if overlapDetector.overlaps(candidateStartPos, candidateStartPos + segLen):
             raise InvalidPositionException('New segment overlaps with existing segment')
 

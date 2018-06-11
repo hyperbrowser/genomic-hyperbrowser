@@ -8268,61 +8268,6 @@ class mRNATool(GeneralGuiTool):
         return 'html'
 
 
-class rankingTFtracks2(GeneralGuiTool, UserBinMixin):
-    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst']
-
-    @staticmethod
-    def getToolName():
-        '''
-        Specifies a header of the tool, which is displayed at the top of the
-        page.
-        '''
-        return "Make ranking for TFs using permutation test"
-
-    @classmethod
-    def getInputBoxNames(cls):
-        return [
-                   ('Select target track collection GSuite', 'gSuiteFirst')
-               ] + cls.getInputBoxNamesForUserBinSelection()
-
-    @staticmethod
-    def getOptionsBoxGSuiteFirst():
-        return GeneralGuiTool.getHistorySelectionElement('gsuite', 'txt', 'tabular')
-
-    @staticmethod
-    def execute(choices, galaxyFn=None, username=''):
-
-        targetGSuite = getGSuiteFromGalaxyTN(choices.gSuiteFirst)
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-
-        i = 0
-        for x in targetGSuite.allTracks():
-            if i == 0:
-                analysisBins = GlobalBinSource(x.genome)
-            #                 analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, x.genome)
-
-        tracks = [Track(x.trackName) for x in targetGSuite.allTracks()]
-        results = doAnalysis(AnalysisSpec(SumTrackPointsStat), analysisBins, tracks)
-        print results
-
-        # resultDict = results.getGlobalResult()
-
-    @classmethod
-    def getToolDescription(cls):
-        return ''
-
-    @staticmethod
-    def getOutputFormat(choices):
-        '''
-        The format of the history element with the output of the tool. Note
-        that html output shows print statements, but that text-based output
-        (e.g. bed) only shows text written to the galaxyFn file.In the latter
-        case, all all print statements are redirected to the info field of the
-        history item box.
-        '''
-        return 'customhtml'
-
-
 class rankingTFtracks(GeneralGuiTool, UserBinMixin):
     GSUITE_FILE_OPTIONS_BOX_KEYS = ['gSuiteFirst', 'gSuiteSecond']
 

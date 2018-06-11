@@ -9,6 +9,8 @@ from gold.statistic.CountElementStat import CountElementStat
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import Track
 from gold.track.TrackStructure import TrackStructureV2, FlatTracksTS
+from gold.track.trackstructure.TsRandAlgorithmRegistry import createTrackViewProvider
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from gold.util import CommonConstants
 from gold.util.CommonFunctions import strWithNatLangFormatting
 from gold.util.TSResultUtil import dictifyTSResult
@@ -23,22 +25,19 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.result.model.GSuitePerTrackResultModel import GSuitePerTrackResultModel
 from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2Stat
 from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import SummarizedInteractionWithOtherTracksV2Stat
+from quick.util.CommonFunctions import getClassName
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.gsuite.GSuiteTracksCoincidingWithQueryTrackTool import GSuiteTracksCoincidingWithQueryTrackTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GSuiteResultsTableMixin import GSuiteResultsTableMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
-
-
-# This is a template prototyping GUI that comes together with a corresponding
-# web page.
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
 class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                                                 GenomeMixin, GSuiteResultsTableMixin,
-                                                DebugMixin):
+                                                DebugMixin, RandAlgorithmMixin):
 
     Q1 = "Rank the tracks by representativeness of the suite"  # (descending, i.e. most representative on top)"
     Q1_SHORT = "similarity to rest of tracks in suite [rank]"
@@ -91,14 +90,12 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                 ('', 'basicQuestionId'),
                 ('Select a GSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
-               [
-                ('Which analysis question do you want to run?','analysisName'),
+               [('Which analysis question do you want to run?','analysisName'),
                 ('Select track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
                 ('Reversed (Used with similarity measures that are not symmetric)', 'reversed'),
-                ('Select MCFDR sampling depth', 'mcfdrDepth'),
-                ('Type of randomization', 'randType'),
-                ('Randomization algorithm', 'randAlg')] + \
+                ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+               cls.getInputBoxNamesForRandAlgSelection() + \
                cls.getInputBoxNamesForAttributesSelection() + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
@@ -217,17 +214,8 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                 return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv4$']).getOptionsAsText().values()[0]
 
     @classmethod
-    def getOptionsBoxRandType(cls, prevChoices):
-        if prevChoices.analysisName in [cls.Q3, cls.Q4]:
-            return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys()
-
-    @classmethod
-    def getOptionsBoxRandAlg(cls, prevChoices):
-        if prevChoices.analysisName in [cls.Q3, cls.Q4]:
-            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
-                if prevChoices.randType == definedRandType:
-                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
-            return '__hidden__', None
+    def _showRandAlgorithmChoices(cls, prevChoices):
+        return prevChoices.analysisName in [cls.Q3, cls.Q4]
 
     #@staticmethod
     #def getInfoForOptionsBoxKey(prevChoices):
@@ -262,9 +250,8 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         reverse = 'Yes' if choices.reversed else 'No'
 
         gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
-        tracks = [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
+        analysisBins = UserBinMixin.getUserBinSource(choices)
+        # tracks = [Track(x.trackName, trackTitle=x.title) for x in gsuite.allTracks()]
         trackTitles = CommonConstants.TRACK_TITLES_SEPARATOR.join([quote(x.title, safe='') for x in gsuite.allTracks()])
 
         import quick.gsuite.GuiBasedTsFactory as factory
@@ -274,7 +261,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         additionalAttributesDict = OrderedDict()
         if analysisQuestion in [cls.Q1, cls.Q2, cls.Q3]:
             additionalAttributesDict = cls.getSelectedAttributesForEachTrackDict(choices.additionalAttributes, gsuite)
-            #additional analysis
+            # additional analysis
             stats = [CountStat, CountElementStat]
             additionalResultsDict = runMultipleSingleValStatsOnTracks(ts, stats, analysisBins)
 
@@ -388,9 +375,10 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
         elif analysisQuestion == cls.Q3:
 
             q2TS = TrackStructureV2()
-            tsRand = ts.getRandomizedVersion(
-                RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg],
-                binSource=analysisBins, allowOverlaps=False, randIndex=0)
+            randTvProvider = cls.createTrackViewProvider(choices, ts, analysisBins, genome)
+            localAnalysis = randTvProvider.supportsLocalAnalysis()
+            tsRand = getRandomizedVersionOfTs(ts, randTvProvider)
+
             for key in ts.keys():
                 realTS = TrackStructureV2()
                 realTS['query'] = ts[key]
@@ -414,6 +402,8 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
             analysisSpec.addParameter('tail', 'right-tail')
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
+            analysisSpec.addParameter('runLocalAnalysis', 'Yes' if localAnalysis else 'No')
+
             results = doAnalysis(analysisSpec, analysisBins, q2TS).getGlobalResult()
             resultsTuples = []
             for key, res in results['Result'].iteritems():
@@ -482,7 +472,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
                                       GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             analysisSpec.addParameter('multitrackSummaryFunc', 'avg')  # should it be a choice?
             analysisSpec.addParameter('tail', 'right-tail')
-            analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
+            analysisSpec.addParameter('tvProviderClass', getClassName(createTrackViewProvider(choices.randType, choices.randAlg)))
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
 
             pval = results['P-value']
@@ -538,6 +528,10 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
              cls.GSUITE_ALLOWED_TRACK_TYPES,
              cls.GSUITE_DISALLOWED_GENOMES)
 
+        if errorString:
+            return errorString
+
+        errorString = cls.validateRandAlgorithmSelection(choices)
         if errorString:
             return errorString
 

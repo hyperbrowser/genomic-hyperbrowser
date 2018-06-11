@@ -4,7 +4,7 @@ from os import sep
 
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH
-from gold.application.StatRunner import StatJob
+from quick.deprecated.StatRunner import StatJob
 from gold.statistic.AllStatistics import STAT_CLASS_DICT
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.application.ProcTrackOptions import ProcTrackOptions
@@ -37,6 +37,7 @@ class DebugAnalysisTool(GeneralGuiTool):
     @classmethod
     def updateCacheDict(cls, stat):
         DebugInfoShelve = safeshelve.open(cls.SHELVE_FN, 'c')
+        stat = str(stat)
         if stat in DebugInfoShelve and type(DebugInfoShelve[stat]).__name__=='dict':
             cls._cacheDict = DebugInfoShelve[stat]
         DebugInfoShelve.close()

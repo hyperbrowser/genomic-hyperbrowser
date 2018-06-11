@@ -8,9 +8,7 @@ from quick.util.GenomeInfo import GenomeInfo
 import time
 from config.Config import NONSTANDARD_DATA_PATH
 from quick.application.GalaxyInterface import GalaxyInterface
-from gold.application.StatRunner import *
-#This is a template prototyping GUI that comes together with a corresponding web page.
-#
+
 
 class Tool1(GeneralGuiTool):
     @staticmethod
