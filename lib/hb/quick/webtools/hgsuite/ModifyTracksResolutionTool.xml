@@ -1,0 +1,4 @@
+<tool id="hb_modify_tracks_resolution_tool" name="Modify resolution of tracks" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ModifyTracksResolutionTool" proto_tool_class="ModifyTracksResolutionTool">
+  <description></description>
+</tool>

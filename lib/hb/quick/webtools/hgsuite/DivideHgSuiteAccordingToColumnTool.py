@@ -96,7 +96,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 add = 'no'
 
             if add == 'yes':
-                trackList[('-'.join(par.encode('utf-8')))] = []
+                trackList[('-'.join([p.encode('utf-8') for p in par]))] = []
             else:
                 for p in par:
                     trackList[p.encode('utf-8')] = []
