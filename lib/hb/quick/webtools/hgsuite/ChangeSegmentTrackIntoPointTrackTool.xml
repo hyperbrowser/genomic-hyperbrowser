@@ -1,0 +1,4 @@
+<tool id="hb_change_segment_track_into_point_track_tool" name="Change segment track into point track" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ChangeSegmentTrackIntoPointTrackTool" proto_tool_class="ChangeSegmentTrackIntoPointTrackTool">
+  <description></description>
+</tool>
