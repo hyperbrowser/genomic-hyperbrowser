@@ -1,11 +1,12 @@
 from collections import OrderedDict
 
-from quick.util.CommonFunctions import smartDiff, smartMeanWithNones, minAndMax, minLqMedUqMax
+from quick.util.CommonFunctions import smartDiff, smartMeanWithNones, minAndMax, minLqMedUqMax, smartSum
 
 FUNCTION_DICT = OrderedDict([('diff', smartDiff),
                              ('avg', smartMeanWithNones),
                              ('max', max),
                              ('min', min),
+                             ('sum', smartSum),
                              ('minAndMax', minAndMax),
                              ('raw', 'RawResults'),
                              ('minLqMedUqMax', minLqMedUqMax)])
