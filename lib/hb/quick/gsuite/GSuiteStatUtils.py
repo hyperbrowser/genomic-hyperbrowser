@@ -19,6 +19,7 @@ T6_STANDARD_DEVIATIONS_OF_OBSERVED_MINUS_EXPECTED_OVERLAP = 'Ratio of observed t
 T7_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP = 'Normalized Forbes coefficient: ratio of observed to expected overlap normalized in relation to the reference GSuite'
 T8_CORRELATED_BIN_COVERAGE = 'Correlated bin coverage'
 T9_TETRA_CORRELATION = 'Tetrachoric correlation of query track base-pairs and base-pairs from the reference track'
+T10_BASEPAIR_OVERLAP = 'Number of overlaping base-pairs'
 
 PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING = OrderedDict([
     (T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, 'ObservedVsExpectedStat'),
@@ -29,12 +30,13 @@ PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING = OrderedDict([
     (T4_RATIO_OF_INTERSECTION_TO_GEOMETRIC_MEAN, 'RatioOfIntersectionToGeometricMeanStat'),
     # (T6_STANDARD_DEVIATIONS_OF_OBSERVED_MINUS_EXPECTED_OVERLAP, None),
     (T8_CORRELATED_BIN_COVERAGE, 'T1T2BinValuesCorrelationWithKendallCountStat'),
-    (T9_TETRA_CORRELATION, 'TetrachoricCorrelationStat')
+    (T9_TETRA_CORRELATION, 'TetrachoricCorrelationStat'),
+    (T10_BASEPAIR_OVERLAP, 'TpRawOverlapStat')
 ])
 
 PAIRWISE_STAT_LABELS = PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING.keys()
 
-SUMMARY_FUNCTIONS_MAPPER = OrderedDict([('average', 'avg'), ('maximum', 'max'), ('minimum', 'min')])
+SUMMARY_FUNCTIONS_MAPPER = OrderedDict([('average', 'avg'), ('maximum', 'max'), ('minimum', 'min'), ('sum', 'sum')])
 SUMMARY_FUNCTIONS_LABELS = SUMMARY_FUNCTIONS_MAPPER.keys()
 
 RAND_BY_UNIVERSE_TEXT = "Preserve elements of T2 and number of points of T1; randomize positions (T1) among locations provided in a universe track (type: points)"
