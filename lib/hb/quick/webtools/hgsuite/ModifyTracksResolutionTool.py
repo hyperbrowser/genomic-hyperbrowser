@@ -1,10 +1,21 @@
+from collections import OrderedDict
+
+from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
+from gold.track.Track import PlainTrack
+from proto.CommonFunctions import ensurePathExists
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from gold.statistic.CountStat import CountStat
+from gold.statistic.CountPointStat import CountPointStat
+from quick.statistic.SingleTSStat import SingleTSStat
+from gold.track.TrackStructure import SingleTrackTS
 
 class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
     @classmethod
@@ -41,10 +52,37 @@ class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
                                                          binSpec,
                                                          choices.genome)
 
-
+        outputGSuite = GSuite()
         #get local result from statistic
+        for i, track in enumerate(gSuite.allTracks()):
+            tt = track.title
+            tn = track.trackName
+            ttNew = str(tt) + '--' + str(resolution)
 
-        #rebuild the gsuite
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName=ttNew,
+                                                suffix='bed')
+            gSuiteTrack = GSuiteTrack(uri)
+            outFn = gSuiteTrack.path
+            ensurePathExists(outFn)
+
+            sts = SingleTrackTS(PlainTrack(tn), OrderedDict(title=tt, genome=str(genome)))
+            res = doAnalysis(analysisSpec, analysisBins, sts)
+
+            wr = open(outFn, 'w')
+            for bin, val in res.iteritems():
+                v = val['Result'].getResult()
+                if int(v) > 0:
+                    wr.write(('\t').join([str(bin.chr), str(bin.start), str(bin.end), str(v)]) + '\n')
+            wr.close()
+
+            gs = GSuiteTrack(uri, title=ttNew, genome=gSuite.genome)
+
+            outputGSuite.addTrack(gs)
+
+        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -98,9 +136,9 @@ class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
     # def isDebugMode(cls):
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'gsuite'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
