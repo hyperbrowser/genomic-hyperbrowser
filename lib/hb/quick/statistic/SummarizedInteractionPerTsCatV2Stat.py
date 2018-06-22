@@ -26,6 +26,7 @@ class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
                     'avg',
                     'max',
                     'min',
+                    'sum',
                     'minAndMax',
                     'raw',
                     'minLqMedUqMax'
