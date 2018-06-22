@@ -1,0 +1,4 @@
+<tool id="hb_plot_h_clust_tool" name="Plot hierarchical clustering" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.PlotHClustTool" proto_tool_class="PlotHClustTool">
+  <description></description>
+</tool>
