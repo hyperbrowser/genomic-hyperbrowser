@@ -46,6 +46,7 @@ class SparseSampling:
             return numpy.array([], dtype='int')
         poisson_lambda = self._ones.size*self._ones_prob
         N = numpy.random.poisson(poisson_lambda, 1)
+        N = min(N, self._ones.size)
         samples = numpy.random.choice(self._ones, N, replace=False)
         return samples
 

@@ -33,7 +33,7 @@ class StatTvOutputWriterStatSplittable(StatisticSplittable):
         self._result = self._childResults[0]
         for childResult in self._childResults:
             if childResult != self._result:
-                raise ShouldNotOccurError('All output filenames should be the same.')
+§                raise ShouldNotOccurError('All output filenames should be the same : ' + str([childResult, self._result]))
 
 
 class StatTvOutputWriterStatUnsplittable(Statistic):
