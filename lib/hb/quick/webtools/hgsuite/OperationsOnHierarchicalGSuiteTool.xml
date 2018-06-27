@@ -1,0 +1,4 @@
+<tool id="hb_operations_on_hierarchical_g_suite_tool" name="Operations on hierarchical gSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.OperationsOnHierarchicalGSuiteTool" proto_tool_class="OperationsOnHierarchicalGSuiteTool">
+  <description></description>
+</tool>
