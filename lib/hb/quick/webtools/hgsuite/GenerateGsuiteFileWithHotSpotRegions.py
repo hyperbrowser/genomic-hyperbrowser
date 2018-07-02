@@ -24,26 +24,24 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
 class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeMixin):
-    
-    
     @classmethod
     def getToolName(cls):
         return "Generate gSuite file with HotSpot regions"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select track collection GSuite','gsuite')] + \
-                    cls.getInputBoxNamesForGenomeSelection() + \
+        return [('Select track collection GSuite', 'gsuite')] + \
+               cls.getInputBoxNamesForGenomeSelection() + \
                [('Number of top hotspots', 'param')
                 ] + cls.getInputBoxNamesForUserBinSelection()
 
     @classmethod
     def getOptionsBoxGsuite(cls):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
-    
+
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
-        
+
         # if prevChoices.gSuite:
         #     from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
         #     gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
@@ -60,23 +58,21 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
     @staticmethod
     def resolveAnalysisFromName(genome, fullCategory, trackName, analysisName):
         selectedAnalysis = None
-        for analysis in AnalysisManager.getValidAnalysesInCategory(fullCategory, genome, trackName, None):
+        for analysis in AnalysisManager.getValidAnalysesInCategory(fullCategory, genome, trackName,
+                                                                   None):
             if analysisName == AnalysisDefHandler.splitAnalysisText(str(analysis))[0]:
                 selectedAnalysis = analysis
-        
-        return selectedAnalysis
-    
 
-    
+        return selectedAnalysis
+
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-          
-        #use gSuite from option
+
+        # use gSuite from option
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         tracks = list(gSuite.allTracks())
 
-        
-        #create new gSuite object
+        # create new gSuite object
         outputGSuite = GSuite()
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec,
@@ -88,7 +84,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
 
         htmlCore = HtmlCore()
         htmlCore.begin()
-        
+
         for track in tracks:
 
             tt = track.title
@@ -102,7 +98,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
             param = int(choices.param)
 
             if resultDict:
-                ttNew = str(tt) + '-' + str(int(choices.param))
+                ttNew = str(tt)
 
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                     extraFileName=ttNew,
@@ -110,31 +106,30 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
                 gSuiteTrack = GSuiteTrack(uri)
                 outFn = gSuiteTrack.path
                 ensurePathExists(outFn)
-                
 
                 resList = resultDict
-                resList.sort(key=operator.itemgetter(1), reverse=True)
-                elNum = resList[int(choices.param)-1][1]
+                resList.sort(key=operator.itemgetter(1), reverse=False)
+                elNum = resList[int(choices.param) - 1][1]
 
                 for elN in range(int(choices.param), len(resList)):
                     if resList[elN][1] == elNum:
-                        param+=1
+                        param += 1
                     else:
                         break
 
                 outputFile = open(outFn, 'w')
-                elNX=0
+                elNX = 0
                 for x in resList[0:param]:
                     outputFile.write(x[0].replace(':', '\t').replace('-', '\t') + '\n')
-                    elNX+=1
+                    elNX += 1
                 outputFile.close()
 
-                gs = GSuiteTrack(uri, title=ttNew, genome=gSuite.genome, attributes=track.attributes)
+                gs = GSuiteTrack(uri, title=ttNew, genome=gSuite.genome,
+                                 attributes=track.attributes)
                 outputGSuite.addTrack(gs)
 
             GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
-        
-            
+
     @staticmethod
     def validateAndReturnErrors(choices):
         '''
@@ -144,7 +139,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
         execute button (even if the text is empty). If all parameters are valid,
         the method should return None, which enables the execute button.
         '''
-        
+
         from gold.gsuite.GSuiteConstants import UNKNOWN, MULTIPLE
 
         errorStr = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
@@ -167,8 +162,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
         if gSuite.trackType in [MULTIPLE]:
             return 'All tracks in the GSuite file needs to be of the same track ' \
                    'type. Multiple track types are not supported.'
-        
-        
+
         return None
 
     @staticmethod
@@ -181,5 +175,3 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
         history item box.
         '''
         return 'gsuite'
-    
-   

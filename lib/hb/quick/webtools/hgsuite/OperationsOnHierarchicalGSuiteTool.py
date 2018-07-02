@@ -1,7 +1,15 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+import os, subprocess
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
+from proto.CommonFunctions import ensurePathExists
+from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuite import GSuite
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from tempfile import NamedTemporaryFile
 
 
-class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool):
+class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     TITLE = 'title'
 
@@ -11,10 +19,12 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select first GSuite', 'gsuite'),
-                ('Select column from first gSuite', 'firstGSuiteColumn'),
+        return [('Select first GSuite', 'gsuite')] + \
+                    cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select column from first gSuite', 'firstGSuiteColumn'),
                 ('Select second GSuite', 'secondGSuite'),
-                ('Select column from second gSuite', 'secondGSuiteColumn')
+                ('Select column from second gSuite', 'secondGSuiteColumn'),
+                ('Select operations', 'operations')
         ]
 
     @classmethod
@@ -38,17 +48,102 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool):
             return ['None'] + [cls.TITLE] + gSuiteTN.attributes
 
     @classmethod
+    def getOptionsBoxOperations(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['intersection']
+
+    @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
         firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
         secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
         secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
+        oper = choices.operations.encode('utf-8')
 
-        print firstGSuite, firstGSuiteColumn
-        print secondGSuitem, secondGSuiteColumn
+        outputGSuite = GSuite()
+        trackNum = 0
+        for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
+            for iTrackFromSecond, trackFromSecond in enumerate(secondGSuite.allTracks()):
 
+                if firstGSuiteColumn == 'title':
+                    attr1 = trackFromFirst.title
+                else:
+                    attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
 
+                if secondGSuiteColumn == 'title':
+                    attr2 = trackFromSecond.title
+                else:
+                    attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
+
+                # print 'attr1', attr1
+                # print 'attr2', attr2
+
+                if attr1 == attr2:
+
+                    track1 = trackFromFirst.path
+                    track2 = trackFromSecond.path
+
+                    tmpFile1 = NamedTemporaryFile()
+                    tmpFile2 = NamedTemporaryFile()
+                    tmpFn1 = cls.writeToTempFile(tmpFile1, track1)
+                    tmpFn2 = cls.writeToTempFile(tmpFile2, track2)
+
+                    # print 'old1', track1
+                    # print 'new1', tmpFn1
+                    #
+                    # print 'old2', track2
+                    # print 'new2', tmpFn2
+
+                    if oper == "intersection":
+                        # print """ bedtools intersect -a """ + str(track1) + """ -b  """ + str(
+                        #     track2)
+
+                        command = """ bedtools intersect -a """ + str(tmpFn1) + """ -b  """ + str(
+                            tmpFn2)
+                        # print command
+                    else:
+                        print
+
+                    process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.PIPE)
+
+                    results, errors = process.communicate()
+
+                    ttNew = trackFromFirst.title + str(trackNum)
+                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                        extraFileName=ttNew,
+                                                        suffix='bed')
+                    gSuiteTrack = GSuiteTrack(uri)
+                    outFn = gSuiteTrack.path
+                    ensurePathExists(outFn)
+
+                    # print 'errors', errors
+                    # print 'results', results, 'end results'
+
+                    wr = open(outFn, 'w')
+                    wr.write(results)
+                    wr.close()
+
+                    gs = GSuiteTrack(uri, title=ttNew, genome=firstGSuite.genome)
+
+                    outputGSuite.addTrack(gs)
+
+                    trackNum += 1
+
+        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+
+    @classmethod
+    def writeToTempFile(cls, tmpFile1, track1):
+        tmpFn1 = tmpFile1.name
+        f = open(track1, 'r')
+        text = f.read()
+        f.close()
+        fw = open(tmpFn1, 'w')
+        fw.write(text)
+        fw.close()
+
+        return tmpFn1
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -76,16 +171,9 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -194,24 +282,9 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'gsuite'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

@@ -50,7 +50,7 @@ class OperationOnTrackTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxOper(cls, prevChoices):
-        return ['difference']
+        return ['difference', 'intersection']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -78,7 +78,12 @@ class OperationOnTrackTool(GeneralGuiTool):
         if choices.oper == "difference":
             command = """ bedtools subtract -a """ + str(track1) + """ -b  """ + str(track2)
         else:
-            print
+            pass
+
+        if choices.oper == "intersection":
+            command = """ bedtools intersect -a """ + str(track1) + """ -b  """ + str(track2)
+        else:
+            pass
 
         process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
