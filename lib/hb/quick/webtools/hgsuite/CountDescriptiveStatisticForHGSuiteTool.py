@@ -258,7 +258,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
-                dataToPresent, headerToPresent = cls.flatResults(header, data)
+                dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
                 dp = zip(*data)
             else:
                 header = firstColumnList + secondColumnList + [summarizeKey]
