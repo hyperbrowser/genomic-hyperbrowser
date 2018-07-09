@@ -90,9 +90,6 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool, GenomeMixin):
         rfPath = resFile.getDiskPath()
         ensurePathExists(rfPath)
 
-        print gSuite
-        exit()
-
         #genome
         rf = open(rfPath, 'w')
         gen = GenomeInfo.getStdChrLengthDict(gSuite.genome)
