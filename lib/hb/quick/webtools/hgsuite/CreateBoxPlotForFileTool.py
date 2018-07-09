@@ -54,10 +54,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             suffixForFile = extractFileSuffixFromDatasetInfo(prevChoices.selFile)
             if prevChoices.response == 'yes':
                 if suffixForFile == 'tabular':
-                    return cls.returnColFile(prevChoices.selFile, asListResponse=True)
+                    return cls.returnColFile(prevChoices.selFile)
                 if suffixForFile == 'gsuite':
                     gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
-                    return cls.returnColFile(prevChoices.selFile, asListResponse=True,
+                    return cls.returnColFile(prevChoices.selFile,
                                       gSuiteAttributes=gSuite.attributes + [cls.TITLE])
             else:
                 if suffixForFile == 'tabular':
@@ -93,6 +93,8 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             hDict = []
             for h in header:
                 hDict.append(h)
+
+
 
         return hDict
 
@@ -195,12 +197,22 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
         suffixForFile = extractFileSuffixFromDatasetInfo(choices.selFile)
 
         if response == "yes":
-            responseValue = choices.responseValue
-            if suffixForFile == 'tabular':
-                dataAll, categories = cls.openFileWithCategories(selFile, selCol, responseValue)
+            res = ""
+            for k, it in selCol.iteritems():
+                if it != False:
+                    sc = k
+                    responseValue = choices.responseValue
+                    if suffixForFile == 'tabular':
+                        dataAll, categories = cls.openFileWithCategories(selFile, sc, responseValue)
 
-            if suffixForFile == 'gsuite':
-                dataAll, categories = cls.openGSuiteFileWithCategories(selFile, selCol, responseValue)
+                    if suffixForFile == 'gsuite':
+                        dataAll, categories = cls.openGSuiteFileWithCategories(selFile, sc, responseValue)
+
+                    #outputFile = open(cls.makeHistElement(galaxyExt='customhtml', title=sc), 'w')
+                    res += str(cls.printResultsForBoxPlot(sc, categories, choices, dataAll, galaxyFn, resValue))
+                    #outputFile.write(str(res))
+                    #outputFile.close()
+            print res
         else:
             if suffixForFile == 'tabular':
                 dataAll, categories = cls.openFile(selFile, selCol)
@@ -208,10 +220,14 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                 dataAll, categories = cls.openGSuiteFile(selFile, selCol)
 
 
+            print cls.printResultsForBoxPlot(selCol, categories, choices, dataAll, galaxyFn, resValue)
+
+
+    @classmethod
+    def printResultsForBoxPlot(cls, selCol, categories, choices, dataAll, galaxyFn, resValue):
         dataForBoxPlot = []
         prettyResults = {}
         i = 0
-
         for data in dataAll.itervalues():
 
             if resValue == 'no':
@@ -224,19 +240,17 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                 s = float(sum(data)) / float(len(data))
             prettyResults[categories[i]] = countedData + [s, float(sum(data)), float(len(data))]
             i += 1
-
         vg = visualizationGraphs()
-        categoriesSorted, dataForBoxPlotSorted = (list(t) for t in zip(*sorted(zip(categories, dataForBoxPlot))))
-
+        categoriesSorted, dataForBoxPlotSorted = (list(t) for t in
+                                                  zip(*sorted(zip(categories, dataForBoxPlot))))
         plot = vg.drawBoxPlotChart(dataForBoxPlotSorted,
                                    categories=categoriesSorted,
                                    seriesName='values',
-                                   xAxisRotation=90)
-
+                                   xAxisRotation=90,
+                                   titleText=selCol)
         core = HtmlCore()
         core.begin()
         shortQuestion = 'results'
-
         addTableWithTabularAndGsuiteImportButtons(
             core,
             choices,
@@ -246,10 +260,9 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             columnNames=['Column'] + ['Minimum', 'Lower quantile', 'Median', 'Upper quantile',
                                       'Maximum', 'Average', 'Sum', 'Elements number']
         )
-
         core.line(plot)
         core.end()
-        print core
+        return core
 
     @classmethod
     def openGSuiteFile(cls, selFile, selCol):
