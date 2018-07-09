@@ -22,18 +22,20 @@ from quick.webtools.assemblygap.Legend import Legend
 from quick.webtools.gsuite.GSuiteConvertFromPreprocessedToPrimaryTool import GSuiteConvertFromPreprocessedToPrimaryTool, \
     FileFormatInfo
 from quick.webtools.mixin.DebugMixin import DebugMixin
-
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
 #class RandomizeTracksInGsuiteTool(GeneralGuiTool, DebugMixin):
-class RandomizeTracksInGsuiteTool(GeneralGuiTool):
+class RandomizeTracksInGsuiteTool(GeneralGuiTool, GenomeMixin):
     @classmethod
     def getToolName(cls):
         return "Randomize a collection of genomic tracks (GSuite)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite', 'gsuite'),
-                ('With exclusion', 'excl'),
+        return [('Select GSuite', 'gsuite')] + \
+               cls.getInputBoxNamesForGenomeSelection() + \
+               [
+                   ('With exclusion', 'excl'),
                 ('Select track of regions to be excluded', 'track'),
                 ('Number of randomised samples to be generated for each track', 'varTracks'),
                 ('Preserve the average length and the number of elements (per GSuite - [yes]) and (per each track in GSuite - [no])', 'option')]\
@@ -88,9 +90,12 @@ class RandomizeTracksInGsuiteTool(GeneralGuiTool):
         rfPath = resFile.getDiskPath()
         ensurePathExists(rfPath)
 
+        print gSuite
+        exit()
+
         #genome
         rf = open(rfPath, 'w')
-        gen = GenomeInfo.getStdChrLengthDict('hg19')
+        gen = GenomeInfo.getStdChrLengthDict(gSuite.genome)
         for keyG, itG in gen.items():
             rf.write(str(keyG) + '\t' + str(itG) + '\n')
         rf.close()
