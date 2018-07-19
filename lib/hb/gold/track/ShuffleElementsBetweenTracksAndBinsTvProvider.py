@@ -183,20 +183,37 @@ class ShuffleElementsBetweenTracksAndBinsPool(object):
 
         if not self._isSorted:
             self._sortTrackElementLists()
-        trackId = origTrack.getUniqueKey(self._binSource.genome if self._binSource.genome else self.UNKNOWN_GENOME)
+        trackId = origTrack.getUniqueKey(
+            self._binSource.genome if self._binSource.genome else self.UNKNOWN_GENOME)
         trackElements = self._trackElementLists[trackId][region]
         import numpy as np
         origTV = origTrack.getTrackView(region)
+        randStarts = np.array([x.start() for x in trackElements])
+        randEnds = self._setNoneArrayToNone(np.array([x.end() for x in trackElements]))
+        randVals = self._setNoneArrayToNone(
+            np.array([x.val() if x.val() else np.nan for x in trackElements]))
+        randStrands = self._setNoneArrayToNone(np.array([x.strand() for x in trackElements]))
+        randIds = self._setNoneArrayToNone(np.array([x.id() for x in trackElements]))
         return TrackView(genomeAnchor=origTV.genomeAnchor,
-                         startList=np.array([x.start() for x in trackElements]),
-                         endList=np.array([x.end() for x in trackElements]),
-                         valList=np.array([x.val() for x in trackElements]),
-                         strandList=np.array([x.strand() for x in trackElements]),
-                         idList=np.array([x.id() for x in trackElements]),
+                         startList=randStarts,
+                         endList=randEnds,
+                         valList=randVals,
+                         strandList=randStrands,
+                         idList=randIds,
                          edgesList=None,
                          weightsList=None,
                          borderHandling=origTV.borderHandling,
                          allowOverlaps=self._allowOverlaps)
+
+    @staticmethod
+    def _setNoneArrayToNone(arr):
+        '''If arr is an array of all None or np.nan elements, return None, else return arr'''
+        import numpy as np
+        if np.equal(arr, None).all():
+            return None
+        if np.isnan(arr).all():
+            return None
+        return arr
 
     def _sortTrackElementLists(self):
         import operator
