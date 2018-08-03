@@ -28,7 +28,7 @@
                             <div class = 'projectDesc'>
                                 <p class="paragraph">
                                     <div><b>Background</b></div>
-                                    The difficulties associated with sequencing and assembling some regions of the DNA sequence result in gaps in the reference genomes that are typically represented as stretches of Ns. Although the presence of assembly gaps causes slight reduction in the mapping rate in many experimental settings, that does not invalidate the typical statistical testing comparing read count distributions across experimental conditions. However, we hypothesize that not handling assembly gaps in the null model may confound statistical testing of co-localization of genomic features.
+                                    The difficulties associated with sequencing and assembling some regions of the DNA sequence result in gaps in the reference genomes that are typically represented as stretches of Ns. Although the presence of assembly gaps causes a slight reduction in the mapping rate in many experimental settings, that does not invalidate the typical statistical testing comparing read count distributions across experimental conditions. However, we hypothesize that not handling assembly gaps in the null model may confound statistical testing of colocalization of genomic features.
                                 </p>
                                 <p class="paragraph">
                                     <div><b>Results</b></div>
@@ -37,6 +37,7 @@
                                     Further, we simulated a set of query and reference genomic tracks in a way that nullified any dependence between them to test our hypothesis that not avoiding assembly gaps in the null model would result in spurious inflation of statistical significance.
                                 We then <b>contrasted the distributions of test statistics and p-values of Monte Carlo simulation-based permutation tests that either avoided or not avoided assembly gaps in the null model when testing for significant co-localization between a pair of query and reference tracks</b>.
                                     We observed that the statistical tests that did not account for the assembly gaps in the null model resulted in a distribution of p-values that is shifted to the left (leading to inflated significance) and a distribution of the test statistic that is shifted to the right.
+                                The spurious inflation of statistical significance did not subside when we repeated the experiments on genomic tracks of hg38 that had relatively smaller proportion of total gap size compared to hg19.
                                 </p>
                                 <p class="paragraph">
                                     <div><b>Conclusion</b></div>
@@ -63,15 +64,16 @@
                                     We performed a series of explorative analyses to understand the nature and extent of intersection of genomic tracks with genome assembly gaps.
                                 </p>
                                 <p class="paragraph">
-                                    All the examples were executed based on 3 large collections of public genomics tracks:
+                                    All the examples were executed based on 3 large collections of public genomics tracks for hg18 and on 1 collections of public genomics tracks for hg38:
                                     <ul>
-                                        <li><a href="../u/hb-superuser/h/dataset-histmod" target="_blank">histone modifications collection</a>, which consist of 477 tracks</li>
-                                        <li><a href="../u/hb-superuser/h/analysis-dnase" target="_blank">DNase I hypersensitivepersensitive sites collection</a>, which consist of 838 tracks</li>
-                                        <li><a href="../u/hb-superuser/h/dataset-k562" target="_blank">transcription factor bindingsites in K562 cell line collection</a>, which consist of 568 tracks</li>
+                                        <li><a href="../u/hb-superuser/h/dataset-histmod" target="_blank">histone modifications collection (hg19)</a>, which consist of 477 tracks</li>
+                                        <li><a href="../u/hb-superuser/h/analysis-dnase" target="_blank">DNase I hypersensitive sites collection (hg19)</a>, which consist of 838 tracks</li>
+                                        <li><a href="../u/hb-superuser/h/dataset-k562" target="_blank">transcription factor bindingsites in K562 cell line collection (hg19)</a>, which consist of 568 tracks</li>
+                                        <li><a href="../u/hb-superuser/h/dataset-dnase-hg38" target="_blank">DNase I hypersensitive sites collection (hg38)</a>, which consist of 95 tracks</li>
                                     </ul>
                                 </p>
                                 <p class="paragraph">
-                                    The following examples are based on dataset: DNase I hypersensitivepersensitive sites collection and <a href="../u/hb-superuser/h/dataset-assembly-gaps" target="_blank"> assembly gaps track (element 1) and start, middle and end region of assembly gaps track (element 2, 3, 4, respectively) </a>.
+                                    The following examples are based on dataset: DNase I hypersensitive sites collection and <a href="../u/hb-superuser/h/dataset-assembly-gaps" target="_blank"> assembly gaps track (element 1) and start, middle and end region of assembly gaps track (element 2, 3, 4, respectively) </a>.
                                     The rest of the analysis described in the paper 'Mind your gaps: Overlooking of assembly gaps confounds statistical testing in genome analysis' can be found <a href="../u/hb-superuser/p/assembly-gaps" target="_blank">here.</a>
                                 </p>
                             </div>
@@ -81,7 +83,7 @@
                                 Number of elements per track in GSuite
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Compute a basic measure for each track in a GSuite" is used to count number of elements per every track in DNase I hypersensitivepersensitive sites collection.
+                                The following tool: "Compute a basic measure for each track in a GSuite" is used to count number of elements per every track in DNase I hypersensitive sites collection.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_g_suite_single_value_analysis_per_track_tool">Click here to use the tool</a>
                                 or
                                 <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 14, 19)</a>
@@ -98,7 +100,7 @@
                                 Average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Count average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)" is used to count average segment length track and bp proportion overlap value per every track in DNase I hypersensitivepersensitive sites collection and assembly gaps track.
+                                The following tool: "Count average segment length of track and bp proportion overlap value (with selected track) per every track in a collection of tracks (GSuite)" is used to count average segment length track and bp proportion overlap value per every track in DNase I hypersensitive sites collection and assembly gaps track.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_count_avg_segment_length_and_bp_overlap_tool">Click here to use the tool</a>
                                 or
                                 <a href = "../u/hb-superuser/h/analysis-dnase">here to view an example (element 15, 16)</a>
@@ -115,7 +117,7 @@
                                 Intersection between the genomic tracks (collection of tracks - GSuite) and selected track
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitivepersensitive sites collection and assembly gaps track.
+                                The following tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitive sites collection and assembly gaps track.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_generate_visualization_overlap_heatmap_tool">Click here to use the tool</a>
                                 or
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 23, 24)</a>
@@ -125,7 +127,7 @@
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 31)</a>
                             </div>
                             <div class = 'exampleDesc'>
-                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitivepersensitive sites collection and start region of assembly gaps track.
+                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitive sites collection and start region of assembly gaps track.
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">Click here to view an example (element 25, 26)</a>
                                 The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
@@ -133,7 +135,7 @@
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 32)</a>
                             </div>
                             <div class = 'exampleDesc'>
-                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitivepersensitive sites collection and middle region of assembly gaps track.
+                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitive sites collection and middle region of assembly gaps track.
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">Click here to view an example (element 27, 28)</a>
                                 The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
@@ -141,7 +143,7 @@
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">here to view an example (element 33)</a>
                             </div>
                             <div class = 'exampleDesc'>
-                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitivepersensitive sites collection and end region of assembly gaps track.
+                                The same tool: "Count coverage for every track within specified region" is used to count intersection between the DNase I hypersensitive sites collection and end region of assembly gaps track.
                                 <a href = "../u/hb-superuser/h/analysis-dnase-vs-assemblygapstrack-bp-proportion">Click here to view an example (element 29, 30)</a>
                                 The following tool: "Create descriptive results for tabular file" is used to present results of the above calculations.
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_create_histogram_tool">Click here to use the tool</a>
@@ -172,7 +174,7 @@
                                 Preparing data for MC-based permutation tests either avoided or not avoided assembly gaps in the null model.
                             </h4>
                             <div class = 'exampleDesc'>
-                                The following tool: "Sample tracks from a collection of tracks (GSuite)" creates a collection of tracks (GSuite) with specified number of tracks (randomly selected from DNase I hypersensitivepersensitive sites collection).
+                                The following tool: "Sample tracks from a collection of tracks (GSuite)" creates a collection of tracks (GSuite) with specified number of tracks (randomly selected from DNase I hypersensitive sites collection).
                                 <a href="../tool_runner/data_source_redirect?tool_id=hb_randomize_gsuite_tool">Click here to use the tool</a>
                                 or
                                 <a href = "../u/hb-superuser/h/randomization---gsuite-dnase">here to view an example (element 30)</a>

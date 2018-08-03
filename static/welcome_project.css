@@ -17,7 +17,7 @@
             padding-bottom:1px;
         }
         .nav-tabs {
-            border-bottom: 1px solid #9aa49a;
+            border-bottom: 1px solid #7c9a7c;
         }
         .nav-tabs > li {
             background-color: #66635B;
@@ -26,22 +26,22 @@
         .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
             color: #222;
             cursor: default;
-            background-color: #9aa49a;
-            border: 1px solid #9aa49a;
+            background-color: #7c9a7c;
+            border: 1px solid #7c9a7c;
             border-bottom-color: transparent;
         }
         .nav-tabs > li > a {
             margin-right: 2px;
             line-height: 1.42857143;
             border-radius: 4px 4px 0 0;
-            border: 1px solid #9aa49a;
+            border: 1px solid #7c9a7c;
             border-bottom-color:transparent ;
             color: #fff;
         }
         .nav-tabs > li > a:hover {
             color: #000000;
             background-color: #b8bfb8;
-            border: 1px solid #9aa49a;
+            border: 1px solid #7c9a7c;
             border-bottom-color:transparent;
         }
         .nav > li > a {
@@ -52,11 +52,11 @@
         .nav > li {
             padding-right:2px;
         }
-       
+
         .container{
             color: #222;
             width: 100%;
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             margin-bottom:10px;
         }
 
@@ -64,7 +64,7 @@
             text-align:center;
             padding: 10px;
             width: 100%;
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             margin-top: 20px;
             border-radius: 0px 0px 4px 4px;
         }
@@ -80,7 +80,7 @@
 
         .rowSpecial{
             overflow: hidden;
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             margin-top: 20px;
             padding-bottom: 10px;
         }
@@ -91,14 +91,14 @@
             margin-top: 20px;
         }
         .colHalfLeft{
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             float: left;
             width:50%;
             padding:15px;
         }
         .colHalfRight{
             float: left;
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             width:50%;
             padding:15px;
             border-left: 10px solid #66635B;
@@ -107,30 +107,30 @@
         .colAll{
             padding:15px;
             width:100%;
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
         }
         .colAllProjectList{
             padding:5px;
             padding-left: 15px;
             padding-right: 15px;
             width:100%;
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
         }
         .colOneThirdLeft{
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             float:left;
             padding:15px;
             width:33.3333333%;
         }
         .colOneThirdMiddle{
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             float:left;
             padding:15px;
             width:33.3333333%;
             border-left: 10px solid #66635B;
         }
         .colOneThirdRight{
-            background-color: #9aa49a;
+            background-color: #7c9a7c;
             float:left;
             padding:15px;
             width:33.3333333%;
