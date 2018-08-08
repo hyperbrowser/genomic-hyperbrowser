@@ -5,6 +5,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.gsuite import GSuiteStatUtils
 from collections import OrderedDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.webtools.assemblygap.Legend import Legend
 
 class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
@@ -12,20 +13,15 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
 
-        return "Combain metadata for hGsuite"
+        return "Combain metadata for hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
 
-        return [#('Select file with data', 'selectedFile'),
-                ('Select gSuite:', 'gSuite'),
+        return [('Select hGSuite:', 'gSuite'),
                 ('Select columns', 'possibleColumns'),
                 ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns')
                 ]
-
-    # @classmethod
-    # def getOptionsBoxSelectedFile(cls):
-    #     return GeneralGuiTool.getHistorySelectionElement('csv')
 
     @classmethod
     def getOptionsBoxGSuite(cls):
@@ -45,40 +41,14 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
                 i+=1
             return tableElements
 
-        # if prevChoices.selectedFile:
-        #     hGSuite = HGsuite()
-        #     header = hGSuite.parseCvsFileHeader(prevChoices.selectedFile)
-        #
-        #     tableElements = [['Column number', 'Column name']]
-        #     i=1
-        #     for h in header:
-        #         tableElements.append([i, h])
-        #         i+=1
-        #     return tableElements
-
     @classmethod
     def getOptionsBoxSelectedColumns(cls, prevChoices):
         if prevChoices.gSuite:
             return ''
 
-
-
     @classmethod
     def validateAndReturnErrors(cls, choices):
         hGSuite = HGsuite()
-        # if not choices.selectedFile:
-        #     return 'Select csv file'
-
-
-        # check if the number of lines in csv is more than in gsuite
-        # if choices.selectedFile and choices.gSuite:
-        #     hGSuite = HGsuite()
-        #     if hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite) != hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile):
-        #
-        #         info = 'You have different number of tracks in gsuite than attributes in csv filr. '
-        #         info += 'In GSuite you have: ' + str(hGSuite.parseGSuiteAndGetLineNumbers(choices.gSuite)) + ' lines. '
-        #         info += 'while in file you have: ' + str(hGSuite.parseCvsAndGetLineNumbers(choices.selectedFile)) + ' lines. '
-        #         return info
 
         if choices.gSuite:
             if choices.selectedColumns != '':
@@ -149,3 +119,21 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
+
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'This tool combain metadata of hGSuite.'
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select columns',
+                          'Select columns numbers which you want to combain (e.g. 1,2, 4-6)']
+
+        toolResult = 'The output of this tool is hGsuite with extra columns, which have combained data.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
