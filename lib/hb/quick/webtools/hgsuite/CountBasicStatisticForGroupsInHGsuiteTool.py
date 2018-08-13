@@ -1,30 +1,47 @@
 from collections import OrderedDict
+from operator import itemgetter
 
+from gold.track.TrackStructure import SingleTrackTS
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.statistic.CountElementStat import CountElementStat
+from gold.statistic.CountStat import CountStat
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
+from gold.track.Track import PlainTrack
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import HistElement
+from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool import \
     CountDescriptiveStatisticBetweenHGsuiteTool
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
+from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
+from quick.statistic.AvgSegLenStat import AvgSegLenStat
 
-
-class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, DebugMixin):
+class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, DebugMixin, UserBinMixin):
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS = 10
     PHRASE = '-- SELECT --'
 
     NUMTRACK = 'Number of tracks'
-    NUMELEMENTS = 'Number of elements in track'
+    NUMELEMENTS = 'Number of elements'
+    BPELEMENTS = 'Base-pair coverage'
+    AVGLENGTHSEG = 'Average length of segments'
+
     STAT_LIST_NOT_PPREPROCESSED = {
         NUMTRACK: 'NumberOfTracks',
     }
     STAT_LIST = {
-        NUMELEMENTS: 'NumElements'
+        NUMELEMENTS: 'NumElements',
+        BPELEMENTS: 'BpCoverage',
+        AVGLENGTHSEG: 'AvgLengthSeg'
     }
 
     @classmethod
@@ -33,14 +50,15 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select gSuite', 'gsuite')] + \
+        return [('Select hGSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                [('Select measure %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_COLS)] + \
                [('Select column %s' % (
                    i + 1) + ' according to which you would like to group results',
-                 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+                 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               cls.getInputBoxNamesForUserBinSelection()
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -112,6 +130,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
             resDict[stat] = OrderedDict()
 
         #count overview
+        i = 0
         for iTrack in gSuite.allTracks():
             for stat in statList:
                 tupleList = []
@@ -119,13 +138,79 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                     tupleList = tuple(iTrack.title)
                 else:
                     for attrName in attrNameList:
-                        tupleList.append(iTrack.getAttribute(attrName))
+                        at = iTrack.getAttribute(attrName)
+                        if at == None:
+                            at = 'No group'
+                        tupleList.append(at)
                     tupleList = tuple(tupleList)
+
                 if not tupleList in resDict[stat].keys():
-                    resDict[stat][tupleList] = 0
+                    if stat == cls.NUMTRACK:
+                        resDict[stat][tupleList] = 0
+                    else:
+                        resDict[stat][tupleList] = []
+
+                if stat in cls.STAT_LIST.keys():
+                    regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+                    analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
+                                                                     genome=gSuite.genome)
+                    analysisSpec = AnalysisSpec(SingleTSStat)
+
+                    if cls.NUMELEMENTS == stat:
+                        analysisSpec.addParameter('rawStatistic', CountStat.__name__)
+
+                    if cls.BPELEMENTS == stat:
+                        analysisSpec.addParameter('rawStatistic', CountElementStat.__name__)
+
+                    if cls.AVGLENGTHSEG == stat:
+                        analysisSpec.addParameter('rawStatistic', AvgSegLenStat.__name__)
+
+                    sts = SingleTrackTS(PlainTrack(iTrack.trackName),
+                                        OrderedDict(title=iTrack.title, genome=str(gSuite.genome)))
+
+                    res = doAnalysis(analysisSpec, analysisBins, sts)
+
+
+                    resDict[stat][tupleList].append(res.getGlobalResult()['Result'].getResult())
 
                 if stat == cls.NUMTRACK:
                     resDict[stat][tupleList] += 1
+            i+=1
+
+        #exclude which will now have min-max
+        notToExcludeFromResults = [cls.NUMTRACK]
+        deleteElements = []
+
+        group = []
+        groupTuple =[]
+        resDictExtra = OrderedDict()
+        for rkey, rItem in resDict.iteritems():
+            if rkey in notToExcludeFromResults:
+                for kTemp, elTemp in resDict[rkey].iteritems():
+                    v = ''.join(list(kTemp))
+                    if not v in group:
+                        group.append(v)
+                        groupTuple.append(kTemp)
+            else:
+                deleteElements.append(rkey)
+                if not [rkey+'-min'] in resDictExtra.keys():
+                    resDictExtra[rkey+'-min'] = OrderedDict()
+                if not [rkey + '-max'] in resDictExtra.keys():
+                    resDictExtra[rkey+'-max'] = OrderedDict()
+                for kTemp, elTemp in resDict[rkey].iteritems():
+                    v = '--'.join(list(kTemp))
+                    if not v in group:
+                        group.append(v)
+                        groupTuple.append(kTemp)
+                    if not kTemp in resDictExtra[rkey + '-min'].keys():
+                        resDictExtra[rkey + '-min'][kTemp] = min(rItem[kTemp])
+                    if not kTemp in resDictExtra[rkey + '-max'].keys():
+                        resDictExtra[rkey + '-max'][kTemp] = max(rItem[kTemp])
+
+        for de in deleteElements:
+            del resDict[de]
+
+        resDictMerged = cls.mergeTwodicts(resDict, resDictExtra)
 
         ########################################################################
         ###################### SUMMARIZE RESULTS ###############################
@@ -133,7 +218,14 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         #Overview table
 
 
-        #build results
+        cls.createGSuiteWithExtraFields(attrNameList, gSuite, resDictMerged)
+        core = cls.drawPlots(group, groupTuple, resDictMerged)
+
+        print core
+
+    @classmethod
+    def createGSuiteWithExtraFields(cls, attrNameList, gSuite, resDictMerged):
+        # build results
         outGSuite = GSuite()
         for i, iTrack in enumerate(gSuite.allTracks()):
             trackTitle = iTrack.title
@@ -141,26 +233,93 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
             attr = OrderedDict()
             for a in gSuite.attributes:
-                attr[str(a)] = str(iTrack.getAttribute(a))
+                at = iTrack.getAttribute(a)
+                if at == None:
+                    at = 'No group'
+                attr[str(a)] = str(at)
 
             tupleList = []
             if len(attrNameList) == 0:
                 tupleList = tuple(trackTitle)
             else:
                 for attrName in attrNameList:
-                    tupleList.append(iTrack.getAttribute(attrName))
+                    at = iTrack.getAttribute(attrName)
+                    if at == None:
+                        at = 'No group'
+                    tupleList.append(at)
                 tupleList = tuple(tupleList)
-            for s in resDict.keys():
+            for s in resDictMerged.keys():
                 attrChange = str(s)
                 if attrChange in attr.keys():
                     attrChange = attrChange + str('-') + str(len(attr.keys()))
 
-                attr[attrChange] = str(resDict[s][tupleList])
+                attr[attrChange] = str(resDictMerged[s][tupleList])
 
             trackType = iTrack.trackType
 
             cls._buildTrack(outGSuite, trackTitle, gSuite.genome, trackPath, attr, trackType)
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['overview gSuite'])
+
+    @classmethod
+    def drawPlots(cls, group, groupTuple, resDictMerged):
+        dataForPlot = []
+        seriesName = []
+        categoriesForPlot = []
+        rdmList = []
+        for rdm in resDictMerged.keys():
+            k = rdm.replace('-min', '').replace('-max', '')
+            if not k in rdmList:
+                rdmList.append(k)
+        titleText = []
+        for k in rdmList:
+            if cls.NUMTRACK == k:
+                seriesName.append([k])
+                data = []
+                for g in groupTuple:
+                    if group not in categoriesForPlot:
+                        categoriesForPlot.append(group)
+                    data.append(resDictMerged[k][g])
+                dataForPlot.append(data)
+            else:
+                newK = []
+                newD = []
+                inxK = 0
+                for r in sorted(resDictMerged.keys()):
+                    if k in r:
+                        newK.append(r.replace(k, ''))
+                        data = []
+                        for g in groupTuple:
+                            if inxK == 0:
+                                categoriesForPlot.append(group)
+                            data.append(resDictMerged[r][g])
+                        newD.append(data)
+                        inxK = 1
+                new = zip(newK, newD)
+                new.sort()
+                seriesName.append([x[0] for x in new])
+                dataForPlot.append([x[1] for x in new])
+            titleText.append(k)
+        vg = visualizationGraphs()
+        core = HtmlCore()
+        core.begin()
+        core.paragraph('Summary results')
+        core.divBegin()
+        plot = vg.drawColumnCharts(dataForPlot,
+                                   height=300,
+                                   categories=categoriesForPlot,
+                                   seriesName=seriesName,
+                                   xAxisRotation=90,
+                                   titleText=titleText)
+        core.line(plot)
+        core.divEnd()
+        core.end()
+        return core
+
+    @classmethod
+    def mergeTwodicts(cls, x, y):
+        z = x.copy()
+        z.update(y)
+        return z
 
     @classmethod
     def _buildTrack(cls, outGSuite, trackTitle, genome, trackPath, attr, trackType):
@@ -273,15 +432,62 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = "This tool provide overview of groups in hGSuite."
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select measure',
+                          'Select column according to which you would like to group results'
+                          ]
+
+        example = {'Example 1': ['', ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   group
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       one
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       one
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       two
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       None
+            """],
+                  [
+                      ['Select hGSuite', 'gsuite'],
+                      ['Select measure 1', 'Number of elements in track'],
+                      ['Select column according to which you would like to group results', 'group'],
+              ],
+              ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   group   Number of elements in track-min	Number of elements in track-max
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       one                100	       	               200
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       one                100	       	               200
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       two                300	       	               300
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .                  500	       	               800
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       .                  500	                	   800
+        """
+               ]
+              ]
+        }
+
+        toolResult = 'The output of this tool is a page with visualizations and hGsuite with extra columns.'
+
+        notice = 'Different measures are available for different type (primary, preprocessed) of hGSuites.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example,
+                                          notice=notice)
+
     # @classmethod
     # def getToolIllustration(cls):
     #     """

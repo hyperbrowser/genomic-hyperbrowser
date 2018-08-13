@@ -1,5 +1,4 @@
 from collections import OrderedDict
-
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.statistic.CountStat import CountStat
@@ -13,10 +12,13 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool import \
     CountDescriptiveStatisticBetweenHGsuiteTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticJS import Cube
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTracksTS
+from functools import partial
+from proto.hyperbrowser.StaticFile import StaticImage
 
 class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
@@ -25,8 +27,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     MAX_NUM_OF_COLS = 10
     PHRASE = '-- SELECT --'
 
-    COUNTSTAT = 'Count (bps)'
-    NORMALIZESTAT = 'Normalize (bps)'
+    COUNTSTAT = 'Coverage'
+    NORMALIZESTAT = 'Normalize'
     OBSVSEXPECTEDSTAT = 'Observed/expected'
 
     SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max'}
@@ -39,7 +41,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select gSuite', 'gsuite')] + \
+        return [('Select hGSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                [('Select statistic %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
@@ -49,7 +51,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                i + 1) + ' which you would like to group',
                  'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Do you want to do above summarize data for column %s' % (
-               i + 1) + ' from gSuite ',
+               i + 1) + ' from hGSuite ',
                  'selectedColumnOption%s' % i) for i in
                 range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                 cls.getInputBoxNamesForUserBinSelection() + \
@@ -72,7 +74,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def setupSelectedStatMethods(cls):
-        from functools import partial
         for i in xrange(cls.MAX_NUM_OF_COLS):
             setattr(cls, 'getOptionsBoxSelectedStat%s' % i,
                     partial(cls._getOptionsBoxForSelectedStat, index=i))
@@ -80,46 +81,55 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def getOptionsBoxSummarize(cls, prevChoices):
         if prevChoices.gsuite:
-            return cls.SUMMARIZE.keys()
+            statList = []
+            for i in xrange(cls.MAX_NUM_OF_COLS):
+                attr = getattr(prevChoices, 'selectedStat%s' % i)
+                if cls.PHRASE in [attr]:
+                    pass
+                elif str(attr) == 'None':
+                    pass
+                else:
+                    statList.append(attr)
+            if len(statList) > 0:
+                return cls.SUMMARIZE.keys()
 
     @classmethod
     def _getOptionsBoxForSelectedColumn(cls, prevChoices, index):
         if prevChoices.gsuite:
-            selectionList = []
+            if prevChoices.summarize and prevChoices.summarize != 'no':
+                selectionList = []
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                           xrange(index)):
+                    gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    selectionList += gSuiteTNFirst.attributes
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
-                       xrange(index)):
-                gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                selectionList += gSuiteTNFirst.attributes
+                    attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                                xrange(index)]
+                    selectionList = [cls.PHRASE] + list(
+                        set(selectionList) - set(attrList))
 
-                attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
-                            xrange(index)]
-                selectionList = [cls.PHRASE] + list(
-                    set(selectionList) - set(attrList))
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedColumnMethods(cls):
-        from functools import partial
         for i in xrange(cls.MAX_NUM_OF_COLS):
             setattr(cls, 'getOptionsBoxSelectedColumn%s' % i,
                     partial(cls._getOptionsBoxForSelectedColumn, index=i))
 
     @classmethod
     def _getOptionsBoxForSelectedColumnOption(cls, prevChoices, index):
-        if prevChoices.gsuite and prevChoices.summarize != 'no':
-            selectionList = []
+        if prevChoices.gsuite:
+            if prevChoices.summarize and prevChoices.summarize != 'no':
+                selectionList = []
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                           xrange(index)):
+                    selectionList = ''
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
-                       xrange(index)):
-                selectionList = ''
+                    return selectionList
 
-                return selectionList
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedColumnOptionMethods(cls):
@@ -141,6 +151,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         else:
             colList = []
             columnOptionsDict = {}
+
+        # print 'colList', colList, '<br>'
+        # print 'columnOptionsDict', columnOptionsDict, '<br>'
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
@@ -170,6 +183,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 if cls.SUMMARIZE[summarize] != 'no':
                     groupKey = CountDescriptiveStatisticBetweenHGsuiteTool.changeOptions(columnOptionsDict, groupKey)
 
+                # print '-groupKey-', groupKey, '<br>'
                 if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
                     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
 
@@ -186,7 +200,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     else:
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(countPerTrack)
 
-
+        # print 'resultsDict',resultsDict, '<br>'
+        # print 'colList', colList, '<br>'
+        # print 'summarize', summarize, '<br>'
+        # print 'sumBp', sumBp, '<br>'
 
         htmlCore = HtmlCore()
         htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'])
@@ -194,9 +211,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
         htmlCore.header('Description')
         htmlCore.paragraph(
-            'You can see results in two ways: table and plot... Click on the following table to see results for statistics. ')
+            'You can see results in two ways: table with results and plot. ')
         htmlCore.header('Interpretation of results')
-        htmlCore.paragraph('Click here to see how to ...')
+        htmlCore.paragraph('Click on the following options for selected statistic to see detailed results. ')
 
         cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp)
         htmlCore.end()
@@ -382,6 +399,15 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
+
+        if not choices.gsuite:
+            return 'Select hGSuite'
+
+        if cls.PHRASE in getattr(choices, 'selectedStat%s' % 0):
+            return 'Select at least 1 statistic'
+
+
+
         return None
 
     # @classmethod
@@ -396,16 +422,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -471,14 +490,129 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+
+
+
+        toolDescription = "This tool count descriptive statistics for hGSuite."
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select statistic',
+                          'Summarize within groups (no, sum, minimum, maximum, average)',
+                          'Select column which you would like to group',
+                          'Do you want to do above summarize data for column from hGSuite'
+                          ]
+
+        urlexample1Output = StaticImage(['hgsuite', 'img',
+                                      'CountDescriptiveStatisticForHGSuiteTool-img1.png']).getURL()
+        urlexample2Output = StaticImage(['hgsuite', 'img',
+                                      'CountDescriptiveStatisticForHGSuiteTool-img2.png']).getURL()
+
+        urlexample3Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticForHGSuiteTool-img3.png']).getURL()
+        urlexample4Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticForHGSuiteTool-img4.png']).getURL()
+
+        urlexample5Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticForHGSuiteTool-img5.png']).getURL()
+        urlexample6Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticForHGSuiteTool-img6.png']).getURL()
+
+
+        example = OrderedDict({'Example - summarize within groups: no': ['', ["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     genotype
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	eta
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	eta
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	iota
+                """],
+                 [
+                     ['Select hGSuite', 'gsuite'],
+                     ['Select statistic 1', 'Coverage'],
+                     ['Summarize within groups', 'no'],
+                 ],
+                 ['<div style = "margin: 0px auto;" ><img style="float:left;padding-left:30px;" width="300" src="' + urlexample1Output + '" /><img  style="float:right;padding-right:30px;" width="300" src="' + urlexample2Output + '" /></div>']
+                                 ]
+                   ,'Example - summarize within groups: maximum': ['', ["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     mutation    genotype
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	CA  eta
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	GT	eta
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	CG	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	GC	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	CA	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track6.bed	GT	iota
+              """],
+                                         [
+                                             ['Select hGSuite', 'gsuite'],
+                                             ['Select statistic 1',
+                                              'Coverage'],
+                                             ['Summarize within groups', 'maximum'],
+                                             ['Select column 1 which you would like to group', 'genotype']
+                                         ],
+                                         [
+                                             '<div style = "margin: 0px auto;" ><img style="float:left;padding-left:30px;" width="300" src="' + urlexample3Output + '" /><img  style="float:right;padding-right:30px;" width="300" src="' + urlexample4Output + '" /></div>']
+                                         ]
+            , 'Example - summarize within groups: sum': ['', ["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     mutation    genotype
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	CA  eta
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	GT	eta
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	CG	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	GC	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	CA	iota
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track6.bed	GT	iota
+               """],
+                 [
+                     ['Select hGSuite', 'gsuite'],
+                     ['Select statistic 1',
+                      'Coverage'],
+                     ['Summarize within groups',
+                      'sum'],
+                     [
+                         'Select column 1 which you would like to group',
+                         'genotype'],
+                     ['Select column 2 which you would like to group', 'mutation'],
+                     ['Do you want to do above summarize data for column 1 from hGSuite ', ''],
+                     ['Do you want to do above summarize data for column 2 from hGSuite ', 'CA,GT;CG,GC;'],
+                 ],
+                 [
+                     '<div style = "margin: 0px auto;" ><img style="float:left;padding-left:30px;" width="300" src="' + urlexample5Output + '" /><img  style="float:right;padding-right:30px;" width="300" src="' + urlexample6Output + '" /></div>']
+                 ]
+
+                   })
+
+        toolResult = 'The output of this tool is a page with visualizations. <br>' \
+                     'Detailed information about results gives possibility to <b>download raw file</b> with results <br>' \
+                     '<b>Options for presenting results:</b> <br>' \
+                     '- Transpose tables and plots - transpose table and plots <br>' \
+                     '- Show all series as one in the plots - show all data as one series <br>' \
+                     "- Remove zeros from plots - remove value 0 from plots"
+
+
+
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example)
+
+
     #
     # @classmethod
     # def getToolIllustration(cls):

@@ -6,6 +6,7 @@ from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteConstants import TITLE_COL
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 
 
 class AddAMetadataToGSuiteTool(GeneralGuiTool):
@@ -17,8 +18,8 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite', 'gsuite'),
-                ('Add meta-data column', 'attrName'),
+        return [('Select GSuite (hGSuite)', 'gsuite'),
+                ('Add metadata column', 'attrName'),
                 ('', 'gsuiteTitles'),
                 ('', 'gsuiteAttributeValues')] + \
                [('', 'selectAttribute%s' % i) for i
@@ -109,6 +110,8 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
                 if(attrName == TITLE_COL):
                     track.title = newAttrValue
                 else:
+                    if newAttrValue == 'None':
+                        newAttrValue = '.'
                     track.setAttribute(attrName, newAttrValue)
             outputGSuite.addTrack(track)
 
@@ -207,14 +210,61 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'This tool add metadata for GSuite (hGSuite).'
+
+        stepsToRunTool = ['Select GSuite (hGSuite)',
+                          'Add metadata column ',
+                          'Add value for track nr. 1 with title ...']
+
+        example = {'Example': ['', ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.
+        """],
+            [
+                ['Select GSuite (hGSuite)', 'gsuite'],
+                ['Add metadata column ', 'Coverage'],
+                ['Add value for track nr. 1 with title "track1.bed":', '100'],
+                ['Add value for track nr. 2 with title "track2.bed":', 'None'],
+                ['Add value for track nr. 3 with title "track3.bed":', '1500'],
+                ['Add value for track nr. 4 with title "track4.bed":', '.'],
+                ['Add value for track nr. 5 with title "track5.bed":', '1200'],
+
+            ],
+        ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   Coverage
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       100
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       1500
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       1200
+        """
+                                ]
+                               ]}
+
+        toolResult = 'The output of this tool is GSuite (hGsuite) with extra column.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example)
+
     #
     # @classmethod
     # def getToolIllustration(cls):

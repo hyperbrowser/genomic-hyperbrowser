@@ -1,6 +1,6 @@
 import urllib2
 
-from gold.gsuite.GSuiteEditor import addColumnToGSuite
+from gold.gsuite.GSuiteEditor import concatenateGSuitesAddingCategories
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGSuiteFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -19,14 +19,15 @@ class ContacenateTwoOrMoreHGsuitesTool(ConcatenateGSuitesTool):
         from gold.gsuite.GSuiteEditor import concatenateGSuites
         from gold.gsuite.GSuiteComposer import composeToFile
 
-        gSuiteList = []
-        for galaxyTn in cls._getSelectedGsuiteGalaxyTNsInOrder(choices):
-            currentGSuite = getGSuiteFromGalaxyTN(galaxyTn)
-            gSuiteTitle = urllib2.unquote(galaxyTn.split(':')[-1])
-            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn)
-            outGsuite = addColumnToGSuite(currentGSuite, uri, attrName='source', gSuiteTitle=gSuiteTitle)
-            gSuiteList.append(outGsuite)
+        gSuiteList = [getGSuiteFromGalaxyTN(galaxyTn) for galaxyTn in \
+                      cls._getSelectedGsuiteGalaxyTNsInOrder(choices)]
 
-        concatenatedGSuite = concatenateGSuites(gSuiteList)
+        if choices.categorize == 'No':
+            concatenatedGSuite = concatenateGSuites(gSuiteList)
+        else:
+            categoryList = [getattr(choices, 'categoryEntry%s' % i).strip()
+                            for i in xrange(len(gSuiteList))]
+            concatenatedGSuite = concatenateGSuitesAddingCategories(
+                gSuiteList, choices.columnTitle, categoryList)
+
         composeToFile(concatenatedGSuite, galaxyFn)
-

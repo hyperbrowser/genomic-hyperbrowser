@@ -10,6 +10,8 @@ from proto.CommonFunctions import ensurePathExists
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.HGsuiteClass import HGsuite
+from quick.webtools.hgsuite.Legend import Legend
+
 
 class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(GeneralGuiTool):
 
@@ -19,11 +21,11 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
     @classmethod
     def getToolName(cls):
-        return "Concatenate tracks in hGsuite according to parameters in the selected column"
+        return "Concatenate tracks in a hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select gSuite:', 'gSuite'),
+        return [('Select hGSuite', 'gSuite'),
                 ('Select column, you want to use to combain tracks', 'column'),
                 ('Show possible phrases', 'possibleColumns')
         ] + \
@@ -244,16 +246,9 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -319,14 +314,56 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'This tool concatenate tracks in hGSuite according to selected phrases in the selected columns..'
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select column, you want to use to combain tracks',
+                          'Select phrase 1, you want to combain (use colon to combain) ',
+                          'Select column 1 which you would like to treat as unique'
+                          ]
+
+        example = {'Example': ['', ["""
+        ##location: local
+        ##file format: primary
+        ##track type: unknown
+        ##genome: mm10
+        ###uri	title	mutation	genotype
+        galaxy:/path/track1.bed	track1	CA	eta
+        galaxy:/path/track2.bed	track2	TA	eta
+        galaxy:/path/track3.bed	track3	CA	iota
+        galaxy:/path/track4.bed	track4	TA	iota
+        """],
+                               [['Select hGSuite: ', 'gsuite'],
+                                ['Select column, you want to use to combain tracks', 'mutation'],
+                                ['Select phrase 1, you want to combain (use colon to combain) ', 'CA,TA'],
+                                ['Select phrase 2, you want to combain (use colon to combain) ', 'select phrase'],
+                                ['Select column 1 which you would like to treat as unique', 'genotype'],
+                                ['Select column 2 which you would like to treat as unique', 'None']
+                                ],
+                               ["""
+        ##location: local
+        ##file format: primary
+        ##track type: unknown
+        ##genome: mm10
+        ###uri	title	mutation	genotype
+        galaxy:/path/track1.bed	track5  title1	CA-TA	eta
+        galaxy:/path/track2.bed	track6  title2	CA-TA	iota
+        """
+                                ]
+                               ]}
+
+        toolResult = 'The output of this tool is hGsuite with concatenated tracks according to selected parameters.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example)
+
     #
     # @classmethod
     # def getToolIllustration(cls):

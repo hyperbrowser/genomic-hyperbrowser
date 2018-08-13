@@ -5,7 +5,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.gsuite import GSuiteStatUtils
 from collections import OrderedDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
-from quick.webtools.assemblygap.Legend import Legend
+from quick.webtools.hgsuite.Legend import Legend
 
 class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
@@ -13,13 +13,13 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
 
-        return "Combain metadata for hGSuite"
+        return "Combain metadata"
 
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select hGSuite:', 'gSuite'),
-                ('Select columns', 'possibleColumns'),
+        return [('Select hGSuite', 'gSuite'),
+                ('See columns', 'possibleColumns'),
                 ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns')
                 ]
 
@@ -49,6 +49,9 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def validateAndReturnErrors(cls, choices):
         hGSuite = HGsuite()
+
+        if not choices.gSuite:
+            return 'Select gSuite'
 
         if choices.gSuite:
             if choices.selectedColumns != '':
@@ -115,11 +118,18 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     def getExtraHistElements(cls, choices):
         return [HistElement('hGSuite', 'gsuite')]
 
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
+        if not choices.gSuite:
+            return 'Select gSuite'
 
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
 
+    @classmethod
+    def isPublic(cls):
+        return True
 
     @classmethod
     def getToolDescription(cls):
@@ -129,11 +139,42 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
         toolDescription = 'This tool combain metadata of hGSuite.'
 
         stepsToRunTool = ['Select hGSuite',
-                          'Select columns',
                           'Select columns numbers which you want to combain (e.g. 1,2, 4-6)']
+
+        example = {'Example':['',["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     T-cells B-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.
+    """],
+                   [['Select hGSuite', 'gsuite'],
+                    ['Select columns numbers which you want to combain (e.g. 1,2, 4-6) ', '1,2']],
+   ["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title    t-cells  t-cells-b-cells  b-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	t-cells	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	b-cells	      X
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	t-cells	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.	      .
+    """
+   ]
+                ]}
 
         toolResult = 'The output of this tool is hGsuite with extra columns, which have combained data.'
 
+
+
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,
-                                          toolResult=toolResult)
+                                          toolResult=toolResult,
+                                          exampleDescription=example)

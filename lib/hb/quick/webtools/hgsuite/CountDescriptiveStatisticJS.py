@@ -355,7 +355,16 @@ class Cube():
        				{
        				    var h = '';
        					var rows = [];
-       					var header = dv;
+       					
+       					if (dv.length == 0)
+       					{
+       						var header = [dv];
+       					}
+       					else
+       					{
+       						var header = dv;
+       					}
+       					
        					rows.push(header);
        					kNum = kNum+1;
        				}
@@ -566,27 +575,68 @@ class Cube():
                
        function generateTable(tab, inx, divId) 
        {
-          //console.log('tab-generateTable', tab);
+          console.log('tab-generateTable', tab);
  		  var tbl = document.createElement("table");
   		  var tblBody = document.createElement("tbody");
  	      
  	      for (var i = 0; i < tab.length; i++) 
   		  {
     			var row = document.createElement("tr");
-	    		for (var j = 0; j < tab[i].length; j++) 
+    			
+    			if (tab[i].length == 0)
     			{
-    				if (i == 0)
-    				{
-    					var cell = document.createElement("th");
-    				}
-    				else
-    				{
-    					var cell = document.createElement("td");
-    				}
-      		   	    var cellText = document.createTextNode(tab[i][j]);
-      			    cell.appendChild(cellText);
-      		   	    row.appendChild(cell);
-    		    }
+    				var cell1 = document.createElement("th");
+    				var cellText1 = document.createTextNode('Data');
+    				cell1.appendChild(cellText1);
+      		   	    row.appendChild(cell1);
+      		   	    
+      		   	    var cell1 = document.createElement("th");
+    				var cellText1 = document.createTextNode('Value');
+    				cell1.appendChild(cellText1);
+      		   	    row.appendChild(cell1);
+    			}
+    			else
+    			{
+    			
+                    for (var j = 0; j < tab[1].length; j++) 
+                    {
+                        if (i == 0)
+                        {
+                            var cell = document.createElement("th");
+                        }
+                        else
+                        {
+                            var cell = document.createElement("td");
+                        }
+                        //console.log('tab[i][j]', tab[i][j], tab[i][j].length, tab[i].length);
+                        
+                        if (tab[i][j] == undefined)
+                        {    
+                            var cellText = document.createTextNode('Value');
+                        }
+                        else
+                        {
+                            if (tab[i][j].length == 0)
+                            {
+                                if (tab[i].length == 1)
+                                {
+                                    var cell1 = document.createElement("th");
+                                    var cellText1 = document.createTextNode('Data');
+                                    cell1.appendChild(cellText1);
+                                    row.appendChild(cell1);
+                                    
+                                    var cellText = document.createTextNode('Value');
+                                }
+                            }
+                            else
+                            {
+                                var cellText = document.createTextNode(tab[i][j]);
+                            }
+                        }
+                        cell.appendChild(cellText);
+                        row.appendChild(cell);
+                    }
+                }
 		        tblBody.appendChild(row);
   			}
   			tbl.setAttribute('class', 'table');

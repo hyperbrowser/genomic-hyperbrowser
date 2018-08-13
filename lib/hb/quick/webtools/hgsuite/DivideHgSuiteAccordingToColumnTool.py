@@ -4,8 +4,10 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 from proto.CommonFunctions import ensurePathExists
+from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 
 
 class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
@@ -23,8 +25,8 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select gSuite', 'gSuite'),
-                ('Select', 'division'),
+        return [('Select hGSuite', 'gSuite'),
+                ('Select division', 'division'),
                 ('Select column', 'column'),
                 ('Select phrases (use colon to provide more than one phrase)', 'param'),
                 ('Add phrases separately', 'add')
@@ -73,6 +75,11 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 return ['yes', 'no']
 
 
+    @classmethod
+    def rename(cls, dictionary, oldkey, newkey):
+        if newkey != oldkey:
+            dictionary[newkey] = dictionary[oldkey]
+            del dictionary[oldkey]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -87,6 +94,10 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                     trackList[attr] = []
                 trackList[attr].append(i)
 
+            if None in trackList.keys():
+                cls.rename(trackList, None, 'Remaining')
+            cls.buildNewGsuites(gSuite, trackList)
+
         if choices.division == cls.DIVISION_BY_PHRASE:
             par = choices.param.replace(' ', '').split(',')
 
@@ -95,7 +106,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
             else:
                 add = 'no'
 
-            if add == 'yes':
+            if add == 'no':
                 trackList[('-'.join([p.encode('utf-8') for p in par]))] = []
             else:
                 for p in par:
@@ -108,13 +119,21 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                     t = iTrack.getAttribute(column)
 
                 for p in par:
-                    if p in t:
-                        if add == 'yes':
-                            trackList[('-'.join(par))].append(i)
-                        else:
-                            trackList[p].append(i)
+                    if t != None:
+                        if p in t:
+                            if add == 'no':
+                                trackList[('-'.join(par))].append(i)
+                            else:
+                                trackList[p].append(i)
 
             cls.buildNewGsuites(gSuite, trackList)
+
+        htmlCore = HtmlCore()
+        htmlCore.begin()
+        htmlCore.paragraph('Divided hGSuite is in the history.')
+        htmlCore.end()
+
+        print htmlCore
 
     @classmethod
     def buildNewGsuites(cls, gSuite, trackList):
@@ -125,8 +144,12 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
             for t in trackList[tl]:
                 track = gSuite.getTrackFromIndex(t)
-                attributes = OrderedDict(
-                    [(key, track.attributes[key]) for key in gSuite.attributes])
+                attributes = OrderedDict()
+                for key in gSuite.attributes:
+                    try:
+                        attributes[key] = track.attributes[key]
+                    except:
+                        attributes[key] = '.'
                 gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome,
                                  attributes=attributes)
 
@@ -206,14 +229,96 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+        l = Legend()
+
+        toolDescription = 'This tool divide hGSuite in the two possible ways. <br>' \
+                          'The first one is division according to selected column, ' \
+                          'the second one is division according to selected phrases.'
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select division',
+                          'Select column',
+                          'Select phrases (use colon to provide more than one phrase)',
+                          'Add phrases separately'
+                          ]
+
+        toolResult = 'The output of this tool is one or many hGsuites.'
+
+        notice = 'The name of the output hGSuite is the same as phrases in the selecetd column.'
+
+        example = OrderedDict()
+        example['Example 1 - Division by column'] = ['',
+            ["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     T-cells B-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.
+    """],
+                   [['Select division', 'by column'], ['Select column', 't-cells']],
+                   [["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     T-cells B-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.
+        """],
+["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title     T-cells B-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.
+        """],
+                    ]
+                   ]
+
+        example['Example 2 - Division by phrase'] = ['',["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title    t-cells  t-cells-b-cells  b-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	t-cells	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	b-cells	      X
+    hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	t-cells	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.	      .
+            """],
+        [['Select division', 'by phrase'],
+         ['Select column', 't-cells-b-cells'],
+         ['Select phrases (use colon to provide more than one phrase)', 't-cells,b-cells'],
+         ['Add phrases separately', 'no']],
+                        [["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: unknown
+    ##genome: hg19
+    ###uri          	                                  title    t-cells  t-cells-b-cells  b-cells
+    hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	t-cells	      .
+    hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	b-cells	      X
+    hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	t-cells	      .
+        """],
+                                 ]
+                                ]
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example,
+                                          notice=notice)
     #
     # @classmethod
     # def getToolIllustration(cls):
@@ -249,24 +354,9 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
     #     """
     #     return False
     #
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

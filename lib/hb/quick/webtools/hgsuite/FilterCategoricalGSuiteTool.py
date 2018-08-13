@@ -3,9 +3,11 @@ from collections import OrderedDict
 from functools import partial
 
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteComposer import composeToFile
+from gold.gsuite.GSuiteComposer import composeToFile, composeToString
+from gold.gsuite.GSuiteTrack import GSuiteTrack
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 
 
 class FilterCategoricalGSuiteTool(GeneralGuiTool):
@@ -23,8 +25,8 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getInputBoxNames(cls):
-        return ['Select gSuite: '] + \
-               ['Select operation:'] + \
+        return ['Select hGSuite'] + \
+               ['Select operation'] + \
                ['Select column: ', 'Select: ', 'Select value: '] * cls.NUM_CATEGORY_FIELDS
 
     @classmethod
@@ -181,9 +183,18 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
             if column == cls.TITLE:
                 data = gSuite.allTrackTitles()
             else:
-                data = list(set(gSuite.getAttributeValueList(column)))
-            for l in data:
-                d[str(l)] = str(l)
+                data = []
+                for tr in gSuite.allTracks():
+                    if tr.getAttribute(column) == None:
+                        data.append('.')
+                    else:
+                        data.append(tr.getAttribute(column))
+
+                #data = list(set(gSuite.getAttributeValueList(column)))
+                data = list(set(data))
+            if len(data)>0:
+                for l in data:
+                    d[str(l)] = str(l)
 
             return d
 
@@ -202,6 +213,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
             filterResult = cls._parseGsuiteByQuestionData(gSuite, filterQuestionsDict)
 
         filteredGSuite = cls._selectRowsFromGSuiteByTitle(gSuite, filterResult)
+
         composeToFile(filteredGSuite, galaxyFn)
 
     @classmethod
@@ -226,9 +238,29 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def _selectRowsFromGSuiteByTitle(cls, gSuite, titleList):
-        reducedTrackList = [gSuite.getTrackFromTitle(title) for title in titleList]
-        reducedGSuite = GSuite(trackList=reducedTrackList)
-        return reducedGSuite
+
+        outputGSuite = GSuite()
+        for title in titleList:
+            tr = gSuite.getTrackFromTitle(title)
+            uri = tr.uri
+
+            attrDict = OrderedDict()
+            for a in gSuite.attributes:
+                if tr.getAttribute(a) == None:
+                    attrDict[a] = '.'
+                else:
+                    attrDict[a] = tr.getAttribute(a)
+
+            gs = GSuiteTrack(uri, title=title, genome=gSuite.genome,
+                             attributes=attrDict)
+            outputGSuite.addTrack(gs)
+
+        return outputGSuite
+
+        #
+        # reducedTrackList = [gSuite.getTrackFromTitle(title) for title in titleList]
+        # reducedGSuite = GSuite(trackList=reducedTrackList)
+        # return reducedGSuite
 
 
     @classmethod
@@ -251,6 +283,11 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
             for fq in filterQuestionsDict.keys():
                 if iTrack.getAttribute(fq) in filterQuestionsDict[fq]:
                     allTracksToNotInclude.append(trackTitle)
+                elif '.' in filterQuestionsDict[fq]:
+                    if iTrack.getAttribute(fq) == None:
+                        allTracksToNotInclude.append(trackTitle)
+                    else:
+                        trackTitleList.append(trackTitle)
                 else:
                     if not trackTitle in allTracksToNotInclude:
                         trackTitleList.append(trackTitle)
@@ -406,15 +443,92 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
+
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = "This tool filter hGSuite according to track's value."
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select operation',
+                          'Select column'
+                          ]
+
+        example = {'Example 1 - select tracks by value': ['', ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   Coverage
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       100
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       1500
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       1200
+            """],
+           [
+               ['Select hGSuite', 'gsuite'],
+               ['Select operation', 'select tracks by value'],
+               ['Select column', 'coverage'],
+               ['Select', '>='],
+               ['Select value', '1200']
+
+           ],
+           ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   Coverage
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       1500
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       1200
+        """
+                            ]
+                           ],
+        'Example 2 - select data in column': ['', ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   Coverage
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       100
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       1500
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .
+        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       1200
+           """],
+           [
+               ['Select hGSuite', 'gsuite'],
+               ['Select operation', 'select data in column'],
+               ['Select column', 't-cells'],
+               ['Select', 'X'],
+               ['Select value', '1200'],
+               ['Select column', 'coverage'],
+               ['Select', '1200, 100']
+           ],
+           ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: hg19
+        ###uri          	                                  title     T-cells B-cells   Coverage
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       100
+        """
+            ]
+           ]
+                   }
+
+        toolResult = 'The output of this tool is filtered hGsuite.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example)
+
+
     # @classmethod
     # def getToolIllustration(cls):
     #     """

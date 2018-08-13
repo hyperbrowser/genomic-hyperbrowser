@@ -445,9 +445,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             for d in data:
                 if not d[0] in res.keys():
                     res[d[0]] = OrderedDict()
-                if not d[1] in res[d[0]].keys():
-                    res[d[0]][d[1]] = 0
-                res[d[0]][d[1]] = d[2]
+                    if not d[1] in res[d[0]].keys():
+                        res[d[0]][d[1]] = 0
+                    res[d[0]][d[1]] = d[2]
 
             # print 'res', res
 
