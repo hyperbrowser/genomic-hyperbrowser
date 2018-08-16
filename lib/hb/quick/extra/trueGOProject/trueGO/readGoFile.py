@@ -53,15 +53,22 @@ class GoGeneMapping:
         return self._gotermGenes
 
 
-class GoGeneMatrix:
+class GoGeneMatrix():
 
-    def isGeneIncludedInGo(self, gene, go, gotermgenes):
+    @classmethod
+    def __init__(cls):
+        pass
+
+    @classmethod
+    def isGeneIncludedInGo(cls, gene, go, gotermgenes):
         return gene in gotermgenes[go]
 
-    def getGeneListForGo(self, go, gotermgenes):
+    @classmethod
+    def getGeneListForGo(cls, go, gotermgenes):
         return gotermgenes[go]
 
-    def getGoTermKappaCoeff(self,goterm1,goterm2,gotermgenes,geneuniversesize):
+    @classmethod
+    def getGoTermKappaCoeff(cls,goterm1,goterm2,gotermgenes,geneuniversesize):
         term1genes = gotermgenes[goterm1]
         term2genes = gotermgenes[goterm2]
         bothpresent = len(set.intersection(term1genes,term2genes))
@@ -82,9 +89,11 @@ class GoGeneMatrix:
             kappa_coeff = (observed_cooccurrence - chance_cooccurrence) / (1 - chance_cooccurrence)
         return kappa_coeff
 
-    def computeKappaforGoTerms(self,goterms,gotermgenes,geneuniversesize):
+    @classmethod
+    def computeKappaforGoTerms(cls,goterms,gotermgenes,geneuniversesize):
         gopairs = list(combinations(goterms, 2))
-        return {pair : self.getGoTermKappaCoeff(*pair,gotermgenes,geneuniversesize) for pair in gopairs}
+        return 'aaaaaa'
+        #return {pair : cls.getGoTermKappaCoeff(*pair,gotermgenes,geneuniversesize) for pair in gopairs}
 
 # class GoGeneMatrix:
 #
@@ -130,40 +139,40 @@ class GoGeneMatrix:
 #     def getGoTermKappaCoeff(self,goterm1,goterm2):
 #         assert False
 
-if __name__ == "__main__":
-    import os
-    os.chdir('/Users/chakravarthikanduri/Documents/PostDoc_Projs/trueGO_data/')
-    myObj=GoGeneMatrix()
-    myObj._readGoFile("goa_human.gaf")
-    golist = myObj.getGoGeneMapping()
-    print(golist)
-
-if __name__ == "__main__":
-    from userdata import readUserGoList
-    import os
-    os.chdir('/Users/chakravarthikanduri/Documents/PostDoc_Projs/trueGO_data/')
-    gofile=ReadGoFile(goFn="goa_human.gaf")
-    goterms = GoTerms()
-    genes = Genes()
-    gogenemap = GoGeneMapping()
-    gogenemat = GoGeneMatrix()
-    gocontent = gofile._readGoFile(goFn="goa_human.gaf")
-    gotermlist = goterms.getGoTerms(gocontent)
-    genelist = genes.getGenes(gocontent)
-    geneuniverselist = genes.getGeneUniverse()
-    gogenemapping= gogenemap.getGoGeneMapping(gotermlist,genelist)
-    #temp = gogenemat.getGoTermKappaCoeff("GO:0007269","GO:0007269",gogenemapping,len(geneuniverselist))
-    userdata = readUserGoList("user_testdata.txt")
-    kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
-    kappa_values = list(kappa.values())
-    x_axis = [i for i in range(len(kappa_values))]
-    # trace = go.Scatter(
-    #     x=x_axis,
-    #     y=kappa_values,
-    #     mode='markers'
-    # )
-    # plotly_data = [trace]
-    # plotly.offline.plot(plotly_data)
-    plt.scatter(x_axis,kappa_values)
-    plt.show()
-    #print(len(kappa))
+# if __name__ == "__main__":
+#     import os
+#     os.chdir('/Users/chakravarthikanduri/Documents/PostDoc_Projs/trueGO_data/')
+#     myObj=GoGeneMatrix()
+#     myObj._readGoFile("goa_human.gaf")
+#     golist = myObj.getGoGeneMapping()
+#     print(golist)
+#
+# if __name__ == "__main__":
+#     from userdata import readUserGoList
+#     import os
+#     os.chdir('/Users/chakravarthikanduri/Documents/PostDoc_Projs/trueGO_data/')
+#     gofile=ReadGoFile(goFn="goa_human.gaf")
+#     goterms = GoTerms()
+#     genes = Genes()
+#     gogenemap = GoGeneMapping()
+#     gogenemat = GoGeneMatrix()
+#     gocontent = gofile._readGoFile(goFn="goa_human.gaf")
+#     gotermlist = goterms.getGoTerms(gocontent)
+#     genelist = genes.getGenes(gocontent)
+#     geneuniverselist = genes.getGeneUniverse()
+#     gogenemapping= gogenemap.getGoGeneMapping(gotermlist,genelist)
+#     #temp = gogenemat.getGoTermKappaCoeff("GO:0007269","GO:0007269",gogenemapping,len(geneuniverselist))
+#     userdata = readUserGoList("user_testdata.txt")
+#     kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
+#     kappa_values = list(kappa.values())
+#     x_axis = [i for i in range(len(kappa_values))]
+#     # trace = go.Scatter(
+#     #     x=x_axis,
+#     #     y=kappa_values,
+#     #     mode='markers'
+#     # )
+#     # plotly_data = [trace]
+#     # plotly.offline.plot(plotly_data)
+#     plt.scatter(x_axis,kappa_values)
+#     plt.show()
+#     #print(len(kappa))

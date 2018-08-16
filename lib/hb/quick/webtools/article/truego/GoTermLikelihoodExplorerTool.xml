@@ -1,0 +1,4 @@
+<tool id="hb_go_term_likelihood_explorer_tool" name="GoTermLikelihoodExplorer" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.article.truego.GoTermLikelihoodExplorerTool" proto_tool_class="GoTermLikelihoodExplorerTool">
+  <description></description>
+</tool>
