@@ -149,9 +149,21 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
-        print choices
-
-        selectSpecies = choices.selectSpecies
+        filename = cls.determineGoAnnotationFile(choices)
+        userterms = choices.chooseGoTermsFile
+        gofile = ReadGoFile(goFn=filename)
+        goterms = GoTerms()
+        genes = Genes()
+        gogenemap = GoGeneMapping()
+        gogenemat = GoGeneMatrix()
+        gocontent = gofile._readGoFile(goFn=filename)
+        gotermlist = goterms.getGoTerms(gocontent)
+        genelist = genes.getGenes(gocontent)
+        geneuniverselist = genes.getGeneUniverse()
+        gogenemapping= gogenemap.getGoGeneMapping(gotermlist,genelist)
+        userdata = readUserGoList(userterms)
+        kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
+        print kappa
 
         # ggm = GoGeneMatrix.computeKappaforGoTerms(selectSpecies)
 

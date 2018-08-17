@@ -1,6 +1,6 @@
 from collections import defaultdict
 from itertools import combinations
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 # from scipy.cluster.hierarchy import dendrogram, linkage
 # import plotly.plotly as ply
 # import plotly
