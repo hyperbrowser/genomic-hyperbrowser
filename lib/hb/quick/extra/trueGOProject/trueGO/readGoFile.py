@@ -1,10 +1,10 @@
 from collections import defaultdict
 from itertools import combinations
 import matplotlib.pyplot as plt
-from scipy.cluster.hierarchy import dendrogram, linkage
-import plotly.plotly as ply
-import plotly
-import plotly.graph_objs as go
+# from scipy.cluster.hierarchy import dendrogram, linkage
+# import plotly.plotly as ply
+# import plotly
+# import plotly.graph_objs as go
 
 class ReadGoFile:
 
@@ -92,8 +92,7 @@ class GoGeneMatrix():
     @classmethod
     def computeKappaforGoTerms(cls,goterms,gotermgenes,geneuniversesize):
         gopairs = list(combinations(goterms, 2))
-        return 'aaaaaa'
-        #return {pair : cls.getGoTermKappaCoeff(*pair,gotermgenes,geneuniversesize) for pair in gopairs}
+        return {pair : cls.getGoTermKappaCoeff(pair[0],pair[1],gotermgenes,geneuniversesize) for pair in gopairs}
 
 # class GoGeneMatrix:
 #

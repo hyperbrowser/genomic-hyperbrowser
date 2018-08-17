@@ -1,7 +1,9 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from proto.HtmlCore import HtmlCore
 from proto.TextCore import TextCore
-from quick.extra.trueGOProject.trueGO.readGoFile import GoGeneMatrix
+from quick.extra.trueGOProject.trueGO.readGoFile import (ReadGoFile,GoTerms,Genes,GoGeneMapping,GoGeneMatrix)
+import os
+from config.Config import DATA_FILES_PATH
 
 
 class GoTermLikelihoodExplorerTool(GeneralGuiTool):
@@ -19,7 +21,8 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
     def getInputBoxNames(cls):
 
         return [("Select species", 'selectSpecies'),
-                ("Choose a file with GO terms",'chooseGoTermsFile')]
+                ("Choose a file with GO terms",'chooseGoTermsFile'),
+                ("Choose a list of genes that was used for GO analysis",'chooseGoTermsGeneListFile')]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -71,6 +74,22 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxChooseGoTermsFile(cls, prevChoices):  # Alt: getOptionsBox2()
+        """
+        See getOptionsBoxFirstKey().
+
+        prevChoices is a namedtuple of selections made by the user in the
+        previous input boxes (that is, a namedtuple containing only one element
+        in this case). The elements can accessed either by index, e.g.
+        prevChoices[0] for the result of input box 1, or by key, e.g.
+        prevChoices.key (case 2).
+
+        Mandatory for the subsequent keys (after the first key) defined in
+        getInputBoxNames(), if any.
+        """
+        return GeneralGuiTool.getHistorySelectionElement('tabular')
+
+    @classmethod
+    def getOptionsBoxChooseGoTermsGeneListFile(cls, prevChoices):  # Alt: getOptionsBox2()
         """
         See getOptionsBoxFirstKey().
 
