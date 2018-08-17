@@ -156,7 +156,14 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
         # ggm = GoGeneMatrix.computeKappaforGoTerms(selectSpecies)
 
 
-        print 'Executing...'
+    @classmethod
+    def determineGoAnnotationFile(cls, choices):
+        selectSpecies = choices.selectSpecies
+        if selectSpecies == "Human":
+            filename = os.path.join(DATA_FILES_PATH, 'trueGO_data', 'goa_human.gaf')
+        else:
+            raise Exception()
+        return filename
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
