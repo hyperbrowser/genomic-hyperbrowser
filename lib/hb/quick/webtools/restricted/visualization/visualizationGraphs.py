@@ -492,6 +492,7 @@ class visualizationGraphs(object):
                 <script src="https://code.highcharts.com/modules/data.js"></script>
                 <script src="https://code.highcharts.com/modules/heatmap.js"></script>
                 <script src="https://code.highcharts.com/modules/exporting.js"></script>
+                <script src="https://code.highcharts.com/modules/offline-exporting.js"></script>
                 <script src="https://raw.github.com/briancray/tooltipsy/master/tooltipsy.min.js"></script>
                 <script src="https://code.highcharts.com/highcharts-more.js"></script>
                 """
@@ -1991,9 +1992,8 @@ class visualizationGraphs(object):
         if self.__class__.count == 1:
             container += self._addLib() + self._addStyle()
             if tableName is None:
-                container += self._addGuidelineV1('tableName')
-            else:
-                container += self._addGuidelineV1(tableName)
+                tableName = 'tableName'
+            container += self._addGuidelineV1(tableName)
 
         container += self._buildContainer(addOptions, addTable, titleText)
 
@@ -2110,6 +2110,17 @@ class visualizationGraphs(object):
             self._useToolTip(label, shared, extraArg, tooltipVal, histogram, extraScriptButton,
                              type))
         functionJS1 += legend
+
+
+        functionJS1 += """
+        exporting: {
+            allowHTML: true,
+            enabled: true,
+            scale: 1,
+            filename: '""" + str('plot-') + str(self.__class__.count) + """'
+        },
+        """
+
 
         if type == 'largeHeatmap':
             functionJS1 += """
