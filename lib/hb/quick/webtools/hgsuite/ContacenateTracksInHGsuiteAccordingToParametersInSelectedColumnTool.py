@@ -21,7 +21,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
     @classmethod
     def getToolName(cls):
-        return "Concatenate tracks in a hGSuite"
+        return "Concatenate tracks in hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -232,7 +232,9 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        return None
+
+        if not choices.gSuite:
+            return 'Please select hGSuite'
 
     # @classmethod
     # def getSubToolClasses(cls):

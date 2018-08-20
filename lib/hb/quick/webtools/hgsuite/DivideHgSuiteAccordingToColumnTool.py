@@ -21,7 +21,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Divide hgSuite"
+        return "Divide hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -159,7 +159,9 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        return None
+
+        if not choices.gSuite:
+            return 'Please select hGSuite'
 
     @classmethod
     def isPublic(cls):

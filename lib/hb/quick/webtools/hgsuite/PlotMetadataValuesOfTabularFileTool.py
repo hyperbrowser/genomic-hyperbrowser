@@ -2,9 +2,11 @@ from collections import OrderedDict
 
 from gold.gsuite.GSuiteConstants import TITLE_COL
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import StaticImage
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 import math
 from gold.gsuite import GSuiteConstants, GSuiteFunctions
@@ -21,7 +23,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
     @staticmethod
     def getToolName():
-        return "Plot data"
+        return "Plot data for tabular file or hGSuite"
 
     @staticmethod
     def getInputBoxNames():
@@ -43,14 +45,16 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxPlotSeries(cls, prevChoices):
-        return ['Single', 'Multi']
+        if prevChoices.selFile:
+            return ['Single', 'Multi']
 
     @classmethod
     def getOptionsBoxPlotType(cls, prevChoices):
-        if prevChoices.plotSeries == 'Single':
-            return ['Column', 'Heatmap', 'Line', 'Pie', 'Scatter']
-        else:
-            return ['Column', 'Line', 'Pie', 'Scatter']
+        if prevChoices.selFile:
+            if prevChoices.plotSeries == 'Single':
+                return ['Column', 'Heatmap', 'Line', 'Pie', 'Scatter']
+            else:
+                return ['Column', 'Line', 'Pie', 'Scatter']
 
     @classmethod
     def getOptionsBoxColumnX(cls, prevChoices):  # Alternatively: getOptionsBox2()
@@ -61,17 +65,24 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
         if suffixForFile == 'tabular':
             input = open(ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.selFile.split(':')), 'r')
             attribute = input.readline().strip('\n').split('\t')
+            if prevChoices.plotType== 'Pie':
+                return attribute
             return ['line number'] + attribute
         if suffixForFile == 'gsuite':
             gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
+            if prevChoices.plotType== 'Pie':
+                return [cls.TITLE] + gSuite.attributes
             return ['line number'] + [cls.TITLE] + gSuite.attributes
         return
 
     @staticmethod
     def getOptionsBoxAxesScaleX(prevChoices):
-        if prevChoices.plotType == 'Heatmap':
-            return
-        return ['linear', 'log10', 'no uniform scale (sorted values as labels)']
+        if prevChoices.selFile:
+            if prevChoices.columnX == 'line number':
+                return
+            if prevChoices.plotType == 'Heatmap' or prevChoices.plotType == 'Pie':
+                return
+            return ['linear', 'log10', 'no uniform scale (sorted values as labels)']
 
     @classmethod
     def getOptionsBoxColumnY(cls, prevChoices):  # Alternatively: getOptionsBox2()
@@ -103,59 +114,42 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxValues(cls, prevChoices):
-        if prevChoices.plotType == 'Heatmap':
-            if not prevChoices.selFile:
-                return
+        if prevChoices.selFile:
+            if prevChoices.plotType == 'Heatmap':
 
-            suffixForFile = extractFileSuffixFromDatasetInfo(prevChoices.selFile)
-            if suffixForFile == 'tabular':
-                input = open(
-                    ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.selFile.split(':')), 'r')
-                attribute = input.readline().strip('\n').split('\t')
-            if suffixForFile == 'gsuite':
-                gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
-                attribute = [cls.TITLE] + gSuite.attributes
+                suffixForFile = extractFileSuffixFromDatasetInfo(prevChoices.selFile)
+                if suffixForFile == 'tabular':
+                    input = open(
+                        ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.selFile.split(':')), 'r')
+                    attribute = input.readline().strip('\n').split('\t')
+                if suffixForFile == 'gsuite':
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
+                    attribute = [cls.TITLE] + gSuite.attributes
 
-            return attribute
+                return attribute
 
     @staticmethod
     def getOptionsBoxAxesScaleY(prevChoices):
-        return ['linear', 'log10']
+        if prevChoices.selFile:
+            return ['linear', 'log10']
 
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        # data from choices
-        selFile = choices.selFile
-        suffixForFile = extractFileSuffixFromDatasetInfo(selFile)
-        plotType = choices.plotType
-        columnX = choices.columnX.encode('utf-8')
+        attributeList, axesScaleX, axesScaleY, columnX, columnY, columnYTitle, dictVal, plotRes, plotSeries, plotType = cls.prepareVariables(
+            choices)
 
-
-        if choices.plotType == "Heatmap":
-            columnY = choices.values.encode('utf-8')
-            columnYTitle = choices.columnY.encode('utf-8')
-            axesScaleX = choices.axesScaleY
-        else:
-            columnY = choices.columnY
-            axesScaleX = choices.axesScaleX
-
-        plotSeries = choices.plotSeries
-
-
-        axesScaleY = choices.axesScaleY
-
-        # 'linear', 'log10', 'no uniform scale (sorted values as labels)'
-        if axesScaleX == 'linear':
-            # plotRes = choices.plotRes
-            plotRes = 'combine'
-        elif axesScaleX == 'log10':
-            plotRes = 'separate'
-        elif axesScaleX == 'no uniform scale (sorted values as labels)':
-            plotRes = 'separate'
-
-        attributeList, dictVal = cls.readFile(choices, selFile, suffixForFile)
+        # print 'attributeList',  attributeList, '<br>'
+        # print 'dictVal', dictVal, '<br>'
+        # print 'axesScaleX', axesScaleX, '<br>'
+        # print 'axesScaleY', axesScaleY, '<br>'
+        # print 'columnX', columnX, '<br>'
+        # print 'columnY', columnY, '<br>'
+        # print 'columnYTitle', columnYTitle, '<br>'
+        # print 'dictVal', dictVal, '<br>'
+        # print 'plotType', plotType, '<br>'
+        # print 'attributeList', attributeList, '<br>'
 
 
         categories, categoriesNumber, categoriesY, data, label, maxY, minFromList, minY, seriesName, vg, xAxisTitle, yAxisTitle = cls.prepareDataForPlots(
@@ -177,6 +171,50 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
         htmlCore.end()
 
         print htmlCore
+
+    @classmethod
+    def prepareVariables(cls, choices):
+        # data from choices
+        selFile = choices.selFile
+        suffixForFile = extractFileSuffixFromDatasetInfo(selFile)
+        plotType = choices.plotType
+        columnX = choices.columnX.encode('utf-8')
+
+        if choices.plotType == "Heatmap":
+            columnY = choices.values.encode('utf-8')
+            columnYTitle = choices.columnY.encode('utf-8')
+            axesScaleX = choices.axesScaleY
+        else:
+            columnY = choices.columnY
+            axesScaleX = choices.axesScaleX
+            columnYTitle = choices.columnY
+        plotSeries = choices.plotSeries
+        axesScaleY = choices.axesScaleY
+        # 'linear', 'log10', 'no uniform scale (sorted values as labels)'
+        if choices.plotType == 'Pie' or choices.columnX == 'line number':
+            plotRes = 'separate'
+            axesScaleX = 'linear'
+        else:
+            if axesScaleX == 'linear':
+                # plotRes = choices.plotRes
+                plotRes = 'combine'
+            elif axesScaleX == 'log10':
+                plotRes = 'separate'
+            elif axesScaleX == 'no uniform scale (sorted values as labels)':
+                plotRes = 'separate'
+        attributeList, dictVal = cls.readFile(choices, selFile, suffixForFile)
+        return attributeList, axesScaleX, axesScaleY, columnX, columnY, columnYTitle, dictVal, plotRes, plotSeries, plotType
+
+    @classmethod
+    def _checkType(cls, l):
+        if len(l) == 0:
+            return 0
+        for x in l:
+            try:
+                float(x)
+            except:
+                return 0
+        return 1
 
     @classmethod
     def readFile(cls, choices, selFile, suffixForFile):
@@ -232,16 +270,32 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
             tempDict = {}
 
             maxY = 0
+            minY = 100000000
             for d in allData:
                 if d[2] == None or d[2] == 'nan':
                     pass
                 else:
-                    tempDict[tuple([d[0], d[1]])] = d[2]
-                    if maxY < float(d[2]):
-                        maxY = float(d[2])
+                    if axesScaleY == 'log10':
+                        if float(d[2]) != 0:
+                            val = math.log(float(d[2]), 10)
+                            tempDict[tuple([d[0], d[1]])] = val
+                            if maxY < val:
+                                maxY = val
+                            if minY > val:
+                                minY = val
+                        else:
+                            tempDict[tuple([d[0], d[1]])] = 0
+                    else:
+                        tempDict[tuple([d[0], d[1]])] = d[2]
+                        if maxY < float(d[2]):
+                            maxY = float(d[2])
+                        if minY > float(d[2]):
+                            minY = float(d[2])
 
+            if minY >= 0:
+                minY = 0
             maxY = math.ceil(maxY)
-            minY = 0
+
 
             data = []
             for cy in columnYTitleChange:
@@ -252,6 +306,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                     else:
                         d.append(0)
                 data.append(d)
+
 
             categories = columnXTitleChange
             categoriesY = columnYTitleChange
@@ -265,12 +320,19 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                 tempDict[columnY] = 'True'
                 columnY = tempDict
 
+            # print 'columnY', columnY, '<br>'
+
             sortedCat = None
             if columnX == 'line number':
                 categories = None
             else:
                 if columnX in dictNum.keys():
-                    categoriesBefore = [float(v) for v in dictVal[columnX]]
+                    try:
+                        categoriesBefore = [float(v) for v in dictVal[columnX]]
+                        categoriesNumber = True
+                    except:
+                        categoriesBefore = [v for v in dictVal[columnX]]
+                        categoriesNumber = False
 
                     if axesScaleX == 'log10':
                         for cbN in range(0, len(categoriesBefore)):
@@ -282,19 +344,32 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                     categories = []
                     for n in sortedCat:
                         categories.append(categoriesBefore[n])
-
-                    categoriesNumber = True
-
                 else:
                     categories = dictVal[columnX]  # gSuite.getAttributeValueList(columnX)
 
 
                     # data are sorted according to numerical values
+                categoriesTemp = categories
+                # print 'dictVal', dictVal, '<br>'
+                # print '-----categories', categories, '<br>'
+
+                #remove duplicates from list
+                categoriesNoDuplicates = list(set(categories))
+                categories01 = []
+                for cNum, c in enumerate(categoriesTemp):
+                    if c in categoriesNoDuplicates:
+                        categories01.append(1)
+                        categoriesNoDuplicates[categoriesNoDuplicates.index(c)] = ''
+                    else:
+                        categories01.append(0)
+
+
 
             for key, it in columnY.iteritems():
                 if it == 'True':
                     dataPart = []
                     seriesName.append(key)
+
                     for x in dictVal[key]:  # gSuite.getAttributeValueList(key):
                         if x == 'nan':
                             x = 0
@@ -318,7 +393,31 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         for n in sortedCat:
                             dataPartTemp.append(dataPart[n])
                         dataPart = dataPartTemp
-                    data.append(dataPart)
+
+                    # print '-----dataPart', dataPart, '<br>'
+
+                    #remove duplicates
+                    if plotType != 'Heatmap' and categories!=None:
+                        dp = []
+                        for numc01, c01 in enumerate(categories01):
+                            if c01 == 1:
+                               dp.append(dataPart[numc01])
+                        data.append(dp)
+                    else:
+                        data.append(dataPart)
+            categoriesY = ''
+            maxY = 0
+            minY = 0
+
+            # print '--------<br> data', data, '<br>'
+
+        # remove duplicates
+        if plotType != 'Heatmap' and categories!= None:
+            categories = []
+            for numc01, c01 in enumerate(categories01):
+                if c01 == 1:
+                    categories.append(categoriesTemp[numc01])
+
         label = ''
         if len(seriesName) != 0:
             label = '<b>{series.name}</b>: {point.x} {point.y}'
@@ -337,12 +436,18 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
         minFromList = min(min(d) for d in data)
         if minFromList > 0:
             minFromList = 0
+
         return categories, categoriesNumber, categoriesY, data, label, maxY, minFromList, minY, seriesName, vg, xAxisTitle, yAxisTitle
 
     @classmethod
     def plotData(cls, categories, categoriesNumber, categoriesY, data, label, maxY, minFromList,
                  minY, plotRes, plotSeries, plotType, seriesName, vg, xAxisTitle, yAxisTitle):
         # combain series with data
+
+        # print '<br>BBBB<br>', data
+        # print 'plotRes', plotRes, '<br>'
+        # print 'categoriesNumber', categoriesNumber, '<br>'
+
         if plotRes == 'combine':
             if categoriesNumber == True:
                 newData = []
@@ -353,6 +458,9 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                     newData.append(newDataPart)
                 data = newData
                 categories = None
+
+        # print '<br>AAAA<br>', data
+
         res = ''
         if plotSeries == 'Single':
             if plotType == 'Scatter':
@@ -379,6 +487,14 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                 )
 
             if plotType == 'Column':
+                # print 'data', data, '<br>'
+                # print 'categories', categories, '<br>'
+                # print 'xAxisTitle', xAxisTitle, '<br>'
+                # print 'yAxisTitle', yAxisTitle, '<br>'
+                # print 'seriesName', seriesName, '<br>'
+                # print 'label', label, '<br>'
+                # print 'minFromList', minFromList, '<br>'
+
                 res += vg.drawColumnChart(
                     data,
                     categories=categories,
@@ -416,6 +532,8 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         xAxisTitle=xAxisTitle,
                         yAxisTitle=yAxisTitle,
                         height=500,
+                        minY=minY,
+                        maxY=maxY,
                         seriesName=seriesName,
                         label=label,
                         categoriesY=categoriesY
@@ -485,18 +603,58 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         minY=minFromList
                         #                      titleText = 'Plot',
                     )
+            if plotType == 'Pie':
+                for nrD in range(0, len(data)):
+                    res += vg.drawPieChart(
+                        data[nrD],
+                        seriesName=categories,
+                        height=400,
+                        titleText=seriesName[nrD],
+                )
         return res
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-
-
 
         columnY = choices.columnY
         if isinstance(columnY, dict):
             if not True in columnY.values():
                 errorString = 'Check at least one value for y-Axis'
                 return errorString
+
+        if choices.selFile:
+            attributeList, axesScaleX, axesScaleY, columnX, columnY, columnYTitle, dictVal, plotRes, plotSeries, plotType = cls.prepareVariables(
+                choices)
+
+
+            howManycY = 0
+            if (choices.plotType == 'Heatmap' or choices.plotType == 'Pie') and choices.plotSeries == 'Single':
+                cY = cls._checkType(dictVal[columnY])
+                if cY == 0:
+                     return '<b>value for plot</b> need to be number type.'
+            elif choices.columnX == 'line number':
+                cX = 0
+                cY = 0
+                if cX == 0:
+                    for keyD, itD in dictVal.items():
+                        if columnY[keyD] == True:
+                            cY += cls._checkType(dictVal[keyD])
+                            howManycY += 1
+                if cX == 0:
+                    if cY != howManycY:
+                        return '<b>value for y-Axis</b> need to be number type.'
+
+            else:
+                cX = cls._checkType(dictVal[columnX])
+                cY = 0
+                if cX == 0:
+                    for keyD, itD in dictVal.items():
+                        if columnY[keyD] == True:
+                            cY += cls._checkType(dictVal[keyD])
+                            howManycY += 1
+                if cX == 0:
+                    if cY != howManycY:
+                        return 'At least on of the values, either <b>value for x-Axis</b> or  <b>value for y-Axis</b> need to be number type.'
 
     # @staticmethod
     # def getSubToolClasses():
@@ -568,61 +726,127 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
     #    return []
     #
 
-    @staticmethod
-    def createDescription(toolDescription=None, stepsToRunTool=None, toolResult=None,
-                          limitation=None):
-        core = HtmlCore()
+    @classmethod
+    def getToolDescription(cls):
 
-        if toolDescription != None or stepsToRunTool != None or toolResult != None or limitation != None:
-            core.divBegin(divId='decription-page')
-            core.divBegin(divClass='decription-section')
-            core.header('Description')
+        l = Legend()
 
-            # small description of tool (The resaon of creating the tool)
-            if toolDescription != None:
-                core.divBegin(divClass='decription-section-main')
-                core.paragraph(toolDescription)
-                core.divEnd()
+        toolDescription = 'The tool allow to present metadata columns from hGSuite or results from tabular file in the chart.'
 
-            # how to use tool
-            if stepsToRunTool != None:
-                core.paragraph('To run the tool, follow these steps:')
-                core.orderedList(stepsToRunTool)
-
-            # what is the result of tool
-            if toolDescription != None:
-                core.divBegin(divClass='decription-section-main')
-                core.paragraph(toolResult)
-                core.divEnd()
-
-                # what are the limitation for tool
-                #         if limitation:
-                #             limits...
-
-            core.divEnd()
-            core.divEnd()
-
-        return str(core)
-
-    @staticmethod
-    def getToolDescription():
-
-        toolDescription = 'The tool allow to present metadata columns from gSuite or results from tabular file in the chart.'
-
-        stepsToRunTool = ['Select GSuite or file with tabular format from history',
-                          'Select way of showing series as single or multi charts',
-                          'Select type of chart',
+        stepsToRunTool = ['Select file',
+                          'Select way of showing series as (Single, Multi)',
+                          'Select type of chart (Single: Column, Heatmap, Line, Pie, Scatter; Multi: Column, Line, Pie, Scatter)',
                           'Select value for x-Axis',
                           'Select type of scale for x-Axis',
                           'Select value for y-Axis',
                           'Select type of scale for y-Axis',
-                          'Select results of plotting (option available for selected type of charts)']
+                          'Select results of plotting (option available for selected type of charts)'
+                          ]
 
-        toolResult = 'The results are presented in an interactive chart'
+        urlexample1Output = StaticImage(['hgsuite', 'img',
+                                         'PlotMetadataValuesOfTabularFileTool-img1.png']).getURL()
+        urlexample2Output = StaticImage(['hgsuite', 'img',
+                                         'PlotMetadataValuesOfTabularFileTool-img2.png']).getURL()
 
-        return PlotMetadataValuesOfTabularFileTool.createDescription(toolDescription=toolDescription,
-                                                     stepsToRunTool=stepsToRunTool,
-                                                     toolResult=toolResult)
+        urlexample3Output = StaticImage(['hgsuite', 'img',
+                                         'PlotMetadataValuesOfTabularFileTool-img3.png']).getURL()
+        urlexample4Output = StaticImage(['hgsuite', 'img',
+                                         'PlotMetadataValuesOfTabularFileTool-img4.png']).getURL()
+
+        example = {'Example 1 (Series: Single; chart type: heatmap; file: tabular)': ['', ["""
+    attribute0	attribute1	attribute2	attribute3
+    track6.bed-CG	track6.bed	CG	1
+    track6.bed-CA	track6.bed	CA	0
+    track3.bed-CG	track3.bed	CG	0
+    track3.bed-CA	track3.bed	CA	1
+    track1.bed-CG	track1.bed	CG	0
+    track1.bed-CA	track1.bed	CA	2
+    track2.bed-CG	track2.bed	CG	0
+    track2.bed-CA	track2.bed	CA	5
+    track4.bed-CG	track4.bed	CG	0
+    track4.bed-CA	track4.bed	CA	1
+    track5.bed-CG	track5.bed	CG	1
+    track5.bed-CA	track5.bed	CA	0
+
+
+                """],
+                 [
+                     ['Select file', 'tabular'],
+                     ['Select way of showing series as','Single'],
+                     ['Select type of chart', 'Heatmap'],
+                     ['Select value for x-Axis', 'attribute0'],
+                     ['Select value for y-Axis', 'attribute1'],
+                     ['Select value for plot', 'attribute2'],
+                     ['Select type of scale for y-Axis', 'linear']
+                 ],
+                                 [
+                                     '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample1Output + '" /></div>'
+                                 ]
+                                 ],
+           'Example 2 (Series: Single; chart type: pie; file: tabular)': ['', ["""
+    attribute0	attribute1	attribute2	attribute3
+    track6.bed-CG	track6.bed	CG	1
+    track6.bed-CA	track6.bed	CA	0
+    track3.bed-CG	track3.bed	CG	0
+    track3.bed-CA	track3.bed	CA	1
+    track1.bed-CG	track1.bed	CG	0
+    track1.bed-CA	track1.bed	CA	2
+    track2.bed-CG	track2.bed	CG	0
+    track2.bed-CA	track2.bed	CA	5
+    track4.bed-CG	track4.bed	CG	0
+    track4.bed-CA	track4.bed	CA	1
+    track5.bed-CG	track5.bed	CG	1
+    track5.bed-CA	track5.bed	CA	0
+
+
+                """],
+             [
+                 ['Select file', 'tabular'],
+                 ['Select way of showing series as', 'Single'],
+                 ['Select type of chart', 'Pie'],
+                 ['Select value for x-Axis', 'attribute0'],
+                 ['Select value for y-Axis', 'attribute3'],
+                 ['Select type of scale for y-Axis', 'linear']
+             ],
+             [
+                 '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample2Output + '" /></div>'
+             ]
+             ],
+                   'Example 3 (Series: Multi; chart type: column; file: gSuite)': ['', ["""
+    ##location: local
+    ##file format: preprocessed
+    ##track type: valued segments
+    ##genome: mm10
+    ###uri	title	genotype	text	Base-pair coverage	Base-pair coverage-max	Base-pair coverage-min
+    hb:/external/dianadom_sandbox/42/4261a5a91e856c76/1%20-%20243-2--eta-.bed	1 - 243-2--eta-.bed	eta-	one	eta-	17117	9078
+    hb:/external/dianadom_sandbox/c5/c58080e55c07e57e/2%20-%20243-4--eta-.bed	2 - 243-4--eta-.bed	eta-	No group	eta-	17117	9078
+    hb:/external/dianadom_sandbox/5d/5d6d295d538d18a1/3%20-%20255-1--eta-.iota-.bed	3 - 255-1--eta-:iota-.bed	eta-/iota-	two	eta-/iota-	4236	3340
+    hb:/external/dianadom_sandbox/36/369b5a0c1086deb2/4%20-%20255-4--eta-.iota-.bed	4 - 255-4--eta-:iota-.bed	eta-/iota-	No group	eta-/iota-	4236	3340
+
+
+                        """],
+
+                  [
+                      ['Select file', 'tabular'],
+                      ['Select way of showing series as', 'Multi'],
+                      ['Select type of chart', 'Column'],
+                      ['Select value for x-Axis', 'base-pair coverage'],
+                      ['Select type of scale for x-Axis', 'linear'],
+                      ['Select value for y-Axis', 'base-pair coverage-max, base-pair coverage-min'],
+                      ['Select type of scale for y-Axis', 'linear']
+                  ],
+              [
+                  '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample3Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample4Output + '" /></div>']
+              ]
+        }
+
+        toolResult = 'The results are presented in an interactive chart.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example
+                                          )
 
     # @staticmethod
     # def getToolIllustration():

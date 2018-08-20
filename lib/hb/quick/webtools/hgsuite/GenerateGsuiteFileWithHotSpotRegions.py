@@ -19,6 +19,7 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 
 # This is a template prototyping GUI that comes together with a corresponding
 # web page.
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
@@ -26,11 +27,11 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeMixin):
     @classmethod
     def getToolName(cls):
-        return "Generate gSuite file with HotSpot regions"
+        return "Generate hGSuite with hotspot regions"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select track collection GSuite', 'gsuite')] + \
+        return [('Select hGSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [('Number of top hotspots', 'param')
                 ] + cls.getInputBoxNamesForUserBinSelection()
@@ -41,18 +42,6 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
 
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
-
-        # if prevChoices.gSuite:
-        #     from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-        #     gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
-        #     tracks = list(gSuite.allTracks())
-        #     fullCategory = AnalysisManager.combineMainAndSubCategories('Descriptive statistics', 'Distributions')
-        #     if len(tracks) >0:
-        #         analysis = GenerateGsuiteFileWithHotSpotRegions.resolveAnalysisFromName(gSuite.genome, fullCategory, \
-        #                                                         tracks[0].trackName, 'Hot spot regions')
-        #
-        #         if analysis and analysis.getOptionsAsKeys():
-        #             return analysis.getOptionsAsKeys().values()[1]
         return ''
 
     @staticmethod
@@ -98,7 +87,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
             param = int(choices.param)
 
             if resultDict:
-                ttNew = str(tt)
+                ttNew = str(tt) + '--' + str(param)
 
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                     extraFileName=ttNew,
@@ -132,38 +121,77 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
 
     @staticmethod
     def validateAndReturnErrors(choices):
-        '''
-        Should validate the selected input parameters. If the parameters are not
-        valid, an error text explaining the problem should be returned. The GUI
-        then shows this text to the user (if not empty) and greys out the
-        execute button (even if the text is empty). If all parameters are valid,
-        the method should return None, which enables the execute button.
-        '''
 
-        from gold.gsuite.GSuiteConstants import UNKNOWN, MULTIPLE
+        if not choices.gsuite:
+            return 'Please select hGSuite'
 
-        errorStr = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
-        if errorStr:
-            return errorStr
+        if choices.gsuite:
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            if gsuite.numTracks() == 0:
+                return 'Please select a hGSuite file with at least one track'
 
-        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        if gSuite.numTracks() == 0:
-            return 'Please select a GSuite file with at least one track'
+            if not gsuite.isPreprocessed():
+                return 'Selected hGSuite file is not preprocess. Please preprocess ' \
+                       'the hGSuite file before continuing the analysis.'
 
-        if not gSuite.isPreprocessed():
-            return 'Selected GSuite file is not preprocess. Please preprocess ' \
-                   'the GSuite file before continuing the analysis.'
+    @classmethod
+    def getToolDescription(cls):
 
-        if gSuite.trackType in [UNKNOWN]:
-            return 'The track type of the GSuite file is not known. The track type ' \
-                   'is needed for doing analysis.'
+        l = Legend()
 
-        if gSuite.trackType in [MULTIPLE]:
-            return 'All tracks in the GSuite file needs to be of the same track ' \
-                   'type. Multiple track types are not supported.'
+        toolDescription = 'The tool allow to generate hGSuite with selected hotspot regions.'
 
-        return None
+        stepsToRunTool = ['Select hGSuite',
+                          'Select resolution (1k, 10k, 100k, 1m, 10m)'
+                          ]
+
+        example = {'Example': ['', ["""
+        ##file format: primary					
+        ##track type: unknown					
+        ##genome: mm10					
+        ###uri	title	mutation	genotype	dir_level_1	dir_level_2
+        galaxy:/path/track1.bed;bed	track1.bed	CA	eta	C	A
+        galaxy:/path/track2.bed;bed	track2.bed	GT	eta	G	T
+        galaxy:/path/track3.bed;bed	track5.bed	CG	iota	C	G
+        galaxy:/path/track4.bed;bed	track6.bed	GC	iota	G	C
+        galaxy:/path/track5.bed;bed	track3.bed	CA	iota	C	A
+        galaxy:/path/track6.bed;bed	track4.bed	GT	iota	G	T
+                            """
+                                    ],
+                               [
+           ['Select hGSuite', 'gsuite'],
+           ['Number of top hotspots', '100']
+
+                               ],
+                               [
+                                   """
+        ##location: local
+        ##file format: primary
+        ##track type: unknown
+        ##genome: mm10
+        ###uri	title	mutation	genotype	dir_level_1	dir_level_2
+        galaxy:/path/track1.bed--100;bed	track1.bed--100	CA	eta	C	A
+        galaxy:/path/track2.bed--100;bed	track2.bed--100	GT	eta	G	T
+        galaxy:/path/track5.bed--100;bed	track5.bed--100	CG	iota	C	G
+        galaxy:/path/track6.bed--100;bed	track6.bed--100	GC	iota	G	C
+        galaxy:/path/track3.bed--100;bed	track3.bed--100	CA	iota	C	A
+        galaxy:/path/track4.bed--100;bed	track4.bed--100	GT	iota	G	T
+            
+                                   """
+                               ]
+                               ]
+                   }
+
+        toolResult = 'The output of this tool is a primary hGsuite with extra columns.'
+
+        notice = "If you want to use hGSuite for the futher analysis then remeber to preprocess it using tool: Preprocess a GSuite for analysis"
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example,
+                                          notice=notice
+                                          )
 
     @staticmethod
     def getOutputFormat(choices):

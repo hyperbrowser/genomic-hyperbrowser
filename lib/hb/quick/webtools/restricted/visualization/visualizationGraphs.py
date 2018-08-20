@@ -1713,12 +1713,12 @@ class visualizationGraphs(object):
 
                                     if (typeof yAxisNameOverMouse != 'undefined')
                                     {
-                                        console.log('a');
+                                        //console.log('a');
                                         return '<div class="hastip" title="'  + 'Track: ' + this.value + ' ' + yAxisNameOverMouse[this.value] +  '" >' + this.value + '</div>';
                                     }
                                     else
                                     {
-                                        console.log('b');
+                                        //console.log('b');
                                         return '<div class="hastip" title="'  + 'Track: ' + this.value + '" >' + this.value + '</div>';
                                     }
                                 }},
@@ -2224,7 +2224,7 @@ class visualizationGraphs(object):
                         }
                     }
 
-                    console.log('i', i, 'A[i]', A[i])
+                    //console.log('i', i, 'A[i]', A[i])
 
                     if (A[i]!= undefined)
                     {
@@ -2447,11 +2447,23 @@ class visualizationGraphs(object):
                      """ + inter + """     }); """ + sortableAccordingToTable + extraScriptButton + """ }); </script> """
 
             else:
+
+                if maxY is None:
+                    maxY = ''
+                else:
+                    maxY = ' max: ' + str(maxY) + ', '
+
+                if minY is None:
+                    minY = 'min: 0,'
+                else:
+                    minY = ' min: ' + str(minY) + ', '
+
                 functionJS2 = """ }],
                 colorAxis: {
-                min: 0,
+                """ + minY + """
                 minColor: '#FFFFFF',
-                maxColor: Highcharts.getOptions().colors[0]
+                maxColor: Highcharts.getOptions().colors[0],
+                """ + maxY + """
                 },
                  """ + inter + """     }); """ + sortableAccordingToTable + extraScriptButton + """ }); </script> """
 

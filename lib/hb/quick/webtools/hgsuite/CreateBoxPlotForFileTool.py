@@ -1,9 +1,12 @@
 from collections import OrderedDict
 import numpy
+
+from proto.StaticFile import StaticImage
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
 from quick.util.CommonFunctions import extractFileSuffixFromDatasetInfo
@@ -16,7 +19,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Create box plot for file"
+        return "Create box plot for tabular file or hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -293,8 +296,46 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
         return dataAll, categories
 
     @classmethod
+    def _checkType(cls, l):
+        if len(l) == 0:
+            return 0
+        for x in l:
+            try:
+                float(x)
+            except:
+                return 0
+        return 1
+
+    @classmethod
     def validateAndReturnErrors(cls, choices):
-        return None
+        if choices.selFile:
+            suffixForFile = extractFileSuffixFromDatasetInfo(choices.selFile)
+            if choices.responseValue == "yes":
+                for k, it in choices.selCol.iteritems():
+                    if it != False:
+                        sc = k
+                        responseValue = choices.responseValue
+                        if suffixForFile == 'tabular':
+                            dataAll, categories = cls.openFileWithCategories(choices.selFile, sc,
+                                                                             responseValue)
+
+                        if suffixForFile == 'gsuite':
+                            dataAll, categories = cls.openGSuiteFileWithCategories(choices.selFile, sc,
+                                                                                   responseValue)
+            else:
+                if suffixForFile == 'tabular':
+                    dataAll, categories = cls.openFile(choices.selFile, choices.selCol)
+                if suffixForFile == 'gsuite':
+                    dataAll, categories = cls.openGSuiteFile(choices.selFile, choices.selCol)
+
+            howManycY = 0
+            cY = 0
+            for keyD, itD in dataAll.iteritems():
+                cY += cls._checkType(dataAll[keyD])
+                howManycY += 1
+
+            if cY != howManycY:
+                return 'All the values need to be number type.'
 
     @classmethod
     def getOutputFormat(cls, choices):
@@ -303,3 +344,59 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
     @staticmethod
     def isPublic():
         return True
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool allow to present metadata columns from gSuite or results from tabular file in the box chart.'
+
+        stepsToRunTool = ['Select file',
+                          'Do you want to have box plot separately for category',
+                          'Select category',
+                          'Select column',
+                          'Include 0 values to count results'
+                          ]
+        urlexample1Output = StaticImage(['hgsuite', 'img',
+                                         'CreateBoxPlotForFileTool-img1.png']).getURL()
+
+
+
+        example = {'Example 1 (Series: Single; chart type: heatmap; file: tabular)': ['', ["""
+        attribute0	attribute1	attribute2	attribute3
+        track6.bed-CG	track6.bed	CG	1
+        track6.bed-CA	track6.bed	CA	0
+        track3.bed-CG	track3.bed	CG	0
+        track3.bed-CA	track3.bed	CA	1
+        track1.bed-CG	track1.bed	CG	0
+        track1.bed-CA	track1.bed	CA	2
+        track2.bed-CG	track2.bed	CG	0
+        track2.bed-CA	track2.bed	CA	5
+        track4.bed-CG	track4.bed	CG	0
+        track4.bed-CA	track4.bed	CA	1
+        track5.bed-CG	track5.bed	CG	1
+        track5.bed-CA	track5.bed	CA	0
+
+
+                    """],
+          [
+              ['Select file','tabular'],
+              ['Do you want to have box plot separately for category','yes'],
+              ['Select category','attribute2'],
+              ['Select column','attribute3'],
+              ['Include 0 values to count results', 'no']
+        ],
+          [
+              '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample1Output + '" /></div>'
+          ]
+          ]
+        }
+
+        toolResult = 'The results are presented in an interactive box chart.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example
+                                          )

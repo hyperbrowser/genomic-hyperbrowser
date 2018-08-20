@@ -1,15 +1,16 @@
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 
 
 class ChangeRowsWithColumnsTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Change rows with columns"
+        return "Change rows with columns (transpose)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select tabular file from history', 'selFile')]
+        return [('Select file', 'selFile')]
 
     @classmethod
     def getOptionsBoxSelFile(cls):
@@ -40,7 +41,8 @@ class ChangeRowsWithColumnsTool(GeneralGuiTool):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        return None
+        if not choices.selFile:
+            return 'Please select tabular file'
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -54,16 +56,9 @@ class ChangeRowsWithColumnsTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -129,14 +124,54 @@ class ChangeRowsWithColumnsTool(GeneralGuiTool):
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool allow to transpose tabular file.'
+
+        stepsToRunTool = ['Select file'
+                          ]
+
+
+        example = {'Example ': ['', ["""
+    attribute0	attribute1	attribute2	attribute3
+    track6.bed-CG	track6.bed	CG	1
+    track6.bed-CA	track6.bed	CA	0
+    track3.bed-CG	track3.bed	CG	0
+    track3.bed-CA	track3.bed	CA	1
+    track1.bed-CG	track1.bed	CG	0
+    track1.bed-CA	track1.bed	CA	2
+    track2.bed-CG	track2.bed	CG	0
+    track2.bed-CA	track2.bed	CA	5
+    track4.bed-CG	track4.bed	CG	0
+    track4.bed-CA	track4.bed	CA	1
+    track5.bed-CG	track5.bed	CG	1
+    track5.bed-CA	track5.bed	CA	0
+
+                            """],
+                                [
+                                    ['Select file', 'tabular'],
+                                ],
+                                [
+                                    """
+    attribute0	track6.bed-CG	track6.bed-CA	track3.bed-CG	track3.bed-CA	track1.bed-CG	track1.bed-CA	track2.bed-CG	track2.bed-CA	track4.bed-CG	track4.bed-CA	track5.bed-CG	track5.bed-CA
+    attribute1	track6.bed	track6.bed	track3.bed	track3.bed	track1.bed	track1.bed	track2.bed	track2.bed	track4.bed	track4.bed	track5.bed	track5.bed
+    attribute2	CG	CA	CG	CA	CG	CA	CG	CA	CG	CA	CG	CA
+    attribute3	1	0	0	1	0	2	0	5	0	1	1	0
+                                    """
+                                ]
+                                ]
+                   }
+
+        toolResult = 'The results are presented as transposed tabular file.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example
+                                          )
     #
     # @classmethod
     # def getToolIllustration(cls):
@@ -175,7 +210,3 @@ class ChangeRowsWithColumnsTool(GeneralGuiTool):
     @classmethod
     def getOutputFormat(cls, choices):
         return 'tabular'
-
-    @staticmethod
-    def isPublic():
-       return True

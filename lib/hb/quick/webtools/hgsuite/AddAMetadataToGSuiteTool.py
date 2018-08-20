@@ -14,11 +14,11 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Add a metadata column in a GSuite"
+        return "Add a metadata column in hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite (hGSuite)', 'gsuite'),
+        return [('Select GSuite or hGSuite', 'gsuite'),
                 ('Add metadata column', 'attrName'),
                 ('', 'gsuiteTitles'),
                 ('', 'gsuiteAttributeValues')] + \
@@ -31,7 +31,8 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxAttrName(cls, prevChoices):
-        return ''
+        if prevChoices.gsuite:
+            return ''
 
     @classmethod
     def getOptionsBoxGsuiteTitles(cls, prevChoices):
@@ -121,9 +122,9 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
     @classmethod
     def validateAndReturnErrors(cls, choices):
         if not choices.gsuite:
-            return 'Select gSuite'
-        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            return 'Select GSuite or hGSuite'
 
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         if choices.attrName:
             if choices.attrName in gSuite.attributes:
                 return 'Attribute with that name has been already in the gsuite'

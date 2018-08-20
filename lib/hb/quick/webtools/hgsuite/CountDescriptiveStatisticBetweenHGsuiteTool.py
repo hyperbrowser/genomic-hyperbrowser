@@ -5,6 +5,7 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.statistic.RawOverlapStat import RawOverlapStat
 from gold.track.Track import PlainTrack
+from proto.hyperbrowser.StaticFile import StaticImage
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -16,6 +17,7 @@ from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTrack
 from quick.util import TrackReportCommon
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticJS import Cube
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
@@ -28,7 +30,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     MAX_NUM_OF_COLS_IN_GSUITE = 2
     MERGED_SIGN = ' - '
     PHRASE = '-- SELECT --'
-    STAT_LIST = {'Count overlap (bps)': STAT_OVERLAP_COUNT_BPS}
+    STAT_LIST = {'Coverage': STAT_OVERLAP_COUNT_BPS}
     FIRST_GSUITE = 'First GSuite'
     SECOND_GSUITE = 'Second GSuite'
     SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max'}
@@ -44,33 +46,33 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select first gSuite', 'gsuite')] + \
+        return [('Select first hGSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
-               [('Select column from first gSuite', 'firstGSuiteColumn'),
-                ('Select second gSuite', 'secondGSuite'),
-                ('Select column from second gSuite', 'secondGSuiteColumn')
+               [('Select column from first hGSuite', 'firstGSuiteColumn'),
+                ('Select second hGSuite', 'secondGSuite'),
+                ('Select column from second hGSuite', 'secondGSuiteColumn')
                 ] + \
                [('Select statistic %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_COLS)] + \
                [('Select overlap handling', 'intraOverlap')] + \
                [('Summarize within groups', 'summarize')] + \
-               [('Select column from first gSuite %s' % (
+               [('Select column from first hGSuite %s' % (
                i + 1) + ' which you would like to treat as unique',
                  'selectedFirstColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Do you want to do above summarize data for column %s' % (
-               i + 1) + ' from first gSuite ',
+               i + 1) + ' from first hGSuite ',
                  'selectedFirstColumnOption%s' % i) for i in
                 range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Select column from second gSuite %s' % (
+               [('Select column from second hGSuite %s' % (
                i + 1) + ' which you would like to treat as unique',
                  'selectedSecondColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Do you want to do above summarize for column %s' % (
-               i + 1) + ' from second gSuite ',
+               i + 1) + ' from second hGSuite ',
                  'selectedSecondColumnOption%s' % i) for i in
                 range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               cls.getInputBoxNamesForUserBinSelection() + \
-               cls.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForUserBinSelection()
+               # cls.getInputBoxNamesForDebug()
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -121,25 +123,36 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def getOptionsBoxSummarize(cls, prevChoices):
         if prevChoices.gsuite and prevChoices.secondGSuite:
-            return cls.SUMMARIZE.keys()
+
+            statList = []
+            for i in xrange(cls.MAX_NUM_OF_COLS):
+                attr = getattr(prevChoices, 'selectedStat%s' % i)
+                if cls.PHRASE in [attr]:
+                    pass
+                elif str(attr) == 'None':
+                    pass
+                else:
+                    statList.append(attr)
+            if len(statList) > 0:
+                return cls.SUMMARIZE.keys()
 
     @classmethod
     def _getOptionsBoxForSelectedFirstColumn(cls, prevChoices, index):
         if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
             selectionList = []
+            if (cls._getLenOfSelectedStat(prevChoices)):
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+                           xrange(index)):
+                    gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    selectionList += gSuiteTNFirst.attributes
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
-                       xrange(index)):
-                gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                selectionList += gSuiteTNFirst.attributes
+                    attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+                                xrange(index)]
+                    selectionList = [cls.PHRASE] + [cls.TITLE] + list(
+                        set(selectionList) - set(attrList))
 
-                attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
-                            xrange(index)]
-                selectionList = [cls.PHRASE] + [cls.TITLE] + list(
-                    set(selectionList) - set(attrList))
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedFirstColumnMethods(cls):
@@ -152,15 +165,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     def _getOptionsBoxForSelectedFirstColumnOption(cls, prevChoices, index):
         if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
             selectionList = []
+            if (cls._getLenOfSelectedStat(prevChoices)):
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+                           xrange(index)):
+                    selectionList = ''
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
-                       xrange(index)):
-                selectionList = ''
+                    return selectionList
 
-                return selectionList
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedFirstColumnOptionMethods(cls):
@@ -173,19 +186,19 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     def _getOptionsBoxForSelectedSecondColumn(cls, prevChoices, index):
         if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
             selectionList = []
+            if (cls._getLenOfSelectedStat(prevChoices)):
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+                           xrange(index)):
+                    gSuiteTNSecond = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+                    selectionList += gSuiteTNSecond.attributes
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
-                       xrange(index)):
-                gSuiteTNSecond = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
-                selectionList += gSuiteTNSecond.attributes
+                    attrList = [getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+                                xrange(index)]
+                    selectionList = [cls.PHRASE] + [cls.TITLE] + list(
+                        set(selectionList) - set(attrList))
 
-                attrList = [getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
-                            xrange(index)]
-                selectionList = [cls.PHRASE] + [cls.TITLE] + list(
-                    set(selectionList) - set(attrList))
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedSecondColumnMethods(cls):
@@ -197,16 +210,16 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def _getOptionsBoxForSelectedSecondColumnOption(cls, prevChoices, index):
         if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
-            selectionList = []
+            if (cls._getLenOfSelectedStat(prevChoices)):
+                selectionList = []
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+                           xrange(index)):
+                    selectionList = ''
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
-                       xrange(index)):
-                selectionList = ''
+                    return selectionList
 
-                return selectionList
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedSecondColumnOptionMethods(cls):
@@ -218,23 +231,61 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        DebugMixin._setDebugModeIfSelected(choices)
+        # DebugMixin._setDebugModeIfSelected(choices)
 
+        analysisBins, columnOptionsDict, firstColumnList, ifAnyElements, secondColumnList, statList, summarize, whichGroups = cls.prepareElements(
+            choices)
+
+        # print 'ifAnyElements', ifAnyElements, '<br>'
+        # print 'which groups', whichGroups, '<br>'
+        selectedAnalysis, statIndex = cls.addStat(choices, statList)
+
+        resultsDict = cls.countStat(analysisBins, selectedAnalysis,
+                                    statIndex, whichGroups, statList, summarize, columnOptionsDict)
+
+        # print 'resultsDict=', resultsDict, '<br>'
+        # print 'galaxyFn=', galaxyFn, '<br>'
+        # print 'firstColumnList=', firstColumnList, '<br>'
+        # print 'secondColumnList=', secondColumnList, '<br>'
+        # print 'summarize=', summarize, '<br>'
+
+
+        extraJavaScriptCode = """
+        $(document).ready(function(){
+            init();
+        }) 
+        """
+
+        htmlCore = HtmlCore()
+        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'], extraJavaScriptCode=extraJavaScriptCode)
+
+        htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
+        htmlCore.header('Description')
+        htmlCore.paragraph(
+            'You can see results in two ways: table with results and plot. ')
+        htmlCore.header('Interpretation of results')
+        htmlCore.paragraph(
+            'Click on the following options for selected statistic to see detailed results. ')
+
+        cls.writeResults(galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
+                         summarize)
+        htmlCore.end()
+        print htmlCore
+
+    @classmethod
+    def prepareElements(cls, choices):
         firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
         secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
         secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
         summarize = choices.summarize.encode('utf-8')
-
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
                                                          genome=firstGSuite.genome)
-
         # print firstGSuite, '<br>'
         # print firstGSuiteColumn, '<br>'
         # print secondGSuite, '<br>'
         # print secondGSuiteColumn, '<br>'
-
         statList = cls._getSelectedOptions(choices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
         if summarize != 'no':
             firstColumnList = cls._getSelectedOptions(choices, 'selectedFirstColumn%s',
@@ -255,50 +306,37 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             firstColumnList = []
             secondColumnList = []
             columnOptionsDict = {}
-
         # print statList, '<br>'
         # print 'firstColumnList', firstColumnList, '<br>'
         # print 'secondColumnList', secondColumnList, '<br>'
         # print 'columnOptionsDict', columnOptionsDict, '<br>'
-
-
         # As many unique columns from: firstColumnList and secondColumnList as many outputGSuites
         firstOutput = cls._getAttributes(firstGSuite, firstColumnList)
         # print 'firstOutput', firstOutput, '<br>'
         secondOutput = cls._getAttributes(secondGSuite, secondColumnList)
         # print 'secondOutput', secondOutput, '<br>'
-        whichGroups = cls.createGroups(firstColumnList, firstGSuite, firstOutput, secondColumnList,
-                                       secondGSuite, secondOutput, firstGSuiteColumn,
-                                       secondGSuiteColumn)
+        whichGroups, ifAnyElements = cls.createGroups(firstColumnList, firstGSuite, firstOutput,
+                                                      secondColumnList,
+                                                      secondGSuite, secondOutput,
+                                                      firstGSuiteColumn,
+                                                      secondGSuiteColumn)
+        return analysisBins, columnOptionsDict, firstColumnList, ifAnyElements, secondColumnList, statList, summarize, whichGroups
 
-        # print 'which groups', whichGroups
-
-        selectedAnalysis, statIndex = cls.addStat(choices, statList)
-
-        resultsDict = cls.countStat(analysisBins, selectedAnalysis,
-                                    statIndex, whichGroups, statList, summarize, columnOptionsDict)
-
-        # print 'resultsDict=', resultsDict
-        # print 'galaxyFn=', galaxyFn
-        # print 'firstColumnList=', firstColumnList
-        # print 'secondColumnList=', secondColumnList
-        # print 'summarize=', summarize
-
-
-        htmlCore = HtmlCore()
-        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'])
-
-        htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
-        htmlCore.header('Description')
-        htmlCore.paragraph(
-            'You can see results in two ways: table and plot... Click on the following table to see results for statistics. ')
-        htmlCore.header('Interpretation of results')
-        htmlCore.paragraph('Click here to see how to ...')
-
-        cls.writeResults(galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
-                         summarize)
-        htmlCore.end()
-        print htmlCore
+    @classmethod
+    def _getLenOfSelectedStat(cls, prevChoices):
+        statList = []
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            attr = getattr(prevChoices, 'selectedStat%s' % i)
+            if cls.PHRASE in [attr]:
+                pass
+            elif str(attr) == 'None':
+                pass
+            else:
+                statList.append(attr)
+        if len(statList) >0:
+            return True
+        else:
+            return False
 
     @classmethod
     def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
@@ -324,15 +362,29 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     if summarizeKey == 'no':
                         data += groupItem
                     else:
-                        data.append(
-                            list(groupKey) + [eval(summarizeKey + "(" + str(groupItem) + ")")])
+                        # print '1--', summarizeKey + "(" + str(groupItem) + ")", len(groupItem), '<br>'
+                        # print '2--', list(groupKey), '<br>'
+                        if len(groupItem) == 0:
+                            # print '4--', list(groupKey) + [0], '<br>'
+                            data.append(list(groupKey) + [0])
+                        else:
+                            if summarizeKey == 'sum':
+                                data.append(list(groupKey) + [sum(groupItem)])
+                            elif summarizeKey == 'avg':
+                                data.append(list(groupKey) + [sum(groupItem)/len(groupItem)])
+                            elif summarizeKey == 'min':
+                                data.append(list(groupKey) + [min(groupItem)])
+                            elif summarizeKey == 'max':
+                                data.append(list(groupKey) + [max(groupItem)])
+                            # print '5--', list(groupKey), '<br>'
+
 
             # print 'data=', data
 
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
-                dataToPresent, headerToPresent = cls.flatResults(header, data)
+                #dataToPresent, headerToPresent = cls.flatResults(header, data)
                 dp = zip(*data)
             else:
                 header = firstColumnList + secondColumnList + [summarizeKey]
@@ -364,8 +416,12 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
             fileStatPath = fileStat.getDiskPath(ensurePath=True)
             wf = open(fileStatPath, 'w')
+            i = 0
             for d in data:
-                wf.write('\t'.join([str(dd) for dd in d]) + '\n')
+                if i ==0:
+                    wf.write('\t'.join([str('attribute')+str(dd) for dd in range(0, len(d)+1)]) + '\n')
+                wf.write('-'.join([str(d[dd]) for dd in range(0, len(d)-1)]) + '\t' + '\t'.join([str(dd) for dd in d]) + '\n')
+                i+=1
 
             divId = 'results' + str(statKey)
 
@@ -420,7 +476,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             htmlCore.header('Results for: ' + str(statKeyOrginal))
             htmlCore.divEnd()
 
-            htmlCore.divBegin(divId='resultsDesc-' + str(statKey), divClass='hidden')
+            htmlCore.divBegin(divId='resultsDesc-' + str(statKey), divClass='visible')
             htmlCore.divBegin(divClass='resultsDescription')
             htmlCore.divBegin(divId='showDetailed-' + str(statKey), divClass='showDetailed')
             htmlCore.header('Detailed information about results')
@@ -449,7 +505,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         res[d[0]][d[1]] = 0
                     res[d[0]][d[1]] = d[2]
 
-            # print 'res', res
+            print 'res', res
 
             header = ['Tracks'] + res[res.keys()[0]].keys()
             resTab = []
@@ -595,9 +651,12 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         # print 'Count for groups: ', whichGroups
 
-
+        ifAnyElements = False
         for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
             for iTrackFromSecond, trackFromSecond in enumerate(secondGSuite.allTracks()):
+
+                # print 'firstGSuiteColumn', firstGSuiteColumn, '<br>'
+                # print 'secondGSuiteColumn', secondGSuiteColumn, '<br>'
 
                 if firstGSuiteColumn == 'title':
                     attr1 = trackFromFirst.title
@@ -616,6 +675,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     cls.buildAttrTuple(attrTuple, firstColumnList, trackFromFirst)
                     cls.buildAttrTuple(attrTuple, secondColumnList, trackFromSecond)
                     attrTuple = tuple(attrTuple)
+
                     # print 'attrTuple', attrTuple, '<br>'
                     # print '[trackFromFirst, trackFromSecond]', [trackFromFirst.trackName,trackFromSecond.trackName], '<br>', '<br>'
                     realTS = TrackStructureV2()
@@ -627,7 +687,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                                                                     genome=str(
                                                                         firstGSuite.genome)))
                     whichGroups[attrTuple].append(realTS)
-        return whichGroups
+                    ifAnyElements = True
+
+        return whichGroups, ifAnyElements
 
     @classmethod
     def buildAttrTuple(cls, attrTuple, firstColumnList, trackFromFirst):
@@ -704,17 +766,34 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        """
-        Should validate the selected input parameters. If the parameters are
-        not valid, an error text explaining the problem should be returned.
-        The GUI then shows this text to the user (if not empty) and greys
-        out the execute button (even if the text is empty). If all
-        parameters are valid, the method should return None, which enables
-        the execute button.
 
-        Optional method. Default return value if method is not defined: None
-        """
-        return None
+        if not choices.gsuite and not choices.secondGSuite:
+            return 'Select first and second hGSuite'
+
+        if not choices.gsuite:
+            return 'Select first hGSuite'
+
+        if not choices.secondGSuite:
+            return 'Select second hGSuite'
+
+        if cls.PHRASE in getattr(choices, 'selectedStat%s' % 0):
+            return 'Select at least 1 statistic'
+
+        if choices.gsuite and choices.secondGSuite:
+            firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
+
+            if firstGSuite.genome == secondGSuite.genome:
+                pass
+            else:
+                return 'Genomes from both hGSuites are not the same.'
+
+        analysisBins, columnOptionsDict, firstColumnList, ifAnyElements, secondColumnList, statList, summarize, whichGroups = cls.prepareElements(
+            choices)
+        if ifAnyElements == False:
+            return 'No common values in columns for both hGSuites.'
+
+
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -728,16 +807,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -803,14 +875,220 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = "This tool count descriptive statistics for hGSuite."
+
+        stepsToRunTool = ['Select first hGSuite',
+                          'Select column from first hGSuite',
+                          'Select second hGSuite',
+                          'Select column from second hGSuite',
+                          'Select statistic',
+                          'Summarize within groups (no, sum, minimum, maximum, average)',
+                          'Select column from first hGSuite which you would like to treat as unique',
+                          'Do you want to do above summarize data for column from first hGSuite',
+                          'Select column from second hGSuite which you would like to treat as unique',
+                          'Do you want to do above summarize data for column from second hGSuite'
+                          ]
+
+        urlexample1Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img1.png']).getURL()
+        urlexample2Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img2.png']).getURL()
+
+        urlexample3Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img3.png']).getURL()
+        urlexample4Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img4.png']).getURL()
+
+        urlexample5Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img5.png']).getURL()
+        urlexample6Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img6.png']).getURL()
+        urlexample7Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img7.png']).getURL()
+        urlexample8Output = StaticImage(['hgsuite', 'img',
+                                         'CountDescriptiveStatisticBetweenHGSuitesTool-img8.png']).getURL()
+
+        example = OrderedDict(
+            {'Example 1 - summarize within groups: no': ['',
+        ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: mm10
+        ###uri          	                                  title     mutation	genotype	dir_level_1	dir_level_2
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed      track1.bed    CA        eta	            C       	    A
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed      track2.bed    GT        eta	            G       	    T
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed      track3.bed    CG        iota  	            C       	    G
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track4.bed    GC        iota  	            G       	    C
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track5.bed    CA        iota  	            C       	    A
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track6.bed    GT        iota  	            G       	    T
+        """,
+        """
+         ##location: local				
+        ##file format: preprocessed				
+        ##track type: points				
+        ##genome: mm10				
+        ###uri          	                                  title     dir_level_1	dir_level_2	dir_level_3
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aca	aca	A	C	A
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acc	acc	A	C	C
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acg	acg	A	C	G
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/act	act	A	C	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aga	aga	A	G	A
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agc	agc	A	G	C
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agg	agg	A	G	G
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agt	agt	A	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aca	tgt	T	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acc	ggt	G	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acg	cgt	C	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/ata	ata	A	T	A
+         """
+         ],
+         [
+             ['Select first hGSuite','gsuite'],
+             ['Select column from first hGSuite','dir_level_1'],
+             ['Select second hGSuite','gsuite'],
+             ['Select column from second hGSuite','dir_level_2'],
+             ['Select statistic 1', 'Coverage'],
+             ['Select overlap handling', 'Merge any overlapping points/segments within the same track'],
+             ['Summarize within groups', 'no']
+
+         ],
+         [
+             '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample1Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample2Output + '" /></div>']
+         ],
+        'Example 2 - summarize within groups: sum (with unique column and summarize data)': ['',
+         ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: mm10
+        ###uri          	                                  title     mutation	genotype	dir_level_1	dir_level_2
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed      track1.bed    CA        eta	            C       	    A
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed      track2.bed    GT        eta	            G       	    T
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed      track3.bed    CG        iota  	            C       	    G
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track4.bed    GC        iota  	            G       	    C
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track5.bed    CA        iota  	            C       	    A
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track6.bed    GT        iota  	            G       	    T
+        """,
+        """
+        ##location: local				
+        ##file format: preprocessed				
+        ##track type: points				
+        ##genome: mm10				
+        ###uri          	                                  title     dir_level_1	dir_level_2	dir_level_3
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aca	aca	A	C	A
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acc	acc	A	C	C
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acg	acg	A	C	G
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/act	act	A	C	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aga	aga	A	G	A
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agc	agc	A	G	C
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agg	agg	A	G	G
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agt	agt	A	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aca	tgt	T	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acc	ggt	G	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acg	cgt	C	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/ata	ata	A	T	A
+         """
+        ],
+        [
+            ['Select first hGSuite', 'gsuite'],
+            ['Select column from first hGSuite','dir_level_1'],
+            ['Select second hGSuite', 'gsuite'],
+            ['Select column from second hGSuite', 'dir_level_2'],
+            ['Select statistic 1', 'Coverage'],
+            ['Select overlap handling', 'Merge any overlapping points/segments within the same track'],
+            ['Summarize within groups', 'sum'],
+            ['Select column from first hGSuite 1 which you would like to treat as unique', 'title'],
+            ['Select column from first hGSuite 2 which you would like to treat as unique', 'mutation'],
+            ['Do you want to do above summarize data for column 1 from first hGSuite', ''],
+            ['Do you want to do above summarize data for column 2 from first hGSuite', 'CA,GT;CG,GC;CT,GA;TA,AT;TC,AG;TG,AC'],
+             [
+                 'Select column from second hGSuite 1 which you would like to treat as unique',
+                 ''],
+             [
+                 'Do you want to do above summarize for column 1 from second hGSuite',
+                 ''],
+        ],
+         [
+             '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample3Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample4Output + '" /></div>']
+         ],
+        'Example 3 - summarize within groups: sum (with unique columns and summarize data)': ['',
+         ["""
+        ##location: local
+        ##file format: preprocessed
+        ##track type: unknown
+        ##genome: mm10
+        ###uri          	                                  title     mutation	genotype	dir_level_1	dir_level_2
+        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed      track1.bed    CA        eta	            C       	    A
+        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed      track2.bed    GT        eta	            G       	    T
+        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed      track3.bed    CG        iota  	            C       	    G
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track4.bed    GC        iota  	            G       	    C
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track5.bed    CA        iota  	            C       	    A
+        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed      track6.bed    GT        iota  	            G       	    T
+        """,
+        """
+        ##location: local				
+        ##file format: preprocessed				
+        ##track type: points				
+        ##genome: mm10				
+        ###uri          	                                  title     dir_level_1	dir_level_2	dir_level_3
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aca	aca	A	C	A
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acc	acc	A	C	C
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acg	acg	A	C	G
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/act	act	A	C	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aga	aga	A	G	A
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agc	agc	A	G	C
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agg	agg	A	G	G
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/agt	agt	A	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/aca	tgt	T	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acc	ggt	G	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/acg	cgt	C	G	T
+        hb:/external/dianadom_sandbox/c7/c79967e1aa4e6024/ata	ata	A	T	A
+         """
+        ],
+        [
+            ['Select first hGSuite', 'gsuite'],
+            ['Select column from first hGSuite','dir_level_1'],
+            ['Select second hGSuite', 'gsuite'],
+            ['Select column from second hGSuite', 'dir_level_2'],
+            ['Select statistic 1', 'Coverage'],
+            ['Select overlap handling', 'Merge any overlapping points/segments within the same track'],
+            ['Summarize within groups', 'sum'],
+            ['Select column from first hGSuite 1 which you would like to treat as unique', 'title'],
+            ['Select column from first hGSuite 2 which you would like to treat as unique', 'mutation'],
+            ['Do you want to do above summarize data for column 1 from first hGSuite', ''],
+            ['Do you want to do above summarize data for column 2 from first hGSuite', 'CA,GT;CG,GC;CT,GA;TA,AT;TC,AG;TG,AC'],
+            ['Select column from second hGSuite 1 which you would like to treat as unique','title'],
+            ['Select column from second hGSuite 2 which you would like to treat as unique',''],
+            ['Do you want to do above summarize for column 1 from second hGSuite',
+                 'aca,tgt;acc,ggt;acg,cgt;act,agt;ata,tat;tct,aga;gct,agc;cct,agg'],
+             [
+                 'Do you want to do above summarize for column 2 from second hGSuite',
+                 '']
+
+        ],
+         [
+             '<div style = "margin: 0px auto 20px auto;clear:both;width:100%" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample5Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample6Output + '" /></div><div style = "margin: 0px auto 20px auto;clear:both;width:100%" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample7Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample8Output + '" /></div>']
+         ]
+
+        })
+
+        toolResult = '<p>The output of this tool is a page with visualizations.</p>' \
+                     'Detailed information about results gives possibility to <b>download raw file</b> with results <br>' \
+                     '<b>Options for presenting results:</b> <br>' \
+                     '- Transpose tables and plots - transpose table and plots <br>' \
+                     '- Show all series as one in the plots - show all data as one series <br>' \
+                     "- Remove zeros from plots - remove value 0 from plots"
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example)
     #
     # @classmethod
     # def getToolIllustration(cls):

@@ -205,8 +205,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'summarize', summarize, '<br>'
         # print 'sumBp', sumBp, '<br>'
 
+        extraJavaScriptCode = """
+                $(document).ready(function(){
+                    init();
+                }) 
+                """
+
         htmlCore = HtmlCore()
-        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'])
+        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'], extraJavaScriptCode=extraJavaScriptCode)
 
         htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
         htmlCore.header('Description')
@@ -238,7 +244,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         for g in groupKey:
                             if not g in expectedDict.keys():
                                 expectedDict[g] = 0
-                            expectedDict[g] += float(eval('sum' + "(" + str(groupItem) + ")"))/sumBp[statKey]
+                            expectedDict[g] += float(sum(groupItem))/float(sumBp[statKey])
 
 
                 for summarizeKey, summarizeItem in statItem.iteritems():
@@ -260,27 +266,18 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     if summarizeKey == 'no':
                         data += groupItem
                     else:
-                        if statKey == cls.OBSVSEXPECTEDSTAT:
-                            data.append(
-                                list(groupKey) + [
-                                    (float(eval(summarizeKey + "(" + str(groupItem) + ")")) / sumBp[
-                                        statKey]) / expectedOrderedDict[groupKey]
-                            ])
-                        else:
-                            data.append(
-                                list(groupKey) + [
-                                    (float(eval(summarizeKey + "(" + str(groupItem) + ")"))/sumBp[statKey])
-                            ])
+                        cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
+                                           sumBp, summarizeKey)
 
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
-                dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
+                #dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
                 dp = zip(*data)
             else:
                 header = firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
-                headerToPresent = header
+                #headerToPresent = header
                 dp = zip(*dataToPresent)
 
             optionData = []
@@ -298,8 +295,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
             fileStatPath = fileStat.getDiskPath(ensurePath=True)
             wf = open(fileStatPath, 'w')
+            i=0
             for d in data:
-                wf.write('\t'.join([str(dd) for dd in d]) + '\n')
+                if i ==0:
+                    wf.write('\t'.join([str('attribute')+str(dd) for dd in range(0, len(d)+1)]) + '\n')
+                wf.write('-'.join([str(d[dd]) for dd in range(0, len(d)-1)]) + '\t' + '\t'.join([str(dd) for dd in d]) + '\n')
+                i+=1
 
             divId = 'results' + str(statKey)
 
@@ -352,7 +353,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.header('Results for: ' + str(statKeyOrginal))
             htmlCore.divEnd()
 
-            htmlCore.divBegin(divId='resultsDesc-' + str(statKey), divClass='hidden')
+            htmlCore.divBegin(divId='resultsDesc-' + str(statKey), divClass='visible')
             htmlCore.divBegin(divClass='resultsDescription')
             htmlCore.divBegin(divId='showDetailed-' + str(statKey), divClass='showDetailed')
             htmlCore.header('Detailed information about results')
@@ -369,6 +370,34 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.divEnd()
 
             statNum += 1
+
+    @classmethod
+    def countSummarize(cls, data, expectedOrderedDict, groupItem, groupKey, statKey, sumBp,
+                       summarizeKey):
+        if statKey == cls.OBSVSEXPECTEDSTAT:
+            if summarizeKey == 'sum':
+                data.append(list(groupKey) + [
+                    (float(sum(groupItem)) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+            elif summarizeKey == 'avg':
+                data.append(list(groupKey) + [
+                    (float(sum(groupItem) / len(groupItem)) / sumBp[statKey]) /
+                    expectedOrderedDict[groupKey]])
+            elif summarizeKey == 'min':
+                data.append(list(groupKey) + [
+                    (float(min(groupItem)) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+            elif summarizeKey == 'max':
+                data.append(list(groupKey) + [
+                    (float(max(groupItem)) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+        else:
+            if summarizeKey == 'sum':
+                data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])
+            elif summarizeKey == 'avg':
+                data.append(
+                    list(groupKey) + [(float(sum(groupItem) / len(groupItem)) / sumBp[statKey])])
+            elif summarizeKey == 'min':
+                data.append(list(groupKey) + [(float(min(groupItem)) / sumBp[statKey])])
+            elif summarizeKey == 'max':
+                data.append(list(groupKey) + [(float(max(groupItem)) / sumBp[statKey])])
 
     @classmethod
     def addStat(cls, choices, statList):
@@ -496,12 +525,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
         l = Legend()
 
+        toolDescription = "This tool count descriptive statistics between two hGSuites."
 
-
-
-        toolDescription = "This tool count descriptive statistics for hGSuite."
-
-        stepsToRunTool = ['Select hGSuite',
+        stepsToRunTool = ['Select first hGSuite',
                           'Select statistic',
                           'Summarize within groups (no, sum, minimum, maximum, average)',
                           'Select column which you would like to group',
@@ -524,7 +550,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                          'CountDescriptiveStatisticForHGSuiteTool-img6.png']).getURL()
 
 
-        example = OrderedDict({'Example - summarize within groups: no': ['', ["""
+        example = OrderedDict({'Example 1 - summarize within groups: no': ['', ["""
     ##location: local
     ##file format: preprocessed
     ##track type: unknown
@@ -540,9 +566,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                      ['Select statistic 1', 'Coverage'],
                      ['Summarize within groups', 'no'],
                  ],
-                 ['<div style = "margin: 0px auto;" ><img style="float:left;padding-left:30px;" width="300" src="' + urlexample1Output + '" /><img  style="float:right;padding-right:30px;" width="300" src="' + urlexample2Output + '" /></div>']
-                                 ]
-                   ,'Example - summarize within groups: maximum': ['', ["""
+                 [
+                 '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample1Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample2Output + '" /></div>'
+                  ]
+                ]
+                   ,'Example 2 - summarize within groups: maximum': ['', ["""
     ##location: local
     ##file format: preprocessed
     ##track type: unknown
@@ -563,9 +591,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                              ['Select column 1 which you would like to group', 'genotype']
                                          ],
                                          [
-                                             '<div style = "margin: 0px auto;" ><img style="float:left;padding-left:30px;" width="300" src="' + urlexample3Output + '" /><img  style="float:right;padding-right:30px;" width="300" src="' + urlexample4Output + '" /></div>']
+                                             '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample3Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample4Output + '" /></div>']
                                          ]
-            , 'Example - summarize within groups: sum': ['', ["""
+            , 'Example 3 - summarize within groups: sum': ['', ["""
     ##location: local
     ##file format: preprocessed
     ##track type: unknown
@@ -592,12 +620,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                      ['Do you want to do above summarize data for column 2 from hGSuite ', 'CA,GT;CG,GC;'],
                  ],
                  [
-                     '<div style = "margin: 0px auto;" ><img style="float:left;padding-left:30px;" width="300" src="' + urlexample5Output + '" /><img  style="float:right;padding-right:30px;" width="300" src="' + urlexample6Output + '" /></div>']
+                     '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample5Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample6Output + '" /></div>']
                  ]
 
                    })
 
-        toolResult = 'The output of this tool is a page with visualizations. <br>' \
+        toolResult = '<p>The output of this tool is a page with visualizations. </p>' \
                      'Detailed information about results gives possibility to <b>download raw file</b> with results <br>' \
                      '<b>Options for presenting results:</b> <br>' \
                      '- Transpose tables and plots - transpose table and plots <br>' \

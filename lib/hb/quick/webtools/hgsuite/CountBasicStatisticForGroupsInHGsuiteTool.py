@@ -198,7 +198,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                 if not [rkey + '-max'] in resDictExtra.keys():
                     resDictExtra[rkey+'-max'] = OrderedDict()
                 for kTemp, elTemp in resDict[rkey].iteritems():
-                    v = '--'.join(list(kTemp))
+                    v = ''.join(list(kTemp))
                     if not v in group:
                         group.append(v)
                         groupTuple.append(kTemp)
@@ -225,6 +225,19 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     @classmethod
     def createGSuiteWithExtraFields(cls, attrNameList, gSuite, resDictMerged):
+
+        # add column for which we counted data
+        for i, iTrack in enumerate(gSuite.allTracks()):
+            for s in resDictMerged.keys():
+                name = s.replace('-min','').replace('-max','')
+                if not name in resDictMerged.keys():
+                    resDictMerged[name] = OrderedDict()
+                for sName in resDictMerged[s].keys():
+                    print sName
+                    if not tuple(sName) in resDictMerged[name].keys():
+                       resDictMerged[name][tuple(sName)] = '--'.join(list(sName))
+
+
         # build results
         outGSuite = GSuite()
         for i, iTrack in enumerate(gSuite.allTracks()):
@@ -340,17 +353,12 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        """
-        Should validate the selected input parameters. If the parameters are
-        not valid, an error text explaining the problem should be returned.
-        The GUI then shows this text to the user (if not empty) and greys
-        out the execute button (even if the text is empty). If all
-        parameters are valid, the method should return None, which enables
-        the execute button.
+        if not choices.gsuite:
+            return 'Select hGSuite'
 
-        Optional method. Default return value if method is not defined: None
-        """
-        return None
+        if cls.PHRASE in getattr(choices, 'selectedStat%s' % 0):
+            return 'Select at least 1 measure'
+
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -451,11 +459,11 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         ##track type: unknown
         ##genome: hg19
         ###uri          	                                  title     T-cells B-cells   group
-        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       one
-        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       one
-        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       two
-        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .
-        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       None
+        hb:/path/track1.bed	track1.bed	X	.       one
+        hb:/path/track2.bed	track2.bed	.	X       one
+        hb:/path/track3.bed	track3.bed	.	.       two
+        hb:/path/track4.bed	track4.bed	X	.       .
+        hb:/path/track5.bed	track5.bed	.	.       None
             """],
                   [
                       ['Select hGSuite', 'gsuite'],
@@ -467,12 +475,12 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         ##file format: preprocessed
         ##track type: unknown
         ##genome: hg19
-        ###uri          	                                  title     T-cells B-cells   group   Number of elements in track-min	Number of elements in track-max
-        hb:/external/gsuite/c2/c298599af8b0d539/track1.bed	track1.bed	X	.       one                100	       	               200
-        hb:/external/gsuite/c2/c298599af8b0d539/track2.bed	track2.bed	.	X       one                100	       	               200
-        hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	.	.       two                300	       	               300
-        hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	X	.       .                  500	       	               800
-        hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.       .                  500	                	   800
+        ###uri          	                                  title     T-cells B-cells   group    Number of elements in track   Number of elements in track-min	Number of elements in track-max
+        hb:/path/track1.bed	track1.bed	X	.       one                 one                 100	       	               200
+        hb:/path/track2.bed	track2.bed	.	X       one                 one          100	       	               200
+        hb:/path/track3.bed	track3.bed	.	.       two                 two           300	       	               300
+        hb:/path/track4.bed	track4.bed	X	.       .                   No group           500	       	               800
+        hb:/path/track5.bed	track5.bed	.	.       .                   No group           500	                	   800
         """
                ]
               ]

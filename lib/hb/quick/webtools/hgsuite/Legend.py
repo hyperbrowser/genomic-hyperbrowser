@@ -57,7 +57,7 @@ class Legend():
     @classmethod
     def createExample(cls, core, exampleDescriptionDict):
 
-        if len(exampleDescriptionDict.items()) > 0:
+        if len(exampleDescriptionDict.items ()) > 0:
 
 
             js = """
@@ -70,7 +70,6 @@ class Legend():
                     jQuery('.targetDiv').hide();
                     
                     jQuery('#div'+$(this).attr('target')).show();
-                    jQuery('#showDiv'+$(this).attr('target')).hide();
     
                     $('.hideDiv').each(function(i, obj) {
                         if (obj.id == '#showDiv'+$(this).attr('target'))
@@ -82,6 +81,7 @@ class Legend():
                             jQuery('#hideDiv'+$(this).attr('target')).hide();
                         }
                     });
+                    jQuery('#showDiv'+$(this).attr('target')).hide();
                     jQuery('#hideDiv'+$(this).attr('target')).show();                
                 });
                 jQuery('.hideDiv').click(function()
@@ -95,7 +95,13 @@ class Legend():
             core.script(js);
             scriptDiv = ""
             i=0
-            for key, exampleDescription in exampleDescriptionDict.iteritems():
+
+            keysExampleDescriptionDict = sorted(exampleDescriptionDict.keys())
+
+            for key in keysExampleDescriptionDict:
+
+                exampleDescription = exampleDescriptionDict[key]
+
                 scriptDiv += '<a style="text-decoration:none" href="#' + 'page' + str(i)  + '"><div id="showDiv' + str(i) + '" target="' + str(i) + '" class="showDiv" style="width:100%; padding: 10px;border: 1px solid #efefee; background-color:#fff7db;color:#565656; margin:10px 0px;">Show ' + str(key) + '</div></a>'
                 scriptDiv += '<a name="page' + str(i) + '"><div id="hideDiv' + str(i) + '" target="' + str(i) + '" class="hideDiv" style="cursor:pointer;width:100%; padding: 10px;border: 1px solid #efefee; background-color:#565656; color:#fff7db; margin:10px 0px;">Hide ' + str(key) + '</div>'
                 scriptDiv += '<div id="div' + str(i) + '" class="targetDiv" style="position: relative;border: 1px solid #efefee; background-color:#fff7db; padding: 25px;">'
@@ -118,7 +124,7 @@ class Legend():
                             scriptDiv += '<p>' + str(ed) + '</p>'
                         if len(ed) > 0 and (edNum == 2):
                             for edNum1, ed1 in enumerate(ed):
-                                scriptDiv += '<p>' + ed1[0] + ': ' + '<b>' + ed1[1] + '</b>' + '</p>'
+                                scriptDiv += '<p style="text-align:left;">' + ed1[0] + ': ' + '<b>' + ed1[1] + '</b>' + '</p>'
                         if len(ed) > 0 and (edNum == 1 or edNum == 3):
                             for edNum1, ed1 in enumerate(ed):
                                 if cls._depth(ed1) == 0:

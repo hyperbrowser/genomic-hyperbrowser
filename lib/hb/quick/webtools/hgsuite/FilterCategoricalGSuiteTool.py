@@ -348,7 +348,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
     def validateAndReturnErrors(cls, choices):
 
         if not choices[0]:
-            return 'Select gSuite'
+            return 'Please select hGSuite'
 
         if choices[0]:
             if choices[1] == cls.FILTER_BY_VAl:
@@ -356,10 +356,10 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
                     return 'The gSuite does not contain any numbered column'
                 else:
                     if choices[3] == cls.NULL_OPTION:
-                        return 'Select at least one column'
+                        return 'Please select at least one column'
                     else:
                         if choices[4] == '':
-                            return 'Define value'
+                            return 'Please define value'
 
         return None
 

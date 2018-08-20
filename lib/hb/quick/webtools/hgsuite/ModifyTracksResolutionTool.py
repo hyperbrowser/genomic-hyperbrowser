@@ -11,6 +11,7 @@ from quick.application.GalaxyInterface import GalaxyInterface
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from gold.statistic.CountStat import CountStat
 from gold.statistic.CountPointStat import CountPointStat
@@ -20,11 +21,11 @@ from gold.track.TrackStructure import SingleTrackTS
 class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
     @classmethod
     def getToolName(cls):
-        return "Modify resolution of tracks"
+        return "Modify resolution of hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select GSuite', 'gsuite')] + \
+        return [('Select hGSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                [('Select resolution', 'resolution')]
 
@@ -66,6 +67,10 @@ class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
             outFn = gSuiteTrack.path
             ensurePathExists(outFn)
 
+            attrDict = OrderedDict()
+            for attrName in gSuite.attributes:
+                attrDict[attrName] = track.getAttribute(attrName)
+
             sts = SingleTrackTS(PlainTrack(tn), OrderedDict(title=tt, genome=str(genome)))
             res = doAnalysis(analysisSpec, analysisBins, sts)
 
@@ -76,7 +81,7 @@ class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
                     wr.write(('\t').join([str(bin.chr), str(bin.start), str(bin.end), str(v)]) + '\n')
             wr.close()
 
-            gs = GSuiteTrack(uri, title=ttNew, genome=gSuite.genome)
+            gs = GSuiteTrack(uri, title=ttNew, genome=gSuite.genome, attributes=attrDict)
 
             outputGSuite.addTrack(gs)
 
@@ -86,7 +91,18 @@ class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
-        return None
+
+        if not choices.gsuite:
+            return 'Please select hGSuite'
+
+        if choices.gsuite:
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            if gsuite.numTracks() == 0:
+                return 'Please select a hGSuite file with at least one track'
+
+            if not gsuite.isPreprocessed():
+                return 'Selected hGSuite file is not preprocess. Please preprocess ' \
+                       'the hGSuite file before continuing the analysis.'
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -120,9 +136,64 @@ class ModifyTracksResolutionTool(GeneralGuiTool, GenomeMixin):
     # def getResetBoxes(cls):
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     return ''
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'The tool allow to expand the resolution of hGSuite.'
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select resolution (1k, 10k, 100k, 1m, 10m)'
+                          ]
+
+        example = {'Example': ['', ["""
+        ##file format: primary					
+        ##track type: unknown					
+        ##genome: mm10					
+        ###uri	title	mutation	genotype	dir_level_1	dir_level_2
+        galaxy:/path/track1.bed;bed	track1.bed	CA	eta	C	A
+        galaxy:/path/track2.bed;bed	track2.bed	GT	eta	G	T
+        galaxy:/path/track3.bed;bed	track5.bed	CG	iota	C	G
+        galaxy:/path/track4.bed;bed	track6.bed	GC	iota	G	C
+        galaxy:/path/track5.bed;bed	track3.bed	CA	iota	C	A
+        galaxy:/path/track6.bed;bed	track4.bed	GT	iota	G	T
+                        """
+                    ],
+               [
+                   ['Select hGSuite', 'gsuite'],
+                   ['Select resolution', '100k']
+
+               ],
+               [
+                   """
+        ##location: local
+        ##file format: primary
+        ##track type: unknown
+        ##genome: mm10
+        ###uri	title	mutation	genotype	dir_level_1	dir_level_2
+        galaxy:/path/track1.bed--100k;bed	track1.bed--100k	CA	eta	C	A
+        galaxy:/path/track2.bed--100k;bed	track2.bed--100k	GT	eta	G	T
+        galaxy:/path/track5.bed--100k;bed	track5.bed--100k	CG	iota	C	G
+        galaxy:/path/track6.bed--100k;bed	track6.bed--100k	GC	iota	G	C
+        galaxy:/path/track3.bed--100k;bed	track3.bed--100k	CA	iota	C	A
+        galaxy:/path/track4.bed--100k;bed	track4.bed--100k	GT	iota	G	T
+                   
+                   """
+               ]
+               ]
+   }
+
+        toolResult = 'The output of this tool is a primary hGsuite with extra columns.'
+
+        notice = "If you want to use hGSuite for the futher analysis then remeber to preprocess it using tool: Preprocess a GSuite for analysis"
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          exampleDescription=example,
+                                          notice=notice
+                                          )
     #
     # @classmethod
     # def getToolIllustration(cls):

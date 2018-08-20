@@ -121,7 +121,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def validateAndReturnErrors(cls, choices):
         if not choices.gSuite:
-            return 'Select gSuite'
+            return 'Select hGSuite'
 
     @classmethod
     def getOutputFormat(cls, choices):

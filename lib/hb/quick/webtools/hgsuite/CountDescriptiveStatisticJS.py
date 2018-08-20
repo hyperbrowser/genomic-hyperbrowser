@@ -5,6 +5,8 @@ class Cube():
 
         js = ''
 
+
+
         if statNum == 0:
             js += cls._visualizeResultsAddLib()
 
@@ -14,7 +16,18 @@ class Cube():
             js += cls._addOptionToSelectList(fileName, index, data, divId, statNum)
             js += "<br \><br \>"
         js += """</form>"""
+
         js += """<script type = "text/javascript" >"""
+
+        js += """
+            function init() 
+            { """
+        for index, fileName in enumerate(fileNameList):
+            js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(data) + ",'" + str(divId)+ "');"
+
+        js+= """
+            }
+            """
 
         #fill the form
         for index, fileName in enumerate(fileNameList):
@@ -65,11 +78,11 @@ class Cube():
     @classmethod
     def _fillFirstSelect(cls, firstSelectTitle, idNum, data, divId, statNum):
         js = firstSelectTitle
-        js += '<select class="dimension" name="dimensions' + str(statNum) + str(idNum) + '" id="dimensions' + str(statNum) + str(idNum) + '" size="1" onClick="onClickChoices(' + str(statNum) + ',' + str(idNum) + ',' + str(data) + ',' + "'" + str(divId) + "'" + ')" onChange="updateChoices(' + str(statNum) + ',' + str(idNum) + ', this.selectedIndex, ' + "'" + str(divId) + "'" + ')" style="width: 150px">'
+        js += '<select class="dimension" name="dimensions' + str(statNum) + str(idNum) + '" id="dimensions' + str(statNum) + str(idNum) + '" size="1"  onClick="onClickChoices(' + str(statNum) + ',' + str(idNum) + ',' + str(data) + ',' + "'" + str(divId) + "'" + ')" onChange="updateChoices(' + str(statNum) + ',' + str(idNum) + ', this.selectedIndex, ' + "'" + str(divId) + "'" + ')" style="width: 150px">'
         js += '''
         <option value="0">---Select---</option>
         <option value="1">Select one value</option>
-        <option value="-2">Show results for each value</option>
+        <option value="-2" selected="selected" >Show results for each value</option>
         <option value="-1">Sum across this dimension</option>
         </select>
         '''
@@ -178,7 +191,12 @@ class Cube():
         js += """
             function onClickChoices(statNum, idNumFS, data, divId)
             {
+            
+                //console.log('--aa--');
+            
                 hideTable(statNum);
+                
+                
 
                 """
         for index in range(0, indexLen):
@@ -579,6 +597,7 @@ class Cube():
  		  var tbl = document.createElement("table");
   		  var tblBody = document.createElement("tbody");
  	      
+ 	      num = 0;
  	      for (var i = 0; i < tab.length; i++) 
   		  {
     			var row = document.createElement("tr");
@@ -597,7 +616,7 @@ class Cube():
     			}
     			else
     			{
-    			
+    			    console.log('B', tab[1].length);
                     for (var j = 0; j < tab[1].length; j++) 
                     {
                         if (i == 0)
@@ -608,30 +627,37 @@ class Cube():
                         {
                             var cell = document.createElement("td");
                         }
-                        //console.log('tab[i][j]', tab[i][j], tab[i][j].length, tab[i].length);
+                        console.log('1', 'tab[i][j]', tab[i][j], tab[i].length);
                         
                         if (tab[i][j] == undefined)
                         {    
-                            var cellText = document.createTextNode('Value');
+                            //if (num == 0)
+                            //{
+                                var cellText = document.createTextNode('Value');
+                                console.log('2', 'tab[i][j]', tab[i][j], tab[i].length);
+                            //}
                         }
                         else
                         {
+                            console.log('3', 'tab[i][j]', tab[i][j], tab[i][j].length, tab[i].length);
                             if (tab[i][j].length == 0)
                             {
                                 if (tab[i].length == 1)
                                 {
-                                    var cell1 = document.createElement("th");
-                                    var cellText1 = document.createTextNode('Data');
-                                    cell1.appendChild(cellText1);
-                                    row.appendChild(cell1);
+                                    //var cell1 = document.createElement("th");
+                                    //var cellText1 = document.createTextNode('Data');
+                                    //cell1.appendChild(cellText1);
+                                    //row.appendChild(cell1);
                                     
-                                    var cellText = document.createTextNode('Value');
+                                    var cellText = document.createTextNode('Data');
                                 }
                             }
                             else
                             {
                                 var cellText = document.createTextNode(tab[i][j]);
                             }
+                            
+                            num = 1;
                         }
                         cell.appendChild(cellText);
                         row.appendChild(cell);
