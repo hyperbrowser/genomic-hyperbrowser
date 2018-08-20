@@ -189,25 +189,23 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
             trackNum = 0
             for attr1 in trackGroupDict.keys():
 
+                results = ''
                 if oper == "merge":
-                    command = """ cat """
+                    results += ''
 
                 for trackFromFirst in trackGroupDict[attr1]:
 
                     ttNew = attr1
-
-
-                    tmpFile1 = NamedTemporaryFile()
                     track1 = trackFromFirst.path
-                    tmpFn1 = cls.writeToTempFile(tmpFile1, track1)
-                    command += str(tmpFn1) + ' '
 
-
-                process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.PIPE)
-
-                results, errors = process.communicate()
+                    text = ''
+                    f = open(track1, 'r')
+                    for l in f.readline():
+                        line = l.split('\t')
+                        if len(line) >=3:
+                            text += l
+                    f.close()
+                    results += text
 
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                     extraFileName=ttNew,
@@ -215,9 +213,6 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                 gSuiteTrack = GSuiteTrack(uri)
                 outFn = gSuiteTrack.path
                 ensurePathExists(outFn)
-
-                # print 'errors', errors
-                # print 'results', results, 'end results'
 
                 wr = open(outFn, 'w')
                 wr.write(results)
@@ -234,9 +229,8 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def writeToTempFile(cls, tmpFile1, track1):
-        print tmpFile1, track1, '<br>'
+
         tmpFn1 = tmpFile1.name
-        print tmpFn1, '<br>'
         f = open(track1, 'r')
         text = f.read()
         f.close()
@@ -252,16 +246,19 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
         if not choices.gsuite and choices.gSuiteNum is not 'yes':
             return 'Select first hGSuite'
 
+        if choices.gsuite and choices.gSuiteNum is not 'yes':
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            if gsuite.isPreprocessed():
+                return 'hGSuite need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
+
         if (not choices.gsuite or not choices.secondGSuite) and choices.gSuiteNum is 'yes':
             return 'Select first and second hGSuite'
-
-
 
         if choices.gsuite and choices.secondGSuite:
             gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
             secondGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
             if gsuite.isPreprocessed() or secondGSuite.isPreprocessed():
-                return 'hGSuites need to be primary. If you have preprocess hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
+                return 'hGSuites need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
 
 
     # @classmethod

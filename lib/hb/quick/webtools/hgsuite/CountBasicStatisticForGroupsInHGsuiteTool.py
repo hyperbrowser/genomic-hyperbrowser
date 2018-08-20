@@ -233,9 +233,8 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                 if not name in resDictMerged.keys():
                     resDictMerged[name] = OrderedDict()
                 for sName in resDictMerged[s].keys():
-                    print sName
                     if not tuple(sName) in resDictMerged[name].keys():
-                       resDictMerged[name][tuple(sName)] = '--'.join(list(sName))
+                       resDictMerged[name][tuple(sName)] = ''.join(list(sName))
 
 
         # build results
