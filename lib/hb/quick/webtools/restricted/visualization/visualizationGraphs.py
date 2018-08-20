@@ -2111,15 +2111,7 @@ class visualizationGraphs(object):
                              type))
         functionJS1 += legend
 
-
-        functionJS1 += """
-        exporting: {
-            allowHTML: true,
-            enabled: true,
-            scale: 2,
-            filename: '""" + str('plot-') + str(self.__class__.count) + """'
-        },
-        """
+        functionJS1 += str(self._addExportingOption())
 
 
         if type == 'largeHeatmap':
@@ -2592,6 +2584,14 @@ class visualizationGraphs(object):
         graph += ' </script> '
 
         return graph
+
+
+    def _addExportingOption(self):
+        return """exporting: {
+                        allowHTML: true,
+                        enabled: true,
+                        scale: 2,
+                        },"""
 
     def drawLineChart(self,
                       dataY,

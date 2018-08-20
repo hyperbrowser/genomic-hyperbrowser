@@ -23,138 +23,212 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select first hGSuite', 'gsuite')] + \
+        return [('Do you need two hGSuites', 'gSuiteNum'),
+                ('Select first hGSuite', 'gsuite')] + \
                     cls.getInputBoxNamesForGenomeSelection() + \
-                [('Select column from first hGSuite', 'firstGSuiteColumn'),
+               [('Select column from first hGSuite', 'firstGSuiteColumn'),
                 ('Select second hGSuite', 'secondGSuite'),
                 ('Select column from second hGSuite', 'secondGSuiteColumn'),
                 ('Select operations', 'operations')
         ]
 
     @classmethod
-    def getOptionsBoxGsuite(cls):
+    def getOptionsBoxGSuiteNum(cls):  # Alt: getOptionsBox2()
+        return ['yes', 'no']
+
+    @classmethod
+    def getOptionsBoxGsuite(cls, prevChoices):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
+
+
 
     @classmethod
     def getOptionsBoxFirstGSuiteColumn(cls, prevChoices):  # Alt: getOptionsBox2()
         if prevChoices.gsuite:
-            gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return ['None'] + [cls.TITLE] + gSuiteTN.attributes
+            if prevChoices.gSuiteNum == 'yes':
+                gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                return ['None'] + [cls.TITLE] + gSuiteTN.attributes
+            else:
+                gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                return ['all'] + gSuiteTN.attributes
+
 
     @classmethod
     def getOptionsBoxSecondGSuite(cls, prevChoices):
-        return GeneralGuiTool.getHistorySelectionElement('gsuite')
+        if prevChoices.gSuiteNum == 'yes':
+            return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
     def getOptionsBoxSecondGSuiteColumn(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.secondGSuite:
+        if prevChoices.secondGSuite  and prevChoices.gSuiteNum == 'yes':
             gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
             return ['None'] + [cls.TITLE] + gSuiteTN.attributes
 
     @classmethod
     def getOptionsBoxOperations(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['intersection', 'subtract']
+        if prevChoices.gSuiteNum == 'yes':
+            return ['intersection', 'subtract']
+        else:
+            return ['merge']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
         firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
-        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
-        secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
         oper = choices.operations.encode('utf-8')
 
         outputGSuite = GSuite()
         trackNum = 0
 
+        if choices.gSuiteNum == 'yes':
+
+            secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
+            secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
+
+            for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
+                for iTrackFromSecond, trackFromSecond in enumerate(secondGSuite.allTracks()):
+
+                    if firstGSuiteColumn == 'title':
+                        attr1 = trackFromFirst.title
+                    else:
+                        attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
+
+                    if secondGSuiteColumn == 'title':
+                        attr2 = trackFromSecond.title
+                    else:
+                        attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
+
+                    # print 'attr1', attr1, '<br>'
+                    # print 'attr2', attr2, '<br>'
+
+                    ttNew = trackFromFirst.title + str(trackNum)
+
+                    attrDict = OrderedDict()
+                    attrDict['oldTrackName1'] = str(trackFromFirst.title)
+                    attrDict['oldTrackName2'] = str(trackFromSecond.title)
+
+                    for attrName in firstGSuite.attributes:
+                        attrDict[attrName] = trackFromFirst.getAttribute(attrName)
+
+                    for attrName in secondGSuite.attributes:
+                        attrDict[attrName] = trackFromSecond.getAttribute(attrName)
+
+                    if attr1 == attr2:
+
+                        track1 = trackFromFirst.path
+                        track2 = trackFromSecond.path
+
+                        # print 'track1', track1, '<br>'
+                        # print 'track2', track2, '<br>'
+
+                        tmpFile1 = NamedTemporaryFile()
+                        tmpFile2 = NamedTemporaryFile()
+                        tmpFn1 = cls.writeToTempFile(tmpFile1, track1)
+                        tmpFn2 = cls.writeToTempFile(tmpFile2, track2)
+
+                        # print 'old1', track1
+                        # print 'new1', tmpFn1
+                        #
+                        # print 'old2', track2
+                        # print 'new2', tmpFn2
+
+                        if oper == "intersection":
+                            # print """ bedtools intersect -a """ + str(track1) + """ -b  """ + str(
+                            #     track2)
+
+                            command = """ bedtools intersect -a """ + str(tmpFn1) + """ -b  """ + str(
+                                tmpFn2)
+                            # print command
+                        elif oper == "subtract":
+                            command = """ bedtools subtract -a """ + str(tmpFn1) + """ -b  """ + str(
+                                tmpFn2)
+                        else:
+                            print
+
+                        process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
+                                                   stdout=subprocess.PIPE,
+                                                   stderr=subprocess.PIPE)
+
+                        results, errors = process.communicate()
 
 
-        for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
-            for iTrackFromSecond, trackFromSecond in enumerate(secondGSuite.allTracks()):
+                        uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                            extraFileName=ttNew,
+                                                            suffix='bed')
+                        gSuiteTrack = GSuiteTrack(uri)
+                        outFn = gSuiteTrack.path
+                        ensurePathExists(outFn)
 
-                if firstGSuiteColumn == 'title':
-                    attr1 = trackFromFirst.title
-                else:
+                        # print 'errors', errors
+                        # print 'results', results, 'end results'
+
+                        wr = open(outFn, 'w')
+                        wr.write(results)
+                        wr.close()
+
+                        gs = GSuiteTrack(uri, title=ttNew, genome=firstGSuite.genome, attributes=attrDict)
+
+                        outputGSuite.addTrack(gs)
+
+                        trackNum += 1
+        else:
+            trackGroupDict = OrderedDict()
+            if firstGSuiteColumn == 'all':
+                if not 'all' in trackGroupDict.keys():
+                    trackGroupDict['all'] = []
+                for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
+                    trackGroupDict['all'].append(trackFromFirst)
+            else:
+                for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
                     attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
+                    if not attr1 in trackGroupDict.keys():
+                        trackGroupDict[attr1] = []
+                    trackGroupDict[attr1].append(trackFromFirst)
 
-                if secondGSuiteColumn == 'title':
-                    attr2 = trackFromSecond.title
-                else:
-                    attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
+            trackNum = 0
+            for attr1 in trackGroupDict.keys():
 
-                # print 'attr1', attr1, '<br>'
-                # print 'attr2', attr2, '<br>'
+                if oper == "merge":
+                    command = """ cat """
 
-                ttNew = trackFromFirst.title + str(trackNum)
+                for trackFromFirst in trackGroupDict[attr1]:
 
-                attrDict = OrderedDict()
-                attrDict['oldTrackName1'] = str(trackFromFirst.title)
-                attrDict['oldTrackName2'] = str(trackFromSecond.title)
+                    ttNew = attr1
 
-                for attrName in firstGSuite.attributes:
-                    attrDict[attrName] = trackFromFirst.getAttribute(attrName)
-
-                for attrName in secondGSuite.attributes:
-                    attrDict[attrName] = trackFromSecond.getAttribute(attrName)
-
-                if attr1 == attr2:
-
-                    track1 = trackFromFirst.path
-                    track2 = trackFromSecond.path
-
-                    # print 'track1', track1, '<br>'
-                    # print 'track2', track2, '<br>'
 
                     tmpFile1 = NamedTemporaryFile()
-                    tmpFile2 = NamedTemporaryFile()
+                    track1 = trackFromFirst.path
                     tmpFn1 = cls.writeToTempFile(tmpFile1, track1)
-                    tmpFn2 = cls.writeToTempFile(tmpFile2, track2)
-
-                    # print 'old1', track1
-                    # print 'new1', tmpFn1
-                    #
-                    # print 'old2', track2
-                    # print 'new2', tmpFn2
-
-                    if oper == "intersection":
-                        # print """ bedtools intersect -a """ + str(track1) + """ -b  """ + str(
-                        #     track2)
-
-                        command = """ bedtools intersect -a """ + str(tmpFn1) + """ -b  """ + str(
-                            tmpFn2)
-                        # print command
-                    elif oper == "subtract":
-                        command = """ bedtools subtract -a """ + str(tmpFn1) + """ -b  """ + str(
-                            tmpFn2)
-                    else:
-                        print
-
-                    process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
-                                               stdout=subprocess.PIPE,
-                                               stderr=subprocess.PIPE)
-
-                    results, errors = process.communicate()
+                    command += str(tmpFn1) + ' '
 
 
-                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                        extraFileName=ttNew,
-                                                        suffix='bed')
-                    gSuiteTrack = GSuiteTrack(uri)
-                    outFn = gSuiteTrack.path
-                    ensurePathExists(outFn)
+                process = subprocess.Popen([command], shell=True, stdin=subprocess.PIPE,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
 
-                    # print 'errors', errors
-                    # print 'results', results, 'end results'
+                results, errors = process.communicate()
 
-                    wr = open(outFn, 'w')
-                    wr.write(results)
-                    wr.close()
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                    extraFileName=ttNew,
+                                                    suffix='bed')
+                gSuiteTrack = GSuiteTrack(uri)
+                outFn = gSuiteTrack.path
+                ensurePathExists(outFn)
 
-                    gs = GSuiteTrack(uri, title=ttNew, genome=firstGSuite.genome, attributes=attrDict)
+                # print 'errors', errors
+                # print 'results', results, 'end results'
 
-                    outputGSuite.addTrack(gs)
+                wr = open(outFn, 'w')
+                wr.write(results)
+                wr.close()
 
-                    trackNum += 1
+                gs = GSuiteTrack(uri, title=ttNew, genome=firstGSuite.genome)
+
+                outputGSuite.addTrack(gs)
+
+                trackNum += 1
+
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
@@ -175,8 +249,13 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
-        if not choices.gsuite or not choices.secondGSuite:
+        if not choices.gsuite and choices.gSuiteNum is not 'yes':
+            return 'Select first hGSuite'
+
+        if (not choices.gsuite or not choices.secondGSuite) and choices.gSuiteNum is 'yes':
             return 'Select first and second hGSuite'
+
+
 
         if choices.gsuite and choices.secondGSuite:
             gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
@@ -274,7 +353,8 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
         toolDescription = 'The tool allow to proceed operations: intersection or subtract between hGSuites'
 
-        stepsToRunTool = ['Select first GSuite',
+        stepsToRunTool = ['Do you need two hGSuites',
+                          'Select first GSuite',
                           'Select column from first hGSuite',
                           'Select second hGSuite',
                           'Select column from second hGSuite',
@@ -309,6 +389,7 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
         galaxy:/path;point.bed	agt	A	G	T
                 """],
               [
+                ['Do you need two hGSuites', 'yes'],
                 ['Select first GSuite','gsuite'],
                 ['Select column from first hGSuite','dir_level_1'],
                 ['Select second hGSuite','gsuite'],
