@@ -640,9 +640,9 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         if columnY[keyD] == True:
                             cY += cls._checkType(dictVal[keyD])
                             howManycY += 1
-                if cX == 0:
-                    if cY != howManycY:
-                        return '<b>value for y-Axis</b> need to be number type.'
+
+                if cY != howManycY or cY == 0:
+                    return '<b>value for y-Axis</b> need to be number type.'
 
             else:
                 cX = cls._checkType(dictVal[columnX])
@@ -652,9 +652,9 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
                         if columnY[keyD] == True:
                             cY += cls._checkType(dictVal[keyD])
                             howManycY += 1
-                if cX == 0:
-                    if cY != howManycY:
-                        return 'At least on of the values, either <b>value for x-Axis</b> or  <b>value for y-Axis</b> need to be number type.'
+
+                if cY != howManycY or cY == 0:
+                    return '<b>value for y-Axis</b> need to be number type.'
 
     # @staticmethod
     # def getSubToolClasses():

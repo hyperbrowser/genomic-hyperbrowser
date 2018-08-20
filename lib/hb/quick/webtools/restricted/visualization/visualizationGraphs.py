@@ -2116,7 +2116,7 @@ class visualizationGraphs(object):
         exporting: {
             allowHTML: true,
             enabled: true,
-            scale: 1,
+            scale: 2,
             filename: '""" + str('plot-') + str(self.__class__.count) + """'
         },
         """
