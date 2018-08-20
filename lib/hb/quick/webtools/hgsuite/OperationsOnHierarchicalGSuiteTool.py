@@ -199,11 +199,11 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                     track1 = trackFromFirst.path
 
                     text = ''
-                    f = open(track1, 'r')
-                    for l in f.readline():
-                        line = l.split('\t')
-                        if len(line) >=3:
-                            text += l
+                    with open(track1, 'r') as f:
+                        for l in f.readlines():
+                            line = l.strip('\n').split('\t')
+                            if len(line) >=3:
+                                text += l
                     f.close()
                     results += text
 
