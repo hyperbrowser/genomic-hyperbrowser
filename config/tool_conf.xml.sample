@@ -1,5 +1,56 @@
 <?xml version='1.0' encoding='utf-8'?>
 <toolbox monitor="true">
+
+
+
+  <label text="Hierarchical GSuite tools" id="hgsuite_tools" />
+
+  <section name="Customize a hGSuite" id="10customize_hGsuite" >
+    <label text="For hGSuites" id="hgsuite_hgsuite"/>
+      <tool file="proto/hyperbrowser/hgsuite/DivideHgSuiteAccordingToColumnTool.xml" />
+      <!--<tool file="proto/hyperbrowser/hgsuite/DivideGSuiteAccordingToColumnInTheTrackTool.xml" />-->
+    <label text="For tracks" id="hgsuite_tracks_hgsuite"/>
+      <tool file="proto/hyperbrowser/hgsuite/ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool.xml" />
+      <tool file="proto/hyperbrowser/hgsuite/FilterCategoricalGSuiteTool.xml" />
+      <!--<tool file="proto/hyperbrowser/hgsuite/ContacenateTwoOrMoreHGsuitesTool.xml" />-->
+    <label text="For meatadata" id="hgsuite_metadata_hgsuite"/>
+      <tool file="proto/hyperbrowser/hgsuite/CreateHGsuiteFromCsvFileTool.xml" />
+      <tool file="proto/hyperbrowser/hgsuite/AddAMetadataToGSuiteTool.xml" />
+  </section>
+
+  <section name="Quantitative overview of hGSuite" id="11quantitative_hGsuite" >
+    <tool file="proto/hyperbrowser/hgsuite/CountBasicStatisticForGroupsInHGsuiteTool.xml" />
+  </section>
+
+  <section name="Statistical analysis of hGSuites" id="12analysis_hGsuite" >
+    <label text="for hGSuites" id="hgsuite_analysis_1"/>
+     <!--<tool file="proto/hyperbrowser/hgsuite/CountAvgSegmentLengthAndBpOverlapTool.xml" />-->
+     <tool file="proto/hyperbrowser/hgsuite/CountDescriptiveStatisticForHGSuiteTool.xml" />
+    <label text="between hGSuites" id="hgsuite_analysis_2"/>
+      <tool file="proto/hyperbrowser/hgsuite/CountDescriptiveStatisticBetweenHGsuiteTool.xml" />
+  </section>
+
+  <section name="Visual analysis" id="13visual_analysis_hGsuite" >
+    <tool file="proto/hyperbrowser/hgsuite/PlotMetadataValuesOfTabularFileTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/CreateBoxPlotForFileTool.xml" />
+    <!--<tool file="proto/hyperbrowser/hgsuite/CreateHistogramTool.xml" />-->
+  </section>
+
+  <section name="Additional" id="14additional_hGsuite" >
+    <label text="For hGSuites" id="additional_hgsuite_hgsuite"/>
+    <tool file="proto/hyperbrowser/hgsuite/OperationsOnHierarchicalGSuiteTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/ModifyTracksResolutionTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/GenerateGsuiteFileWithHotSpotRegions.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/PlotHClustTool.xml" />
+    <label text="For tracks" id="additional_hgsuite_tracks_hgsuite"/>
+    <tool file="proto/hyperbrowser/hgsuite/OperationOnTrackTool.xml" />
+    <label text="For tabular files" id="additional_tabular_hgsuite"/>
+    <tool file="proto/hyperbrowser/hgsuite/ChangeRowsWithColumnsTool.xml" />
+    <!--<tool file="proto/hyperbrowser/hgsuite/GSuiteTracksBasicAnalysisTool.xml" />-->
+    <!--<tool file="proto/hyperbrowser/hgsuite/ModifyMetadataAccordingToUserOperationsTool.xml" />-->
+  </section>
+
+
   <label text="GSuite HyperBrowser tools" id="hb_gsuite_tools" />
 
   <section name="Create a GSuite of genomic tracks" id="gsuite_compile_tools">

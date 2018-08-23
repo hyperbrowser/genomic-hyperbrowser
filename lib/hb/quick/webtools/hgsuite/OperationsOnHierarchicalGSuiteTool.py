@@ -105,15 +105,15 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                     ttNew = trackFromFirst.title + str(trackNum)
 
                     attrDict = OrderedDict()
-                    attrDict['oldTrackName1'] = str(trackFromFirst.title)
-                    attrDict['oldTrackName2'] = str(trackFromSecond.title)
+                    attrDict['oldTrackName1'.lower()] = str(trackFromFirst.title)
+                    attrDict['oldTrackName2'.lower()] = str(trackFromSecond.title)
 
                     for attrName in firstGSuite.attributes:
-                        if attrName.lower() not in attrDict.keys():
+                        if attrName not in attrDict.keys():
                             attrDict[attrName] = trackFromFirst.getAttribute(attrName)
 
                     for attrName in secondGSuite.attributes:
-                        if attrName.lower() not in attrDict.keys():
+                        if attrName not in attrDict.keys():
                             attrDict[attrName] = trackFromSecond.getAttribute(attrName)
 
                     if attr1 == attr2:
