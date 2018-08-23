@@ -42,9 +42,9 @@
     <tool file="proto/hyperbrowser/hgsuite/ModifyTracksResolutionTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/GenerateGsuiteFileWithHotSpotRegions.xml" />
     <tool file="proto/hyperbrowser/hgsuite/PlotHClustTool.xml" />
-    <label text="For tracks" id="additional_hgsuite_tracks_hgsuite"/>
+    <label text="For tracks" id="15additional_hgsuite_tracks_hgsuite"/>
     <tool file="proto/hyperbrowser/hgsuite/OperationOnTrackTool.xml" />
-    <label text="For tabular files" id="additional_tabular_hgsuite"/>
+    <label text="For tabular files" id="16additional_tabular_hgsuite"/>
     <tool file="proto/hyperbrowser/hgsuite/ChangeRowsWithColumnsTool.xml" />
     <!--<tool file="proto/hyperbrowser/hgsuite/GSuiteTracksBasicAnalysisTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/hgsuite/ModifyMetadataAccordingToUserOperationsTool.xml" />-->
