@@ -5,8 +5,8 @@ def readUserGoList(Fn):
                    go_line.startswith("GO")]
     return goTerms
 
-if __name__ == "__main__":
-    import os
-    os.chdir('/Users/chakravarthikanduri/Documents/PostDoc_Projs/trueGO_data/')
-    userdata = readUserGoList("user_testdata.txt")
-    print(userdata)
+# if __name__ == "__main__":
+    # import os
+    # os.chdir('/Users/chakravarthikanduri/Documents/PostDoc_Projs/trueGO_data/')
+    # userdata = readUserGoList("user_testdata.txt")
+    # print(userdata)

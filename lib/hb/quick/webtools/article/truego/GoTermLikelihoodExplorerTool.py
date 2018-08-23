@@ -1,7 +1,9 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from proto.HtmlCore import HtmlCore
 from proto.TextCore import TextCore
 from quick.extra.trueGOProject.trueGO.readGoFile import (ReadGoFile,GoTerms,Genes,GoGeneMapping,GoGeneMatrix)
+from quick.extra.trueGOProject.trueGO.userdata import readUserGoList
 import os
 from config.Config import DATA_FILES_PATH
 
@@ -150,7 +152,8 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         filename = cls.determineGoAnnotationFile(choices)
-        userterms = choices.chooseGoTermsFile
+        #userterms_fn  = choices.chooseGoTermsFile
+        userterms = ExternalTrackManager.extractFnFromGalaxyTN(choices.chooseGoTermsFile)
         gofile = ReadGoFile(goFn=filename)
         goterms = GoTerms()
         genes = Genes()
@@ -163,7 +166,9 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
         gogenemapping= gogenemap.getGoGeneMapping(gotermlist,genelist)
         userdata = readUserGoList(userterms)
         kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
-        print kappa
+        core = HtmlCore()
+
+        #print kappa
 
         # ggm = GoGeneMatrix.computeKappaforGoTerms(selectSpecies)
 
