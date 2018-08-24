@@ -3,7 +3,9 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from proto.HtmlCore import HtmlCore
 from proto.TextCore import TextCore
 from quick.extra.trueGOProject.trueGO.readGoFile import (ReadGoFile,GoTerms,Genes,GoGeneMapping,GoGeneMatrix)
-from quick.extra.trueGOProject.trueGO.userdata import readUserGoList
+from quick.extra.trueGOProject.trueGO.userdata import *
+from quick.extra.trueGOProject.trueGO.computeLikelihoods import *
+from itertools import combinations
 import os
 from config.Config import DATA_FILES_PATH
 
@@ -152,8 +154,8 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         filename = cls.determineGoAnnotationFile(choices)
-        #userterms_fn  = choices.chooseGoTermsFile
         userterms = ExternalTrackManager.extractFnFromGalaxyTN(choices.chooseGoTermsFile)
+        usergenes = ExternalTrackManager.extractFnFromGalaxyTN(choices.chooseGoTermsGeneListFile)
         gofile = ReadGoFile(goFn=filename)
         goterms = GoTerms()
         genes = Genes()
@@ -165,12 +167,15 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
         geneuniverselist = genes.getGeneUniverse()
         gogenemapping= gogenemap.getGoGeneMapping(gotermlist,genelist)
         userdata = readUserGoList(userterms)
-        kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
+        usergene_list = readUserGeneList(usergenes)
+        present_terms = [term for term in userdata if term in gogenemapping.keys()]
+        both_likelihoods = computeLikelihoodsForUserGoTerms(usergoterms=present_terms,usergeneslist=usergene_list,gotermgenes=gogenemapping,geneuniversesize=len(geneuniverselist))
+        # #kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
         core = HtmlCore()
-
-        #print kappa
-
-        # ggm = GoGeneMatrix.computeKappaforGoTerms(selectSpecies)
+        core.begin()
+        core.tableFromDictionary(dataDict=both_likelihoods,columnNames= ['Pair of GO terms','Both Vs Term1','Both Vs Term2'], sortable=True)
+        core.end()
+        print core
 
 
     @classmethod
