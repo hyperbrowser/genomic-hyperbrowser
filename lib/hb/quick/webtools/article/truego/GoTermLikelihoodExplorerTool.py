@@ -168,13 +168,20 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
         userdata = readUserGoList(userterms)
         usergene_list = readUserGeneList(usergenes)
         present_terms = [term for term in userdata if term in gogenemapping.keys()]
-        both_likelihoods = computeLikelihoodsForUserGoTerms(usergoterms=present_terms,usergeneslist=usergene_list,gotermgenes=gogenemapping,geneuniversesize=len(geneuniverselist))
-        # #kappa = gogenemat.computeKappaforGoTerms(userdata,gogenemapping,len(geneuniverselist))
+        # both_likelihoods = computeLikelihoodsForUserGoTerms(usergoterms=present_terms,usergeneslist=usergene_list,gotermgenes=gogenemapping,geneuniversesize=len(geneuniverselist))
+        kappa_coeff = gogenemat.computeKappaforGoTerms(usergeneslist=usergene_list, usergoterms=userdata,
+                                                       gotermgenes=gogenemapping,
+                                                       geneuniversesize=len(geneuniverselist))
         core = HtmlCore()
         core.begin()
-        core.tableFromDictionary(dataDict=both_likelihoods,columnNames= ['Pair of GO terms','Both Vs Term1','Both Vs Term2'], sortable=True)
+        # core.tableFromDictionary(dataDict=both_likelihoods,columnNames= ['Pair of GO terms','Both Vs Term1','Both Vs Term2'], sortable=True)
+        core.tableFromDictionary(dataDict=kappa_coeff, columnNames=['Pair of GO terms', 'Kappa coefficient'], sortable=True)
         core.end()
         print core
+        #print kappa_coeff
+
+
+
 
 
     @classmethod

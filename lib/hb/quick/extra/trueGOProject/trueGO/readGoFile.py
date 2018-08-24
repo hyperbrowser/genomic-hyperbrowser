@@ -68,9 +68,9 @@ class GoGeneMatrix():
         return gotermgenes[go]
 
     @classmethod
-    def getGoTermKappaCoeff(cls,goterm1,goterm2,gotermgenes,geneuniversesize):
-        term1genes = gotermgenes[goterm1]
-        term2genes = gotermgenes[goterm2]
+    def getGoTermKappaCoeff(cls,usergeneslist,goterm1,goterm2,gotermgenes,geneuniversesize):
+        term1genes = set.intersection(gotermgenes[goterm1],usergeneslist)
+        term2genes = set.intersection(gotermgenes[goterm2],usergeneslist)
         bothpresent = len(set.intersection(term1genes,term2genes))
         present_in_onlyterm1 = len(set.difference(term1genes,term2genes))
         present_in_onlyterm2 = len(set.difference(term2genes, term1genes))
@@ -83,16 +83,16 @@ class GoGeneMatrix():
         observed_cooccurrence = (bothpresent+bothabsent)/totalgenes
         chance_cooccurrence = ((totalcol1 * totalrow1) + (totalcol2 * totalrow2)) / (totalgenes * totalgenes)
         try:
-            kappa_coeff = (observed_cooccurrence - chance_cooccurrence) / (1 - chance_cooccurrence)
+            kappa_coeff = float(observed_cooccurrence - chance_cooccurrence) / (1 - chance_cooccurrence)
         except ZeroDivisionError:
             chance_cooccurrence += 0.001
-            kappa_coeff = (observed_cooccurrence - chance_cooccurrence) / (1 - chance_cooccurrence)
+            kappa_coeff = float(observed_cooccurrence - chance_cooccurrence) / (1 - chance_cooccurrence)
         return kappa_coeff
 
     @classmethod
-    def computeKappaforGoTerms(cls,goterms,gotermgenes,geneuniversesize):
-        gopairs = list(combinations(goterms, 2))
-        return {pair : cls.getGoTermKappaCoeff(pair[0],pair[1],gotermgenes,geneuniversesize) for pair in gopairs}
+    def computeKappaforGoTerms(cls,usergeneslist,usergoterms,gotermgenes,geneuniversesize):
+        gopairs = list(combinations(usergoterms, 2))
+        return {pair : cls.getGoTermKappaCoeff(usergeneslist,pair[0],pair[1],gotermgenes,geneuniversesize) for pair in gopairs}
 
 # class GoGeneMatrix:
 #
