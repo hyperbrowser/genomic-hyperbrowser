@@ -9,7 +9,6 @@ from itertools import combinations
 import os
 from config.Config import DATA_FILES_PATH
 
-
 class GoTermLikelihoodExplorerTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
@@ -283,8 +282,12 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
     #
     @classmethod
     def getToolDescription(cls):
-
-        return 'aajdnsjbaba'
+        core = HtmlCore()
+        core.begin()
+        core.paragraph('Tool to explore the ideas of TrueGO project. For more information and notes:')
+        core.link('Read here on google docs', 'https://docs.google.com/document/d/1yvI-wZeGB9hzMUoRqawxIdvaRH4xiKgFPfNoaYoGqCk/edit')
+        core.end()
+        return core
     #
     # @classmethod
     # def getToolIllustration(cls):
