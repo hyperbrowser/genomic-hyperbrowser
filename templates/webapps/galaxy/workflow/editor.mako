@@ -1,5 +1,9 @@
 <%inherit file="/webapps/galaxy/base_panels.mako"/>
 
+<%def name="title()">
+    Workflow Editor
+</%def>
+
 <%def name="init()">
 <%
     self.active_view="workflow"
@@ -13,9 +17,10 @@
             'run_workflow'        : h.url_for( controller='root', action='index', workflow_id=trans.security.encode_id(stored.id)),
             'rename_async'        : h.url_for( controller='workflow', action='rename_async', id=trans.security.encode_id(stored.id) ),
             'annotate_async'      : h.url_for( controller='workflow', action='annotate_async', id=trans.security.encode_id(stored.id) ),
-            'get_new_module_info' : h.url_for(controller='workflow', action='get_new_module_info' ),
+            'get_new_module_info' : h.url_for( controller='workflow', action='get_new_module_info' ),
             'workflow_index'      : h.url_for( controller='workflow', action='index' ),
-            'save_workflow'       : h.url_for(controller='workflow', action='save_workflow' )
+            'save_workflow'       : h.url_for( controller='workflow', action='save_workflow' ),
+            'workflow_save_as'    : h.url_for( controller='workflow', action='save_workflow_as') 
         },
         'workflows' : [{
             'id'                  : trans.security.encode_id( workflow.id ),
@@ -42,7 +47,6 @@
 
     <script type='text/javascript'>
         workflow_view = null;
-        console.debug( 'bibtex?', window.BibtexParser );
         $( function() {
             require(['mvc/workflow/workflow-view'], function(Workflow){
                 workflow_view = new Workflow(${h.dumps(self.editor_config)});
@@ -54,7 +58,7 @@
 <%def name="stylesheets()">
 
     ## Include "base.css" for styling tool menu and forms (details)
-    ${h.css( "base", "autocomplete_tagging", "tool_menu", "jquery-ui/smoothness/jquery-ui" )}
+    ${h.css( "base", "autocomplete_tagging", "jquery-ui/smoothness/jquery-ui" )}
 
     ## But make sure styles for the layout take precedence
     ${parent.stylesheets()}
@@ -62,24 +66,6 @@
     <style type="text/css">
     body { margin: 0; padding: 0; overflow: hidden; }
 
-    #left {
-        background: #C1C9E5 url(${h.url_for('/static/style/menu_bg.png')}) top repeat-x;
-    }
-
-    div.toolMenu {
-        margin: 5px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    div.toolMenuGroupHeader {
-        font-weight: bold;
-        padding-top: 0.5em;
-        padding-bottom: 0.5em;
-        color: #333;
-        font-style: italic;
-        border-bottom: dotted #333 1px;
-        margin-bottom: 0.5em;
-    }
     div.toolTitleDisabled {
         padding-top: 5px;
         padding-bottom: 5px;
@@ -284,76 +270,82 @@
     </div>
 
     <div class="unified-panel-body" style="overflow: auto;">
-        <div class="toolMenu">
-            <%
-                from galaxy.workflow.modules import load_module_sections
-                module_sections = load_module_sections( trans )
-            %>
-            <div id="tool-search" style="padding-bottom: 5px; position: relative; display: block; width: 100%">
-                <input type="text" name="query" placeholder="search tools" id="tool-search-query" class="search-query parent-width" />
-                <img src="${h.url_for('/static/images/loading_small_white_bg.gif')}" id="search-spinner" class="search-spinner" />
-            </div>
+        <div class="toolMenuContainer">
+            <div class="toolMenu">
+                <%
+                    from galaxy.workflow.modules import load_module_sections
+                    module_sections = load_module_sections( trans )
+                %>
+                %if trans.app.config.message_box_visible:
+                    <div id="tool-search" style="top: 95px;">
+                %else:
+                    <div id="tool-search">
+                %endif
+                    <input type="text" name="query" placeholder="search tools" id="tool-search-query" class="search-query parent-width" />
+                    <img src="${h.url_for('/static/images/loading_small_white_bg.gif')}" id="search-spinner" class="search-spinner" />
+                </div>
 
-            <div class="toolSectionWrapper">
-                ${render_module_section(module_sections['inputs'])}
-            </div>
+                <div class="toolSectionWrapper">
+                    ${render_module_section(module_sections['inputs'])}
+                </div>
 
-            <div class="toolSectionList">
-                %for val in app.toolbox.tool_panel_contents( trans ):
-                    <div class="toolSectionWrapper">
-                    %if isinstance( val, Tool ):
-                        ${render_tool( val, False )}
-                    %elif isinstance( val, ToolSection ) and val.elems:
-                    <% section = val %>
-                        <div class="toolSectionTitle" id="title_${section.id}">
-                            <span>${section.name}</span>
-                        </div>
-                        <div id="${section.id}" class="toolSectionBody">
-                            <div class="toolSectionBg">
-                                %for section_key, section_val in section.elems.items():
-                                    %if isinstance( section_val, Tool ):
-                                        ${render_tool( section_val, True )}
-                                    %elif isinstance( section_val, ToolSectionLabel ):
-                                        ${render_label( section_val )}
-                                    %endif
-                                %endfor
+                <div class="toolSectionList">
+                    %for val in app.toolbox.tool_panel_contents( trans ):
+                        <div class="toolSectionWrapper">
+                        %if isinstance( val, Tool ):
+                            ${render_tool( val, False )}
+                        %elif isinstance( val, ToolSection ) and val.elems:
+                        <% section = val %>
+                            <div class="toolSectionTitle" id="title_${section.id}">
+                                <span>${section.name}</span>
                             </div>
+                            <div id="${section.id}" class="toolSectionBody">
+                                <div class="toolSectionBg">
+                                    %for section_key, section_val in section.elems.items():
+                                        %if isinstance( section_val, Tool ):
+                                            ${render_tool( section_val, True )}
+                                        %elif isinstance( section_val, ToolSectionLabel ):
+                                            ${render_label( section_val )}
+                                        %endif
+                                    %endfor
+                                </div>
+                            </div>
+                        %elif isinstance( val, ToolSectionLabel ):
+                            ${render_label( val )}
+                        %endif
                         </div>
-                    %elif isinstance( val, ToolSectionLabel ):
-                        ${render_label( val )}
-                    %endif
-                    </div>
-                %endfor
-                ## Data Manager Tools
-                %if trans.user_is_admin() and trans.app.data_managers.data_managers:
-                   <div>&nbsp;</div>
-                   <div class="toolSectionWrapper">
-                       <div class="toolSectionTitle" id="title___DATA_MANAGER_TOOLS__">
-                           <span>Data Manager Tools</span>
-                       </div>
-                       <div id="__DATA_MANAGER_TOOLS__" class="toolSectionBody">
-                           <div class="toolSectionBg">
-                               %for data_manager_id, data_manager_val in trans.app.data_managers.data_managers.items():
-                                   ${ render_tool( data_manager_val.tool, True ) }
-                               %endfor
+                    %endfor
+                    ## Data Manager Tools
+                    %if trans.user_is_admin() and trans.app.data_managers.data_managers:
+                       <div>&nbsp;</div>
+                       <div class="toolSectionWrapper">
+                           <div class="toolSectionTitle" id="title___DATA_MANAGER_TOOLS__">
+                               <span>Data Manager Tools</span>
+                           </div>
+                           <div id="__DATA_MANAGER_TOOLS__" class="toolSectionBody">
+                               <div class="toolSectionBg">
+                                   %for data_manager_id, data_manager_val in trans.app.data_managers.data_managers.items():
+                                       ${ render_tool( data_manager_val.tool, True ) }
+                                   %endfor
+                               </div>
                            </div>
                        </div>
-                   </div>
-                %endif
-                ## End Data Manager Tools
-            </div>
-            <div>&nbsp;</div>
-            %for section_name, module_section in module_sections.items():
-                %if section_name != "inputs":
-                    ${render_module_section(module_section)}
-                %endif
-            %endfor
+                    %endif
+                    ## End Data Manager Tools
+                </div>
+                <div>&nbsp;</div>
+                %for section_name, module_section in module_sections.items():
+                    %if section_name != "inputs":
+                        ${render_module_section(module_section)}
+                    %endif
+                %endfor
 
-            ## Feedback when search returns no results.
-            <div id="search-no-results" style="display: none; padding-top: 5px">
-                <em><strong>Search did not match any tools.</strong></em>
-            </div>
+                ## Feedback when search returns no results.
+                <div id="search-no-results" style="display: none; padding-top: 5px">
+                    <em><strong>Search did not match any tools.</strong></em>
+                </div>
 
+            </div>
         </div>
     </div>
 </%def>
@@ -396,7 +388,7 @@
             Details
         </div>
     </div>
-    <div class="unified-panel-body" style="overflow: auto;">
+    <div class="unified-panel-body workflow-right" style="overflow: auto;">
         ## Div for elements to modify workflow attributes.
         <div id="edit-attributes" class="metadataForm right-content">
             <div class="metadataFormTitle">Edit Workflow Attributes</div>

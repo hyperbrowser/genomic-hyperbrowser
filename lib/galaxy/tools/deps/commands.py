@@ -1,16 +1,23 @@
+"""Generic I/O and shell processing code used by Galaxy tool dependencies."""
 import os
 import subprocess
 import sys as _sys
+
+from six.moves import shlex_quote
+
 from galaxy.util import which
+
+STDOUT_INDICATOR = "-"
 
 
 def redirecting_io(sys=_sys):
+    """Predicate to determine if we are redicting I/O in process."""
     assert sys is not None
-    # We are redirecting standard out and standard error.
     return not hasattr(sys.stdout, "fileno")
 
 
 def redirect_aware_commmunicate(p, sys=_sys):
+    """Variant of process.communicate that works with in process I/O redirection."""
     assert sys is not None
     out, err = p.communicate()
     if redirecting_io(sys=sys):
@@ -24,6 +31,7 @@ def redirect_aware_commmunicate(p, sys=_sys):
 
 
 def shell(cmds, env=None, **kwds):
+    """Run shell commands with `shell_process` and wait."""
     sys = kwds.get("sys", _sys)
     assert sys is not None
     p = shell_process(cmds, env, **kwds)
@@ -36,6 +44,11 @@ def shell(cmds, env=None, **kwds):
 
 
 def shell_process(cmds, env=None, **kwds):
+    """A high-level method wrapping subprocess.Popen.
+
+    Handles details such as environment extension and in process I/O
+    redirection.
+    """
     sys = kwds.get("sys", _sys)
     popen_kwds = dict(
         shell=True,
@@ -55,33 +68,66 @@ def shell_process(cmds, env=None, **kwds):
 
 
 def execute(cmds):
-    return __wait(cmds, shell=False)
+    """Execute commands and throw an exception on a non-zero exit.
+
+    Return the standard output if the commands are successful
+    """
+    return _wait(cmds, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
 
-def __wait(cmds, **popen_kwds):
+def argv_to_str(command_argv, quote=True):
+    """Convert an argv command list to a string for shell subprocess.
+
+    If None appears in the command list it is simply excluded.
+
+    Arguments are quoted with shlex_quote. That said, this method is not meant to be
+    used in security critical paths of code and should not be used to sanitize
+    code.
+    """
+    map_func = shlex_quote if quote else lambda x: x
+    return " ".join([map_func(c) for c in command_argv if c is not None])
+
+
+def _wait(cmds, **popen_kwds):
     p = subprocess.Popen(cmds, **popen_kwds)
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        raise CommandLineException(" ".join(cmds), stdout, stderr)
+        raise CommandLineException(argv_to_str(cmds), stdout, stderr, p.returncode)
     return stdout
 
 
-def download_command(url, quote_url=False):
+def download_command(url, to=STDOUT_INDICATOR, quote_url=False):
+    """Build a command line to download a URL.
+
+    By default the URL will be downloaded to standard output but a specific
+    file can be specified with the `to` argument.
+    """
     if quote_url:
         url = "'%s'" % url
+        if to != STDOUT_INDICATOR:
+            to = "'%s'" % to
     if which("wget"):
-        download_cmd = ["wget", "-q", "--recursive", "-O" "-", url]
+        download_cmd = ["wget", "-q"]
+        if to == STDOUT_INDICATOR:
+            download_cmd += ["-O", STDOUT_INDICATOR, url]
+        else:
+            download_cmd += ["--recursive", "-O", to, url]
     else:
         download_cmd = ["curl", "-L", url]
+        if to != STDOUT_INDICATOR:
+            download_cmd += ["-o", to]
     return download_cmd
 
 
 class CommandLineException(Exception):
+    """An exception indicating a non-zero command-line exit."""
 
-    def __init__(self, command, stdout, stderr):
+    def __init__(self, command, stdout, stderr, returncode):
+        """Construct a CommandLineException from command and standard I/O."""
         self.command = command
         self.stdout = stdout
         self.stderr = stderr
+        self.returncode = returncode
         self.message = ("Failed to execute command-line %s, stderr was:\n"
                         "-------->>begin stderr<<--------\n"
                         "%s\n"
@@ -92,10 +138,12 @@ class CommandLineException(Exception):
                         ) % (command, stderr, stdout)
 
     def __str__(self):
+        """Return a verbose error message indicating the command problem."""
         return self.message
 
 
-__all__ = [
+__all__ = (
+    'argv_to_str',
     'CommandLineException',
     'download_command',
     'execute',
@@ -104,4 +152,4 @@ __all__ = [
     'shell',
     'shell_process',
     'which',
-]
+)

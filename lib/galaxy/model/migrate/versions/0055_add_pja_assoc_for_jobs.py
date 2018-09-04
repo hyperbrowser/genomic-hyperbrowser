@@ -1,13 +1,13 @@
 """
 Migration script to add the post_job_action_association table.
 """
-import datetime
+from __future__ import print_function
+
 import logging
 
 from sqlalchemy import Column, ForeignKey, Integer, MetaData, Table
 
-now = datetime.datetime.utcnow
-log = logging.getLogger( __name__ )
+log = logging.getLogger(__name__)
 metadata = MetaData()
 
 PostJobActionAssociation_table = Table("post_job_action_association", metadata,
@@ -18,12 +18,12 @@ PostJobActionAssociation_table = Table("post_job_action_association", metadata,
 
 def upgrade(migrate_engine):
     metadata.bind = migrate_engine
-    print __doc__
+    print(__doc__)
     metadata.reflect()
     try:
         PostJobActionAssociation_table.create()
-    except Exception, e:
-        log.debug( "Creating PostJobActionAssociation table failed: %s" % str( e ) )
+    except Exception:
+        log.exception("Creating PostJobActionAssociation table failed.")
 
 
 def downgrade(migrate_engine):
@@ -32,5 +32,5 @@ def downgrade(migrate_engine):
     metadata.reflect()
     try:
         PostJobActionAssociation_table.drop()
-    except Exception, e:
-        log.debug( "Dropping PostJobActionAssociation table failed: %s" % str( e ) )
+    except Exception:
+        log.exception("Dropping PostJobActionAssociation table failed.")

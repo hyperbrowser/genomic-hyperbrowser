@@ -6,7 +6,8 @@ import re
 import sgmllib
 
 from six import unichr
-from six import text_type as unicode
+
+from galaxy.util import unicodify
 
 
 # reversable htmlentitydefs mappings for Python 2.2
@@ -22,20 +23,21 @@ except:
         name2codepoint[name] = ord(codepoint)
         codepoint2name[ord(codepoint)] = name
 
+
 _cp1252 = {
     unichr(128): unichr(8364),  # euro sign
     unichr(130): unichr(8218),  # single low-9 quotation mark
-    unichr(131): unichr( 402),  # latin small letter f with hook
+    unichr(131): unichr(402),  # latin small letter f with hook
     unichr(132): unichr(8222),  # double low-9 quotation mark
     unichr(133): unichr(8230),  # horizontal ellipsis
     unichr(134): unichr(8224),  # dagger
     unichr(135): unichr(8225),  # double dagger
-    unichr(136): unichr( 710),  # modifier letter circumflex accent
+    unichr(136): unichr(710),  # modifier letter circumflex accent
     unichr(137): unichr(8240),  # per mille sign
-    unichr(138): unichr( 352),  # latin capital letter s with caron
+    unichr(138): unichr(352),  # latin capital letter s with caron
     unichr(139): unichr(8249),  # single left-pointing angle quotation mark
-    unichr(140): unichr( 338),  # latin capital ligature oe
-    unichr(142): unichr( 381),  # latin capital letter z with caron
+    unichr(140): unichr(338),  # latin capital ligature oe
+    unichr(142): unichr(381),  # latin capital letter z with caron
     unichr(145): unichr(8216),  # left single quotation mark
     unichr(146): unichr(8217),  # right single quotation mark
     unichr(147): unichr(8220),  # left double quotation mark
@@ -43,13 +45,13 @@ _cp1252 = {
     unichr(149): unichr(8226),  # bullet
     unichr(150): unichr(8211),  # en dash
     unichr(151): unichr(8212),  # em dash
-    unichr(152): unichr( 732),  # small tilde
+    unichr(152): unichr(732),  # small tilde
     unichr(153): unichr(8482),  # trade mark sign
-    unichr(154): unichr( 353),  # latin small letter s with caron
+    unichr(154): unichr(353),  # latin small letter s with caron
     unichr(155): unichr(8250),  # single right-pointing angle quotation mark
-    unichr(156): unichr( 339),  # latin small ligature oe
-    unichr(158): unichr( 382),  # latin small letter z with caron
-    unichr(159): unichr( 376)}  # latin capital letter y with diaeresis
+    unichr(156): unichr(339),  # latin small ligature oe
+    unichr(158): unichr(382),  # latin small letter z with caron
+    unichr(159): unichr(376)}  # latin capital letter y with diaeresis
 
 
 class _BaseHTMLProcessor(sgmllib.SGMLParser):
@@ -87,8 +89,6 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
         data = re.sub(r'<([^<>\s]+?)\s*/>', self._shorttag_replace, data)
         data = data.replace('&#39;', "'")
         data = data.replace('&#34;', '"')
-        if self.encoding and isinstance(data, unicode):
-            data = data.encode(self.encoding)
         sgmllib.SGMLParser.feed(self, data)
         sgmllib.SGMLParser.close(self)
 
@@ -111,23 +111,12 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
             for key, value in attrs:
                 value = value.replace('>', '&gt;').replace('<', '&lt;').replace('"', '&quot;')
                 value = self.bare_ampersand.sub("&amp;", value)
-                # thanks to Kevin Marks for this breathtaking hack to deal with (valid) high-bit attribute values in UTF-8 feeds
-                if isinstance(value, unicode):
-                    try:
-                        value = unicode(value, self.encoding)
-                    except:
-                        value = unicode(value, 'iso-8859-1')
-                uattrs.append((unicode(key, self.encoding), value))
-            strattrs = u''.join([u' %s="%s"' % (key, val) for key, val in uattrs])
-            if self.encoding:
-                try:
-                    strattrs = strattrs.encode(self.encoding)
-                except:
-                    pass
+                uattrs.append((key, value))
+            strattrs = ''.join([' %s="%s"' % (k, v) for k, v in uattrs])
         if tag in self.elements_no_end_tag:
-            self.pieces.append('<%(tag)s%(strattrs)s />' % locals())
+            self.pieces.append('<%s%s />' % (tag, strattrs))
         else:
-            self.pieces.append('<%(tag)s%(strattrs)s>' % locals())
+            self.pieces.append('<%s%s>' % (tag, strattrs))
 
     def unknown_endtag(self, tag):
         # called for each end tag, e.g. for </pre>, tag will be 'pre'
@@ -206,7 +195,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
 
     def output(self):
         '''Return processed HTML as a single string'''
-        return ''.join([str(p) for p in self.pieces])
+        return ''.join(self.pieces)
 
 
 class _HTMLSanitizer(_BaseHTMLProcessor):
@@ -327,9 +316,9 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
     svg_attr_map = None
     svg_elem_map = None
 
-    acceptable_svg_properties = [ 'fill', 'fill-opacity', 'fill-rule',
-                                  'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
-                                  'stroke-opacity']
+    acceptable_svg_properties = ['fill', 'fill-opacity', 'fill-rule',
+                                 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
+                                 'stroke-opacity']
 
     def reset(self):
         _BaseHTMLProcessor.reset(self)
@@ -446,7 +435,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
 
 def sanitize_html(htmlSource, encoding="utf-8", type="text/html"):
     p = _HTMLSanitizer(encoding, type)
-    p.feed(htmlSource)
+    p.feed(unicodify(htmlSource, encoding))
     data = p.output()
     data = data.strip().replace('\r\n', '\n')
     return data

@@ -1,15 +1,9 @@
 define([
-    "layout/masthead",
-    "mvc/base-mvc",
-    "utils/utils",
     "libs/toastr",
     "mvc/library/library-model",
     "mvc/library/library-libraryrow-view",
     "libs/underscore"
 ], function(
-    mod_masthead,
-    mod_baseMVC,
-    mod_utils,
     mod_toastr,
     mod_library_model,
     mod_library_libraryrow_view,
@@ -25,7 +19,8 @@ var LibraryListView = Backbone.View.extend({
 
     defaults: {
         page_count: null,
-        show_page: null
+        show_page: null,
+        all_fetched: false
     },
 
     /**
@@ -39,6 +34,7 @@ var LibraryListView = Backbone.View.extend({
         this.modal = null;
         // collection of {Item}s
         this.collection = new mod_library_model.Libraries();
+        this.collection.url = this.collection.urlRoot + '?deleted=false';
         this.collection.fetch({
           success: function(){
             that.render();
@@ -47,7 +43,7 @@ var LibraryListView = Backbone.View.extend({
               if ( typeof response.responseJSON !== "undefined" ){
                 mod_toastr.error( response.responseJSON.err_msg );
               } else {
-                mod_toastr.error( 'An error ocurred.' );
+                mod_toastr.error( 'An error occurred.' );
               }
           }
         });
@@ -64,6 +60,7 @@ var LibraryListView = Backbone.View.extend({
         var template = this.templateLibraryList();
         var libraries_to_render = null;
         var models = null;
+        var is_public = function(model){ return model.get('public') === true; }
         $( ".tooltip" ).hide();
         if ( typeof options !== 'undefined' ){
             models = typeof options.models !== 'undefined' ? options.models : null;
@@ -75,12 +72,18 @@ var LibraryListView = Backbone.View.extend({
             } else {
               libraries_to_render = this.collection.where( { deleted: false } );
             }
+            if ( Galaxy.libraries.preferences.get( 'without_restricted' ) ){
+              libraries_to_render = _.filter( libraries_to_render, is_public );
+            }
         } else if ( models !== null ){
             if ( Galaxy.libraries.preferences.get( 'with_deleted' ) ){
                 libraries_to_render = models;
             } else {
                 var is_deleted = function(model){ return model.get('deleted') === false; }
-                libraries_to_render = _.filter(models, is_deleted );
+                libraries_to_render = _.filter( models, is_deleted );
+            }
+            if ( Galaxy.libraries.preferences.get( 'without_restricted' ) ) {
+              libraries_to_render = _.filter( libraries_to_render, is_public );
             }
         } else {
             libraries_to_render = [];
@@ -117,6 +120,29 @@ var LibraryListView = Backbone.View.extend({
         }
         $( "#center [data-toggle]" ).tooltip();
         $( "#center" ).css( 'overflow','auto' );
+    },
+
+    fetchDeleted: function(){
+      if (this.options.all_fetched){
+        this.render();
+      } else{
+        var that = this;
+        this.collection.url = this.collection.urlRoot + '?deleted=true';
+        this.collection.fetch({
+          remove: false,
+          success: function(){
+            that.options.all_fetched = true;
+            that.render();
+          },
+          error: function( model, response ){
+              if ( typeof response.responseJSON !== "undefined" ){
+                mod_toastr.error( response.responseJSON.err_msg );
+              } else {
+                mod_toastr.error( 'An error occurred.' );
+              }
+          }
+        });
+      }
     },
 
     /**
@@ -167,13 +193,6 @@ var LibraryListView = Backbone.View.extend({
         }
     },
 
-    redirectToHome: function(){
-        window.location = '../';
-    },
-    redirectToLogin: function(){
-        window.location = '/user/login';
-    },
-
     /**
      * In case the search_term is not empty perform the search and render
      * the result. Render all visible libraries otherwise.
@@ -185,7 +204,7 @@ var LibraryListView = Backbone.View.extend({
         var results = null
         results = this.collection.search( search_term );
         this.options.searching = true;
-        this.render({'models': results});
+        this.render({models: results, show_page: 1});
       } else {
         this.options.searching = false;
         this.render();
@@ -197,32 +216,41 @@ var LibraryListView = Backbone.View.extend({
 // MMMMMMMMMMMMMMMMMM
 
     templateLibraryList: function(){
-        tmpl_array = [];
-
-        tmpl_array.push('<div class="library_container table-responsive">');
-        tmpl_array.push('<% if(length === 0) { %>');
-        tmpl_array.push('<% if(search_term.length > 0) { %>');
-        tmpl_array.push('<div>There are no libraries matching your search. Try different keyword.</div>');
-        tmpl_array.push('<% } else{ %>');
-        tmpl_array.push('<div>There are no libraries visible to you here. If you expected some to show up please consult the <a href="https://wiki.galaxyproject.org/Admin/DataLibraries/LibrarySecurity" target="_blank">library security wikipage</a> or visit the <a href="https://biostar.usegalaxy.org/" target="_blank">Galaxy support site</a>.</div>');
-        tmpl_array.push('<% }%>');
-        tmpl_array.push('<% } else{ %>');
-        tmpl_array.push('<table class="grid table table-condensed">');
-        tmpl_array.push('   <thead>');
-        tmpl_array.push('     <th style="width:30%;"><a class="sort-libraries-link" title="Click to reverse order" href="#">name</a> <span title="Sorted alphabetically" class="fa fa-sort-alpha-<%- order %>"></span></th>');
-        tmpl_array.push('     <th style="width:22%;">description</th>');
-        tmpl_array.push('     <th style="width:22%;">synopsis</th> ');
-        tmpl_array.push('     <th style="width:26%;"></th>');
-        tmpl_array.push('   </thead>');
-        tmpl_array.push('   <tbody id="library_list_body">');
-        // library item views will attach here
-        tmpl_array.push('   </tbody>');
-        tmpl_array.push('</table>');
-        tmpl_array.push('<% }%>');
-        tmpl_array.push('</div>');
-
-        return _.template(tmpl_array.join(''));
-    },
+      return _.template([
+      '<div class="library_container table-responsive">',
+        '<% if(length === 0) { %>',
+          '<% if(search_term.length > 0) { %>',
+            '<div>',
+              'There are no libraries matching your search. Try different keyword.',
+            '</div>',
+          '<% } else{ %>',
+            '<div>',
+              'There are no libraries visible to you here. If you expected some to show up please consult the',
+              ' <a href="https://galaxyproject.org/data-libraries/#permissions" target="_blank">library security wikipage</a>',
+              ' or visit the <a href="https://biostar.usegalaxy.org/" target="_blank">Galaxy support site</a>.',
+            '</div>',
+          '<% }%>',
+        '<% } else{ %>',
+          '<table class="grid table table-condensed">',
+            '<thead>',
+              '<th style="width:30%;">',
+                '<a class="sort-libraries-link" title="Click to reverse order" href="#">',
+                  'name',
+                '</a>',
+                '<span title="Sorted alphabetically" class="fa fa-sort-alpha-<%- order %>"/>',
+              '</th>',
+              '<th style="width:22%;">description</th>',
+              '<th style="width:22%;">synopsis</th> ',
+              '<th style="width:26%;"></th>',
+            '</thead>',
+            '<tbody id="library_list_body">',
+            // library item views will attach here
+            '</tbody>',
+          '</table>',
+        '<% }%>',
+      '</div>'
+      ].join(''));
+    }
 
 });
 

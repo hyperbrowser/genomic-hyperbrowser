@@ -3,13 +3,17 @@ define([
     "mvc/history/hdca-model",
     "mvc/dataset/states",
     "mvc/base-mvc",
+    "mvc/collection/base-creator",
     "mvc/ui/ui-modal",
     "utils/natural-sort",
     "utils/localization",
     "ui/hoverhighlight"
-], function( HDCA, STATES, BASE_MVC, UI_MODAL, naturalSort, _l ){
+], function( HDCA, STATES, BASE_MVC, baseCreator, UI_MODAL, naturalSort, _l ){
+
+'use strict';
 
 var logNamespace = 'collections';
+
 /*==============================================================================
 TODO:
     use proper Element model and not just json
@@ -149,7 +153,7 @@ var DatasetCollectionElementView = Backbone.View.extend( BASE_MVC.LoggableMixin 
 // ============================================================================
 /** An interface for building collections.
  */
-var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).extend({
+var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).extend( baseCreator.CollectionCreatorMixin ).extend({
     _logNamespace : logNamespace,
 
     /** the class used to display individual elements */
@@ -175,6 +179,10 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         highlightClr    : 'rgba( 64, 255, 255, 1.0 )'
     },
 
+    footerSettings : {
+        '.hide-originals': 'hideOriginals'
+    },
+
     /** set up initial options, instance vars, behaviors */
     initialize : function( attributes ){
         this.metric( 'ListCollectionCreator.initialize', attributes );
@@ -187,6 +195,7 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         /** unordered, original list - cache to allow reversal */
         creator.initialElements = attributes.elements || [];
 
+        this._setUpCommonSettings( attributes );
         this._instanceSetUp();
         this._elementsSetUp();
         this._setUpBehaviors();
@@ -256,10 +265,8 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         if( element.history_content_type !== 'dataset' ){
             return _l( "is not a dataset" );
         }
-        if( element.state !== STATES.OK ){
-            if( _.contains( STATES.NOT_READY_STATES, element.state ) ){
-                return _l( "hasn't finished running yet" );
-            }
+        var validState = element.state === STATES.OK || _.contains( STATES.NOT_READY_STATES, element.state );
+        if( ! validState ){
             return _l( "has errored, is paused, or is not accessible" );
         }
         if( element.deleted || element.purged ){
@@ -346,15 +353,6 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         return $middle;
     },
 
-    /** render the footer, completion controls, and cancel controls */
-    _renderFooter : function( speed, callback ){
-        var $footer = this.$( '.footer' ).empty().html( this.templates.footer() );
-        if( typeof this.oncancel === 'function' ){
-            this.$( '.cancel-create.btn' ).show();
-        }
-        return $footer;
-    },
-
     /** add any jQuery/bootstrap/custom plugins to elements rendered */
     _addPluginComponents : function(){
         this.$( '.help-content i' ).hoverhighlight( '.collection-creator', this.highlightClr );
@@ -363,21 +361,6 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
     /** build and show an alert describing any elements that could not be included due to problems */
     _invalidElementsAlert : function(){
         this._showAlert( this.templates.invalidElements({ problems: this.invalidElements }), 'alert-warning' );
-    },
-
-    /** add (or clear if clear is truthy) a validation warning to the DOM element described in what */
-    _validationWarning : function( what, clear ){
-        var VALIDATION_CLASS = 'validation-warning';
-        if( what === 'name' ){
-            what = this.$( '.collection-name' ).add( this.$( '.collection-name-prompt' ) );
-            this.$( '.collection-name' ).focus().select();
-        }
-        if( clear ){
-            what = what || this.$( '.' + VALIDATION_CLASS );
-            what.removeClass( VALIDATION_CLASS );
-        } else {
-            what.addClass( VALIDATION_CLASS );
-        }
     },
 
     _disableNameAndCreate : function( disable ){
@@ -526,7 +509,7 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
             });
 
         creator.blocking = true;
-        return creator.creationFn( elements, name )
+        return creator.creationFn( elements, name, creator.hideOriginals )
             .always( function(){
                 creator.blocking = false;
             })
@@ -579,7 +562,7 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
     _errorHandler : function( data ){
         this.error( data );
 
-        var creator = this;
+        var creator = this,
             content = data.message || _l( 'An error occurred' );
         if( data.xhr ){
             var xhr = data.xhr,
@@ -622,46 +605,9 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         // footer
         'change .collection-name'       : '_changeName',
         'keydown .collection-name'      : '_nameCheckForEnter',
-        'click .cancel-create'          : function( ev ){
-            if( typeof this.oncancel === 'function' ){
-                this.oncancel.call( this );
-            }
-        },
+        'change .hide-originals'        : '_changeHideOriginals',
+        'click .cancel-create'          : '_cancelCreate',
         'click .create-collection'      : '_clickCreate'//,
-    },
-
-    // ........................................................................ header
-    /** expand help */
-    _clickMoreHelp : function( ev ){
-        ev.stopPropagation();
-        this.$( '.main-help' ).addClass( 'expanded' );
-        this.$( '.more-help' ).hide();
-    },
-    /** collapse help */
-    _clickLessHelp : function( ev ){
-        ev.stopPropagation();
-        this.$( '.main-help' ).removeClass( 'expanded' );
-        this.$( '.more-help' ).show();
-    },
-    /** toggle help */
-    _toggleHelp : function( ev ){
-        ev.stopPropagation();
-        this.$( '.main-help' ).toggleClass( 'expanded' );
-        this.$( '.more-help' ).toggle();
-    },
-
-    /** show an alert on the top of the interface containing message (alertClass is bootstrap's alert-*) */
-    _showAlert : function( message, alertClass ){
-        alertClass = alertClass || 'alert-danger';
-        this.$( '.main-help' ).hide();
-        this.$( '.header .alert' )
-            .attr( 'class', 'alert alert-dismissable' ).addClass( alertClass ).show()
-            .find( '.alert-message' ).html( message );
-    },
-    /** hide the alerts at the top */
-    _hideAlert : function( message ){
-        this.$( '.main-help' ).show();
-        this.$( '.header .alert' ).hide();
     },
 
     // ........................................................................ elements
@@ -698,7 +644,7 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         //TODO: no need to re-create - move instead
         this.$( '.element-drop-placeholder' ).remove();
         var $placeholder = $( '<div class="element-drop-placeholder"></div>' );
-        if( !$nearest.size() ){
+        if( !$nearest.length ){
             $list.append( $placeholder );
         } else {
             $nearest.before( $placeholder );
@@ -745,7 +691,7 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
 
         // insert before the nearest element or after the last.
         var $nearest = this._getNearestElement( ev.clientY );
-        if( $nearest.size() ){
+        if( $nearest.length ){
             this.$dragging.insertBefore( $nearest );
         } else {
             // no nearest before - insert after last element
@@ -787,46 +733,12 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         this.$dragging = null;
     },
 
-    // ........................................................................ footer
-    /** handle a collection name change */
-    _changeName : function( ev ){
-        this._validationWarning( 'name', !!this._getName() );
-    },
-
-    /** check for enter key press when in the collection name and submit */
-    _nameCheckForEnter : function( ev ){
-        if( ev.keyCode === 13 && !this.blocking ){
-            this._clickCreate();
-        }
-    },
-
-    /** get the current collection name */
-    _getName : function(){
-        return _.escape( this.$( '.collection-name' ).val() );
-    },
-
-    /** attempt to create the current collection */
-    _clickCreate : function( ev ){
-        var name = this._getName();
-        if( !name ){
-            this._validationWarning( 'name' );
-        } else if( !this.blocking ){
-            this.createList( name );
-        }
-    },
-
     // ------------------------------------------------------------------------ templates
     //TODO: move to require text plugin and load these as text
     //TODO: underscore currently unnecc. bc no vars are used
     //TODO: better way of localizing text-nodes in long strings
     /** underscore template fns attached to class */
-    templates : {
-        /** the skeleton */
-        main : _.template([
-            '<div class="header flex-row no-flex"></div>',
-            '<div class="middle flex-row flex-row-container"></div>',
-            '<div class="footer flex-row no-flex"></div>'
-        ].join('')),
+    templates : _.extend({}, baseCreator.CollectionCreatorMixin._creatorTemplates, {
 
         /** the header (not including help text) */
         header : _.template([
@@ -862,6 +774,12 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
         /** creation and cancel controls */
         footer : _.template([
             '<div class="attributes clear">',
+                '<div class="clear">',
+                    '<label class="setting-prompt pull-right">',
+                        _l( 'Hide original elements' ), '?',
+                        '<input class="hide-originals pull-right" type="checkbox" />',
+                    '</label>',
+                '</div>',
                 '<div class="clear">',
                     '<input class="collection-name form-control pull-right" ',
                         'placeholder="', _l( 'Enter a name for your new collection' ), '" />',
@@ -972,7 +890,7 @@ var ListCollectionCreator = Backbone.View.extend( BASE_MVC.LoggableMixin ).exten
                 '</div>',
             '</div>'
         ].join('')),
-    },
+    }),
 
     // ------------------------------------------------------------------------ misc
     /** string rep */
@@ -1030,10 +948,11 @@ var listCollectionCreatorModal = function _listCollectionCreatorModal( elements,
 /** Use a modal to create a list collection, then add it to the given history contents.
  *  @returns {Deferred} resolved when the collection is added to the history.
  */
-function createListCollection( contents ){
+function createListCollection( contents, defaultHideSourceItems ){
     var elements = contents.toJSON(),
         promise = listCollectionCreatorModal( elements, {
-            creationFn : function( elements, name ){
+            defaultHideSourceItems: defaultHideSourceItems,
+            creationFn : function( elements, name, hideSourceItems ){
                 elements = elements.map( function( element ){
                     return {
                         id      : element.id,
@@ -1042,7 +961,7 @@ function createListCollection( contents ){
                         src     : ( element.history_content_type === 'dataset'? 'hda' : 'hdca' )
                     };
                 });
-                return contents.createHDCA( elements, 'list', name );
+                return contents.createHDCA( elements, 'list', name, hideSourceItems );
             }
         });
     return promise;

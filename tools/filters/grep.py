@@ -7,29 +7,31 @@
 # provides security and pipeline.
 #
 # Grep is launched based on these inputs:
-# -i		Input file
-# -o		Output file
-# -pattern	RegEx pattern
-# -v	        true or false (output NON-matching lines)
+# -i Input file
+# -o Output file
+# -pattern RegEx pattern
+# -v true or false (output NON-matching lines)
+from __future__ import print_function
 
-import sys
 import os
 import re
-import string
-import commands
-from subprocess import Popen, PIPE
+import subprocess
+import sys
+from subprocess import PIPE, Popen
 from tempfile import NamedTemporaryFile
+
 
 # This function is exceedingly useful, perhaps package for reuse?
 def getopts(argv):
     opts = {}
     while argv:
-	if argv[0][0] == '-':
-	    opts[argv[0]] = argv[1]
-	    argv = argv[2:]
-	else:
-	    argv = argv[1:]
+        if argv[0][0] == '-':
+            opts[argv[0]] = argv[1]
+            argv = argv[2:]
+        else:
+            argv = argv[1:]
     return opts
+
 
 def main():
     args = sys.argv[1:]
@@ -37,47 +39,46 @@ def main():
     try:
         opts = getopts(args)
     except IndexError:
-        print "Usage:"
-        print " -i		Input file"
-        print " -o		Output file"
-        print " -pattern	RegEx pattern"
-        print " -v		true or false (Invert match)"
+        print("Usage:")
+        print(" -i Input file")
+        print(" -o Output file")
+        print(" -pattern RegEx pattern")
+        print(" -v true or false (Invert match)")
         return 0
 
     outputfile = opts.get("-o")
-    if outputfile == None:
-        print "No output file specified."
+    if outputfile is None:
+        print("No output file specified.")
         return -1
-    
+
     inputfile = opts.get("-i")
-    if inputfile == None:
-        print "No input file specified."
+    if inputfile is None:
+        print("No input file specified.")
         return -2
 
     invert = opts.get("-v")
-    if invert == None:
-        print "Match style (Invert or normal) not specified."
+    if invert is None:
+        print("Match style (Invert or normal) not specified.")
         return -3
 
     pattern = opts.get("-pattern")
-    if pattern == None:
-        print "RegEx pattern not specified."
+    if pattern is None:
+        print("RegEx pattern not specified.")
         return -4
 
     # All inputs have been specified at this point, now validate.
 
     # replace if input has been escaped, remove sq
     # characters that are allowed but need to be escaped
-    mapped_chars =  {   '>' :'__gt__',
-                        '<' :'__lt__',
-                        '\'':'__sq__',
-                        '"' :'__dq__',
-                        '[' :'__ob__',
-                        ']' :'__cb__',
-                        '{' :'__oc__',
-                        '}' :'__cc__'
-                    }
-    
+    mapped_chars = {'>' : '__gt__',
+                    '<' : '__lt__',
+                    '\'': '__sq__',
+                    '"' : '__dq__',
+                    '[' : '__ob__',
+                    ']' : '__cb__',
+                    '{' : '__oc__',
+                    '}' : '__cc__'}
+
     # with new sanitizing we only need to replace for single quote,
     # but this needs to remain for backwards compatibility
     for key, value in mapped_chars.items():
@@ -89,47 +90,48 @@ def main():
 
     # verify that filename and inversion flag are in the correct format
     if not fileRegEx.match(outputfile):
-        print "Illegal output filename."
+        print("Illegal output filename.")
         return -5
     if not fileRegEx.match(inputfile):
-        print "Illegal input filename."
+        print("Illegal input filename.")
         return -6
     if not invertRegEx.match(invert):
-        print "Illegal invert option."
+        print("Illegal invert option.")
         return -7
 
     # invert grep search?
     if invert == "true":
         invertflag = "-v"
-        print "Not matching pattern: %s" % pattern
+        print("Not matching pattern: %s" % pattern)
     else:
         invertflag = ""
-        print "Matching pattern: %s" % pattern
+        print("Matching pattern: %s" % pattern)
 
     # set version flag
-    versionflag  = "-P"
-    
+    versionflag = "-P"
+
     # MacOS 10.8.2 does not support -P option for perl-regex anymore
-    versionmatch = Popen("grep -V | grep 'BSD'", shell=True, stdout=PIPE).communicate()[0];
+    versionmatch = Popen("grep -V | grep 'BSD'", shell=True, stdout=PIPE).communicate()[0]
     if versionmatch:
         versionflag = "-E"
 
     # create temp file holding pattern
     # by using a file to hold the pattern, we don't have worry about sanitizing grep commandline and can include single quotes in pattern
     pattern_file_name = NamedTemporaryFile().name
-    open( pattern_file_name, 'w' ).write( pattern )
-    
+    open(pattern_file_name, 'w').write(pattern)
+
     # generate grep command
-    commandline = "grep %s %s -f %s %s > %s" % ( versionflag, invertflag, pattern_file_name, inputfile, outputfile )
-    
+    commandline = "grep %s %s -f %s %s > %s" % (versionflag, invertflag, pattern_file_name, inputfile, outputfile)
+
     # run grep
-    errorcode, stdout = commands.getstatusoutput(commandline)
-    
+    errorcode = subprocess.call(commandline, shell=True)
+
     # remove temp pattern file
-    os.unlink( pattern_file_name )
-    
+    os.unlink(pattern_file_name)
+
     # return error code
     return errorcode
+
 
 if __name__ == "__main__":
     main()

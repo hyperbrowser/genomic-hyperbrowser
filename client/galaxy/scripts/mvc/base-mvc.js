@@ -4,6 +4,8 @@ define([
     'utils/add-logging',
     'utils/localization'
 ], function( _, Backbone, addLogging, _l ){
+'use strict';
+
 //==============================================================================
 /** @class Mixin to add logging capabilities to an object.
  *      Designed to allow switching an objects log output off/on at one central
@@ -562,6 +564,19 @@ function wrapTemplate( template, jsonNamespace ){
 
 
 //==============================================================================
+/** Return a comparator function for sorted Collections */
+function buildComparator( attribute_name, options ){
+    options = options || {};
+    var ascending = options.ascending? 1 : -1;
+    return function __comparator( a, b ){
+        a = a.get( attribute_name );
+        b = b.get( attribute_name );
+        return ( a < b? -1 : ( a > b? 1 : 0 ) ) * ascending;
+    };
+}
+
+
+//==============================================================================
     return {
         LoggableMixin                   : LoggableMixin,
         SessionStorageModel             : SessionStorageModel,
@@ -570,6 +585,7 @@ function wrapTemplate( template, jsonNamespace ){
         HiddenUntilActivatedViewMixin   : HiddenUntilActivatedViewMixin,
         DraggableViewMixin              : DraggableViewMixin,
         SelectableViewMixin             : SelectableViewMixin,
-        wrapTemplate                    : wrapTemplate
+        wrapTemplate                    : wrapTemplate,
+        buildComparator                 : buildComparator,
     };
 });
