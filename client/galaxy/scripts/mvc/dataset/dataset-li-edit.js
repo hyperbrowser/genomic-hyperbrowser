@@ -230,11 +230,7 @@ var DatasetListItemEdit = _super.extend(
                 onclick     : function( ev ) {
                     if ( Galaxy.router ) {
                         ev.preventDefault();
-
-                        if (form.options.model_class.lastIndexOf('Proto', 0) === 0)
-                            galaxy_main.location = rerun_url;
-                        else
-                            Galaxy.router.push( '/', { job_id : creating_job } );
+                        Galaxy.router.push( '/', { job_id : creating_job } );
                     }
                 }
             });
