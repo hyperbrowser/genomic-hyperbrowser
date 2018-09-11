@@ -148,7 +148,7 @@ class HtmlCore(TableCoreMixin):
                 tableClassList.append('sortable')
             tableClassStr = 'class="' + ' '.join(tableClassList) + '" ' \
                 if tableClassList else ''
-            self._str += '<table %s%s" width="100%%" style="%s">' \
+            self._str += '<table %s%s width="100%%" style="%s">' \
                 % (tableIdStr, tableClassStr, style) + os.linesep
 
         if headerRow not in [None, []]:
