@@ -18,7 +18,8 @@ ALL_GUI_ELEMENTS = [
     ('History selection box', 'historySelection'),
     ('History selection box (tabular files only)', 'historySelectionTabular'),
     ('History check box list', 'historyCheckBoxList'),
-    ('History check box list (tabular files only)', 'historyCheckBoxListTabular')
+    ('History check box list (tabular files only)', 'historyCheckBoxListTabular'),
+    ('Label ignored', 'hiddenField')
 ]
 
 SELECTION_A = 'Selection A'
@@ -255,6 +256,10 @@ class ProtoGuiTestTool1(GeneralGuiTool):
     @classmethod
     def getOptionsBoxHistoryCheckBoxListTabular(cls, prevChoices):
         return '__multihistory__', 'tabular'
+
+    @classmethod
+    def getOptionsBoxHiddenField(cls, prevChoices):
+        return '__hidden__', (None,)
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
