@@ -1,5 +1,9 @@
 from itertools import combinations
 from collections import defaultdict
+from matplotlib import pyplot as plt
+from proto.HtmlCore import HtmlCore
+from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+
 
 def computeMaximumLikelihood(probablityOfBeingIncludedInCategory, numberOfItemsInCategory, numberOfItemsInUniverse):
     numberOfItemsNotInCategory = numberOfItemsInUniverse - numberOfItemsInCategory
@@ -44,3 +48,44 @@ def computeLikelihoodsForUserGoTerms(usergoterms,usergeneslist,gotermgenes,geneu
             likelihoodsDict[pair].append(bothVersusTerm1)
             likelihoodsDict[pair].append(bothVersusTerm2)
     return likelihoodsDict
+
+#########
+# tempdata= {('GO:0072599', 'GO:0031325'): [1.0, 53179.106545258954], ('GO:0046907', 'GO:0033993'): [1.3602951566666981e+20, 53179.106545258954], ('GO:0010972', 'GO:0006461'): [1.3602951566666981e+20, 53179.106545258954]}
+#########
+
+def filterGOTermsBasedOnLikelihoodRatios(dictOfLikelihoodratios):
+    retainedGoTerms = set()
+    excludedGoTerms = set()
+    for key in dictOfLikelihoodratios:
+        likelihoodratiovalues= dictOfLikelihoodratios[key]
+        # if len(set.intersection(set(key),excludedGoTerms)) > 0:
+        #     pass
+        # else:
+        if likelihoodratiovalues[0] > likelihoodratiovalues[1]:
+            retainedGoTerms.add(key[0])
+            excludedGoTerms.add(key[1])
+        elif likelihoodratiovalues[0] < likelihoodratiovalues[1]:
+            retainedGoTerms.add(key[1])
+            excludedGoTerms.add(key[0])
+        elif likelihoodratiovalues[0] == likelihoodratiovalues[1]:
+            retainedGoTerms.add(key[0])
+            retainedGoTerms.add(key[1])
+    filteredterms = set.difference(retainedGoTerms,excludedGoTerms)
+    return filteredterms
+
+def visualizeHistogramForValuesOfDict(valuesDict,galaxyFn,xlabel,ylabel,title,figsize):
+    plotOutput = GalaxyRunSpecificFile(['Histogram', 'Histogram.png'], galaxyFn)
+    plt.figure(figsize=figsize)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.hist(x=valuesDict.values())
+    plt.grid(True)
+    plt.savefig(plotOutput.getDiskPath(ensurePath=True))
+    core = HtmlCore()
+    core.begin()
+    core.divBegin(divId='plot')
+    core.image(plotOutput.getURL())
+    core.divEnd()
+    core.end()
+    print core

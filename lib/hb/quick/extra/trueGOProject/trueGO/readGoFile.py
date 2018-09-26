@@ -1,5 +1,6 @@
 from collections import defaultdict
 from itertools import combinations
+import pandas as pd
 #import matplotlib.pyplot as plt
 # from scipy.cluster.hierarchy import dendrogram, linkage
 # import plotly.plotly as ply
@@ -68,20 +69,22 @@ class GoGeneMatrix():
         return gotermgenes[go]
 
     @classmethod
-    def getGoTermKappaCoeff(cls,usergeneslist,goterm1,goterm2,gotermgenes,geneuniversesize):
-        term1genes = set.intersection(gotermgenes[goterm1],usergeneslist)
-        term2genes = set.intersection(gotermgenes[goterm2],usergeneslist)
+    def getGoTermKappaCoeff(cls,usergenelist,goterm1,goterm2,gotermgenes,geneuniverse):
+        term1genes = set.intersection(gotermgenes[goterm1],usergenelist)
+        term2genes = set.intersection(gotermgenes[goterm2],usergenelist)
         bothpresent = len(set.intersection(term1genes,term2genes))
         present_in_onlyterm1 = len(set.difference(term1genes,term2genes))
         present_in_onlyterm2 = len(set.difference(term2genes, term1genes))
-        bothabsent = geneuniversesize-len(set.union(term1genes,term2genes))
+        not_term1genes = set.difference(set(geneuniverse),term1genes)
+        not_term2genes = set.difference(set(geneuniverse), term2genes)
+        bothabsent = len(set.intersection(not_term1genes,not_term2genes))
         totalcol1 = bothpresent+present_in_onlyterm1
         totalcol2 = bothabsent+present_in_onlyterm2
         totalrow1 = bothpresent+present_in_onlyterm2
         totalrow2 = bothabsent+present_in_onlyterm1
         totalgenes = totalcol1+totalcol2
-        observed_cooccurrence = (bothpresent+bothabsent)/totalgenes
-        chance_cooccurrence = ((totalcol1 * totalrow1) + (totalcol2 * totalrow2)) / (totalgenes * totalgenes)
+        observed_cooccurrence = float(bothpresent+bothabsent)/totalgenes
+        chance_cooccurrence = float((totalcol1 * totalrow1) + (totalcol2 * totalrow2)) / (totalgenes * totalgenes)
         try:
             kappa_coeff = float(observed_cooccurrence - chance_cooccurrence) / (1 - chance_cooccurrence)
         except ZeroDivisionError:
@@ -90,9 +93,9 @@ class GoGeneMatrix():
         return kappa_coeff
 
     @classmethod
-    def computeKappaforGoTerms(cls,usergeneslist,usergoterms,gotermgenes,geneuniversesize):
+    def computeKappaforGoTerms(cls,usergenelist,usergoterms,gotermgenes,geneuniverse):
         gopairs = list(combinations(usergoterms, 2))
-        return {pair : cls.getGoTermKappaCoeff(usergeneslist,pair[0],pair[1],gotermgenes,geneuniversesize) for pair in gopairs}
+        return {pair : cls.getGoTermKappaCoeff(usergenelist,pair[0],pair[1],gotermgenes,geneuniverse) for pair in gopairs}
 
 # class GoGeneMatrix:
 #

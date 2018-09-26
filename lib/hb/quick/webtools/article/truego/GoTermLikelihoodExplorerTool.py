@@ -5,9 +5,11 @@ from proto.TextCore import TextCore
 from quick.extra.trueGOProject.trueGO.readGoFile import (ReadGoFile,GoTerms,Genes,GoGeneMapping,GoGeneMatrix)
 from quick.extra.trueGOProject.trueGO.userdata import *
 from quick.extra.trueGOProject.trueGO.computeLikelihoods import *
+from quick.extra.trueGOProject.trueGO.simulatedata import *
 from itertools import combinations
 import os
 from config.Config import DATA_FILES_PATH
+import pandas as pd
 
 class GoTermLikelihoodExplorerTool(GeneralGuiTool):
     @classmethod
@@ -168,20 +170,65 @@ class GoTermLikelihoodExplorerTool(GeneralGuiTool):
         userdata = readUserGoList(userterms)
         usergene_list = readUserGeneList(usergenes)
         present_terms = [term for term in userdata if term in gogenemapping.keys()]
-        # both_likelihoods = computeLikelihoodsForUserGoTerms(usergoterms=present_terms,usergeneslist=usergene_list,gotermgenes=gogenemapping,geneuniversesize=len(geneuniverselist))
-        kappa_coeff = gogenemat.computeKappaforGoTerms(usergeneslist=usergene_list, usergoterms=userdata,
-                                                       gotermgenes=gogenemapping,
-                                                       geneuniversesize=len(geneuniverselist))
-        core = HtmlCore()
-        core.begin()
-        # core.tableFromDictionary(dataDict=both_likelihoods,columnNames= ['Pair of GO terms','Both Vs Term1','Both Vs Term2'], sortable=True)
-        core.tableFromDictionary(dataDict=kappa_coeff, columnNames=['Pair of GO terms', 'Kappa coefficient'], sortable=True)
-        core.end()
-        print core
-        #print kappa_coeff
+        both_likelihoods = computeLikelihoodsForUserGoTerms(usergoterms=present_terms,usergeneslist=usergene_list,gotermgenes=gogenemapping,geneuniversesize=len(geneuniverselist))
+        ### testing on synthetic data ###
+        synth_data = returnsyntheticdata(numberOfRelevantterms=2, numberOfOtherterms=2, geneuniversesize=20)
+        synth_universe = synth_data["universe"]
+        synth_userlist = synth_data["usergene_list"]
+        del synth_data["universe","usergene_list"]
+        print "gene universe:", synth_universe
+        print "user gene list:", synth_userlist
+        print "terms:", synth_data
 
 
+        #kappa_coeff = gogenemat.computeKappaforGoTerms(usergenelist=usergene_list,usergoterms=present_terms,gotermgenes=gogenemapping,geneuniverse=geneuniverselist)
+        # similarGopairs = {k for k, v in kappa_coeff.items() if v > 0.5}
+        # likelihoods_of_similarGOpairs = {k: both_likelihoods[k] for k in similarGopairs}
+        # similarpairs = likelihoods_of_similarGOpairs.keys()
+        # flatsetofsimilarterms = set([e for t in similarpairs for e in t])
+        #
+        # retained_terms = filterGOTermsBasedOnLikelihoodRatios(likelihoods_of_similarGOpairs)
+        # print "length of retained terms", len(retained_terms)
+        # print "length of total present terms", len(present_terms)
+        # print "length of similar terms", len(flatsetofsimilarterms)
+        # print "length of similar terms dict", len(similarpairs)
+        #### for debugging ###
+        # gopairs = list(combinations(present_terms, 2))
+        # pair = gopairs[1]
+        # temp1 = gogenemat.getGoTermKappaCoeff(usergeneslist=usergene_list,goterm1=pair[0],goterm2=pair[1],gotermgenes=gogenemapping,geneuniversesize=len(geneuniverselist))
+        # print temp1
+        ###############
+        # core = HtmlCore()
+        # core.begin()
+        # # core.tableFromDictionary(dataDict=both_likelihoods,columnNames= ['Pair of GO terms','Both Vs Term1','Both Vs Term2'], sortable=True)
+        # core.tableFromDictionary(dataDict=kappa_coeff, columnNames=['Pair of GO terms', 'Kappa coefficient'], sortable=True)
+        # core.end()
+        # print core
 
+        ####### html from pandas for kappa coefficient matrix #####
+        # kappa_matrix = pd.DataFrame.from_dict(kappa_coeff,orient='index')
+        # kappa_matrix.rename(columns={0: 'Kappa coefficient'}, inplace=True)
+        # print kappa_matrix.to_html()
+        ########
+        #kappa_matrix = pd.DataFrame.from_dict(both_likelihoods,orient='index')
+        #kappa_matrix.rename(columns={0: 'Kappa coefficient'}, inplace=True)
+        #print kappa_matrix.to_html()
+
+        ################################## results presentation
+        # core = HtmlCore()
+        # core.begin()
+        # kappa_matrix = pd.DataFrame.from_dict(kappa_coeff,orient='index')
+        # kappa_matrix.rename(columns={0: 'Kappa coefficient'}, inplace=True)
+        # # core.smallHeader('Kappa similarity between pairs')
+        # print kappa_matrix.to_html()
+        # core.smallHeader('Histogram of Kappa similarity values')
+        # visualizeHistogramForValuesOfDict(valuesDict=kappa_coeff, galaxyFn=galaxyFn, xlabel='value range',ylabel='Frequency', title='Histogram of Kappa coefficient values',figsize=(7, 5))
+        # core.smallHeader('Likelihood ratios of pairs')
+        # likelihood_matrix = pd.DataFrame.from_dict(both_likelihoods,orient='index')
+        # likelihood_matrix.rename(columns={0: 'Both Vs Term1',1:'Both Vs Term2'}, inplace=True)
+        # print likelihood_matrix.to_html()
+        # core.end()
+        # print core
 
 
     @classmethod
