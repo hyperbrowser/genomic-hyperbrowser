@@ -14,6 +14,7 @@ class PlotDenistyTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
         return [('Select file ', 'selFile'),
+                ('Select plot type', 'type'),
                 ('Select bin', 'bin'),
                 ('Description for label x', 'xLabel'),
                 ('Description for label y', 'yLabel'),
@@ -26,8 +27,13 @@ class PlotDenistyTool(GeneralGuiTool):
         return GeneralGuiTool.getHistorySelectionElement()
 
     @classmethod
+    def getOptionsBoxType(cls, prevChoices):  # Alt: getOptionsBox2()
+        return ['lines', 'density']
+
+    @classmethod
     def getOptionsBoxBin(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ''
+        if prevChoices.type == 'density':
+            return ''
 
     @classmethod
     def getOptionsBoxXLabel(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -43,16 +49,17 @@ class PlotDenistyTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelColor(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['color black-blue', 'colorful', 'colorful with contour']
+        if prevChoices.type == 'density':
+            return ['color black-blue', 'colorful', 'colorful with contour', 'color white-gray-black']
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         selFile = choices.selFile
-        bin = int(choices.bin)
+        type = choices.type.encode('utf-8')
         xLabel = choices.xLabel.encode('utf-8')
         yLabel = choices.yLabel.encode('utf-8')
         imgTitle = choices.title.encode('utf-8')
-        selColor = choices.selColor.encode('utf-8')
+
 
         pathInput = ExternalTrackManager.extractFnFromGalaxyTN(selFile.split(':'))
 
@@ -65,8 +72,14 @@ class PlotDenistyTool(GeneralGuiTool):
         ensurePathExists(fileOutputPng.getDiskPath())
         pathOutputPng = fileOutputPng.getDiskPath()
 
-        cls.prepareDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+        if type == 'density':
+            bin = int(choices.bin)
+            selColor = choices.selColor.encode('utf-8')
+            cls.prepareDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
                                yLabel, imgTitle)
+        else:
+            cls.prepareLinesPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+                                   yLabel, imgTitle)
 
         htmlCore = HtmlCore()
         htmlCore.paragraph('Selection')
@@ -81,6 +94,39 @@ class PlotDenistyTool(GeneralGuiTool):
         print htmlCore
 
     @classmethod
+    def prepareLinesPlot(cls, pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+                           yLabel, imgTitle):
+        rCode = """
+                    suppressMessages(library(ggplot2));
+                    suppressMessages(library(hexbin));
+
+                    plotDraw <- function(pathInput, pathOutputPdf, pathOutputPng, xLabel, yLabel, imgTitle) {
+                    data <- read.table(pathInput, sep='\t', header = F)
+                    df <- data.frame(t(data))
+                    head(df)
+                    ## Use densCols() output to get density at each point
+                    x1<-df$X5 #points-xs
+                    x2<-df$X6 #points-ys
+                    x3<-df$X1 #line-xs
+                    x4<-df$X2 #mid-ys
+                    x5<-df$X3 #upper-ys
+                    x6<-df$X4 #lower-ys
+
+                    p1 <- ggplot(df, aes(x = x3, y = x4)) + geom_line() + geom_line(aes(x = x3, y = x1), color='red') + geom_line(aes(x = x3, y = x2), color='blue')
+                    
+                    png(pathOutputPng)
+                    plot(p1)
+                    dev.off()
+
+                    pdf(pathOutputPdf)
+                    plot(p1)
+                    dev.off()
+
+                }
+                """
+        r(rCode)(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle)
+
+    @classmethod
     def prepareDensityPlot(cls, pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
                            yLabel, imgTitle):
         rCode = """
@@ -92,24 +138,35 @@ class PlotDenistyTool(GeneralGuiTool):
                 df <- data.frame(t(data))
                 head(df)
                 ## Use densCols() output to get density at each point
-                x1<-df$X1
-                x2<-df$X2
+                x1<-df$X5 #points-xs
+                x2<-df$X6 #points-ys
+                x3<-df$X1 #line-xs
+                x4<-df$X2 #mid-ys
+                x5<-df$X3 #upper-ys
+                x6<-df$X4 #lower-ys
+
 
                 p <- ggplot(df, aes(x = x1, y = x2))
                 bins <- bin
                 if (selColor == "color black-blue")
                 {
-                    p1 <- p + stat_binhex(bins = bins) + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
-                } else {
+                    p1 <- p + stat_binhex(bins = bins) + geom_line(aes(x = x3, y = x4), color='red') +  geom_ribbon(aes(x3, ymin=x6, ymax=x5), fill="red", alpha="0.3") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
+                } 
+                else if (selColor == "color white-gray-black")
+                {
+                    myColor_scale_fill_sqrt <- scale_fill_gradientn(colours=c("white", "gray", "black"), trans = "sqrt")
+                    p1 <- p + myColor_scale_fill_sqrt + stat_binhex(bins = bins) + geom_line(aes(x = x3, y = x4), color='red') +  geom_ribbon(aes(x3, ymin=x6, ymax=x5), fill="red", alpha="0.3") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle) + geom_line(aes(x = x3, y = x4), color='red')
+                }
+                else {
                     myColor <- rev(RColorBrewer::brewer.pal(11, "Spectral"))
                     myColor_scale_fill_sqrt <- scale_fill_gradientn(colours = myColor, trans = "sqrt")
 
                     if (selColor == "colorful")
                     {
-                        p1 <- p + myColor_scale_fill_sqrt + stat_binhex(bins = bins) + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
+                        p1 <- p + myColor_scale_fill_sqrt + stat_binhex(bins = bins) + geom_line(aes(x = x3, y = x4), color='red') +  geom_ribbon(aes(x3, ymin=x6, ymax=x5), fill="red", alpha="0.3") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle) + geom_line(aes(x = x3, y = x4), color='red')
                     } else {
                         p <- p + myColor_scale_fill
-                        p1 <- p + stat_binhex(bins = bins) + geom_density2d(colour = "black") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle)
+                        p1 <- p + stat_binhex(bins = bins) + geom_density2d(colour = "black") + geom_line(aes(x = x3, y = x4), color='red') +  geom_ribbon(aes(x3, ymin=x6, ymax=x5), fill="red", alpha="0.3") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle) + geom_line(aes(x = x3, y = x4), color='red')
                     }
                 }
 
