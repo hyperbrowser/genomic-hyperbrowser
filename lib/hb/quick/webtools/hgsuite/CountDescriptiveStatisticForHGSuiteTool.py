@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.gsuite import GSuiteConstants
 from gold.statistic.CountStat import CountStat
 from gold.track.Track import PlainTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -431,6 +432,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
         if not choices.gsuite:
             return 'Select hGSuite'
+
+        if choices.gsuite:
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            if not gsuite.isPreprocessed():
+                return 'hGSuite need to preprocessed.'
 
         if cls.PHRASE in getattr(choices, 'selectedStat%s' % 0):
             return 'Select at least 1 statistic'

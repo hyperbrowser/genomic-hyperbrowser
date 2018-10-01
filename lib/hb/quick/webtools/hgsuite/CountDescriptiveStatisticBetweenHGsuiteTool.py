@@ -3,6 +3,7 @@ from collections import OrderedDict, defaultdict
 import itertools
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.gsuite import GSuiteConstants
 from gold.statistic.RawOverlapStat import RawOverlapStat
 from gold.track.Track import PlainTrack
 from proto.hyperbrowser.StaticFile import StaticImage
@@ -775,6 +776,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         if not choices.secondGSuite:
             return 'Select second hGSuite'
+
+        if choices.gsuite and choices.secondGSuite:
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            if not gsuite.isPreprocessed():
+                return 'First hGSuite need to preprocessed.'
+            secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
+            if not secondGSuite.isPreprocessed():
+                return 'Second hGSuite need to preprocessed.'
+
 
         if cls.PHRASE in getattr(choices, 'selectedStat%s' % 0):
             return 'Select at least 1 statistic'
