@@ -134,7 +134,7 @@ class PlotDenistyTool(GeneralGuiTool):
                 suppressMessages(library(hexbin));
 
                 plotDraw <- function(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle) {
-                data <- read.table(pathInput, sep='\t', header = F)
+                data <- read.table(pathInput, sep='\t', header = F, fill=T)
                 df <- data.frame(t(data))
                 head(df)
                 ## Use densCols() output to get density at each point
@@ -154,7 +154,7 @@ class PlotDenistyTool(GeneralGuiTool):
                 } 
                 else if (selColor == "color white-gray-black")
                 {
-                    myColor_scale_fill_sqrt <- scale_fill_gradientn(colours=c("white", "gray", "black"), trans = "sqrt")
+                    myColor_scale_fill_sqrt <- scale_fill_gradientn(colours=c("white", "gray", "gray", "black", "black"), trans = "sqrt")
                     p1 <- p + myColor_scale_fill_sqrt + stat_binhex(bins = bins) + geom_line(aes(x = x3, y = x4), color='red') +  geom_ribbon(aes(x3, ymin=x6, ymax=x5), fill="red", alpha="0.3") + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle) + geom_line(aes(x = x3, y = x4), color='red')
                 }
                 else {
