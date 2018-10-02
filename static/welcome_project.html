@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="welcome_project.css">
+    <meta charset='UTF-8'>
+    <title>
+        hdGSuite HyperBrowser: A web platform for high dimensional genomic data analysis
+    </title>
+</head>
+<body>
+<div class='content'>
+    <div class ="tabs">
+        <ul class ="nav nav-tabs" id="tab-links">
+            <li class="active" value="tab0">
+                <a data-toggle="tab" href="#menu0">hdGSuite</a>
+            </li>
+            <li  value="tab1">
+                <a data-toggle="tab" href="#menu1">List of other projects</a>
+            </li>
+            <li  value="tab2">
+                <a data-toggle="tab" href="#menu2">About</a>
+            </li>
+        </ul>
+    </div>
+    <div class="tab-content">
+        <div id="menu0" class="tab-pane fade  in active">
+            <div class="container">
+                <div class="rowSpecial">
+                    <div class="colAll">
+                        <h2 class="projectTitle">
+                            hdGSuite HyperBrowser: A web platform for high dimensional genomic data analysis</h2>
+                        <div class = 'project'>
+                            <div class = 'projectDesc'>description</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colAll">
+                        <div class = 'description'>
+                            <h4 class = 'descriptionTitle'>
+                                High dimensional genomic data
+                            </h4>
+                            <div class = 'descriptionDesc'>
+                                High dimensional genomic data can be presented as a matrix, with each column representing a sample (for example, a patient, a cell type, genotype, an experimental condition and so on), and each row representing a genomic tracks, which is represented by collection of features (for example, genes, genomic locus and so on).
+                                <br /><br />
+                                In the project we represented high dimensional genomic data in a GSuite format. To read more about it look at <a href = "../tool_runner/data_source_redirect?tool_id=gsuite_spec">GSuite specification</a>. You can also look at the below example, where every single genomic track is represented by the set of characteristic defined by selected columns (genotype and mutation type).
+                                <div style="width:50%;margin: 10px auto;display:block;">
+                                <img class="img-thumbnail" src="../static/project/hdGSuite.png" \>
+                                </div>
+                                This way of representing data allow us for effective analysis not only collections of single genomic data, but also analysis within groups and among groups.
+                                <br />
+                                Depend on the biological question, you can divide the same data into different groups.
+                                Let assume that you are interested in the statistic: average number of genomic elements per defined group such as
+                                genotype (left figure) or genotype and mutation type (right figure).
+                                <br />
+                                For genotype groups average number of genomic elements is counted for eta and iota group. For eta, iota we counted average number of genomic elements for tracks 1-3, 4-7 separately.
+                                For genotype and mutation type groups average number of genomic elements is counted for eta-CA, eta-CG, iota-CA, iota-CG and iota-CT group. For eta-CA, eta-CG, iota-CA, iota-CG, iota-CT we counted average number of genomic elements for tracks 1-2, 3, 4-5, 6, 7  separately.
+                                <div style="display: block">
+                                    <div style="width:45%;margin: 10px auto;float:left">
+                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups1.png" \>
+                                    </div>
+                                    <div style="width:45%;margin: 10px auto;float:right">
+                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups2.png" \>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colHalfLeft">
+                        <div class = 'project'>
+                            <div class = 'projectDesc'>description</div>
+                        </div>
+                    </div>
+                    <div class="colHalfRight">
+                        <div class = 'project'>
+                            <div class = 'projectDesc'>description</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colAll">
+                        <div class = 'project'>
+                            <div class = 'projectDesc'>description</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <div class = 'contactInfo'>
+                    <h4 class = 'contactInfoTitle'>Diana Domanska</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu1" class="tab-pane fade ">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAllProjectList">
+                    <div id ='content'></div>
+                    <script>
+                    $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_hdGSuite.txt");
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu2" class="tab-pane fade ">
+        <div class="container">
+            <div class="contact">
+                <b>Note:</b>
+                <p>
+                This is a specialized version of The Genomic Hyperbrowser,
+                focusing on new functionality for analyzing collections of genomic track.
+                More information on the general HyperBrowser functionality can be
+                found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
+                </p>
+                <b>Contact information</b>
+                <p>
+                If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
+                <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
+                </p>
+                <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
+                 A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
+                </p>
+            </div>
+		</div>
+
+        <div class="containerNext">
+            <div class="rowSpecial">
+                <div class ="infoAboutHB">
+                <p class="blocktext">
+                This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
+                supported by various national and local bodies.
+                </p>
+                <p class="blocktext">
+                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+                </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="section">
+                <img src="hyperbrowser/images/logo/HB_support.png" class="center">
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

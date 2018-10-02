@@ -52,11 +52,11 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
     def getInputBoxNames(cls):
         return [('Select hGSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
-               [('Select measure %s' % (i + 1) + '',
+               [('Select statistic %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_COLS)] + \
-               [('Select column %s' % (
-                   i + 1) + ' according to which you would like to group results',
+               [('Select group %s' % (
+                   i + 1) + '',
                  'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                cls.getInputBoxNamesForUserBinSelection()
 
@@ -445,11 +445,11 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
         l = Legend()
 
-        toolDescription = "This tool provide overview of groups in hGSuite."
+        toolDescription = "This tool provide overview of groups such as " + cls.NUMTRACK.lower() + ", " + cls.NUMELEMENTS.lower() + ", " + cls.BPELEMENTS.lower() + ", " + cls.AVGLENGTHSEG.lower() + " in hGSuite."
 
         stepsToRunTool = ['Select hGSuite',
-                          'Select measure',
-                          'Select column according to which you would like to group results'
+                          'Select statistic',
+                          'Select group'
                           ]
 
         example = {'Example 1': ['', ["""
@@ -466,8 +466,8 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
             """],
                   [
                       ['Select hGSuite', 'gsuite'],
-                      ['Select measure 1', 'Number of elements in track'],
-                      ['Select column according to which you would like to group results', 'group'],
+                      ['Select statistic 1', 'Number of elements in track'],
+                      ['Select group', 'group'],
               ],
               ["""
         ##location: local
@@ -487,7 +487,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
         toolResult = 'The output of this tool is a page with visualizations and hGsuite with extra columns.'
 
-        notice = 'Different measures are available for different type (primary, preprocessed) of hGSuites.'
+        notice = 'Different statistic are available for different type (primary, preprocessed) of hGSuites.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

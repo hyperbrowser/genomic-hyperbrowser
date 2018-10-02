@@ -48,10 +48,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_COLS)] + \
                [('Summarize within groups', 'summarize')] + \
-               [('Select column %s' % (
-               i + 1) + ' which you would like to group',
+               [('Select group %s' % (
+               i + 1) + '',
                  'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Do you want to do above summarize data for column %s' % (
+               [('Do you want summarize data within group %s' % (
                i + 1) + ' from hGSuite ',
                  'selectedColumnOption%s' % i) for i in
                 range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
@@ -531,7 +531,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
         l = Legend()
 
-        toolDescription = "This tool count descriptive statistics between two hGSuites."
+        toolDescription = "This tool count descriptive statistics for hGSuite."
 
         stepsToRunTool = ['Select first hGSuite',
                           'Select statistic',
@@ -591,10 +591,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
               """],
                                          [
                                              ['Select hGSuite', 'gsuite'],
-                                             ['Select statistic 1',
-                                              'Coverage'],
+                                             ['Select statistic 1','Coverage'],
                                              ['Summarize within groups', 'maximum'],
-                                             ['Select column 1 which you would like to group', 'genotype']
+                                             ['Select group 1', 'genotype']
                                          ],
                                          [
                                              '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample3Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample4Output + '" /></div>']
@@ -614,16 +613,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                """],
                  [
                      ['Select hGSuite', 'gsuite'],
-                     ['Select statistic 1',
-                      'Coverage'],
-                     ['Summarize within groups',
-                      'sum'],
-                     [
-                         'Select column 1 which you would like to group',
-                         'genotype'],
-                     ['Select column 2 which you would like to group', 'mutation'],
-                     ['Do you want to do above summarize data for column 1 from hGSuite ', ''],
-                     ['Do you want to do above summarize data for column 2 from hGSuite ', 'CA,GT;CG,GC;'],
+                     ['Select statistic 1','Coverage'],
+                     ['Summarize within groups','sum'],
+                     ['Select group 1','genotype'],
+                     ['Select group 2', 'mutation'],
+                     ['Do you want summarize data within group 1 from hGSuite ', ''],
+                     ['Do you want summarize data within group 2 from hGSuite ', 'CA,GT;CG,GC;'],
                  ],
                  [
                      '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample5Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample6Output + '" /></div>']
@@ -632,7 +627,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                    })
 
         toolResult = '<p>The output of this tool is a page with visualizations. </p>' \
-                     'Detailed information about results gives possibility to <b>download raw file</b> with results <br>' \
+                     'Detailed information about results. You can <b>download raw file</b> with results <br>' \
                      '<b>Options for presenting results:</b> <br>' \
                      '- Transpose tables and plots - transpose table and plots <br>' \
                      '- Show all series as one in the plots - show all data as one series <br>' \
