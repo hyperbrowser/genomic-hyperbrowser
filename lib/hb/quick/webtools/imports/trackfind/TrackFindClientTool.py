@@ -34,8 +34,8 @@ class TrackFindClientTool(GeneralGuiTool):
                               'attributeList%s' % i))
             attrBoxes.append(('Selection type:', \
                               'selectionType%s' % i))
-            #attrBoxes.append(('Text to search for', \
-            #                 'textSearch%s' % i))
+            attrBoxes.append(('Text to search for', \
+                             'textSearch%s' % i))
             attrBoxes.append(('Select value:', \
                          'valueList%s' % i))
             #attrBoxes.append(('Range ' + cls.ATTRIBUTES[i], \
@@ -147,10 +147,10 @@ class TrackFindClientTool(GeneralGuiTool):
                 chosenOptions[attr] = val
 
         tfm = TrackFindModule()
-        data, query = tfm.getData(choices.selectRepository, chosenOptions)
+        data = tfm.getData(choices.selectRepository, chosenOptions)
 
         print 'You chose ' + str(chosenOptions)
-        print query
+        print
         print data
 
     @classmethod
