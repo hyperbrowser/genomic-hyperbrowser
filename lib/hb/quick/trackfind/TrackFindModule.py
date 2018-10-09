@@ -5,11 +5,14 @@ import ast
 
 
 class TrackFindModule:
+    #URL = 'http://insilico.hpc.uio.no:8888/api/v1/'
+    URL = 'http://158.39.77.99/api/v1/'
+
     def __init__(self):
         pass
 
     def getRepositories(self):
-        url = 'http://insilico.hpc.uio.no:8888/api/v1/providers'
+        url = self.URL + 'providers'
 
         response = requests.get(url)
 
@@ -18,7 +21,7 @@ class TrackFindModule:
         return repos
 
     def getAttributesForRepository(self, repository):
-        url = 'http://insilico.hpc.uio.no:8888/api/v1/' + repository + '/attributes'
+        url = self.URL + repository + '/attributes?raw=true'
 
         response = requests.get(url)
 
@@ -27,7 +30,7 @@ class TrackFindModule:
         return attributes
 
     def getAttributeValues(self, repository, attribute):
-        url = 'http://insilico.hpc.uio.no:8888/api/v1/' + repository + '/' + attribute + '/values'
+        url = self.URL + repository + '/' + attribute + '/values?raw=true'
 
         response = requests.get(url)
 
@@ -35,10 +38,30 @@ class TrackFindModule:
 
         return values
 
-    def getData(self, repository, attribute, value):
-        url = 'http://insilico.hpc.uio.no:8888/api/v1/' + repository + '/search?query=' + attribute + ':' + value + '&limit=10'
+    def getData(self, repository, attrValueMap):
+        query = self.createQuery(attrValueMap)
+
+        print query
+
+        url = self.URL + repository + '/search?query=' + query + '&limit=10'
 
         response = requests.get(url)
 
-        return response.text
+        return response.text, query
+
+    def createQuery(self, attrValueMap):
+        queryList = []
+
+        for attribute, value in attrValueMap.iteritems():
+            print type(value)
+            if type(value) is list:
+                queryList.append('curated_content->>' + "'{}'".format(attribute) + ' IN (' + (', '.join("'{0}'".format(v) for v in value)) + ')')
+            else:
+                queryList.append('curated_content->>' + "'{}'".format(attribute) + ' = ' + "'{}'".format(value))
+
+        print queryList
+
+        query = (' AND '.join(queryList))
+
+        return query
 
