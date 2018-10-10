@@ -53,6 +53,8 @@ class TrackFindClientTool(GeneralGuiTool):
                     partial(cls._getValueListBox, index=i))
             setattr(cls, 'getOptionsBoxSelectionType%s' % i, \
                     partial(cls._getSelectionTypeBox, index=i))
+            setattr(cls, 'getOptionsBoxTextSearch%s' % i, \
+                    partial(cls._getTextSearchBox, index=i))
 
     @classmethod
     def _getAttributeListBox(cls, prevChoices, index):
@@ -88,15 +90,29 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         tfm = TrackFindModule()
-        values = tfm.getAttributeValues(prevChoices.selectRepository, getattr(prevChoices, 'attributeList%s' % index))
+        filteredValues = []
+        if getattr(prevChoices, 'selectionType%s' % index) == cls.TEXT_SEARCH:
+            searchTerm = getattr(prevChoices, 'textSearch%s' % index)
+            if searchTerm:
+                filteredValues = tfm.getAttributeValues(prevChoices.selectRepository, selectedAttribute, searchTerm)
 
+        values = tfm.getAttributeValues(prevChoices.selectRepository, selectedAttribute)
         values.sort()
-        values.insert(0, cls.SELECT_CHOICE)
 
         if getattr(prevChoices, 'selectionType%s' % index) == cls.SINGLE_SELECTION:
+            values.insert(0, cls.SELECT_CHOICE)
             return values
         elif getattr(prevChoices, 'selectionType%s' % index) == cls.MULTIPLE_SELECTION:
             return OrderedDict([(value, False) for value in values])
+        elif getattr(prevChoices, 'selectionType%s' % index) == cls.TEXT_SEARCH:
+            valuesDict = OrderedDict()
+            for value in values:
+                print value + '\n'
+                if value in filteredValues:
+                    valuesDict[value] = True
+                else:
+                    valuesDict[value] = False
+            return valuesDict
 
         return values
 
@@ -117,6 +133,14 @@ class TrackFindClientTool(GeneralGuiTool):
         repos.insert(0, cls.SELECT_CHOICE)
 
         return repos
+
+    @classmethod
+    def _getTextSearchBox(cls, prevChoices, index):
+        attribute = getattr(prevChoices, 'selectionType%s' % index)
+        if attribute == cls.TEXT_SEARCH:
+            return ''
+        else:
+            return
 
 
     @classmethod
@@ -243,17 +267,23 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @classmethod
-    # def getResetBoxes(cls):
-    #     """
-    #     Specifies a list of input boxes which resets the subsequent stored
-    #     choices previously made. The input boxes are specified by index
-    #     (starting with 1) or by key.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return []
-    #
+    @classmethod
+    def getResetBoxes(cls):
+        """
+        Specifies a list of input boxes which resets the subsequent stored
+        choices previously made. The input boxes are specified by index
+        (starting with 1) or by key.
+
+        Optional method. Default return value if method is not defined: True
+        """
+
+        textSearchBoxes = []
+        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+            textSearchBoxes.append('textSearch%s' % i)
+            return textSearchBoxes
+
+        return []
+
     # @classmethod
     # def getToolDescription(cls):
     #     """

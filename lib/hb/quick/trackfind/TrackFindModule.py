@@ -29,8 +29,11 @@ class TrackFindModule:
 
         return attributes
 
-    def getAttributeValues(self, repository, attribute):
+    def getAttributeValues(self, repository, attribute, searchTerm=''):
         url = self.URL + repository + '/' + attribute + '/values?raw=true'
+
+        if searchTerm:
+            url += '&filter=' + searchTerm
 
         response = requests.get(url)
 
