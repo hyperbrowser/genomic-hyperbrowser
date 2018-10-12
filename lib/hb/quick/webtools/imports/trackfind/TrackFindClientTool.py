@@ -28,10 +28,15 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
 
+        selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
-                attrBoxes.append(('Select attribute:', \
+                if j == 0:
+                    attrBoxes.append((selectAttributeStr, \
                               'subAttributeList%s_%s' % (i,j)))
+                else:
+                    attrBoxes.append(((len(selectAttributeStr) + 6)*'&nbsp;' + (j*'&emsp;') + '|_', \
+                                      'subAttributeList%s_%s' % (i, j)))
             attrBoxes.append(('Selection type:', \
                               'selectionType%s' % i))
             attrBoxes.append(('Text to search for', \
@@ -58,7 +63,8 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def _getSubAttributeListBox(cls, prevChoices, level, index):
-        if level == 0 and getattr(prevChoices, 'selectRepository') in [None, cls.SELECT_CHOICE, '']:
+        repo = getattr(prevChoices, 'selectRepository')
+        if level == 0 and repo in [None, cls.SELECT_CHOICE, '']:
             return
 
         tfm = TrackFindModule()
@@ -72,36 +78,64 @@ class TrackFindClientTool(GeneralGuiTool):
                 if True not in prev.values():
                     return
 
+        subattributePath = ''
         if index == 0:
-                attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
         else:
             attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
             if cls.isBottomLevel(attributes):
                 return
 
-            #filter out previously chosen attributes
-            prevChoicesList = []
-            if level > 0:
-                for l in xrange(level):
-                    subattributes = []
-                    for i in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
-                        attr = getattr(prevChoices, 'subAttributeList%s_%s' % (l, i))
-                        if attr is None:
-                            break
-                        subattributes.append(attr)
-                    path = ('->'.join(subattributes))
-                    prevChoicesList.append(path)
+        #filter out previously chosen attributes
+        prevChoicesList = []
+        if level > 0:
+            for l in xrange(level):
+                subattributes = []
+                for i in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
+                    attr = getattr(prevChoices, 'subAttributeList%s_%s' % (l, i))
+                    if attr is None or attr == '':
+                        break
+                    subattributes.append(attr)
+                path = ('->'.join(subattributes))
+                prevChoicesList.append(path)
 
-            currentChoicesMap = {}
-            for attr in attributes:
+        currentChoicesMap = {}
+        for attr in attributes:
+            if subattributePath:
                 currentChoicesMap[subattributePath + '->' + attr] = attr
+            else:
+                currentChoicesMap[attr] = attr
 
-            for choice in currentChoicesMap.keys():
-                if choice in prevChoicesList:
-                    attributes.remove(currentChoicesMap[choice])
+        for choice in currentChoicesMap.keys():
+            if choice in prevChoicesList:
+                attributes.remove(currentChoicesMap[choice])
+                currentChoicesMap.pop(choice)
 
-            if not attributes:
-                return
+        if not attributes:
+            return
+
+        print prevChoicesList
+        #filter out attributes that have no subattributes left
+        attributesInRepo = tfm.getAttributesForRepository(repo)
+        for prevChoice in prevChoicesList:
+            if prevChoice in attributesInRepo:
+                attributesInRepo.remove(prevChoice)
+
+        print attributes
+
+        for choice in currentChoicesMap.keys():
+            found = False
+            for repoAttr in attributesInRepo:
+                if repoAttr.startswith(choice):
+                    print 'found'
+                    found = True
+                    break
+            if not found:
+                print 'removing: ' + choice
+                attributes.remove(currentChoicesMap[choice])
+
+        if not attributes:
+            return
 
         attributes.sort()
         attributes.insert(0, cls.SELECT_CHOICE)
