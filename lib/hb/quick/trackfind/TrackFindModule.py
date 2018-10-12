@@ -29,6 +29,23 @@ class TrackFindModule:
 
         return attributes
 
+    def getTopLevelAttributesForRepository(self, repository):
+        url = self.URL + repository + '/attributes?raw=true&top=true'
+
+        response = requests.get(url)
+        attributes = list(map(str, ast.literal_eval(response.text)))
+
+        return attributes
+
+    def getSubLevelAttributesForRepository(self, repository, attribute):
+        url = self.URL + repository + '/' + attribute + '/subattributes?raw=true'
+
+        response = requests.get(url)
+
+        attributes = list(map(str, ast.literal_eval(response.text)))
+
+        return attributes
+
     def getAttributeValues(self, repository, attribute, searchTerm=''):
         url = self.URL + repository + '/' + attribute + '/values?raw=true'
 
