@@ -2,6 +2,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.trackfind.TrackFindModule import TrackFindModule
 from functools import partial
 from collections import OrderedDict
+from proto.hyperbrowser.HtmlCore import HtmlCore
 
 
 class TrackFindClientTool(GeneralGuiTool):
@@ -43,6 +44,8 @@ class TrackFindClientTool(GeneralGuiTool):
                               'textSearch%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueList%s' % i)),
+        attrBoxes.append(('Found tracks: ', \
+                              'trackList')),
 
 
         return attrBoxes
@@ -63,8 +66,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def _getSubAttributeListBox(cls, prevChoices, level, index):
-        repo = getattr(prevChoices, 'selectRepository')
-        if level == 0 and repo in [None, cls.SELECT_CHOICE, '']:
+        if level == 0 and prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
         tfm = TrackFindModule()
@@ -114,24 +116,20 @@ class TrackFindClientTool(GeneralGuiTool):
         if not attributes:
             return
 
-        print prevChoicesList
+
         #filter out attributes that have no subattributes left
-        attributesInRepo = tfm.getAttributesForRepository(repo)
+        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
         for prevChoice in prevChoicesList:
             if prevChoice in attributesInRepo:
                 attributesInRepo.remove(prevChoice)
 
-        print attributes
-
         for choice in currentChoicesMap.keys():
             found = False
             for repoAttr in attributesInRepo:
-                if repoAttr.startswith(choice):
-                    print 'found'
+                if repoAttr.startswith(choice + '->') or repoAttr == choice:
                     found = True
                     break
             if not found:
-                print 'removing: ' + choice
                 attributes.remove(currentChoicesMap[choice])
 
         if not attributes:
@@ -163,7 +161,6 @@ class TrackFindClientTool(GeneralGuiTool):
 
         tfm = TrackFindModule()
         values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
-
         values.sort()
 
         if getattr(prevChoices, 'selectionType%s' % index) == cls.SINGLE_SELECTION:
@@ -215,6 +212,54 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
     @classmethod
+    def getOptionsBoxTrackList(cls, prevChoices):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        chosenOptions = {}
+        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+            val = getattr(prevChoices, 'valueList%s' % i)
+            if val in [None, cls.SELECT_CHOICE, '']:
+                break
+
+            subattributes = []
+            for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
+                attr = getattr(prevChoices, 'subAttributeList%s_%s' % (i, j))
+                if attr in [None, cls.SELECT_CHOICE, '']:
+                    break
+                subattributes.append("'{}'".format(attr))
+            path = ('->'.join(subattributes))
+
+            if type(val) is OrderedDict:
+                chosenOptions[path] = [option for option, checked in val.items() if checked]
+            else:
+                chosenOptions[path] = val
+
+        if not chosenOptions:
+            return
+
+        tfm = TrackFindModule()
+        jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
+
+        tableDict = {}
+        for jsonItem in jsonData:
+            if prevChoices.selectRepository == 'FANTOM':
+                attrName = 'sample_name'
+            elif prevChoices.selectRepository == 'IHEC':
+                attrName = 'sample_id'
+            elif prevChoices.selectRepository == 'TrackHub':
+                attrName = 'name'
+            name = jsonItem['curatedContent'][attrName]
+            tableDict[name] = ['tba', 'tba']
+
+        html = HtmlCore()
+        html.tableFromDictionary(tableDict, columnNames=['Sample name', 'nothing yet', 'not here either'],  \
+                                 tableId='t1', expandable=True)
+
+        return '__rawstr__', unicode(html)
+
+
+    @classmethod
     def getSubattributes(cls, prevChoices, level, index):
         prevSubattributes = []
         for i in xrange(index):
@@ -235,7 +280,7 @@ class TrackFindClientTool(GeneralGuiTool):
     @classmethod
     def isBottomLevel(cls, attributes):
         # check if this is the bottom level
-        if not attributes or len(attributes) == 1:
+        if not attributes:
             return True
 
 
