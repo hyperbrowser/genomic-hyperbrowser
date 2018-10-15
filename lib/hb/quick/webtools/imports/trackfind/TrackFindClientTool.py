@@ -3,6 +3,7 @@ from quick.trackfind.TrackFindModule import TrackFindModule
 from functools import partial
 from collections import OrderedDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
+import operator
 
 
 class TrackFindClientTool(GeneralGuiTool):
@@ -160,7 +161,23 @@ class TrackFindClientTool(GeneralGuiTool):
         subattributePath = ('->'.join(prevSubattributes))
 
         tfm = TrackFindModule()
-        values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
+        if index == 0:
+            values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
+        else:
+            chosenOptions = cls.getPreviousChoices(prevChoices, index)
+
+            jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
+
+            values = set()
+            for jsonItem in jsonData:
+                try:
+                    value = reduce(operator.getitem, prevSubattributes, jsonItem['curatedContent'])
+                except (KeyError, TypeError):
+                    continue
+                if value:
+                    values.add(value)
+
+        values = list(values)
         values.sort()
 
         if getattr(prevChoices, 'selectionType%s' % index) == cls.SINGLE_SELECTION:
@@ -169,13 +186,12 @@ class TrackFindClientTool(GeneralGuiTool):
         elif getattr(prevChoices, 'selectionType%s' % index) == cls.MULTIPLE_SELECTION:
             return OrderedDict([(value, False) for value in values])
         elif getattr(prevChoices, 'selectionType%s' % index) == cls.TEXT_SEARCH:
-            filteredValues = []
-            if getattr(prevChoices, 'selectionType%s' % index) == cls.TEXT_SEARCH:
-                searchTerm = getattr(prevChoices, 'textSearch%s' % index)
-                if not searchTerm:
-                    return
-                filteredValues = tfm.getAttributeValues(prevChoices.selectRepository,
-                                                        subattributePath, searchTerm)
+            searchTerm = getattr(prevChoices, 'textSearch%s' % index)
+            if not searchTerm:
+                return
+            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository,
+                                                    subattributePath, searchTerm)
+
             valuesDict = OrderedDict()
             for value in values:
                 if value in filteredValues:
@@ -216,24 +232,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
-        chosenOptions = {}
-        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-            val = getattr(prevChoices, 'valueList%s' % i)
-            if val in [None, cls.SELECT_CHOICE, '']:
-                break
-
-            subattributes = []
-            for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
-                attr = getattr(prevChoices, 'subAttributeList%s_%s' % (i, j))
-                if attr in [None, cls.SELECT_CHOICE, '']:
-                    break
-                subattributes.append("'{}'".format(attr))
-            path = ('->'.join(subattributes))
-
-            if type(val) is OrderedDict:
-                chosenOptions[path] = [option for option, checked in val.items() if checked]
-            else:
-                chosenOptions[path] = val
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
 
         if not chosenOptions:
             return
@@ -251,6 +250,9 @@ class TrackFindClientTool(GeneralGuiTool):
                 attrName = 'name'
             name = jsonItem['curatedContent'][attrName]
             tableDict[name] = ['tba', 'tba']
+
+        if not tableDict:
+            return
 
         html = HtmlCore()
         html.tableFromDictionary(tableDict, columnNames=['Sample name', 'nothing yet', 'not here either'],  \
@@ -276,11 +278,35 @@ class TrackFindClientTool(GeneralGuiTool):
                                                             subattributePath)
 
         return attributes, subattributePath
+
+    @classmethod
+    def getPreviousChoices(cls, prevChoices, level):
+        chosenOptions = {}
+        for i in xrange(level):
+            val = getattr(prevChoices, 'valueList%s' % i)
+            if val in [None, cls.SELECT_CHOICE, '']:
+                break
+
+            subattributes = []
+            for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
+                attr = getattr(prevChoices, 'subAttributeList%s_%s' % (i, j))
+                if attr in [None, cls.SELECT_CHOICE, '']:
+                    break
+                subattributes.append("'{}'".format(attr))
+            path = ('->'.join(subattributes))
+
+            if type(val) is OrderedDict:
+                chosenOptions[path] = [option for option, checked in val.items() if checked]
+            else:
+                chosenOptions[path] = val
+
+        return chosenOptions
+
     
     @classmethod
     def isBottomLevel(cls, attributes):
         # check if this is the bottom level
-        if not attributes:
+        if not attributes or len(attributes) == 1 and attributes[0].startswith('_'):
             return True
 
 

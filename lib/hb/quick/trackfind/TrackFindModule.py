@@ -61,7 +61,7 @@ class TrackFindModule:
     def getData(self, repository, attrValueMap):
         query = self.createQuery(attrValueMap)
 
-        url = self.URL + repository + '/search?query=' + query + '&limit=10'
+        url = self.URL + repository + '/search?query=' + query #+ '&limit=10'
 
         response = requests.get(url)
 
