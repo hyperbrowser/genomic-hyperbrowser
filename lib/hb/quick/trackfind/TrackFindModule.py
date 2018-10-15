@@ -61,25 +61,23 @@ class TrackFindModule:
     def getData(self, repository, attrValueMap):
         query = self.createQuery(attrValueMap)
 
-        print query
-
         url = self.URL + repository + '/search?query=' + query + '&limit=10'
 
         response = requests.get(url)
 
-        return response.text, query
+        return response.json()
 
     def createQuery(self, attrValueMap):
         queryList = []
 
         for attribute, value in attrValueMap.iteritems():
-            print type(value)
+            queryPart = 'curated_content->' + attribute
             if type(value) is list:
-                queryList.append('curated_content->>' + "'{}'".format(attribute) + ' IN (' + (', '.join("'{0}'".format(v) for v in value)) + ')')
+                queryPart += ' IN (' + (', '.join("'{0}'".format(v) for v in value)) + ')'
             else:
-                queryList.append('curated_content->>' + "'{}'".format(attribute) + ' = ' + "'{}'".format(value))
+                queryPart += ' = ' + "'{}'".format(value)
 
-        print queryList
+            queryList.append('->>'.join(queryPart.rsplit('->', 1)))
 
         query = (' AND '.join(queryList))
 
