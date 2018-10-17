@@ -16,7 +16,7 @@ class TrackFindModule:
 
         response = requests.get(url)
 
-        repos = list(map(str, ast.literal_eval(response.text)))
+        repos = response.json()
 
         return repos
 

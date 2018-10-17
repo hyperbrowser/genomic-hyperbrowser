@@ -4,6 +4,8 @@ from functools import partial
 from collections import OrderedDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
 import operator
+import collections
+import gold.gsuite.GSuiteComposer as GSuiteComposer
 
 
 class TrackFindClientTool(GeneralGuiTool):
@@ -32,6 +34,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+            attrBoxes.append((('', 'divider%s' % i)))
             for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
                 if j == 0:
                     attrBoxes.append((selectAttributeStr, \
@@ -44,9 +47,9 @@ class TrackFindClientTool(GeneralGuiTool):
             attrBoxes.append(('Text to search for', \
                               'textSearch%s' % i))
             attrBoxes.append(('Select value:', \
-                              'valueList%s' % i)),
-        attrBoxes.append(('Found tracks: ', \
-                              'trackList')),
+                              'valueList%s' % i))
+        attrBoxes.append(('Select type of data', 'dataTypes'))
+        attrBoxes.append(('Found tracks: ', 'trackList'))
 
 
         return attrBoxes
@@ -56,6 +59,7 @@ class TrackFindClientTool(GeneralGuiTool):
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             setattr(cls, 'getOptionsBoxValueList%s' % i, \
                     partial(cls._getValueListBox, index=i))
+            setattr(cls, 'getOptionsBoxDivider%s' % i, partial(cls._getDivider, index=i))
             setattr(cls, 'getOptionsBoxTextSearch%s' % i, \
                     partial(cls._getTextSearchBox, index=i))
             for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
@@ -63,6 +67,18 @@ class TrackFindClientTool(GeneralGuiTool):
                         partial(cls._getSubAttributeListBox, level=i, index=j))
             setattr(cls, 'getOptionsBoxSelectionType%s' % i, \
                     partial(cls._getSelectionTypeBox, index=i))
+
+    @classmethod
+    def _getDivider(cls, prevChoices, index):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        if index > 0 and getattr(prevChoices, 'valueList%s' % (index - 1)) \
+                in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        return '__rawstr__', str(HtmlCore().divider())
+
 
 
     @classmethod
@@ -237,28 +253,97 @@ class TrackFindClientTool(GeneralGuiTool):
         if not chosenOptions:
             return
 
-        tfm = TrackFindModule()
-        jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
+        dataTypes = prevChoices.dataTypes
+        if not dataTypes:
+            return
+
+        chosenDataTypes = [option.split(' [')[0] for option, checked in prevChoices.dataTypes.items() if checked]
+
+        # Import line for ProTo tools
+        from proto.hyperbrowser.StaticFile import StaticFile
+
+        filepath = StaticFile(['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
 
         tableDict = {}
-        for jsonItem in jsonData:
-            if prevChoices.selectRepository == 'FANTOM':
-                attrName = 'sample_name'
-            elif prevChoices.selectRepository == 'IHEC':
-                attrName = 'sample_id'
-            elif prevChoices.selectRepository == 'TrackHub':
-                attrName = 'name'
-            name = jsonItem['curatedContent'][attrName]
-            tableDict[name] = ['tba', 'tba']
+
+        from gold.gsuite import GSuiteParser
+        gsuite = GSuiteParser.parse(filepath)
+
+
+        for track in gsuite.allTracks():
+            title = track.title
+            attributes = []
+            dataType = track.getAttribute('type of data')
+
+            if not dataType in chosenDataTypes:
+                continue
+
+            attributes.append(dataType)
+            attributes.append(track.getAttribute(' cell/tissue type'))
+            attributes.append(track.getAttribute(' target'))
+            attributes.append(track.getAttribute('origassembly'))
+            tableDict[title] = attributes
+
 
         if not tableDict:
             return
 
+
+        # tfm = TrackFindModule()
+        # jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
+        #
+        # tableDict = {}
+        # for jsonItem in jsonData:
+        #     if prevChoices.selectRepository == 'FANTOM':
+        #         attrName = 'sample_name'
+        #     elif prevChoices.selectRepository == 'IHEC':
+        #         attrName = 'sample_id'
+        #     elif prevChoices.selectRepository == 'TrackHub':
+        #         attrName = 'name'
+        #     name = jsonItem['curatedContent'][attrName]
+        #     tableDict[name] = ['tba', 'tba']
+        #
+        # if not tableDict:
+        #     return
+        #
+
+
+
         html = HtmlCore()
-        html.tableFromDictionary(tableDict, columnNames=['Sample name', 'nothing yet', 'not here either'],  \
+        html.tableFromDictionary(tableDict, columnNames=['Sample name', 'Type of data', 'Cell/tissue type', 'Target', 'Genome build'],  \
                                  tableId='t1', expandable=True)
 
         return '__rawstr__', unicode(html)
+
+    @classmethod
+    def getOptionsBoxDataTypes(cls, prevChoices):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        if not chosenOptions:
+            return
+
+        # Import line for ProTo tools
+        from proto.hyperbrowser.StaticFile import StaticFile
+        filepath = StaticFile(['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
+
+        from gold.gsuite import GSuiteParser
+        gsuite = GSuiteParser.parse(filepath)
+
+
+        dataTypes = collections.defaultdict(int)
+        for track in gsuite.allTracks():
+            dataTypes[track.getAttribute('type of data')] += 1
+
+        dataTypes = collections.OrderedDict(sorted(dataTypes.items()))
+
+        dataTypesOutput = OrderedDict()
+        for dataType, count in dataTypes.iteritems():
+            dataTypesOutput[dataType + ' [' + str(count) + ' files found]'] = True
+
+        return dataTypesOutput
 
 
     @classmethod
@@ -310,7 +395,6 @@ class TrackFindClientTool(GeneralGuiTool):
             return True
 
 
-
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         """
@@ -325,25 +409,17 @@ class TrackFindClientTool(GeneralGuiTool):
         Mandatory unless isRedirectTool() returns True.
         """
 
-        chosenOptions = {}
-        # for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-        #     attr = getattr(choices, 'attributeList%s' % i)
-        #     val = getattr(choices, 'valueList%s' % i)
-        #
-        #     if attr == cls.SELECT_CHOICE or val == cls.SELECT_CHOICE:
-        #         break
-        #
-        #     if type(val) is OrderedDict:
-        #         chosenOptions[attr] = [option for option, checked in val.items() if checked]
-        #     else:
-        #         chosenOptions[attr] = val
-        #
-        # tfm = TrackFindModule()
-        # data = tfm.getData(choices.selectRepository, chosenOptions)
-
         print 'You chose ' + str(choices)
         print
-        #print data
+
+        from proto.hyperbrowser.StaticFile import StaticFile
+        filepath = StaticFile(
+            ['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
+
+        from gold.gsuite import GSuiteParser
+        gsuite = GSuiteParser.parse(filepath)
+
+        GSuiteComposer.composeToFile(gsuite, galaxyFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -499,24 +575,24 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return False
 
-    # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'gsuite'
+    @classmethod
+    def getOutputFormat(cls, choices):
+        """
+        The format of the history element with the output of the tool. Note
+        that if 'html' is returned, any print statements in the execute()
+        method is printed to the output dataset. For text-based output
+        (e.g. bed) the output dataset only contains text written to the
+        galaxyFn file, while all print statements are redirected to the info
+        field of the history item box.
+
+        Note that for 'html' output, standard HTML header and footer code is
+        added to the output dataset. If one wants to write the complete HTML
+        page, use the restricted output format 'customhtml' instead.
+
+        Optional method. Default return value if method is not defined:
+        'html'
+        """
+        return 'gsuite'
 
     # @classmethod
     # def getOutputName(cls, choices=None):
