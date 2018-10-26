@@ -4,8 +4,10 @@ from functools import partial
 from collections import OrderedDict
 from proto.hyperbrowser.HtmlCore import HtmlCore
 import operator
-import collections
 import gold.gsuite.GSuiteComposer as GSuiteComposer
+from collections import defaultdict
+from gold.gsuite.GSuite import GSuite
+import quick.gsuite.GSuiteUtils as GSuiteUtils
 
 
 class TrackFindClientTool(GeneralGuiTool):
@@ -15,6 +17,10 @@ class TrackFindClientTool(GeneralGuiTool):
     SINGLE_SELECTION = 'Single selection'
     MULTIPLE_SELECTION = 'Multiple selection'
     TEXT_SEARCH = 'Text search'
+    ALL_TRACKS = 'Keep all tracks'
+    RANDOM_10_TRACKS = 'Select 10 random tracks'
+    RANDOM_50_TRACKS = 'Select 50 random tracks'
+    MANUAL_TRACK_SELECT = 'Select tracks manually'
 
     @classmethod
     def getToolName(cls):
@@ -49,6 +55,8 @@ class TrackFindClientTool(GeneralGuiTool):
             attrBoxes.append(('Select value:', \
                               'valueList%s' % i))
         attrBoxes.append(('Select type of data', 'dataTypes'))
+        attrBoxes.append(('Select tracks', 'selectTracks'))
+        attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
 
 
@@ -133,7 +141,6 @@ class TrackFindClientTool(GeneralGuiTool):
         if not attributes:
             return
 
-
         #filter out attributes that have no subattributes left
         attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
         for prevChoice in prevChoicesList:
@@ -181,7 +188,6 @@ class TrackFindClientTool(GeneralGuiTool):
             values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
         else:
             chosenOptions = cls.getPreviousChoices(prevChoices, index)
-
             jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
 
             values = set()
@@ -249,33 +255,27 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
         if not chosenOptions:
             return
 
-        dataTypes = prevChoices.dataTypes
-        if not dataTypes:
+        chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+        if not chosenDataTypes:
             return
 
-        chosenDataTypes = [option.split(' [')[0] for option, checked in prevChoices.dataTypes.items() if checked]
+        selectedTracks = cls.getSelectedTracks(prevChoices)
 
-        # Import line for ProTo tools
-        from proto.hyperbrowser.StaticFile import StaticFile
-
-        filepath = StaticFile(['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
+        tfm = TrackFindModule()
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
         tableDict = {}
-
-        from gold.gsuite import GSuiteParser
-        gsuite = GSuiteParser.parse(filepath)
-
-
         for track in gsuite.allTracks():
             title = track.title
             attributes = []
             dataType = track.getAttribute('type of data')
 
-            if not dataType in chosenDataTypes:
+            if dataType not in chosenDataTypes:
+                continue
+            if selectedTracks is not None and title not in selectedTracks:
                 continue
 
             attributes.append(dataType)
@@ -284,30 +284,8 @@ class TrackFindClientTool(GeneralGuiTool):
             attributes.append(track.getAttribute('origassembly'))
             tableDict[title] = attributes
 
-
         if not tableDict:
             return
-
-
-        # tfm = TrackFindModule()
-        # jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
-        #
-        # tableDict = {}
-        # for jsonItem in jsonData:
-        #     if prevChoices.selectRepository == 'FANTOM':
-        #         attrName = 'sample_name'
-        #     elif prevChoices.selectRepository == 'IHEC':
-        #         attrName = 'sample_id'
-        #     elif prevChoices.selectRepository == 'TrackHub':
-        #         attrName = 'name'
-        #     name = jsonItem['curatedContent'][attrName]
-        #     tableDict[name] = ['tba', 'tba']
-        #
-        # if not tableDict:
-        #     return
-        #
-
-
 
         html = HtmlCore()
         html.tableFromDictionary(tableDict, columnNames=['Sample name', 'Type of data', 'Cell/tissue type', 'Target', 'Genome build'],  \
@@ -325,25 +303,57 @@ class TrackFindClientTool(GeneralGuiTool):
         if not chosenOptions:
             return
 
-        # Import line for ProTo tools
-        from proto.hyperbrowser.StaticFile import StaticFile
-        filepath = StaticFile(['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
+        tfm = TrackFindModule()
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
-        from gold.gsuite import GSuiteParser
-        gsuite = GSuiteParser.parse(filepath)
-
-
-        dataTypes = collections.defaultdict(int)
+        dataTypes = defaultdict(int)
         for track in gsuite.allTracks():
             dataTypes[track.getAttribute('type of data')] += 1
 
-        dataTypes = collections.OrderedDict(sorted(dataTypes.items()))
+        dataTypes = OrderedDict(sorted(dataTypes.items()))
 
         dataTypesOutput = OrderedDict()
         for dataType, count in dataTypes.iteritems():
             dataTypesOutput[dataType + ' [' + str(count) + ' files found]'] = True
 
         return dataTypesOutput
+
+    @classmethod
+    def getOptionsBoxSelectTracks(cls, prevChoices):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        if not chosenOptions:
+            return
+
+        return [cls.ALL_TRACKS, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS, cls.MANUAL_TRACK_SELECT]
+
+    @classmethod
+    def getOptionsBoxSelectTracksManually(cls, prevChoices):
+        if not prevChoices.selectTracks == cls.MANUAL_TRACK_SELECT:
+            return
+
+        chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+        if not chosenDataTypes:
+            return
+
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        tfm = TrackFindModule()
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+
+        trackTitles = []
+        for track in gsuite.allTracks():
+            dataType = track.getAttribute('type of data')
+
+            if dataType not in chosenDataTypes:
+                continue
+
+            trackTitles.append(track.title)
+
+        return OrderedDict([(title, True) for title in trackTitles])
 
 
     @classmethod
@@ -387,12 +397,32 @@ class TrackFindClientTool(GeneralGuiTool):
 
         return chosenOptions
 
+    @classmethod
+    def getChosenDataTypes(cls, prevChoices):
+        dataTypes = prevChoices.dataTypes
+        if not dataTypes:
+            return
+
+        chosenDataTypes = [option.split(' [')[0] for option, checked in
+                           prevChoices.dataTypes.items() if checked]
+
+        return chosenDataTypes
+
     
     @classmethod
     def isBottomLevel(cls, attributes):
         # check if this is the bottom level
-        if not attributes or len(attributes) == 1 and attributes[0].startswith('_'):
+        if not attributes:
             return True
+
+    @classmethod
+    def getSelectedTracks(cls, prevChoices):
+        if prevChoices.selectTracks != cls.MANUAL_TRACK_SELECT:
+            return None
+        selectedTracks = [track for track, checked in prevChoices.selectTracksManually.items()
+                              if checked]
+
+        return selectedTracks
 
 
     @classmethod
@@ -412,14 +442,35 @@ class TrackFindClientTool(GeneralGuiTool):
         print 'You chose ' + str(choices)
         print
 
-        from proto.hyperbrowser.StaticFile import StaticFile
-        filepath = StaticFile(
-            ['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
+        chosenOptions = cls.getPreviousChoices(choices, cls.MAX_NUM_OF_EXTRA_BOXES)
+        
+        tfm = TrackFindModule()
+        gsuite = tfm.getGSuite(choices.selectRepository, chosenOptions)
 
-        from gold.gsuite import GSuiteParser
-        gsuite = GSuiteParser.parse(filepath)
+        chosenDataTypes = cls.getChosenDataTypes(choices)
+        if not chosenDataTypes:
+            return
 
-        GSuiteComposer.composeToFile(gsuite, galaxyFn)
+        selectedTracks = cls.getSelectedTracks(choices)
+
+        newGSuite = GSuite()
+
+        for track in gsuite.allTracks():
+            dataType = track.getAttribute('type of data')
+
+            if not dataType in chosenDataTypes:
+                continue
+            if selectedTracks is not None and track.title not in selectedTracks:
+                continue
+
+            newGSuite.addTrack(track)
+
+        if choices.selectTracks == cls.RANDOM_10_TRACKS:
+            newGSuite = GSuiteUtils.getRandomGSuite(newGSuite, 10)
+        elif choices.selectTracks == cls.RANDOM_50_TRACKS:
+            newGSuite = GSuiteUtils.getRandomGSuite(newGSuite, 50)
+
+        GSuiteComposer.composeToFile(newGSuite, galaxyFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

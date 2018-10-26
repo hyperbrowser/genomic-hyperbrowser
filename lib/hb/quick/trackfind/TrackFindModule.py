@@ -1,7 +1,8 @@
 
-
 import requests
-import ast
+
+from proto.hyperbrowser.StaticFile import StaticFile
+from gold.gsuite import GSuiteParser
 
 
 class TrackFindModule:
@@ -16,35 +17,28 @@ class TrackFindModule:
 
         response = requests.get(url)
 
-        repos = response.json()
-
-        return repos
+        return response.json()
 
     def getAttributesForRepository(self, repository):
         url = self.URL + repository + '/attributes?raw=true'
 
         response = requests.get(url)
 
-        attributes = list(map(str, ast.literal_eval(response.text)))
-
-        return attributes
+        return response.json()
 
     def getTopLevelAttributesForRepository(self, repository):
         url = self.URL + repository + '/attributes?raw=true&top=true'
 
         response = requests.get(url)
-        attributes = list(map(str, ast.literal_eval(response.text)))
 
-        return attributes
+        return response.json()
 
     def getSubLevelAttributesForRepository(self, repository, attribute):
         url = self.URL + repository + '/' + attribute + '/subattributes?raw=true'
 
         response = requests.get(url)
 
-        attributes = list(map(str, ast.literal_eval(response.text)))
-
-        return attributes
+        return response.json()
 
     def getAttributeValues(self, repository, attribute, searchTerm=''):
         url = self.URL + repository + '/' + attribute + '/values?raw=true'
@@ -54,9 +48,7 @@ class TrackFindModule:
 
         response = requests.get(url)
 
-        values = list(map(str, ast.literal_eval(response.text)))
-
-        return values
+        return response.json()
 
     def getData(self, repository, attrValueMap):
         query = self.createQuery(attrValueMap)
@@ -66,6 +58,14 @@ class TrackFindModule:
         response = requests.get(url)
 
         return response.json()
+
+    def getGSuite(self, repository, attrValueMap):
+
+        filepath = StaticFile(
+            ['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
+        gsuite = GSuiteParser.parse(filepath)
+
+        return gsuite
 
     def createQuery(self, attrValueMap):
         queryList = []
