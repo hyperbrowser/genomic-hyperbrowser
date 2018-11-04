@@ -1,7 +1,13 @@
 class Cube():
 
     @classmethod
-    def addSelectList(cls, fileNameList, optionsToUniqueList, data, divId, statNum):
+    def addSelectList(cls, fileNameList, optionsToUniqueList, data, divId, statNum, option = 'no'):
+
+        print 'fileNameList', fileNameList, '<br>'
+        print 'optionsToUniqueList', optionsToUniqueList, '<br>'
+        print 'data', data, '<br>'
+        print 'divId', divId, '<br>'
+        print 'statNum', statNum, '<br>'
 
         js = ''
 
@@ -22,22 +28,36 @@ class Cube():
         js += """
             function init() 
             { """
-        for index, fileName in enumerate(fileNameList):
-            js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(data) + ",'" + str(divId)+ "');"
+        if option == 'raw':
+            for index, fileName in enumerate(fileNameList):
+                js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(
+                    data) + ",'" + str(divId) + "');"
+        else:
+            for index, fileName in enumerate(fileNameList):
+                js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(data) + ",'" + str(divId)+ "');"
 
         js+= """
             }
             """
 
         #fill the form
-        for index, fileName in enumerate(fileNameList):
-            js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
+        if option == 'raw':
+            for index, fileName in enumerate(fileNameList):
+                js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
+                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'max'], statNum)
+        else:
+            for index, fileName in enumerate(fileNameList):
+                js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
+                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'max'], statNum)
 
         js += """var chocieslistRowColumn"""+str(statNum)+"""=document.classic.choicesRowColumn"""+str(statNum)
 
         # fill the form
         for index, fileName in enumerate(fileNameList):
             js += cls._fillSecondSelectOption(index, 'fV'+str(statNum)+str(index)+'U', statNum)
+
+        for index, fileName in enumerate(fileNameList):
+            js += cls._fillThirdSelectOption(index, 'fVAggregate'+str(statNum)+str(index)+'U', statNum)
 
 
         #update choices
@@ -73,6 +93,7 @@ class Cube():
     def _addOptionToSelectList(cls, fieldName, index, data, divId, statNum):
         js, idNumFS = cls._fillFirstSelect("How to treat " + str(fieldName) + ": ", index, data, divId, statNum)
         js += cls._fillSecondSelect(index, data, divId, idNumFS, statNum)
+        js += cls._fillThirdSelect(index, data, divId, idNumFS, statNum)
         return js
 
     @classmethod
@@ -83,7 +104,7 @@ class Cube():
         <option value="0">---Select---</option>
         <option value="1">Select one value</option>
         <option value="-2" selected="selected" >Show results for each value</option>
-        <option value="-1">Sum across this dimension</option>
+        <option value="-1">Aggregate across this dimension</option>
         </select>
         '''
         return js, idNum
@@ -91,6 +112,15 @@ class Cube():
     @classmethod
     def _fillSecondSelect(cls, idNum, data, divId, idNumFS, statNum):
         js = '<select class="dimension" name="choices' + str(statNum) + '' + str(idNum) + '" id="choices' + str(statNum) + str(idNum) + '" size="1" style="width: 100px"  onClick="onClickChoices(' + str(statNum) + ',' + str(idNumFS) + ',' + str(data) + ',' + "'" + str(divId) + "'" + ')"></select>'
+        return js
+
+    @classmethod
+    def _fillThirdSelect(cls, idNum, data, divId, idNumFS, statNum):
+        js = '<select class="choicesAggregate" name="choicesAggregate' + str(statNum) + '' + str(
+            idNum) + '" id="choicesAggregate' + str(statNum) + str(
+            idNum) + '" size="1" style="width: 100px"  onClick="onClickChoices(' + str(
+            statNum) + ',' + str(idNumFS) + ',' + str(data) + ',' + "'" + str(
+            divId) + "'" + ')"></select>'
         return js
 
 
@@ -113,12 +143,43 @@ class Cube():
         return js
 
     @classmethod
+    def _addOptionsToUniqueSelectAggregateOptionList(cls, index, optionsToUniqueList, statNum):
+
+        js = ''
+        js += cls._addSecondThirdInfo(index, statNum)
+        js += """ folderValue""" + str(statNum) + str(index) + """AggregateUnique =""" + str(
+            optionsToUniqueList) + ";"
+        js += """
+                var fVAggregate""" + str(statNum) + str(index) + """U = new Array(folderValue""" + str(
+            statNum) + str(index) + """AggregateUnique.length)
+                fVAggregate""" + str(statNum) + str(index) + """U[0] = "Select value|0"
+                for(i=0;i<folderValue""" + str(statNum) + str(index) + """AggregateUnique.length;i++)
+                {
+                    j=i+1
+                    fVAggregate""" + str(statNum) + str(index) + """U[j] = folderValue""" + str(
+            statNum) + str(index) + """AggregateUnique[i] +'|' + folderValue""" + str(statNum) + str(
+            index) + """AggregateUnique[i]
+                }
+                j=j+1
+                """
+        return js
+
+    @classmethod
     def _addSecondSelectInfo(cls, idNum, statNum):
         js = '''document.getElementById("choices''' + str(statNum) + str(idNum) + '''").style.visibility = "hidden";
         var dimensionslist''' + str(statNum) + str(idNum) + '''= document.getElementById("dimensions''' + str(statNum) + str(idNum) + '''");
         var choiceslist''' + str(statNum) + str(idNum) + '''= document.getElementById("choices''' + str(statNum) + str(idNum) + '''");
 
         '''
+        return js
+
+    @classmethod
+    def _addSecondThirdInfo(cls, idNum, statNum):
+        js = '''//document.getElementById("choicesAggregate''' + str(statNum) + str(idNum) + '''").style.visibility = "hidden";
+            var choicesAggregateList''' + str(statNum) + str(
+            idNum) + '''= document.getElementById("choicesAggregate''' + str(statNum) + str(idNum) + '''");
+
+            '''
         return js
 
     @classmethod
@@ -130,6 +191,14 @@ class Cube():
         return js
 
     @classmethod
+    def _fillThirdSelectOption(cls, idNum, data, statNum):
+        js = '''
+            var choicesAggregate''' + str(statNum) + str(idNum) + '''=new Array()
+            choicesAggregate''' + str(statNum) + str(idNum) + '''[1]=''' + data
+
+        return js
+
+    @classmethod
     def _updateChoices(cls):
         js = '''
         <script>
@@ -137,7 +206,10 @@ class Cube():
         {
             hideTable(statNum)
             
-            document.getElementById("choices"+statNum+idNum).style.visibility = "hidden";        
+            document.getElementById("choices"+statNum+idNum).style.visibility = "hidden";
+            
+            console.log('selectedChoicesGroup', selectedChoicesGroup);
+                    
             if(selectedChoicesGroup  == 1)
             {
                 document.getElementById("choices"+statNum+idNum).style.visibility = "visible";    
@@ -150,6 +222,25 @@ class Cube():
                     for (i=0; i<choices[selectedChoicesGroup].length; i++)
                     {
                         choiceslist.options[choiceslist.options.length]=new Option(choices[selectedChoicesGroup][i].split("|")[0], choices[selectedChoicesGroup][i].split("|")[1])
+                    }
+                }
+                var dimensions = document.getElementById("dimensions"+statNum+idNum);
+                dimensions.options[selectedChoicesGroup].setAttribute("selected", "selected");
+            }
+            if(selectedChoicesGroup  == 3)
+            {
+                selectedChoicesGroup = selectedChoicesGroup - 2;
+                document.getElementById("choicesAggregate"+statNum+idNum).style.visibility = "visible";    
+                var choicesAggregateList = eval("choicesAggregateList"+statNum+idNum);   
+
+                choicesAggregateList.options.length=0
+                if (selectedChoicesGroup>0)
+                {
+                    var choicesAggregate = eval("choicesAggregate"+statNum+idNum);
+                    console.log('choicesAggregate', choicesAggregate);
+                    for (i=0; i<choicesAggregate[selectedChoicesGroup].length; i++)
+                    {
+                        choicesAggregateList.options[choicesAggregateList.options.length]=new Option(choicesAggregate[selectedChoicesGroup][i].split("|")[0], choicesAggregate[selectedChoicesGroup][i].split("|")[1])
                     }
                 }
                 var dimensions = document.getElementById("dimensions"+statNum+idNum);
@@ -189,10 +280,14 @@ class Cube():
             """
 
         js += """
+        
+        
+       
+        
             function onClickChoices(statNum, idNumFS, data, divId)
             {
             
-                //console.log('--aa--');
+                console.log('--aa--');
             
                 hideTable(statNum);
                 
@@ -201,9 +296,12 @@ class Cube():
                 """
         for index in range(0, indexLen):
             js += cls._addSelectedIndex(index)
+            js += cls._addSelectedChoicesAggregateIndex(index)
 
         for index in range(0, indexLen):
             js += cls._addSelectedDimension(index)
+
+
 
         js+= """ if (  """
         for index in range(0, indexLen):
@@ -215,11 +313,13 @@ class Cube():
                 """
         js += """var divName = []; """
         for index in range(0, indexLen):
+            js += """ console.log('selDim', selDim"""+str(index) + """); """
             js += """ divName.push(selDim"""+str(index) + """);"""
 
         js += """
-                //console.log('data', data);
-                //console.log('divName', divName);
+                
+                console.log('data', data);
+                console.log('divName', divName);
                 tab = summarizeTable(data, divName);
                 var dv = changeDivName(divName);
                 changeDataIntoProperDict(tab, dv, divId, statNum);
@@ -238,13 +338,30 @@ class Cube():
                 """
 
     @classmethod
+    def _addSelectedChoicesAggregateIndex(cls, index):
+        return """
+                    var chAggregate""" + str(
+            index) + """ = document.getElementById('choicesAggregate'+statNum+'""" + str(index) + """');
+                    var selChAggregate""" + str(index) + """ = chAggregate""" + str(index) + """.value
+                    """
+
+    @classmethod
     def _addSelectedDimension(cls, index):
         js = """var dim"""+str(index)+""" = document.getElementById('dimensions'+statNum+'"""+str(index)+"""');
                 var selDim"""+str(index)+""" = dim"""+str(index)+""".value"""
         js+= """
-                if (selDim"""+str(index)+""" == -2 || selDim"""+str(index)+""" == -1) 
+                if (selDim"""+str(index)+""" == -2 ) 
                 {
                 	selDim"""+str(index)+""" = parseInt(selDim"""+str(index)+""");
+                }
+                else if (selDim"""+str(index)+""" == -1)
+                {
+                    console.log('aggregate inside');
+                    //selDim"""+str(index)+""" = parseInt(selDim"""+str(index)+""");
+                    if(selChAggregate"""+str(index)+""" != 0)
+                	{
+                		selDim"""+str(index)+""" = """ + """selChAggregate"""+str(index) + """;
+                	}
                 }
                 else if (selDim"""+str(index)+""" == 1)
                 {
@@ -962,18 +1079,70 @@ class Cube():
         		
         		if ((op >= 0) || (op.length >= 0))
         		{	
-        			var partFlat = [];
-        			for (j = 0; j < flat.length; j++) 
+        		
+        		    if (op == 'sum')
+        		    {
+        		        var partFlat = [];
+        			for (var j = 0; j < flat.length; j++) 
         			{
-        				if(flat[j][i] == op)
-        				{
-        					//console.log('>=0', flat[j].slice(0,i), flat[j].slice(i+1,flat[j].length));
-        					var part = (flat[j].slice(0,i)).concat(flat[j].slice(i+1,flat[j].length));	
-        					partFlat.push(part);
-        				}
+        				partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
         			}
         			flat = partFlat;
-        			//console.log('op', op, 'op>=0', flat);
+        			
+        			var myDict = {};
+        			for (var x in flat) 
+        			{
+        				if (x == 'alphanumSort')
+        				{
+        				}
+        				else
+        				{
+        					//console.log('x', x, flat[x], flat[x].length-1);
+        					var value = parseFloat(flat[x][flat[x].length-1]);
+        					var key = flat[x].slice(0,flat[x].length-1);
+        				
+        					//console.log('value', value, 'key', key);
+        					if (myDict[ key ] == undefined)
+        					{
+        						myDict[ key ] = 0;
+        					}
+	        				myDict[ key ] += value;
+	        			}
+        			}
+        			
+        			partFlat = [];
+        			var c = 0;
+        			
+        			for (var x in myDict)
+        			{
+        				if ( x == "")
+        				{
+        					partFlat[c] = [myDict[x]];
+        				}
+        				else
+        				{
+        					partFlat[c] = x.split(',');
+        					partFlat[c].push(myDict[x]);
+        				}
+        				c = c+1;
+        			}
+        			flat = partFlat;
+        		    }
+        		    else
+        		    {
+                        var partFlat = [];
+                        for (j = 0; j < flat.length; j++) 
+                        {
+                            if(flat[j][i] == op)
+                            {
+                                //console.log('>=0', flat[j].slice(0,i), flat[j].slice(i+1,flat[j].length));
+                                var part = (flat[j].slice(0,i)).concat(flat[j].slice(i+1,flat[j].length));	
+                                partFlat.push(part);
+                            }
+                        }
+                        flat = partFlat;
+                        //console.log('op', op, 'op>=0', flat);
+        			}
         		}
         		else if(op == -1)
         		{

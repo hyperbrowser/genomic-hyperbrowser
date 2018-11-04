@@ -1,4 +1,0 @@
-<tool id="hb_modify_metadata_according_to_user_operations_tool" name="Modify metadata according to user operations" version="1.0.0"
-  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ModifyMetadataAccordingToUserOperationsTool" proto_tool_class="ModifyMetadataAccordingToUserOperationsTool">
-  <description></description>
-</tool>

@@ -31,7 +31,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
         ] + \
                 [('Select phrase %s' % (i+1) + ', you want to combain (use colon to combain)', 'selectedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)] + \
-                [('Select column %s' % (i+1) + ' which you would like to treat as unique', 'excludedColumns%s' % i) for i \
+                [('Select column %s' % (i+1) + ' which you would like to treat as unique (datasets will be combain separately to selected groups)', 'excludedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)]
 
     @classmethod
@@ -234,7 +234,12 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
     def validateAndReturnErrors(cls, choices):
 
         if not choices.gSuite:
-            return 'Please select hGSuite'
+            return 'Please select hGSuite.'
+
+        if choices.gSuite:
+            gsuite = getGSuiteFromGalaxyTN(choices.gSuite)
+            if gsuite.isPreprocessed():
+                return 'hGSuite need to primary.'
 
     # @classmethod
     # def getSubToolClasses(cls):
