@@ -1,0 +1,4 @@
+<tool id="hb_modify_hg_suite_by_sum_up_some_data_within_groups_tool" name="Modify hGSuite by aggregating data within groups" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ModifyHGSuiteBySumUpSomeDataWithinGroupsTool" proto_tool_class="ModifyHGSuiteBySumUpSomeDataWithinGroupsTool">
+  <description></description>
+</tool>
