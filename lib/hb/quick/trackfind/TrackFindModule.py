@@ -17,12 +17,15 @@ class TrackFindModule:
 
         response = requests.get(url)
 
+        self.logRequest(url, response.elapsed.total_seconds())
+
         return response.json()
 
     def getAttributesForRepository(self, repository):
         url = self.URL + repository + '/attributes?raw=true'
 
         response = requests.get(url)
+        self.logRequest(url, response.elapsed.total_seconds())
 
         return response.json()
 
@@ -30,6 +33,7 @@ class TrackFindModule:
         url = self.URL + repository + '/attributes?raw=true&top=true'
 
         response = requests.get(url)
+        self.logRequest(url, response.elapsed.total_seconds())
 
         return response.json()
 
@@ -37,6 +41,7 @@ class TrackFindModule:
         url = self.URL + repository + '/' + attribute + '/subattributes?raw=true'
 
         response = requests.get(url)
+        self.logRequest(url, response.elapsed.total_seconds())
 
         return response.json()
 
@@ -47,6 +52,7 @@ class TrackFindModule:
             url += '&filter=' + searchTerm
 
         response = requests.get(url)
+        self.logRequest(url, response.elapsed.total_seconds())
 
         return response.json()
 
@@ -57,9 +63,13 @@ class TrackFindModule:
 
         response = requests.get(url)
 
+        self.logRequest(url, response.elapsed.total_seconds())
+
         return response.json()
 
     def getGSuite(self, repository, attrValueMap):
+
+        self.logRequest("getting gsuite \n")
 
         filepath = StaticFile(
             ['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
@@ -82,4 +92,11 @@ class TrackFindModule:
         query = (' AND '.join(queryList))
 
         return query
+
+    def logRequest(self, url, time = 0):
+        logfile = open("apilog", "a")
+
+        logfile.write(str(time) + '   ' + url + '\n')
+
+        logfile.close()
 

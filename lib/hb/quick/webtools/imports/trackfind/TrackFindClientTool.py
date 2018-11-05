@@ -11,8 +11,8 @@ import quick.gsuite.GSuiteUtils as GSuiteUtils
 
 
 class TrackFindClientTool(GeneralGuiTool):
-    MAX_NUM_OF_EXTRA_BOXES = 20
-    MAX_NUM_OF_SUB_LEVELS = 7
+    MAX_NUM_OF_EXTRA_BOXES = 10
+    MAX_NUM_OF_SUB_LEVELS = 5
     SELECT_CHOICE = '--- Select ---'
     SINGLE_SELECTION = 'Single selection'
     MULTIPLE_SELECTION = 'Multiple selection'
@@ -38,6 +38,8 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
 
+        attrBoxes.append(('', 'attributesListCache'))
+        attrBoxes.append(('', 'topAttributesListCache'))
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             attrBoxes.append((('', 'divider%s' % i)))
@@ -54,6 +56,7 @@ class TrackFindClientTool(GeneralGuiTool):
                               'textSearch%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueList%s' % i))
+        attrBoxes.append(('', 'gsuiteCache'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
@@ -94,8 +97,9 @@ class TrackFindClientTool(GeneralGuiTool):
         if level == 0 and prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
-        tfm = TrackFindModule()
         if index > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level, index-1)) in [None, cls.SELECT_CHOICE, '']:
+            return
+        if level > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level-1, 0)) in [None, cls.SELECT_CHOICE, '']:
             return
         elif index == 0 and level > 0:
             prev = getattr(prevChoices, 'valueList%s' % (level - 1))
@@ -107,7 +111,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         subattributePath = ''
         if index == 0:
-            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+            attributes = prevChoices.topAttributesListCache
         else:
             attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
             if cls.isBottomLevel(attributes):
@@ -142,7 +146,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         #filter out attributes that have no subattributes left
-        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
+        attributesInRepo = prevChoices.attributesListCache
         for prevChoice in prevChoicesList:
             if prevChoice in attributesInRepo:
                 attributesInRepo.remove(prevChoice)
@@ -163,6 +167,27 @@ class TrackFindClientTool(GeneralGuiTool):
         attributes.insert(0, cls.SELECT_CHOICE)
 
         return attributes
+
+    @classmethod
+    def getOptionsBoxAttributesListCache(cls, prevChoices):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        tfm = TrackFindModule()
+        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
+
+        return  '__hidden__', attributesInRepo
+
+    @classmethod
+    def getOptionsBoxTopAttributesListCache(cls, prevChoices):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        tfm = TrackFindModule()
+        topAttributesInRepo = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+
+        return '__hidden__', topAttributesInRepo
+
 
     @classmethod
     def _getValueListBox(cls, prevChoices, index):
@@ -226,6 +251,12 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def _getSelectionTypeBox(cls, prevChoices, index):
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        if getattr(prevChoices, 'subAttributeList%s_%s' % (index, 0)) in [None, cls.SELECT_CHOICE, '']:
+            return
+
         attributes = cls.getSubattributes(prevChoices, index, cls.MAX_NUM_OF_SUB_LEVELS)[0]
 
         if cls.isBottomLevel(attributes):
@@ -239,6 +270,7 @@ class TrackFindClientTool(GeneralGuiTool):
         repos.sort()
         repos.insert(0, cls.SELECT_CHOICE)
 
+
         return repos
 
     @classmethod
@@ -250,12 +282,24 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
     @classmethod
-    def getOptionsBoxTrackList(cls, prevChoices):
+    def getOptionsBoxGsuiteCache(cls, prevChoices):
         if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
         if not chosenOptions:
+            return
+
+        tfm = TrackFindModule()
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+
+        return '__hidden__', gsuite
+
+
+    @classmethod
+    def getOptionsBoxTrackList(cls, prevChoices):
+        if not prevChoices.gsuiteCache:
             return
 
         chosenDataTypes = cls.getChosenDataTypes(prevChoices)
@@ -264,11 +308,8 @@ class TrackFindClientTool(GeneralGuiTool):
 
         selectedTracks = cls.getSelectedTracks(prevChoices)
 
-        tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
-
         tableDict = {}
-        for track in gsuite.allTracks():
+        for track in prevChoices.gsuiteCache.allTracks():
             title = track.title
             attributes = []
             dataType = track.getAttribute('type of data')
@@ -295,19 +336,11 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxDataTypes(cls, prevChoices):
-        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+        if not prevChoices.gsuiteCache:
             return
-
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        if not chosenOptions:
-            return
-
-        tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
         dataTypes = defaultdict(int)
-        for track in gsuite.allTracks():
+        for track in prevChoices.gsuiteCache.allTracks():
             dataTypes[track.getAttribute('type of data')] += 1
 
         dataTypes = OrderedDict(sorted(dataTypes.items()))
@@ -320,12 +353,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectTracks(cls, prevChoices):
-        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
-            return
-
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        if not chosenOptions:
+        if not prevChoices.gsuiteCache:
             return
 
         return [cls.ALL_TRACKS, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS, cls.MANUAL_TRACK_SELECT]
@@ -339,13 +367,8 @@ class TrackFindClientTool(GeneralGuiTool):
         if not chosenDataTypes:
             return
 
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
-
         trackTitles = []
-        for track in gsuite.allTracks():
+        for track in prevChoices.gsuiteCache.allTracks():
             dataType = track.getAttribute('type of data')
 
             if dataType not in chosenDataTypes:
@@ -411,7 +434,6 @@ class TrackFindClientTool(GeneralGuiTool):
     
     @classmethod
     def isBottomLevel(cls, attributes):
-        # check if this is the bottom level
         if not attributes:
             return True
 
@@ -439,14 +461,6 @@ class TrackFindClientTool(GeneralGuiTool):
         Mandatory unless isRedirectTool() returns True.
         """
 
-        print 'You chose ' + str(choices)
-        print
-
-        chosenOptions = cls.getPreviousChoices(choices, cls.MAX_NUM_OF_EXTRA_BOXES)
-        
-        tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(choices.selectRepository, chosenOptions)
-
         chosenDataTypes = cls.getChosenDataTypes(choices)
         if not chosenDataTypes:
             return
@@ -455,7 +469,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         newGSuite = GSuite()
 
-        for track in gsuite.allTracks():
+        for track in choices.gsuiteCache.allTracks():
             dataType = track.getAttribute('type of data')
 
             if not dataType in chosenDataTypes:
@@ -574,12 +588,8 @@ class TrackFindClientTool(GeneralGuiTool):
     #
     #     boxes = []
     #     for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-    #         boxes.append('selectionType%s' % i)
     #         boxes.append('textSearch%s' % i)
-    #         boxes.append('valueList%s' % i)
-    #         boxes.append('attributeList%s' % i)
     #
-    #     boxes.append('selectRepository')
     #
     #     return boxes
 
