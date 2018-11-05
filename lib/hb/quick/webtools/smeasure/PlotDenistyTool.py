@@ -7,6 +7,9 @@ from proto.RSetup import r
 
 
 class PlotDenistyTool(GeneralGuiTool):
+
+    OPTIONS = ['lines with density', 'lines', 'density']
+
     @classmethod
     def getToolName(cls):
         return "Plot chart with density per bin"
@@ -28,11 +31,11 @@ class PlotDenistyTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxType(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['lines with density', 'lines', 'density']
+        return cls.OPTIONS
 
     @classmethod
     def getOptionsBoxBin(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.type != 'lines with density':
+        if prevChoices.type != cls.OPTIONS[0]:
             return ''
 
     @classmethod
@@ -73,11 +76,11 @@ class PlotDenistyTool(GeneralGuiTool):
         pathOutputPng = fileOutputPng.getDiskPath()
         selColor = choices.selColor.encode('utf-8')
 
-        if type == 'density':
+        if type == cls.OPTIONS[2]:
             bin = int(choices.bin)
             cls.prepareDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
                                yLabel, imgTitle)
-        elif type == 'lines with density':
+        elif type == cls.OPTIONS[0]:
             cls.prepareLinesWithDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
                                    yLabel, imgTitle)
         else:
