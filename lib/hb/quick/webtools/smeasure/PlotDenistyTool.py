@@ -28,11 +28,11 @@ class PlotDenistyTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxType(cls, prevChoices):  # Alt: getOptionsBox2()
-        return ['lines', 'density']
+        return ['lines with density', 'lines', 'density']
 
     @classmethod
     def getOptionsBoxBin(cls, prevChoices):  # Alt: getOptionsBox2()
-        if prevChoices.type == 'density':
+        if prevChoices.type != 'lines with density':
             return ''
 
     @classmethod
@@ -71,15 +71,19 @@ class PlotDenistyTool(GeneralGuiTool):
         fileOutputPng = GalaxyRunSpecificFile([filename, filename + '.png'], galaxyFn)
         ensurePathExists(fileOutputPng.getDiskPath())
         pathOutputPng = fileOutputPng.getDiskPath()
+        selColor = choices.selColor.encode('utf-8')
 
         if type == 'density':
             bin = int(choices.bin)
-            selColor = choices.selColor.encode('utf-8')
             cls.prepareDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
                                yLabel, imgTitle)
-        else:
-            cls.prepareLinesPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+        elif type == 'lines with density':
+            cls.prepareLinesWithDensityPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
                                    yLabel, imgTitle)
+        else:
+            bin = int(choices.bin)
+            cls.prepareLinesPlot(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+                                 yLabel, imgTitle)
 
         htmlCore = HtmlCore()
         htmlCore.paragraph('Selection')
@@ -94,25 +98,26 @@ class PlotDenistyTool(GeneralGuiTool):
         print htmlCore
 
     @classmethod
-    def prepareLinesPlot(cls, pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
-                           yLabel, imgTitle):
+    def prepareLinesPlot(cls, pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle):
         rCode = """
                     suppressMessages(library(ggplot2));
                     suppressMessages(library(hexbin));
 
-                    plotDraw <- function(pathInput, pathOutputPdf, pathOutputPng, xLabel, yLabel, imgTitle) {
+                    plotDraw <- function(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle) {
                     data <- read.table(pathInput, sep='\t', header = F)
                     df <- data.frame(t(data))
                     head(df)
                     ## Use densCols() output to get density at each point
-                    x1<-df$X5 #points-xs
-                    x2<-df$X6 #points-ys
-                    x3<-df$X1 #line-xs
-                    x4<-df$X2 #mid-ys
-                    x5<-df$X3 #upper-ys
-                    x6<-df$X4 #lower-ys
+                
+                    x1<-df$X1 #measure value
+                    x2<-df$X2 #measure value 2
+                    
+                    p <- ggplot(df, aes(x = x1, y = x2))
+                    bins <- bin
+                    myColor_scale_fill_sqrt <- scale_fill_gradientn(colours=c("white","gray", "gray", "gray", "black", "black", "black"), trans = "sqrt")
+                    p1 <- p + myColor_scale_fill_sqrt + stat_binhex(bins = bins) + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle) 
 
-                    p1 <- ggplot(df, aes(x = x3, y = x4)) + geom_line() + geom_line(aes(x = x3, y = x1), color='red') + geom_line(aes(x = x3, y = x2), color='blue')
+                    #p1 <- ggplot(df, aes(x = x1, y = x2)) + geom_line() + labs(x = xLabel) + labs(y = yLabel) + labs(title = imgTitle) 
                     
                     png(pathOutputPng)
                     plot(p1)
@@ -124,6 +129,39 @@ class PlotDenistyTool(GeneralGuiTool):
 
                 }
                 """
+        r(rCode)(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle)
+
+    @classmethod
+    def prepareLinesWithDensityPlot(cls, pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel,
+                         yLabel, imgTitle):
+        rCode = """
+                        suppressMessages(library(ggplot2));
+                        suppressMessages(library(hexbin));
+
+                        plotDraw <- function(pathInput, pathOutputPdf, pathOutputPng, xLabel, yLabel, imgTitle) {
+                        data <- read.table(pathInput, sep='\t', header = F)
+                        df <- data.frame(t(data))
+                        head(df)
+                        ## Use densCols() output to get density at each point
+                        x1<-df$X5 #points-xs
+                        x2<-df$X6 #points-ys
+                        x3<-df$X1 #line-xs
+                        x4<-df$X2 #mid-ys
+                        x5<-df$X3 #upper-ys
+                        x6<-df$X4 #lower-ys
+
+                        p1 <- ggplot(df, aes(x = x3, y = x4)) + geom_line() + geom_line(aes(x = x3, y = x1), color='red') + geom_line(aes(x = x3, y = x2), color='blue')
+
+                        png(pathOutputPng)
+                        plot(p1)
+                        dev.off()
+
+                        pdf(pathOutputPdf)
+                        plot(p1)
+                        dev.off()
+
+                    }
+                    """
         r(rCode)(pathInput, pathOutputPdf, pathOutputPng, selColor, bin, xLabel, yLabel, imgTitle)
 
     @classmethod
