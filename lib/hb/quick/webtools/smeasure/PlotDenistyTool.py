@@ -10,6 +10,7 @@ class PlotDenistyTool(GeneralGuiTool):
 
     OPTIONS = ['lines with density', 'lines', 'density']
 
+
     @classmethod
     def getToolName(cls):
         return "Plot chart with density per bin"
