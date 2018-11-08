@@ -21,6 +21,7 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
+
 class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
