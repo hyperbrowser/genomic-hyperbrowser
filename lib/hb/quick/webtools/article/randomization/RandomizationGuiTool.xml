@@ -1,0 +1,4 @@
+<tool id="hb_randomization_gui_tool" name="Randomization GUI" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.article.randomization.RandomizationGuiTool" proto_tool_class="RandomizationGuiTool">
+  <description></description>
+</tool>
