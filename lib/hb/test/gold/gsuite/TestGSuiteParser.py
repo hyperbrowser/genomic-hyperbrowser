@@ -1074,8 +1074,10 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\tTrack\n' \
             'hb:/track/name\tTrack2\n' \
 
-        #self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
+        gSuite = self._parseContents(contents)
+        # self._assertInvalidFormatWhenParsing(contents)
+        self.assertEquals(gSuite.getTrackFromTitle('Track').uri,
+                          gSuite.getTrackFromTitle('Track2').uri)
 
     def testMultipleTracksSameTitle(self):
         contents = \
