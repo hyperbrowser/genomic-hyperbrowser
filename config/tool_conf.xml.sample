@@ -1,19 +1,29 @@
 <?xml version='1.0' encoding='utf-8'?>
 <toolbox monitor="true">
 
-  <section name="Other tools" id="other_dd_tools" >
+
+
+    <label text="Similarity project tools" id="sim_project_tools" />
+    <section name="Similarity tools" id="sim_tools">
     <tool file="proto/hyperbrowser/smeasure/CreateGSuiteFromTwoBinomialDistrTool.xml" />
-    <tool file="proto/hyperbrowser/recpatt/ParseDataFromGliphPaperTool.xml" />
-    <tool file="proto/hyperbrowser/questionstatistics/GenerateQuestionForStatisticsTool.xml" />
-    <tool file="proto/hyperbrowser/ldproxy/GetSNPsRsNumberOrCoordinatesTool.xml" />
-    <tool file="proto/hyperbrowser/catgsuite/ModifyMetadataAccordingToUserOperationsTool.xml" />
-    <tool file="proto/hyperbrowser/ldproxy/CountLdProxyForSelectedDatasetTool.xml" />
-    <tool file="proto/hyperbrowser/ldproxy/CountLDProxyTool.xml" />
-    <tool file="proto/hyperbrowser/hgsuite/ContacenateTwoOrMoreHGsuitesTool.xml" />
-    <tool file="proto/hyperbrowser/referenceGenome/GenomeBuildPredictorTool.xml" />
-    <tool file="proto/hyperbrowser/hgsuite/CreateHGsuiteFromCsvFileTool.xml" />
-    <tool file="proto/hyperbrowser/mirathon/PipelineForMiRNAsTool.xml" />
+    <tool file="proto/hyperbrowser/smeasure/ChangeSegmentGSuiteToPointGSuiteTool.xml" />
+
   </section>
+
+
+##   <section name="Other tools" id="other_dd_tools" >
+##     <tool file="proto/hyperbrowser/smeasure/CreateGSuiteFromTwoBinomialDistrTool.xml" />
+##     <tool file="proto/hyperbrowser/recpatt/ParseDataFromGliphPaperTool.xml" />
+##     <tool file="proto/hyperbrowser/questionstatistics/GenerateQuestionForStatisticsTool.xml" />
+##     <tool file="proto/hyperbrowser/ldproxy/GetSNPsRsNumberOrCoordinatesTool.xml" />
+##     <tool file="proto/hyperbrowser/catgsuite/ModifyMetadataAccordingToUserOperationsTool.xml" />
+##     <tool file="proto/hyperbrowser/ldproxy/CountLdProxyForSelectedDatasetTool.xml" />
+##     <tool file="proto/hyperbrowser/ldproxy/CountLDProxyTool.xml" />
+##     <tool file="proto/hyperbrowser/hgsuite/ContacenateTwoOrMoreHGsuitesTool.xml" />
+##     <tool file="proto/hyperbrowser/referenceGenome/GenomeBuildPredictorTool.xml" />
+##     <tool file="proto/hyperbrowser/hgsuite/CreateHGsuiteFromCsvFileTool.xml" />
+##     <tool file="proto/hyperbrowser/mirathon/PipelineForMiRNAsTool.xml" />
+##   </section>
 
 
 
