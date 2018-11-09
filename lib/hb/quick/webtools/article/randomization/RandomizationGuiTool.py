@@ -1,15 +1,26 @@
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.track.trackstructure import TsRandAlgorithmRegistry
+from gold.track.trackstructure.TsRandAlgorithmRegistry import getRequiredArgsForAlgorithm, getKwArgsForAlgorithm, \
+    BIN_SOURCE_ARG, EXCLUDED_TS_ARG
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
+from quick.gsuite.GuiBasedTsFactory import getFlatTracksTS, getSingleTrackTS
+from quick.statistic.TsWriterStat import TsWriterStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from proto.HtmlCore import HtmlCore
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
+from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class RandomizationGuiTool(GeneralGuiTool):
+class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin):
     @classmethod
     def getToolName(cls):
         return "Randomization GUI"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [("", 'toolDescTop'),
+        return [('Basic user mode', 'isBasic'),
+                ("", 'toolDescTop'),
                 ('Reference genome: ', 'selectReferenceGenome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Number of tracks to shuffle: ', 'numberOfTracks'),
@@ -22,10 +33,14 @@ class RandomizationGuiTool(GeneralGuiTool):
                 ('Allow overlap of shuffled locations? ', 'allowOverlaps'),
                 ('Allow truncation of sizes in special cases? ', 'truncateSizes'),
                 ('Should the shuffling be reproducible? ', 'reproduceShuffling'),
-                ('Enter a seed value in the textbox: ', 'enterSeed')]
+                ('Enter a seed value in the textbox: ', 'enterSeed')] + cls.getInputBoxNamesForRandAlgSelection()
+
+    @staticmethod
+    def getOptionsBoxIsBasic():
+        return False
 
     @classmethod
-    def getOptionsBoxToolDescTop(cls):
+    def getOptionsBoxToolDescTop(cls, prevChoices):
         core = HtmlCore()
         core.bigHeader('genomic-permutation-tools')
         core.smallHeader('a collection of permutation approaches to shuffle genomic regions')
@@ -33,6 +48,7 @@ class RandomizationGuiTool(GeneralGuiTool):
         return '__rawStr__', str(core)
 
     CUSTOM_REFERENCE_GENOME = 'Custom reference genome'
+
 
     @classmethod
     def getOptionsBoxSelectReferenceGenome(cls, prevChoices):
@@ -278,7 +294,43 @@ class RandomizationGuiTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        choices_gsuite = choices.gsuite
+        genome =  choices.genome
+        analysisBins = UserBinMixin.getUserBinSource(choices)
+
+        ts = getFlatTracksTS(genome, choices_gsuite)
+        randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome. choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
+        randTs = getRandomizedVersionOfTs(ts, randTvProvider)
+
+        spec = AnalysisSpec(TsWriterStat)
+
+        res = doAnalysis(spec, analysisBins, randTs)
+
+    @classmethod
+    def _createTrackViewProvider(cls, origTs, binSource, genome, randType, randAlg, selectExcludedTrack, excludedTrack):
+        reqArgs = getRequiredArgsForAlgorithm(randType, randAlg)
+        kwArgs = getKwArgsForAlgorithm(randType, randAlg)
+
+        args = []
+        for arg in reqArgs:
+            if arg == EXCLUDED_TS_ARG:
+                if selectExcludedTrack == cls.YES:
+                    raise NotImplementedError()
+                    excludedTs = getSingleTrackTS(genome, excludedTrack)
+                else:
+                    excludedTs = None
+                args.append(excludedTs)
+            if arg == BIN_SOURCE_ARG:
+                args.append(binSource)
+
+        tvProvider = TsRandAlgorithmRegistry.createTrackViewProvider(
+            randType, randAlg, *args, **kwArgs
+        )
+
+        tvProvider.setOrigTrackStructure(origTs)
+        tvProvider.setBinSource(binSource)
+
+        return tvProvider
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
