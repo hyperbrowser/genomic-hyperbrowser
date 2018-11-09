@@ -56,6 +56,8 @@ class TrackFindClientTool(GeneralGuiTool):
                               'textSearch%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueList%s' % i))
+            attrBoxes.append(('Select value:', \
+                              'valueCheckbox%s' % i))
         attrBoxes.append(('', 'gsuiteCache'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
@@ -70,6 +72,8 @@ class TrackFindClientTool(GeneralGuiTool):
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             setattr(cls, 'getOptionsBoxValueList%s' % i, \
                     partial(cls._getValueListBox, index=i))
+            setattr(cls, 'getOptionsBoxValueCheckbox%s' % i, \
+                    partial(cls._getValueCheckboxBox, index=i))
             setattr(cls, 'getOptionsBoxDivider%s' % i, partial(cls._getDivider, index=i))
             setattr(cls, 'getOptionsBoxTextSearch%s' % i, \
                     partial(cls._getTextSearchBox, index=i))
@@ -101,7 +105,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
         if level > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level-1, 0)) in [None, cls.SELECT_CHOICE, '']:
             return
-        elif index == 0 and level > 0:
+        if index == 0 and level > 0:
             prev = getattr(prevChoices, 'valueList%s' % (level - 1))
             if prev in [None, cls.SELECT_CHOICE, '']:
                 return
@@ -176,7 +180,7 @@ class TrackFindClientTool(GeneralGuiTool):
         tfm = TrackFindModule()
         attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
 
-        return  '__hidden__', attributesInRepo
+        return '__hidden__', attributesInRepo
 
     @classmethod
     def getOptionsBoxTopAttributesListCache(cls, prevChoices):
@@ -195,9 +199,47 @@ class TrackFindClientTool(GeneralGuiTool):
                 in [None, cls.SELECT_CHOICE, '']:
             return
 
-        if getattr(prevChoices, 'selectionType%s' % index) in [None, cls.SELECT_CHOICE, '']:
+        selectionType = getattr(prevChoices, 'selectionType%s' % index)
+        if selectionType != cls.SINGLE_SELECTION:
             return
 
+        values = cls.getValues(prevChoices, index)[0]
+
+        values.insert(0, cls.SELECT_CHOICE)
+        return values
+
+    @classmethod
+    def _getValueCheckboxBox(cls, prevChoices, index):
+        if index > 0 and getattr(prevChoices, 'valueList%s' % (index - 1)) \
+                in [None, cls.SELECT_CHOICE, '']:
+            return
+        selectionType = getattr(prevChoices, 'selectionType%s' % index)
+        if selectionType not in [cls.MULTIPLE_SELECTION, cls.TEXT_SEARCH]:
+            return
+
+        values, subattributePath = cls.getValues(prevChoices, index)
+
+        if getattr(prevChoices, 'selectionType%s' % index) == cls.MULTIPLE_SELECTION:
+            return OrderedDict([(value, False) for value in values])
+        else:
+            searchTerm = getattr(prevChoices, 'textSearch%s' % index)
+            if not searchTerm:
+                return
+            tfm = TrackFindModule()
+            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository,
+                                                    subattributePath, searchTerm)
+
+            valuesDict = OrderedDict()
+            for value in values:
+                if value in filteredValues:
+                    valuesDict[value] = True
+                else:
+                    valuesDict[value] = False
+            return valuesDict
+
+
+    @classmethod
+    def getValues(cls, prevChoices, index):
         prevSubattributes = []
         for i in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
             attr = getattr(prevChoices, 'subAttributeList%s_%s' % (index, i))
@@ -227,27 +269,8 @@ class TrackFindClientTool(GeneralGuiTool):
         values = list(values)
         values.sort()
 
-        if getattr(prevChoices, 'selectionType%s' % index) == cls.SINGLE_SELECTION:
-            values.insert(0, cls.SELECT_CHOICE)
-            return values
-        elif getattr(prevChoices, 'selectionType%s' % index) == cls.MULTIPLE_SELECTION:
-            return OrderedDict([(value, False) for value in values])
-        elif getattr(prevChoices, 'selectionType%s' % index) == cls.TEXT_SEARCH:
-            searchTerm = getattr(prevChoices, 'textSearch%s' % index)
-            if not searchTerm:
-                return
-            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository,
-                                                    subattributePath, searchTerm)
+        return values, subattributePath
 
-            valuesDict = OrderedDict()
-            for value in values:
-                if value in filteredValues:
-                    valuesDict[value] = True
-                else:
-                    valuesDict[value] = False
-            return valuesDict
-
-        return values
 
     @classmethod
     def _getSelectionTypeBox(cls, prevChoices, index):
@@ -279,7 +302,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if attribute == cls.TEXT_SEARCH:
             return ''
         else:
-            return
+            return '__hidden__', ''
 
     @classmethod
     def getOptionsBoxGsuiteCache(cls, prevChoices):
@@ -576,22 +599,22 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @classmethod
-    # def getResetBoxes(cls):
-    #     """
-    #     Specifies a list of input boxes which resets the subsequent stored
-    #     choices previously made. The input boxes are specified by index
-    #     (starting with 1) or by key.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #
-    #     boxes = []
-    #     for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-    #         boxes.append('textSearch%s' % i)
-    #
-    #
-    #     return boxes
+    @classmethod
+    def getResetBoxes(cls):
+        """
+        Specifies a list of input boxes which resets the subsequent stored
+        choices previously made. The input boxes are specified by index
+        (starting with 1) or by key.
+
+        Optional method. Default return value if method is not defined: True
+        """
+
+        boxes = []
+        #boxes.append('selectRepository')
+        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+            boxes.append('textSearch%s' % i)
+
+        return boxes
 
     # @classmethod
     # def getToolDescription(cls):

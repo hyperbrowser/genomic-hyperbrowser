@@ -94,7 +94,7 @@ class TrackFindModule:
         return query
 
     def logRequest(self, url, time = 0):
-        logfile = open("apilog", "a")
+        logfile = open("apilog", "a", 0)
 
         logfile.write(str(time) + '   ' + url + '\n')
 
