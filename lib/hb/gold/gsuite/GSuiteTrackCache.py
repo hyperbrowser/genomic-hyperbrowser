@@ -4,12 +4,14 @@ from config.Config import DATA_FILES_PATH, URL_PREFIX
 from quick.util.CommonFunctions import ensurePathExists
 import third_party.safeshelve as safeshelve
 
+
 class GSuiteTrackCache(object):
     CACHE_DIRECTORY = os.path.join(DATA_FILES_PATH, 'GSuiteTrackCache')
     URI_PREFIXES_FN = CACHE_DIRECTORY + os.sep + 'UriPrefixesToCache.txt'
-    CACHE_SHELVE_FN = os.path.join(CACHE_DIRECTORY, \
-                      (URL_PREFIX[1:] if URL_PREFIX.startswith(os.path.sep) else URL_PREFIX), \
-                      'GSuiteTrackCache.shelve')
+    CACHE_SHELVE_FN = os.path.join(CACHE_DIRECTORY,
+                                   (URL_PREFIX[1:] if URL_PREFIX.startswith(os.path.sep) else
+                                    URL_PREFIX),
+                                   'GSuiteTrackCache.shelve')
     
     PROTOCOL = 0
 
@@ -50,5 +52,6 @@ class GSuiteTrackCache(object):
         cache = self._openShelve('c')
         cache[gSuiteTrack.uri] = galaxyUri
         cache.close()
+
 
 GSUITE_TRACK_CACHE = GSuiteTrackCache()

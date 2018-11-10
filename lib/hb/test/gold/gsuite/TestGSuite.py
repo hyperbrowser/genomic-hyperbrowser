@@ -19,7 +19,6 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual('unknown', gSuite.fileFormat)
         self.assertEqual('unknown', gSuite.trackType)
         self.assertEqual('unknown', gSuite.genome)
-        self.assertEqual([], gSuite.extraHeaderKeys)
         self.assertEqual([], gSuite.attributes)
 
         self.assertEqual(False, gSuite.isPreprocessed())
