@@ -1,5 +1,9 @@
 import unittest
 from collections import OrderedDict
+
+import config.Config
+config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
+
 from gold.gsuite.GSuiteTrack import GSuiteTrack, FtpGSuiteTrack, HttpGSuiteTrack, \
                                     HttpsGSuiteTrack, RsyncGSuiteTrack, HbGSuiteTrack, \
                                     GalaxyGSuiteTrack, FileGSuiteTrack

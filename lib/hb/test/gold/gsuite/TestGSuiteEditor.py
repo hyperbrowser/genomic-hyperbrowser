@@ -1,6 +1,9 @@
 import unittest
 from collections import OrderedDict
 
+import config.Config
+config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
+
 from gold.util.CustomExceptions import ArgumentValueError
 import gold.gsuite.GSuiteEditor as GSuiteEditor
 from gold.gsuite.GSuite import GSuite

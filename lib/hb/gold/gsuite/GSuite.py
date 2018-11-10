@@ -89,6 +89,9 @@ class GSuite(object):
             raise InvalidFormatError('Track types "%s" and "%s" are not possible to combine. '
                                      % (curVal, nextVal))
 
+    def getCustomHeaderKeys(self):
+        pass
+
     @property
     def attributes(self):
         allAttributes = OrderedDict()
