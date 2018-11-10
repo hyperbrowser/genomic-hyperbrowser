@@ -14,13 +14,16 @@ from third_party.Visitor import Visitor
 
 # Classes
 
+
 class GSuiteMultipleGalaxyFnDownloader(GSuiteAllTracksVisitor):
     def __init__(self):
         GSuiteAllTracksVisitor.__init__(self, GSuiteTrackExclusiveGalaxyFnDownloader())
 
+
 class GSuiteSingleGalaxyFnDownloader(GSuiteAllTracksVisitor):
     def __init__(self):
         GSuiteAllTracksVisitor.__init__(self, GSuiteTrackSharedGalaxyFnDownloader())
+
 
 class GSuiteTrackDownloader(Visitor):
     def genericVisit(self, gSuiteTrack, *args, **kwArgs):
@@ -29,7 +32,8 @@ class GSuiteTrackDownloader(Visitor):
 
 
 class GSuiteTrackBasicDownloader(GSuiteTrackDownloader):
-    def visitFtpGSuiteTrack(self, gSuiteTrack, outFileName):
+    @staticmethod
+    def visitFtpGSuiteTrack(gSuiteTrack, outFileName):
         import ftplib
 
         try:
@@ -44,7 +48,8 @@ class GSuiteTrackBasicDownloader(GSuiteTrackDownloader):
             conn.quit()
             out.flush()
 
-    def visitHttpGSuiteTrack(self, gSuiteTrack, outFileName):
+    @staticmethod
+    def visitHttpGSuiteTrack(gSuiteTrack, outFileName):
         import urllib2
         response = urllib2.urlopen(gSuiteTrack.uriWithoutSuffix)
         data = response.read()
@@ -52,12 +57,14 @@ class GSuiteTrackBasicDownloader(GSuiteTrackDownloader):
         out.write(data)
         out.close()
 
-    def visitRsyncGSuiteTrack(self, gSuiteTrack, outFileName):
+    @staticmethod
+    def visitRsyncGSuiteTrack(gSuiteTrack, outFileName):
         import sys
         import subprocess
-        subprocess.check_call(['rsync', '-a', '-P', \
-                                gSuiteTrack.uriWithoutSuffix, outFileName], \
-                                stderr=sys.stdout)
+        subprocess.check_call(['rsync', '-a', '-P',
+                               gSuiteTrack.uriWithoutSuffix, outFileName],
+                              stderr=sys.stdout)
+
 
 class GSuiteTrackUncompressorAndDownloader(GSuiteTrackDownloader):
     def visitFtpGSuiteTrack(self, gSuiteTrack, outFileName):
@@ -71,17 +78,20 @@ class GSuiteTrackUncompressorAndDownloader(GSuiteTrackDownloader):
 
     def _downloadToFileAndUncompress(self, gSuiteTrack, outFileName):
         import tempfile
-        tmpSuffix='.' + gSuiteTrack.suffix if gSuiteTrack.suffix else ''
-        tmpFile = tempfile.NamedTemporaryFile(delete = False, suffix=tmpSuffix)
+        tmpSuffix = '.' + gSuiteTrack.suffix if gSuiteTrack.suffix else ''
+        tmpFile = tempfile.NamedTemporaryFile(delete=False, suffix=tmpSuffix)
 
         gSuiteTrackDownloader = GSuiteTrackBasicDownloader()
         gSuiteTrackDownloader.visit(gSuiteTrack, tmpFile.name)
 
         self._uncompressTemporaryFile(gSuiteTrack, tmpFile.name, outFileName)
 
-    def _uncompressTemporaryFile(self, gSuiteTrack, tmpFileName, outFileName):
+    @staticmethod
+    def _uncompressTemporaryFile(gSuiteTrack, tmpFileName, outFileName):
+        import os
         import subprocess
-        import os, sys, shutil
+        import sys
+        import shutil
 
         for compSuffix in COMPRESSION_SUFFIXES:
             reduceLen = len(compSuffix)+1
@@ -95,13 +105,13 @@ class GSuiteTrackUncompressorAndDownloader(GSuiteTrackDownloader):
                     unzippedFileName = tmpFileName[:-reduceLen]
 
                     ensurePathExists(outFileName)
-                    #os.rename(unzippedFileName, outFileName)
+                    # os.rename(unzippedFileName, outFileName)
                     shutil.move(unzippedFileName, outFileName)
                 else:
                     raise ShouldNotOccurError
                 break
         else:
-            #os.rename(tmpFileName, outFileName)
+            # os.rename(tmpFileName, outFileName)
             shutil.move(tmpFileName, outFileName)
 
         currentUmask = os.umask(0)
@@ -110,7 +120,9 @@ class GSuiteTrackUncompressorAndDownloader(GSuiteTrackDownloader):
 
 
 class GSuiteCachedTrackDownloader(GSuiteTrackDownloader):
-    def _getUriForDownloadedAndUncompressedTrackPossiblyCached(self, gSuiteTrack, galaxyFn, uncomprSuffix, extraFileName=None):
+    @staticmethod
+    def _getUriForDownloadedAndUncompressedTrackPossiblyCached(gSuiteTrack, galaxyFn,
+                                                               uncomprSuffix, extraFileName=None):
         from gold.gsuite.GSuiteTrackCache import GSUITE_TRACK_CACHE
         cache = GSUITE_TRACK_CACHE
 
@@ -126,7 +138,8 @@ class GSuiteCachedTrackDownloader(GSuiteTrackDownloader):
             if extraFileName.endswith('.' + uncomprSuffix):
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName)
             else:
-                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName, suffix=uncomprSuffix)
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=extraFileName,
+                                                    suffix=uncomprSuffix)
         else:
             outGalaxyFn = galaxyFn
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=outGalaxyFn, suffix=uncomprSuffix)
@@ -147,14 +160,16 @@ class GSuiteTrackExclusiveGalaxyFnDownloader(GSuiteCachedTrackDownloader):
         uncomprTitle, uncomprSuffix = getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack)
         outGalaxyFn = uncomprTitleToGalaxyFnDict[uncomprTitle]
 
-        uri = self._getUriForDownloadedAndUncompressedTrackPossiblyCached(gSuiteTrack, outGalaxyFn, uncomprSuffix)
+        uri = self._getUriForDownloadedAndUncompressedTrackPossiblyCached(gSuiteTrack, outGalaxyFn,
+                                                                          uncomprSuffix)
         return GSuiteTrack(uri, title=uncomprTitle, fileFormat=gSuiteTrack.fileFormat,
                            trackType=gSuiteTrack.trackType, genome=gSuiteTrack.genome,
                            attributes=gSuiteTrack.attributes)
 
 
 class GSuiteTrackSharedGalaxyFnDownloader(GSuiteCachedTrackDownloader):
-    def genericVisit(self, gSuiteTrack, galaxyFn, colHierarchyList):
+    @staticmethod
+    def genericVisit(gSuiteTrack, galaxyFn, colHierarchyList):
         gSuiteReq = GSuiteRequirements(allowedLocations=[REMOTE])
         gSuiteReq.check(gSuiteTrack)
 
@@ -168,7 +183,7 @@ class GSuiteTrackSharedGalaxyFnDownloader(GSuiteCachedTrackDownloader):
         self.genericVisit(gSuiteTrack, galaxyFn, colHierarchyList)
 
         uncomprTitle, uncomprSuffix = getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack)
-        rawFileName = getTitleWithCompressionSuffixesRemoved( GSuiteTrack(gSuiteTrack.uri) )
+        rawFileName = getTitleWithCompressionSuffixesRemoved(GSuiteTrack(gSuiteTrack.uri))
 
         duplicateIdx = getDuplicateIdx(uncomprTitle)
         rawFileName = renameBaseFileNameWithDuplicateIdx(rawFileName, duplicateIdx)
@@ -184,11 +199,13 @@ class GSuiteTrackSharedGalaxyFnDownloader(GSuiteCachedTrackDownloader):
 
             memberHierarchyList.append(memberName)
 
-        extraFileName = os.path.sep.join([getattr(gSuiteTrack, memberName) for memberName in memberHierarchyList] +
+        extraFileName = os.path.sep.join([getattr(gSuiteTrack, memberName)
+                                          for memberName in memberHierarchyList] +
                                          [rawFileName])
 
-        uri = self._getUriForDownloadedAndUncompressedTrackPossiblyCached(gSuiteTrack, galaxyFn,
-                                                                          uncomprSuffix, extraFileName)
+        uri = self._getUriForDownloadedAndUncompressedTrackPossiblyCached(
+            gSuiteTrack, galaxyFn, uncomprSuffix, extraFileName
+        )
         return GSuiteTrack(uri, title=uncomprTitle, fileFormat=gSuiteTrack.fileFormat,
                            trackType=gSuiteTrack.trackType, genome=gSuiteTrack.genome,
                            attributes=gSuiteTrack.attributes)

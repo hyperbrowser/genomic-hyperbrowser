@@ -1,21 +1,20 @@
 import unittest
-import os
 
 import config.Config
 config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
 
 from collections import OrderedDict
-from tempfile import gettempdir, NamedTemporaryFile
 
 from gold.util.CustomExceptions import InvalidFormatError
 import gold.gsuite.GSuiteParser as GSuiteParser
-import quick.application.ExternalTrackManager
 
 from test.gold.gsuite.GSuiteTestWithMockEncodingFuncs import GSuiteTestWithMockEncodingFuncs
 
+
 class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
-    def _parseContents(self, contents):
-        return GSuiteParser.parseLines( contents.split('\n') )
+    @staticmethod
+    def _parseContents(contents):
+        return GSuiteParser.parseLines(contents.split('\n'))
 
     def testDefaults(self):
         contents = ''
@@ -45,11 +44,12 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
     def testParseColSpecLineDirectlyMoreStdCols(self):
         colSpecLine = '###Uri\tTitle\tfile_format\ttrack_type\tgenome\tANTIBODY'
 
-        self.assertEquals(['uri', 'title', 'file_format', 'track_type', 'genome', 'antibody'], \
+        self.assertEquals(['uri', 'title', 'file_format', 'track_type', 'genome', 'antibody'],
                           GSuiteParser._parseColumnSpecLine(colSpecLine))
 
     def _commonAssertTrack(self, track, uri, scheme, netloc, path, query, suffix, trackName,
-                           title, location, fileFormat, trackType, genome, attributes=OrderedDict()):
+                           title, location, fileFormat, trackType, genome, 
+                           attributes=OrderedDict()):
         self.assertEquals(uri, track.uri)
         self.assertEquals(scheme, track.scheme)
         self.assertEquals(netloc, track.netloc)
@@ -205,7 +205,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         contents = \
             'galaxy:/ad123dd12fg;bed\n'
 
-        #todo: add test of error when fileFormat is set manually to different
+        # TODO: add test of error when fileFormat is set manually to different
 
         gSuite = self._parseContents(contents)
 
@@ -322,7 +322,8 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
                                 fileFormat='primary',
                                 trackType='unknown',
                                 genome='unknown',
-                                attributes=OrderedDict([('cell', 'GM12878'), ('antibody', 'cMyc')]))
+                                attributes=OrderedDict([('cell', 'GM12878'), 
+                                                        ('antibody', 'cMyc')]))
 
         self._commonAssertTrack(tracks[2],
                                 uri='https://server.other.com/path/to/file3.bed?query=something',
@@ -337,7 +338,8 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
                                 fileFormat='primary',
                                 trackType='unknown',
                                 genome='unknown',
-                                attributes=OrderedDict([('cell', 'GM12878'), ('antibody', 'cMyb')]))
+                                attributes=OrderedDict([('cell', 'GM12878'), 
+                                                        ('antibody', 'cMyb')]))
 
         self._commonAssertTrack(tracks[3],
                                 uri='rsync://server.other.com/path/to/file4;wig',
@@ -408,7 +410,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         from cStringIO import StringIO
         GSuiteParser.validateFromString(contents, outFile=StringIO())
 
-    ## Deprecated, but still allowed
+    # Deprecated, but still allowed
 
     def testParseTrackLinesFileType(self):
         contents = \
@@ -489,7 +491,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         self.assertEquals('unknown', gSuite.trackType)
         self.assertEquals('hg18', gSuite.genome)
         self.assertEquals(['extra'], gSuite.attributes)
-        self.assertEquals(2, len( list(gSuite.allTracks()) ))
+        self.assertEquals(2, len(list(gSuite.allTracks())))
 
     def testImplicitLocationHeaderMultiple(self):
         contents = \
@@ -689,7 +691,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         for gSuiteTrack in gSuite.allTracks():
             self.assertEquals('primary', gSuiteTrack.fileFormat)
 
-    def testFileFormatHeaderWithoutColumn(self):
+    def testTrackTypeHeaderWithoutColumn(self):
         contents = \
             '##track type: segments\n' \
             '###uri\n' \
@@ -798,11 +800,11 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
     #
 
     def _assertInvalidFormatWhenParsing(self, contents):
-        self.assertRaises(InvalidFormatError, \
+        self.assertRaises(InvalidFormatError,
                           GSuiteParser.parseLines, contents.split('\n'))
 
     def _assertValueErrorWhenParsing(self, contents):
-        self.assertRaises(ValueError, \
+        self.assertRaises(ValueError,
                           GSuiteParser.parseLines, contents.split('\n'))
 
     def testNonAscii(self):
@@ -810,7 +812,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '##location: remote\xaf\n' \
             'ftp://server/file1.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testQuotesStdHeader(self):
@@ -818,7 +820,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '##track type: valued%20segments\n' \
             'ftp://server/file1.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testQuotesHeaderGenome(self):
@@ -826,84 +828,70 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '##genom%65: hg19\n' \
             'ftp://server/file1.bed\t%c3\n'
 
-        #self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
-
-    def testInvalidHeaderVariable(self):
-        contents = \
-            '##track typex: segments\n'
-
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testInvalidHeaderValue(self):
         contents = \
             '##track type: segmentation\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testErrorInHeaderLineSpaces(self):
         contents = \
             '##track type : segments\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testSpaceSeparatedColumns(self):
         contents = \
             '###uri title\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testNotUriAsFirstColumn(self):
         contents = \
             '###title\turi\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testExtraColumnBeforeStd(self):
         contents = \
             '###uri\tcell\tfile_format\ttrack_type\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectOrderOfStdColumns(self):
         contents = \
             '###uri\tfile_format\tgenome\ttrack_type\ttitle\n'
 
-        #self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
-
-    def testNotUriAsFirstColumn(self):
-        contents = \
-            '###title\turi\n'
-
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testDuplicateColumn(self):
         contents = \
             '###uri\tabc\tabc\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testEmptyColumnName(self):
         contents = \
             '###uri\t\tabc\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testNoColumns(self):
         contents = \
             '###\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectFileFormatAttributeShouldBePrimary(self):
@@ -911,7 +899,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\tfile_format\n' \
             'file:/path/to/file.bed\tpreprocessed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectLocationHeaderShouldBeMultiple(self):
@@ -920,7 +908,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'ftp://server/file1.bed\n' \
             'file:/path/to/file.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectLocationHeaderShouldBeRemote(self):
@@ -929,7 +917,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'ftp://server/file1.bed\n' \
             'http://server/file2.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectFileFormatHeaderShouldBeUnknown(self):
@@ -939,7 +927,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'ftp://server/file1\tunknown\n' \
             'file:/path/to/file.bed\tprimary\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectFileFormatHeaderShouldBePrimary(self):
@@ -949,7 +937,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\tprimary\n' \
             'file:/path/to/file.bed\tprimary\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectFileFormatHeaderShouldBeMultiple(self):
@@ -959,7 +947,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\tpreprocessedy\n' \
             'file:/path/to/file.bed\tprimary\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectTrackTypeHeaderShouldBeUnknown(self):
@@ -969,7 +957,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'ftp://server/file1.bed\tunknown\n' \
             'file:/path/to/file.bed\tsegments\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectTrackTypeHeaderShouldBeMultiple(self):
@@ -979,7 +967,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\tpoints\n' \
             'file:/path/to/file.bed\tsegments\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectTrackTypeHeaderShouldBeSegments(self):
@@ -989,35 +977,35 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\tvalued segments\n' \
             'file:/path/to/file.bed\tsegments\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectLocationHeaderNoTrackLinesShouldBeUnknown(self):
         contents = \
             '##location: local\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectFileFormatHeaderNoTrackLinesShouldBeUnknown(self):
         contents = \
             '##file format: primary\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectTrackTypeHeaderNoTrackLinesShouldBeUnknown(self):
         contents = \
             '##track type: segments\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectGenomeHeaderNoTrackLinesShouldBeUnknown(self):
         contents = \
             '##genome: hg19\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectMultipleFileFormatHeaderNoColumn(self):
@@ -1027,7 +1015,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'file:/path/to/file.bed\n' \
             'file:/path/to/file2.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectPrimaryFileFormatHeaderNoColumn(self):
@@ -1036,7 +1024,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\n' \
             'hb:/track/name\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectPreprocessedFileFormatHeaderNoColumn(self):
@@ -1045,7 +1033,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\n' \
             'file:/path/to/file.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectMultipleTrackTypeHeaderNoColumn(self):
@@ -1055,7 +1043,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\n' \
             'file:/path/to/file.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectMultipleGenomeHeaderNoColumn(self):
@@ -1065,7 +1053,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\n' \
             'file:/path/to/file.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testMultipleTracksSameUrl(self):
@@ -1085,30 +1073,30 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb:/track/name\tTrack\n' \
             'file:/path/to/file.bed\tTrack\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
-    ## Deprecated, but still allowed:
+    # Deprecated, but still allowed:
 
     def testErrorInGenomeLine(self):
         contents = \
             '####hg18\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testErrorInGenomeLine2(self):
         contents = \
             '####genome:hg18\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testErrorInGenomeLine3(self):
         contents = \
             '####genomes=hg18\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testWrongHeaderOrder1(self):
@@ -1116,7 +1104,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '####genome=hg19\n' \
             '###uri\ttitle\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testWrongHeaderOrder2(self):
@@ -1124,7 +1112,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '####genome=hg19\n' \
             '##key: value\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testDoubleGenomeLine(self):
@@ -1132,7 +1120,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '####genome=hg19\n' \
             '####genome=hg19\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testTrackBeforeGenomeLine(self):
@@ -1140,7 +1128,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb://trackname\n' \
             '####genome=hg19\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     ##
@@ -1150,7 +1138,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\ttitle\n' \
             '##key: value\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testDoubleVariableLine(self):
@@ -1158,7 +1146,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '##track type: segments\n' \
             '##track type: points\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testDoubleColSpecLine(self):
@@ -1166,7 +1154,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\ttitle\n' \
             '###uri\ttitle\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testTrackBeforeHeaderLine(self):
@@ -1174,7 +1162,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb://trackname\n' \
             '##key=value\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testTrackBeforeColSpecLine(self):
@@ -1182,93 +1170,91 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             'hb://trackname\n' \
             '###uri\ttitle\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testInvalidChar(self):
         contents = \
             'hb://track name %s\n' % chr(134)
 
-        #self._parseContents(contents)3
+        # self._parseContents(contents)3
         self._assertInvalidFormatWhenParsing(contents)
 
     def testInvalidProtocol(self):
         contents = \
             'fttp://server.somewhere.com/path/to/file1.bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testMalformedUriLocalNoProtocol(self):
         contents = \
             'track/name/hierarchy\n' \
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testMalformedUriLocalNoSlash(self):
         contents = \
             'hb:track/name/hierarchy\n' \
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testMalformedUriRemoteNoNetloc(self):
         contents = \
             'ftp:/path/to/file\n' \
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
-    #
-    #def testMalformedUriTextWithQueryFtp(self):
+
+    # def testMalformedUriTextWithQueryFtp(self):
     #    contents = \
     #        'ftp://server.somewhere.com/path/to/file1.bed?track:name\n'
     #
-    #    #self._parseContents(contents)
+    #    # self._parseContents(contents)
     #    self._assertInvalidFormatWhenParsing(contents)
-
 
     def testMalformedUriHbWithQuery(self):
         contents = \
             'hb:/track/name/hierarchy?track=track:name\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
-    #def testMalformedUriHierarchicalGalaxyPath(self):
+    # def testMalformedUriHierarchicalGalaxyPath(self):
     #    contents = \
     #        'galaxy:/ad123dd12fg/path/to/filename.bed\n\n'
     #
-    #    #self._parseContents(contents)
+    #    # self._parseContents(contents)
     #    self._assertInvalidFormatWhenParsing(contents)
 
     def testMalformedUriFileUnknownWithQuote(self):
         contents = \
             'file:/path/to/file?track=track:name\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testMalformedUriFileTrackNameWithoutKey(self):
         contents = \
             'file:/path/to/file.btrack?track:name\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertValueErrorWhenParsing(contents)
-
 
     def testMalformedUriWithFragment(self):
         contents = \
             'http://server.other.com/path/to/file2.bed#part1\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testMalformedUriHbWithSuffix(self):
         contents = \
             'hb:/track/name;bed\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectTrackColumnCount(self):
@@ -1276,7 +1262,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\tantibody\tcell\n' \
             'file:/path/to/file.bed\tcMyb\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testInvalidFileFormatInTrack(self):
@@ -1284,7 +1270,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\tfile_format\n' \
             'ftp://server.somewhere.com/path/to/file1.bed\tstring\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testInvalidFileFormatInHbTrack(self):
@@ -1292,7 +1278,7 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\tfile_format\n' \
             'hb:/track/name\tprimary\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testInvalidTrackTypeInTrack(self):
@@ -1300,14 +1286,14 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\ttrack_type\n' \
             'ftp://server.somewhere.com/path/to/file1.bed\tsegmentation\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testErrorInGenomeHeader(self):
         contents = \
             '##genome: .\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def testEmptyMetaDataCell(self):
@@ -1315,12 +1301,13 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
             '###uri\tantibody\tcell\textra\n' \
             'file:/path/to/file.bed\tcMyb\t\t.\n'
 
-        #self._parseContents(contents)
+        # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
     def runTest(self):
         pass
 
+
 if __name__ == "__main__":
-    #TestGtrackSuite().debug()
+    # TestGtrackSuite().debug()
     unittest.main()

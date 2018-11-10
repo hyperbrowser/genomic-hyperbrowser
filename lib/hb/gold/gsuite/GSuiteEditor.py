@@ -2,16 +2,19 @@ from copy import copy
 from collections import OrderedDict
 from gold.gsuite.GSuite import GSuite
 
+
 def selectRowsFromGSuiteByIndex(gSuite, idxList):
     trackList = list(gSuite.allTracks())
     reducedTrackList = [trackList[i] for i in idxList]
     reducedGSuite = GSuite(trackList=reducedTrackList)
     return reducedGSuite
 
+
 def selectRowsFromGSuiteByTitle(gSuite, titleList):
     reducedTrackList = [gSuite.getTrackFromTitle(title) for title in titleList]
     reducedGSuite = GSuite(trackList=reducedTrackList)
     return reducedGSuite
+
 
 def selectColumnsFromGSuite(gSuite, selectedAttributes, selectTitle=True):
     reducedGSuite = GSuite()
@@ -23,7 +26,7 @@ def selectColumnsFromGSuite(gSuite, selectedAttributes, selectTitle=True):
     for track in gSuite.allTracks():
         reducedTrack = copy(track)
         reducedTrack.attributes = \
-            OrderedDict([(key, reducedTrack.attributes[key]) for key in selectedAttributes \
+            OrderedDict([(key, reducedTrack.attributes[key]) for key in selectedAttributes
                          if key in reducedTrack.attributes])
         if not selectTitle:
             reducedTrack.title = reducedTrack.uri

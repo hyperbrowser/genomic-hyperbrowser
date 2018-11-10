@@ -7,6 +7,7 @@ from gold.util.CustomExceptions import InvalidFormatError
 
 from test.gold.gsuite.GSuiteTestWithMockEncodingFuncs import GSuiteTestWithMockEncodingFuncs
 
+
 class TestGSuite(GSuiteTestWithMockEncodingFuncs):
     def testEmptyGSuite(self):
         gSuite = GSuite()
@@ -15,6 +16,7 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual('unknown', gSuite.fileFormat)
         self.assertEqual('unknown', gSuite.trackType)
         self.assertEqual('unknown', gSuite.genome)
+        self.assertEqual([], gSuite.extraHeaderKeys)
         self.assertEqual([], gSuite.attributes)
 
         self.assertEqual(False, gSuite.isPreprocessed())
@@ -32,11 +34,11 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual('unknown', gSuite.genome)
 
         gSuite.addTrack(GSuiteTrack('ftp://server.somewhere.com/path/to/file1.bed',
-                                    title='Track1', \
+                                    title='Track1',
                                     attributes=OrderedDict([('cell', 'k562'),
                                                             ('antibody', 'cMyb')])))
         gSuite.addTrack(GSuiteTrack('http://server.other.com/path/to/file2.bed',
-                                    title='Track2', \
+                                    title='Track2',
                                     attributes=OrderedDict([('cell', 'GM12878'),
                                                             ('antibody', 'cMyc')])))
         gSuite.addTrack(GSuiteTrack('https://server.other.com/path/to/file3.bed',
@@ -66,11 +68,11 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual('multiple', gSuite.genome)
 
         gSuite.addTrack(GSuiteTrack('galaxy:/ad123dd12fg;btrack?track=track:name',
-                                    title='Track2', \
+                                    title='Track2',
                                     attributes=OrderedDict([('cell', 'k562'),
                                                             ('antibody', 'cMyb')])))
         gSuite.addTrack(GSuiteTrack('file:/path/to/file.btrack?track=track:name',
-                                    title='Track2', \
+                                    title='Track2',
                                     attributes=OrderedDict([('antibody', 'cMyb'),
                                                             ('extra', 'yes')])))
 
@@ -86,7 +88,7 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual(7, gSuite.numTracks())
         self.assertEqual(['hg18'] * 4 + ['hg19'] + ['unknown'] * 2,
                          [x.genome for x in gSuite.allTracks()])
-        self.assertEqual(['Track1', 'Track2', 'file3.bed', 'file3.bed (2)', \
+        self.assertEqual(['Track1', 'Track2', 'file3.bed', 'file3.bed (2)',
                           'Track1 (2)', 'Track2 (2)', 'Track2 (3)'],
                          gSuite.allTrackTitles())
         self.assertEqual(['segments', 'unknown'],
@@ -94,7 +96,7 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
 
         self.assertRaises(InvalidFormatError, gSuite.addTrack,
                           GSuiteTrack('https://server.third.com/path/to/file3.bed'),
-                          allowDuplicateTitles = False)
+                          allowDuplicateTitles=False)
 
     def testSimpleTitleDuplicate(self):
         gSuite = GSuite()
@@ -108,5 +110,5 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
 
 
 if __name__ == "__main__":
-    #TestGSuite().debug()
+    # TestGSuite().debug()
     unittest.main()

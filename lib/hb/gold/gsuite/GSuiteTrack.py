@@ -2,11 +2,11 @@ import os
 import urlparse
 
 from collections import OrderedDict
-from urllib import quote, quote_plus, unquote, unquote_plus 
+from urllib import quote, quote_plus, unquote, unquote_plus
 from config.Config import ALLOW_GSUITE_FILE_PROTOCOL
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_FORMAT_HEADER, \
-                                        TRACK_TYPE_HEADER, GENOME_HEADER, LOCAL, REMOTE, TEXT, BINARY, \
-                                        MULTIPLE, UNKNOWN, PREPROCESSED, PRIMARY, BTRACK_SUFFIX
+                                        TRACK_TYPE_HEADER, GENOME_HEADER, LOCAL, REMOTE, TEXT, \
+                                        BINARY, UNKNOWN, PREPROCESSED, PRIMARY, BTRACK_SUFFIX
 from gold.util.CustomExceptions import InvalidFormatError, AbstractClassError, \
                                        NotSupportedError
 from gold.util.CommonFunctions import getFileSuffix
@@ -14,6 +14,7 @@ from quick.application.SignatureDevianceLogging import takes, returns
 
 
 _GSUITE_TRACK_REGISTRY = {}
+
 
 def quoteParseResults(parseResults):
     scheme = parseResults.scheme
@@ -40,7 +41,7 @@ def unquoteParseResults(parseResults):
 def unquoteQueryDict(queryDict):
     resQueryDict = {}
 
-    for key,val in queryDict.iteritems():
+    for key, val in queryDict.iteritems():
         resQueryDict[unquote_plus(key)] = [unquote_plus(_) for _ in val]
 
     return resQueryDict
@@ -50,26 +51,23 @@ class GSuiteTrackFactory(type):
     def __call__(cls, uri, **kwArgs):
 
         if cls is GSuiteTrack:
-            # This is probably not needed, as the scheme should not be quoted
-            #if doUnquote:
-                #uri = unquote(uri)
             scheme = urlparse.urlparse(uri).scheme
 
             if scheme == '':
-                raise InvalidFormatError('GSuite track URI does not have a specified ' \
+                raise InvalidFormatError('GSuite track URI does not have a specified '
                                          'protocol. URI: ' + uri)
 
             if scheme not in _GSUITE_TRACK_REGISTRY:
-                raise InvalidFormatError('Track protocol "%s" is not supported in ' % scheme +\
+                raise InvalidFormatError('Track protocol "%s" is not supported in ' % scheme +
                                          'this version of the GSuite format')
             return _GSUITE_TRACK_REGISTRY[scheme](uri, **kwArgs)
         return type.__call__(cls, uri, **kwArgs)
 
 
 class GSuiteTrack(object):
-    '''
+    """
     Abstract superclass for all protocol-specific subclasses of GSuite tracks
-    '''
+    """
     __metaclass__ = GSuiteTrackFactory
 
     SCHEME = None
@@ -80,7 +78,8 @@ class GSuiteTrack(object):
 
         self._parsedUri = urlparse.urlparse(uri)
         if self._parsedUri.query:
-            self._queryDict = urlparse.parse_qs(self._parsedUri.query, keep_blank_values=False, strict_parsing=True)
+            self._queryDict = urlparse.parse_qs(self._parsedUri.query, keep_blank_values=False,
+                                                strict_parsing=True)
 
         if doUnquote:
             self._parsedUri = unquoteParseResults(self._parsedUri)
@@ -89,12 +88,16 @@ class GSuiteTrack(object):
 
         assert self._parsedUri.scheme == self.SCHEME, [self._parsedUri.scheme, self.SCHEME]
         if self._parsedUri.fragment != '':
-            raise InvalidFormatError('Fragment part of URI is not allowed: "#%s"' % self._parsedUri.fragment)
+            raise InvalidFormatError('Fragment part of URI is not allowed: "#%s"' %
+                                     self._parsedUri.fragment)
 
         self.title = title
-        self.fileFormat = fileFormat if fileFormat is not None else HEADER_VAR_DICT[FILE_FORMAT_HEADER].default
-        self.trackType = trackType if trackType is not None else HEADER_VAR_DICT[TRACK_TYPE_HEADER].default
-        self.genome = genome if genome is not None else HEADER_VAR_DICT[GENOME_HEADER].default
+        self.fileFormat = fileFormat if fileFormat is not None else \
+            HEADER_VAR_DICT[FILE_FORMAT_HEADER].default
+        self.trackType = trackType if trackType is not None else \
+            HEADER_VAR_DICT[TRACK_TYPE_HEADER].default
+        self.genome = genome if genome is not None else \
+            HEADER_VAR_DICT[GENOME_HEADER].default
         self.attributes = attributes
         self.comment = comment
 
@@ -228,7 +231,7 @@ class GSuiteTrack(object):
     def attributes(self, attributes):
         self._attributes = OrderedDict()
         
-        for key,val in attributes.iteritems():
+        for key, val in attributes.iteritems():
             if val is not None:
                 if val == '':
                     raise InvalidFormatError('Empty attribute contents not allowed. '
@@ -249,10 +252,12 @@ class GSuiteTrack(object):
         if attrName in self._attributes:
             return self._attributes[attrName]
 
-    def _checkHeaderValAllowed(self, param, header):
+    @staticmethod
+    def _checkHeaderValAllowed(param, header):
         if param is not None and param not in HEADER_VAR_DICT[header].allowed:
-            raise InvalidFormatError('Header "%s" value is not allowed: "%s". ' % (header, param) +\
-                                     'Allowed values: ' + ', '.join(HEADER_VAR_DICT[header].allowed))
+            raise InvalidFormatError('Header "%s" value is not allowed: "%s". ' % (header, param) +
+                                     'Allowed values: ' +
+                                     ', '.join(HEADER_VAR_DICT[header].allowed))
 
     def __getattr__(self, item):
         try:
@@ -269,8 +274,10 @@ class GSuiteTrack(object):
 class RemoteGSuiteTrack(GSuiteTrack):
     def _init(self, **kwArgs):
         if self.netloc is None:
-            raise InvalidFormatError('Track protocol "%s" requires the specification ' % self.SCHEME +\
-                                     'of a host server, e.g. "%s://server.org/path/to/file".' % self.SCHEME)
+            raise InvalidFormatError(
+                'Track protocol "%s" requires the specification ' % self.SCHEME +
+                'of a host server, e.g. "%s://server.org/path/to/file".' % self.SCHEME
+            )
 
         super(RemoteGSuiteTrack, self)._init(**kwArgs)
 
@@ -294,15 +301,17 @@ class RemoteGSuiteTrack(GSuiteTrack):
 
 class LocalGSuiteTrack(GSuiteTrack):
     # In order to set doUnquote to False for all local tracks
-    #def __init__(self, uri, title=None, fileFormat=None, trackType=None, genome=None,
+    # def __init__(self, uri, title=None, fileFormat=None, trackType=None, genome=None,
     #             attributes=OrderedDict(), comment=None, doUnquote=True):
     #    GSuiteTrack.__init__(self, uri, title=title, fileFormat=fileFormat, trackType=trackType,
-    #                         genome=genome, attributes=attributes, comment=comment, doUnquote=False)
+    #                         genome=genome, attributes=attributes, comment=comment,
+    #                         doUnquote=False)
 
     def _init(self, **kwArgs):
         if not self._parsedUri.path.startswith('/'):
-            raise InvalidFormatError('Track protocol "%s" requires the ' % self.SCHEME +\
-                                     'path to start with the "/" character. Path: "%s"' % self._parsedUri.path)
+            raise InvalidFormatError('Track protocol "%s" requires the ' % self.SCHEME +
+                                     'path to start with the "/" character. Path: "%s"' %
+                                     self._parsedUri.path)
 
         super(LocalGSuiteTrack, self)._init(**kwArgs)
 
@@ -337,22 +346,26 @@ class SuffixDependentGSuiteTrack(GSuiteTrack):
                         self.fileFormat = UNKNOWN
 
         if oldFileFormat != UNKNOWN and oldFileFormat != self.fileFormat:
-            raise InvalidFormatError('File format specified as parameter ("%s") does not ' % oldFileFormat +\
-                                     'fit with track type as specified by the suffix '
-                                     '"%s": "%s"' % (self.suffix, self.fileFormat))
+            raise InvalidFormatError(
+                'File format specified as parameter ("%s") does not ' % oldFileFormat +
+                'fit with track type as specified by the suffix '
+                '"%s": "%s"' % (self.suffix, self.fileFormat)
+            )
 
         super(SuffixDependentGSuiteTrack, self)._init(**kwArgs)
 
     def getGenomeElementSource(self, printWarnings=True):
         from gold.origdata.GenomeElementSource import GenomeElementSource
-        return GenomeElementSource(self.path, genome=self.genome, trackName=self.trackName, suffix=self.suffix,
-                                   external=True, printWarnings=printWarnings)
+        return GenomeElementSource(self.path, genome=self.genome, trackName=self.trackName,
+                                   suffix=self.suffix, external=True, printWarnings=printWarnings)
+
 
 class NoQueryForTextGSuiteTrack(GSuiteTrack):
     def _init(self, **kwArgs):
         if self.fileFormat in (PRIMARY, UNKNOWN) and self._parsedUri.query != '':
-            raise InvalidFormatError('Queries in URI ("?%s") ' % self._parsedUri.query +\
-                                     'is not allowed for non-binary tracks with "%s" as protocol.' % self.SCHEME)
+            raise InvalidFormatError('Queries in URI ("?%s") ' % self._parsedUri.query +
+                                     'is not allowed for non-binary tracks with "%s" as protocol.'
+                                     % self.SCHEME)
 
         super(NoQueryForTextGSuiteTrack, self)._init(**kwArgs)
 
@@ -364,12 +377,12 @@ class SearchQueryForSuffixGSuiteTrack(GSuiteTrack):
     def _getFileNameFromQuery(self):
         import re
         query = self._parsedUri.query
-        for part in re.split('&|;', query):
+        for part in re.split('[&;]', query):
             subparts = part.split('=')
             if len(subparts) == 2:
                 key, val = subparts
                 partSuffix = getFileSuffix(val)
-                if partSuffix != '': # Looks like a file name with suffix
+                if partSuffix != '':  # Looks like a file name with suffix
                     fileName = val
                     return fileName
 
@@ -394,11 +407,13 @@ class SearchQueryForSuffixGSuiteTrack(GSuiteTrack):
 
 class PreprocessedGSuiteTrack(GSuiteTrack):
     def _init(self, fileFormat=None, **kwArgs):
-        self.fileFormat = fileFormat #To handle deprecated 'binary' value
+        self.fileFormat = fileFormat  # To handle deprecated 'binary' value
 
         if self.fileFormat is not None and self.fileFormat != PREPROCESSED:
-            raise InvalidFormatError('Track protocol "%s" requires the file format ' % self.SCHEME +\
-                                     'to be "%s", not "%s".' % (PREPROCESSED, fileFormat))
+            raise InvalidFormatError(
+                'Track protocol "%s" requires the file format ' % self.SCHEME +
+                'to be "%s", not "%s".' % (PREPROCESSED, fileFormat)
+            )
 
         self.fileFormat = PREPROCESSED
 
@@ -410,7 +425,8 @@ class FtpGSuiteTrack(RemoteGSuiteTrack, SuffixDependentGSuiteTrack):
     SCHEME = 'ftp'
 
 
-class HttpGSuiteTrack(RemoteGSuiteTrack, SuffixDependentGSuiteTrack, SearchQueryForSuffixGSuiteTrack):
+class HttpGSuiteTrack(RemoteGSuiteTrack, SuffixDependentGSuiteTrack,
+                      SearchQueryForSuffixGSuiteTrack):
     SCHEME = 'http'
 
 
@@ -431,7 +447,7 @@ class HbGSuiteTrack(LocalGSuiteTrack, PreprocessedGSuiteTrack, NoQueryForTextGSu
                                      '"%s" protocol: %s' % (self.SCHEME, self._parsedUri.params))
 
         if self._parsedUri.query != '':
-            raise InvalidFormatError('Queries in URI ("?%s") ' % self._parsedUri.query +\
+            raise InvalidFormatError('Queries in URI ("?%s") ' % self._parsedUri.query +
                                      'is not supported by the "%s" protocol.' % self.SCHEME)
 
         super(HbGSuiteTrack, self)._init(**kwArgs)
@@ -460,11 +476,11 @@ class GalaxyGSuiteTrack(LocalGSuiteTrack, SuffixDependentGSuiteTrack, NoQueryFor
     SCHEME = 'galaxy'
 
     def _init(self, **kwArgs):
-        self.path #To make sure path is checked
+        self.path  # To make sure path is checked
         super(GalaxyGSuiteTrack, self)._init(**kwArgs)
 
     def hasExtraFileName(self):
-        return len( self._parsedUri.path.split('/') ) > 2
+        return len(self._parsedUri.path.split('/')) > 2
 
     @property
     def path(self):
@@ -497,7 +513,7 @@ class GalaxyGSuiteTrack(LocalGSuiteTrack, SuffixDependentGSuiteTrack, NoQueryFor
 
 class FileGSuiteTrack(LocalGSuiteTrack, SuffixDependentGSuiteTrack, NoQueryForTextGSuiteTrack):
     SCHEME = 'file'
-    #DO_UNQUOTE_DEFAULT = False
+    # DO_UNQUOTE_DEFAULT = False
 
     @classmethod
     def generateURI(cls, path='', suffix='', trackName=[], doQuote=True):
@@ -510,17 +526,19 @@ class FileGSuiteTrack(LocalGSuiteTrack, SuffixDependentGSuiteTrack, NoQueryForTe
         return urlparse.urlunparse(parseResult)
 
 
-def registerGSuiteTrackClass(cls):
-    if cls.SCHEME not in urlparse.uses_query:
-        urlparse.uses_query.append(cls.SCHEME)
+def registerGSuiteTrackClass(trackCls):
+    if trackCls.SCHEME not in urlparse.uses_query:
+        urlparse.uses_query.append(trackCls.SCHEME)
 
-    if cls.SCHEME not in urlparse.uses_params:
-        urlparse.uses_params.append(cls.SCHEME)
+    if trackCls.SCHEME not in urlparse.uses_params:
+        urlparse.uses_params.append(trackCls.SCHEME)
 
-    _GSUITE_TRACK_REGISTRY[cls.SCHEME] = cls
+    _GSUITE_TRACK_REGISTRY[trackCls.SCHEME] = trackCls
+
 
 def fixNetlocParsingForFile():
     urlparse.uses_netloc.remove(FileGSuiteTrack.SCHEME)
+
 
 for cls in [FtpGSuiteTrack,
             HttpGSuiteTrack,

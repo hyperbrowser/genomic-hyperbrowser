@@ -5,11 +5,13 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
                                         FILE_FORMAT_MEMBER, TRACK_TYPE_MEMBER, GENOME_MEMBER, \
                                         UNKNOWN, MULTIPLE, LOCAL, PREPROCESSED
 
+
 class GSuite(object):
     def __init__(self, trackList=[]):
         self._trackList = []
         self._titleToTrackDict = {}
         self._updatedHeaders = False
+        self._customHeaders = OrderedDict()
 
         self.addTracks(trackList)
 
@@ -20,13 +22,14 @@ class GSuite(object):
     def _updateLocation(self):
         self._location = self._getCombinedHeaderValue(LOCATION_HEADER, LOCATION_MEMBER,
                                                       self._combineEqualVals)
+
     @property
     def fileFormat(self):
         return self._fileFormat
 
     def _updateFileFormat(self):
         self._fileFormat = self._getCombinedHeaderValue(FILE_FORMAT_HEADER, FILE_FORMAT_MEMBER,
-                                                      self._combineEqualVals)
+                                                        self._combineEqualVals)
 
     @property
     def trackType(self):
@@ -55,7 +58,8 @@ class GSuite(object):
 
         return curVal
 
-    def _combineTrackValPair(self, curVal, nextVal, combineValPairFunc):
+    @staticmethod
+    def _combineTrackValPair(curVal, nextVal, combineValPairFunc):
         try:
             return combineValPairFunc(curVal, nextVal)
         except (InvalidFormatError, NotSupportedError):
@@ -64,7 +68,8 @@ class GSuite(object):
             else:
                 return MULTIPLE
 
-    def _combineEqualVals(self, curVal, nextVal):
+    @staticmethod
+    def _combineEqualVals(curVal, nextVal):
         if curVal == nextVal:
             return curVal
         raise InvalidFormatError('%s != %s' % (curVal, nextVal))
@@ -74,8 +79,8 @@ class GSuite(object):
             return self._combineEqualVals(curVal, nextVal)
         except InvalidFormatError:
             from gold.track.TrackFormat import TrackFormatReq
-            curReq = TrackFormatReq(name = curVal)
-            nextReq = TrackFormatReq(name = nextVal)
+            curReq = TrackFormatReq(name=curVal)
+            nextReq = TrackFormatReq(name=nextVal)
 
             maxCommonCoreType = TrackFormatReq.maxCommonCoreFormat(curReq, nextReq)
             if maxCommonCoreType is not None:
@@ -109,7 +114,8 @@ class GSuite(object):
                         track.title = candTitle
                         break
             else:
-                raise InvalidFormatError('Multiple tracks with the same title is not allowed: ' + track.title)
+                raise InvalidFormatError('Multiple tracks with the same title is not allowed: ' +
+                                         track.title)
 
         self._updatedHeaders = False
         self._titleToTrackDict[track.title] = track
