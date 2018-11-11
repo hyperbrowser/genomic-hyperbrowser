@@ -1,23 +1,25 @@
 class Cube():
 
     @classmethod
-    def addSelectList(cls, fileNameList, optionsToUniqueList, data, divId, statNum, option = 'no'):
+    def addSelectList(cls, fileNameList, optionsToUniqueList, data, divId, statNum, mainOptionList, optionList, option = 'no'):
 
-        print 'fileNameList', fileNameList, '<br>'
-        print 'optionsToUniqueList', optionsToUniqueList, '<br>'
-        print 'data', data, '<br>'
-        print 'divId', divId, '<br>'
-        print 'statNum', statNum, '<br>'
+        # print 'fileNameList', fileNameList, '<br>'
+        # print 'optionsToUniqueList', optionsToUniqueList, '<br>'
+        # print 'data', data, '<br>'
+        # print 'divId', divId, '<br>'
+        # print 'statNum', statNum, '<br>'
+        print 'mainOptionList', mainOptionList, '<br>'
+        print 'optionList', optionList, '<br>'
 
         js = ''
-
-
-
         if statNum == 0:
             js += cls._visualizeResultsAddLib()
 
         #create form
         js += """<form id='""" + str(divId) + 'form' +  """' name="classic">"""
+
+        ####TODO
+        #js += """ mainOptionList = """ + str(mainOptionList), optionList
         for index, fileName in enumerate(fileNameList):
             js += cls._addOptionToSelectList(fileName, index, data, divId, statNum)
             js += "<br \><br \>"
@@ -44,11 +46,11 @@ class Cube():
         if option == 'raw':
             for index, fileName in enumerate(fileNameList):
                 js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
-                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'max'], statNum)
+                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'average', 'max', 'min'], statNum)
         else:
             for index, fileName in enumerate(fileNameList):
                 js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
-                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'max'], statNum)
+                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'average', 'max', 'min'], statNum)
 
         js += """var chocieslistRowColumn"""+str(statNum)+"""=document.classic.choicesRowColumn"""+str(statNum)
 
@@ -90,8 +92,8 @@ class Cube():
         return js
 
     @classmethod
-    def _addOptionToSelectList(cls, fieldName, index, data, divId, statNum):
-        js, idNumFS = cls._fillFirstSelect("How to treat " + str(fieldName) + ": ", index, data, divId, statNum)
+    def _addOptionToSelectList(cls, fieldName, index, data, divId, statNum, mainOptionList, optionList):
+        js, idNumFS = cls._fillFirstSelect("How to treat " + str(fieldName) + ": ", index, data, divId, statNum, mainOptionList, optionList)
         js += cls._fillSecondSelect(index, data, divId, idNumFS, statNum)
         js += cls._fillThirdSelect(index, data, divId, idNumFS, statNum)
         return js
@@ -116,7 +118,7 @@ class Cube():
 
     @classmethod
     def _fillThirdSelect(cls, idNum, data, divId, idNumFS, statNum):
-        js = '<select class="choicesAggregate" name="choicesAggregate' + str(statNum) + '' + str(
+        js = '<select class="choicesAggregate" style="margin-left: -170px;" name="choicesAggregate' + str(statNum) + '' + str(
             idNum) + '" id="choicesAggregate' + str(statNum) + str(
             idNum) + '" size="1" style="width: 100px"  onClick="onClickChoices(' + str(
             statNum) + ',' + str(idNumFS) + ',' + str(data) + ',' + "'" + str(
@@ -175,7 +177,7 @@ class Cube():
 
     @classmethod
     def _addSecondThirdInfo(cls, idNum, statNum):
-        js = '''//document.getElementById("choicesAggregate''' + str(statNum) + str(idNum) + '''").style.visibility = "hidden";
+        js = '''document.getElementById("choicesAggregate''' + str(statNum) + str(idNum) + '''").style.visibility = "hidden";
             var choicesAggregateList''' + str(statNum) + str(
             idNum) + '''= document.getElementById("choicesAggregate''' + str(statNum) + str(idNum) + '''");
 
@@ -207,6 +209,7 @@ class Cube():
             hideTable(statNum)
             
             document.getElementById("choices"+statNum+idNum).style.visibility = "hidden";
+            document.getElementById("choicesAggregate"+statNum+idNum).style.visibility = "hidden";
             
             console.log('selectedChoicesGroup', selectedChoicesGroup);
                     
@@ -229,6 +232,7 @@ class Cube():
             }
             if(selectedChoicesGroup  == 3)
             {
+                selectedChoicesGroupPrevious = selectedChoicesGroup;
                 selectedChoicesGroup = selectedChoicesGroup - 2;
                 document.getElementById("choicesAggregate"+statNum+idNum).style.visibility = "visible";    
                 var choicesAggregateList = eval("choicesAggregateList"+statNum+idNum);   
@@ -244,7 +248,7 @@ class Cube():
                     }
                 }
                 var dimensions = document.getElementById("dimensions"+statNum+idNum);
-                dimensions.options[selectedChoicesGroup].setAttribute("selected", "selected");
+                dimensions.options[selectedChoicesGroupPrevious].setAttribute("selected", "selected");
             }
         }
         </script>
@@ -356,7 +360,7 @@ class Cube():
                 }
                 else if (selDim"""+str(index)+""" == -1)
                 {
-                    console.log('aggregate inside');
+                    //console.log('aggregate inside');
                     //selDim"""+str(index)+""" = parseInt(selDim"""+str(index)+""");
                     if(selChAggregate"""+str(index)+""" != 0)
                 	{
@@ -710,7 +714,7 @@ class Cube():
                
        function generateTable(tab, inx, divId) 
        {
-          console.log('tab-generateTable', tab);
+          //console.log('tab-generateTable', tab);
  		  var tbl = document.createElement("table");
   		  var tblBody = document.createElement("tbody");
  	      
@@ -733,7 +737,7 @@ class Cube():
     			}
     			else
     			{
-    			    console.log('B', tab[1].length);
+    			    //console.log('B', tab[1].length);
                     for (var j = 0; j < tab[1].length; j++) 
                     {
                         if (i == 0)
@@ -744,19 +748,19 @@ class Cube():
                         {
                             var cell = document.createElement("td");
                         }
-                        console.log('1', 'tab[i][j]', tab[i][j], tab[i].length);
+                        //console.log('1', 'tab[i][j]', tab[i][j], tab[i].length);
                         
                         if (tab[i][j] == undefined)
                         {    
                             //if (num == 0)
                             //{
                                 var cellText = document.createTextNode('Value');
-                                console.log('2', 'tab[i][j]', tab[i][j], tab[i].length);
+                                //console.log('2', 'tab[i][j]', tab[i][j], tab[i].length);
                             //}
                         }
                         else
                         {
-                            console.log('3', 'tab[i][j]', tab[i][j], tab[i][j].length, tab[i].length);
+                            //console.log('3', 'tab[i][j]', tab[i][j], tab[i][j].length, tab[i].length);
                             if (tab[i][j].length == 0)
                             {
                                 if (tab[i].length == 1)
@@ -907,7 +911,7 @@ class Cube():
 		
 	   function createPLotWithOneSeries(statNum, container, categories, series, plotLines, inx)
 	   {
-	      //console.log('container', container);
+	       //console.log('container', container);
   		   //console.log('categories', categories);
   		   //console.log('series', series);
   		  
@@ -1022,8 +1026,8 @@ class Cube():
 		function createPLot(container, categories, series)
 		{
 			//console.log('container', container);
-  		  //console.log('categories', categories);
-  		  //console.log('series', series);
+  		    //console.log('categories', categories);
+  		    //console.log('series', series);
   		  
   		  	
   		  
@@ -1076,6 +1080,7 @@ class Cube():
         	for (var k = 0; k < operationsReverse.length; k++) 
         	{	
         		var op = operationsReverse[k];
+        		console.log('op');
         		
         		if ((op >= 0) || (op.length >= 0))
         		{	
@@ -1083,52 +1088,180 @@ class Cube():
         		    if (op == 'sum')
         		    {
         		        var partFlat = [];
-        			for (var j = 0; j < flat.length; j++) 
-        			{
-        				partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
-        			}
-        			flat = partFlat;
-        			
-        			var myDict = {};
-        			for (var x in flat) 
-        			{
-        				if (x == 'alphanumSort')
+        				for (var j = 0; j < flat.length; j++) 
         				{
+        					partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
         				}
-        				else
+        				flat = partFlat;
+        			
+        				var myDict = {};
+        				for (var x in flat) 
         				{
-        					//console.log('x', x, flat[x], flat[x].length-1);
-        					var value = parseFloat(flat[x][flat[x].length-1]);
-        					var key = flat[x].slice(0,flat[x].length-1);
-        				
-        					//console.log('value', value, 'key', key);
-        					if (myDict[ key ] == undefined)
+        					if (x == 'alphanumSort')
         					{
-        						myDict[ key ] = 0;
         					}
-	        				myDict[ key ] += value;
-	        			}
-        			}
-        			
-        			partFlat = [];
-        			var c = 0;
-        			
-        			for (var x in myDict)
-        			{
-        				if ( x == "")
-        				{
-        					partFlat[c] = [myDict[x]];
+        					else
+        					{
+        						//console.log('x', x, flat[x], flat[x].length-1);
+        						var value = parseFloat(flat[x][flat[x].length-1]);
+        						var key = flat[x].slice(0,flat[x].length-1);
+        				
+        						//console.log('value', value, 'key', key);
+        						if (myDict[ key ] == undefined)
+        						{
+        							myDict[ key ] = 0;
+        						}
+	        					myDict[ key ] += value;
+	        				}
         				}
-        				else
+        			
+        				partFlat = [];
+        				var c = 0;
+        			
+        				for (var x in myDict)
         				{
-        					partFlat[c] = x.split(',');
-        					partFlat[c].push(myDict[x]);
+        					if ( x == "")
+        					{
+        						partFlat[c] = [myDict[x]];
+        					}
+        					else
+        					{
+        						partFlat[c] = x.split(',');
+        						partFlat[c].push(myDict[x]);
+        					}
+        					c = c+1;
         				}
-        				c = c+1;
-        			}
-        			flat = partFlat;
+        				flat = partFlat;
         		    }
-        		    else
+        		    else if (op == 'average')
+        		    {
+        		        var partFlat = [];
+        				for (var j = 0; j < flat.length; j++) 
+        				{
+        					partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
+        				}
+        				flat = partFlat;
+        			
+        				var myDict = {};
+        				for (var x in flat) 
+        				{
+        					if (x == 'alphanumSort')
+        					{
+        					}
+        					else
+        					{
+        						//console.log('x', x, flat[x], flat[x].length-1);
+        						var value = parseFloat(flat[x][flat[x].length-1]);
+        						var key = flat[x].slice(0,flat[x].length-1);
+        				
+        						//console.log('value', value, 'key', key);
+        						if (myDict[ key ] == undefined)
+        						{
+        							myDict[ key ] = 0;
+        						}
+	        					myDict[ key ] += parseFloat(value)/parseFloat(operationsReverse.length);
+	        				}
+        				}
+        			
+        				partFlat = [];
+        				var c = 0;
+        			
+        				for (var x in myDict)
+        				{
+        					if ( x == "")
+        					{
+        						partFlat[c] = [myDict[x]];
+        					}
+        					else
+        					{
+        						partFlat[c] = x.split(',');
+        						partFlat[c].push(myDict[x]);
+        					}
+        					c = c+1;
+        				}
+        				flat = partFlat;
+        		    }
+        		    else if (op == 'max' || op == 'min')
+        		    {
+                        var partFlat = [];
+        				for (var j = 0; j < flat.length; j++) 
+        				{
+        					partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
+        				}
+        				flat = partFlat;
+        			
+        				var myDict = {};
+        				
+        				if (op == 'max')
+        				{
+        				    value = Number.NEGATIVE_INFINITY;
+        				}
+        				if (op == 'min')
+        				{
+        				    value = Number.POSITIVE_INFINITY;
+        				}
+        				key = ""
+        				
+        				
+        				for (var x in flat) 
+        				{
+        					if (x == 'alphanumSort')
+        					{
+        					}
+        					else
+        					{
+        						//console.log('x', x, flat[x], flat[x].length-1);
+        						var valueCheck = parseFloat(flat[x][flat[x].length-1]);
+        						var keyCheck = flat[x].slice(0,flat[x].length-1);
+        						
+        						if (op == 'max')
+        				        {
+                                    if (value <= valueCheck)
+                                    {
+                                        value = valueCheck;
+                                        key = keyCheck;
+                                    }
+                                }
+                                if (op == 'min')
+        				        {
+        				            if (value >= valueCheck)
+                                    {
+                                        value = valueCheck;
+                                        key = keyCheck;
+                                    }
+        				        }
+        				
+        						console.log('value', value, 'key', key);
+        						
+	        				}
+        				}
+        				
+        				if (myDict[ key ] == undefined)
+        				{
+        					myDict[ key ] = 0;
+        				}		
+	        			myDict[ key ] += value;
+        			
+        				partFlat = [];
+        				var c = 0;
+        			
+        				for (var x in myDict)
+        				{
+        					if ( x == "")
+        					{
+        						partFlat[c] = [myDict[x]];
+        					}
+        					else
+        					{
+        						partFlat[c] = x.split(',');
+        						partFlat[c].push(myDict[x]);
+        					}
+        					c = c+1;
+        				}
+        				flat = partFlat;
+        			}
+        			
+        			else
         		    {
                         var partFlat = [];
                         for (j = 0; j < flat.length; j++) 
@@ -1195,9 +1328,9 @@ class Cube():
         		}
         		i = i - 1;
         	}
+        	console.log('flat', flat);
         	return flat;
         }
-        
         </script>
         
         """

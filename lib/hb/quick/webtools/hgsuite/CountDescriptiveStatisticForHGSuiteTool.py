@@ -23,6 +23,8 @@ from proto.hyperbrowser.StaticFile import StaticImage
 
 class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
+    MAIN_OPTIONS = ['Select one value', 'Show results for each value', 'Aggregate across this dimension']
+    OPTIONS_LIST = ['sum', 'average', 'max', 'min']
     COUNT = 'Count'
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS = 10
@@ -35,7 +37,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     NORMALIZESTAT = 'Normalize (Coverege divided by sum of coverages)'
     OBSVSEXPECTEDSTAT = 'Compare of observed coverege values vs expected coverage values'
 
-    SUMMARIZE = {'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max', 'no': 'no', 'raw': 'raw'}
+    SUMMARIZE = {'sum': 'sum', 'average': 'average', 'minimum': 'min', 'maximum': 'max', 'no': 'no', 'raw': 'raw'}
     STAT_LIST = {NORMALIZESTAT: 'Count/SumStat', OBSVSEXPECTEDSTAT: 'ObsVsExpStat', COUNTSTAT: 'CountStat'}
 
     @classmethod
@@ -53,9 +55,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 in range(cls.MAX_NUM_OF_STAT)] + \
                [('Information', 'groupDefined')] + \
                [('Do you want to specify groups', 'groupResponse')] + \
-               [('Select the column which define the group at level %s' % (
-               i + 1) + '',
-                 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('', 'preselectedGroup')] + \
+               [('Select the column which define the group at level %s' % (i + 2) + '', 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('Do you want to have preselected presenting options', 'preselectedDecision')] + \
+               [('Select main option for the group at level %s' % (i + 1) + '', 'selectedMainOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('', 'selectedOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
                # [('Do you want to summarize results within groups', 'summarizeResponse')] + \
@@ -113,6 +117,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     return ['no', 'yes']
 
     @classmethod
+    def getOptionsBoxPreselectedGroup(cls, prevChoices):
+        return '__rawstr__', 'Important: Preselected column which define the group at level 1 is always title.'
+    #coremine
+
+    @classmethod
     def getHowManyStatHaveBeenSelected(cls, prevChoices):
         statList = []
         for i in xrange(cls.MAX_NUM_OF_STAT):
@@ -156,6 +165,62 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 if selectionList:
                     return selectionList
 
+    @classmethod
+    def setupSelectedColumnMethods(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            setattr(cls, 'getOptionsBoxSelectedColumn%s' % i,
+                    partial(cls._getOptionsBoxForSelectedColumn, index=i))
+
+    @classmethod
+    def getOptionsBoxPreselectedDecision(cls, prevChoices):
+        if prevChoices.gsuite:
+            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(statList) > 0:
+                return ['no', 'yes']
+
+    @classmethod
+    def _getOptionsBoxForSelectedMainOption(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
+                if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index)):
+                    return cls.MAIN_OPTIONS
+
+    @classmethod
+    def setupSelectedMainOptionMethods(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            setattr(cls, 'getOptionsBoxSelectedMainOption%s' % i,
+                    partial(cls._getOptionsBoxForSelectedMainOption, index=i))
+
+    @classmethod
+    def _getOptionsBoxForSelectedOption(cls, prevChoices, index):
+        if prevChoices.gsuite:
+                if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
+                    dfTF = any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index))
+                    if not dfTF:
+                        attr = []
+                        for i in xrange(index + 1):
+                            attr.append(getattr(prevChoices, 'selectedColumn%s' % i))
+                            selOption = getattr(prevChoices, 'selectedMainOption%s' % i).encode('utf-8')
+
+                        if cls.MAIN_OPTIONS[0] == selOption:
+                            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                            if index == 0:
+                                return list(set(gSuite.allTrackTitles()))
+                            else:
+                                j = index-1
+                                selectedAttribute = getattr(prevChoices, 'selectedColumn%s' % j)
+                                return list(set(gSuite.getAttributeValueList(selectedAttribute)))
+                        elif cls.MAIN_OPTIONS[1] == selOption:
+                          pass
+                        else:
+                            return cls.OPTIONS_LIST
+
+    @classmethod
+    def setupSelectedOptionMethods(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            setattr(cls, 'getOptionsBoxSelectedOption%s' % i,
+                    partial(cls._getOptionsBoxForSelectedOption, index=i))
+
     # @classmethod
     # def getOptionsBoxSummarizeResponse(cls, prevChoices):
     #     if prevChoices.gsuite:
@@ -178,11 +243,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     #                     del tempDict['no']
     #                     return tempDict.keys()
     #
-    @classmethod
-    def setupSelectedColumnMethods(cls):
-        for i in xrange(cls.MAX_NUM_OF_COLS):
-            setattr(cls, 'getOptionsBoxSelectedColumn%s' % i,
-                    partial(cls._getOptionsBoxForSelectedColumn, index=i))
+
     #
     # @classmethod
     # def getOptionsBoxQuestion(cls, prevChoices):
@@ -247,11 +308,29 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     def execute(cls, choices, galaxyFn=None, username=''):
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         groupResponse = choices.groupResponse.encode('utf-8')
+        preselectedDecision = choices.preselectedDecision.encode('utf-8')
         #summarize = choices.summarize.encode('utf-8')
         #summarizeResponse = choices.summarizeResponse.encode('utf-8')
         #it need to be covered by javascript now
         summarizeResponse = 'no'
         summarize = 'no'
+
+        if preselectedDecision != 'no':
+            mainOptionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedMainOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            optionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            newOptionList = []
+            for mNum, m in enumerate(mainOptionList):
+                if m == cls.MAIN_OPTIONS[1]:
+                    newOptionList.append('')
+                else:
+                    newOptionList.append(optionList[mNum])
+            optionList = newOptionList
+        else:
+            mainOptionList = []
+            optionList = []
+
+        # print mainOptionList, '<br>'
+        # print optionList, '<br>'
 
         colList = []
         if groupResponse != 'no':
@@ -339,12 +418,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         htmlCore.header('Interpretation of results')
         htmlCore.paragraph('Click on the following options for selected statistic to see detailed results. ')
 
-        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp)
+        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp, mainOptionList, optionList)
         htmlCore.end()
         print htmlCore
 
     @classmethod
-    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList, summarize, sumBp):
+    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList, summarize, sumBp, mainOptionList, optionList):
 
         cube = Cube()
         statNum = 0
@@ -396,7 +475,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 #dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
                 dp = zip(*data)
             elif summarizeKey == 'raw':
-                header = ['Column 1'] + firstColumnList + secondColumnList + [summarizeKey]
+                header = ['Title'] + firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
                 #print 'dataToPresent', dataToPresent
                 # headerToPresent = header
@@ -492,7 +571,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.divEnd()
             htmlCore.divEnd()
             htmlCore.line(
-                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum, option = 'raw'))
+                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum, mainOptionList, optionList, option = 'raw'))
             htmlCore.divEnd()
             htmlCore.divEnd()
 
@@ -506,7 +585,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [
                     (float(sum(groupItem)) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
-            elif summarizeKey == 'avg':
+            elif summarizeKey == 'average':
                 data.append(list(groupKey) + [
                     (float(sum(groupItem) / len(groupItem)) / sumBp[statKey]) /
                     expectedOrderedDict[groupKey]])
@@ -522,7 +601,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         else:
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])
-            elif summarizeKey == 'avg':
+            elif summarizeKey == 'average':
                 data.append(
                     list(groupKey) + [(float(sum(groupItem) / len(groupItem)) / sumBp[statKey])])
             elif summarizeKey == 'min':
@@ -815,15 +894,22 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     def getInputBoxOrder(cls):
 
         data = ['selectedText%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
-        dataText = ['selectedColumnOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
-        flat_list = [item for sublist in zip(data, dataText) for item in sublist]
+        #dataText = ['selectedColumnOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+
+        mainOption = ['selectedMainOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+        option = ['selectedOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+        optionFlatList = [item for sublist in zip(mainOption, option) for item in sublist]
+
+        #flat_list = [item for sublist in zip(data, dataText) for item in sublist]
+
         bins = [x[1] for x in cls.getInputBoxNamesForUserBinSelection()]
 
         return ['gsuite'] + \
                ['selectedStat%s' % i for i in range(cls.MAX_NUM_OF_STAT)] + \
-               ['groupDefined'] + \
+               ['preselectedGroup'] + \
                ['groupResponse'] + \
-               ['selectedColumn%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+               ['groupDefined'] + \
+               ['selectedColumn%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + ['preselectedDecision'] + optionFlatList
                # ['summarizeResponse', 'summarize', 'question'] + flat_list #+ bins
 
 
@@ -846,5 +932,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedStatMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnMethods()
+CountDescriptiveStatisticForHGSuiteTool.setupSelectedMainOptionMethods()
+CountDescriptiveStatisticForHGSuiteTool.setupSelectedOptionMethods()
 #CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnOptionMethods()
 #CountDescriptiveStatisticForHGSuiteTool.setupSelectedTextMethods()
