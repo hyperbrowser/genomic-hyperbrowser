@@ -14,9 +14,13 @@ def getSingleTrackTS(genome, guiSelectedTrack, title='Dummy'):
 def getFlatTracksTS(genome, guiSelectedGSuite):
     ts = FlatTracksTS()
     gsuite = getGSuiteFromGalaxyTN(guiSelectedGSuite)
+
     for gsTrack in gsuite.allTracks():
+        assert gsTrack.trackName is not None, "Gstrack name is None %s" % gsTrack
         track = PlainTrack(gsTrack.trackName)
         metadata = OrderedDict(title=gsTrack.title, genome=str(genome))
         metadata.update(gsTrack.attributes)
+        assert track is not None
+        assert metadata is not None
         ts[gsTrack.title] = SingleTrackTS(track, metadata)
     return ts

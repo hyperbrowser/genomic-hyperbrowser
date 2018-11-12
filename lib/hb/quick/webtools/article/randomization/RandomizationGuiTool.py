@@ -10,6 +10,7 @@ from gold.track.trackstructure.TsRandAlgorithmRegistry import getRequiredArgsFor
     BIN_SOURCE_ARG, EXCLUDED_TS_ARG
 from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from quick.gsuite.GuiBasedTsFactory import getFlatTracksTS, getSingleTrackTS
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.TsWriterStat import TsWriterStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from proto.HtmlCore import HtmlCore
@@ -33,11 +34,11 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
                 ('Select the BED or Gsuite file to shuffle: ', 'chooseTrackFiles'),
                 ('Restrict the shuffling to certain regions?', 'universeRegions'),
                 ('Select the BED file containing universe of regions', 'universeRegionFileUpload'),
-                ('Type of shuffling (horizontal or vertical): ', 'shufflingType'),
+                #('Type of shuffling (horizontal or vertical): ', 'shufflingType'),
                 ('Shuffling distribution: ', 'shufflingDistribution'),
-                ('Preserve clumping of genomic regions? ', 'preserveClumping'),
-                ('Allow overlap of shuffled locations? ', 'allowOverlaps'),
-                ('Allow truncation of sizes in special cases? ', 'truncateSizes'),
+                #('Preserve clumping of genomic regions? ', 'preserveClumping'),
+                #('Allow overlap of shuffled locations? ', 'allowOverlaps'),
+                #('Allow truncation of sizes in special cases? ', 'truncateSizes'),
                 ('Should the shuffling be reproducible? ', 'reproduceShuffling'),
                 ('Enter a seed value in the textbox: ', 'enterSeed')] \
                + cls.getInputBoxNamesForRandAlgSelection() \
@@ -124,7 +125,8 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
     @classmethod
     def getOptionsBoxChooseTrackFiles(cls, prevChoices):
         if prevChoices.numberOfTracks in [cls.SINGLE_TRACK,cls.MULTIPLE_TRACKS]:
-            return ('__history__', 'bed','gsuite')
+            #return ('__history__', 'bed','gsuite')
+            return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     WHOLE_GENOME = 'No, use the whole genome'
     EXPLICIT_UNIVERSE = 'Yes, perform the shuffling only in the explicit set of regions supplied'
@@ -140,155 +142,12 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
 
     @classmethod
     def getOptionsBoxFirstKey(cls):  # Alt: getOptionsBox1()
-        """
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to
-        other methods. These are lists of results, one for each input box
-        (in the order specified by getInputBoxOrder()).
-
-        Mandatory for the first key defined in getInputBoxNames(), if any.
-
-        The input box is defined according to the following syntax:
-
-        Selection box:          ['choice1','choice2']
-        - Returns: string
-
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - The contents is the default value shown inside the text area
-        - Returns: string
-
-        Raw HTML code:          '__rawstr__', 'HTML code'
-        - This is mainly intended for read only usage. Even though more
-          advanced hacks are possible, it is discouraged.
-
-        Password field:         '__password__'
-        - Returns: string
-
-        Genome selection box:   '__genome__'
-        - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
-
-        History selection box:  ('__history__',) |
-                                ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting Galaxy dataset info, as
-            described below.
-
-        History check box list: ('__multihistory__', ) |
-                                ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with Galaxy dataset ids as key (the number YYYY
-            as described below), and the associated Galaxy dataset info as the
-            values, given that the history element is ticked off by the user.
-            If not, the value is set to None. The Galaxy dataset info structure
-            is described below.
-
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
-
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'],
-                                 ['cell2_1','cell2_2']]
-        - Returns: None
-
-        Check box list:         OrderedDict([('key1', True), ('key2', False),
-                                             ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
-
-
-        ###
-        Note about the "Galaxy dataset info" data structure:
-        ###
-
-        "Galaxy dataset info" is a list of strings coding information about a
-        Galaxy history element and its associated dataset, typically used to
-        provide info on the history element selected by the user as input to a
-        ProTo tool.
-
-        Structure:
-            ['galaxy', fileFormat, path, name]
-
-        Optionally encoded as a single string, delineated by colon:
-
-            'galaxy:fileFormat:path:name'
-
-        Where:
-            'galaxy' used for assertions in the code
-            fileFormat (or suffix) contains the file format of the dataset, as
-                encoded in the 'format' field of a Galaxy history element.
-            path (or file name/fn) is the disk path to the dataset file.
-                Typically ends with 'XXX/dataset_YYYY.dat'. XXX and YYYY are
-                numbers which are extracted and used as an unique id  of the
-                dataset in the form [XXX, YYYY]
-            name is the title of the history element
-
-        The different parts can be extracted using the functions
-        extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
-        extractNameFromDatasetInfo() from the module CommonFunctions.py.
-        """
         return ['testChoice1', 'testChoice2', '...']
 
     @classmethod
     def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
-        """
-        See getOptionsBoxFirstKey().
-
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
-        """
         return ''
 
-    # @classmethod
-    # def getInfoForOptionsBoxKey(cls, prevChoices):
-    #     """
-    #     If not None, defines the string content of an clickable info box
-    #     beside the corresponding input box. HTML is allowed.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getDemoSelections(cls):
-    #     """
-    #     Defines a set of demo inputs to the option boxes in the
-    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
-    #     If not None, a Demo button appears in the interface. Clicking the
-    #     button fills the option boxed with the defined demo values.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return ['testChoice1', '..']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -304,8 +163,18 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
         Mandatory unless isRedirectTool() returns True.
         """
         choices_gsuite = choices.chooseTrackFiles
+
+        assert choices_gsuite is not None
+
         genome =  choices.genome
+        assert genome is not None
         analysisBins = UserBinMixin.getUserBinSource(choices)
+
+
+        gsuite = getGSuiteFromGalaxyTN(choices_gsuite)
+        for i, gsTrack in enumerate(gsuite.allTracks()):
+            assert gsTrack.trackName is not None, "gsuite track %s has track name None" % gsTrack
+
 
         ts = getFlatTracksTS(genome, choices_gsuite)
         randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome, choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
@@ -500,23 +369,23 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
     #     return False
     #
     # @classmethod
-    # def getOutputFormat(cls, choices):
-    #     """
-    #     The format of the history element with the output of the tool. Note
-    #     that if 'html' is returned, any print statements in the execute()
-    #     method is printed to the output dataset. For text-based output
-    #     (e.g. bed) the output dataset only contains text written to the
-    #     galaxyFn file, while all print statements are redirected to the info
-    #     field of the history item box.
-    #
-    #     Note that for 'html' output, standard HTML header and footer code is
-    #     added to the output dataset. If one wants to write the complete HTML
-    #     page, use the restricted output format 'customhtml' instead.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
-    #     """
-    #     return 'html'
+    def getOutputFormat(cls, choices):
+        """
+        The format of the history element with the output of the tool. Note
+        that if 'html' is returned, any print statements in the execute()
+        method is printed to the output dataset. For text-based output
+        (e.g. bed) the output dataset only contains text written to the
+        galaxyFn file, while all print statements are redirected to the info
+        field of the history item box.
+
+        Note that for 'html' output, standard HTML header and footer code is
+        added to the output dataset. If one wants to write the complete HTML
+        page, use the restricted output format 'customhtml' instead.
+
+        Optional method. Default return value if method is not defined:
+        'html'
+        """
+        return 'gsuite'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
