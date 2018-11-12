@@ -1,5 +1,10 @@
+import os
+
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
+from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 from gold.track.trackstructure import TsRandAlgorithmRegistry
 from gold.track.trackstructure.TsRandAlgorithmRegistry import getRequiredArgsForAlgorithm, getKwArgsForAlgorithm, \
     BIN_SOURCE_ARG, EXCLUDED_TS_ARG
@@ -12,16 +17,17 @@ from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin):
+class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
     @classmethod
     def getToolName(cls):
         return "Randomization GUI"
 
+    #
     @classmethod
     def getInputBoxNames(cls):
         return [('Basic user mode', 'isBasic'),
                 ("", 'toolDescTop'),
-                ('Reference genome: ', 'selectReferenceGenome'),
+                ('Reference genome: ', 'genome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Number of tracks to shuffle: ', 'numberOfTracks'),
                 ('Select the BED or Gsuite file to shuffle: ', 'chooseTrackFiles'),
@@ -33,7 +39,9 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin):
                 ('Allow overlap of shuffled locations? ', 'allowOverlaps'),
                 ('Allow truncation of sizes in special cases? ', 'truncateSizes'),
                 ('Should the shuffling be reproducible? ', 'reproduceShuffling'),
-                ('Enter a seed value in the textbox: ', 'enterSeed')] + cls.getInputBoxNamesForRandAlgSelection()
+                ('Enter a seed value in the textbox: ', 'enterSeed')] \
+               + cls.getInputBoxNamesForRandAlgSelection() \
+                + cls.getInputBoxNamesForUserBinSelection()
 
     @staticmethod
     def getOptionsBoxIsBasic():
@@ -51,13 +59,14 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin):
 
 
     @classmethod
-    def getOptionsBoxSelectReferenceGenome(cls, prevChoices):
-        return ['Human (hg19)', 'Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)',cls.CUSTOM_REFERENCE_GENOME]
+    def getOptionsBoxGenome(cls, prevChoices):
+        return '__genome__'
+        #return ['Human (hg19)', 'Human (hg38)', 'Mouse (mm9)', 'Mouse (mm10)',cls.CUSTOM_REFERENCE_GENOME]
 
     @classmethod
     def getOptionsBoxChooseChrnLenFile(cls, prevChoices):
         # if prevChoices.missingGenome:
-        if prevChoices.selectReferenceGenome == cls.CUSTOM_REFERENCE_GENOME:
+        if prevChoices.genome == cls.CUSTOM_REFERENCE_GENOME:
             return ('__history__',)
 
     SINGLE_TRACK = 'Single genomic track'
@@ -294,17 +303,31 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        choices_gsuite = choices.gsuite
+        choices_gsuite = choices.chooseTrackFiles
         genome =  choices.genome
         analysisBins = UserBinMixin.getUserBinSource(choices)
 
         ts = getFlatTracksTS(genome, choices_gsuite)
-        randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome. choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
-        randTs = getRandomizedVersionOfTs(ts, randTvProvider)
+        randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome, choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
+        randomizedTs = getRandomizedVersionOfTs(ts, randTvProvider)
+
+        #output files
+        outputGSuite = GSuite()
+        for singleTrackTs in randomizedTs.getLeafNodes():
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
+                                                suffix='bed')
+
+            title = singleTrackTs.metadata.pop('title')
+            gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
+            outputGSuite.addTrack(gSuiteTrack)
+            singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
 
         spec = AnalysisSpec(TsWriterStat)
 
-        res = doAnalysis(spec, analysisBins, randTs)
+        res = doAnalysis(spec, analysisBins, randomizedTs)
+
+        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
     def _createTrackViewProvider(cls, origTs, binSource, genome, randType, randAlg, selectExcludedTrack, excludedTrack):
