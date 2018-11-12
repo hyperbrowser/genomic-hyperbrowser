@@ -32,7 +32,8 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         return [('Select gsuite contain track Y', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                 [('Select probability that R=1 given that Y=1', 'firstProb'),
-                ('Select probability that R=0 given that Y=0', 'secondProb'),
+                 ('Select false discovery rate (FDR)', 'fdr'),
+                ('Select number of Ones in Y', 'numberOfOnes'),
                 ('Select number of output tracks (subsampling replicates Rs)', 'number'),
                 ] + cls.getInputBoxNamesForUserBinSelection() + cls.getInputBoxNamesForDebug()
 
@@ -46,8 +47,12 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         return '0.9'
 
     @classmethod
-    def getOptionsBoxSecondProb(cls, prevChoices):  # Alt: getOptionsBox2()
-        return '0.0000001'
+    def getOptionsBoxFdr(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '0.05'
+
+    @classmethod
+    def getOptionsBoxNumberOfOnes(cls, prevChoices):  # Alt: getOptionsBox2()
+        return '11000'
 
     @classmethod
     def getOptionsBoxNumber(cls, prevChoices):  # Alt: getOptionsBox2()
@@ -58,12 +63,16 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         DebugMixin._setDebugModeIfSelected(choices)
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         firstProb = choices.firstProb.encode('utf-8')
-        firstProb = firstProb.split(',')
-        secondProb = choices.secondProb.encode('utf-8')
-        secondProb = secondProb.split(',')
+        #firstProb = firstProb.split(',')
+        fdr = choices.fdr.encode('utf-8')
+        numberOfOnes = choices.numberOfOnes.encode('utf-8')
 
-        firstProb = [float(f) for f in firstProb]
-        secondProb = [float(f) for f in secondProb]
+
+
+        firstProb = float(firstProb)
+        fdr = float(fdr)
+        numberOfOnes = float(numberOfOnes)
+        #secondProb = [float(f) for f in secondProb]
 
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         genome = gSuite.genome
@@ -72,7 +81,7 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
         number = int(choices.number)
 
         outGSuite = GSuite()
-
+        genomeLen = GenomeInfo.getGenomeLen(genome)
         k = 0
         for i, iTrack in enumerate(gSuite.allTracks()):
             trackTitle = iTrack.title
@@ -80,51 +89,54 @@ class CreateGSuiteFromTwoBinomialDistrTool(GeneralGuiTool, UserBinMixin, GenomeM
             #spec = AnalysisSpec(NoisyPointTrackGenerationStat)
 
             for n in range(0, number):
-                for numF, f in enumerate(firstProb):
-                    s =  secondProb[numF]
+                #for numF, f in enumerate(firstProb):
 
-                    #build track
-                    attr = OrderedDict()
-                    attr['originalTrackName'] = str(trackTitle)
-                    attr['trackVersion'] = str(n)
-                    attr['R=1 and Y=1'] = str(f)
-                    attr['R=0 and Y=0'] = str(s)
+                #s =  secondProb[numF]
+                s = 1 - (fdr * firstProb*numberOfOnes/genomeLen)/(1 - fdr*(genomeLen-numberOfOnes)/genomeLen)
 
-                    uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                        extraFileName=trackTitle + '--' + str(
-                                                            k) + '-'+ str(
-                                                            n) + '-' + str(f) + '-' + str(s),
-                                                        suffix='bed')
-                    gSuiteTrack = GSuiteTrack(uri)
-                    outFn = gSuiteTrack.path
-                    ensurePathExists(outFn)
+                #build track
+                attr = OrderedDict()
+                attr['originalTrackName'] = str(trackTitle)
+                attr['trackVersion'] = str(n)
+                attr['R=1 and Y=1'] = str(firstProb)
+                attr['FDR'] = str(fdr)
+                attr['R=0 and Y=0'] = str(s)
 
-
-
-
-                    # from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-                    # sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
-                    # fn = sf.getDiskPath(ensurePath=True)
-                    import urllib
-                    fn = urllib.quote(outFn, safe='')
-                    # print sf.getLink('My file')
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                    extraFileName=trackTitle + '--' + str(
+                                                        k) + '-'+ str(
+                                                        n) + '-' + str(firstProb) + '-' + str(s),
+                                                    suffix='bed')
+                gSuiteTrack = GSuiteTrack(uri)
+                outFn = gSuiteTrack.path
+                ensurePathExists(outFn)
 
 
 
-                    spec = AnalysisSpec(StatTvOutputWriterStat)
-                    spec.addParameter('trackFilePath', fn)
-                    spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
-                    spec.addParameter('keepOnesProb', f)
-                    spec.addParameter('introduceZerosProb', 1-s)
 
-                    doAnalysis(spec, bins, [iTrack])
+                # from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+                # sf = GalaxyRunSpecificFile([str(i)], galaxyFn)
+                # fn = sf.getDiskPath(ensurePath=True)
+                import urllib
+                fn = urllib.quote(outFn, safe='')
+                # print sf.getLink('My file')
 
-                    gs = GSuiteTrack(uri, title=''.join(
-                        trackTitle + '--' + str(k) + '-'+ str(n) + '-' + str(f) + '-' + str(s)), genome=genome,
-                                     attributes=attr)
 
-                    outGSuite.addTrack(gs)
-                    k = k + 1
+
+                spec = AnalysisSpec(StatTvOutputWriterStat)
+                spec.addParameter('trackFilePath', fn)
+                spec.addParameter('trackGenerationStat','NoisyPointTrackGenerationStat')
+                spec.addParameter('keepOnesProb', firstProb)
+                spec.addParameter('introduceZerosProb', 1-s)
+
+                doAnalysis(spec, bins, [iTrack])
+
+                gs = GSuiteTrack(uri, title=''.join(
+                    trackTitle + '--' + str(k) + '-'+ str(n) + '-' + str(firstProb) + '-' + str(s)), genome=genome,
+                                 attributes=attr)
+
+                outGSuite.addTrack(gs)
+                k = k + 1
 
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['output gSuite'])
 
