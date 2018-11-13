@@ -7,6 +7,7 @@
     <section name="Similarity tools" id="sim_tools">
     <tool file="proto/hyperbrowser/smeasure/CreateGSuiteFromTwoBinomialDistrTool.xml" />
     <tool file="proto/hyperbrowser/smeasure/ChangeSegmentGSuiteToPointGSuiteTool.xml" />
+    <tool file="proto/hyperbrowser/smeasure/SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool.xml" />
 
   </section>
 
