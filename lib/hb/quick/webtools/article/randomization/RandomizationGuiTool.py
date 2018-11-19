@@ -31,6 +31,7 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
                 ('Reference genome: ', 'genome'),
                 ('Choose a file with chromosome lengths of a custom genome build : ', 'chooseChrnLenFile'),
                 ('Number of tracks to shuffle: ', 'numberOfTracks'),
+                ('Number of desired randomizations of each track: ', 'numberOfRandomizations'),
                 ('Select the BED or Gsuite file to shuffle: ', 'chooseTrackFiles'),
                 ('Restrict the shuffling to certain regions?', 'universeRegions'),
                 ('Select the BED file containing universe of regions', 'universeRegionFileUpload'),
@@ -76,6 +77,16 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
     @classmethod
     def getOptionsBoxNumberOfTracks(cls, prevChoices):  # Alt: getOptionsBox1()
         return [cls.SINGLE_TRACK, cls.MULTIPLE_TRACKS]
+
+    ONE_RAND = 1
+    THREE_RAND = 3
+    TEN_RAND = 10
+    FIFTY_RAND = 50
+    HUNDRED_RAND = 100
+
+    @classmethod
+    def getOptionsBoxNumberOfRandomizations(cls, prevChoices):
+        return [cls.ONE_RAND, cls.THREE_RAND,cls.TEN_RAND,cls.FIFTY_RAND,cls.HUNDRED_RAND]
 
     HORIZONTAL = 'Shuffling should be within each genomic track'
     VERTICAL = 'Shuffling should be across all the multiple tracks'
