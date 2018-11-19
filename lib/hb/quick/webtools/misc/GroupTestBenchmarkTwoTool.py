@@ -10,6 +10,7 @@ from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
 from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.GenericTSChildrenV2Stat import GenericTSChildrenV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
+from quick.statistic.TtestUnpairedTestStat import TtestUnpairedTestStat
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
@@ -106,95 +107,6 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
     @classmethod
     def getOptionsBoxQueryTrack(cls):  # Alt: getOptionsBox1()
-        """
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to
-        other methods. These are lists of results, one for each input box
-        (in the order specified by getInputBoxOrder()).
-
-        Mandatory for the first key defined in getInputBoxNames(), if any.
-
-        The input box is defined according to the following syntax:
-
-        Selection box:          ['choice1','choice2']
-        - Returns: string
-
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - The contents is the default value shown inside the text area
-        - Returns: string
-
-        Raw HTML code:          '__rawstr__', 'HTML code'
-        - This is mainly intended for read only usage. Even though more
-          advanced hacks are possible, it is discouraged.
-
-        Password field:         '__password__'
-        - Returns: string
-
-        Genome selection box:   '__genome__'
-        - Returns: string
-
-        Track selection box:    '__track__'
-        - Requires genome selection box.
-        - Returns: colon-separated string denoting track name
-
-        History selection box:  ('__history__',) |
-                                ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting Galaxy dataset info, as
-            described below.
-
-        History check box list: ('__multihistory__', ) |
-                                ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with Galaxy dataset ids as key (the number YYYY
-            as described below), and the associated Galaxy dataset info as the
-            values, given that the history element is ticked off by the user.
-            If not, the value is set to None. The Galaxy dataset info structure
-            is described below.
-
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
-
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'],
-                                 ['cell2_1','cell2_2']]
-        - Returns: None
-
-        Check box list:         OrderedDict([('key1', True), ('key2', False),
-                                             ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
-
-
-        ###
-        Note about the "Galaxy dataset info" data structure:
-        ###
-
-        "Galaxy dataset info" is a list of strings coding information about a
-        Galaxy history element and its associated dataset, typically used to
-        provide info on the history element selected by the user as input to a
-        ProTo tool.
-
-        Structure:
-            ['galaxy', fileFormat, path, name]
-
-        Optionally encoded as a single string, delineated by colon:
-
-            'galaxy:fileFormat:path:name'
-
-        Where:
-            'galaxy' used for assertions in the code
-            fileFormat (or suffix) contains the file format of the dataset, as
-                encoded in the 'format' field of a Galaxy history element.
-            path (or file name/fn) is the disk path to the dataset file.
-                Typically ends with 'XXX/dataset_YYYY.dat'. XXX and YYYY are
-                numbers which are extracted and used as an unique id  of the
-                dataset in the form [XXX, YYYY]
-            name is the title of the history element
-
-        The different parts can be extracted using the functions
-        extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
-        extractNameFromDatasetInfo() from the module CommonFunctions.py.
-        """
         return GeneralGuiTool.getHistorySelectionElement()
 
 
@@ -252,6 +164,9 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         Mandatory unless isRedirectTool() returns True.
         """
 
+        print("Test test")
+        print(choices.randType)
+
         cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
@@ -278,7 +193,9 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             if DebugConfig.USE_CALLGRAPH and galaxyFn:
                 profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
         else:
-            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+            results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
+            print("Results:" + str(results))
+            results = results["Result"]
         cls._endProgressOutput(hidden=(not DebugConfig.USE_PROFILING))
         cls._printResults(results, choices, galaxyFn)
 
@@ -292,19 +209,20 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     def _getOpertationsCount(cls, analysisBins, choices, ts):
         operationCount = 0
         isWilcoxon = choices.randType == "Wilcoxon"
+        isTtest = choices.randType == "T-test"
         for subIndex, subTS in ts.items():
-            currTS = subTS if isWilcoxon else subTS['real']
+            currTS = subTS if isWilcoxon or isTtest else subTS['real']
             operationCount += cls._calculateNrOfOperationsForProgresOutput(currTS,
                                                                            analysisBins,
                                                                            choices,
-                                                                           isMC=(not isWilcoxon))
+                                                                           isMC=(not isWilcoxon and not isTtest))
         return operationCount
 
     @classmethod
     def _prepareTrackStructure(cls, querySTS, catTS, randType, randAlg, randInput, analysisBins):
 
         ts = TrackStructureV2()
-        if randType == 'Wilcoxon':
+        if randType == 'Wilcoxon' or randType == "T-test":
             for cat, subTS in catTS.items():
                 ts[cat] = cls._prepareQueryRefTrackStructure(querySTS, subTS)
         else:
@@ -337,8 +255,14 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     @classmethod
     def _prepareAnalysis(cls, choices, opCount):
         if choices.randType == 'Wilcoxon':
+
             analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
             analysisSpec.addParameter('genericTSChildrenRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+            analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
+            analysisSpec.addParameter('alternative', choices.tail)
+        elif choices.randType == 'T-test':
+            analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
+            analysisSpec.addParameter('genericTSChildrenRawStatistic', TtestUnpairedTestStat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
             analysisSpec.addParameter('alternative', choices.tail)
         else:
@@ -375,18 +299,18 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         core = HtmlCore()
         core.divBegin()
 
-        if choices.randType == 'Wilcoxon':
-            core.paragraph('The table contains the results from Wilcoxon{}s unpaired rank sum test executed for '
+        if choices.randType == 'Wilcoxon' or choices.randType == "T-test":
+            core.paragraph('The table contains the results from %s unpaired rank sum test executed for '
                            'each sub-GSuite, using the similarity measure "<b>{}</b>".'.format(
-                            "'", choices.similarityFunc))
+                            choices.randType, choices.similarityFunc))
             resTableDict = OrderedDict()
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
 
-            columnNames = ["GSuite index", "Wilcoxon statistic", "P-value"]
+            columnNames = ["GSuite index", "%s statistic" % choices.randType, "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
 
-            nameList = ['Wilcoxon', 'qqplot.png']
+            nameList = [choices.randType, 'qqplot.png']
             pvals = [x[1] for x in resTableDict.values()]
 
             cls._addQQPlot(core, pvals, nameList, galaxyFn)

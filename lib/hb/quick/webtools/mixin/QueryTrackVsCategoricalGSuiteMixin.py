@@ -43,7 +43,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
     @staticmethod
     def getOptionsBoxRandType(prevChoices):
         from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
-        return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
+        return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"] + ["T-test"]
 
     @staticmethod
     def getOptionsBoxSimilarityFunc(prevChoices):
@@ -52,7 +52,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def getOptionsBoxCatSummaryFunc(cls, prevChoices):
-        if prevChoices.randType not in ["Wilcoxon"]:
+        if prevChoices.randType not in ["Wilcoxon", "T-test"]:
             return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys() + \
                    [cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL]
 
@@ -65,7 +65,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @staticmethod
     def getOptionsBoxMcfdrDepth(prevChoices):
-        if prevChoices.randType not in ["Wilcoxon"]:
+        if prevChoices.randType not in ["Wilcoxon", "T-test"]:
             from gold.description.AnalysisDefHandler import AnalysisDefHandler
             from gold.description.AnalysisList import REPLACE_TEMPLATES
             return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
@@ -77,7 +77,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @staticmethod
     def getOptionsBoxRandAlg(prevChoices):
-        if prevChoices.randType not in ["Wilcoxon"]:
+        if prevChoices.randType not in ["Wilcoxon", "T-test"]:
             from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
             for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
                 if prevChoices.randType == definedRandType:
@@ -85,7 +85,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def getOptionsBoxRandInput(cls, prevChoices):
-        if prevChoices.randType not in ["Wilcoxon"] and cls.RANDOMIZABLE_INPUTS and \
+        if prevChoices.randType not in ["Wilcoxon", "T-test"] and cls.RANDOMIZABLE_INPUTS and \
                 len(cls.RANDOMIZABLE_INPUTS) > 1:
             return cls.RANDOMIZABLE_INPUTS
 

@@ -55,6 +55,7 @@ class WilcoxonUnpairedTestRV2StatUnsplittable(StatisticV2):
 
         wilcoxResult = wilcoxTest(fmla, alternative=self._alternative, paired=False)
         # wilcoxResults.names = ['statistic' 'parameter' 'p.value' 'null.value' 'alternative' 'method', 'data.name']
+        print("Setting results")
         tsResult.setResult(dict([(wilcoxResult.names[i], wilcoxResult[i]) for i in xrange(len(wilcoxResult.names))]))
         return tsResult
 
