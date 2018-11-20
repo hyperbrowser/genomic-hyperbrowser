@@ -40,7 +40,9 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
                 #('Allow overlap of shuffled locations? ', 'allowOverlaps'),
                 #('Allow truncation of sizes in special cases? ', 'truncateSizes'),
                 ('Should the shuffling be reproducible? ', 'reproduceShuffling'),
-                ('Enter a seed value in the textbox: ', 'enterSeed')] \
+                ('Enter a seed value in the textbox: ', 'enterSeed'),
+                ('Number of times to randomize: ', 'numberOfTimesToRandomize')
+                ] \
                + cls.getInputBoxNamesForRandAlgSelection() \
                 + cls.getInputBoxNamesForUserBinSelection()
 
@@ -123,6 +125,10 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
             return ('textbox')
 
     @classmethod
+    def getOptionsBoxNumberOfTimesToRandomize(cls, prevChoices):
+        return ['1', '3', '5', '10', '50', '100']
+
+    @classmethod
     def getOptionsBoxChooseTrackFiles(cls, prevChoices):
         if prevChoices.numberOfTracks in [cls.SINGLE_TRACK,cls.MULTIPLE_TRACKS]:
             #return ('__history__', 'bed','gsuite')
@@ -176,25 +182,27 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
             assert gsTrack.trackName is not None, "gsuite track %s has track name None" % gsTrack
 
 
-        ts = getFlatTracksTS(genome, choices_gsuite)
-        randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome, choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
-        randomizedTs = getRandomizedVersionOfTs(ts, randTvProvider)
-
-        #output files
         outputGSuite = GSuite()
-        for singleTrackTs in randomizedTs.getLeafNodes():
-            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + '.randomized',
-                                                suffix='bed')
+        for n in range(0, int(choices.numberOfTimesToRandomize)):
+            ts = getFlatTracksTS(genome, choices_gsuite)
+            randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome, choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
+            randomizedTs = getRandomizedVersionOfTs(ts, randTvProvider) 
 
-            title = singleTrackTs.metadata.pop('title')
-            gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
-            outputGSuite.addTrack(gSuiteTrack)
-            singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+            #output files
+            for singleTrackTs in randomizedTs.getLeafNodes():
+                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                    extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + "_" + str(n) + "_" + '.randomized',
+                                                    suffix='bed')
 
-        spec = AnalysisSpec(TsWriterStat)
+                title = singleTrackTs.metadata.pop('title')
+                gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
+                outputGSuite.addTrack(gSuiteTrack)
+                singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
+                singleTrackTs.metadata['randomization_run'] = n
 
-        res = doAnalysis(spec, analysisBins, randomizedTs)
+            spec = AnalysisSpec(TsWriterStat)
+
+            res = doAnalysis(spec, analysisBins, randomizedTs)
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
