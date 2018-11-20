@@ -183,22 +183,22 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
 
 
         outputGSuite = GSuite()
-        for n in range(0, int(choices.numberOfTimesToRandomize)):
+        for i in range(0, int(choices.numberOfTimesToRandomize)):
             ts = getFlatTracksTS(genome, choices_gsuite)
             randTvProvider = cls._createTrackViewProvider(ts, analysisBins, choices.genome, choices.randType, choices.randAlg, False, None) #the last False and non are temporary..
-            randomizedTs = getRandomizedVersionOfTs(ts, randTvProvider) 
+            randomizedTs = getRandomizedVersionOfTs(ts, randTvProvider)
 
             #output files
             for singleTrackTs in randomizedTs.getLeafNodes():
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                    extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + "_" + str(n) + "_" + '.randomized',
+                                                    extraFileName= os.path.sep.join(singleTrackTs.track.trackName) + "_" + str(i) + "_" + '.randomized',
                                                     suffix='bed')
 
                 title = singleTrackTs.metadata.pop('title')
                 gSuiteTrack = GSuiteTrack(uri, title=title + '.randomized', fileFormat='primary', trackType='segments', genome=genome, attributes=singleTrackTs.metadata)
                 outputGSuite.addTrack(gSuiteTrack)
                 singleTrackTs.metadata['trackFilePath'] = gSuiteTrack.path
-                singleTrackTs.metadata['randomization_run'] = n
+                singleTrackTs.metadata['randomization_run'] = i
 
             spec = AnalysisSpec(TsWriterStat)
 
