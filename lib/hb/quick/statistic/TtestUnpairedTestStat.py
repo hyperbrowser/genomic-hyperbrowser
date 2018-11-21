@@ -54,26 +54,12 @@ class TtestUnpairedTestStatUnsplittable(StatisticV2):
         x = StrVector(list(groups))
         y = FloatVector(list(scores))
 
-        print("x: " + str(x))
-        print("y: " + str(y))
-
-        print("""
-        x = c(%s)
-        y = c(%s)
-        f = Formula('y ~ x')
-        env = f$environment
-        result = t.test(formula, paired=False)
-        """ % (', '.join("'" + str(element) + "'" for element in x), ', '.join(str(element) for element in y)))
-
         fmla = Formula('y ~ x')
         env = fmla.environment
         env['x'] = x
         env['y'] = y
 
         tResult = tTest(fmla, alternative=self._alternative, paired=False)
-        #tResult = tTest(FloatVector([1.0, 1.2, 1.3]), FloatVector([1.2, 1.4, 1.5]), equal=True)
-        print("Names: " + str(tResult.names))
-        # wilcoxResults.names = ['statistic' 'parameter' 'p.value' 'null.value' 'alternative' 'method', 'data.name']
         tsResult.setResult(dict([(tResult.names[i], tResult[i]) for i in xrange(len(tResult.names))]))
         return tsResult
 

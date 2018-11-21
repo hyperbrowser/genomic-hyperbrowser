@@ -164,9 +164,6 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         Mandatory unless isRedirectTool() returns True.
         """
 
-        print("Test test")
-        print(choices.randType)
-
         cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
@@ -194,8 +191,8 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
                 profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
         else:
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
-            print("Results:" + str(results))
             results = results["Result"]
+
         cls._endProgressOutput(hidden=(not DebugConfig.USE_PROFILING))
         cls._printResults(results, choices, galaxyFn)
 

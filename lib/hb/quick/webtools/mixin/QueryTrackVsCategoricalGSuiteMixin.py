@@ -144,7 +144,7 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         strOut += "method={}".format(cls._determineMethod(choices)) + linesep
         strOut += "simMeasure={}".format(choices.similarityFunc) + linesep
         strOut += "catSummaryFunc={}".format(choices.catSummaryFunc) + linesep
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             for key, val in results.iteritems():
                 strOut += "pval_{}={}".format(key, val.getResult()['p.value']) + linesep
         else:
