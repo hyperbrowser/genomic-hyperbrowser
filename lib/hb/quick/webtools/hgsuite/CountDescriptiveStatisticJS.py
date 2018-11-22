@@ -8,8 +8,11 @@ class Cube():
         # print 'data', data, '<br>'
         # print 'divId', divId, '<br>'
         # print 'statNum', statNum, '<br>'
-        print 'mainOptionList', mainOptionList, '<br>'
-        print 'optionList', optionList, '<br>'
+        # print 'mainOptionList', mainOptionList, '<br>'
+        # print 'optionList', optionList, '<br>'
+        # print 'data', data, '<br>'
+
+        operList = ['sum', 'average', 'max', 'min']
 
         js = ''
         if statNum == 0:
@@ -21,22 +24,37 @@ class Cube():
         ####TODO
         #js += """ mainOptionList = """ + str(mainOptionList), optionList
         for index, fileName in enumerate(fileNameList):
-            js += cls._addOptionToSelectList(fileName, index, data, divId, statNum)
+            js += cls._addOptionToSelectList(fileName, index, data, divId, statNum, mainOptionList)
             js += "<br \><br \>"
         js += """</form>"""
 
         js += """<script type = "text/javascript" >"""
 
+
         js += """
             function init() 
-            { """
+            {  """
+
+        if len(mainOptionList) > 0:
+            for index, fileName in enumerate(fileNameList):
+                element = optionList[index]
+                if element != '':
+                    if element in operList:
+                        elNum = 3
+                    else:
+                        elNum = 1
+                    js += 'updateChoices(' + str(statNum) + ', ' + str(index) + ", " + str(elNum)+ ",'" + str(divId) + "'" + ", selected='" + str(element) + "'); \n"
+
+
         if option == 'raw':
             for index, fileName in enumerate(fileNameList):
                 js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(
-                    data) + ",'" + str(divId) + "');"
+                    data) + ",'" + str(divId) + "'); \n"
         else:
             for index, fileName in enumerate(fileNameList):
-                js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(data) + ",'" + str(divId)+ "');"
+                js += "onClickChoices(" + str(statNum) + ", " + str(index) + ", " + str(data) + ",'" + str(divId)+ "'); \n"
+
+
 
         js+= """
             }
@@ -46,11 +64,11 @@ class Cube():
         if option == 'raw':
             for index, fileName in enumerate(fileNameList):
                 js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
-                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'average', 'max', 'min'], statNum)
+                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, operList, statNum)
         else:
             for index, fileName in enumerate(fileNameList):
                 js += cls._addOptionsToUniqueSelectOptionList(index, optionsToUniqueList[index], statNum)
-                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, ['sum', 'average', 'max', 'min'], statNum)
+                js += cls._addOptionsToUniqueSelectAggregateOptionList(index, operList, statNum)
 
         js += """var chocieslistRowColumn"""+str(statNum)+"""=document.classic.choicesRowColumn"""+str(statNum)
 
@@ -92,24 +110,35 @@ class Cube():
         return js
 
     @classmethod
-    def _addOptionToSelectList(cls, fieldName, index, data, divId, statNum, mainOptionList, optionList):
-        js, idNumFS = cls._fillFirstSelect("How to treat " + str(fieldName) + ": ", index, data, divId, statNum, mainOptionList, optionList)
+    def _addOptionToSelectList(cls, fieldName, index, data, divId, statNum, mainOptionList):
+        singleMainOption = -2
+        if len(mainOptionList) > 0:
+            singleMainOption = mainOptionList[index]
+        js, idNumFS = cls._fillFirstSelect("How to treat " + str(fieldName) + ": ", index, data, divId, statNum, singleMainOption)
         js += cls._fillSecondSelect(index, data, divId, idNumFS, statNum)
         js += cls._fillThirdSelect(index, data, divId, idNumFS, statNum)
         return js
 
     @classmethod
-    def _fillFirstSelect(cls, firstSelectTitle, idNum, data, divId, statNum):
+    def _fillFirstSelect(cls, firstSelectTitle, idNum, data, divId, statNum, mainOneOption):
         js = firstSelectTitle
-        js += '<select class="dimension" name="dimensions' + str(statNum) + str(idNum) + '" id="dimensions' + str(statNum) + str(idNum) + '" size="1"  onClick="onClickChoices(' + str(statNum) + ',' + str(idNum) + ',' + str(data) + ',' + "'" + str(divId) + "'" + ')" onChange="updateChoices(' + str(statNum) + ',' + str(idNum) + ', this.selectedIndex, ' + "'" + str(divId) + "'" + ')" style="width: 150px">'
-        js += '''
-        <option value="0">---Select---</option>
-        <option value="1">Select one value</option>
-        <option value="-2" selected="selected" >Show results for each value</option>
-        <option value="-1">Aggregate across this dimension</option>
-        </select>
-        '''
+        js += '<select class="dimension" name="dimensions' + str(statNum) + str(idNum) + '" id="dimensions' + str(statNum) + str(idNum) + '" size="1"  onClick="onClickChoices(' + str(statNum) + ',' + str(idNum) + ',' + str(data) + ',' + "'" + str(divId) + "'" + ')" onChange="updateChoices(' + str(statNum) + ',' + str(idNum) + ', this.selectedIndex, ' + "'" + str(divId) + "'" + ', selected = 0)" style="width: 150px">'
+        js += '''<option value="0">---Select---</option>'''
+        js += '''<option value="1" ''' + cls._fillSelectedOption(mainOneOption, 1) + '''>Select one value</option>'''
+        js += '''<option value="-2" ''' + cls._fillSelectedOption(mainOneOption, -2) + '''>Show results for each value</option>'''
+        js += '''<option value="-1" ''' + cls._fillSelectedOption(mainOneOption, -1) + '''>Aggregate across this dimension</option>'''
+        js += '''</select>'''
+
+
         return js, idNum
+
+    @classmethod
+    def _fillSelectedOption(cls, mainOneOption, num):
+        if mainOneOption == num:
+            extraSelectedCode = ' selected="selected"  '
+        else:
+            extraSelectedCode = ''
+        return extraSelectedCode
 
     @classmethod
     def _fillSecondSelect(cls, idNum, data, divId, idNumFS, statNum):
@@ -204,14 +233,17 @@ class Cube():
     def _updateChoices(cls):
         js = '''
         <script>
-        function updateChoices(statNum, idNum, selectedChoicesGroup, divId)
+        function updateChoices(statNum, idNum, selectedChoicesGroup, divId, selected = 0)
         {
+            
+            //console.log("selected", selected);
+            
             hideTable(statNum)
             
             document.getElementById("choices"+statNum+idNum).style.visibility = "hidden";
             document.getElementById("choicesAggregate"+statNum+idNum).style.visibility = "hidden";
             
-            console.log('selectedChoicesGroup', selectedChoicesGroup);
+            //console.log('selectedChoicesGroup', selectedChoicesGroup);
                     
             if(selectedChoicesGroup  == 1)
             {
@@ -229,6 +261,11 @@ class Cube():
                 }
                 var dimensions = document.getElementById("dimensions"+statNum+idNum);
                 dimensions.options[selectedChoicesGroup].setAttribute("selected", "selected");
+                
+                if (selected != 0)
+                {
+                    $("#choices"+statNum+idNum).val(selected);
+                }
             }
             if(selectedChoicesGroup  == 3)
             {
@@ -241,7 +278,7 @@ class Cube():
                 if (selectedChoicesGroup>0)
                 {
                     var choicesAggregate = eval("choicesAggregate"+statNum+idNum);
-                    console.log('choicesAggregate', choicesAggregate);
+                    //console.log('choicesAggregate', choicesAggregate);
                     for (i=0; i<choicesAggregate[selectedChoicesGroup].length; i++)
                     {
                         choicesAggregateList.options[choicesAggregateList.options.length]=new Option(choicesAggregate[selectedChoicesGroup][i].split("|")[0], choicesAggregate[selectedChoicesGroup][i].split("|")[1])
@@ -249,6 +286,11 @@ class Cube():
                 }
                 var dimensions = document.getElementById("dimensions"+statNum+idNum);
                 dimensions.options[selectedChoicesGroupPrevious].setAttribute("selected", "selected");
+                
+                if (selected != 0)
+                {
+                    $("#choicesAggregate"+statNum+idNum).val(selected);
+                }
             }
         }
         </script>
@@ -259,8 +301,6 @@ class Cube():
     def _addExtraJS(cls, indexLen):
         js = ''
         js += """
-            
-
             function removeElement(el) 
             {
     			el.parentNode.removeChild(el);
@@ -284,20 +324,11 @@ class Cube():
             """
 
         js += """
-        
-        
-       
-        
-            function onClickChoices(statNum, idNumFS, data, divId)
-            {
-            
-                console.log('--aa--');
-            
-                hideTable(statNum);
+            function onClickChoices(statNum, idNumFS, data, divId, par=1)
+            {   
                 
-                
-
-                """
+                hideTable(statNum);    
+            """
         for index in range(0, indexLen):
             js += cls._addSelectedIndex(index)
             js += cls._addSelectedChoicesAggregateIndex(index)
@@ -322,7 +353,7 @@ class Cube():
 
         js += """
                 
-                console.log('data', data);
+                //console.log('data', data);
                 console.log('divName', divName);
                 tab = summarizeTable(data, divName);
                 var dv = changeDivName(divName);
@@ -338,7 +369,7 @@ class Cube():
     def _addSelectedIndex(cls, index):
         return """
                 var ch"""+str(index)+""" = document.getElementById('choices'+statNum+'"""+str(index)+"""');
-                var selCh"""+str(index)+""" = ch"""+str(index)+""".value
+                var selCh"""+str(index)+""" = ch"""+str(index)+""".value;
                 """
 
     @classmethod
@@ -352,15 +383,16 @@ class Cube():
     @classmethod
     def _addSelectedDimension(cls, index):
         js = """var dim"""+str(index)+""" = document.getElementById('dimensions'+statNum+'"""+str(index)+"""');
-                var selDim"""+str(index)+""" = dim"""+str(index)+""".value"""
+                var selDim"""+str(index)+""" = dim"""+str(index)+""".value;"""
         js+= """
+                console.log(selDim"""+str(index)+""");
                 if (selDim"""+str(index)+""" == -2 ) 
                 {
                 	selDim"""+str(index)+""" = parseInt(selDim"""+str(index)+""");
                 }
                 else if (selDim"""+str(index)+""" == -1)
                 {
-                    //console.log('aggregate inside');
+                    console.log('option -1 -- ', selChAggregate"""+str(index)+""");
                     //selDim"""+str(index)+""" = parseInt(selDim"""+str(index)+""");
                     if(selChAggregate"""+str(index)+""" != 0)
                 	{
@@ -369,6 +401,7 @@ class Cube():
                 }
                 else if (selDim"""+str(index)+""" == 1)
                 {
+                    console.log('option 1 -- ', selCh"""+str(index)+""");
                 	if(selCh"""+str(index)+""" != 0)
                 	{
                 		selDim"""+str(index)+""" = """ + """selCh"""+str(index) + """;

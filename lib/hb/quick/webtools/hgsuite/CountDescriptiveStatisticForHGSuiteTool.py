@@ -318,13 +318,24 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         if preselectedDecision != 'no':
             mainOptionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedMainOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
             optionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+
             newOptionList = []
-            for mNum, m in enumerate(mainOptionList):
+            newMainOptionList = []
+            mNum = 0
+            for m in mainOptionList:
                 if m == cls.MAIN_OPTIONS[1]:
+                    newMainOptionList.append(-2)
                     newOptionList.append('')
-                else:
+                elif m == cls.MAIN_OPTIONS[0]:
+                    newMainOptionList.append(1)
                     newOptionList.append(optionList[mNum])
-            optionList = newOptionList
+                    mNum += 1
+                elif m == cls.MAIN_OPTIONS[2]:
+                    newMainOptionList.append(-1)
+                    newOptionList.append(optionList[mNum])
+                    mNum += 1
+            optionList = newOptionList[1:len(newOptionList)] + [newOptionList[0]]
+            mainOptionList = newMainOptionList[1:len(newMainOptionList)] + [newMainOptionList[0]]
         else:
             mainOptionList = []
             optionList = []
@@ -457,8 +468,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 # print 'summarizeItem', summarizeItem
 
                 for groupKey, groupItem in summarizeItem.iteritems():
-                    # print 'groupKey', list(groupKey)
-                    # print 'groupItem', groupItem
+                    # print 'groupKey', list(groupKey), '<br>'
+                    # print 'groupItem', groupItem, '<br>'
 
                     if summarizeKey == 'no':
                         data += groupItem
@@ -475,7 +486,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 #dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
                 dp = zip(*data)
             elif summarizeKey == 'raw':
-                header = ['Title'] + firstColumnList + secondColumnList + [summarizeKey]
+                header = firstColumnList + secondColumnList + ['Title'] + [summarizeKey]
                 dataToPresent = data
                 #print 'dataToPresent', dataToPresent
                 # headerToPresent = header
@@ -570,6 +581,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.divEnd()
             htmlCore.divEnd()
             htmlCore.divEnd()
+
+
             htmlCore.line(
                 cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum, mainOptionList, optionList, option = 'raw'))
             htmlCore.divEnd()
