@@ -70,7 +70,7 @@ class RandAlgorithmMixin(object):
     @classmethod
     def getOptionsBoxSelectExcludedTrack(cls, prevChoices):
         if cls._showExcludedTrackSelection(prevChoices):
-            return [cls.NO, cls.YES]
+            return [RandAlgorithmMixin.NO, RandAlgorithmMixin.YES]
 
     @classmethod
     def _showExcludedTrackSelection(cls, choices):
@@ -84,7 +84,7 @@ class RandAlgorithmMixin(object):
 
     @classmethod
     def getOptionsBoxExcludedTrack(cls, prevChoices):
-        if prevChoices.selectExcludedTrack == cls.YES:
+        if prevChoices.selectExcludedTrack == RandAlgorithmMixin.YES:
             return cls.getHistorySelectionElement(*getSupportedFileSuffixesForPointsAndSegments())
 
     @classmethod
@@ -98,7 +98,7 @@ class RandAlgorithmMixin(object):
         args = []
         for arg in reqArgs:
             if arg == TsRandAlgReg.EXCLUDED_TS_ARG:
-                if choices.selectExcludedTrack == cls.YES:
+                if choices.selectExcludedTrack == RandAlgorithmMixin.YES:
                     excludedTs = factory.getSingleTrackTS(genome, choices.excludedTrack)
                 else:
                     excludedTs = None
@@ -122,7 +122,7 @@ class RandAlgorithmMixin(object):
                 if requiredParameter in [None, '', '--- Select ---']:
                     return 'Please select all randomization parameters'
 
-            if choices.selectExcludedTrack == cls.YES:
+            if choices.selectExcludedTrack == RandAlgorithmMixin.YES:
                 if not choices.excludedTrack:
                     return 'Please select a track with the regions to be excluded in the ' \
                            'randomization algorithm.'
