@@ -9,6 +9,7 @@
     <tool file="proto/hyperbrowser/smeasure/ChangeSegmentGSuiteToPointGSuiteTool.xml" />
     <tool file="proto/hyperbrowser/smeasure/SimulateTtwoContinuousTracksBasedOnABinormalDistributionTool.xml" />
     <tool file="proto/hyperbrowser/smeasure/CreateABedFileBasedOnTresholdValueFromAContinousTrackTool.xml" />
+    <tool file="proto/hyperbrowser/smeasure/PlotDenistyTool.xml" />
   </section>
 
 
