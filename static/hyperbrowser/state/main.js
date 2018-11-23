@@ -14,9 +14,9 @@
 					|| location.href === (location.protocol + "//" +  location.host + hbGetBaseUrl() + "root")) {
 					
 					modeModel = modeApp.start();
-					toolApp.start(modeModel, toolApp);
-					history.start(historyOptions);
-				} else {
+				// 	toolApp.start(modeModel, toolApp);
+				// 	history.start(historyOptions);
+				// } else {
 					// When the user navigates outside app ie when going to the Shared Data part of the HyperBrowser
 					//console.log("ModeApp: navigating outside app");
 				}
