@@ -2,3 +2,4 @@
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.smeasure.CreateABedFileBasedOnTresholdValueFromAContinousTrackTool" proto_tool_class="CreateABedFileBasedOnTresholdValueFromAContinousTrackTool">
   <description></description>
 </tool>
+
