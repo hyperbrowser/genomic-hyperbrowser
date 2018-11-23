@@ -7,7 +7,7 @@ config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
 from gold.gsuite.GSuiteTrack import GSuiteTrack, FtpGSuiteTrack, HttpGSuiteTrack, \
                                     HttpsGSuiteTrack, RsyncGSuiteTrack, HbGSuiteTrack, \
                                     GalaxyGSuiteTrack, FileGSuiteTrack
-from gold.util.CustomExceptions import InvalidFormatError
+from gold.util.CustomExceptions import InvalidFormatError, ArgumentValueError
 
 from test.gold.gsuite.GSuiteTestWithMockEncodingFuncs import GSuiteTestWithMockEncodingFuncs
 
@@ -244,13 +244,20 @@ class TestGSuiteTrack(GSuiteTestWithMockEncodingFuncs):
         track.genome = 'hg19'
         self.assertEquals('hg19', track.genome)
 
-        track.attributes = OrderedDict([('a', '123'), ('b', '234')])
-        self.assertEquals(OrderedDict([('a', '123'), ('b', '234')]), track.attributes)
+        track.attributes = OrderedDict([('a', '123'), ('b', '234'), ('C', '345')])
+        self.assertEquals(OrderedDict([('a', '123'), ('b', '234'), ('c', '345')]),
+                          track.attributes)
         self.assertEquals('123', track.a)
         self.assertEquals('234', track.getAttribute('b'))
 
-        track.setAttribute('c', '345')
+        self.assertEquals('345', track.c)
         self.assertEquals('345', track.getAttribute('c'))
+
+        track.setAttribute('D', '456')
+        self.assertEquals('456', track.getAttribute('d'))
+
+        with self.assertRaises(ArgumentValueError):
+            track.attributes = OrderedDict([('a', '123'), ('A', '234')])
 
         track.comment = 'Comment'
         self.assertEquals('Comment', track.comment)

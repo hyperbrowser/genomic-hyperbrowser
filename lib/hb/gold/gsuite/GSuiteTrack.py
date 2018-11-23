@@ -8,7 +8,7 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
                                         TRACK_TYPE_HEADER, GENOME_HEADER, LOCAL, REMOTE, TEXT, \
                                         BINARY, UNKNOWN, PREPROCESSED, PRIMARY, BTRACK_SUFFIX
 from gold.util.CustomExceptions import InvalidFormatError, AbstractClassError, \
-                                       NotSupportedError
+                                       NotSupportedError, ArgumentValueError
 from gold.util.CommonFunctions import getFileSuffix
 from quick.application.SignatureDevianceLogging import takes, returns
 
@@ -240,13 +240,19 @@ class GSuiteTrack(object):
 
                 if self._doUnquote:
                     val = unquote(val)
-                self._attributes[key] = val
+                if key.lower() in self._attributes:
+                    raise ArgumentValueError('Attribute "{}" appears multiple times in the '
+                                             'attribute list. Note that attributes are case '
+                                             'insensitive (e.g., "ABC" and "abc" is the same '
+                                             'attribute).'.format(key))
+                self.setAttribute(key, val)
 
-    @takes(str, str)
+    @takes('GSuiteTrack', str, str)
     def setAttribute(self, attrName, attrVal):
+        attrName = attrName.lower()
         self._attributes[attrName] = attrVal
 
-    @takes(str)
+    @takes('GSuiteTrack', str)
     @returns(str)
     def getAttribute(self, attrName):
         if attrName in self._attributes:
