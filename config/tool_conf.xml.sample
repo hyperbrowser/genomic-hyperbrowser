@@ -13,6 +13,7 @@
   </section>
 
 
+
 ##   <section name="Other tools" id="other_dd_tools" >
 ##     <tool file="proto/hyperbrowser/smeasure/CreateGSuiteFromTwoBinomialDistrTool.xml" />
 ##     <tool file="proto/hyperbrowser/recpatt/ParseDataFromGliphPaperTool.xml" />
