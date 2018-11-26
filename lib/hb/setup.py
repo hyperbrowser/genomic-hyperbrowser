@@ -265,6 +265,7 @@ def installAndCheckRLibraries():
         _installAndCheckRLibrary('maptree')
         _installAndCheckRLibrary('pi0')
         _installAndCheckRLibrary('plotrix')
+        _installAndCheckRLibrary('hexbin')
 
         import config.LocalOSConfig
         extraRLibraries = config.LocalOSConfig.__dict__.get('HB_EXTRA_R_LIBRARIES').strip().split('\n')
