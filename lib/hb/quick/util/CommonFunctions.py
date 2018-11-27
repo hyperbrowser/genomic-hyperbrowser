@@ -14,7 +14,7 @@ from collections import Iterable, OrderedDict
 from config.Config import PROCESSED_DATA_PATH, DEFAULT_GENOME, \
     ORIG_DATA_PATH, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
     PARSING_ERROR_DATA_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonConstants import BINARY_MISSING_VAL, ALLOWED_CHARS
 from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
@@ -714,3 +714,14 @@ def cleanUpTrackType(trackTypeStr):
         trackTypeStr = trackTypeStr.replace(old, new).strip()
 
     return trackTypeStr
+
+
+def formatPhraseWithCorrectChrUsage(phrase, useUrlEncoding=True, notAllowedChars=''):
+    corrected = ''
+    for char in phrase:
+        if char not in ALLOWED_CHARS or char in notAllowedChars:
+            if useUrlEncoding:
+                corrected += '%' + '{:0>2X}'.format(ord(char))
+        else:
+            corrected += char
+    return corrected

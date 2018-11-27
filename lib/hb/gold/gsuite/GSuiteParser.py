@@ -4,11 +4,12 @@ from cStringIO import StringIO
 
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
-from gold.gsuite.GSuiteConstants import ALLOWED_CHARS, HEADER_VAR_DICT, FILE_TYPE_HEADER, \
+from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, FILE_TYPE_HEADER, \
                                         TEXT, BINARY, PRIMARY, PREPROCESSED, \
                                         ALL_STD_COL_SPECS, OPTIONAL_STD_COL_NAMES, \
                                         ALL_STD_COL_NAMES, URI_COL, \
                                         GENOME_HEADER, MULTIPLE
+from gold.util.CommonConstants import ALLOWED_CHARS
 from gold.util.CustomExceptions import InvalidFormatError
 
 

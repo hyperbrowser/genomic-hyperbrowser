@@ -12,7 +12,7 @@ from copy import copy
 from gold.origdata.GenomeElementSource import GenomeElementSource, BoundingRegionTuple
 from gold.util.CustomExceptions import InvalidFormatError, ShouldNotOccurError
 from gold.util.CommonFunctions import getStringFromStrand
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonConstants import BINARY_MISSING_VAL, ALLOWED_CHARS
 from gold.track.GenomeRegion import GenomeRegion
 from gold.origdata.GenomeElement import GenomeElement
 from quick.util.CommonFunctions import smartRecursiveEquals
@@ -113,7 +113,6 @@ class GtrackGenomeElementSource(GenomeElementSource):
                                                            missingVal='', \
                                                            fromNumpyTypeFunc=lambda t:t[0] == 'S'))])
 
-    ALLOWED_CHARS = set([chr(x) for x in xrange(128) if x not in set(range(9)+[11,12]+range(14,32)+[127])])
     _RETURN_NUMPY_TYPES = False
 
     _addsStartElementToDenseIntervals = False
@@ -306,7 +305,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
     @classmethod
     def _checkCharUsageOfPhrase(cls, phrase):
         for char in phrase:
-            if not char in cls.ALLOWED_CHARS:
+            if not char in ALLOWED_CHARS:
                 raise InvalidFormatError("Error: Character %s is not allowed in GTrack file. Offending phrase: %s" % (repr(char), repr(phrase)))
 
         if phrase != phrase.strip():
@@ -315,11 +314,6 @@ class GtrackGenomeElementSource(GenomeElementSource):
     @classmethod
     def urlQuote(cls, phrase):
         return urllib.quote(phrase, safe=' ')
-
-    @classmethod
-    def convertPhraseToAllowed(cls, phrase):
-        return ''.join([x if x in cls.ALLOWED_CHARS and x not in '#\t' \
-                        else '%' + '{:0>2X}'.format(ord(x)) for x in phrase])
 
     # Parsing of header lines
 
