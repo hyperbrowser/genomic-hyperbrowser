@@ -20,7 +20,7 @@ vioplot
 mvtnorm
 sfsmisc
 polycor
-
+hexbin
 
 # Todo: Experimental packages (from developer), double-check these
 
