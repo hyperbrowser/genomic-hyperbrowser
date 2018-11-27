@@ -12,6 +12,14 @@ log = logging.getLogger( __name__ )
 class ProtoTool(DataSourceTool):
     tool_type = 'proto'
 
+    @property
+    def requires_galaxy_python_environment(self):
+        # Set to False in order to enable activation of tool-specific conda environment by Galaxy,
+        # which by design excludes the Galaxy Python environment.
+        # The Galaxy Python environment is still provided for ProTo tools by a adjustment in protoToolExecute.py,
+        # which adds the Galaxy "lib" directory to PYTHONPATH.
+        return False
+
     def parse_inputs( self, root ):
         Tool.parse_inputs( self, root )
         
