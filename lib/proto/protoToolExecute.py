@@ -7,9 +7,6 @@ import sys, os
 lib_dir = os.path.dirname(sys.path[0])
 sys.path[0] = lib_dir
 
-print os.getenv('PATH')
-print sys.path
-
 from proto.generictool import getController
 
 #sys.path = sys.path[1:]  # to remove the '/proto' directory from the Python path
