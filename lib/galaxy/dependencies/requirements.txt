@@ -17,6 +17,7 @@ bz2file; python_version < '3.3'
 ipaddress; python_version < '3.3'
 Paste
 PasteDeploy
+PasteScript < 3.0.0
 docutils
 wchartype
 repoze.lru
