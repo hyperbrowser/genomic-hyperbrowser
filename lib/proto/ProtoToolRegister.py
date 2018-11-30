@@ -76,9 +76,10 @@ def getToolPrototype(toolId):
     tool_shelve = None
     try:
         tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
-        module_name, class_name = tool_shelve[str(toolId)]
+        module_name, class_name, conda_activate_source = \
+            tool_shelve[str(toolId)]
         module = __import__(module_name, fromlist=[class_name])
-        prototype = getattr(module, class_name)(toolId)
+        prototype = getattr(module, class_name)(toolId, conda_activate_source)
     #except KeyError:
     #    prototype = None
     finally:
