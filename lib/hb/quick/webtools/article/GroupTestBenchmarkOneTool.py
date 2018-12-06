@@ -10,6 +10,7 @@ from proto.tools.GeneralGuiTool import HistElement
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.statistic.TtestUnpairedTestStat import TtestUnpairedTestStat
 from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
@@ -189,13 +190,13 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         core = HtmlCore()
         core.divBegin()
         resTableDict = OrderedDict()
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-            columnNames = ["Query track", "Wilcoxon score", "P-value"]
+            columnNames = ["Query track", choices.randType + " score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
 
-            nameList = ['Wilcoxon', 'qqplot.png']
+            nameList = [choices.randType, 'qqplot.png']
             pvals = [x[1] for x in resTableDict.values()]
 
             cls._addQQPlot(core, pvals, nameList, galaxyFn)
@@ -230,7 +231,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
     @classmethod
     def prepareTrackStructure(cls, queryTS, catTS, analysisBins, choices):
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             return cls._prepareQueryRefTrackStructure(queryTS, catTS)
         else:
             ts = TrackStructureV2()
@@ -266,7 +267,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
     @classmethod
     def _calculateNrOfOperations(cls, ts, analysisBins, choices):
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType  == "T-test":
             return cls._calculateNrOfOperationsForProgresOutput(ts,
                                                                 analysisBins,
                                                                 choices,
@@ -283,9 +284,13 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
     @classmethod
     def prepareMultiQueryAnalysis(cls, choices, opCount):
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+            statName = WilcoxonUnpairedTestRV2Stat.__name__
+            if choices.randType == "T-test":
+                statName == TtestUnpairedTestStat.__name__
+
             analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
-            analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+            analysisSpec.addParameter('multitrackRawStatistic', statName)
             analysisSpec.addParameter('alternative', choices.tail)
             analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
