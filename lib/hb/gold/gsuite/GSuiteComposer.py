@@ -3,7 +3,7 @@ from cStringIO import StringIO
 
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, URI_COL_SPEC, TITLE_COL, \
                                         OPTIONAL_STD_COL_SPECS
-from quick.util.CommonFunctions import ensurePathExists
+from quick.util.CommonFunctions import ensurePathExists, formatPhraseWithCorrectChrUsage
 
 
 def _composeHeaders(gSuite, out):
@@ -50,7 +50,7 @@ def _composeTrackLines(gSuite, colSpecs, attributes, out):
         cells = [getattr(track, colSpec.memberName) for colSpec in colSpecs]
         for attribute in attributes:
             if attribute in track.attributes:
-                cells.append(track.attributes[attribute])
+                cells.append(formatPhraseWithCorrectChrUsage(track.attributes[attribute]))
             else:
                 cells.append('.')
 

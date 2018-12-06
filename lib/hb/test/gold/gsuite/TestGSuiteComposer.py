@@ -82,12 +82,12 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
 
         self.assertEquals(targetOutput, output)
 
-    def testComposeLocalUrlGenomeAttributes(self):
+    def testComposeLocalUrlGenomeAttributesNonAscii(self):
         gSuite = GSuite()
-        gSuite.addTrack(GSuiteTrack('galaxy:/12345abc', genome='hg18',
+        gSuite.addTrack(GSuiteTrack('galaxy:/12345abc', genome='hg18\xC3',
                                     attributes=OrderedDict([('one', 'yes')])))
         gSuite.addTrack(GSuiteTrack('file:/path/to/file2', genome='hg19',
-                                    attributes=OrderedDict([('two', 'no')])))
+                                    attributes=OrderedDict([('two', 'no\xC3')])))
         
         output = GSuiteComposer.composeToString(gSuite)
 
@@ -97,8 +97,8 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##track type: unknown\n' \
             '##genome: multiple\n' \
             '###uri\ttitle\tgenome\tone\ttwo\n' \
-            'galaxy:/12345abc\t12345abc\thg18\tyes\t.\n' \
-            'file:/path/to/file2\tfile2\thg19\t.\tno\n'
+            'galaxy:/12345abc\t12345abc\thg18%C3\tyes\t.\n' \
+            'file:/path/to/file2\tfile2\thg19\t.\tno%C3\n'
 
         self.assertEquals(targetOutput, output)
 
