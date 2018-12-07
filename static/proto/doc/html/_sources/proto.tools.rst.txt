@@ -1,5 +1,5 @@
-proto\.tools package
-====================
+proto.tools package
+===================
 
 Submodules
 ----------

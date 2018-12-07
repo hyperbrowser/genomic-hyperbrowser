@@ -1,5 +1,5 @@
-proto\.RSetup module
-====================
+proto.RSetup module
+===================
 
 .. automodule:: proto.RSetup
     :members:

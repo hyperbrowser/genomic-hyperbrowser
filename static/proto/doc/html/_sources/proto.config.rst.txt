@@ -1,5 +1,5 @@
-proto\.config package
-=====================
+proto.config package
+====================
 
 Submodules
 ----------

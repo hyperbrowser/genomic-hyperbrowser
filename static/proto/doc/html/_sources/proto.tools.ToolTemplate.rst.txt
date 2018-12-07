@@ -1,5 +1,5 @@
-proto\.tools\.ToolTemplate module
-=================================
+proto.tools.ToolTemplate module
+===============================
 
 .. automodule:: proto.tools.ToolTemplate
     :members:

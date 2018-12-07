@@ -1,5 +1,5 @@
-proto\.CommonFunctions module
-=============================
+proto.CommonFunctions module
+============================
 
 .. automodule:: proto.CommonFunctions
     :members:

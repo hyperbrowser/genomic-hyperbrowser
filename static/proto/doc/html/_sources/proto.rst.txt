@@ -1,6 +1,14 @@
 proto package
 =============
 
+Subpackages
+-----------
+
+.. toctree::
+
+    proto.config
+    proto.tools
+
 Submodules
 ----------
 

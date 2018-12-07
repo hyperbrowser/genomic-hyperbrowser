@@ -8,7 +8,8 @@ class ToolTemplate(GeneralGuiTool):
         Specifies a header of the tool, which is displayed at the top of the
         page.
 
-        Mandatory method for all ProTo tools.
+        *Mandatory method*:
+            Yes
         """
         return "Tool not yet in use"
 
@@ -19,19 +20,24 @@ class ToolTemplate(GeneralGuiTool):
         the number of input boxes to display on the page. The returned list
         can have two syntaxes:
 
-            1) A list of strings denoting the headers for the input boxes in
-               numerical order.
-            2) A list of tuples of strings, where each tuple has
+            1) A list of tuples of strings, where each tuple has
                two items: a header and a key.
+            2) A simple list of strings denoting the headers for the input
+               boxes in numerical order. [Deprecated]
 
         The contents of each input box must be defined by the function
-        getOptionsBoxK, where K is either a number in the range of 1 to the
-        number of boxes (case 1), or the specified key (case 2).
+        getOptionsBoxK, where K is the specified key (case 1).
 
-        Note: the key has to be camelCase and start with a non-capital letter
-              (e.g. "firstKey")
-
-        Optional method. Default return value if method is not defined: []
+        *Note*:
+            the key has to be camelCase and start with a non-capital letter
+            (e.g. "firstKey")
+        *Note 2*:
+            Case 2 above, which uses indexes, is deprecated and will not be
+            discussed further in this documentation.
+        *Mandatory method*:
+            No
+        *Default return value (if method is not defined)*:
+            []
         """
         return [('First header', 'firstKey'),
                 ('Second Header', 'secondKey')]
@@ -42,9 +48,12 @@ class ToolTemplate(GeneralGuiTool):
     #     Specifies the order in which the input boxes should be displayed,
     #     as a list. The input boxes are specified by index (starting with 1)
     #     or by key. If None, the order of the input boxes is in the order
-    #     specified by getInputBoxNames().
+    #     specified by :py:meth:`getInputBoxNames()`.
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
     #
@@ -57,120 +66,225 @@ class ToolTemplate(GeneralGuiTool):
     #     boxes, return a list of BoxGroup namedtuples with the label, the key
     #     (or index) of the first and last options boxes (inclusive).
     #
-    #     Example:
+    #     Example::
+    #
     #        from proto.tools.GeneralGuiTool import BoxGroup
     #        return [BoxGroup(label='A group of choices', first='firstKey',
     #                         last='secondKey')]
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
 
     @classmethod
     def getOptionsBoxFirstKey(cls):  # Alt: getOptionsBox1()
         """
-        Defines the type and contents of the input box. User selections are
-        returned to the tools in the prevChoices and choices attributes to
-        other methods. These are lists of results, one for each input box
-        (in the order specified by getInputBoxOrder()).
+        For all the keys defined in :py:meth:`getInputBoxNames()`, the Galaxy
+        ProTo parser looks for a class method named::
 
-        Mandatory for the first key defined in getInputBoxNames(), if any.
+            getOptionsBox + key.capitalize()
 
-        The input box is defined according to the following syntax:
+        The Python object that is returned by such a method defines the type
+        and contents of the corresponding input box in the GUI. The specific
+        user selections are then provided to other methods in the prevChoices
+        or choices parameters. This is a namedtuple object which can be
+        accessed by key (recommended) or index (in the order specified by
+        :py:meth:`getInputBoxOrder()`), e.g.::
 
-        Check box:              False | True
-        - Returns: bool
+            choices.firstKey
+            choices[0]
 
-        Selection box:          ['choice1', 'choice2']
-        - Returns: string
+        *Mandatory method*:
+            Yes, for the first key defined in
+            :py:meth:`getInputBoxNames()`, if any.
 
-        Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
-        - Tuple syntax: (contents, height (#lines) = 1, read only flag = False)
-        - The contents is the default value shown inside the text area
-        - Returns: string
+        Here follows an overview of the different GUI elements, together with
+        an example of the Python syntax that needs to be returned by this to
+        trigger the element, and the type of the user selection value present
+        in choices/prevchoices:
 
-        Raw HTML code:          '__rawstr__', 'HTML code'
-        - This is mainly intended for read only usage. Even though more
-          advanced hacks are possible, it is discouraged.
+        * *Check box*:
+            * Syntax::
 
-        Password field:         '__password__'
-        - Returns: string
+                False | True
 
-        Genome selection box:   '__genome__'
-        - Returns: string
+            * Prevchoices/choices type::
 
-        History selection box:  ('__history__',) |
-                                ('__history__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: colon-separated string denoting Galaxy dataset info, as
-            described below.
+                bool
 
-        History check box list: ('__multihistory__', ) |
-                                ('__multihistory__', 'bed', 'wig')
-        - Only history items of specified types are shown.
-        - Returns: OrderedDict with Galaxy dataset ids as key (the number YYYY
-            as described below), and the associated Galaxy dataset info as the
-            values, given that the history element is ticked off by the user.
-            If not, the value is set to None. The Galaxy dataset info structure
-            is described below.
+        * *Selection box*:
+            * Syntax::
 
-        Hidden field:           ('__hidden__', 'Hidden value')
-        - Returns: string
+                ['choice1', 'choice2']
 
-        Table:                  [['header1','header2'], ['cell1_1','cell1_2'],
-                                 ['cell2_1','cell2_2']]
-        - Returns: None
+            * Prevchoices/choices type::
 
-        Check box list:         OrderedDict([('key1', True), ('key2', False),
-                                             ('key3', False)])
-        - Returns: OrderedDict from key to selection status (bool).
+                string
 
+        * *Text area*:
+            * Syntax::
 
-        ###
-        Note about the "Galaxy dataset info" data structure:
-        ###
+                'textbox' | ('textbox', 1) | ('textbox', 1, False)
+
+            * Tuple elements:
+
+                1. contents:
+
+                    the default value shown inside the text area
+
+                2. height (default: 1):
+
+                    the number of lines of the text box
+
+                3. read only flag (default: False):
+
+                    whether the text box will allow user input
+
+            * Prevchoices/choices type::
+
+                string
+
+        * *Raw HTML code*:
+            * Syntax::
+
+                '__rawstr__', 'HTML code'
+
+            * Note:
+
+                This is mainly intended for read only usage. Even though more
+                advanced hacks are possible, it is discouraged.
+
+        * *Password field*:
+            * Syntax::
+
+                '__password__'
+
+            * Prevchoices/choices type::
+
+                string
+
+        * *Genome selection box*:
+            * Syntax::
+
+                '__genome__'
+
+            * Prevchoices/choices type::
+
+                string
+
+        * *History selection box*:
+            * Syntax::
+
+                ('__history__',) | ('__history__', 'bed', 'wig')
+
+            * Note:
+
+                Only history items of specified types are shown.
+
+            * Prevchoices/choices type:
+
+                colon-separated string denoting Galaxy dataset info, as
+                described below.
+
+        * *History check box list*:
+            * Syntax::
+
+                ('__multihistory__', ) | ('__multihistory__', 'bed', 'wig')
+
+            * Note:
+
+                Only history items of specified types are shown.
+
+            * Prevchoices/choices type:
+
+                OrderedDict with Galaxy dataset ids as key (the number YYYY
+                as described below), and the associated Galaxy dataset info as
+                the values, given that the history element is ticked off by the
+                user. If not, the value is set to None. The Galaxy dataset info
+                structure is described below.
+
+        * *Hidden field*:
+            * Syntax::
+
+                ('__hidden__', 'Hidden value')
+
+            * Prevchoices/choices type::
+
+                string
+
+        * *Table*:
+            * Syntax::
+
+                [['header1','header2'],
+                 ['cell1_1','cell1_2'],
+                 ['cell2_1','cell2_2']]
+
+            * Prevchoices/choices type::
+
+                None
+
+        * *Check box list*:
+            * Syntax:
+
+                OrderedDict([('key1', True),
+                             ('key2', False),
+                             ('key3', False)])
+
+            * Prevchoices/choices type:
+
+                OrderedDict from key to selection status (bool).
+
+        **Note about the "Galaxy dataset info" data structure**
 
         "Galaxy dataset info" is a list of strings coding information about a
         Galaxy history element and its associated dataset, typically used to
         provide info on the history element selected by the user as input to a
         ProTo tool.
 
-        Structure:
+        Structure::
+
             ['galaxy', fileFormat, path, name]
 
-        Optionally encoded as a single string, delineated by colon:
+        Optionally encoded as a single string, delineated by colon::
 
             'galaxy:fileFormat:path:name'
 
         Where:
-            'galaxy' used for assertions in the code
-            fileFormat (or suffix) contains the file format of the dataset, as
-                encoded in the 'format' field of a Galaxy history element.
-            path (or file name/fn) is the disk path to the dataset file.
-                Typically ends with 'XXX/dataset_YYYY.dat'. XXX and YYYY are
-                numbers which are extracted and used as an unique id  of the
-                dataset in the form [XXX, YYYY]
-            name is the title of the history element
+            * *'galaxy'* is used for assertions in the code
+            * *fileFormat* (or suffix) contains the file format of the dataset,
+              as encoded in the 'format' field of a Galaxy history element.
+            * *path* (or file name/fn) is the disk path to the dataset file.
+              Typically ends with 'XXX/dataset_YYYY.dat'. XXX and YYYY are
+              numbers which are extracted and used as an unique id  of the
+              dataset in the form [XXX, YYYY]
+            * *name* is the title of the history element
 
         The different parts can be extracted using the functions
-        extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
-        extractNameFromDatasetInfo() from the module CommonFunctions.py.
+        :py:func:`proto.CommonFunctions.extractFileSuffixFromDatasetInfo()`,
+        :py:func:`proto.CommonFunctions.extractFnFromDatasetInfo()`, and
+        :py:func:`proto.CommonFunctions.extractNameFromDatasetInfo()`.
         """
         return ['testChoice1', 'testChoice2', '...']
 
     @classmethod
     def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
         """
-        See getOptionsBoxFirstKey().
+        See :py:meth:`getOptionsBoxFirstKey()`.
 
         prevChoices is a namedtuple of selections made by the user in the
         previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
+        in this case). The elements can accessed either by key (recommended)
+        or index, e.g.::
 
-        Mandatory for the subsequent keys (after the first key) defined in
-        getInputBoxNames(), if any.
+            prevChoices.firstKey
+            prevChoices[0]
+
+        *Mandatory method*:
+            Yes, for the subsequent keys (after the first key) defined in
+            :py:meth:`getInputBoxNames()`, if any.
         """
         return ''
 
@@ -180,7 +294,10 @@ class ToolTemplate(GeneralGuiTool):
     #     If not None, defines the string content of an clickable info box
     #     beside the corresponding input box. HTML is allowed.
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
     #
@@ -192,7 +309,10 @@ class ToolTemplate(GeneralGuiTool):
     #     If not None, a Demo button appears in the interface. Clicking the
     #     button fills the option boxed with the defined demo values.
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return ['testChoice1', '..']
     #
@@ -200,8 +320,9 @@ class ToolTemplate(GeneralGuiTool):
     # def getExtraHistElements(cls, choices):
     #     """
     #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
+    #     This is defined by a list of
+    #     :py:class:`proto.tools.GeneralGuiTool.HistElement` objects, as in the
+    #     following example::
     #
     #        from proto.tools.GeneralGuiTool import HistElement
     #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
@@ -211,9 +332,14 @@ class ToolTemplate(GeneralGuiTool):
     #     In the execute() method, one typically needs to fetch the path to
     #     the dataset referred to by the extra history element. To fetch the
     #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
+    #     as key, e.g.::
     #
-    #     Optional method. Default return value if method is not defined: None
+    #         cls.extraGalaxyFn[cls.HISTORY_TITLE]
+    #
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
 
@@ -228,7 +354,8 @@ class ToolTemplate(GeneralGuiTool):
         files can be put (cls, e.g. generated image files). choices is a list
         of selections made by web-user in each options box.
 
-        Mandatory unless isRedirectTool() returns True.
+        *Mandatory method*:
+            Yes, unless :py:meth:`isRedirectTool()` returns True.
         """
         print 'Executing...'
 
@@ -242,7 +369,10 @@ class ToolTemplate(GeneralGuiTool):
         parameters are valid, the method should return None, which enables
         the execute button.
 
-        Optional method. Default return value if method is not defined: None
+        *Mandatory method*:
+            No
+        *Default return value (if method is not defined)*:
+            None
         """
         return None
 
@@ -254,7 +384,10 @@ class ToolTemplate(GeneralGuiTool):
     #     page. The input boxes will change according to which subtool is
     #     selected.
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
     #
@@ -265,7 +398,10 @@ class ToolTemplate(GeneralGuiTool):
     #     tool is only accessible to a restricted set of users as well as admin
     #     users, as defined in the galaxy.ini file.
     #
-    #     Optional method. Default return value if method is not defined: False
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         False
     #     """
     #     return False
     #
@@ -275,7 +411,10 @@ class ToolTemplate(GeneralGuiTool):
     #     Specifies whether the tool should redirect to an URL when the Execute
     #     button is clicked.
     #
-    #     Optional method. Default return value if method is not defined: False
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         False
     #     """
     #     return False
     #
@@ -285,7 +424,8 @@ class ToolTemplate(GeneralGuiTool):
     #     This method is called to return an URL if the isRedirectTool method
     #     returns True.
     #
-    #     Mandatory method if isRedirectTool() returns True.
+    #     *Mandatory method*:
+    #         Yes, if :py:meth:`isRedirectTool()` returns True.
     #     """
     #     return ''
     #
@@ -295,7 +435,10 @@ class ToolTemplate(GeneralGuiTool):
     #     Specifies if a History item should be created when the Execute button
     #     is clicked.
     #
-    #     Optional method. Default return value if method is not defined: True
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         True
     #     """
     #     return True
     #
@@ -306,7 +449,10 @@ class ToolTemplate(GeneralGuiTool):
     #     to reload. Returning False stops the need for reloading the tool
     #     after each input, resulting in less lags for the user.
     #
-    #     Optional method. Default return value if method is not defined: True
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         True
     #     """
     #     return True
     #
@@ -317,7 +463,10 @@ class ToolTemplate(GeneralGuiTool):
     #     choices previously made. The input boxes are specified by index
     #     (starting with 1) or by key.
     #
-    #     Optional method. Default return value if method is not defined: True
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         []
     #     """
     #     return []
     #
@@ -326,7 +475,10 @@ class ToolTemplate(GeneralGuiTool):
     #     """
     #     Specifies a help text in HTML that is displayed below the tool.
     #
-    #     Optional method. Default return value if method is not defined: ''
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         ''
     #     """
     #     return ''
     #
@@ -339,7 +491,10 @@ class ToolTemplate(GeneralGuiTool):
     #     Config.py. The full path is created from the base directory
     #     followed by the id.
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
     #
@@ -349,7 +504,10 @@ class ToolTemplate(GeneralGuiTool):
     #     Specifies an URL to an example page that describes the tool, for
     #     instance a Galaxy page.
     #
-    #     Optional method. Default return value if method is not defined: None
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         None
     #     """
     #     return None
     #
@@ -360,7 +518,10 @@ class ToolTemplate(GeneralGuiTool):
     #     currently mostly used within the Genomic HyperBrowser and will make
     #     little difference in a plain Galaxy ProTo installation.
     #
-    #     Optional method. Default return value if method is not defined: False
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         False
     #     """
     #     return False
     #
@@ -378,8 +539,10 @@ class ToolTemplate(GeneralGuiTool):
     #     added to the output dataset. If one wants to write the complete HTML
     #     page, use the restricted output format 'customhtml' instead.
     #
-    #     Optional method. Default return value if method is not defined:
-    #     'html'
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         'html'
     #     """
     #     return 'html'
     #
@@ -388,7 +551,9 @@ class ToolTemplate(GeneralGuiTool):
     #     """
     #     The title (name) of the main output history element.
     #
-    #     Optional method. Default return value if method is not defined:
-    #     the name of the tool.
+    #     *Mandatory method*:
+    #         No
+    #     *Default return value (if method is not defined)*:
+    #         The name of the tool
     #     """
     #     return cls.getToolSelectionName()

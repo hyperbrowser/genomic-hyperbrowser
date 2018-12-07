@@ -1,5 +1,5 @@
-proto\.StaticFile module
-========================
+proto.StaticFile module
+=======================
 
 .. automodule:: proto.StaticFile
     :members:

@@ -1,5 +1,5 @@
-proto\.HtmlCore module
-======================
+proto.HtmlCore module
+=====================
 
 .. automodule:: proto.HtmlCore
     :members:

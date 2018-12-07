@@ -1,5 +1,5 @@
-proto\.TextCore module
-======================
+proto.TextCore module
+=====================
 
 .. automodule:: proto.TextCore
     :members:

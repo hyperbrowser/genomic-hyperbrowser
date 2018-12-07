@@ -1,5 +1,5 @@
-proto\.TableCoreMixin module
-============================
+proto.TableCoreMixin module
+===========================
 
 .. automodule:: proto.TableCoreMixin
     :members:
