@@ -134,7 +134,7 @@ class GenerateToolsTool(GeneralGuiTool):
 
     @staticmethod
     def getOptionsBoxTemplate(prevChoices):
-        return ['Yes', 'No']
+        return ['No', 'Yes']
 
     @classmethod
     def _getPackageDir(cls, selectedDirs):
