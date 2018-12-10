@@ -14,8 +14,8 @@ MULTI_GENERAL_GUI_TOOL = 'MultiGeneralGuiTool'
 
 EXPLORE_TOOLS_TOOL_CLS_NAME = 'ExploreToolsTool'
 
-DEFAULT_INSTALLED_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate'),
-                                ('proto.tools.ToolTemplateMinimal', 'ToolTemplate')]
+DEFAULT_INSTALLED_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate', None),
+                                ('proto.tools.ToolTemplateMinimal', 'ToolTemplate', None)]
 
 HIDDEN_MODULES_CONFIG_FN = \
     os.path.join(CONFIG_DIR, 'proto_tool_explorer_hidden_modules.txt')
@@ -108,7 +108,8 @@ def _commonGetProtoToolList(tool_dir=PROTO_TOOL_DIR, except_modules_set=set(), d
 def _findInstalledClassesSet():
     installed_class_info = DEFAULT_INSTALLED_CLASS_INFO + getInstalledProtoTools()
     installed_classes_set = set([getUniqueKeyForClass(module, class_name) for
-                                 module, class_name in installed_class_info])
+                                 module, class_name, conda_activate_source
+                                 in installed_class_info])
     return installed_classes_set
 
 
