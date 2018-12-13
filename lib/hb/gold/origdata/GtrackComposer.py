@@ -129,7 +129,7 @@ class StdGtrackComposer(FileFormatComposer):
             elif hbColName == 'weights':
                 pass
             else:
-                cols.append(formatPhraseWithCorrectChrUsage(str(getattr(ge, hbColName)), \
+                cols.append(formatPhraseWithCorrectChrUsage(unicode(getattr(ge, hbColName)), \
                                                             useUrlEncoding=True,
                                                             notAllowedChars='#\t'))
 
