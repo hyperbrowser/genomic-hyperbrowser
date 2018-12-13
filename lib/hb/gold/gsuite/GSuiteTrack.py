@@ -9,7 +9,8 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
                                         BINARY, UNKNOWN, PREPROCESSED, PRIMARY, BTRACK_SUFFIX
 from gold.util.CustomExceptions import InvalidFormatError, AbstractClassError, \
                                        NotSupportedError, ArgumentValueError
-from gold.util.CommonFunctions import getFileSuffix
+from gold.util.CommonFunctions import getFileSuffix, formatPhraseWithCorrectChrUsage, \
+    urlDecodePhrase
 from quick.application.SignatureDevianceLogging import takes, returns
 
 
@@ -18,22 +19,22 @@ _GSUITE_TRACK_REGISTRY = {}
 
 def quoteParseResults(parseResults):
     scheme = parseResults.scheme
-    netloc = quote(parseResults.netloc, safe='')
-    path = quote(parseResults.path, safe='/')
-    params = quote(parseResults.params, safe='')
-    query = quote_plus(parseResults.query, safe='=&')
-    fragment = quote(parseResults.fragment, safe='')
+    netloc = quote(parseResults.netloc.encode('utf-8'), safe='')
+    path = quote(parseResults.path.encode('utf-8'), safe='/')
+    params = quote(parseResults.params.encode('utf-8'), safe='')
+    query = quote_plus(parseResults.query.encode('utf-8'), safe='=&')
+    fragment = quote(parseResults.fragment.encode('utf-8'), safe='')
 
     return urlparse.ParseResult(scheme, netloc, path, params, query, fragment)
 
 
 def unquoteParseResults(parseResults):
     scheme = parseResults.scheme
-    netloc = unquote(parseResults.netloc)
-    path = unquote(parseResults.path)
-    params = unquote(parseResults.params)
-    query = unquote_plus(parseResults.query)
-    fragment = unquote(parseResults.fragment)
+    netloc = urlDecodePhrase(parseResults.netloc)
+    path = urlDecodePhrase(parseResults.path)
+    params = urlDecodePhrase(parseResults.params)
+    query = urlDecodePhrase(parseResults.query, unquotePlus=True)
+    fragment = urlDecodePhrase(parseResults.fragment)
 
     return urlparse.ParseResult(scheme, netloc, path, params, query, fragment)
 
@@ -42,7 +43,8 @@ def unquoteQueryDict(queryDict):
     resQueryDict = {}
 
     for key, val in queryDict.iteritems():
-        resQueryDict[unquote_plus(key)] = [unquote_plus(_) for _ in val]
+        resQueryDict[urlDecodePhrase(key, unquotePlus=True)] = \
+            [urlDecodePhrase(_, unquotePlus=True) for _ in val]
 
     return resQueryDict
 
@@ -96,7 +98,7 @@ class GSuiteTrack(object):
             HEADER_VAR_DICT[FILE_FORMAT_HEADER].default
         self.trackType = trackType if trackType is not None else \
             HEADER_VAR_DICT[TRACK_TYPE_HEADER].default
-        self.genome = genome if genome is not None else \
+        self.genome = urlDecodePhrase(genome) if genome is not None else \
             HEADER_VAR_DICT[GENOME_HEADER].default
         self.attributes = attributes
         self.comment = comment
@@ -239,7 +241,7 @@ class GSuiteTrack(object):
                                              'indicate missing values')
 
                 if self._doUnquote:
-                    val = unquote(val)
+                    val = urlDecodePhrase(val)
                 if key.lower() in self._attributes:
                     raise ArgumentValueError('Attribute "{}" appears multiple times in the '
                                              'attribute list. Note that attributes are case '

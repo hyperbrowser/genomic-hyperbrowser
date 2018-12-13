@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 
 import config.Config
@@ -745,23 +747,6 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         gSuite = self._parseContents(contents)
         self.assertEquals('unknown', gSuite.genome)
 
-    def testNoQuotesStdHeaderCol(self):
-        contents = \
-            '###uri\tfile%5fformat\n' \
-            'ftp://server/file1\tprimary\n'
-
-        gSuite = self._parseContents(contents)
-        track = list(gSuite.allTracks())[0]
-        self.assertEquals(['file%5fformat'], track.attributes.keys())
-
-    def testQuotesColumnName(self):
-        contents = \
-            '###uri\textra%20col\n' \
-            'ftp://server/file1.bed\tyes\n'
-
-        gSuite = self._parseContents(contents)
-        self.assertEquals(['extra col'], gSuite.attributes)
-
     def testQuotesGenome(self):
         contents = \
             '##genome: hg%2019\n' \
@@ -789,11 +774,11 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
     def testQuotesAttribute(self):
         contents = \
             '###uri\textra\n' \
-            'ftp://server/file1.bed\t%c3\n'
+            'ftp://server/file1.bed\t%c3%b8\n'
 
         gSuite = self._parseContents(contents)
         track = list(gSuite.allTracks())[0]
-        self.assertEquals('\xc3', track.attributes['extra'])
+        self.assertEquals(u'ø', track.attributes['extra'])
 
     #
     # Parsing errors
@@ -809,13 +794,21 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
 
     def testNonAscii(self):
         contents = \
-            '##location: remote\xaf\n' \
-            'ftp://server/file1.bed\n'
+            u'##location: remøte\n' \
+            u'ftp://server/file1.bed\n'
 
         # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
-    def testQuotesStdHeader(self):
+    def testQuotesColSpecLine(self):
+        contents = \
+            '###uri\tfile%5fformat\n' \
+            'ftp://server/file1\tprimary\n'
+
+        # self._parseContents(contents)
+        self._assertInvalidFormatWhenParsing(contents)
+
+    def testQuotesStdHeaderVal(self):
         contents = \
             '##track type: valued%20segments\n' \
             'ftp://server/file1.bed\n'

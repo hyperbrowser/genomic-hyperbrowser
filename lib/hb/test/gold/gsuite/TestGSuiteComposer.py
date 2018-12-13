@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 from collections import OrderedDict
 
@@ -5,7 +7,7 @@ import config.Config
 config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
 
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import gold.gsuite.GSuiteParser as GSuiteParser
 
@@ -84,10 +86,12 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
 
     def testComposeLocalUrlGenomeAttributesNonAscii(self):
         gSuite = GSuite()
-        gSuite.addTrack(GSuiteTrack('galaxy:/12345abc', genome='hg18\xC3',
+        gSuite.addTrack(GSuiteTrack('galaxy:/12345abc', genome=u'hg18ø',
                                     attributes=OrderedDict([('one', 'yes')])))
         gSuite.addTrack(GSuiteTrack('file:/path/to/file2', genome='hg19',
-                                    attributes=OrderedDict([('two', 'no\xC3')])))
+                                    attributes=OrderedDict([('two', u'nø')])))
+        gSuite.addTrack(GSuiteTrack(HbGSuiteTrack.generateURI(trackName=[u'track', u'nøme']),
+                                    genome='hg38', attributes=OrderedDict([('two', 'yes')])))
         
         output = GSuiteComposer.composeToString(gSuite)
 
@@ -96,9 +100,10 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##file format: unknown\n' \
             '##track type: unknown\n' \
             '##genome: multiple\n' \
-            '###uri\ttitle\tgenome\tone\ttwo\n' \
-            'galaxy:/12345abc\t12345abc\thg18%C3\tyes\t.\n' \
-            'file:/path/to/file2\tfile2\thg19\t.\tno%C3\n'
+            '###uri\ttitle\tfile_format\tgenome\tone\ttwo\n' \
+            'galaxy:/12345abc\t12345abc\tunknown\thg18%C3%B8\tyes\t.\n' \
+            'file:/path/to/file2\tfile2\tunknown\thg19\t.\tn%C3%B8\n' \
+            'hb:/track/n%C3%B8me\tn%C3%B8me\tpreprocessed\thg38\t.\tyes\n'
 
         self.assertEquals(targetOutput, output)
 

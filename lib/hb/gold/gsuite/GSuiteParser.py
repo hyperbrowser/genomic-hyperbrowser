@@ -16,6 +16,8 @@ from gold.util.CustomExceptions import InvalidFormatError
 #
 # Namedtuples
 #
+from quick.util.CommonFunctions import urlDecodePhrase, \
+    formatPhraseWithCorrectChrUsage
 
 GSuiteContents = namedtuple('GSuiteContents', ['genome', 'colNames', 'headerVars', 'tracks'])
 
@@ -36,7 +38,7 @@ def _parseHeaderLine(line):
     val = val.strip()
 
     if key == GENOME_HEADER:
-        val = unquote(val)
+        val = urlDecodePhrase(val)
     else:
         val = val.lower()
 
@@ -102,7 +104,7 @@ def _parseColumnSpecLine(line):
     #    raise InvalidFormatError('Error in column specification line: %s ' % repr(line) +
     #                             'Please separate columns by tab, not space.')
 
-    colNames = [(unquote(col) if unquote(col) not in ALL_STD_COL_NAMES else col)
+    colNames = [(col if col not in ALL_STD_COL_NAMES else col)
                 for col in colNames]
 
     for colName in colNames:
@@ -137,6 +139,9 @@ def _parseColumnSpecLine(line):
 
             curOptStdColIdx = nextOptStdColIdx
         else:
+            if urlDecodePhrase(colName) != colName:
+                raise InvalidFormatError('Column names in GSuite do not support URL escaping. '
+                                         'Offending column name: "{}"'.format(colName))
             nonStdColsFound.append(colName)
 
     return colNames
@@ -160,7 +165,7 @@ def _parseGenomeLine(line):
         raise InvalidFormatError('Genome line not understood: ' + repr(genomeLine))
 
     key, genome = [_.strip() for _ in splitLine]
-    genome = unquote(genome)
+    genome = urlDecodePhrase(genome)
     key = key.lower()
 
     if key != 'genome':

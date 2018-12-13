@@ -721,7 +721,28 @@ def formatPhraseWithCorrectChrUsage(phrase, useUrlEncoding=True, notAllowedChars
     for char in phrase:
         if char not in ALLOWED_CHARS or char in notAllowedChars:
             if useUrlEncoding:
-                corrected += '%' + '{:0>2X}'.format(ord(char))
+                if isinstance(phrase, unicode):
+                    char = char.encode('utf-8')
+                for byte in char:
+                    if not isinstance(byte, int):
+                        byte = ord(byte)
+                    corrected += '%' + '{:0>2X}'.format(byte)
         else:
             corrected += char
     return corrected
+
+
+def urlDecodePhrase(phrase, unquotePlus=False):
+    if unquotePlus:
+        decoded = urllib.unquote_plus(phrase)
+    else:
+        decoded = urllib.unquote(phrase)
+
+    try:
+        try:
+            decoded.decode('ascii')
+            return decoded
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return decoded.decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return decoded

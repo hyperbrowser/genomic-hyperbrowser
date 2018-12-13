@@ -47,7 +47,8 @@ def _composeTrackLines(gSuite, colSpecs, attributes, out):
         if track.comment:
             print >>out, '#' + track.comment
         
-        cells = [getattr(track, colSpec.memberName) for colSpec in colSpecs]
+        cells = [formatPhraseWithCorrectChrUsage(getattr(track, colSpec.memberName))
+                 for colSpec in colSpecs]
         for attribute in attributes:
             if attribute in track.attributes:
                 cells.append(formatPhraseWithCorrectChrUsage(track.attributes[attribute]))
