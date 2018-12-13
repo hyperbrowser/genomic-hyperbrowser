@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from gold.util.CustomExceptions import InvalidFormatError, NotSupportedError
+from gold.util.CustomExceptions import InvalidFormatError, NotSupportedError, ArgumentValueError
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_FORMAT_HEADER, \
                                         TRACK_TYPE_HEADER, GENOME_HEADER, LOCATION_MEMBER, \
                                         FILE_FORMAT_MEMBER, TRACK_TYPE_MEMBER, GENOME_MEMBER, \
@@ -7,11 +7,11 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
 
 
 class GSuite(object):
-    def __init__(self, trackList=[]):
+    def __init__(self, trackList=[], customHeaders=OrderedDict()):
         self._trackList = []
         self._titleToTrackDict = {}
         self._updatedHeaders = False
-        self._customHeaders = OrderedDict()
+        self.customHeaders = customHeaders
 
         self.addTracks(trackList)
 
@@ -89,8 +89,35 @@ class GSuite(object):
             raise InvalidFormatError('Track types "%s" and "%s" are not possible to combine. '
                                      % (curVal, nextVal))
 
-    def getCustomHeaderKeys(self):
-        pass
+    @property
+    def customHeaders(self):
+        return self._customHeaders
+
+    @customHeaders.setter
+    def customHeaders(self, customHeaders):
+        self._customHeaders = OrderedDict()
+
+        for key, val in customHeaders.iteritems():
+            if val is not None:
+                if val == '':
+                    raise InvalidFormatError('Empty header values not allowed. '
+                                             'Please use ".", the period character, to '
+                                             'indicate missing values')
+
+                if key.lower() in self._customHeaders:
+                    raise ArgumentValueError('Custom header "{}" appears multiple times in the '
+                                             'header list. Note that custom headers are case '
+                                             'insensitive (e.g., "ABC" and "abc" is the same '
+                                             'header).'.format(key))
+                self.setCustomHeader(key, val)
+
+    def setCustomHeader(self, headerName, headerVal):
+        headerName = headerName.lower()
+        self._customHeaders[headerName] = headerVal
+
+    def getCustomHeader(self, headerName):
+        if headerName in self._customHeaders:
+            return self._customHeaders[headerName]
 
     @property
     def attributes(self):
@@ -182,3 +209,10 @@ class GSuite(object):
                 attr not in ('addTrack', 'addTracks'):
             self._updateGSuiteHeaders()
         return object.__getattribute__(self, attr)
+
+    def __getattr__(self, item):
+        try:
+            return self.__dict__['_customHeaders'][item]
+        except KeyError:
+            raise AttributeError("Member '%s' not found in class '%s'" %
+                                 (item, self.__class__.__name__))

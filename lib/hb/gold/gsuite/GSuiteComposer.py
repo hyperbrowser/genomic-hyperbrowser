@@ -7,10 +7,17 @@ from quick.util.CommonFunctions import ensurePathExists, formatPhraseWithCorrect
 
 
 def _composeHeaders(gSuite, out):
+    for headerKey, headerVal in _getAllHeadersToPrint(gSuite):
+        print >> out, '##%s: %s' % (headerKey, headerVal)
+
+
+def _getAllHeadersToPrint(gSuite):
     for headerKey, headerSpec in HEADER_VAR_DICT.iteritems():
         if not headerSpec.deprecated:
             headerVal = getattr(gSuite, headerSpec.memberName)
-            print >>out, '##%s: %s' % (headerKey, headerVal)
+            yield (headerKey, headerVal)
+    for headerKey, headerVal in gSuite.customHeaders.iteritems():
+        yield (headerKey, headerVal)
 
 
 def _findAllCols(gSuite):

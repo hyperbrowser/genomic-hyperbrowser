@@ -37,6 +37,8 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
                           GSuiteParser._parseHeaderLine('##File format:  primary\n'))
         self.assertEquals(('genome', 'HG18'),
                           GSuiteParser._parseHeaderLine('##genome:  HG18\n'))
+        self.assertEquals(('my header', 'Some text'),
+                          GSuiteParser._parseHeaderLine('##My Header:  Some text\n'))
 
     def testParseColSpecLineDirectly(self):
         colSpecLine = '###uri\tantibody'
@@ -747,6 +749,21 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         gSuite = self._parseContents(contents)
         self.assertEquals('unknown', gSuite.genome)
 
+    def testNoCustomHeaders(self):
+        contents = \
+            'ftp://server/file1.bed\n'
+
+        gSuite = self._parseContents(contents)
+        self.assertEquals(OrderedDict(), gSuite.customHeaders)
+        
+    def testCustomHeaderVariable(self):
+        contents = \
+            '##My Variable: something\n'
+
+        gSuite = self._parseContents(contents)
+        self.assertEquals(OrderedDict([('my variable', 'something')]), gSuite.customHeaders)
+        self.assertEquals('something', gSuite.getCustomHeader('my variable'))
+
     def testQuotesGenome(self):
         contents = \
             '##genome: hg%2019\n' \
@@ -811,6 +828,14 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
     def testQuotesStdHeaderVal(self):
         contents = \
             '##track type: valued%20segments\n' \
+            'ftp://server/file1.bed\n'
+
+        # self._parseContents(contents)
+        self._assertInvalidFormatWhenParsing(contents)
+
+    def testQuotesCustomHeaderKey(self):
+        contents = \
+            '##my%20header: true\n' \
             'ftp://server/file1.bed\n'
 
         # self._parseContents(contents)

@@ -6,7 +6,7 @@ config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
 
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
-from gold.util.CustomExceptions import InvalidFormatError
+from gold.util.CustomExceptions import InvalidFormatError, ArgumentValueError
 
 from test.gold.gsuite.GSuiteTestWithMockEncodingFuncs import GSuiteTestWithMockEncodingFuncs
 
@@ -19,6 +19,7 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual('unknown', gSuite.fileFormat)
         self.assertEqual('unknown', gSuite.trackType)
         self.assertEqual('unknown', gSuite.genome)
+        self.assertEqual(OrderedDict(), gSuite.customHeaders)
         self.assertEqual([], gSuite.attributes)
 
         self.assertEqual(False, gSuite.isPreprocessed())
@@ -28,7 +29,26 @@ class TestGSuite(GSuiteTestWithMockEncodingFuncs):
         self.assertEqual(0, len(list(gSuite.allTracks())))
         self.assertEqual(0, len(list(gSuite.allTrackTitles())))
         self.assertEqual(0, len(list(gSuite.allTrackTypes())))
-        
+
+    def testCustomHeaders(self):
+        gSuite = GSuite(customHeaders=OrderedDict([('My Header', 'My value')]))
+        self.assertEqual(OrderedDict([('my header', 'My value')]), gSuite.customHeaders)
+        self.assertEqual('My value', gSuite.getCustomHeader('my header'))
+        self.assertEqual(None, gSuite.getCustomHeader('wrong header'))
+
+        gSuite.customHeaders = OrderedDict([('My New Header', 'My new value')])
+        gSuite.setCustomHeader('my_second_header', 'My other value')
+        self.assertEqual('My other value', gSuite.getCustomHeader('my_second_header'))
+        self.assertEqual(['my new header', 'my_second_header'], gSuite.customHeaders.keys())
+        self.assertEqual(['My new value', 'My other value'], gSuite.customHeaders.values())
+
+        with self.assertRaises(AttributeError):
+            gSuite.my_new_header
+        self.assertEqual('My other value', gSuite.my_second_header)
+
+        with self.assertRaises(ArgumentValueError):
+            gSuite.customHeaders = OrderedDict([('a', 'value'), ('A', 'other value')])
+
     def testAddGSuiteTracks(self):
         gSuite = GSuite()
         gSuite.setGenomeOfAllTracks('hg18')

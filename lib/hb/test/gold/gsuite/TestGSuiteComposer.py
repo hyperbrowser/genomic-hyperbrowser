@@ -134,6 +134,7 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
                                     attributes=OrderedDict([('antibody', 'cMyb'),
                                                             ('extra', 'yes')])))
         gSuite.setGenomeOfAllTracks('hg18')
+        gSuite.setCustomHeader('My header', 'Some value')
 
         output = GSuiteComposer.composeToString(gSuite)
 
@@ -142,6 +143,7 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##file format: multiple\n' \
             '##track type: unknown\n' \
             '##genome: hg18\n' \
+            '##my header: Some value\n' \
             '###uri\ttitle\tfile_format\tcell\tantibody\textra\n' \
             'ftp://server.somewhere.com/path/to/file1.bed\tTrack\tprimary\tk562\tcMyb\t.\n' \
             'http://server.other.com/path/to/file2.bed\tTrack2\tprimary\tGM12878\tcMyc\t.\n' \

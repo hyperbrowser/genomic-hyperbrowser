@@ -39,24 +39,26 @@ def _parseHeaderLine(line):
 
     if key == GENOME_HEADER:
         val = urlDecodePhrase(val)
-    else:
-        val = val.lower()
-
-    if key not in HEADER_VAR_DICT:
+    elif key not in HEADER_VAR_DICT:
         if key.endswith(' '):
             raise InvalidFormatError('Header variable "%s" must not end with space.' % key)
 
-        raise InvalidFormatError('Header variable "%s" is not part of the GSuite format.' % key)
+        # raise InvalidFormatError('Header variable "%s" is not part of the GSuite format.' % key)
+        if urlDecodePhrase(key) != key:
+            raise InvalidFormatError('Custom header variable names in GSuite do not support URL '
+                                     'escaping. Offending header variable: "{}"'.format(key))
+    else:
+        val = val.lower()
 
-    if val not in HEADER_VAR_DICT[key].allowed:
-        raise InvalidFormatError('Value "%s" is not allowed for header "%s". Allowed values: %s' %
-                                 (val, key, ', '.join(HEADER_VAR_DICT[key].allowed)))
+        if val not in HEADER_VAR_DICT[key].allowed:
+            raise InvalidFormatError('Value "%s" is not allowed for header "%s". Allowed values: %s' %
+                                     (val, key, ', '.join(HEADER_VAR_DICT[key].allowed)))
 
-    if key == FILE_TYPE_HEADER:
-        if val == TEXT:
-            val = PRIMARY
-        elif val == BINARY:
-            val = PREPROCESSED
+        if key == FILE_TYPE_HEADER:
+            if val == TEXT:
+                val = PRIMARY
+            elif val == BINARY:
+                val = PREPROCESSED
 
     return key, val
 
@@ -67,6 +69,12 @@ def _updateHeaderVars(headerVars, key, val):
 
     headerVars[key] = val
     return headerVars
+
+
+def _setCustomHeaders(gSuite, headerVars):
+    for key, val in headerVars.iteritems():
+        if key not in HEADER_VAR_DICT:
+            gSuite.setCustomHeader(key, val)
 
 
 def _compareHeaders(headerName, textHeader, trackSummaryHeader):
@@ -294,7 +302,9 @@ def parseLines(gSuiteLines):
     for trackLine in trackLines:
         gSuite.addTrack(_parseTrackLine(trackLine, colNames, headerVars),
                         allowDuplicateTitles=False)
-    
+
+    _setCustomHeaders(gSuite, headerVars)
+
     _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
 
     return gSuite
