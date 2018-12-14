@@ -1,12 +1,18 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 from collections import OrderedDict
 
+import config.Config
+config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
+
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import gold.gsuite.GSuiteParser as GSuiteParser
 
 from test.gold.gsuite.GSuiteTestWithMockEncodingFuncs import GSuiteTestWithMockEncodingFuncs
+
 
 class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
     def testEmptyCompose(self):
@@ -21,7 +27,6 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##genome: unknown\n'
 
         self.assertEquals(targetOutput, output)
-
 
     def testComposeRemoteOnlyUrl(self):
         gSuite = GSuite()
@@ -41,7 +46,6 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
 
         self.assertEquals(targetOutput, output)
 
-
     def testComposeRemoteUrlGenomeFileFormat(self):
         gSuite = GSuite()
         gSuite.addTrack(GSuiteTrack('ftp://server.somewhere.com/path/to/file1.bed', genome='hg18'))
@@ -59,7 +63,6 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             'http://server.other.com/path/to/file2\tfile2\tunknown\n'
 
         self.assertEquals(targetOutput, output)
-
 
     def testComposeUrlTitleLocationTrackType(self):
         gSuite = GSuite()
@@ -81,13 +84,15 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
 
         self.assertEquals(targetOutput, output)
 
-
-    def testComposeLocalUrlGenomeAttributes(self):
+    def testComposeLocalUrlGenomeAttributesNonAscii(self):
         gSuite = GSuite()
-        gSuite.addTrack(GSuiteTrack('galaxy:/12345abc', genome='hg18',
+        gSuite.addTrack(GSuiteTrack('galaxy:/12345abc', genome=u'hg18ø',
                                     attributes=OrderedDict([('one', 'yes')])))
         gSuite.addTrack(GSuiteTrack('file:/path/to/file2', genome='hg19',
-                                    attributes=OrderedDict([('two', 'no')])))
+                                    attributes=OrderedDict([('two', u'nø')])))
+        gSuite.addTrack(GSuiteTrack(HbGSuiteTrack.generateURI(trackName=[u'track', u'nøme']),
+                                    genome='hg38', attributes=OrderedDict([('two', 'yes')])))
+        gSuite.setCustomHeader('my header', u'bø!')
         
         output = GSuiteComposer.composeToString(gSuite)
 
@@ -96,40 +101,42 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##file format: unknown\n' \
             '##track type: unknown\n' \
             '##genome: multiple\n' \
-            '###uri\ttitle\tgenome\tone\ttwo\n' \
-            'galaxy:/12345abc\t12345abc\thg18\tyes\t.\n' \
-            'file:/path/to/file2\tfile2\thg19\t.\tno\n'
+            '##my header: b%C3%B8!\n' \
+            '###uri\ttitle\tfile_format\tgenome\tone\ttwo\n' \
+            'galaxy:/12345abc\t12345abc\tunknown\thg18%C3%B8\tyes\t.\n' \
+            'file:/path/to/file2\tfile2\tunknown\thg19\t.\tn%C3%B8\n' \
+            'hb:/track/n%C3%B8me\tn%C3%B8me\tpreprocessed\thg38\t.\tyes\n'
 
         self.assertEquals(targetOutput, output)
-
 
     def testFullCompose(self):
         gSuite = GSuite()
         gSuite.addTrack(GSuiteTrack('ftp://server.somewhere.com/path/to/file1.bed',
-                                    title='Track', \
+                                    title='Track',
                                     attributes=OrderedDict([('cell', 'k562'),
                                                             ('antibody', 'cMyb')])))
         gSuite.addTrack(GSuiteTrack('http://server.other.com/path/to/file2.bed',
-                                    title='Track2', \
+                                    title='Track2',
                                     attributes=OrderedDict([('cell', 'GM12878'),
                                                             ('antibody', 'cMyc')])))
         gSuite.addTrack(GSuiteTrack('https://server.other.com/path/to/file3.bed',
                                     attributes=OrderedDict([('cell', 'GM12878'),
                                                             ('antibody', 'cMyb')])))
         gSuite.addTrack(GSuiteTrack('rsync://server.other.com/path/to/file4;wig',
-                                    title='Track4', \
+                                    title='Track4',
                                     attributes=OrderedDict([('cell', 'NHFL')])))
         gSuite.addTrack(GSuiteTrack('hb:/track/name/hierarchy',
                                     title='Track'))
         gSuite.addTrack(GSuiteTrack('galaxy:/ad123dd12fg;btrack?track=track:name',
-                                    title='Track', \
+                                    title='Track',
                                     attributes=OrderedDict([('cell', 'k562'),
                                                             ('antibody', 'cMyb')])))
         gSuite.addTrack(GSuiteTrack('file:/path/to/file.btrack?track=track:name',
-                                    title='Track name7', \
+                                    title='Track name7',
                                     attributes=OrderedDict([('antibody', 'cMyb'),
                                                             ('extra', 'yes')])))
         gSuite.setGenomeOfAllTracks('hg18')
+        gSuite.setCustomHeader('My header', 'Some value')
 
         output = GSuiteComposer.composeToString(gSuite)
 
@@ -138,6 +145,7 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##file format: multiple\n' \
             '##track type: unknown\n' \
             '##genome: hg18\n' \
+            '##my header: Some value\n' \
             '###uri\ttitle\tfile_format\tcell\tantibody\textra\n' \
             'ftp://server.somewhere.com/path/to/file1.bed\tTrack\tprimary\tk562\tcMyb\t.\n' \
             'http://server.other.com/path/to/file2.bed\tTrack2\tprimary\tGM12878\tcMyc\t.\n' \
@@ -148,7 +156,6 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             'file:/path/to/file.btrack?track=track%3Aname\tTrack name7\tpreprocessed\t.\tcMyb\tyes\n'
 
         self.assertEquals(targetOutput, output)
-
 
     def testParseAndCompose(self):
         inputContents = \
@@ -170,10 +177,10 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
 
         self.assertEquals(inputContents, outputContents)
 
-
     def runTest(self):
         pass
 
+
 if __name__ == "__main__":
-    #TestGSuite().debug()
+    # TestGSuite().debug()
     unittest.main()
