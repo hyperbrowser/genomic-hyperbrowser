@@ -92,6 +92,7 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
                                     attributes=OrderedDict([('two', u'nø')])))
         gSuite.addTrack(GSuiteTrack(HbGSuiteTrack.generateURI(trackName=[u'track', u'nøme']),
                                     genome='hg38', attributes=OrderedDict([('two', 'yes')])))
+        gSuite.setCustomHeader('my header', u'bø!')
         
         output = GSuiteComposer.composeToString(gSuite)
 
@@ -100,6 +101,7 @@ class TestGSuiteComposer(GSuiteTestWithMockEncodingFuncs):
             '##file format: unknown\n' \
             '##track type: unknown\n' \
             '##genome: multiple\n' \
+            '##my header: b%C3%B8!\n' \
             '###uri\ttitle\tfile_format\tgenome\tone\ttwo\n' \
             'galaxy:/12345abc\t12345abc\tunknown\thg18%C3%B8\tyes\t.\n' \
             'file:/path/to/file2\tfile2\tunknown\thg19\t.\tn%C3%B8\n' \

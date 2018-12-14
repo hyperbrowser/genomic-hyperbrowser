@@ -797,6 +797,14 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         track = list(gSuite.allTracks())[0]
         self.assertEquals(u'ø', track.attributes['extra'])
 
+    def testQuotesCustomHeader(self):
+        contents = \
+            '##myheader: b%c3%b8!\n' \
+            'ftp://server/file1.bed\n'
+
+        gSuite = self._parseContents(contents)
+        self.assertEquals(u'bø!', gSuite.getCustomHeader('myheader'))
+
     #
     # Parsing errors
     #

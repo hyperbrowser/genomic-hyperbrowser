@@ -4,6 +4,7 @@ from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_F
                                         TRACK_TYPE_HEADER, GENOME_HEADER, LOCATION_MEMBER, \
                                         FILE_FORMAT_MEMBER, TRACK_TYPE_MEMBER, GENOME_MEMBER, \
                                         UNKNOWN, MULTIPLE, LOCAL, PREPROCESSED
+from quick.util.CommonFunctions import urlDecodePhrase
 
 
 class GSuite(object):
@@ -113,7 +114,7 @@ class GSuite(object):
 
     def setCustomHeader(self, headerName, headerVal):
         headerName = headerName.lower()
-        self._customHeaders[headerName] = headerVal
+        self._customHeaders[headerName] = urlDecodePhrase(headerVal)
 
     def getCustomHeader(self, headerName):
         if headerName in self._customHeaders:

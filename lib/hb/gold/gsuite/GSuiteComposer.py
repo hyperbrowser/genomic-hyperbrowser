@@ -8,7 +8,7 @@ from quick.util.CommonFunctions import ensurePathExists, formatPhraseWithCorrect
 
 def _composeHeaders(gSuite, out):
     for headerKey, headerVal in _getAllHeadersToPrint(gSuite):
-        print >> out, '##%s: %s' % (headerKey, headerVal)
+        print >> out, '##%s: %s' % (headerKey, formatPhraseWithCorrectChrUsage(headerVal))
 
 
 def _getAllHeadersToPrint(gSuite):
