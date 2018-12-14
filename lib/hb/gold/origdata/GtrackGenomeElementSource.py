@@ -11,8 +11,8 @@ from copy import copy
 
 from gold.origdata.GenomeElementSource import GenomeElementSource, BoundingRegionTuple
 from gold.util.CustomExceptions import InvalidFormatError, ShouldNotOccurError
-from gold.util.CommonFunctions import getStringFromStrand
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonFunctions import getStringFromStrand, urlDecodePhrase
+from gold.util.CommonConstants import BINARY_MISSING_VAL, ALLOWED_CHARS
 from gold.track.GenomeRegion import GenomeRegion
 from gold.origdata.GenomeElement import GenomeElement
 from quick.util.CommonFunctions import smartRecursiveEquals
@@ -113,7 +113,6 @@ class GtrackGenomeElementSource(GenomeElementSource):
                                                            missingVal='', \
                                                            fromNumpyTypeFunc=lambda t:t[0] == 'S'))])
 
-    ALLOWED_CHARS = set([chr(x) for x in xrange(128) if x not in set(range(9)+[11,12]+range(14,32)+[127])])
     _RETURN_NUMPY_TYPES = False
 
     _addsStartElementToDenseIntervals = False
@@ -306,20 +305,11 @@ class GtrackGenomeElementSource(GenomeElementSource):
     @classmethod
     def _checkCharUsageOfPhrase(cls, phrase):
         for char in phrase:
-            if not char in cls.ALLOWED_CHARS:
+            if not char in ALLOWED_CHARS:
                 raise InvalidFormatError("Error: Character %s is not allowed in GTrack file. Offending phrase: %s" % (repr(char), repr(phrase)))
 
         if phrase != phrase.strip():
             raise InvalidFormatError("Error: phrase %s is incorrectly specified. Phrase must not start or end with whitespace." % repr(phrase))
-
-    @classmethod
-    def urlQuote(cls, phrase):
-        return urllib.quote(phrase, safe=' ')
-
-    @classmethod
-    def convertPhraseToAllowed(cls, phrase):
-        return ''.join([x if x in cls.ALLOWED_CHARS and x not in '#\t' \
-                        else '%' + '{:0>2X}'.format(ord(x)) for x in phrase])
 
     # Parsing of header lines
 
@@ -349,7 +339,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
             if typeOfValue == str:
                 headerVal = headerVal.lower()
         else:
-            headerVal = urllib.unquote(headerVal)
+            headerVal = urlDecodePhrase(headerVal)
 
         return headerKey, headerVal
 
@@ -678,7 +668,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
             raise InvalidFormatError("Error: bounding region incorrectly specified. All attributes must have values (separated by '='), and attributes must be separated by semicolons (';').")
 
         self._checkCharUsageOfPhrase(line)
-        boundingDict = dict((x.lower(), urllib.unquote(y)) for x,y in \
+        boundingDict = dict((x.lower(), urlDecodePhrase(y)) for x,y in \
                             [tuple(v.lstrip(' ').split('=')) for v in line.split(';')])
 
         for key,val in boundingDict.iteritems():
@@ -849,7 +839,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
 
         for key in self._columnSpec.keys():
             rawValue = cols[self._columnSpec[key]]
-            value = urllib.unquote(rawValue)
+            value = urlDecodePhrase(rawValue)
 
             if key=='genome':
                 if self._curGenome() and value != self._curGenome():
@@ -889,7 +879,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
             lastBoundingRegion = self._boundingRegionTuples[-1].region
 
         if 'seqid' in self._columnSpec:
-            chr = urllib.unquote(cols[self._columnSpec['seqid']])
+            chr = urlDecodePhrase(cols[self._columnSpec['seqid']])
             if self.hasBoundingRegionTuples() and lastBoundingRegion.chr and chr != lastBoundingRegion.chr:
                 raise InvalidFormatError("Error: sequence id in data line is not equal to sequence id"
                                          " in previous bounding region. %s != %s" % (chr, lastBoundingRegion.chr))
@@ -932,7 +922,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
                         raise InvalidFormatError("Error: edges without weights must not include an equals sign '='. Maybe the header variable 'edge weight' has the wrong value? Edge: " + edgeSpec)
                     edge = edgeSpec
                 self._checkIfNotEmpty('edge', edge)
-                edges.append(urllib.unquote(edge))
+                edges.append(urlDecodePhrase(edge))
 
         return edges, weights
 
@@ -962,7 +952,7 @@ class GtrackGenomeElementSource(GenomeElementSource):
 
         for i,el in enumerate(valList):
 
-            valList[i] = valTypeInfo.missingVal if el == '.' else valType(urllib.unquote(el))
+            valList[i] = valTypeInfo.missingVal if el == '.' else valType(urlDecodePhrase(el))
 
         if not isEmptyElement:
             self._setVectorLength(valueOrEdgeWeight, valDim, vectorLength, valLen)
@@ -1188,7 +1178,8 @@ class GtrackGenomeElementSource(GenomeElementSource):
 
     def getHeaderLines(self):
         #fixme: hide default header lines in some cases (perhaps not all? some should perhaps be obligatory?)
-        return ''.join(['##' + ': '.join([k, self.urlQuote(str(v))]) + os.linesep for k, v in self.getHeaderDict().iteritems()])
+        return ''.join(['##' + ': '.join([k, self.formatPhraseWithCorrectChrUsage(str(v))]) +
+                        os.linesep for k, v in self.getHeaderDict().iteritems()])
 
     def getColSpecLine(self, orig=True):
         return '###' + '\t'.join([x for x in self.getColumns(orig)]) + os.linesep

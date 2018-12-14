@@ -1,6 +1,9 @@
 import unittest
 from collections import OrderedDict
 
+import config.Config
+config.Config.ALLOW_GSUITE_FILE_PROTOCOL = True
+
 from gold.util.CustomExceptions import ArgumentValueError
 import gold.gsuite.GSuiteEditor as GSuiteEditor
 from gold.gsuite.GSuite import GSuite
@@ -8,8 +11,8 @@ from gold.gsuite.GSuiteTrack import GSuiteTrack
 
 from test.gold.gsuite.GSuiteTestWithMockEncodingFuncs import GSuiteTestWithMockEncodingFuncs
 
-class TestGSuiteEditor(GSuiteTestWithMockEncodingFuncs):
 
+class TestGSuiteEditor(GSuiteTestWithMockEncodingFuncs):
     # TODO: Test checks on location, fileFormat, trackType after adding tracks one at a time
 
     def setUp(self):
@@ -31,7 +34,7 @@ class TestGSuiteEditor(GSuiteTestWithMockEncodingFuncs):
     def testSelectRows(self):
         gSuite = GSuite(trackList=[self.track1, self.track2, self.track3])
 
-        outGSuite = GSuiteEditor.selectRowsFromGSuiteByIndex(gSuite, [0,2])
+        outGSuite = GSuiteEditor.selectRowsFromGSuiteByIndex(gSuite, [0, 2])
         self.assertEquals([self.track1, self.track3], list(outGSuite.allTracks()))
 
         outGSuite = GSuiteEditor.selectRowsFromGSuiteByIndex(gSuite, [])
@@ -49,7 +52,9 @@ class TestGSuiteEditor(GSuiteTestWithMockEncodingFuncs):
     def testSelectAttributesEmpty(self):
         gSuite = GSuite(trackList=[self.track1, self.track2, self.track3])
 
-        outGSuite = GSuiteEditor.selectColumnsFromGSuite(gSuite, selectedAttributes=[], selectTitle=False)
+        outGSuite = GSuiteEditor.selectColumnsFromGSuite(
+            gSuite, selectedAttributes=[], selectTitle=False
+        )
         self.assertEquals([], outGSuite.attributes)
 
         tracks = list(outGSuite.allTracks())
@@ -60,8 +65,9 @@ class TestGSuiteEditor(GSuiteTestWithMockEncodingFuncs):
     def testSelectColumns(self):
         gSuite = GSuite(trackList=[self.track1, self.track2, self.track3])
 
-        outGSuite = GSuiteEditor.selectColumnsFromGSuite(gSuite, selectedAttributes=['antibody', 'view'],
-                                                         selectTitle=False)
+        outGSuite = GSuiteEditor.selectColumnsFromGSuite(
+            gSuite, selectedAttributes=['antibody', 'view'], selectTitle=False
+        )
 
         self.assertEquals(['antibody', 'view'], outGSuite.attributes)
 
@@ -82,5 +88,5 @@ class TestGSuiteEditor(GSuiteTestWithMockEncodingFuncs):
 
 
 if __name__ == "__main__":
-    #TestGSuite().debug()
+    # TestGSuite().debug()
     unittest.main()
