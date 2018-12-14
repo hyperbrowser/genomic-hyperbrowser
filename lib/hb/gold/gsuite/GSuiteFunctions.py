@@ -41,8 +41,8 @@ def renameBaseFileNameWithDuplicateIdx(baseFileName, duplicateIdx):
             else:
                 break
 
-        return baseFileName + '_%s' % duplicateIdx +\
-               (('.' +'.'.join(suffixes)) if suffixes else '')
+        return baseFileName + '_%s' % duplicateIdx + \
+            (('.' + '.'.join(suffixes)) if suffixes else '')
 
 
 def changeSuffixIfPresent(text, oldSuffix=None, newSuffix=None):
@@ -86,12 +86,13 @@ def getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack):
                     suffix = getFileSuffix(path)
                 else:
                     if isinstance(gSuiteTrack, SearchQueryForSuffixGSuiteTrack):
-                        tempGSuiteTrack = GSuiteTrack(gSuiteTrack.uri.replace('.' + compSuffix, ''), title='')
+                        tempGSuiteTrack = \
+                            GSuiteTrack(gSuiteTrack.uri.replace('.' + compSuffix, ''), title='')
                         suffix = tempGSuiteTrack.suffix
                     else:
-                        suffix = None # Impossible to find uncompressed suffix
+                        suffix = None  # Impossible to find uncompressed suffix
             elif suffix.lower().endswith('.' + compSuffix):
-                suffix = suffix[:-reduceLen] # e.g. suffix = 'bed.gz' -> 'bed'
+                suffix = suffix[:-reduceLen]  # e.g. suffix = 'bed.gz' -> 'bed'
             else:
                 continue
 
@@ -107,5 +108,3 @@ def getTitleWithCompressionSuffixesRemoved(gSuiteTrack):
 
 def getSuffixWithCompressionSuffixesRemoved(gSuiteTrack):
     return getTitleAndSuffixWithCompressionSuffixesRemoved(gSuiteTrack)[1]
-
-
