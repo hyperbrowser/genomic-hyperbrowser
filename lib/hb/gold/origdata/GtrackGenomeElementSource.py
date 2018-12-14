@@ -840,7 +840,6 @@ class GtrackGenomeElementSource(GenomeElementSource):
         for key in self._columnSpec.keys():
             rawValue = cols[self._columnSpec[key]]
             value = urlDecodePhrase(rawValue)
-            print repr(rawValue), repr(value)
 
             if key=='genome':
                 if self._curGenome() and value != self._curGenome():
