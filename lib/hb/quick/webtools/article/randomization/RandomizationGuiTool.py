@@ -14,11 +14,12 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.TsWriterStat import TsWriterStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from proto.HtmlCore import HtmlCore
+from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
+class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin, DebugMixin):
     @classmethod
     def getToolName(cls):
         return "Randomization GUI"
@@ -45,7 +46,8 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
                 ('Number of times to randomize: ', 'numberOfTimesToRandomize')
                 ] \
                + cls.getInputBoxNamesForRandAlgSelection() \
-                + cls.getInputBoxNamesForUserBinSelection()
+                + cls.getInputBoxNamesForUserBinSelection() \
+               + cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsBasic():
@@ -179,6 +181,7 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
 
         Mandatory unless isRedirectTool() returns True.
         """
+        cls._setDebugModeIfSelected(choices)
         choices_gsuite = choices.chooseTrackFiles
 
         assert choices_gsuite is not None
@@ -212,6 +215,7 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
                 singleTrackTs.metadata['randomization_run'] = i
 
             spec = AnalysisSpec(TsWriterStat)
+            spec.addParameter('runLocalAnalysis','No')
 
             res = doAnalysis(spec, analysisBins, randomizedTs)
 
@@ -376,16 +380,16 @@ class RandomizationGuiTool(GeneralGuiTool, RandAlgorithmMixin, UserBinMixin):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return False
     #
     # @classmethod
     def getOutputFormat(cls, choices):

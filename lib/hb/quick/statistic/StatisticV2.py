@@ -61,7 +61,28 @@ class StatisticV2(Statistic):
         #TODO: boris 20150924, check if the caching works with this
         return (hash(str(cls)), Statistic._constructConfigKey(kwArgs), hash(reg), hash(trackStructure))
 
-    
+    def _trace(self, methodName):
+        from config.DebugConfig import DebugConfig
+
+        if DebugConfig.TRACE_STAT[methodName]:
+            if not hasattr(Statistic, 'objAddresses'):
+
+                Statistic.objAddresses = {}
+
+            if not hasattr(self, '_traceId'):
+                if not self.__class__.__name__ in Statistic.objAddresses:
+                    Statistic.objAddresses[self.__class__.__name__] = 0
+                self._traceId = str(Statistic.objAddresses[self.__class__.__name__])
+                Statistic.objAddresses[self.__class__.__name__] += 1
+
+            message = self.__class__.__name__ + '(' + self._traceId + ').' + methodName \
+                  + ( (' (' + str(self._region) +')') if DebugConfig.TRACE_PRINT_REGIONS else '') \
+                  + ( ( ' (' + str(self._trackStructure) \
+                  + ')' ) if DebugConfig.TRACE_PRINT_TRACK_NAMES else '')
+
+            logMessage(message)
+            print message, '<br>'
+
 class StatisticV2Splittable(StatisticV2, StatisticSplittable):
     
     def __init__(self, region, trackStructure, *args, **kwArgs):

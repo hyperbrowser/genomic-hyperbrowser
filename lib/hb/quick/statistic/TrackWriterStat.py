@@ -13,7 +13,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with The Genomic HyperBrowser.  If not, see <http://www.gnu.org/licenses/>.
-
+from gold.application.LogSetup import logMessage
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
 from gold.statistic.Statistic import Statistic, StatisticSplittable
