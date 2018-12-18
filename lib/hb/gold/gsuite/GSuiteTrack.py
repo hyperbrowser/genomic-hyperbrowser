@@ -356,7 +356,7 @@ class SuffixDependentGSuiteTrack(GSuiteTrack):
         if oldFileFormat != UNKNOWN and oldFileFormat != self.fileFormat:
             raise InvalidFormatError(
                 'File format specified as parameter ("%s") does not ' % oldFileFormat +
-                'fit with track type as specified by the suffix '
+                'fit with file format as specified by the suffix '
                 '"%s": "%s"' % (self.suffix, self.fileFormat)
             )
 
