@@ -292,8 +292,8 @@ class ClusteringExecution(object):
                 #refTracks.append(ref_i) #put the refTrack into refTracks list
                 reftrack_names.append(ref_i[-1])
                 temp_opt1 = 'ref'+str(i)+'feature'
-                options+= [] if refFeatures[i] == None else [refFeatures[i]]
-                if  yesNo[i] == "Yes" and howMany[i] != '--select--':
+                options+= [] if refFeatures[i] is None else [refFeatures[i]]
+                if yesNo and yesNo[i] == "Yes" and howMany and howMany[i] != '--select--':
                     for expan in range(int(howMany[i])) :
                         reftrack_names.append(ref_i[-1]+'_'+ upFlank[i][expan])
                         upFlank = int(upFlank[i][expan])
