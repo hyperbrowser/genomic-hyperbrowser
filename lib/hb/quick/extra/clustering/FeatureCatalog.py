@@ -50,8 +50,8 @@ class LocalResultsAsFeaturesCatalog(FeatureCatalog):
     def getAllFeatures():
         allFeatures = {}
         #US-US
-        allFeatures['Prop. Bp coverage per bin'] = ['dummy -> ProportionCountStat', 'Result']
-        allFeatures['Prop. Bp coverage by points per bin'] = ['dummy -> PointFreqStat', 'Result']
+        allFeatures['Bp coverage per bin (proportional)'] = ['dummy -> ProportionCountStat', 'Result']
+        allFeatures['Bp coverage by points per bin (proportional)'] = ['dummy -> PointFreqStat', 'Result']
         #allFeatures['Relative coverage per bin'] = ['dummy -> PropOfSegmentsInsideEachBinStat', 'Result']
         allFeatures['Relative coverage per bin'] = ['dummy [rawStatistic=CountSegmentStat] [globalSource=chrs] -> GenericRelativeToGlobalStat', 'Result']
         #allFeatures['Relative frequency per bin'] = ['dummy -> PropOfPointsInsideEachBinStat', 'Result']
@@ -74,7 +74,7 @@ class ReferenceAnalsesAsFeaturesCatalog(FeatureCatalog):
         #US-F
         allFeatures['Mean inside'] = ['dummy -> MeanInsideStat','Result']
         #UP-US
-        allFeatures['#Points inside'] = ['dummy [tf1=TrivialFormatConverter] ->PointCountInsideSegsStat','Result']
+        allFeatures['Points inside'] = ['dummy [tf1=TrivialFormatConverter] ->PointCountInsideSegsStat','Result']
         allFeatures['Prop. of tr1-points falling inside segments of tr2'] = ['dummy -> DerivedPointCountsVsSegsStat', '2inside1']
         return allFeatures
 
