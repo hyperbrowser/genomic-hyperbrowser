@@ -118,7 +118,7 @@ release-bootstrap-history: ## bootstrap history for a new release
 	$(IN_VENV) python scripts/bootstrap_history.py --release $(RELEASE_CURR)
 
 npm-deps: ## Install NodeJS dependencies.
-	cd client && npm install
+	cd client && npm ci
 
 grunt: npm-deps ## Calls out to Grunt to build client
 	cd client && $(GRUNT_EXEC)
