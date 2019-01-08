@@ -124,21 +124,27 @@ class ToolRunner(BaseUIController):
             else:
                 raise Exception("Failed to get job information for dataset hid %d" % data.hid)
 
-        # Get the tool object
+        else:
+            try:
+                job_id = int(job_id)
+            except:
+                job_id = trans.security.decode_id(job_id)
+            job = trans.sa_session.query(trans.app.model.Job).get(job_id)
+            if job:
+                job_id = trans.security.encode_id(job.id)
+            else:
+                raise Exception("Failed to get data for job id %d" % job_id)
+
+
+        # Get the tool object from job to check tool type
         tool_id = job.tool_id
         tool = self.__get_tool(tool_id)
 
         if proto_tool_types.has_key(tool.tool_type):
-            # Get the job's parameters
-            #try:
-            #    params_objects = job.get_param_values(trans.app, ignore_errors=True)
-            #except:
-            #    raise Exception('Failed to get job params')
-
             return trans.response.send_redirect(
                     url_for(controller=tool.action, action='index',
                             mako=tool.inputs['mako'].get_initial_value(None, None),
-                            rerun_hda_id=id))
+                            rerun_job_id=job_id))
 
         return trans.response.send_redirect(url_for(controller="root", job_id=job_id))
 

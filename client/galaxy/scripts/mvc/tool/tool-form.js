@@ -34,7 +34,7 @@ define([ 'utils/utils', 'mvc/ui/ui-misc', 'mvc/ui/ui-modal', 'mvc/tool/tool-form
                                 return;
                             }
                             if (data.model_class.lastIndexOf('Proto', 0) === 0) {
-                                galaxy_main.location = Galaxy.root + 'tool_runner/rerun?id=' + data.job_id;
+                                galaxy_main.location = Galaxy.root + 'tool_runner/rerun?job_id=' + data.job_id;
                                 return;
                             }
                             form.model.set( data );
