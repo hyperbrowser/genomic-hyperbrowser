@@ -13,10 +13,13 @@ class GSuitePreprocessor(GSuiteAllTracksVisitor):
 
 
 class GSuiteTrackPreprocessor(Visitor):
-    def genericVisit(self, gSuiteTrack):
-        gSuiteReq = GSuiteRequirements(allowedLocations=[LOCAL], allowedFileFormats=[PRIMARY, UNKNOWN])
+    @staticmethod
+    def genericVisit(gSuiteTrack):
+        gSuiteReq = GSuiteRequirements(allowedLocations=[LOCAL],
+                                       allowedFileFormats=[PRIMARY, UNKNOWN])
         gSuiteReq.check(gSuiteTrack)
-        assert gSuiteTrack.genome != UNKNOWN, 'A genome build must be selected for the track: ' + gSuiteTrack.title
+        assert gSuiteTrack.genome != UNKNOWN, 'A genome build must be selected for the track: ' + \
+                                              gSuiteTrack.title
 
     def visitGalaxyGSuiteTrack(self, gSuiteTrack):
         self.genericVisit(gSuiteTrack)

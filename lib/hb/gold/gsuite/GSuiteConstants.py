@@ -9,14 +9,13 @@ from gold.track.TrackFormat import POINTS, VALUED_POINTS, SEGMENTS, VALUED_SEGME
 # Namedtuples
 #
 
-HeaderSpec = namedtuple('HeaderSpec', ['allowed', 'default', 'memberName', 'colName', 'deprecated'])
+HeaderSpec = namedtuple('HeaderSpec',
+                        ['allowed', 'default', 'memberName', 'colName', 'deprecated'])
 ColSpec = namedtuple('ColSpec', ['colName', 'memberName', 'headerName', 'deprecated'])
 
 #
 # Constants
 #
-
-ALLOWED_CHARS = set([chr(x) for x in xrange(128) if x not in set(range(9)+[11,12]+range(14,32)+[127])])
 
 LOCATION_HEADER = 'location'
 FILE_FORMAT_HEADER = 'file format'
@@ -77,62 +76,64 @@ PREPROCESSED = 'preprocessed'
 TEXT = 'text'
 BINARY = 'binary'
 
+
 class EverythingAllowed(object):
     def __contains__(self, key):
         return True
 
+
 HEADER_VAR_DICT = OrderedDict([
 
-    (LOCATION_HEADER, HeaderSpec(allowed = OrderedDict(zip([REMOTE,
-                                                            LOCAL,
-                                                            UNKNOWN,
-                                                            MULTIPLE], [None]*4)),
-                                           default=UNKNOWN,
-                                           memberName=LOCATION_MEMBER,
-                                           colName=LOCATION_COL,
-                                           deprecated=False)),
+    (LOCATION_HEADER, HeaderSpec(allowed=OrderedDict(zip([REMOTE,
+                                                          LOCAL,
+                                                          UNKNOWN,
+                                                          MULTIPLE], [None]*4)),
+                                 default=UNKNOWN,
+                                 memberName=LOCATION_MEMBER,
+                                 colName=LOCATION_COL,
+                                 deprecated=False)),
 
-    (FILE_TYPE_HEADER, HeaderSpec(allowed = OrderedDict(zip([TEXT,
-                                                             BINARY,
+    (FILE_TYPE_HEADER, HeaderSpec(allowed=OrderedDict(zip([TEXT,
+                                                           BINARY,
+                                                           UNKNOWN,
+                                                           MULTIPLE], [None]*4)),
+                                  default=UNKNOWN,
+                                  memberName=FILE_FORMAT_MEMBER,
+                                  colName=FILE_TYPE_COL,
+                                  deprecated=True)),
+
+    (FILE_FORMAT_HEADER, HeaderSpec(allowed=OrderedDict(zip([PRIMARY,
+                                                             PREPROCESSED,
                                                              UNKNOWN,
                                                              MULTIPLE], [None]*4)),
-                                           default=UNKNOWN,
-                                           memberName=FILE_FORMAT_MEMBER,
-                                           colName=FILE_TYPE_COL,
-                                           deprecated=True)),
+                                    default=UNKNOWN,
+                                    memberName=FILE_FORMAT_MEMBER,
+                                    colName=FILE_FORMAT_COL,
+                                    deprecated=False)),
 
-    (FILE_FORMAT_HEADER, HeaderSpec(allowed = OrderedDict(zip([PRIMARY,
-                                                               PREPROCESSED,
-                                                               UNKNOWN,
-                                                               MULTIPLE], [None]*4)),
-                                           default=UNKNOWN,
-                                           memberName=FILE_FORMAT_MEMBER,
-                                           colName=FILE_FORMAT_COL,
-                                           deprecated=False)),
+    (TRACK_TYPE_HEADER, HeaderSpec(allowed=OrderedDict(zip([POINTS,
+                                                            VALUED_POINTS,
+                                                            SEGMENTS,
+                                                            VALUED_SEGMENTS,
+                                                            GENOME_PARTITION,
+                                                            STEP_FUNCTION,
+                                                            FUNCTION,
+                                                            LINKED_POINTS,
+                                                            LINKED_VALUED_POINTS,
+                                                            LINKED_SEGMENTS,
+                                                            LINKED_VALUED_SEGMENTS,
+                                                            LINKED_GENOME_PARTITION,
+                                                            LINKED_STEP_FUNCTION,
+                                                            LINKED_FUNCTION,
+                                                            LINKED_BASE_PAIRS,
+                                                            MULTIPLE,
+                                                            UNKNOWN], [None]*17)),
+                                   default=UNKNOWN,
+                                   memberName=TRACK_TYPE_MEMBER,
+                                   colName=TRACK_TYPE_COL,
+                                   deprecated=False)),
 
-    (TRACK_TYPE_HEADER, HeaderSpec(allowed = OrderedDict(zip([POINTS,
-                                                              VALUED_POINTS,
-                                                              SEGMENTS,
-                                                              VALUED_SEGMENTS,
-                                                              GENOME_PARTITION,
-                                                              STEP_FUNCTION,
-                                                              FUNCTION,
-                                                              LINKED_POINTS,
-                                                              LINKED_VALUED_POINTS,
-                                                              LINKED_SEGMENTS,
-                                                              LINKED_VALUED_SEGMENTS,
-                                                              LINKED_GENOME_PARTITION,
-                                                              LINKED_STEP_FUNCTION,
-                                                              LINKED_FUNCTION,
-                                                              LINKED_BASE_PAIRS,
-                                                              MULTIPLE,
-                                                              UNKNOWN], [None]*17)),
-                                             default=UNKNOWN,
-                                             memberName=TRACK_TYPE_MEMBER,
-                                             colName=TRACK_TYPE_COL,
-                                             deprecated=False)),
-
-    (GENOME_HEADER, HeaderSpec(allowed = EverythingAllowed(),
+    (GENOME_HEADER, HeaderSpec(allowed=EverythingAllowed(),
                                default=UNKNOWN,
                                memberName=GENOME_MEMBER,
                                colName=GENOME_COL,
@@ -147,4 +148,3 @@ GSUITE_SUFFIX = 'gsuite'
 GSUITE_STORAGE_SUFFIX = 'gsuite_storage'
 
 GSUITE_EXPANDED_WITH_RESULT_COLUMNS_FILENAME = 'GSuite with results'
-

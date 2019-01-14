@@ -26,10 +26,10 @@ class BasicModeAnalysisInfoMixin(object):
 
     @staticmethod
     def getOptionsBoxBmQid():
-        return '__hidden__', None
+        return '__hidden__', ''
      
     @staticmethod
     def getOptionsBoxAnalysisInfo(prevChoices):
-        if prevChoices.bmQid and prevChoices.bmQid not in ('None', '', None):
+        if prevChoices.bmQid:
             htmlCore = quick.gsuite.GSuiteHbIntegration.getAnalysisQuestionInfoHtml(prevChoices.bmQid)
             return '__rawstr__', str(htmlCore)

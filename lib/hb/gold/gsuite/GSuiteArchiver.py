@@ -1,13 +1,16 @@
 import os
 import tarfile
+
+from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from zipfile import ZipFile
 
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteConstants import ARCHIVE_SUFFIXES
+# from gold.gsuite.GSuiteConstants import ARCHIVE_SUFFIXES
 from gold.gsuite.GSuiteTrack import GSuiteTrack, GalaxyGSuiteTrack
-from gold.util.CustomExceptions import AbstractClassError, NotSupportedError, ShouldNotOccurError
+from gold.util.CustomExceptions import NotSupportedError
 from quick.util.CommonFunctions import ensurePathExists
+
 
 class ArchivedFileInfo(object):
     def __init__(self, internalFn):
@@ -18,20 +21,27 @@ class ArchivedFileInfo(object):
 
         self.directories = dirs if dirs != [''] else []
         if '' in self.directories:
-            raise NotSupportedError('Absolute paths (starting with '/') or empty directory ' \
+            raise NotSupportedError('Absolute paths (starting with "/") or empty directory '
                                     'names not supported for internal file names in archive.')
 
         self.baseFileName = tail
 
+
 class ArchiveReader(object):
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
     def __init__(self, archiveFn):
-        raise AbstractClassError
+        pass
 
+    @abstractmethod
     def __iter__(self):
-        raise AbstractClassError
+        pass
 
+    @abstractmethod
     def openFile(self, internalFn):
-        raise AbstractClassError
+        pass
+
 
 class ZipArchiveReader(ArchiveReader):
     def __init__(self, archiveFn):
@@ -39,11 +49,12 @@ class ZipArchiveReader(ArchiveReader):
 
     def __iter__(self):
         for internalFn in self._archive.namelist():
-            if not internalFn.endswith(os.path.sep): # not directory
+            if not internalFn.endswith(os.path.sep):  # not directory
                 yield ArchivedFileInfo(internalFn)
 
     def openFile(self, internalFn):
         return self._archive.open(internalFn, 'r')
+
 
 class TarArchiveReader(ArchiveReader):
     def __init__(self, archiveFn):
@@ -57,30 +68,35 @@ class TarArchiveReader(ArchiveReader):
     def openFile(self, internalFn):
         return self._archive.extractfile(internalFn)
 
+
 class ArchiveToGalaxyGSuiteTrackIterator(object):
     def __init__(self, archive, galaxyFn, storeHierarchy=False):
         self._archive = archive
         self._galaxyFn = galaxyFn
-        #self._titleToGalaxyFnDict = titleToGalaxyFnDict
+        # self._titleToGalaxyFnDict = titleToGalaxyFnDict
         self._storeHierarchy = storeHierarchy
 
     def __iter__(self):
         for archivedFileInfo in self._archive:
-        #    galaxyFn = self._titleToGalaxyFnDict.get(archivedFileInfo.title)
-        #    if not galaxyFn:
-        #        raise ShouldNotOccurError('Galaxy filename not found for file with title: ' + archivedFile.title)
+            # galaxyFn = self._titleToGalaxyFnDict.get(archivedFileInfo.title)
+            # if not galaxyFn:
+            #     raise ShouldNotOccurError('Galaxy filename not found for file with title: ' +
+            #                               archivedFile.title)
 
-            extraFileName = os.sep.join((archivedFileInfo.directories if self._storeHierarchy else []) +\
-                                         [archivedFileInfo.baseFileName])
+            extraFileName = os.sep.join((archivedFileInfo.directories
+                                         if self._storeHierarchy else []) +
+                                        [archivedFileInfo.baseFileName])
 
             if self._storeHierarchy:
-                attributeList = OrderedDict([('dir_level_%s' % (i+1), directory) \
-                                             for i,directory in enumerate(archivedFileInfo.directories)])
+                attributeList = OrderedDict([('dir_level_%s' % (i+1), directory)
+                                             for i, directory in
+                                             enumerate(archivedFileInfo.directories)])
             else:
                 attributeList = OrderedDict()
             
             uri = GalaxyGSuiteTrack.generateURI(self._galaxyFn, extraFileName=extraFileName)
-            gSuiteTrack = GSuiteTrack(uri, title=archivedFileInfo.baseFileName, attributes=attributeList)
+            gSuiteTrack = GSuiteTrack(uri, title=archivedFileInfo.baseFileName,
+                                      attributes=attributeList)
 
             outFn = gSuiteTrack.path
             ensurePathExists(outFn)
@@ -90,6 +106,7 @@ class ArchiveToGalaxyGSuiteTrackIterator(object):
                 inFile.close()
 
             yield gSuiteTrack
+
 
 def convertArchiveToGSuite(archiveToGSuiteIterator, progressViewer=None):
     gSuite = GSuite()
