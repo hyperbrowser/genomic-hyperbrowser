@@ -154,11 +154,11 @@ class HtmlCore(TableCoreMixin):
         if headerRow not in [None, []]:
             if tagRow is None:
                 tagRow = [''] * len(headerRow)
-            self._str += '<tr>'
             headerClassStr = ' class="' + ' '.join(headerClass.split()) + '"' \
                 if headerClass else ''
+            self._str += '<tr%s' % headerClassStr + '>'
             for tag, el in zip(tagRow, headerRow):
-                self._str += '<th%s' % headerClassStr + \
+                self._str += '<th' + \
                              (' ' + tag if tag != '' else '') + \
                              '>' + unicode(el) + '</th>'
             self._str += '</tr>' + os.linesep

@@ -321,3 +321,7 @@ def fromDictOfDictsToDictOfListsAndColumnNameList(dataDict, firstColName=''):
             colNames = [firstColName] + val1.keys()
         convertedDataDict[key1] = val1.values()
     return convertedDataDict, colNames
+
+
+def isSamePath(path, otherPath):
+    return os.path.abspath(path) == os.path.abspath(otherPath)

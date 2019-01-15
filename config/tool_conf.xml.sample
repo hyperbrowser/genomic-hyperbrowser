@@ -144,6 +144,7 @@
     <tool file="proto/guitest/ProtoGuiTestTool4.xml" />
     <tool file="proto/guitest/ProtoGuiTestTool5.xml" />
     <tool file="proto/guitest/ProtoGuiTestTool6.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool7.xml" />
   </section>
   <section id="installedProto" name="Installed ProTo tools">
   </section>
