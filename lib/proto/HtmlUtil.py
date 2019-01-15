@@ -2,7 +2,7 @@ import os
 import time
 import humanize
 
-from proto.CommonFunctions import isSamePath
+from proto.CommonFunctions import isSamePath, getLoadToGalaxyHistoryURL, getFileSuffix
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 
@@ -40,10 +40,27 @@ def generateHtmlFileBrowserRootPage(galaxyFn, rootPageFileName):
         for i, (item, isDir) in enumerate(filesAndDirs):
             fullItemPath = os.path.join(dirpath, item)
             core.tableLine(
-                [HtmlCore().link(item, item + '/' + FILE_BROWSER_FILENAME) if isDir else item,
-                 time.ctime(os.path.getmtime(fullItemPath)),
-                 '&lt;dir&gt;' if isDir else humanize.naturalsize(os.path.getsize(fullItemPath))],
+                [_getNameContent(isDir, item, fullItemPath),
+                 _getLastModifiedDateContent(fullItemPath),
+                 _getSizeContent(fullItemPath, isDir)],
                 rowClass=None if i % 2 == 0 else 'odd_row')
+
+    def _getNameContent(isDir, item, fullItemPath):
+        if isDir:
+            return HtmlCore().link(item, item + '/' + FILE_BROWSER_FILENAME)
+        else:
+            loadToHistoryUrl = getLoadToGalaxyHistoryURL(
+                fullItemPath,
+                galaxyDataType='txt',
+                histElementName=item
+            )
+            return HtmlCore().link(item, loadToHistoryUrl)
+
+    def _getLastModifiedDateContent(fullItemPath):
+        return time.ctime(os.path.getmtime(fullItemPath))
+
+    def _getSizeContent(fullItemPath, isDir):
+        return '&lt;dir&gt;' if isDir else humanize.naturalsize(os.path.getsize(fullItemPath))
 
     def _writeCoreToFileBrowserFile(core, dirpath):
         htmlPagePath = os.path.abspath(os.path.join(dirpath, FILE_BROWSER_FILENAME))
