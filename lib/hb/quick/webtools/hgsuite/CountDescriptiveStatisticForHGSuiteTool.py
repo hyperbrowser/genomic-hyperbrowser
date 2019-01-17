@@ -29,8 +29,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS = 10
     MAX_NUM_OF_STAT = 1
-    INFO_1 = 'You have define levels of dimensions in your hGSuite'
-    INFO_2 = 'You need to define levels of dimensions in your hGSuite. Either you use the tool ... to build the hGSuite with predefined dimensions or you will specify order of levels in this tool'
+    INFO_1 = 'You have define levels of dimensions in your hGSuite so by defualt your groups and their hierarchy is specified.'
+    INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's title."
+    INFO_ALL = ''
     PHRASE = '-- SELECT --'
 
     COUNTSTAT = 'Coverage (Counts of elements)'
@@ -42,7 +44,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def getToolName(cls):
-        return "Count descriptive statistic for hGSuite"
+        return "Compute Pivot table for hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -99,26 +101,29 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def getOptionsBoxGroupDefined(cls, prevChoices):
         #parse GSuite and get metadata about dimensions
-        #dimensions  = ['genotype']
         statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
         if len(statList) > 0:
-            dimensions = []
-            if len(dimensions) > 0:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            dimensions = gSuite.getCustomHeader('levels')
+            if str(dimensions) != 'None':
+                cls.INFO_ALL = cls.INFO_1
                 return '__rawstr__', cls.INFO_1
             else:
+                cls.INFO_ALL = cls.INFO_2
                 return '__rawstr__', cls.INFO_2
 
     @classmethod
     def getOptionsBoxGroupResponse(cls, prevChoices):
         if prevChoices.gsuite:
-            if prevChoices.groupDefined != cls.INFO_1:
+            if cls.INFO_ALL != cls.INFO_1:
                 statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
                 if len(statList) > 0:
                     return ['no', 'yes']
 
+
     @classmethod
     def getOptionsBoxPreselectedGroup(cls, prevChoices):
-        return '__rawstr__', 'Important: Preselected column which define the group at level 1 is always title.'
+        return '__rawstr__', cls.INFO_3
     #coremine
 
     @classmethod
@@ -150,20 +155,33 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def _getOptionsBoxForSelectedColumn(cls, prevChoices, index):
         if prevChoices.gsuite:
-            if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
-                selectionList = []
-                if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
-                           xrange(index)):
-                    gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                    selectionList += gSuiteTNFirst.attributes
+            selectionList = []
+            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(statList) > 0:
+                if prevChoices.groupResponse:
+                    if prevChoices.groupResponse != 'no':
+                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                                   xrange(index)):
+                            gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                            selectionList += gSuiteTNFirst.attributes
 
+                            attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                                        xrange(index)]
+                            selectionList = [cls.PHRASE] + list(
+                                set(selectionList) - set(attrList))
+
+                        if selectionList:
+                            return selectionList
+                else:
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    dimensions = gSuite.getCustomHeader('levels')
+                    dimensions = dimensions.split(',')
                     attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
                                 xrange(index)]
-                    selectionList = [cls.PHRASE] + list(
-                        set(selectionList) - set(attrList))
-
-                if selectionList:
-                    return selectionList
+                    selectionList = [item for item in dimensions if item not in attrList]
+                    cls.MAX_NUM_OF_COLS = len(dimensions)
+                    if selectionList:
+                        return selectionList
 
     @classmethod
     def setupSelectedColumnMethods(cls):
@@ -181,9 +199,17 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def _getOptionsBoxForSelectedMainOption(cls, prevChoices, index):
         if prevChoices.gsuite:
-            if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
-                if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index)):
-                    return cls.MAIN_OPTIONS
+            #return cls.MAIN_OPTIONS
+            if prevChoices.preselectedDecision:
+                if prevChoices.preselectedDecision == 'no':
+                    pass
+                else:
+                    if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
+                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index)):
+                            return cls.MAIN_OPTIONS
+                    else:
+                        if int(index) <= cls.MAX_NUM_OF_COLS:
+                            return cls.MAIN_OPTIONS
 
     @classmethod
     def setupSelectedMainOptionMethods(cls):
@@ -194,7 +220,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def _getOptionsBoxForSelectedOption(cls, prevChoices, index):
         if prevChoices.gsuite:
-                if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
+            if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
+                if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
                     dfTF = any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index))
                     if not dfTF:
                         attr = []
@@ -208,12 +235,32 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                 return list(set(gSuite.allTrackTitles()))
                             else:
                                 j = index-1
-                                selectedAttribute = getattr(prevChoices, 'selectedColumn%s' % j)
+                                selectedAttribute = getattr(prevChoices, 'selectedColumn%s' % j).encode('utf-8')
                                 return list(set(gSuite.getAttributeValueList(selectedAttribute)))
                         elif cls.MAIN_OPTIONS[1] == selOption:
                           pass
                         else:
                             return cls.OPTIONS_LIST
+                else:
+                    if index <= cls.MAX_NUM_OF_COLS:
+                        attr = []
+                        for i in xrange(index + 1):
+                            attr.append(getattr(prevChoices, 'selectedColumn%s' % i))
+                            selOption = getattr(prevChoices, 'selectedMainOption%s' % i).encode('utf-8')
+
+                        if cls.MAIN_OPTIONS[0] == selOption:
+                            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                            if index == 0:
+                                return list(set(gSuite.allTrackTitles()))
+                            else:
+                                j = index - 1
+                                selectedAttribute = getattr(prevChoices, 'selectedColumn%s' % j).encode('utf-8')
+                                return list(set(gSuite.getAttributeValueList(selectedAttribute)))
+                        elif cls.MAIN_OPTIONS[1] == selOption:
+                            pass
+                        else:
+                            return cls.OPTIONS_LIST
+
 
     @classmethod
     def setupSelectedOptionMethods(cls):
@@ -319,6 +366,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             mainOptionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedMainOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
             optionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
 
+            # print 'mainOptionList', mainOptionList, '<br>'
+            # print 'optionList', optionList, '<br>'
+
             newOptionList = []
             newMainOptionList = []
             mNum = 0
@@ -344,12 +394,18 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print optionList, '<br>'
 
         colList = []
+        summarize = 'raw'
+        columnOptionsDict = {}
         if groupResponse != 'no':
-            summarize = 'raw'
             colList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
                                                                                       'selectedColumn%s',
                                                                                       cls.MAX_NUM_OF_COLS_IN_GSUITE)
-            columnOptionsDict = {}
+        else:
+            colList = gSuite.levels
+            colList = colList.split(',')
+
+        # print 'groupResponse', groupResponse, '<br>'
+        # print 'colList', colList, '<br>'
 
         # if summarize != 'no':
         #     colList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)

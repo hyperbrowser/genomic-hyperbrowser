@@ -1,6 +1,8 @@
 from collections import OrderedDict, defaultdict
 
 import itertools
+from functools import partial
+
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
@@ -27,22 +29,31 @@ from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS, processResult
 
 class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
                                                   DebugMixin):
+    MAIN_OPTIONS = ['Select one value', 'Show results for each value',
+                    'Aggregate across this dimension']
+    OPTIONS_LIST = ['sum', 'average', 'max', 'min']
     MAX_NUM_OF_COLS = 15
     MAX_NUM_OF_COLS_IN_GSUITE = 2
+    MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED=MAX_NUM_OF_COLS_IN_GSUITE+2
     MERGED_SIGN = ' - '
     PHRASE = '-- SELECT --'
     STAT_LIST = {'Coverage': STAT_OVERLAP_COUNT_BPS}
     FIRST_GSUITE = 'First GSuite'
     SECOND_GSUITE = 'Second GSuite'
-    SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max'}
+    SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max', 'raw': 'raw'}
     TITLE = 'title'
+    INFO_ALL = ''
+    MAX_NUM_OF_STAT = 1
+    INFO_1 = 'You have define levels of dimensions in your hGSuite so by defualt your groups and their hierarchy is specified.'
+    INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's title."
 
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
 
     @classmethod
     def getToolName(cls):
-        return "Count descriptive statistic between hGsuite"
+        return "Compute Pivot table for relations between hGSuites"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -51,28 +62,39 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                cls.getInputBoxNamesForGenomeSelection() + \
                [('Select column from first hGSuite', 'firstGSuiteColumn'),
                 ('Select second hGSuite', 'secondGSuite'),
-                ('Select column from second hGSuite', 'secondGSuiteColumn')
-                ] + \
-               [('Select statistic %s' % (i + 1) + '',
-                 'selectedStat%s' % i) for i \
-                in range(cls.MAX_NUM_OF_COLS)] + \
+                ('Select column from second hGSuite', 'secondGSuiteColumn')] + \
+               [('Select statistic %s' % (i + 1) + '', 'selectedStat%s' % i) for i in range(cls.MAX_NUM_OF_STAT)] + \
                [('Select overlap handling', 'intraOverlap')] + \
-               [('Summarize within groups', 'summarize')] + \
-               [('Select column from first hGSuite %s' % (
-               i + 1) + ' which you would like to treat as unique',
-                 'selectedFirstColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Do you want to do above summarize data for column %s' % (
-               i + 1) + ' from first hGSuite ',
-                 'selectedFirstColumnOption%s' % i) for i in
-                range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Select column from second hGSuite %s' % (
-               i + 1) + ' which you would like to treat as unique',
-                 'selectedSecondColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               [('Do you want to do above summarize for column %s' % (
-               i + 1) + ' from second hGSuite ',
-                 'selectedSecondColumnOption%s' % i) for i in
-                range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('Information', 'groupDefined')] + \
+               [('Do you want to specify groups', 'groupResponse')] + \
+               [('', 'preselectedGroup')] + \
+               [('Select the column for first hGSuite which define the group at level %s' % (i + 2) + '',
+                 'selectedColumnFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
+               [('Select the column for second hGSuite which define the group at level %s' % (i + 2) + '',
+                 'selectedColumnSecond%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
+               [('Do you want to have preselected presenting options for first hGSuite', 'preselectedDecision')] + \
+               [('Select main option for first hGSuite for the group at level %s' % (i + 1) + '',
+                 'selectedMainOptionFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
+               [('', 'selectedOptionFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
+               [('Select main option for second hGSuite for the group at level %s' % (i + 1) + '',
+                 'selectedMainOptionSecond%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
+               [('', 'selectedOptionSecond%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
                cls.getInputBoxNamesForUserBinSelection()
+               # [('Summarize within groups', 'summarize')] + \
+               # [('Select column from first hGSuite %s' % (
+               # i + 1) + ' which you would like to treat as unique',
+               #   'selectedFirstColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               # [('Do you want to do above summarize data for column %s' % (
+               # i + 1) + ' from first hGSuite ',
+               #   'selectedFirstColumnOption%s' % i) for i in
+               #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               # [('Select column from second hGSuite %s' % (
+               # i + 1) + ' which you would like to treat as unique',
+               #   'selectedSecondColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               # [('Do you want to do above summarize for column %s' % (
+               # i + 1) + ' from second hGSuite ',
+               #   'selectedSecondColumnOption%s' % i) for i in
+               #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                # cls.getInputBoxNamesForDebug()
 
     @classmethod
@@ -97,145 +119,455 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def _getOptionsBoxForSelectedStat(cls, prevChoices, index):
-        if prevChoices.gsuite and prevChoices.secondGSuite:
-            selectionList = []
+        if prevChoices.gsuite:
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedStat%s' % i) for i in
                        xrange(index)):
                 attrList = [getattr(prevChoices, 'selectedStat%s' % i) for i in xrange(index)]
                 selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
-            if selectionList:
+
                 return selectionList
 
     @classmethod
     def setupSelectedStatMethods(cls):
-        from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_COLS):
+        for i in xrange(cls.MAX_NUM_OF_STAT):
             setattr(cls, 'getOptionsBoxSelectedStat%s' % i,
                     partial(cls._getOptionsBoxForSelectedStat, index=i))
 
     @classmethod
     def getOptionsBoxIntraOverlap(cls, prevChoices):
-        statList = cls._getSelectedOptions(prevChoices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
+        statList = cls._getSelectedOptions(prevChoices, 'selectedStat%s', cls.MAX_NUM_OF_STAT)
         for a in statList:
             if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
-                return [CountDescriptiveStatisticBetweenHGsuiteTool.MERGE_INTRA_OVERLAPS,
-                        CountDescriptiveStatisticBetweenHGsuiteTool.ALLOW_MULTIPLE_OVERLAP]
+                return [cls.MERGE_INTRA_OVERLAPS,
+                        cls.ALLOW_MULTIPLE_OVERLAP]
 
     @classmethod
-    def getOptionsBoxSummarize(cls, prevChoices):
-        if prevChoices.gsuite and prevChoices.secondGSuite:
+    def getOptionsBoxGroupDefined(cls, prevChoices):
+        # parse GSuite and get metadata about dimensions
+        statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+        if len(statList) > 0:
+            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            dimensions = gSuite.getCustomHeader('levels')
+            if str(dimensions) != 'None':
+                cls.INFO_ALL = cls.INFO_1
+                return '__rawstr__', cls.INFO_1
+            else:
+                cls.INFO_ALL = cls.INFO_2
+                return '__rawstr__', cls.INFO_2
 
-            statList = []
-            for i in xrange(cls.MAX_NUM_OF_COLS):
-                attr = getattr(prevChoices, 'selectedStat%s' % i)
-                if cls.PHRASE in [attr]:
-                    pass
-                elif str(attr) == 'None':
+    @classmethod
+    def getOptionsBoxGroupResponse(cls, prevChoices):
+        if prevChoices.gsuite:
+            if cls.INFO_ALL != cls.INFO_1:
+                statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+                if len(statList) > 0:
+                    return ['no', 'yes']
+
+    @classmethod
+    def getOptionsBoxPreselectedGroup(cls, prevChoices):
+        return '__rawstr__', cls.INFO_3
+
+    # coremine
+
+    @classmethod
+    def getHowManyStatHaveBeenSelected(cls, prevChoices):
+        statList = []
+        for i in xrange(cls.MAX_NUM_OF_STAT):
+            attr = getattr(prevChoices, 'selectedStat%s' % i)
+            if cls.PHRASE in [attr]:
+                pass
+            elif str(attr) == 'None':
+                pass
+            else:
+                statList.append(attr)
+        return statList
+
+    @classmethod
+    def getHowManyColumnHaveBeenSelected(cls, prevChoices):
+        statList = []
+        for i in xrange(cls.MAX_NUM_OF_COLS):
+            attr = getattr(prevChoices, 'selectedColumn%s' % i)
+            if cls.PHRASE in [attr]:
+                pass
+            elif str(attr) == 'None':
+                pass
+            else:
+                statList.append(attr)
+        return statList
+
+    @classmethod
+    def _getOptionsBoxForSelectedColumnFirst(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            selectionList = []
+            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(statList) > 0:
+                if prevChoices.groupResponse:
+                    if prevChoices.groupResponse != 'no':
+                        if not any(cls.PHRASE in getattr(prevChoices,
+                                                         'selectedColumnFirst%s' % i) for i in
+                                   xrange(index)):
+                            gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                            selectionList += gSuiteTNFirst.attributes
+
+                            attrList = [getattr(prevChoices, 'selectedColumnFirst%s' % i) for i
+                                        in
+                                        xrange(index)]
+                            selectionList = [cls.PHRASE] + list(
+                                set(selectionList) - set(attrList))
+
+                        if selectionList:
+                            return selectionList
+                else:
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    dimensions = gSuite.getCustomHeader('levels')
+                    dimensions = dimensions.split(',')
+                    attrList = [getattr(prevChoices, 'selectedColumnFirst%s' % i) for i in
+                                xrange(index)]
+                    selectionList = [item for item in dimensions if item not in attrList]
+                    cls.MAX_NUM_OF_COLS = len(dimensions)
+                    if selectionList:
+                        return selectionList
+
+    @classmethod
+    def setupSelectedColumnMethodsFirst(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED):
+            setattr(cls, 'getOptionsBoxSelectedColumnFirst%s' % i,
+                    partial(cls._getOptionsBoxForSelectedColumnFirst, index=i))
+
+    @classmethod
+    def _getOptionsBoxForSelectedColumnSecond(cls, prevChoices, index):
+        if prevChoices.secondGSuite:
+            selectionList = []
+            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(statList) > 0:
+                if prevChoices.groupResponse:
+                    if prevChoices.groupResponse != 'no':
+                        if not any(cls.PHRASE in getattr(prevChoices,
+                                                         'selectedColumnSecond%s' % i) for i in
+                                   xrange(index)):
+                            gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+                            selectionList += gSuiteTNFirst.attributes
+
+                            attrList = [getattr(prevChoices, 'selectedColumnSecond%s' % i) for i
+                                        in
+                                        xrange(index)]
+                            selectionList = [cls.PHRASE] + list(
+                                set(selectionList) - set(attrList))
+
+                        if selectionList:
+                            return selectionList
+                else:
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+                    dimensions = gSuite.getCustomHeader('levels')
+                    dimensions = dimensions.split(',')
+                    attrList = [getattr(prevChoices, 'selectedColumnSecond%s' % i) for i in
+                                xrange(index)]
+                    selectionList = [item for item in dimensions if item not in attrList]
+                    cls.MAX_NUM_OF_COLS = len(dimensions)
+                    if selectionList:
+                        return selectionList
+
+    @classmethod
+    def setupSelectedColumnMethodsSecond(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED):
+            setattr(cls, 'getOptionsBoxSelectedColumnSecond%s' % i,
+                    partial(cls._getOptionsBoxForSelectedColumnSecond, index=i))
+
+    @classmethod
+    def getOptionsBoxPreselectedDecision(cls, prevChoices):
+        if prevChoices.gsuite:
+            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(statList) > 0:
+                return ['no', 'yes']
+
+    @classmethod
+    def _getOptionsBoxForSelectedMainOptionFirst(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            # return cls.MAIN_OPTIONS
+            if prevChoices.preselectedDecision:
+                if prevChoices.preselectedDecision == 'no':
                     pass
                 else:
-                    statList.append(attr)
-            if len(statList) > 0:
-                return cls.SUMMARIZE.keys()
+                    if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
+                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumnFirst%s' % i)
+                                   for i in xrange(index)):
+                            return cls.MAIN_OPTIONS
+                    else:
+                        if int(index) <= cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED:
+                            return cls.MAIN_OPTIONS
 
     @classmethod
-    def _getOptionsBoxForSelectedFirstColumn(cls, prevChoices, index):
-        if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
-            selectionList = []
-            if (cls._getLenOfSelectedStat(prevChoices)):
-                if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
-                           xrange(index)):
-                    gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                    selectionList += gSuiteTNFirst.attributes
-
-                    attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
-                                xrange(index)]
-                    selectionList = [cls.PHRASE] + [cls.TITLE] + list(
-                        set(selectionList) - set(attrList))
-
-                if selectionList:
-                    return selectionList
+    def setupSelectedMainOptionMethodsFirst(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED):
+            setattr(cls, 'getOptionsBoxSelectedMainOptionFirst%s' % i,
+                    partial(cls._getOptionsBoxForSelectedMainOptionFirst, index=i))
 
     @classmethod
-    def setupSelectedFirstColumnMethods(cls):
-        from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_COLS):
-            setattr(cls, 'getOptionsBoxSelectedFirstColumn%s' % i,
-                    partial(cls._getOptionsBoxForSelectedFirstColumn, index=i))
+    def _getOptionsBoxForSelectedOptionFirst(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
+                if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
+                    dfTF = any(
+                        cls.PHRASE in getattr(prevChoices, 'selectedColumnFirst%s' % i) for i in
+                        xrange(index))
+                    if not dfTF:
+                        attr = []
+                        for i in xrange(index + 1):
+                            attr.append(getattr(prevChoices, 'selectedColumnFirst%s' % i))
+                            selOption = getattr(prevChoices,
+                                                'selectedMainOptionFirst%s' % i).encode('utf-8')
+
+                        if cls.MAIN_OPTIONS[0] == selOption:
+                            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                            if index == 0:
+                                return list(set(gSuite.allTrackTitles()))
+                            else:
+                                j = index - 1
+                                selectedAttribute = getattr(prevChoices,
+                                                            'selectedColumnFirst%s' % j).encode(
+                                    'utf-8')
+                                return list(
+                                    set(gSuite.getAttributeValueList(selectedAttribute)))
+                        elif cls.MAIN_OPTIONS[1] == selOption:
+                            pass
+                        else:
+                            return cls.OPTIONS_LIST
+                else:
+                    if index <= cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED:
+                        attr = []
+                        for i in xrange(index + 1):
+                            attr.append(getattr(prevChoices, 'selectedColumnFirst%s' % i))
+                            selOption = getattr(prevChoices,
+                                                'selectedMainOptionFirst%s' % i).encode('utf-8')
+
+                        if cls.MAIN_OPTIONS[0] == selOption:
+                            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                            if index == 0:
+                                return list(set(gSuite.allTrackTitles()))
+                            else:
+                                j = index - 1
+                                selectedAttribute = getattr(prevChoices,
+                                                            'selectedColumnFirst%s' % j).encode(
+                                    'utf-8')
+                                return list(
+                                    set(gSuite.getAttributeValueList(selectedAttribute)))
+                        elif cls.MAIN_OPTIONS[1] == selOption:
+                            pass
+                        else:
+                            return cls.OPTIONS_LIST
 
     @classmethod
-    def _getOptionsBoxForSelectedFirstColumnOption(cls, prevChoices, index):
-        if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
-            selectionList = []
-            if (cls._getLenOfSelectedStat(prevChoices)):
-                if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
-                           xrange(index)):
-                    selectionList = ''
-
-                    return selectionList
-
-                if selectionList:
-                    return selectionList
+    def setupSelectedOptionMethodsFirst(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED):
+            setattr(cls, 'getOptionsBoxSelectedOptionFirst%s' % i,
+                    partial(cls._getOptionsBoxForSelectedOptionFirst, index=i))
 
     @classmethod
-    def setupSelectedFirstColumnOptionMethods(cls):
-        from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_COLS):
-            setattr(cls, 'getOptionsBoxSelectedFirstColumnOption%s' % i,
-                    partial(cls._getOptionsBoxForSelectedFirstColumnOption, index=i))
+    def _getOptionsBoxForSelectedMainOptionSecond(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            # return cls.MAIN_OPTIONS
+            if prevChoices.preselectedDecision:
+                if prevChoices.preselectedDecision == 'no':
+                    pass
+                else:
+                    if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
+                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumnSecond%s' % i)
+                                   for i in xrange(index)):
+                            return cls.MAIN_OPTIONS
+                    else:
+                        if int(index) <= cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED:
+                            return cls.MAIN_OPTIONS
 
     @classmethod
-    def _getOptionsBoxForSelectedSecondColumn(cls, prevChoices, index):
-        if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
-            selectionList = []
-            if (cls._getLenOfSelectedStat(prevChoices)):
-                if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
-                           xrange(index)):
-                    gSuiteTNSecond = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
-                    selectionList += gSuiteTNSecond.attributes
-
-                    attrList = [getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
-                                xrange(index)]
-                    selectionList = [cls.PHRASE] + [cls.TITLE] + list(
-                        set(selectionList) - set(attrList))
-
-                if selectionList:
-                    return selectionList
+    def setupSelectedMainOptionMethodsSecond(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED):
+            setattr(cls, 'getOptionsBoxSelectedMainOptionSecond%s' % i,
+                    partial(cls._getOptionsBoxForSelectedMainOptionSecond, index=i))
 
     @classmethod
-    def setupSelectedSecondColumnMethods(cls):
-        from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_COLS):
-            setattr(cls, 'getOptionsBoxSelectedSecondColumn%s' % i,
-                    partial(cls._getOptionsBoxForSelectedSecondColumn, index=i))
+    def _getOptionsBoxForSelectedOptionSecond(cls, prevChoices, index):
+        if prevChoices.secondGSuite:
+            if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
+                if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
+                    dfTF = any(
+                        cls.PHRASE in getattr(prevChoices, 'selectedColumnSecond%s' % i) for i in
+                        xrange(index))
+                    if not dfTF:
+                        attr = []
+                        for i in xrange(index + 1):
+                            attr.append(getattr(prevChoices, 'selectedColumnSecond%s' % i))
+                            selOption = getattr(prevChoices,
+                                                'selectedMainOptionSecond%s' % i).encode('utf-8')
+
+                        if cls.MAIN_OPTIONS[0] == selOption:
+                            gSuite = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+                            if index == 0:
+                                return list(set(gSuite.allTrackTitles()))
+                            else:
+                                j = index - 1
+                                selectedAttribute = getattr(prevChoices,
+                                                            'selectedColumnSecond%s' % j).encode(
+                                    'utf-8')
+                                return list(
+                                    set(gSuite.getAttributeValueList(selectedAttribute)))
+                        elif cls.MAIN_OPTIONS[1] == selOption:
+                            pass
+                        else:
+                            return cls.OPTIONS_LIST
+                else:
+                    if index <= cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED:
+                        attr = []
+                        for i in xrange(index + 1):
+                            attr.append(getattr(prevChoices, 'selectedColumnSecond%s' % i))
+                            selOption = getattr(prevChoices,
+                                                'selectedMainOptionSecond%s' % i).encode('utf-8')
+
+                        if cls.MAIN_OPTIONS[0] == selOption:
+                            gSuite = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+                            if index == 0:
+                                return list(set(gSuite.allTrackTitles()))
+                            else:
+                                j = index - 1
+                                selectedAttribute = getattr(prevChoices,
+                                                            'selectedColumnSecond%s' % j).encode(
+                                    'utf-8')
+                                return list(
+                                    set(gSuite.getAttributeValueList(selectedAttribute)))
+                        elif cls.MAIN_OPTIONS[1] == selOption:
+                            pass
+                        else:
+                            return cls.OPTIONS_LIST
 
     @classmethod
-    def _getOptionsBoxForSelectedSecondColumnOption(cls, prevChoices, index):
-        if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
-            if (cls._getLenOfSelectedStat(prevChoices)):
-                selectionList = []
-                if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
-                           xrange(index)):
-                    selectionList = ''
+    def setupSelectedOptionMethodsSecond(cls):
+        for i in xrange(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED):
+            setattr(cls, 'getOptionsBoxSelectedOptionSecond%s' % i,
+                    partial(cls._getOptionsBoxForSelectedOptionSecond, index=i))
 
-                    return selectionList
-
-                if selectionList:
-                    return selectionList
-
-    @classmethod
-    def setupSelectedSecondColumnOptionMethods(cls):
-        from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_COLS):
-            setattr(cls, 'getOptionsBoxSelectedSecondColumnOption%s' % i,
-                    partial(cls._getOptionsBoxForSelectedSecondColumnOption, index=i))
+    # @classmethod
+    # def getOptionsBoxSummarize(cls, prevChoices):
+    #     if prevChoices.gsuite and prevChoices.secondGSuite:
+    #
+    #         statList = []
+    #         for i in xrange(cls.MAX_NUM_OF_COLS):
+    #             attr = getattr(prevChoices, 'selectedStat%s' % i)
+    #             if cls.PHRASE in [attr]:
+    #                 pass
+    #             elif str(attr) == 'None':
+    #                 pass
+    #             else:
+    #                 statList.append(attr)
+    #         if len(statList) > 0:
+    #             return cls.SUMMARIZE.keys()
+    #
+    # @classmethod
+    # def _getOptionsBoxForSelectedFirstColumn(cls, prevChoices, index):
+    #     if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
+    #         selectionList = []
+    #         if (cls._getLenOfSelectedStat(prevChoices)):
+    #             if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+    #                        xrange(index)):
+    #                 gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+    #                 selectionList += gSuiteTNFirst.attributes
+    #
+    #                 attrList = [getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+    #                             xrange(index)]
+    #                 selectionList = [cls.PHRASE] + [cls.TITLE] + list(
+    #                     set(selectionList) - set(attrList))
+    #
+    #             if selectionList:
+    #                 return selectionList
+    #
+    # @classmethod
+    # def setupSelectedFirstColumnMethods(cls):
+    #     from functools import partial
+    #     for i in xrange(cls.MAX_NUM_OF_COLS):
+    #         setattr(cls, 'getOptionsBoxSelectedFirstColumn%s' % i,
+    #                 partial(cls._getOptionsBoxForSelectedFirstColumn, index=i))
+    #
+    # @classmethod
+    # def _getOptionsBoxForSelectedFirstColumnOption(cls, prevChoices, index):
+    #     if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
+    #         selectionList = []
+    #         if (cls._getLenOfSelectedStat(prevChoices)):
+    #             if not any(cls.PHRASE in getattr(prevChoices, 'selectedFirstColumn%s' % i) for i in
+    #                        xrange(index)):
+    #                 selectionList = ''
+    #
+    #                 return selectionList
+    #
+    #             if selectionList:
+    #                 return selectionList
+    #
+    # @classmethod
+    # def setupSelectedFirstColumnOptionMethods(cls):
+    #     from functools import partial
+    #     for i in xrange(cls.MAX_NUM_OF_COLS):
+    #         setattr(cls, 'getOptionsBoxSelectedFirstColumnOption%s' % i,
+    #                 partial(cls._getOptionsBoxForSelectedFirstColumnOption, index=i))
+    #
+    # @classmethod
+    # def _getOptionsBoxForSelectedSecondColumn(cls, prevChoices, index):
+    #     if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
+    #         selectionList = []
+    #         if (cls._getLenOfSelectedStat(prevChoices)):
+    #             if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+    #                        xrange(index)):
+    #                 gSuiteTNSecond = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+    #                 selectionList += gSuiteTNSecond.attributes
+    #
+    #                 attrList = [getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+    #                             xrange(index)]
+    #                 selectionList = [cls.PHRASE] + [cls.TITLE] + list(
+    #                     set(selectionList) - set(attrList))
+    #
+    #             if selectionList:
+    #                 return selectionList
+    #
+    # @classmethod
+    # def setupSelectedSecondColumnMethods(cls):
+    #     from functools import partial
+    #     for i in xrange(cls.MAX_NUM_OF_COLS):
+    #         setattr(cls, 'getOptionsBoxSelectedSecondColumn%s' % i,
+    #                 partial(cls._getOptionsBoxForSelectedSecondColumn, index=i))
+    #
+    # @classmethod
+    # def _getOptionsBoxForSelectedSecondColumnOption(cls, prevChoices, index):
+    #     if prevChoices.gsuite and prevChoices.secondGSuite and prevChoices.summarize != 'no':
+    #         if (cls._getLenOfSelectedStat(prevChoices)):
+    #             selectionList = []
+    #             if not any(cls.PHRASE in getattr(prevChoices, 'selectedSecondColumn%s' % i) for i in
+    #                        xrange(index)):
+    #                 selectionList = ''
+    #
+    #                 return selectionList
+    #
+    #             if selectionList:
+    #                 return selectionList
+    #
+    # @classmethod
+    # def setupSelectedSecondColumnOptionMethods(cls):
+    #     from functools import partial
+    #     for i in xrange(cls.MAX_NUM_OF_COLS):
+    #         setattr(cls, 'getOptionsBoxSelectedSecondColumnOption%s' % i,
+    #                 partial(cls._getOptionsBoxForSelectedSecondColumnOption, index=i))
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
         # DebugMixin._setDebugModeIfSelected(choices)
-
+        preselectedDecision = choices.preselectedDecision.encode('utf-8')
+        groupResponse = choices.groupResponse.encode('utf-8')
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
         analysisBins, columnOptionsDict, firstColumnList, ifAnyElements, secondColumnList, statList, summarize, whichGroups = cls.prepareElements(
             choices)
+
+
+        mainOptionList, optionList = cls.getPreselectedOptions(choices, preselectedDecision)
+
+        # print 'mainOptionList', mainOptionList, '<br>'
+        # print 'optionList', optionList, '<br>'
 
         # print 'ifAnyElements', ifAnyElements, '<br>'
         # print 'which groups', whichGroups, '<br>'
@@ -243,6 +575,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         resultsDict = cls.countStat(analysisBins, selectedAnalysis,
                                     statIndex, whichGroups, statList, summarize, columnOptionsDict)
+
+        summarize = 'raw'
 
         # print 'resultsDict=', resultsDict, '<br>'
         # print 'galaxyFn=', galaxyFn, '<br>'
@@ -269,9 +603,63 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             'Click on the following options for selected statistic to see detailed results. ')
 
         cls.writeResults(galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
-                         summarize)
+                         summarize, mainOptionList, optionList)
         htmlCore.end()
         print htmlCore
+
+    @classmethod
+    def getPreselectedOptions(cls, choices, preselectedDecision):
+
+        if preselectedDecision != 'no':
+
+            mainOptionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(
+                choices, 'selectedMainOptionFirst%s', cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)
+            optionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
+                                                                                         'selectedOptionFirst%s',
+                                                                                         cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)
+            main1, main2, option1, option2 = cls.getAllOptions(mainOptionList, optionList)
+            # print 'main1', main1, 'main2', main2, 'option1', option1, 'option2', option2
+
+            mainOptionList1 = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(
+                choices, 'selectedMainOptionSecond%s', cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)
+            optionList1 = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
+                                                                                          'selectedOptionSecond%s',
+                                                                                          cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)
+            main3, main4, option3, option4 = cls.getAllOptions(mainOptionList1, optionList1)
+            # print 'main3', main3, 'main4', main4, 'option3', option3, 'option4', option4
+
+            # optionList = ['44 - ung-bcl', 'tat', '43 - ung-aicda-bcl--AT']
+
+            mainOptionList = option1 + option3 + option2 + option4
+            optionList = main1 + main3 + main2 + main4
+
+            # print 'mainOptionList', mainOptionList, '<br>'
+            # print 'optionList', optionList, '<br>'
+
+        else:
+            mainOptionList = []
+            optionList = []
+        return mainOptionList, optionList
+
+    @classmethod
+    def getAllOptions(cls, mainOptionList, optionList):
+        newOptionList = []
+        newMainOptionList = []
+        mNum = 0
+        for m in mainOptionList:
+            if m == cls.MAIN_OPTIONS[1]:
+                newMainOptionList.append(-2)
+                newOptionList.append('')
+            elif m == cls.MAIN_OPTIONS[0]:
+                newMainOptionList.append(1)
+                newOptionList.append(optionList[mNum])
+                mNum += 1
+            elif m == cls.MAIN_OPTIONS[2]:
+                newMainOptionList.append(-1)
+                newOptionList.append(optionList[mNum])
+                mNum += 1
+        return newOptionList[1:len(newOptionList)], [newOptionList[0]], newMainOptionList[1:len(
+            newMainOptionList)], [newMainOptionList[0]]
 
     @classmethod
     def prepareElements(cls, choices):
@@ -279,7 +667,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
         secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
         secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
-        summarize = choices.summarize.encode('utf-8')
+        summarize = 'no'
+        # summarize = choices.summarize.encode('utf-8')
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
                                                          genome=firstGSuite.genome)
@@ -287,26 +676,26 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         # print firstGSuiteColumn, '<br>'
         # print secondGSuite, '<br>'
         # print secondGSuiteColumn, '<br>'
-        statList = cls._getSelectedOptions(choices, 'selectedStat%s', cls.MAX_NUM_OF_COLS)
-        if summarize != 'no':
-            firstColumnList = cls._getSelectedOptions(choices, 'selectedFirstColumn%s',
-                                                      cls.MAX_NUM_OF_COLS_IN_GSUITE)
-            columnOptionsDict = cls._getSelectedColumnOptions(choices,
-                                                              'selectedFirstColumnOption%s',
-                                                              cls.MAX_NUM_OF_COLS_IN_GSUITE,
-                                                              firstColumnList)
-            secondColumnList = cls._getSelectedOptions(choices, 'selectedSecondColumn%s',
-                                                       cls.MAX_NUM_OF_COLS_IN_GSUITE)
-            columnOptionsDict = cls._getSelectedColumnOptions(choices,
-                                                              'selectedSecondColumnOption%s',
-                                                              cls.MAX_NUM_OF_COLS_IN_GSUITE,
-                                                              secondColumnList, columnOptionsDict,
-                                                              st=len(firstColumnList))
-
-        else:
-            firstColumnList = []
-            secondColumnList = []
-            columnOptionsDict = {}
+        statList = cls._getSelectedOptions(choices, 'selectedStat%s', cls.MAX_NUM_OF_STAT)
+        # if summarize != 'no':
+        #     firstColumnList = cls._getSelectedOptions(choices, 'selectedFirstColumn%s',
+        #                                               cls.MAX_NUM_OF_COLS_IN_GSUITE)
+        #     columnOptionsDict = cls._getSelectedColumnOptions(choices,
+        #                                                       'selectedFirstColumnOption%s',
+        #                                                       cls.MAX_NUM_OF_COLS_IN_GSUITE,
+        #                                                       firstColumnList)
+        #     secondColumnList = cls._getSelectedOptions(choices, 'selectedSecondColumn%s',
+        #                                                cls.MAX_NUM_OF_COLS_IN_GSUITE)
+        #     columnOptionsDict = cls._getSelectedColumnOptions(choices,
+        #                                                       'selectedSecondColumnOption%s',
+        #                                                       cls.MAX_NUM_OF_COLS_IN_GSUITE,
+        #                                                       secondColumnList, columnOptionsDict,
+        #                                                       st=len(firstColumnList))
+        #
+        # else:
+        firstColumnList = cls._getSelectedOptions(choices, 'selectedColumnFirst%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+        secondColumnList = cls._getSelectedOptions(choices, 'selectedColumnSecond%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+        columnOptionsDict = {}
         # print statList, '<br>'
         # print 'firstColumnList', firstColumnList, '<br>'
         # print 'secondColumnList', secondColumnList, '<br>'
@@ -341,13 +730,13 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
-                     summarize):
+                     summarize, mainOptionList, optionList):
 
         # print '--- resultsDictFinal --- ', resultsDict
         # print 'firstColumnList, secondColumnList', firstColumnList, secondColumnList
 
         cube = Cube()
-        statNum = 0;
+        statNum = 0
         for statKey, statItem in resultsDict.iteritems():
 
             data = []
@@ -362,6 +751,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
                     if summarizeKey == 'no':
                         data += groupItem
+                    elif summarizeKey == 'raw':
+                        for g in groupItem:
+                            data.append(list(groupKey) + g)
                     else:
                         # print '1--', summarizeKey + "(" + str(groupItem) + ")", len(groupItem), '<br>'
                         # print '2--', list(groupKey), '<br>'
@@ -382,16 +774,21 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
             # print 'data=', data
 
-
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
                 #dataToPresent, headerToPresent = cls.flatResults(header, data)
                 dp = zip(*data)
+            elif summarizeKey == 'raw':
+                header = firstColumnList + secondColumnList + ['Title (first GSuite)'] + ['Title (second GSuite)'] + [summarizeKey]
+                dataToPresent = data
+                dp = zip(*dataToPresent)
             else:
                 header = firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
                 headerToPresent = header
                 dp = zip(*dataToPresent)
+
+            # print 'header[:len(header) - 1]', header[:len(header) - 1], '<br>'
 
             optionData = []
             for z in range(0, len(dp) - 1):
@@ -489,7 +886,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             htmlCore.divEnd()
             htmlCore.divEnd()
             htmlCore.line(
-                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum))
+                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum, mainOptionList, optionList, option = 'raw'))
             htmlCore.divEnd()
             htmlCore.divEnd()
 
@@ -567,7 +964,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         # print 'statList', statList, '<br>'
         # print 'summarize', summarize, '<br>', '<br>', '<br>'
 
-
+        summarize = 'raw'
         for saNum, sa in enumerate(selectedAnalysis):
             stat = statList[saNum]
             # print stat, statList, saNum
@@ -577,9 +974,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 resultsDict[stat][cls.SUMMARIZE[summarize]] = OrderedDict()
             for groupKey, groupItem in whichGroups.iteritems():
 
-                if cls.SUMMARIZE[summarize] != 'no':
+                # if cls.SUMMARIZE[summarize] != 'no':
                     # print 'groupKey----b', groupKey, '<br>'
-                    groupKey = cls.changeOptions(columnOptionsDict, groupKey)
+                groupKey = cls.changeOptions(columnOptionsDict, groupKey)
                     # print 'groupKey----a', groupKey, '<br>'
 
                 if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
@@ -606,12 +1003,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
                     # print [queryTrackTitle, refTrackTitle, resVal], '<br>'
 
-                    if cls.SUMMARIZE[summarize] == 'no':
+                    # if cls.SUMMARIZE[summarize] == 'no':
+                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
+                    #         [queryTrackTitle, refTrackTitle, resVal])
+                    # else:
+                    #     # groupKey = cls.changeOptions(columnOptionsDict, groupKey)
+                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(resVal)
+                    if cls.SUMMARIZE[summarize] == 'raw':
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
                             [queryTrackTitle, refTrackTitle, resVal])
-                    else:
-                        # groupKey = cls.changeOptions(columnOptionsDict, groupKey)
-                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(resVal)
 
         return resultsDict
 
@@ -659,15 +1059,17 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 # print 'firstGSuiteColumn', firstGSuiteColumn, '<br>'
                 # print 'secondGSuiteColumn', secondGSuiteColumn, '<br>'
 
+
                 if firstGSuiteColumn == 'title':
                     attr1 = trackFromFirst.title
                 else:
-                    attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
+                    attr1 = trackFromFirst.getAttribute(firstGSuiteColumn.encode('utf-8'))
+
 
                 if secondGSuiteColumn == 'title':
                     attr2 = trackFromSecond.title
                 else:
-                    attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
+                    attr2 = trackFromSecond.getAttribute(secondGSuiteColumn.encode('utf-8'))
 
                 # print 'attr', attr1, attr2, firstGSuiteColumn, secondGSuiteColumn, '<br>'
 
@@ -1143,7 +1545,13 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
 
 CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedStatMethods()
-CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedFirstColumnMethods()
-CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedFirstColumnOptionMethods()
-CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedSecondColumnMethods()
-CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedSecondColumnOptionMethods()
+# CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedFirstColumnMethods()
+# CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedFirstColumnOptionMethods()
+# CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedSecondColumnMethods()
+# CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedSecondColumnOptionMethods()
+CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedColumnMethodsFirst()
+CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedColumnMethodsSecond()
+CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedMainOptionMethodsFirst()
+CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedOptionMethodsFirst()
+CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedMainOptionMethodsSecond()
+CountDescriptiveStatisticBetweenHGsuiteTool.setupSelectedOptionMethodsSecond()

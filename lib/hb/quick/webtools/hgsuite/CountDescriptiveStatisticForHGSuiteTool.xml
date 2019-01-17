@@ -1,4 +1,4 @@
-<tool id="hb_count_descriptive_statistic_for_hg_suite_tool" name="Count descriptive statistic for hGSuite" version="1.0.0"
+<tool id="hb_count_descriptive_statistic_for_hg_suite_tool" name="Compute Pivot table for hGSuite" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CountDescriptiveStatisticForHGSuiteTool" proto_tool_class="CountDescriptiveStatisticForHGSuiteTool">
   <description></description>
 </tool>

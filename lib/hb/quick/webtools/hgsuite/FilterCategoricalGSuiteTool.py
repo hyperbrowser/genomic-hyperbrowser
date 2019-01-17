@@ -185,7 +185,7 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
             else:
                 data = []
                 for tr in gSuite.allTracks():
-                    if tr.getAttribute(column) == None:
+                    if tr.getAttribute(column.encode('utf-8')) == None:
                         data.append('.')
                     else:
                         data.append(tr.getAttribute(column))
@@ -341,7 +341,6 @@ class FilterCategoricalGSuiteTool(GeneralGuiTool):
 
                     else:
                         filterQuestionsDict[option][choices[i + 1].encode('utf-8')] = float(choices[i + 2])
-
         return filterQuestionsDict
 
     @classmethod

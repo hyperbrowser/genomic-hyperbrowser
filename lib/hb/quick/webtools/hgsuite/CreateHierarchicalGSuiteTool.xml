@@ -1,4 +1,4 @@
-<tool id="hb_create_hierarchical_g_suite_tool" name="Create hierarchy of GSuite" version="1.0.0"
+<tool id="hb_create_hierarchical_g_suite_tool" name="Create or modify hierarchy of hGSuite" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CreateHierarchicalGSuiteTool" proto_tool_class="CreateHierarchicalGSuiteTool">
   <description></description>
 </tool>

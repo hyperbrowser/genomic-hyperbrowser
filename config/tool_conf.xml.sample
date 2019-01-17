@@ -11,7 +11,7 @@
       <!--<tool file="proto/hyperbrowser/hgsuite/DivideGSuiteAccordingToColumnInTheTrackTool.xml" />-->
     <label text="For tracks" id="hgsuite_tracks_hgsuite"/>
       <tool file="proto/hyperbrowser/hgsuite/ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool.xml" />
-      <tool file="proto/hyperbrowser/hgsuite/FilterCategoricalGSuiteTool.xml" />
+      <!--<tool file="proto/hyperbrowser/hgsuite/FilterCategoricalGSuiteTool.xml" />-->
       <!--<tool file="proto/hyperbrowser/hgsuite/ContacenateTwoOrMoreHGsuitesTool.xml" />-->
     <label text="For meatadata" id="hgsuite_metadata_hgsuite"/>
       <tool file="proto/hyperbrowser/hgsuite/CreateHGsuiteFromCsvFileTool.xml" />

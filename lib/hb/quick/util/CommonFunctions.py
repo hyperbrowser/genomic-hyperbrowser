@@ -14,7 +14,7 @@ from collections import Iterable, OrderedDict
 from config.Config import PROCESSED_DATA_PATH, DEFAULT_GENOME, \
     ORIG_DATA_PATH, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
     PARSING_ERROR_DATA_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonConstants import BINARY_MISSING_VAL, ALLOWED_CHARS
 from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
@@ -752,3 +752,34 @@ def dump_args_and_more(func):
 
 
     return echo_func
+
+def formatPhraseWithCorrectChrUsage(phrase, useUrlEncoding=True, notAllowedChars=''):
+    corrected = ''
+    for char in phrase:
+        if char not in ALLOWED_CHARS or char in notAllowedChars:
+            if useUrlEncoding:
+                if isinstance(phrase, unicode):
+                    char = char.encode('utf-8')
+                for byte in char:
+                    if not isinstance(byte, int):
+                        byte = ord(byte)
+                    corrected += '%' + '{:0>2X}'.format(byte)
+        else:
+            corrected += char
+    return corrected
+
+
+def urlDecodePhrase(phrase, unquotePlus=False):
+    if unquotePlus:
+        decoded = urllib.unquote_plus(phrase)
+    else:
+        decoded = urllib.unquote(phrase)
+
+    try:
+        try:
+            decoded.decode('ascii')
+            return decoded
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return decoded.decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return decoded

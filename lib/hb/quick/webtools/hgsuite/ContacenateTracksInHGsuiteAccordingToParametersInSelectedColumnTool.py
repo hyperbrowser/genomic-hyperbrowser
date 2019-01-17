@@ -51,7 +51,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
 
             tableElements = [['Unique phrases']]
-            for a in gSuite.getAttributeValueList(prevChoices.column):
+            for a in gSuite.getAttributeValueList(prevChoices.column.encode('utf-8')):
                 if not [a] in tableElements:
                     tableElements.append([a])
             return tableElements

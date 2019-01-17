@@ -51,15 +51,19 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
     def getOptionsBoxGsuiteAttributeValues(cls, prevChoices):
         if prevChoices.gsuite:
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return '__hidden__', [track.getAttribute(prevChoices.attrName)
-                                  for track in gSuite.allTracks()]
+            attrName = prevChoices.attrName
+            if attrName != '':
+                if gSuite.getCustomHeader(attrName):
+                    return '__hidden__', [track.getAttribute(attrName) for track in gSuite.allTracks()]
 
     @classmethod
     def _getGsuiteAttributeValues(cls, prevChoices):
         gsuiteAttributeValues = prevChoices.gsuiteAttributeValues
-        if isinstance(gsuiteAttributeValues, basestring):
-            gsuiteAttributeValues = literal_eval(gsuiteAttributeValues)
-        return gsuiteAttributeValues
+        gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+        if gSuite.getCustomHeader(prevChoices.attrName):
+            if isinstance(gsuiteAttributeValues, basestring):
+                gsuiteAttributeValues = literal_eval(gsuiteAttributeValues)
+            return gsuiteAttributeValues
 
     @classmethod
     def _getOptionsBoxLabel(cls, prevChoices, index):
@@ -83,7 +87,10 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
             if attrName == TITLE_COL:
                 attrValue = gSuiteTitles[index / 2]
             else:
-                attrValue = gSuiteAttributeValues[index / 2]
+                if not gSuiteAttributeValues:
+                    attrValue = ['' for t in gSuiteTitles[index / 2]]
+                else:
+                    attrValue = gSuiteAttributeValues[index / 2]
             return str(attrValue)
 
     @classmethod
@@ -111,9 +118,9 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
                 if(attrName == TITLE_COL):
                     track.title = newAttrValue
                 else:
-                    if newAttrValue == 'None':
+                    if newAttrValue == 'None' or newAttrValue == '':
                         newAttrValue = '.'
-                    track.setAttribute(attrName, newAttrValue)
+                    track.setAttribute(attrName.encode('utf-8'), newAttrValue.encode('utf-8'))
             outputGSuite.addTrack(track)
 
         #Creates the new GSuite

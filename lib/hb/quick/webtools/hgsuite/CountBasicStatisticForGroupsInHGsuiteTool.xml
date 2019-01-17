@@ -1,4 +1,4 @@
-<tool id="hb_count_basic_statistic_for_groups_in_h_gsuite_tool" name="Overview of groups in hGSuite" version="1.0.0"
+<tool id="hb_count_basic_statistic_for_groups_in_h_gsuite_tool" name="Expand hGSuite with group summary statistics" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CountBasicStatisticForGroupsInHGsuiteTool" proto_tool_class="CountBasicStatisticForGroupsInHGsuiteTool">
   <description></description>
 </tool>

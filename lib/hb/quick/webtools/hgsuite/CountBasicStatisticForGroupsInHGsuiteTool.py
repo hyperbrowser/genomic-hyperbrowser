@@ -18,6 +18,8 @@ from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool import \
     CountDescriptiveStatisticBetweenHGsuiteTool
+from quick.webtools.hgsuite.CountDescriptiveStatisticForHGSuiteTool import \
+    CountDescriptiveStatisticForHGSuiteTool
 from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -28,6 +30,7 @@ from quick.statistic.AvgSegLenStat import AvgSegLenStat
 class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, DebugMixin, UserBinMixin):
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS = 10
+    MAX_NUM_OF_STAT = 1
     PHRASE = '-- SELECT --'
 
     NUMTRACK = 'Number of tracks'
@@ -46,7 +49,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     @classmethod
     def getToolName(cls):
-        return "Overview of groups in hGSuite"
+        return "Expand hGSuite with group summary statistics"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -54,7 +57,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                 cls.getInputBoxNamesForGenomeSelection() + \
                [('Select statistic %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
-                in range(cls.MAX_NUM_OF_COLS)] + \
+                in range(cls.MAX_NUM_OF_STAT)] + \
                [('Select group %s' % (
                    i + 1) + '',
                  'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
@@ -83,27 +86,39 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
     @classmethod
     def setupSelectedStatMethods(cls):
         from functools import partial
-        for i in xrange(cls.MAX_NUM_OF_COLS):
+        for i in xrange(cls.MAX_NUM_OF_STAT):
             setattr(cls, 'getOptionsBoxSelectedStat%s' % i,
                     partial(cls._getOptionsBoxForSelectedStat, index=i))
 
     @classmethod
     def _getOptionsBoxForSelectedColumn(cls, prevChoices, index):
         if prevChoices.gsuite:
-            selectionList = []
+            statList = CountDescriptiveStatisticForHGSuiteTool.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(statList) > 0:
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                dimensions = gSuite.getCustomHeader('levels')
+                selectionList = []
+                if str(dimensions) == 'None':
+                    if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                               xrange(index)):
+                        gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                        selectionList += gSuiteTNFirst.attributes
 
-            if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
-                       xrange(index)):
-                gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                selectionList += gSuiteTNFirst.attributes
+                        attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                                    xrange(index)]
+                        selectionList = [cls.PHRASE] + list(
+                            set(selectionList) - set(attrList))
+                else:
+                    gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    dimensions = gSuite.getCustomHeader('levels')
+                    dimensions = dimensions.split(',')
+                    attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                                xrange(index)]
+                    selectionList = [item for item in dimensions if item not in attrList]
+                    cls.MAX_NUM_OF_COLS = len(dimensions)
 
-                attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
-                            xrange(index)]
-                selectionList = [cls.PHRASE] + list(
-                    set(selectionList) - set(attrList))
-
-            if selectionList:
-                return selectionList
+                if selectionList:
+                    return selectionList
 
     @classmethod
     def setupSelectedColumnMethods(cls):
@@ -123,8 +138,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
         statList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
                                                                                    'selectedStat%s',
-                                                                                   cls.MAX_NUM_OF_COLS)
-
+                                                                                   cls.MAX_NUM_OF_STAT)
         resDict = {}
         for stat in statList:
             resDict[stat] = OrderedDict()
@@ -197,6 +211,8 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                     resDictExtra[rkey+'-min'] = OrderedDict()
                 if not [rkey + '-max'] in resDictExtra.keys():
                     resDictExtra[rkey+'-max'] = OrderedDict()
+                if not [rkey+'-avg'] in resDictExtra.keys():
+                    resDictExtra[rkey+'-avg'] = OrderedDict()
                 for kTemp, elTemp in resDict[rkey].iteritems():
                     v = ''.join(list(kTemp))
                     if not v in group:
@@ -206,6 +222,8 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                         resDictExtra[rkey + '-min'][kTemp] = min(rItem[kTemp])
                     if not kTemp in resDictExtra[rkey + '-max'].keys():
                         resDictExtra[rkey + '-max'][kTemp] = max(rItem[kTemp])
+                    if not kTemp in resDictExtra[rkey + '-avg'].keys():
+                        resDictExtra[rkey + '-avg'][kTemp] = sum(rItem[kTemp])/len(rItem[kTemp])
 
         for de in deleteElements:
             del resDict[de]
@@ -229,7 +247,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         # add column for which we counted data
         for i, iTrack in enumerate(gSuite.allTracks()):
             for s in resDictMerged.keys():
-                name = s.replace('-min','').replace('-max','')
+                name = s.replace('-min','').replace('-max','').replace('-avg','')
                 if not name in resDictMerged.keys():
                     resDictMerged[name] = OrderedDict()
                 for sName in resDictMerged[s].keys():
@@ -279,10 +297,11 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         categoriesForPlot = []
         rdmList = []
         for rdm in resDictMerged.keys():
-            k = rdm.replace('-min', '').replace('-max', '')
+            k = rdm.replace('-min', '').replace('-max', '').replace('-avg', '')
             if not k in rdmList:
                 rdmList.append(k)
         titleText = []
+
         for k in rdmList:
             if cls.NUMTRACK == k:
                 seriesName.append([k])
@@ -308,24 +327,46 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                         inxK = 1
                 new = zip(newK, newD)
                 new.sort()
-                seriesName.append([x[0] for x in new])
+                seriesName.append([str(x[0]) for x in new])
                 dataForPlot.append([x[1] for x in new])
             titleText.append(k)
+
         vg = visualizationGraphs()
         core = HtmlCore()
         core.begin()
         core.paragraph('Summary results')
         core.divBegin()
-        plot = vg.drawColumnCharts(dataForPlot,
+
+        newdataForPlot = []
+        newseriesName = []
+        for eNum, e in enumerate(dataForPlot):
+            d1=[]
+            d2=[]
+            for dNum, d in enumerate(e):
+                try:
+                    int(d[0])
+                    newdataForPlot.append(dataForPlot[eNum][dNum])
+                    newseriesName.append(seriesName[eNum][dNum])
+                except:
+                    pass
+
+        plot = vg.drawColumnCharts([newdataForPlot],
                                    height=300,
                                    categories=categoriesForPlot,
-                                   seriesName=seriesName,
+                                   seriesName=[newseriesName],
                                    xAxisRotation=90,
                                    titleText=titleText)
         core.line(plot)
         core.divEnd()
         core.end()
         return core
+
+    @classmethod
+    def depth(cls, l):
+        if isinstance(l, list):
+            return 1 + max(cls.depth(item) for item in l)
+        else:
+            return 0
 
     @classmethod
     def mergeTwodicts(cls, x, y):

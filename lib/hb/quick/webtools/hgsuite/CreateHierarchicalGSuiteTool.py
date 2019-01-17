@@ -1,5 +1,9 @@
+from gold.gsuite import GSuiteComposer
+from gold.gsuite.GSuite import GSuite
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool import \
+    CountDescriptiveStatisticBetweenHGsuiteTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
 class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
@@ -8,7 +12,7 @@ class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def getToolName(cls):
-        return "Create hierarchy of hdGSuite"
+        return "Create or modify hierarchy of hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -128,8 +132,19 @@ class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         #open gsuite, add new dimensions to gsuite and save gsuite
-        return
+        levelList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,'selectedLevel%s',cls.MAX_NUM_OF_COLS)
+
+        outputGSuite = GSuite()
+        outputGSuite.setCustomHeader('levels', ','.join(levelList))
+        for i, track in enumerate(gSuite.allTracks()):
+            outputGSuite.addTrack(track)
+
+        # Creates the new GSuite
+        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

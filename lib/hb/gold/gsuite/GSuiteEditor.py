@@ -58,3 +58,9 @@ def concatenateGSuitesAddingCategories(gSuiteList, categoryColumnTitle, category
         concatenatedGSuite.addTracks(tracksToAdd)
 
     return concatenatedGSuite
+
+def selectRowsFromGSuiteByAttrValues(gSuite, attrName, attrVals):
+    trackList = list(gSuite.allTracks())
+    reducedTrackList = [track for track in trackList if track.getAttribute(attrName) in attrVals]
+    reducedGSuite = GSuite(trackList=reducedTrackList)
+    return reducedGSuite
