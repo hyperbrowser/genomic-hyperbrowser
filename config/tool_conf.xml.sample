@@ -18,7 +18,7 @@
       <tool file="proto/hyperbrowser/hgsuite/AddAMetadataToGSuiteTool.xml" />
   </section>
 
-  <section name="Quantitative overview of hGSuite" id="11quantitative_hGsuite" >
+  <section name="Statistical analysis of hGSuites" id="12analysis_hGsuite" >
     <label text="for hGSuites" id="hgsuite_analysis_1"/>
     <tool file="proto/hyperbrowser/hgsuite/CountBasicStatisticForGroupsInHGsuiteTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/CountDescriptiveStatisticForHGSuiteTool.xml" />
@@ -26,11 +26,11 @@
       <tool file="proto/hyperbrowser/hgsuite/CountDescriptiveStatisticBetweenHGsuiteTool.xml" />
   </section>
 
-  <section name="Statistical analysis of hGSuites" id="12analysis_hGsuite" >
-    <label text="for hGSuites" id="hgsuite_analysis_2"/>
-    <tool file="proto/hyperbrowser/hgsuite/MixModelsTool.xml" />
-     <!--<tool file="proto/hyperbrowser/hgsuite/CountAvgSegmentLengthAndBpOverlapTool.xml" />-->
-  </section>
+  <!--<section name="Statistical analysis of hGSuites" id="12analysis_hGsuite" >-->
+    <!--<label text="for hGSuites" id="hgsuite_analysis_2"/>-->
+    <!--<tool file="proto/hyperbrowser/hgsuite/MixModelsTool.xml" />-->
+     <!--&lt;!&ndash;<tool file="proto/hyperbrowser/hgsuite/CountAvgSegmentLengthAndBpOverlapTool.xml" />&ndash;&gt;-->
+  <!--</section>-->
 
   <section name="Visual analysis" id="13visual_analysis_hGsuite" >
     <tool file="proto/hyperbrowser/hgsuite/PlotMetadataValuesOfTabularFileTool.xml" />

@@ -17,6 +17,9 @@ from quick.statistic.PairedTSStat import PairedTSStat
 from quick.statistic.RawOverlapAllowSingleTrackOverlapsStat import \
     RawOverlapAllowSingleTrackOverlapsStat
 from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTracksTS
+from quick.statistic.StatFacades import ObservedVsExpectedStat
+from quick.statistic.SummarizedInteractionWithOtherTracksV2Stat import \
+    SummarizedInteractionWithOtherTracksV2Stat
 from quick.util import TrackReportCommon
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticJS import Cube
@@ -37,7 +40,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED=MAX_NUM_OF_COLS_IN_GSUITE+2
     MERGED_SIGN = ' - '
     PHRASE = '-- SELECT --'
-    STAT_LIST = {'Coverage': STAT_OVERLAP_COUNT_BPS}
+    STAT_LIST = {'Overlap': STAT_OVERLAP_COUNT_BPS, 'Forbes coefficient': 'Forbes coefficient'}
     FIRST_GSUITE = 'First GSuite'
     SECOND_GSUITE = 'Second GSuite'
     SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max', 'raw': 'raw'}
@@ -566,11 +569,11 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         mainOptionList, optionList = cls.getPreselectedOptions(choices, preselectedDecision)
 
-        # print 'mainOptionList', mainOptionList, '<br>'
-        # print 'optionList', optionList, '<br>'
+        print 'mainOptionList', mainOptionList, '<br>'
+        print 'optionList', optionList, '<br>'
 
-        # print 'ifAnyElements', ifAnyElements, '<br>'
-        # print 'which groups', whichGroups, '<br>'
+        print 'ifAnyElements', ifAnyElements, '<br>'
+        print 'which groups', whichGroups, '<br>'
         selectedAnalysis, statIndex = cls.addStat(choices, statList)
 
         resultsDict = cls.countStat(analysisBins, selectedAnalysis,
@@ -923,6 +926,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def addStat(cls, choices, statList):
+        print 'aa', '<br>'
+        print 'statList', statList, '<br>'
         selectedAnalysis = []
         for a in statList:
             if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
@@ -935,6 +940,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     analysisSpec.addParameter('pairedTsRawStatistic',
                                               RawOverlapAllowSingleTrackOverlapsStat.__name__)
                 selectedAnalysis.append(analysisSpec)
+            if cls.STAT_LIST[a] == 'Forbes coefficient':
+                statIndex = 10
+                analysisSpec = AnalysisSpec(SummarizedInteractionWithOtherTracksV2Stat)
+                analysisSpec.addParameter('pairwiseStatistic', 'ObservedVsExpectedStat')
+                analysisSpec.addParameter('reverse', 'No')
+                analysisSpec.addParameter("summaryFunc", 'raw')
+                print 'bb'
+                selectedAnalysis.append(analysisSpec)
+
         return selectedAnalysis, statIndex
 
     # print summarizeTable([['ata', '1 - 243-2--eta-.bed--TG', 863], ['ata', '1 - 243-2--eta-.bed--TA', 781]], [-1, -1, -2])
@@ -957,17 +971,17 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                   columnOptionsDict):
         resultsDict = OrderedDict()
 
-        # print 'analysisBins', analysisBins, '<br>'
-        # print 'selectedAnalysis', selectedAnalysis, '<br>'
-        # print 'statIndex', statIndex, '<br>'
-        # print 'whichGroups', whichGroups, '<br>'
-        # print 'statList', statList, '<br>'
-        # print 'summarize', summarize, '<br>', '<br>', '<br>'
+        print 'analysisBins', analysisBins, '<br>'
+        print 'selectedAnalysis', selectedAnalysis, '<br>'
+        print 'statIndex', statIndex, '<br>'
+        print 'whichGroups', whichGroups, '<br>'
+        print 'statList', statList, '<br>'
+        print 'summarize', summarize, '<br>', '<br>', '<br>'
 
         summarize = 'raw'
         for saNum, sa in enumerate(selectedAnalysis):
             stat = statList[saNum]
-            # print stat, statList, saNum
+
             if not stat in resultsDict.keys():
                 resultsDict[stat] = OrderedDict()
             if not cls.SUMMARIZE[summarize] in resultsDict[stat].keys():
@@ -984,31 +998,18 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
                 # print 'group', groupKey, len(groupItem)
                 for gi in groupItem:
+                    print 'aa'
                     result = doAnalysis(sa, analysisBins, gi)
-                    # print result, result.getGlobalResult(), result.getGlobalResult()['Result']
                     res = result.getGlobalResult()['Result']
                     allResults = res.getResult()
-                    # queryTrack = res.getTrackStructure()['query'].track
                     queryTrackTitle = res.getTrackStructure()['query'].metadata['title']
-                    # refTrack = res.getTrackStructure()['reference'].track
                     refTrackTitle = res.getTrackStructure()['reference'].metadata['title']
+                    if stat == 'Forbes coefficient':
+                        print allResults
+                        resVal = int(allResults[0])
+                    else:
+                        resVal = int(allResults['Both'])
 
-                    # IS there a bug ? - consult it with GKS
-                    # print 'allResults', allResults
-                    # print 'statIndex', statIndex
-                    # print 'processResult(allResults)', processResult(allResults)
-                    # resVal = processResult(allResults)[statIndex]
-                    resVal = int(allResults['Both'])
-                    # print sa, queryTrackTitle, refTrackTitle, resVal
-
-                    # print [queryTrackTitle, refTrackTitle, resVal], '<br>'
-
-                    # if cls.SUMMARIZE[summarize] == 'no':
-                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
-                    #         [queryTrackTitle, refTrackTitle, resVal])
-                    # else:
-                    #     # groupKey = cls.changeOptions(columnOptionsDict, groupKey)
-                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(resVal)
                     if cls.SUMMARIZE[summarize] == 'raw':
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
                             [queryTrackTitle, refTrackTitle, resVal])
