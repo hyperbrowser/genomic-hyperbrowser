@@ -12,7 +12,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Divide tracks in gSuite according to the phrase in the title column and create hierarchical gSuite"
+        return "Create hGSuite based on phrases in title column in tracks"
 
     @classmethod
     def getInputBoxNames(cls):

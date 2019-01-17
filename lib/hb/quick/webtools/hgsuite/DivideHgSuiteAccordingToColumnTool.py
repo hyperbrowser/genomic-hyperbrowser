@@ -28,7 +28,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Divide hGSuite"
+        return "Divide/Filter hGSuite according to metadata"
 
     @classmethod
     def getInputBoxNames(cls):

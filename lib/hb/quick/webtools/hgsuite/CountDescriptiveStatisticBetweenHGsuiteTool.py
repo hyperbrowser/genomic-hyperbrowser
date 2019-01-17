@@ -569,11 +569,11 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         mainOptionList, optionList = cls.getPreselectedOptions(choices, preselectedDecision)
 
-        print 'mainOptionList', mainOptionList, '<br>'
-        print 'optionList', optionList, '<br>'
-
-        print 'ifAnyElements', ifAnyElements, '<br>'
-        print 'which groups', whichGroups, '<br>'
+        # print 'mainOptionList', mainOptionList, '<br>'
+        # print 'optionList', optionList, '<br>'
+        #
+        # print 'ifAnyElements', ifAnyElements, '<br>'
+        # print 'which groups', whichGroups, '<br>'
         selectedAnalysis, statIndex = cls.addStat(choices, statList)
 
         resultsDict = cls.countStat(analysisBins, selectedAnalysis,
@@ -906,7 +906,6 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         res[d[0]][d[1]] = 0
                     res[d[0]][d[1]] = d[2]
 
-            print 'res', res
 
             header = ['Tracks'] + res[res.keys()[0]].keys()
             resTab = []
@@ -926,8 +925,6 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def addStat(cls, choices, statList):
-        print 'aa', '<br>'
-        print 'statList', statList, '<br>'
         selectedAnalysis = []
         for a in statList:
             if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
@@ -946,7 +943,6 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 analysisSpec.addParameter('pairwiseStatistic', 'ObservedVsExpectedStat')
                 analysisSpec.addParameter('reverse', 'No')
                 analysisSpec.addParameter("summaryFunc", 'raw')
-                print 'bb'
                 selectedAnalysis.append(analysisSpec)
 
         return selectedAnalysis, statIndex
@@ -971,12 +967,12 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                   columnOptionsDict):
         resultsDict = OrderedDict()
 
-        print 'analysisBins', analysisBins, '<br>'
-        print 'selectedAnalysis', selectedAnalysis, '<br>'
-        print 'statIndex', statIndex, '<br>'
-        print 'whichGroups', whichGroups, '<br>'
-        print 'statList', statList, '<br>'
-        print 'summarize', summarize, '<br>', '<br>', '<br>'
+        # print 'analysisBins', analysisBins, '<br>'
+        # print 'selectedAnalysis', selectedAnalysis, '<br>'
+        # print 'statIndex', statIndex, '<br>'
+        # print 'whichGroups', whichGroups, '<br>'
+        # print 'statList', statList, '<br>'
+        # print 'summarize', summarize, '<br>', '<br>', '<br>'
 
         summarize = 'raw'
         for saNum, sa in enumerate(selectedAnalysis):
@@ -987,26 +983,18 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             if not cls.SUMMARIZE[summarize] in resultsDict[stat].keys():
                 resultsDict[stat][cls.SUMMARIZE[summarize]] = OrderedDict()
             for groupKey, groupItem in whichGroups.iteritems():
-
-                # if cls.SUMMARIZE[summarize] != 'no':
-                    # print 'groupKey----b', groupKey, '<br>'
                 groupKey = cls.changeOptions(columnOptionsDict, groupKey)
-                    # print 'groupKey----a', groupKey, '<br>'
-
                 if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
                     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
 
-                # print 'group', groupKey, len(groupItem)
                 for gi in groupItem:
-                    print 'aa'
                     result = doAnalysis(sa, analysisBins, gi)
                     res = result.getGlobalResult()['Result']
                     allResults = res.getResult()
                     queryTrackTitle = res.getTrackStructure()['query'].metadata['title']
                     refTrackTitle = res.getTrackStructure()['reference'].metadata['title']
                     if stat == 'Forbes coefficient':
-                        print allResults
-                        resVal = int(allResults[0])
+                        resVal = float(allResults[0])
                     else:
                         resVal = int(allResults['Both'])
 
