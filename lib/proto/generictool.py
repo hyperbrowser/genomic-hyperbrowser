@@ -131,7 +131,7 @@ class GenericToolController(BaseToolController):
 
     def _getIdxList(self, inputList):
         idxList = []
-        if inputList == None:
+        if inputList is None:
             idxList = range(len(self.inputIds))
         else:
             for i in inputList:
@@ -241,8 +241,6 @@ class GenericToolController(BaseToolController):
         return pickle.loads(str(self.cachedOptions[id]))
 
     def getOptionsBox(self, id, i, val):
-        #print id, '=', val, 'cache=', self.cachedParams[id] if id in self.cachedParams else 'NOT'
-        
         if self.input_changed or id not in self.cachedParams:
             opts, info = self._getOptionsBox(i, val)
             self.input_changed = True
@@ -262,7 +260,6 @@ class GenericToolController(BaseToolController):
         self.inputInfo.append(info)
         return opts
 
-
     def action(self):
         self.options = []
         reset = self.resetAll
@@ -281,7 +278,7 @@ class GenericToolController(BaseToolController):
             if reset and not self.initChoicesDict:
                 val = None
 
-            if opts == None:
+            if opts is None:
                 self.inputTypes += [None]
                 val = None
 
@@ -321,12 +318,12 @@ class GenericToolController(BaseToolController):
 
                 elif opts == '__password__':
                     self.inputTypes += ['__password__']
-                    if val == None:
+                    if val is None:
                         val = ''
 
                 else:
                     self.inputTypes += ['text']
-                    if val == None:
+                    if val is None:
                         val = opts
                     opts = (val, 1, False)
 
@@ -334,13 +331,13 @@ class GenericToolController(BaseToolController):
                 if opts[0] == '__history__':
                     self.inputTypes += opts[:1]
                     opts = self.galaxy.optionsFromHistoryFn(exts = opts[1:] if len(opts)>1 else None, select = val)
-                    if val == None and opts and len(opts[1]) > 0:
+                    if val is None and opts and len(opts[1]) > 0:
                         val = opts[1][0]
                     #opts = self.galaxy.getHistory(GalaxyInterface.getSupportedGalaxyFileFormats())
                 elif opts[0] == '__toolhistory__':
                     self.inputTypes += opts[:1]
                     opts = self.galaxy.optionsFromHistoryFn(tools = opts[1:] if len(opts)>1 else None, select = val)
-                    if val == None and opts and len(opts[1]) > 0:
+                    if val is None and opts and len(opts[1]) > 0:
                         val = opts[1][0]
                 elif opts[0] == '__multihistory__':
                     self.inputTypes += opts[:1]
@@ -375,7 +372,7 @@ class GenericToolController(BaseToolController):
                                 #display_only = True
                             else:
                                 self.inputTypes += ['text']
-                                if val == None:
+                                if val is None:
                                     val = opts[0]
                     else:
                         self.inputTypes += ['rawStr']
@@ -399,7 +396,7 @@ class GenericToolController(BaseToolController):
 
                 else:
                     self.inputTypes += ['select']
-                    if len(opts) > 0 and (val == None or val not in opts):
+                    if len(opts) > 0 and (val is None or val not in opts):
                         val = opts[0]
 
             elif isinstance(opts, bool):
@@ -408,7 +405,7 @@ class GenericToolController(BaseToolController):
 
             #elif isinstance(opts, list) and len(opts) == 0:
             #    self.inputTypes += ['text']
-            #    if val == None:
+            #    if val is None:
             #        val = ''
 
             self.displayValues.append(val if isinstance(val, basestring) else repr(val))
@@ -642,9 +639,9 @@ class GenericToolController(BaseToolController):
                     val = demo[i]
                 url += '&' + id + '=' + val
         except Exception, e:
-            log.exception(e)
-            log.debug(i)
-            log.debug(repr(demo))
+            # log.exception(e)
+            # log.debug(i)
+            # log.debug(repr(demo))
             url = None
 
         return url
@@ -655,7 +652,8 @@ class GenericToolController(BaseToolController):
             if len(demo) > 0:
                 return True
         except Exception, e:
-            log.exception(e)
+            pass
+            # log.exception(e)
         return False
 
     def getFullExampleURL(self):
