@@ -1,7 +1,7 @@
 from os import makedirs, mkdir
 from random import randint
 
-from proto.HtmlUtil import generateHtmlFileBrowserRootPage
+from proto.HtmlUtil import generateHtmlFileBrowserForGalaxyFilesDir
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
@@ -65,11 +65,8 @@ class ProtoGuiTestTool7(GeneralGuiTool):
                 with cls._createFile(galaxyFn, path) as curFile:
                     curFile.write(cls._generateRandomString(cls.MIN_FILESIZE, cls.MAX_FILESIZE))
 
-        fileBrowserRootContents = \
-            generateHtmlFileBrowserRootPage(galaxyFn, rootPageFileName='')
-
-        with open(galaxyFn, 'w') as datasetFile:
-            datasetFile.write(fileBrowserRootContents)
+        rootFile = generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=False)
+        print rootFile.getLink('File browser')
 
     @classmethod
     def _createFile(cls, galaxyFn, path):
@@ -140,7 +137,7 @@ class ProtoGuiTestTool7(GeneralGuiTool):
 
     @classmethod
     def getOutputFormat(cls, choices):
-        return 'customhtml'
+        return 'html'
 
     # @classmethod
     # def getOutputName(cls, choices=None):

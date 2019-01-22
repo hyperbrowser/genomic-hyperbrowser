@@ -10,35 +10,51 @@ from proto.StaticFile import GalaxyRunSpecificFile
 FILE_BROWSER_FILENAME = 'files.html'
 
 
-def generateHtmlFileBrowserRootPage(galaxyFn, rootPageFileName):
+def generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=False):
+    """
+    Generates a HTML-based file browser that provides a clickable overview of all the result files
+    in the "dataset_123_files" directory connected to a Galaxy history element. This folder 
+    contains all the result files except the main output (which is in the galaxyFn dataset file).
+    The file browser is written into a set of files named '{}', one in each directory.
+    :param galaxyFn: Path to Galaxy dataset file (e.g. "/path/to/dataset_123.dat").
+    :param writeRootPageToGalaxyFn: If True, write root HTML page to main dataset file (galaxyFn).
+    :return: GalaxyRunSpecificFile object pointing to the newly created root HTML page (named 
+        '{}'). If writeRootPageToGalaxyFn is set to True, None is returned.
+    """.format(FILE_BROWSER_FILENAME, FILE_BROWSER_FILENAME)
 
     # Helper functions
 
-    def _addHeader(core, dirpath, rootDir):
-        reldirpath = os.path.abspath(dirpath)[len(os.path.abspath(rootDir)):]
-        if not reldirpath:
-            reldirpath = '/'
-        core.header('File browser for result directory: "{}"'.format(reldirpath))
+    def _addHeader(core, dirPath, rootDir):
+        relDirPath = os.path.abspath(dirPath)[len(os.path.abspath(rootDir)):]
+        if not relDirPath:
+            relDirPath = '/'
+        core.header('File browser for result directory: "{}"'.format(relDirPath))
 
-    def _addUpOneDirLinkIfNotRoot(core, dirpath, rootDir, rootPageFileName):
-        if not isSamePath(dirpath, rootDir):
-            if isSamePath(os.path.join(dirpath, '..'), rootDir):
-                upOneDirPageFn = rootPageFileName
+    def _addUpOneDirLinkIfNotRoot(core, dirPath, rootDir, writeRootPageToGalaxyFn):
+        if not isSamePath(dirPath, rootDir):
+            if isSamePath(os.path.join(dirPath, '..'), rootDir):
+                upOneDirPageFn = FILE_BROWSER_FILENAME if not writeRootPageToGalaxyFn else ''
             else:
                 upOneDirPageFn = FILE_BROWSER_FILENAME
             upOneDirLink = str(HtmlCore().link('< Up one directory', '../' + upOneDirPageFn))
             core.paragraph(upOneDirLink)
 
+    def _addLinkToMainDatasetIfRootAndSeparateFile(core, dirPath,
+                                                   rootDir, writeRootPageToGalaxyFn):
+        if isSamePath(dirPath, rootDir) and not writeRootPageToGalaxyFn:
+            mainDatasetLink = str(HtmlCore().link('< Back to main dataset', '/.'))
+            core.paragraph(mainDatasetLink)
+
     def _addTableHeader(core):
         core.tableHeader(['Name', 'Date Modified', 'Size'],
                          tableClass='auto_width colored bordered')
 
-    def _addTableLines(core, dirpath, dirnames, filenames):
-        filesAndDirs = sorted(zip(dirnames + filenames,
-                                  [True] * len(dirnames) + [False] * len(filenames)))
+    def _addTableLines(core, dirPath, dirNames, fileNames):
+        filesAndDirs = sorted(zip(dirNames + fileNames,
+                                  [True] * len(dirNames) + [False] * len(fileNames)))
 
         for i, (item, isDir) in enumerate(filesAndDirs):
-            fullItemPath = os.path.join(dirpath, item)
+            fullItemPath = os.path.join(dirPath, item)
             core.tableLine(
                 [_getNameContent(isDir, item, fullItemPath),
                  _getLastModifiedDateContent(fullItemPath),
@@ -62,28 +78,32 @@ def generateHtmlFileBrowserRootPage(galaxyFn, rootPageFileName):
     def _getSizeContent(fullItemPath, isDir):
         return '&lt;dir&gt;' if isDir else humanize.naturalsize(os.path.getsize(fullItemPath))
 
-    def _writeCoreToFileBrowserFile(core, dirpath):
-        htmlPagePath = os.path.abspath(os.path.join(dirpath, FILE_BROWSER_FILENAME))
-        with open(htmlPagePath, 'w') as htmlPage:
-            htmlPage.write(str(core))
+    def _determineOutputFilePath(galaxyFn, dirPath, rootDir, writeRootPageToGalaxyFn):
+        if isSamePath(dirPath, rootDir) and writeRootPageToGalaxyFn:
+            return galaxyFn
+        else:
+            return os.path.abspath(os.path.join(dirPath, FILE_BROWSER_FILENAME))
+
 
     # Main function
 
     rootDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
 
-    for dirpath, dirnames, filenames in os.walk(rootDir):
+    for dirPath, dirNames, fileNames in os.walk(rootDir):
         core = HtmlCore()
         core.begin()
-        _addHeader(core, dirpath, rootDir)
-        _addUpOneDirLinkIfNotRoot(core, dirpath, rootDir, rootPageFileName)
+        _addHeader(core, dirPath, rootDir)
+        _addUpOneDirLinkIfNotRoot(core, dirPath, rootDir, writeRootPageToGalaxyFn)
+        _addLinkToMainDatasetIfRootAndSeparateFile(core, dirPath, rootDir,
+                                                   writeRootPageToGalaxyFn)
         _addTableHeader(core)
-        _addTableLines(core, dirpath, dirnames, filenames)
+        _addTableLines(core, dirPath, dirNames, fileNames)
         core.tableFooter()
         core.end()
 
-        if not isSamePath(dirpath, rootDir):
-            _writeCoreToFileBrowserFile(core, dirpath)
-        else:
-            rootContents = str(core)
+        outputPath = _determineOutputFilePath(galaxyFn, dirPath, rootDir, writeRootPageToGalaxyFn)
+        with open(outputPath, 'w') as outputPage:
+            outputPage.write(str(core))
 
-    return rootContents
+    return GalaxyRunSpecificFile([FILE_BROWSER_FILENAME], galaxyFn) \
+        if not writeRootPageToGalaxyFn else None
