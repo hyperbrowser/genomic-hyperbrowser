@@ -1,7 +1,7 @@
 from os import makedirs, mkdir
 from random import randint
 
-from proto.HtmlUtil import generateHtmlFileBrowserForGalaxyFilesDir
+from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 

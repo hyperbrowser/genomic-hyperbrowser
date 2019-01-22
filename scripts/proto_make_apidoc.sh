@@ -15,7 +15,7 @@ cp proto/tools/ToolTemplate.py proto/tools/ToolTemplate.py.orig
 sed -i 's/    # /    /g' proto/tools/ToolTemplate.py
 sed -i 's/    #//g' proto/tools/ToolTemplate.py
 
-EXCLUDE_PATHS=$(find proto \( -path proto/doc -o -path proto/__init__.py -o -path proto/config/__init__.py -o -path proto/tools/__init__.py -o -path proto/CommonFunctions.py -o -path proto/HtmlCore.py -o -path proto/TextCore.py -o -path proto/TableCoreMixin.py -o -path proto/RSetup.py -o -path proto/StaticFile.py -o -path proto/config/Config.py -o -path proto/tools/ToolTemplate.py \) -prune -o -name "*.py" -print)
+EXCLUDE_PATHS=$(find proto \( -path proto/doc -o -path proto/__init__.py -o -path proto/config/__init__.py -o -path proto/tools/__init__.py -o -path proto/CommonFunctions.py -o -path proto/HtmlCore.py -o -path proto/FileBrowser.py -o -path proto/TextCore.py -o -path proto/TableCoreMixin.py -o -path proto/RSetup.py -o -path proto/StaticFile.py -o -path proto/config/Config.py -o -path proto/tools/ToolTemplate.py \) -prune -o -name "*.py" -print)
 sphinx-apidoc -e -o $PROTO_DOC_DIR proto/ proto/doc $EXCLUDE_PATHS
 
 cd $PROTO_DOC_DIR

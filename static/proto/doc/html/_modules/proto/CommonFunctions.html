@@ -354,6 +354,10 @@
             <span class="n">colNames</span> <span class="o">=</span> <span class="p">[</span><span class="n">firstColName</span><span class="p">]</span> <span class="o">+</span> <span class="n">val1</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="n">convertedDataDict</span><span class="p">[</span><span class="n">key1</span><span class="p">]</span> <span class="o">=</span> <span class="n">val1</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">convertedDataDict</span><span class="p">,</span> <span class="n">colNames</span></div>
+
+
+<div class="viewcode-block" id="isSamePath"><a class="viewcode-back" href="../../proto.CommonFunctions.html#proto.CommonFunctions.isSamePath">[docs]</a><span class="k">def</span> <span class="nf">isSamePath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">otherPath</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">otherPath</span><span class="p">)</span></div>
 </pre></div>
 
       </div>
