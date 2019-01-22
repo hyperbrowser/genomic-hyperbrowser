@@ -232,10 +232,10 @@ class GenericToolController(BaseToolController):
         self.cachedExtra[id] = pickle.dumps(data)
 
     def getCacheData(self, id):
-        return pickle.loads(b64decode(str(self.cachedExtra[id])))
+        return pickle.loads(str(self.cachedExtra[id]))
 
     def putCachedOption(self, id, data):
-        self.cachedOptions[id] = b64encode(pickle.dumps(data))
+        self.cachedOptions[id] = pickle.dumps(data)
 
     def getCachedOption(self, id):
         return pickle.loads(str(self.cachedOptions[id]))
@@ -249,15 +249,15 @@ class GenericToolController(BaseToolController):
         else:
             try:
                 opts, info = self.getCachedOption(id)
-                #print 'from cache:',id
-                self.input_changed = (val != self.cachedParams[id])
+                self.input_changed = False  # Temporarily. Full check towards end of action()
+                # print 'Loaded options from cache. id: {}, opts: {}, info: {}'.format(
+                #     id, opts, info)
             except Exception as e:
-                # print 'cache load failed for id "%s": %s' % (id, e)
+                # print 'Cache load failed for id "%s": %s' % (id, e)
                 opts, info = self._getOptionsBox(i, val)
                 self.input_changed = True
         
-        #print repr(opts)
-        self.cachedParams[id] = val
+        # self.cachedParams[id] = val
         self.putCachedOption(id, (opts, info))
         self.inputInfo.append(info)
         return opts
@@ -420,6 +420,16 @@ class GenericToolController(BaseToolController):
                 self.oldValues[id] = val
                 if val != oldval:
                     reset = True
+
+            if not self.input_changed:
+                if val or self.cachedParams[id]:
+                    self.input_changed = (val != self.cachedParams[id])
+                # print 'Loaded values from cache. id: {}, val: {}, cached: {}, ' \
+                #       'input changed: {}'.format(
+                #     id, val, self.cachedParams[id], self.input_changed)
+
+            # print "Caching.. id: {}, val: {}".format(id, val)
+            self.cachedParams[id] = val
 
         ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds)
         self.choices = ChoiceTuple._make(self.inputValues)
