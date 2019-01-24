@@ -181,7 +181,7 @@ An overview of the methods are available from [StaticFile.html](https://elixir-n
 #### Adding result file browser
 Galaxy ProTo contains support for generating a HTML-based file browser to browse the result files from a job. The file browser is essentially a set of simple HTML pages, one per result directory. To create the file browser, one has two possibilities:
 
-  i. Printing the file browser as the main output in the history:
+  i. Printing the file browser start page as the main output in the history:
 ```python
 from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
 
@@ -192,7 +192,7 @@ def execute(cls, choices, galaxyFn=None, username=''):
 
     generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=True)
 ```
-  ii. Printing the file browser as separate HTML page and add as a link in the main output in the history:
+  ii. Printing the file browser start page as separate HTML page and add as a link in the main output in the history:
 ```python
 from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
 
