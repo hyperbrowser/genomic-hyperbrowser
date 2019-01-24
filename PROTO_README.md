@@ -398,6 +398,7 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v1.2: Added result file browser. Fixed bug in Explore ProTo tool. Fixed job rerun bug. Added support for Unicode. Various small fixes and cleanup.
 * v1.1: Updated to Galaxy version 17.09. Implemented Conda support. Cleaned up Sphinx documentation.
 * v1.0.3: Small fixes to extra history element creation.
 * v1.0.2: Created first version of Galaxy ProTo API documentation using Sphinx.
