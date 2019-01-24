@@ -14,6 +14,7 @@
       * [Extra output files linked from the main HTML output](#extra-output-files-linked-from-the-main-html-output)
       * [Running R code](#running-r-code)
       * [More than one output history element](#more-than-one-output-history-element)
+      * [Adding result file browser](#adding-result-file-browser)
       * [Storing state information](#storing-state-information)
       * [Variable number of option boxes](#variable-number-of-option-boxes)
       * [Use class constants to store selection box text](#use-class-constants-to-store-selection-box-text)
@@ -176,6 +177,33 @@ with open(galaxyFn, 'w') as outFile:
 ```
 
 An overview of the methods are available from [StaticFile.html](https://elixir-no-nels.github.io/proto/html/proto.StaticFile.html), but not yet with detailed documentation.
+
+#### Adding result file browser
+Galaxy ProTo contains support for generating a HTML-based file browser to browse the result files from a job. The file browser is essentially a set of simple HTML pages, one per result directory. To create the file browser, one has two possibilities:
+
+  i. Printing the file browser as the main output in the history:
+```python
+from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
+
+@classmethod
+def execute(cls, choices, galaxyFn=None, username=''):
+    
+    # (... Some code to generate result files ...)
+
+    generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=True)
+```
+  ii. Printing the file browser as separate HTML page and add as a link in the main output in the history:
+```python
+from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
+
+@classmethod
+def execute(cls, choices, galaxyFn=None, username=''):
+    
+    # (... Some code to generate result files ...)
+
+    rootFile = generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=False)
+    print rootFile.getLink('File browser')
+```
 
 #### Running R code
 Galaxy ProTo includes support for running `R` code via the `rpy2` Python package. If `R` is available when starting up Galaxy ProTo, `rpy2` is automatically installed. However, `R` is not a mandatory dependency for Galaxy ProTo; the rest of the functionality still works without `R` installed.
