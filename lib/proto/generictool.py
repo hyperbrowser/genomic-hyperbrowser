@@ -9,6 +9,8 @@ from zlib import compress, decompress
 from base64 import urlsafe_b64decode, urlsafe_b64encode, b64encode, b64decode
 from collections import namedtuple, OrderedDict, defaultdict
 from urllib import quote, unquote
+
+from proto.CommonFunctions import makeUnicode
 from proto.tools.GeneralGuiTool import HistElement
 from proto.HtmlCore import HtmlCore
 from proto.config.Config import URL_PREFIX, GALAXY_BASE_DIR
@@ -127,7 +129,7 @@ class GenericToolController(BaseToolController):
             else:
                 id = 'box' + str(1 + i)
             self.inputIds.append(id)
-            self.inputNames.append(name)
+            self.inputNames.append(makeUnicode(name))
 
     def _getIdxList(self, inputList):
         idxList = []
@@ -295,10 +297,8 @@ class GenericToolController(BaseToolController):
                 if not self.initChoicesDict:
                     values = type(opts)()
                     for k,v in opts.items():
-                        #values[k] = bool(self.params.get(id + '|' + k, False if val else v))
-                        # print repr(k.encode('utf8')), self.params
-
-                        values[unicode(k)] = bool(self.params.get(id + '|' + k.encode('utf8'), False) if val else v)
+                        # values[k] = bool(self.params.get(id + '|' + k, False if val else v))
+                        values[unicode(k)] = bool(self.params.get(id + '|' + k.encode('utf-8'), False) if val else v)
                     val = values
 
             elif isinstance(opts, basestring):
@@ -307,10 +307,8 @@ class GenericToolController(BaseToolController):
                     try:
                         genomeCache = self.getCacheData(id)
                     except Exception as e:
-                        #raise e
-                        print 'genome cache empty', e
+                        # print 'genome cache empty', e
                         genomeCache = self._getAllGenomes()
-                        #print genomeCache
                         self.putCacheData(id, genomeCache)
                         
                     opts = self.getGenomeElement(id, genomeCache)
@@ -349,7 +347,7 @@ class GenericToolController(BaseToolController):
                     if not self.initChoicesDict:
                         values = OrderedDict()
                         for k,v in opts.items():
-                            itemval = self.params.get(id + '|' + k.encode('utf8'), None)
+                            itemval = self.params.get(id + '|' + k.encode('utf-8'), None)
                             #if itemval:
                             values[unicode(k)] = itemval
 
@@ -400,7 +398,7 @@ class GenericToolController(BaseToolController):
 
                 else:
                     self.inputTypes += ['select']
-                    if len(opts) > 0 and (val is None or val not in opts):
+                    if len(opts) > 0 and (val is None or makeUnicode(val) not in opts):
                         val = opts[0]
 
             elif isinstance(opts, bool):
@@ -412,8 +410,8 @@ class GenericToolController(BaseToolController):
             #    if val is None:
             #        val = ''
 
-            self.displayValues.append(val if isinstance(val, basestring) else repr(val))
-            self.inputValues.append(None if display_only else val)
+            self.displayValues.append(makeUnicode(val) if isinstance(val, basestring) else repr(val))
+            self.inputValues.append(None if display_only else makeUnicode(val))
             self.options.append(opts)
 
             oldval = self.oldValues[id] if id in self.oldValues else None
@@ -424,12 +422,12 @@ class GenericToolController(BaseToolController):
 
             if not self.input_changed:
                 if val or self.cachedParams[id]:
-                    self.input_changed = (val != self.cachedParams[id])
+                    self.input_changed = (makeUnicode(val) != makeUnicode(self.cachedParams[id]))
                 # print u'Loaded values from cache. id: {}, val: {}, cached: {}, ' \
                 #       u'input changed: {}'.format(
-                #           id, val, self.cachedParams[id], self.input_changed).encode('utf8')
+                #           id, repr(val), repr(self.cachedParams[id]), self.input_changed)
 
-            # print "Caching.. id: {}, val: {}".format(id, val)
+            # print "Caching.. id: {}, val: {}".format(id, repr(val))
             self.cachedParams[id] = val
 
         ChoiceTuple = namedtuple('ChoiceTuple', self.inputIds)
@@ -521,7 +519,7 @@ class GenericToolController(BaseToolController):
 #             if isinstance(opts, bool):
 #                 choice = True if choice == "True" else False
 
-            self.inputValues.append(choice)
+            self.inputValues.append(makeUnicode(choice))
 
         # if self.params.has_key('Track_state'):
         #     self.inputValues.append(unquote(self.params['Track_state']))

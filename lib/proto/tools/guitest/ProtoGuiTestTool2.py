@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from proto.CommonFunctions import makeUnicode
 from proto.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
@@ -36,11 +37,10 @@ GUI_ELEMENTS_ORDER = [
 
 A = 'A'
 B = 'B'
-C = 'C'
+C = u'\xc5'
 DEFAULT_TEXT = 'Default text'
 READ_ONLY_TEXT = "Read only text"
 CHECK_BOX_LIST = OrderedDict([('Something', True), ('Something else', False)])
-
 OUTPUT_TO_VALIDATION = 'Output to validation box'
 OUTPUT_TO_HISTORY = 'Output to new history element'
 
@@ -227,7 +227,7 @@ class ProtoGuiTestTool2(GeneralGuiTool):
         if prevChoices.passwordField:
             core = HtmlCore()
             core.descriptionLine('Password written', prevChoices.passwordField)
-            return '__rawstr__', str(core)
+            return '__rawstr__', unicode(core)
 
     @classmethod
     def getOptionsBoxHistorySelectionTabular(cls, prevChoices):

@@ -153,7 +153,7 @@ class GalaxyWrapper:
 
     def makeHistoryOptionName(self, dataset):
         name = dataset.name.replace('[', '(').replace(']', ')')
-        return str(dataset.hid) + quote(' - ' + name.encode('utf8'), safe='')
+        return str(dataset.hid) + quote(' - ' + name.encode('utf-8'), safe='')
 
     def getUserName(self):
         user = self.trans.get_user()

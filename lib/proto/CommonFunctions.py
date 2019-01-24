@@ -2,6 +2,7 @@ import os
 import re
 import urllib
 from collections import OrderedDict
+from numbers import Number
 
 from proto.CommonConstants import THOUSANDS_SEPARATOR
 from proto.config.Config import OUTPUT_PRECISION
@@ -182,7 +183,7 @@ def extractNameFromDatasetInfo(datasetInfo):
         datasetInfo = datasetInfo.split(':')
 
     from urllib import unquote
-    return unquote(str(datasetInfo[-1])).decode('utf8')
+    return unquote(str(datasetInfo[-1])).decode('utf-8')
 
 
 def getSecureIdAndExtFromDatasetInfoAsStr(datasetInfo):
@@ -227,7 +228,7 @@ def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=Non
         urlPrefix = URL_PREFIX
 
     import base64
-    encodedFn = base64.urlsafe_b64encode(GALAXY_SECURITY_HELPER_OBJ.encode_guid(fn.encode('utf8')))
+    encodedFn = base64.urlsafe_b64encode(GALAXY_SECURITY_HELPER_OBJ.encode_guid(fn.encode('utf-8')))
 
     assert galaxyDataType is not None
     return urlPrefix + '/tool_runner?tool_id=file_import' + \
@@ -325,3 +326,12 @@ def fromDictOfDictsToDictOfListsAndColumnNameList(dataDict, firstColName=''):
 
 def isSamePath(path, otherPath):
     return os.path.abspath(path) == os.path.abspath(otherPath)
+
+
+def makeUnicode(obj):
+    if not any(isinstance(obj, x) for x in [basestring, Number, bool]):
+        return obj
+    try:
+        return obj.decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError, AttributeError):
+        return unicode(obj)
