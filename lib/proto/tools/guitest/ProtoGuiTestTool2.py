@@ -14,7 +14,8 @@ ALL_GUI_ELEMENTS = [
     ('Text area (readonly)', 'textAreaReadonly'),
     ('Table', 'table'),
     ('Check box list (only unique values)', 'checkBoxList'),
-    ('Hidden element', 'hidden')
+    ('Hidden element', 'hidden'),
+    ('Output type?', 'outputType')
 ]
 
 # Order is different than
@@ -29,7 +30,8 @@ GUI_ELEMENTS_ORDER = [
     'checkBoxList',
     'hidden',
     'historySelectionTabular',
-    'historyContents'
+    'historyContents',
+    'outputType'
 ]
 
 A = 'A'
@@ -38,6 +40,9 @@ C = 'C'
 DEFAULT_TEXT = 'Default text'
 READ_ONLY_TEXT = "Read only text"
 CHECK_BOX_LIST = OrderedDict([('Something', True), ('Something else', False)])
+
+OUTPUT_TO_VALIDATION = 'Output to validation box'
+OUTPUT_TO_HISTORY = 'Output to new history element'
 
 
 class ProtoGuiTestTool2(GeneralGuiTool):
@@ -283,6 +288,10 @@ class ProtoGuiTestTool2(GeneralGuiTool):
         return '__hidden__', \
                '|'.join([key for key, sel in prevChoices.checkBoxList.iteritems() if sel])
 
+    @classmethod
+    def getOptionsBoxOutputType(cls, prevChoices):
+        return [OUTPUT_TO_VALIDATION, OUTPUT_TO_HISTORY]
+
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -339,7 +348,7 @@ class ProtoGuiTestTool2(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        print cls._getChoicesAsHtml(choices)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -353,6 +362,11 @@ class ProtoGuiTestTool2(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
+        if choices.outputType == OUTPUT_TO_VALIDATION:
+            return cls._getChoicesAsHtml(choices)
+
+    @classmethod
+    def _getChoicesAsHtml(cls, choices):
         core = HtmlCore()
         core.smallHeader('GUI selections (value of prevChoices/choices attributes)')
         for guiElement in ALL_GUI_ELEMENTS:
