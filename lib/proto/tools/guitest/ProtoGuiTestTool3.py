@@ -9,6 +9,10 @@ from proto.tools.GeneralGuiTool import GeneralGuiTool
 
 
 class ProtoGuiTestTool3(GeneralGuiTool):
+    SINGLE_HISTORY_TEXT = 'A single history element'
+    MULTIPLE_HISTORY_TEXT = 'Several history elements'
+    ONE_OR_MANY_SELECTION = [SINGLE_HISTORY_TEXT, MULTIPLE_HISTORY_TEXT]
+
     @classmethod
     def getToolName(cls):
         """
@@ -40,7 +44,9 @@ class ProtoGuiTestTool3(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select input histories', 'histories')]
+        return [('Select one or several histories?', 'oneOrMany'),
+                ('Select input histories', 'histories'),
+                ('Select input history', 'history')]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -73,7 +79,7 @@ class ProtoGuiTestTool3(GeneralGuiTool):
     #     return None
 
     @classmethod
-    def getOptionsBoxHistories(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxOneOrMany(cls):  # Alt: getOptionsBox1()
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -162,23 +168,30 @@ class ProtoGuiTestTool3(GeneralGuiTool):
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return '__multihistory__',
 
-    # @classmethod
-    # def getOptionsBoxSecondKey(cls, prevChoices):  # Alt: getOptionsBox2()
-    #     """
-    #     See getOptionsBoxFirstKey().
-    #
-    #     prevChoices is a namedtuple of selections made by the user in the
-    #     previous input boxes (that is, a namedtuple containing only one element
-    #     in this case). The elements can accessed either by index, e.g.
-    #     prevChoices[0] for the result of input box 1, or by key, e.g.
-    #     prevChoices.key (case 2).
-    #
-    #     Mandatory for the subsequent keys (after the first key) defined in
-    #     getInputBoxNames(), if any.
-    #     """
-    #     return ''
+        return cls.ONE_OR_MANY_SELECTION
+
+    @classmethod
+    def getOptionsBoxHistory(cls, prevChoices):  # Alt: getOptionsBox2()
+        """
+        See getOptionsBoxFirstKey().
+
+        prevChoices is a namedtuple of selections made by the user in the
+        previous input boxes (that is, a namedtuple containing only one element
+        in this case). The elements can accessed either by index, e.g.
+        prevChoices[0] for the result of input box 1, or by key, e.g.
+        prevChoices.key (case 2).
+
+        Mandatory for the subsequent keys (after the first key) defined in
+        getInputBoxNames(), if any.
+        """
+        if prevChoices.oneOrMany == cls.SINGLE_HISTORY_TEXT:
+            return '__history__',
+
+    @classmethod
+    def getOptionsBoxHistories(cls, prevChoices):
+        if prevChoices.oneOrMany == cls.MULTIPLE_HISTORY_TEXT:
+            return '__multihistory__',
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -221,7 +234,7 @@ class ProtoGuiTestTool3(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        if cls._anyHistoriesSelected(choices):
+        if cls._numberOfHistoriesSelected(choices) > 1:
             from proto.tools.GeneralGuiTool import HistElement
             return [HistElement(name=name,
                                 format='customhtml',
@@ -321,7 +334,7 @@ class ProtoGuiTestTool3(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        if not cls._anyHistoriesSelected(choices):
+        if cls._numberOfHistoriesSelected(choices) == 0:
             return "Please select at least one history element"
 
     # @classmethod
@@ -480,13 +493,23 @@ class ProtoGuiTestTool3(GeneralGuiTool):
         Optional method. Default return value if method is not defined:
         the name of the tool.
         """
-        if cls._anyHistoriesSelected(choices):
-            historyName = cls._getNamesForSelectedHistories(choices)[0]
+        if cls._numberOfHistoriesSelected(choices) > 0:
+            print cls._numberOfHistoriesSelected(choices)
+            if choices.oneOrMany == cls.MULTIPLE_HISTORY_TEXT:
+                historyName = cls._getNamesForSelectedHistories(choices)[0]
+            else:
+                historyName = extractNameFromDatasetInfo(choices.history)
             return cls._createHistLabel(historyName)
 
     @classmethod
-    def _anyHistoriesSelected(cls, choices):
-        return any(sel for sel in choices.histories.values())
+    def _numberOfHistoriesSelected(cls, choices):
+        if choices.oneOrMany == cls.MULTIPLE_HISTORY_TEXT:
+            return sum(1 for sel in choices.histories.values() if sel)
+        else:
+            if choices.history:
+                return 1
+            else:
+                return 0
 
     @classmethod
     def _getNamesForSelectedHistories(cls, choices):
@@ -495,7 +518,10 @@ class ProtoGuiTestTool3(GeneralGuiTool):
 
     @classmethod
     def _getDatasetInfoForSelectedHistories(cls, choices):
-        return [val for val in choices.histories.values() if val]
+        if choices.oneOrMany == cls.MULTIPLE_HISTORY_TEXT:
+            return [val for val in choices.histories.values() if val]
+        else:
+            return [choices.history]
 
     @classmethod
     def _cleanUpName(cls, historyName):
