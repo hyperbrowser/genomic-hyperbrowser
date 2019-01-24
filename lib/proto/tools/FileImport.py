@@ -253,6 +253,10 @@ class FileImport(GeneralGuiTool):
         try:
             input = base64.urlsafe_b64decode(input)
             input = GALAXY_SECURITY_HELPER_OBJ.decode_guid(input)
+            try:
+                input = input.decode('utf8')
+            except:
+                pass
         except:
             raise Exception('Old-style "import to history" URLs have been deprecated due to '
                             'security concerns. If you clicked from the output of an analysis '

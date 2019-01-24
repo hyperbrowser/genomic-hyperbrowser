@@ -243,7 +243,7 @@ class ProtoGuiTestTool2(GeneralGuiTool):
                 return '', 10, True
         except Exception, e:
             pass
-        return str(e)
+        return unicode(e)
 
     @classmethod
     def getOptionsBoxCheckBox(cls, prevChoices):
@@ -272,10 +272,10 @@ class ProtoGuiTestTool2(GeneralGuiTool):
     @classmethod
     def getOptionsBoxCheckBoxList(cls, prevChoices):
         return OrderedDict([
-            (str(prevChoices.checkBox), False),
-            (str(prevChoices.selectionBox), False),
-            (str(prevChoices.textAreaReadWrite), True),
-            (str(prevChoices.passwordField), False),
+            (unicode(prevChoices.checkBox), False),
+            (unicode(prevChoices.selectionBox), False),
+            (unicode(prevChoices.textAreaReadWrite), True),
+            (unicode(prevChoices.passwordField), False),
         ])
 
     @classmethod
@@ -358,7 +358,7 @@ class ProtoGuiTestTool2(GeneralGuiTool):
         for guiElement in ALL_GUI_ELEMENTS:
             core.descriptionLine(guiElement[0] + ' [' + guiElement[1] + ']',
                                  repr(getattr(choices, guiElement[1])))
-        return str(core)
+        return unicode(core)
 
     # @classmethod
     # def getSubToolClasses(cls):

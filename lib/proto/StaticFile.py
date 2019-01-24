@@ -38,14 +38,14 @@ class StaticFile(object):
         return os.sep.join([self.STATIC_REL_PATH] + self._id)
 
     def getLink(self, linkText):
-        return str(HtmlCore().link(linkText, self.getURL()))
+        return unicode(HtmlCore().link(linkText, self.getURL()))
         #return '<a href=%s>%s</a>' % (self.getURL(), linkText)
 
     def getEmbeddedImage(self):
-        return str(HtmlCore().image(self.getURL()))
+        return unicode(HtmlCore().image(self.getURL()))
 
     def getLoadToHistoryLink(self, linkText, galaxyDataType='bed'):
-        return str(HtmlCore().link(linkText,
+        return unicode(HtmlCore().link(linkText,
                                    getLoadToGalaxyHistoryURL
                                    (self.getDiskPath(relativeToBase=True),
                                     galaxyDataType=galaxyDataType,

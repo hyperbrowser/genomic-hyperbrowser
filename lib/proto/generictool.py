@@ -219,13 +219,15 @@ class GenericToolController(BaseToolController):
     def encodeCache(self, data):
         if not data:
             return ''
-        return GALAXY_SECURITY_HELPER_OBJ.encode_guid(json.dumps(data))
+        # return GALAXY_SECURITY_HELPER_OBJ.encode_guid(json.dumps(data))
+        return GALAXY_SECURITY_HELPER_OBJ.encode_guid(pickle.dumps(data))
         #return urlsafe_b64encode(compress(json.dumps(data)))
 
     def decodeCache(self, data):
         if not data:
             raise Exception('Nothing to decode')
-        return json.loads(GALAXY_SECURITY_HELPER_OBJ.decode_guid(str(data)))
+        # return json.loads(GALAXY_SECURITY_HELPER_OBJ.decode_guid(unicode(data)))
+        return pickle.loads(GALAXY_SECURITY_HELPER_OBJ.decode_guid(str(data)))
         #return json.loads(decompress(urlsafe_b64decode(str(data))))
 
     def putCacheData(self, id, data):
@@ -294,7 +296,9 @@ class GenericToolController(BaseToolController):
                     values = type(opts)()
                     for k,v in opts.items():
                         #values[k] = bool(self.params.get(id + '|' + k, False if val else v))
-                        values[k] = bool(self.params.get(id + '|' + k , False) if val else v)
+                        # print repr(k.encode('utf8')), self.params
+
+                        values[unicode(k)] = bool(self.params.get(id + '|' + k.encode('utf8'), False) if val else v)
                     val = values
 
             elif isinstance(opts, basestring):
@@ -345,7 +349,7 @@ class GenericToolController(BaseToolController):
                     if not self.initChoicesDict:
                         values = OrderedDict()
                         for k,v in opts.items():
-                            itemval = self.params.get(id + '|' + k, None)
+                            itemval = self.params.get(id + '|' + k.encode('utf8'), None)
                             #if itemval:
                             values[unicode(k)] = itemval
 
@@ -421,9 +425,9 @@ class GenericToolController(BaseToolController):
             if not self.input_changed:
                 if val or self.cachedParams[id]:
                     self.input_changed = (val != self.cachedParams[id])
-                # print 'Loaded values from cache. id: {}, val: {}, cached: {}, ' \
-                #       'input changed: {}'.format(
-                #     id, val, self.cachedParams[id], self.input_changed)
+                # print u'Loaded values from cache. id: {}, val: {}, cached: {}, ' \
+                #       u'input changed: {}'.format(
+                #           id, val, self.cachedParams[id], self.input_changed).encode('utf8')
 
             # print "Caching.. id: {}, val: {}".format(id, val)
             self.cachedParams[id] = val
@@ -435,11 +439,10 @@ class GenericToolController(BaseToolController):
     def _action(self):
         pass
 
-
     def decodeChoice(self, opts, id, choice):
         if opts == '__genome__':
             id = 'dbkey'
-            choice = str(self.params[id]) if self.params.has_key(id) else ''
+            choice = unicode(self.params[id]) if self.params.has_key(id) else ''
 
             #            if isinstance(opts, tuple):
             #                if opts[0] == '__hidden__':

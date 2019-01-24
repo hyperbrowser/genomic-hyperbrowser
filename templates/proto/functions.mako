@@ -53,8 +53,8 @@ import proto.gui as gui
     <fieldset><legend>${label}</legend>
         <a href="javascript:;" id="${name}_check" onclick="$('input.${name}').attr('checked','checked');reloadForm(null, this);">Check all</a>
         <a href="javascript:;" id="${name}_uncheck" onclick="$('input.${name}').removeAttr('checked');reloadForm(null, this)">Uncheck all</a><br/>
-        %for key,value in opts.items():            
-            <label><input onchange="updateMultiChoice(this, '${name}', '${key}', ${history|lower});reloadForm(form, this)" class="${name}" id="${name + '|' + key}" name="${name + '|' + key}" type="checkbox" value="${value if history else 'True'}" ${'checked=checked' if values and values[key] else 'checked=checked' if value and not values else ''}> ${unquote(value.split(':')[3]) if history else key}</label><br/>
+        %for key,value in opts.items():
+            <label><input onchange="updateMultiChoice(this, '${name}', '${key}', ${history|lower});reloadForm(form, this)" class="${name}" id="${name + '|' + key}" name="${name + '|' + key}" type="checkbox" value="${value if history else 'True'}" ${'checked=checked' if values and values[key] else 'checked=checked' if value and not values else ''}> ${unquote(str(value.split(':')[3])).decode('utf8') if history else key}</label><br/>
         %endfor
         <input type="hidden" name="${name}" id="${name}" value="${escape(json.dumps(values), True)}">
     </fieldset>
