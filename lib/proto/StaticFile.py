@@ -44,12 +44,12 @@ class StaticFile(object):
     def getEmbeddedImage(self):
         return unicode(HtmlCore().image(self.getURL()))
 
-    def getLoadToHistoryLink(self, linkText, galaxyDataType='bed'):
-        return unicode(HtmlCore().link(linkText,
-                                   getLoadToGalaxyHistoryURL
-                                   (self.getDiskPath(relativeToBase=True),
-                                    galaxyDataType=galaxyDataType,
-                                    histElementName=self.getId()[-1])))
+    def getLoadToHistoryLink(self, linkText, galaxyDataType='bed', histElementName=None):
+        return unicode(HtmlCore().link(
+            linkText, getLoadToGalaxyHistoryURL(
+                self.getDiskPath(relativeToBase=True),
+                galaxyDataType=galaxyDataType,
+                histElementName=histElementName if histElementName else self.getId()[-1])))
 
     def openRFigure(self, h=600, w=800):
         from proto.RSetup import r
