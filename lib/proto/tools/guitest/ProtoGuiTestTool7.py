@@ -2,6 +2,7 @@ from os import makedirs, mkdir
 from random import randint
 
 from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
+from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.tools.GeneralGuiTool import GeneralGuiTool
 
@@ -18,13 +19,19 @@ class ProtoGuiTestTool7(GeneralGuiTool):
     ALLOWED_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-_'
     FILE_BROWSER_FILENAME = 'files.html'
 
+    AS_MAIN_CHOICE = 'As main dataset'
+    AS_MAIN_LINK_CHOICE = 'As link in main dataset'
+    AS_EXTRA_CHOICE = 'As extra dataset'
+    AS_EXTRA_LINK_CHOICE = 'As link in extra dataset'
+    EXTRA_OUTPUT_TITLE = 'File browser'
+
     @classmethod
     def getToolName(cls):
         return "HTML output with file browser: Test tool #7 for Galaxy ProTo GUI"
 
     @classmethod
     def getInputBoxNames(cls):
-        return []
+        return [('How to output the file browser', 'outputType')]
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -34,9 +41,12 @@ class ProtoGuiTestTool7(GeneralGuiTool):
     # def getInputBoxGroups(cls, choices=None):
     #     return None
     #
-    # @classmethod
-    # def getOptionsBoxFirstKey(cls):
-    #     return ['testChoice1', 'testChoice2', '...']
+    @classmethod
+    def getOptionsBoxOutputType(cls):
+        return [cls.AS_MAIN_CHOICE,
+                cls.AS_MAIN_LINK_CHOICE,
+                cls.AS_EXTRA_CHOICE,
+                cls.AS_EXTRA_LINK_CHOICE]
     #
     # @classmethod
     # def getOptionsBoxSecondKey(cls, prevChoices):
@@ -49,24 +59,57 @@ class ProtoGuiTestTool7(GeneralGuiTool):
     # @classmethod
     # def getDemoSelections(cls):
     #     return ['testChoice1', '..']
-    #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     return None
 
+    @classmethod
+    def getExtraHistElements(cls, choices):
+        if choices.outputType in [cls.AS_EXTRA_CHOICE, cls.AS_EXTRA_LINK_CHOICE]:
+            from proto.tools.GeneralGuiTool import HistElement
+            return [HistElement(cls.EXTRA_OUTPUT_TITLE, 'customhtml')]
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         path = []
 
+        cls._generateRandomDirStructure(galaxyFn, path)
+
+        if choices.outputType == cls.AS_MAIN_CHOICE:
+            generateHtmlFileBrowserForGalaxyFilesDir(
+                crawlDataset=galaxyFn,
+                outputDataset=galaxyFn,
+                returnSeparateRootFile=False
+            )
+        elif choices.outputType == cls.AS_MAIN_LINK_CHOICE:
+            rootFile = generateHtmlFileBrowserForGalaxyFilesDir(
+                crawlDataset=galaxyFn,
+                outputDataset=galaxyFn,
+                returnSeparateRootFile=True
+            )
+            cls._writeDataset(galaxyFn, rootFile)
+        elif choices.outputType == cls.AS_EXTRA_CHOICE:
+            extraDataset = cls.extraGalaxyFn[cls.EXTRA_OUTPUT_TITLE]
+            generateHtmlFileBrowserForGalaxyFilesDir(
+                crawlDataset=galaxyFn,
+                outputDataset=extraDataset,
+                returnSeparateRootFile=False
+            )
+        else:
+            assert choices.outputType == cls.AS_EXTRA_LINK_CHOICE
+            extraDataset = cls.extraGalaxyFn[cls.EXTRA_OUTPUT_TITLE]
+            rootFile = generateHtmlFileBrowserForGalaxyFilesDir(
+                crawlDataset=galaxyFn,
+                outputDataset=extraDataset,
+                returnSeparateRootFile=True
+            )
+            cls._writeDataset(extraDataset, rootFile)
+
+
+    @classmethod
+    def _generateRandomDirStructure(cls, galaxyFn, path):
         for level in range(cls.MAX_DIRECTORY_LEVEL):
             if level > 0:
                 path += [cls._createDirAndReturnDirName(galaxyFn, path)]
             for fileNum in range(randint(0, cls.MAX_FILES_PER_DIR)):
                 with cls._createFile(galaxyFn, path) as curFile:
                     curFile.write(cls._generateRandomString(cls.MIN_FILESIZE, cls.MAX_FILESIZE))
-
-        rootFile = generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=False)
-        print rootFile.getLink('File browser')
 
     @classmethod
     def _createFile(cls, galaxyFn, path):
@@ -86,6 +129,15 @@ class ProtoGuiTestTool7(GeneralGuiTool):
     def _generateRandomString(cls, minChars, maxChars):
         return ''.join([cls.ALLOWED_CHARS[randint(0, len(cls.ALLOWED_CHARS)-1)]
                         for _ in range(randint(minChars, maxChars))])
+
+    @classmethod
+    def _writeDataset(cls, galaxyFn, rootFile):
+        core = HtmlCore()
+        core.begin()
+        core.paragraph(rootFile.getLink('Result file browser'))
+        core.end()
+        with open(galaxyFn, 'w') as outputFile:
+            outputFile.write(str(core))
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -137,7 +189,7 @@ class ProtoGuiTestTool7(GeneralGuiTool):
 
     @classmethod
     def getOutputFormat(cls, choices):
-        return 'html'
+        return 'customhtml'
 
     # @classmethod
     # def getOutputName(cls, choices=None):
