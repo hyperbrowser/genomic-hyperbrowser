@@ -184,7 +184,7 @@ fi
 set +e
 
 if [ $FETCH_WHEELS -eq 1 ]; then
-    pip install -r proto-requirements.txt || echo "Failed to install rpy2. R code will not work"
+    cat proto-requirements.txt | grep -vE "^#" | xargs -n 1 pip install || echo "Failed to install package. If rpy2 failed, R code will not work"
 fi
 
 if [ $INSTALL_R_PACKAGES -eq 1 ]; then
