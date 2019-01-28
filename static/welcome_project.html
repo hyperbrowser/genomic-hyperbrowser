@@ -18,11 +18,14 @@
             <li class="active" value="tab0">
                 <a data-toggle="tab" href="#menu0">hdGSuite</a>
             </li>
-            <li  value="tab1">
-                <a data-toggle="tab" href="#menu1">Important introduction</a>
-            </li>
             <li  value="tab2">
-                <a data-toggle="tab" href="#menu2">Biological questions</a>
+                <a data-toggle="tab" href="#menu2">Examples</a>
+            </li>
+            <li  value="tab1">
+                <a data-toggle="tab" href="#menu5">Tools</a>
+            </li>
+            <li  value="tab1">
+                <a data-toggle="tab" href="#menu1">Technical details</a>
             </li>
             <li  value="tab3">
                 <a data-toggle="tab" href="#menu3">List of other projects</a>
@@ -125,7 +128,7 @@
                 <div class="rowSpecial">
                     <div class="colAll">
                         <h2 class="projectTitle">
-                            Important technical details</h2>
+                            Technical details</h2>
                         <div class = 'project'>
                             <div class = 'projectDesc'>
                                 Before you started, you need to prepare your data in a GSuite format.
@@ -158,13 +161,43 @@
                                 All the other questions with possible answers you can find in the main page: https://hyperbrowser.uio.no
                             </div>
                         </div>
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                Before you started using domain specific tools
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <div id="q1" class='question'>How to prepare hdGsuite?</div>
-                                <div id="q2" class='question'>How to modified hdSuite?</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class = 'contactInfo'>
+                    <h4 class = 'contactInfoTitle'>Diana Domanska</h4>
+                </div>
+            </div>
+        </div>
+
+        <div id="menu5" class="tab-pane fade">
+            <div class="container">
+                <div class="rowSpecial">
+                    <div class="colAll">
+                        <h2 class="projectTitle">
+                            Domain specific tools</h2>
+                        <div class = 'project'>
+                            <div class = 'projectDesc'>
+                                Tools are divided into 5 sections:
+                                <ul>
+                                    <li>
+                                    Create a hGSuite
+                                    </li>
+                                    <li>
+                                    Customize a hGSuite
+                                    </li>
+                                    <li>
+                                    Statistical analysis of hGSuites
+                                    </li>
+                                    <li>
+                                    Visual analysis
+                                    </li>
+                                    <li>
+                                    Additional
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -175,13 +208,35 @@
                     <div class="colAll">
                         <div class = 'description'>
                             <h4 class = 'descriptionTitle'>
-                                Explore disease associated regions within collection of genomic tracks (i.e schizophrenia associated regions within public collection of DNase I hypersensitive sites)
+                                Create a hGSuite
                             </h4>
                             <div class = 'descriptionDesc'>
-                                Dataset:
+                                <b>Create or modify hierarchy of hGSuite</b> -
+                                <p>
+                                    You can specify the levels (hierarchy) of your hGSuite. Link to tool and to example.
+                                </p>
+                            </div>
+                        </div>
 
-                                <div id="q5" class='question'>How much does each cell group of genomic tracks overlap with schizophrenia associated SNPs?</div>
-                                <div id="q6" class='question'>How much does each individual cell type within each of these groups overlap with schizophrenia associated SNPs?</div>
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colAll">
+                        <div class = 'description'>
+                            <h4 class = 'descriptionTitle'>
+                                Customize a hGSuite
+                            </h4>
+                            <div class = 'descriptionDesc'>
+                                <b>Divide/Filter hGSuite according to metadata</b> -
+                                <p>
+                                    .... Link to tool and to example.
+                                </p>
+                                <b>Concatenate tracks in hGsuite</b> -
+                                <p>
+                                    .... Link to tool and to example.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -199,21 +254,86 @@
                 <div class="rowSpecial">
                     <div class="colAll">
                         <h2 class="projectTitle">
-                            Biological question</h2>
-                        <div class = 'project'>
-                            <div class = 'projectDesc'>description</div>
+                            Introduction</h2>
+                            <div class = 'project'>
+                                <div class = 'projectDesc'>
+                                    <p>
+                                        To help you properly understand the possible grouping of your data,
+                                    we decided to share our story with you (section 1).
+                                    </p>
+                                    <p>
+                                    If you are ready to begin with analysis, go to section look at our examples: 1 and 2.
+                                        If you want to know more about tools itself go to tab called: Tools, if you want to know more about The Genomic HyperBrowser
+                                        got to tab: Technical details.
+                                    </p>
+                                 </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                    <div class="colAll">
+                        <p class = 'description'>
+                            <h4 class = 'descriptionTitle'>
+                                1. Before you start analysis, look at a possible structure of your data
+                            </h4>
+                            <div class = 'descriptionDesc'>
+                                <p>
+                                    Our goal in this project is to explore the nature of DNA repair enzymes and mutations in knockout mouse data.
+                                    We started from the point, where usually most researchers start; we received data from our collaborators and we wanted to investigate those data. We got around 30 different genomic tracks (let's call them query tracks).
+                                    Full of enthusiasm, we started by preparing sketches for different possible analyses.
+
+                                </p>
+                                <p>
+                                    We started from a quantitative overview of the query tracks, by counting several summary statistics e.g.
+                                    base-pair coverage per genomic track, segment distance average per genomic track etc and
+                                    as well as local measurements such as coverage proportion per track per chromosome, count per track per chromosome etc.
+
+                                    <div style="width:50%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/1.jpg" \>
+                                    </div>
+
+                                    Therefore we downloaded reference genomic tracks from different databases: ENCODE, UCSC etc.
+                                    We collected around 10 genomic reference tracks and we repeated all the above analyses for the reference tracks and after that we computed
+                                    different pairwise similarity measures ( the Forbes coefficient, the Jaccard index and the tetrachoric correlation) between every pair of query and reference tracks.
+
+                                    <div style="width:50%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/2.jpg" \>
+                                    </div>
+
+
+                                </p>
+                                <p >
+                                    However, after all these analyses, we realized that these genomic data had a really important difference compared to previous projects.
+                                    Firstly, every query track was characterized by different mutation type (e.g. C>A, C>T, C>G, A>T, A>G, A>C, T>A etc), and therefore the query tracks should have been divided into two
+                                    smaller tracks based on mutation types, resulting in 360 new genomic query tracks( 30 X 12 = 360 ).
+                                     And, it was really insufficient to interpret the results in a reasonable amount of time.
+
+                                </p>
+                                <p>
+                                    So we had go  back to the first step and realized that the structure of our data was multi dimensional, with two possible levels.
+                                    The first level of the data was specified by different DNA repair enzymes, while the second level was identified by type of mutations.
+                                    We ended up with 7 individual groups in the first level and 12 groups in the second level, and at this point we could  start again with our analysis.
+
+                                    <div style="width:50%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/3.jpg" \>
+                                    </div>
+
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <div class="containerNext">
                 <div class="rowSpecialWithGap">
                     <div class="colAll">
                         <div class = 'description'>
                             <h4 class = 'descriptionTitle'>
-                                Explore the nature of DNA repair enzymes and mutations (i.e  knockout mouse data)
+                                Example 1. Explore the nature of DNA repair enzymes and mutations (i.e  knockout mouse data)
                             </h4>
                             <div class = 'descriptionDesc'>
+                                Let assume that you have one genomic track
                                 Dataset:
 
                                 <div id="q1" class='question'>Are some mutation more active in certein genotype?</div>
@@ -230,7 +350,7 @@
                     <div class="colAll">
                         <div class = 'description'>
                             <h4 class = 'descriptionTitle'>
-                                Explore disease associated regions within collection of genomic tracks (i.e schizophrenia associated regions within public collection of DNase I hypersensitive sites)
+                                Example 2. Explore disease associated regions within collection of genomic tracks (i.e schizophrenia associated regions within public collection of DNase I hypersensitive sites)
                             </h4>
                             <div class = 'descriptionDesc'>
                                 Dataset:
@@ -264,7 +384,6 @@
                     <h4 class = 'contactInfoTitle'>Diana Domanska</h4>
                 </div>
             </div>
-        </div>
     </div>
 
     <div id="menu3" class="tab-pane fade ">
