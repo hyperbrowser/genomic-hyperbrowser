@@ -41,7 +41,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 range(cls.NUM_CATEGORY_FIELDS)] + \
                 [('Select column', 'column'),
                 ('Show possible phrases', 'possibleColumns'),
-                ('Select phrases (use colon to provide more than one phrase)', 'param'),
+                ('Select phrases (use commma to provide more than one phrase)', 'param'),
                 ('Add phrases separately', 'add')
                 ]
 
@@ -202,6 +202,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
         if choices.division == cls.DIVISION_BY_PHRASE:
             par = choices.param.replace(' ', '').split(',')
 
+
             if choices.add in ['yes', 'no']:
                 add = choices.add
             else:
@@ -352,7 +353,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
         for tl in trackList.keys():
 
             outputGSuite = GSuite()
-            url = cls.makeHistElement(galaxyExt='gsuite', title=str(tl))
+            url = cls.makeHistElement(galaxyExt='gsuite', title=str(tl.replace('_','')))
 
             for t in trackList[tl]:
                 track = gSuite.getTrackFromIndex(t)
