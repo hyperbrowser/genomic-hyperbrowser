@@ -76,8 +76,6 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
         gSuiteTN = getGSuiteFromGalaxyTN(gSuite)
 
-
-
         #dataFromFile, header, message = hGSuite.parseCvsFileBasedOnColumsNumber(selectedFile, selCol)
         dataFromFile, header, message = hGSuite.parseGSuiteFileBasedOnColumsNumber(gSuiteTN, selCol)
 
