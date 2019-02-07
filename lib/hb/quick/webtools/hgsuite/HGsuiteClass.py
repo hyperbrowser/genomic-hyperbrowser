@@ -323,8 +323,6 @@ class HGsuite:
 
         return headerGroup, dataCollectionGroup
 
-
-
     @classmethod
     def readGSuiteFile(cls, colNum, gSuite):
 
