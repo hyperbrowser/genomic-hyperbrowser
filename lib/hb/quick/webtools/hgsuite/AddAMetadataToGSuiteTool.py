@@ -88,7 +88,7 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
                 attrValue = gSuiteTitles[index / 2]
             else:
                 if not gSuiteAttributeValues:
-                    attrValue = ['' for t in gSuiteTitles[index / 2]]
+                    attrValue = '.' # ['' for t in gSuiteTitles[index / 2]]
                 else:
                     attrValue = gSuiteAttributeValues[index / 2]
             return str(attrValue)
