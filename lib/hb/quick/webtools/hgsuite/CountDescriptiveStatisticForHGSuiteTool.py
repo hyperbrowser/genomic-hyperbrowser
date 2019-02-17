@@ -118,7 +118,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             if cls.INFO_ALL != cls.INFO_1:
                 statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
                 if len(statList) > 0:
-                    return ['no', 'yes']
+                    return '__hidden__', 'yes'
 
 
     @classmethod
@@ -396,13 +396,17 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         colList = []
         summarize = 'raw'
         columnOptionsDict = {}
+
         if groupResponse != 'no':
             colList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
                                                                                       'selectedColumn%s',
                                                                                       cls.MAX_NUM_OF_COLS_IN_GSUITE)
         else:
-            colList = gSuite.levels
-            colList = colList.split(',')
+            try:
+                colList = gSuite.levels
+                colList = colList.split(',')
+            except:
+                pass
 
         # print 'groupResponse', groupResponse, '<br>'
         # print 'colList', colList, '<br>'
@@ -508,7 +512,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         for g in groupKey:
                             if not g in expectedDict.keys():
                                 expectedDict[g] = 0
-                            expectedDict[g] += float(sum(groupItem))/float(sumBp[statKey])
+                            # print groupItem, '<br>'
+                            # print sumBp, statKey, '<br>'
+                            expectedDict[g] += float(sum([g[-1] for g in groupItem]))/float(sumBp[statKey])
 
 
                 for summarizeKey, summarizeItem in statItem.iteritems():
@@ -527,15 +533,16 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     # print 'groupKey', list(groupKey), '<br>'
                     # print 'groupItem', groupItem, '<br>'
 
+
                     if summarizeKey == 'no':
                         data += groupItem
                     elif summarizeKey == 'raw':
+
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
                                            sumBp, summarizeKey)
                     else:
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
                                            sumBp, summarizeKey)
-
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
@@ -544,7 +551,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             elif summarizeKey == 'raw':
                 header = firstColumnList + secondColumnList + ['Title'] + [summarizeKey]
                 dataToPresent = data
-                #print 'dataToPresent', dataToPresent
+                # print 'dataToPresent', dataToPresent,'<br>'
+                # print 'header', header,'<br>'
                 # headerToPresent = header
                 dp = zip(*dataToPresent)
             else:
@@ -666,7 +674,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     (float(max(groupItem)) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
             elif summarizeKey == 'raw': #double check it
                 for g in groupItem:
-                    data.append(list(groupKey) + (float(g) / sumBp[statKey]) / expectedOrderedDict[groupKey])
+                    try:
+                        data.append([g[0]] + list(groupKey) + [(float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+                    except:
+                        data.append([g[0]] + [
+                            (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
         else:
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])
