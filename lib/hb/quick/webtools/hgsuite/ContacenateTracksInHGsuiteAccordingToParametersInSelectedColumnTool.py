@@ -142,6 +142,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
         column = choices.column.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
         phraseList = [a.strip(' ').split(',') for a in cls._getSelectedPhrases(choices)]
+
         excludedList = cls._getExcludedColumns(choices)
 
         whichTracksWillBeCombinedTogether = cls._getDictOfCombinedTracks(gSuite, excludedList, phraseList, column)
