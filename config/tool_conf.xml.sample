@@ -5,6 +5,10 @@
 
   <label text="Hierarchical GSuite tools" id="hgsuite_tools" />
 
+  <section name="Create a hdGSuite" id="hgsuite_create_tools">
+    <tool file="proto/hyperbrowser/hgsuite/CreateHierarchicalGSuiteTool.xml" />
+  </section>
+
   <section name="Customize a hGSuite" id="10customize_hGsuite" >
     <label text="For hGSuites" id="hgsuite_hgsuite"/>
       <tool file="proto/hyperbrowser/hgsuite/DivideHgSuiteAccordingToColumnTool.xml" />

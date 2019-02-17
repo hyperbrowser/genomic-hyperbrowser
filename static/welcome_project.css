@@ -200,6 +200,12 @@
                 text-decoration: none;
                 color: #7b6d5e;
             }
+
+            .exampleDesc {
+                font-weight:normal;
+                margin: 10px 0px;
+            }
+
             .exampleDesc p{
                 font-weight:normal;
             }
@@ -312,6 +318,18 @@
 
         }
 
+ /* Three image containers (use 25% for four, and 50% for two, etc) */
+.columnImage {
+  float: left;
+  width: 33.33%;
+  padding: 5px;
+}
 
+/* Clear floats after image containers */
+.rowImage::after {
+  content: "";
+  clear: both;
+  display: table;
+}
 
         
