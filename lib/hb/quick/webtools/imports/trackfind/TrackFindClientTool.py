@@ -21,6 +21,12 @@ class TrackFindClientTool(GeneralGuiTool):
     RANDOM_10_TRACKS = 'Select 10 random tracks'
     RANDOM_50_TRACKS = 'Select 50 random tracks'
     MANUAL_TRACK_SELECT = 'Select tracks manually'
+    
+    TYPE_OF_DATA_ATTR = 'type->fileformat_term'
+    GENOME_ASSEMBLY_ATTR = 'genome_assembly'
+    CELL_TISSUE_ATTR = ''
+    TARGET_ATTR = ''
+    
 
     @classmethod
     def getToolName(cls):
@@ -82,6 +88,19 @@ class TrackFindClientTool(GeneralGuiTool):
                         partial(cls._getSubAttributeListBox, level=i, index=j))
             setattr(cls, 'getOptionsBoxSelectionType%s' % i, \
                     partial(cls._getSelectionTypeBox, index=i))
+
+    @classmethod
+    def getOptionsBoxSelectRepository(cls):
+        tfm = TrackFindModule()
+        hubs = tfm.getRepositories()
+        repos = []
+        for hub in hubs:
+            repos.append(hub['repository'] + ' - ' + hub['hub'])
+
+        repos.sort()
+        repos.insert(0, cls.SELECT_CHOICE)
+
+        return repos
 
     @classmethod
     def _getDivider(cls, prevChoices, index):
@@ -255,7 +274,7 @@ class TrackFindClientTool(GeneralGuiTool):
             values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
         else:
             chosenOptions = cls.getPreviousChoices(prevChoices, index)
-            jsonData = tfm.getData(prevChoices.selectRepository, chosenOptions)
+            jsonData = tfm.getJsonData(prevChoices.selectRepository, chosenOptions)
 
             values = set()
             for jsonItem in jsonData:
@@ -285,17 +304,6 @@ class TrackFindClientTool(GeneralGuiTool):
         if cls.isBottomLevel(attributes):
             return [cls.SINGLE_SELECTION, cls.MULTIPLE_SELECTION, cls.TEXT_SEARCH]
 
-
-    @classmethod
-    def getOptionsBoxSelectRepository(cls):
-        tfm = TrackFindModule()
-        repos = tfm.getRepositories()
-        repos.sort()
-        repos.insert(0, cls.SELECT_CHOICE)
-
-
-        return repos
-
     @classmethod
     def _getTextSearchBox(cls, prevChoices, index):
         attribute = getattr(prevChoices, 'selectionType%s' % index)
@@ -317,8 +325,8 @@ class TrackFindClientTool(GeneralGuiTool):
         tfm = TrackFindModule()
         gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
-        return '__hidden__', gsuite
-
+        if gsuite:
+            return '__hidden__', gsuite
 
     @classmethod
     def getOptionsBoxTrackList(cls, prevChoices):
@@ -335,7 +343,7 @@ class TrackFindClientTool(GeneralGuiTool):
         for track in prevChoices.gsuiteCache.allTracks():
             title = track.title
             attributes = []
-            dataType = track.getAttribute('type of data')
+            dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if dataType not in chosenDataTypes:
                 continue
@@ -345,7 +353,7 @@ class TrackFindClientTool(GeneralGuiTool):
             attributes.append(dataType)
             attributes.append(track.getAttribute(' cell/tissue type'))
             attributes.append(track.getAttribute(' target'))
-            attributes.append(track.getAttribute('origassembly'))
+            attributes.append(track.getAttribute('genome_assembly'))
             tableDict[title] = attributes
 
         if not tableDict:
@@ -364,7 +372,12 @@ class TrackFindClientTool(GeneralGuiTool):
 
         dataTypes = defaultdict(int)
         for track in prevChoices.gsuiteCache.allTracks():
-            dataTypes[track.getAttribute('type of data')] += 1
+            attr = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
+            if attr:
+                dataTypes[attr] += 1
+
+        if not dataTypes:
+            return []
 
         dataTypes = OrderedDict(sorted(dataTypes.items()))
 
@@ -392,7 +405,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         trackTitles = []
         for track in prevChoices.gsuiteCache.allTracks():
-            dataType = track.getAttribute('type of data')
+            dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if dataType not in chosenDataTypes:
                 continue
@@ -493,7 +506,7 @@ class TrackFindClientTool(GeneralGuiTool):
         newGSuite = GSuite()
 
         for track in choices.gsuiteCache.allTracks():
-            dataType = track.getAttribute('type of data')
+            dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if not dataType in chosenDataTypes:
                 continue

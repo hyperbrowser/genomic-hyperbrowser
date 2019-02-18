@@ -7,13 +7,13 @@ from gold.gsuite import GSuiteParser
 
 class TrackFindModule:
     #URL = 'http://insilico.hpc.uio.no:8888/api/v1/'
-    URL = 'http://158.39.77.99/api/v1/'
+    URL = 'http://158.37.63.104/api/v1/'
 
     def __init__(self):
         pass
 
     def getRepositories(self):
-        url = self.URL + 'providers'
+        url = self.URL + 'hubs?active=true'
 
         response = requests.get(url)
 
@@ -22,7 +22,8 @@ class TrackFindModule:
         return response.json()
 
     def getAttributesForRepository(self, repository):
-        url = self.URL + repository + '/attributes?raw=true'
+        repo, hub = self.getRepoAndHub(repository)
+        url = self.URL + '/' + repo + '/' + hub + '/attributes?raw=true'
 
         response = requests.get(url)
         self.logRequest(url, response.elapsed.total_seconds())
@@ -30,7 +31,8 @@ class TrackFindModule:
         return response.json()
 
     def getTopLevelAttributesForRepository(self, repository):
-        url = self.URL + repository + '/attributes?raw=true&top=true'
+        repo, hub = self.getRepoAndHub(repository)
+        url = self.URL + '/' + repo + '/' + hub + '/attributes?raw=true&top=true'
 
         response = requests.get(url)
         self.logRequest(url, response.elapsed.total_seconds())
@@ -38,7 +40,8 @@ class TrackFindModule:
         return response.json()
 
     def getSubLevelAttributesForRepository(self, repository, attribute):
-        url = self.URL + repository + '/' + attribute + '/subattributes?raw=true'
+        repo, hub = self.getRepoAndHub(repository)
+        url = self.URL + '/' + repo + '/' + hub + '/' + attribute + '/subattributes?raw=true'
 
         response = requests.get(url)
         self.logRequest(url, response.elapsed.total_seconds())
@@ -46,7 +49,8 @@ class TrackFindModule:
         return response.json()
 
     def getAttributeValues(self, repository, attribute, searchTerm=''):
-        url = self.URL + repository + '/' + attribute + '/values?raw=true'
+        repo, hub = self.getRepoAndHub(repository)
+        url = self.URL + '/' + repo + '/' + hub + '/' + attribute + '/values?raw=true'
 
         if searchTerm:
             url += '&filter=' + searchTerm
@@ -56,26 +60,36 @@ class TrackFindModule:
 
         return response.json()
 
-    def getData(self, repository, attrValueMap):
-        query = self.createQuery(attrValueMap)
+    def getJsonData(self, repository, attrValueMap):
+        headers = {'Accept': 'application/json'}
 
-        url = self.URL + repository + '/search?query=' + query #+ '&limit=10'
-
-        response = requests.get(url)
-
-        self.logRequest(url, response.elapsed.total_seconds())
+        response = self.getData(repository, attrValueMap, headers)
 
         return response.json()
 
     def getGSuite(self, repository, attrValueMap):
+        headers = {'Accept': 'text/plain'}
 
-        self.logRequest("getting gsuite \n")
+        response = self.getData(repository, attrValueMap, headers)
 
-        filepath = StaticFile(
-            ['files', 'trackfind', 'trackfind-export-example.gsuite']).getDiskPath()
-        gsuite = GSuiteParser.parse(filepath)
+        gsuite = GSuiteParser.parse("fair.gsuite")
 
         return gsuite
+
+        if response.status_code == 200:
+            return response.text        
+
+    def getData(self, repository, attrValueMap, headers):
+        repo, hub = self.getRepoAndHub(repository)
+        query = self.createQuery(attrValueMap)
+
+        url = self.URL + '/' + repo + '/' + hub + '/search?query=' + query + '&limit=10'
+
+        response = requests.get(url, headers=headers)
+
+        self.logRequest(url, response.elapsed.total_seconds())
+
+        return response
 
     def createQuery(self, attrValueMap):
         queryList = []
@@ -99,4 +113,10 @@ class TrackFindModule:
         logfile.write(str(time) + '   ' + url + '\n')
 
         logfile.close()
+
+    def getRepoAndHub(self, repository):
+        repo, hub = [s.strip() for s in repository.split('-')]
+
+        return repo, hub
+
 
