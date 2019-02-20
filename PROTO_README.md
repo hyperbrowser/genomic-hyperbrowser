@@ -398,6 +398,7 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v1.2.3: Bugfix to support full paths from galaxy.ini
 * v1.2.2: Small addition in StaticFile.
 * v1.2.1: File browser can now be output as a separate history element. Fixed package install bug.
 * v1.2: Added result file browser. Fixed bug in Explore ProTo tool. Fixed job rerun bug. Added support for Unicode. Various small fixes and cleanup.
