@@ -290,7 +290,7 @@
                                     base-pair coverage per genomic track, segment distance average per genomic track etc and
                                     as well as local measurements such as coverage proportion per track per chromosome, count per track per chromosome etc.
 
-                                    <div style="width:50%;margin: 10px auto;display:block;">
+                                    <div style="width:100%;margin: 10px auto;display:block;">
                                     <img class="img-thumbnail" src="../static/project/story1.png" \>
                                     </div>
 
@@ -298,8 +298,8 @@
                                     We collected around 10 genomic reference tracks and we repeated all the above analyses for the reference tracks and after that we computed
                                     different pairwise similarity measures ( the Forbes coefficient, the Jaccard index and the tetrachoric correlation) between every pair of query and reference tracks.
 
-                                    <div style="width:50%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/2.jpg" \>
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/story2.png" \>
                                     </div>
 
 
@@ -316,8 +316,8 @@
                                     The first level of the data was specified by different DNA repair enzymes, while the second level was identified by type of mutations.
                                     We ended up with 7 individual groups in the first level and 12 groups in the second level, and at this point we could  start again with our analysis.
 
-                                    <div style="width:50%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/3.jpg" \>
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/story3.png" \>
                                     </div>
 
                                 </p>
@@ -374,19 +374,16 @@
                                     <p class="paragraph">
                                      Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 1 compute coverage of data.
                                      <a href = "../u/hb-superuser/h/analysis-q1---11">Click here to view an example, el. 2</a>
+                                        The result of the tool is a Pivot table. During computation user can select columns which will show up in the result page.
+                                        In this case, the selected column is genotype, so all results are counted separately for every track and every genotype.
+                                        User have several possibilities to look at the results. Every value can be shown separately, the results can be shown for each value or the results can be aggregated across the dimensions.
                                     </p>
-                                    On the left picture you can see counts per single track, on the right image you can observe average counts per genotype.
-                                    <div class="rowImage">
-                                        <div class="columnImage">
-                                        <img class="img-thumbnail" src="../static/project/ex1l.png" \>
-                                        </div>
-                                        <div class="columnImage">
-                                        <img class="img-thumbnail" src="../static/project/ex1p.png" \>
-                                        </div>
+
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/ex1.png" \>
                                     </div>
                                 </div>
-                            </div>
-                            <div class = 'example'>
+
                                 <h4 class = 'exampleTitle'>
                                     Check whether some mutation are more active in certain mutation type
                                 </h4>
@@ -397,15 +394,11 @@
                                      <a href = "../u/hb-superuser/h/analysis-q2---12 ">Click here to view an example, el. 2</a>
                                     </p>
                                     On the picture you can see counts per single track.
-                                    <div class="rowImage">
-                                        <div class="columnImage">
-                                        <img class="img-thumbnail" src="../static/project/ex2.png" \>
-                                        </div>
-
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                    <img class="img-thumbnail" src="../static/project/ex2.png" \>
                                     </div>
                                 </div>
-                            </div>
-                            <div class = 'example'>
+
                                 <h4 class = 'exampleTitle'>
                                     Check whether some mutation types are enriched in certain genotype more than you would expected by chance
                                 </h4>
@@ -418,12 +411,14 @@
                                     On the picture you can see counts per single track.
                                     <div class="rowImage">
                                         <div class="columnImage">
-                                        <img class="img-thumbnail" src="../static/project/ex2.png" \>
+                                        <img class="img-thumbnail" src="../static/project/ex3.png" \>
                                         </div>
-
                                     </div>
                                 </div>
+
+
                             </div>
+
 
                             <div class = 'descriptionDesc'>
 
