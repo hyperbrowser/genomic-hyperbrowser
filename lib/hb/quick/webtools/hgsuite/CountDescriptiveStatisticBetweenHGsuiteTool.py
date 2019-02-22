@@ -1281,7 +1281,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         l = Legend()
 
-        toolDescription = "This tool count descriptive statistics for hGSuite."
+        toolDescription = "This tool count descriptive statistics for relations between hGSuites."
 
         stepsToRunTool = ['Select first hGSuite',
                           'Select column from first hGSuite',
