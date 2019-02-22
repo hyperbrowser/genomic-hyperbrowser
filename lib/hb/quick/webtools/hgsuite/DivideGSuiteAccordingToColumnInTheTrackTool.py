@@ -92,8 +92,11 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
                 with open(trackPath, 'r') as f:
                     for l in f.readlines():
                         line = l.split('\t')
-                        if p in line[3]:
-                            lineAll.append(l)
+                        try:
+                            if p in line[3]:
+                                lineAll.append(l)
+                        except:
+                            pass
 
                 with open(outFn, 'w') as contentFile:
                     contentFile.write(''.join(lineAll))
