@@ -92,12 +92,18 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                     if firstGSuiteColumn == 'title':
                         attr1 = trackFromFirst.title
                     else:
-                        attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
+                        if firstGSuiteColumn == 'None':
+                            attr1 = 'None'
+                        else:
+                            attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
 
                     if secondGSuiteColumn == 'title':
                         attr2 = trackFromSecond.title
                     else:
-                        attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
+                        if secondGSuiteColumn == 'None':
+                            attr2 = 'None'
+                        else:
+                            attr2 = trackFromSecond.getAttribute(secondGSuiteColumn)
 
                     # print 'attr1', attr1, '<br>'
                     # print 'attr2', attr2, '<br>'
