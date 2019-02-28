@@ -421,7 +421,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                            choices.categoryVal)
         operationCount = cls._calculateNrOfOperationsForProgresOutput(tsMC.values()[0]['real'], analysisBins, choices)
         analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount)
-        resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()['Result']
+        globalResult = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
+        print "temp1: ", repr(globalResult)
+        resultsMC = globalResult['Result']
         return resultsMC
 
     @classmethod
