@@ -21,7 +21,7 @@ module.exports = function( grunt ){
             'circster',
             'reports',
             'proto',
-            'proto_base'
+            'proto_base',
             'welcome',
             'hb_base'
         ];

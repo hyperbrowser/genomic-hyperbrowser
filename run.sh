@@ -19,13 +19,7 @@ then
     . $GALAXY_LOCAL_ENV_FILE
 fi
 
-./scripts/common_startup.sh $common_startup_args || exit 1
-
 parse_common_args $@
-
-run_common_start_up
-
-setup_python
 
 if [ ! -z "$GALAXY_RUN_WITH_TEST_TOOLS" ];
 then
@@ -54,6 +48,10 @@ if [ $INITIALIZE_TOOL_DEPENDENCIES -eq 1 ]; then
     # Install Conda environment if needed.
     python ./scripts/manage_tool_dependencies.py -c "$GALAXY_CONFIG_FILE" init_if_needed
 fi
+
+run_common_start_up
+
+setup_python
 
 ## HyperBrowser addition: Tmp dir
 export TMPDIR="$(python scripts/hyperbrowser_config.py -c GALAXY_TMP_DIR)"
