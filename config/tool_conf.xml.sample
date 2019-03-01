@@ -6,6 +6,7 @@
     <label text="From an external source" id="gsuite_from_remote"/>
       <tool file="proto/hyperbrowser/imports/TrackGlobalSearchTool.xml" />
       <tool file="proto/hyperbrowser/imports/TrackSourceTestTool.xml" />
+      <tool file="proto/hyperbrowser/imports/trackfind/TrackFindClientTool.xml" />
     <label text="From history" id="gsuite_from_history"/>
       <tool file="proto/hyperbrowser/gsuite/CreateGSuiteFileFromHistoryElementsTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/CompileGSuiteFromSingleTrackAttributeTool.xml" />

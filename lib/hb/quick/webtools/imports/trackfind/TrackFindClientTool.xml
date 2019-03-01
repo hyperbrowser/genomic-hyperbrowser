@@ -1,0 +1,4 @@
+<tool id="hb_track_find_client_tool" name="Create a remote GSuite from a public repository" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.imports.trackfind.TrackFindClientTool" proto_tool_class="TrackFindClientTool">
+  <description>(TrackFind client)</description>
+</tool>
