@@ -22,10 +22,11 @@ class TrackFindClientTool(GeneralGuiTool):
     RANDOM_50_TRACKS = 'Select 50 random tracks'
     MANUAL_TRACK_SELECT = 'Select tracks manually'
     
-    TYPE_OF_DATA_ATTR = 'type->fileformat_term'
+    TYPE_OF_DATA_ATTR = 'type->datatype_term'
     GENOME_ASSEMBLY_ATTR = 'genome_assembly'
-    CELL_TISSUE_ATTR = ''
-    TARGET_ATTR = ''
+    CELL_TISSUE_ATTR = 'sample->type->sample_type_term'
+    TARGET_ATTR = 'experiment->target'
+    FILE_FORMAT_ATTR = 'type->fileformat_term'
     
 
     @classmethod
@@ -134,7 +135,9 @@ class TrackFindClientTool(GeneralGuiTool):
 
         subattributePath = ''
         if index == 0:
-            attributes = prevChoices.topAttributesListCache
+            tfm = TrackFindModule()
+            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+
         else:
             attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
             if cls.isBottomLevel(attributes):
@@ -169,7 +172,9 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         #filter out attributes that have no subattributes left
-        attributesInRepo = prevChoices.attributesListCache
+        tfm = TrackFindModule()
+        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
+
         for prevChoice in prevChoicesList:
             if prevChoice in attributesInRepo:
                 attributesInRepo.remove(prevChoice)
@@ -279,7 +284,7 @@ class TrackFindClientTool(GeneralGuiTool):
             values = set()
             for jsonItem in jsonData:
                 try:
-                    value = reduce(operator.getitem, prevSubattributes, jsonItem['curatedContent'])
+                    value = reduce(operator.getitem, prevSubattributes, jsonItem)
                 except (KeyError, TypeError):
                     continue
                 if value:
@@ -329,6 +334,18 @@ class TrackFindClientTool(GeneralGuiTool):
             return '__hidden__', gsuite
 
     @classmethod
+    def getGsuite(cls, prevChoices):
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        if not chosenOptions:
+            return
+
+        tfm = TrackFindModule()
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+
+        return gsuite
+
+    @classmethod
     def getOptionsBoxTrackList(cls, prevChoices):
         if not prevChoices.gsuiteCache:
             return
@@ -338,9 +355,10 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         selectedTracks = cls.getSelectedTracks(prevChoices)
+        gsuite = cls.getGsuite(prevChoices)
 
         tableDict = {}
-        for track in prevChoices.gsuiteCache.allTracks():
+        for track in gsuite.allTracks():
             title = track.title
             attributes = []
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
@@ -351,16 +369,17 @@ class TrackFindClientTool(GeneralGuiTool):
                 continue
 
             attributes.append(dataType)
-            attributes.append(track.getAttribute(' cell/tissue type'))
-            attributes.append(track.getAttribute(' target'))
-            attributes.append(track.getAttribute('genome_assembly'))
+            attributes.append(track.getAttribute(cls.CELL_TISSUE_ATTR))
+            attributes.append(track.getAttribute(cls.TARGET_ATTR))
+            attributes.append(track.getAttribute(cls.GENOME_ASSEMBLY_ATTR))
+            attributes.append(track.getAttribute(cls.FILE_FORMAT_ATTR))
             tableDict[title] = attributes
 
         if not tableDict:
             return
 
         html = HtmlCore()
-        html.tableFromDictionary(tableDict, columnNames=['Sample name', 'Type of data', 'Cell/tissue type', 'Target', 'Genome build'],  \
+        html.tableFromDictionary(tableDict, columnNames=['Sample name', 'Type of data', 'Cell/tissue type', 'Target', 'Genome build', 'File format'],  \
                                  tableId='t1', expandable=True)
 
         return '__rawstr__', unicode(html)
@@ -371,7 +390,10 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         dataTypes = defaultdict(int)
-        for track in prevChoices.gsuiteCache.allTracks():
+
+        gsuite = cls.getGsuite(prevChoices)
+
+        for track in gsuite.allTracks():
             attr = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
             if attr:
                 dataTypes[attr] += 1
@@ -404,7 +426,10 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         trackTitles = []
-        for track in prevChoices.gsuiteCache.allTracks():
+
+        gsuite = cls.getGsuite(prevChoices)
+
+        for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if dataType not in chosenDataTypes:
@@ -504,8 +529,9 @@ class TrackFindClientTool(GeneralGuiTool):
         selectedTracks = cls.getSelectedTracks(choices)
 
         newGSuite = GSuite()
+        gsuite = cls.getGsuite(choices)
 
-        for track in choices.gsuiteCache.allTracks():
+        for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if not dataType in chosenDataTypes:

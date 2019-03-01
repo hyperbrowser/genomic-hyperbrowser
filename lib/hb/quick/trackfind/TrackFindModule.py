@@ -47,6 +47,7 @@ class TrackFindModule:
         self.logRequest(url, response.elapsed.total_seconds())
 
         return response.json()
+        #return json.loads(response.text)
 
     def getAttributeValues(self, repository, attribute, searchTerm=''):
         repo, hub = self.getRepoAndHub(repository)
@@ -72,12 +73,9 @@ class TrackFindModule:
 
         response = self.getData(repository, attrValueMap, headers)
 
-        gsuite = GSuiteParser.parse("fair.gsuite")
+        gsuite = GSuiteParser.parseFromString(response.text)
 
         return gsuite
-
-        if response.status_code == 200:
-            return response.text        
 
     def getData(self, repository, attrValueMap, headers):
         repo, hub = self.getRepoAndHub(repository)
