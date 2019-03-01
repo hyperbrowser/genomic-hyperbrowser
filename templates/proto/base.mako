@@ -24,7 +24,6 @@
     <div id="help_${what}" class="infomessagesmall help">help</div>
 </%def>
 
-    
     <div id="__disabled"></div>
     <div class="toolForm">
     <div class="toolFormTitle">${self.title()}</div>
@@ -37,4 +36,3 @@
             ${self.toolHelp()}
         </div>
     </div>
-

@@ -3,8 +3,8 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( DATASET_MODEL, BASE_MVC, _l ){
+'use strict';
 
-var logNamespace = 'collections';
 //==============================================================================
 /*
 Notes:
@@ -86,34 +86,20 @@ var DatasetCollectionElementMixin = {
     }
 };
 
-//TODO: unused?
 /** @class Concrete class of Generic DatasetCollectionElement */
 var DatasetCollectionElement = Backbone.Model
     .extend( BASE_MVC.LoggableMixin )
     .extend( DatasetCollectionElementMixin )
-    .extend({ _logNamespace : logNamespace });
+    .extend({ _logNamespace : 'collections' });
 
 
 //==============================================================================
 /** @class Base/Abstract Backbone collection for Generic DCEs. */
 var DCECollection = Backbone.Collection.extend( BASE_MVC.LoggableMixin ).extend(
 /** @lends DCECollection.prototype */{
-    _logNamespace : logNamespace,
+    _logNamespace : 'collections',
 
     model: DatasetCollectionElement,
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
-//TODO: unused?
-    /** Set up.
-     *  @see Backbone.Collection#initialize
-     */
-    initialize : function( attributes, options ){
-        this.debug( this + '(DCECollection).initialize:', attributes, options );
-        options = options || {};
-        //this._setUpListeners();
-    },
 
     /** String representation. */
     toString : function(){
@@ -127,9 +113,6 @@ var DCECollection = Backbone.Collection.extend( BASE_MVC.LoggableMixin ).extend(
  */
 var DatasetDCE = DATASET_MODEL.DatasetAssociation.extend( BASE_MVC.mixin( DatasetCollectionElementMixin,
 /** @lends DatasetDCE.prototype */{
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
 
     /** url fn */
     url : function(){
@@ -147,6 +130,10 @@ var DatasetDCE = DATASET_MODEL.DatasetAssociation.extend( BASE_MVC.mixin( Datase
         DatasetCollectionElementMixin.defaults
     ),
 
+    _downloadQueryParameters : function() {
+        return '?to_ext=' + this.get( 'file_ext' ) + '&hdca_id=' + this.get( 'parent_hdca_id' ) + '&element_identifier=' + this.get( 'element_identifier' );
+    },
+
     // because all objects have constructors (as this hashmap would even if this next line wasn't present)
     //  the constructor in hcontentMixin won't be attached by BASE_MVC.mixin to this model
     //  - re-apply manually for now
@@ -157,17 +144,9 @@ var DatasetDCE = DATASET_MODEL.DatasetAssociation.extend( BASE_MVC.mixin( Datase
         DatasetCollectionElementMixin.constructor.call( this, attributes, options );
     },
 
-//TODO: unused?
-    /** set up */
-    initialize : function( attributes, options ){
-        this.debug( this + '(DatasetDCE).initialize:', attributes, options );
-        DATASET_MODEL.DatasetAssociation.prototype.initialize.call( this, attributes, options );
-    },
-
     /** Does this model already contain detailed data (as opposed to just summary level data)? */
     hasDetails : function(){
-        // dataset collection api does return genome_build but doesn't return annotation
-        return _.has( this.attributes, 'annotation' );
+        return this.elements && this.elements.length;
     },
 
     /** String representation. */
@@ -184,16 +163,6 @@ var DatasetDCE = DATASET_MODEL.DatasetAssociation.extend( BASE_MVC.mixin( Datase
 var DatasetDCECollection = DCECollection.extend(
 /** @lends DatasetDCECollection.prototype */{
     model: DatasetDCE,
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
-//TODO: unused?
-    /** set up */
-    initialize : function( attributes, options ){
-        this.debug( this + '(DatasetDCECollection).initialize:', attributes, options );
-        DCECollection.prototype.initialize.call( this, attributes, options );
-    },
 
     /** String representation. */
     toString : function(){
@@ -215,10 +184,7 @@ var DatasetCollection = Backbone.Model
         .extend( BASE_MVC.LoggableMixin )
         .extend( BASE_MVC.SearchableModelMixin )
         .extend(/** @lends DatasetCollection.prototype */{
-    _logNamespace : logNamespace,
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
+    _logNamespace : 'collections',
 
     /** default attributes for a model */
     defaults : {
@@ -234,11 +200,10 @@ var DatasetCollection = Backbone.Model
     /** set up: create elements instance var and (on changes to elements) update them  */
     initialize : function( model, options ){
         this.debug( this + '(DatasetCollection).initialize:', model, options, this );
-        //historyContent.HistoryContent.prototype.initialize.call( this, attrs, options );
         this.elements = this._createElementsModel();
         this.on( 'change:elements', function(){
             this.log( 'change:elements' );
-//TODO: prob. better to update the collection instead of re-creating it
+            //TODO: prob. better to update the collection instead of re-creating it
             this.elements = this._createElementsModel();
         });
     },
@@ -246,9 +211,13 @@ var DatasetCollection = Backbone.Model
     /** move elements model attribute to full collection */
     _createElementsModel : function(){
         this.debug( this + '._createElementsModel', this.collectionClass, this.get( 'elements' ), this.elements );
-//TODO: same patterns as DatasetCollectionElement _createObjectModel - refactor to BASE_MVC.hasSubModel?
+        //TODO: same patterns as DatasetCollectionElement _createObjectModel - refactor to BASE_MVC.hasSubModel?
         var elements = this.get( 'elements' ) || [];
         this.unset( 'elements', { silent: true });
+        var self = this;
+        _.each(elements, function(element, index) {
+            _.extend(element, {"parent_hdca_id": self.get("id")});
+        });
         this.elements = new this.collectionClass( elements );
         //this.debug( 'collectionClass:', this.collectionClass + '', this.elements );
         return this.elements;
@@ -275,8 +244,6 @@ var DatasetCollection = Backbone.Model
     //TODO:?? the following are the same interface as DatasetAssociation - can we combine?
     /** Does the DC contain any elements yet? Is a fetch() required? */
     hasDetails : function(){
-//TODO: this is incorrect for (accidentally) empty collections
-        this.debug( 'hasDetails:', this.elements.length );
         return this.elements.length !== 0;
     },
 
@@ -287,6 +254,18 @@ var DatasetCollection = Backbone.Model
     },
 
     // ........................................................................ ajax
+    /** override to use actual Dates objects for create/update times */
+    parse : function( response, options ){
+        var parsed = Backbone.Model.prototype.parse.call( this, response, options );
+        if( parsed.create_time ){
+            parsed.create_time = new Date( parsed.create_time );
+        }
+        if( parsed.update_time ){
+            parsed.update_time = new Date( parsed.update_time );
+        }
+        return parsed;
+    },
+
     /** save this dataset, _Mark_ing it as deleted (just a flag) */
     'delete' : function( options ){
         if( this.get( 'deleted' ) ){ return jQuery.when(); }
@@ -306,7 +285,7 @@ var DatasetCollection = Backbone.Model
     // ........................................................................ searchable
     /** searchable attributes for collections */
     searchAttributes : [
-        'name'
+        'name', 'tags'
     ],
 
     // ........................................................................ misc
@@ -324,22 +303,11 @@ var DatasetCollection = Backbone.Model
 var ListDatasetCollection = DatasetCollection.extend(
 /** @lends ListDatasetCollection.prototype */{
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
     /** override since we know the collection will only contain datasets */
     collectionClass : DatasetDCECollection,
 
-//TODO: unused?
-    initialize : function( attrs, options ){
-        this.debug( this + '(ListDatasetCollection).initialize:', attrs, options );
-        DatasetCollection.prototype.initialize.call( this, attrs, options );
-    },
-
     /** String representation. */
-    toString : function(){
-         return ([ 'ListDatasetCollection(', this.get( 'name' ), ')' ].join( '' ));
-    }
+    toString : function(){ return 'List' + DatasetCollection.prototype.toString.call( this ); }
 });
 
 
@@ -349,20 +317,8 @@ var ListDatasetCollection = DatasetCollection.extend(
 var PairDatasetCollection = ListDatasetCollection.extend(
 /** @lends PairDatasetCollection.prototype */{
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
-//TODO: unused?
-    /**  */
-    initialize : function( attrs, options ){
-        this.debug( this + '(PairDatasetCollection).initialize:', attrs, options );
-        ListDatasetCollection.prototype.initialize.call( this, attrs, options );
-    },
-
     /** String representation. */
-    toString : function(){
-         return ([ 'PairDatasetCollection(', this.get( 'name' ), ')' ].join( '' ));
-    }
+    toString : function(){ return 'Pair' + DatasetCollection.prototype.toString.call( this ); }
 });
 
 
@@ -375,9 +331,6 @@ var PairDatasetCollection = ListDatasetCollection.extend(
  */
 var NestedDCDCE = DatasetCollection.extend( BASE_MVC.mixin( DatasetCollectionElementMixin,
 /** @lends NestedDCDCE.prototype */{
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
 
     // because all objects have constructors (as this hashmap would even if this next line wasn't present)
     //  the constructor in hcontentMixin won't be attached by BASE_MVC.mixin to this model
@@ -402,18 +355,8 @@ var NestedDCDCE = DatasetCollection.extend( BASE_MVC.mixin( DatasetCollectionEle
 var NestedDCDCECollection = DCECollection.extend(
 /** @lends NestedDCDCECollection.prototype */{
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
     /** This is a collection of nested collections */
     model: NestedDCDCE,
-
-//TODO: unused?
-    /** set up */
-    initialize : function( attrs, options ){
-        this.debug( this + '(NestedDCDCECollection).initialize:', attrs, options );
-        DCECollection.prototype.initialize.call( this, attrs, options );
-    },
 
     /** String representation. */
     toString : function(){
@@ -428,9 +371,6 @@ var NestedDCDCECollection = DCECollection.extend(
 var NestedPairDCDCE = PairDatasetCollection.extend( BASE_MVC.mixin( DatasetCollectionElementMixin,
 /** @lends NestedPairDCDCE.prototype */{
 //TODO:?? possibly rename to NestedDatasetCollection?
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
 
     // because all objects have constructors (as this hashmap would even if this next line wasn't present)
     //  the constructor in hcontentMixin won't be attached by BASE_MVC.mixin to this model
@@ -456,18 +396,8 @@ var NestedPairDCDCE = PairDatasetCollection.extend( BASE_MVC.mixin( DatasetColle
 var NestedPairDCDCECollection = NestedDCDCECollection.extend(
 /** @lends PairDCDCECollection.prototype */{
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
     /** We know this collection is composed of only nested pair collections */
     model: NestedPairDCDCE,
-
-//TODO: unused?
-    /** set up */
-    initialize : function( attrs, options ){
-        this.debug( this + '(NestedPairDCDCECollection).initialize:', attrs, options );
-        NestedDCDCECollection.prototype.initialize.call( this, attrs, options );
-    },
 
     /** String representation. */
     toString : function(){
@@ -482,18 +412,8 @@ var NestedPairDCDCECollection = NestedDCDCECollection.extend(
 var ListPairedDatasetCollection = DatasetCollection.extend(
 /** @lends ListPairedDatasetCollection.prototype */{
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
     /** list:paired is the only collection that itself contains collections */
     collectionClass : NestedPairDCDCECollection,
-
-//TODO: unused?
-    /** set up */
-    initialize : function( attributes, options ){
-        this.debug( this + '(ListPairedDatasetCollection).initialize:', attributes, options );
-        DatasetCollection.prototype.initialize.call( this, attributes, options );
-    },
 
     /** String representation. */
     toString : function(){
@@ -503,9 +423,57 @@ var ListPairedDatasetCollection = DatasetCollection.extend(
 
 
 //==============================================================================
+/** @class Backbone model for a list dataset collection within a list:list dataset collection. */
+var NestedListDCDCE = ListDatasetCollection.extend( BASE_MVC.mixin( DatasetCollectionElementMixin,
+/** @lends NestedListDCDCE.prototype */{
+
+    /** This is both a collection and a collection element - call the constructor */
+    constructor : function( attributes, options ){
+        this.debug( '\t NestedListDCDCE.constructor:', attributes, options );
+        DatasetCollectionElementMixin.constructor.call( this, attributes, options );
+    },
+
+    /** String representation. */
+    toString : function(){
+        var objStr = ( this.object )?( '' + this.object ):( this.get( 'element_identifier' ) );
+        return ([ 'NestedListDCDCE(', objStr, ')' ].join( '' ));
+    }
+}));
+
+
+//==============================================================================
+/** @class Backbone collection containing list dataset collections. */
+var NestedListDCDCECollection = NestedDCDCECollection.extend({
+
+    /** We know this collection is composed of only nested pair collections */
+    model: NestedListDCDCE,
+
+    /** String representation. */
+    toString : function(){
+        return ([ 'NestedListDCDCECollection(', this.length, ')' ].join( '' ));
+    }
+});
+
+
+//==============================================================================
+/** @class Backbone Model for a DatasetCollection (list) that contains other lists. */
+var ListOfListsDatasetCollection = DatasetCollection.extend({
+
+    /** list:paired is the only collection that itself contains collections */
+    collectionClass : NestedListDCDCECollection,
+
+    /** String representation. */
+    toString : function(){
+        return ([ 'ListOfListsDatasetCollection(', this.get( 'name' ), ')' ].join( '' ));
+    }
+});
+
+
+//==============================================================================
     return {
-        ListDatasetCollection               : ListDatasetCollection,
-        PairDatasetCollection               : PairDatasetCollection,
-        ListPairedDatasetCollection         : ListPairedDatasetCollection
+        ListDatasetCollection       : ListDatasetCollection,
+        PairDatasetCollection       : PairDatasetCollection,
+        ListPairedDatasetCollection : ListPairedDatasetCollection,
+        ListOfListsDatasetCollection: ListOfListsDatasetCollection
     };
 });

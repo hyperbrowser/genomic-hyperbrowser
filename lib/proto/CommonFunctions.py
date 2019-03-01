@@ -2,6 +2,7 @@ import os
 import re
 import urllib
 from collections import OrderedDict
+from numbers import Number
 
 from proto.CommonConstants import THOUSANDS_SEPARATOR
 from proto.config.Config import OUTPUT_PRECISION
@@ -20,6 +21,15 @@ with 'XXX/dataset_YYYY.dat', where XXX and YYYY are numbers which may be
 extracted and used as a datasetId in the form [XXX, YYYY]. The last element
 is the name of the history element, mostly used for presentation purposes.
 """
+
+
+def getFileSuffix(fn):
+    return os.path.splitext(fn)[1].replace('.', '')
+
+
+def stripFileSuffix(fn):
+    suffix = getFileSuffix(fn)
+    return fn[:-len(suffix)-1]
 
 
 def ensurePathExists(fn):
@@ -173,7 +183,7 @@ def extractNameFromDatasetInfo(datasetInfo):
         datasetInfo = datasetInfo.split(':')
 
     from urllib import unquote
-    return unquote(datasetInfo[-1])
+    return unquote(str(datasetInfo[-1])).decode('utf-8')
 
 
 def getSecureIdAndExtFromDatasetInfoAsStr(datasetInfo):
@@ -191,6 +201,7 @@ def getSecureIdAndExtFromDatasetInfoAsStr(datasetInfo):
             id_sel = 0
             ext = ''
         return id_sel, ext
+
 
 def createToolURL(toolId, **kwArgs):
     from proto.tools.GeneralGuiTool import GeneralGuiTool
@@ -217,7 +228,7 @@ def getLoadToGalaxyHistoryURL(fn, genome='', galaxyDataType='bed', urlPrefix=Non
         urlPrefix = URL_PREFIX
 
     import base64
-    encodedFn = base64.urlsafe_b64encode(GALAXY_SECURITY_HELPER_OBJ.encode_guid(fn))
+    encodedFn = base64.urlsafe_b64encode(GALAXY_SECURITY_HELPER_OBJ.encode_guid(fn.encode('utf-8')))
 
     assert galaxyDataType is not None
     return urlPrefix + '/tool_runner?tool_id=file_import' + \
@@ -311,3 +322,16 @@ def fromDictOfDictsToDictOfListsAndColumnNameList(dataDict, firstColName=''):
             colNames = [firstColName] + val1.keys()
         convertedDataDict[key1] = val1.values()
     return convertedDataDict, colNames
+
+
+def isSamePath(path, otherPath):
+    return os.path.abspath(path) == os.path.abspath(otherPath)
+
+
+def makeUnicode(obj):
+    if not any(isinstance(obj, x) for x in [basestring, Number, bool]):
+        return obj
+    try:
+        return obj.decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError, AttributeError):
+        return unicode(obj)

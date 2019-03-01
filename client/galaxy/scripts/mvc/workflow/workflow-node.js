@@ -5,7 +5,7 @@ define(['mvc/workflow/workflow-view-node'], function( NodeView ) {
             this.element = attr.element;
             this.input_terminals = {};
             this.output_terminals = {};
-            this.tool_errors = {};
+            this.errors = {};
             this.workflow_outputs = [];
         },
         getWorkflowOutput: function(outputName) {
@@ -148,32 +148,33 @@ define(['mvc/workflow/workflow-view-node'], function( NodeView ) {
             // Remove active class
             $(element).removeClass( "toolForm-active" );
         },
-        setLabel: function(label) {
-            this.app.workflow.updateNodeLabel(this.label, label);
-            this.label = label || null;
+        set_tool_version: function () {
+            if (this.type === "tool" && this.config_form) {
+                this.tool_version = this.config_form.version;
+                this.content_id = this.config_form.id;
+            }
         },
         init_field_data : function ( data ) {
             if ( data.type ) {
                 this.type = data.type;
             }
             this.name = data.name;
-            this.form_html = data.form_html;
+            this.config_form = data.config_form;
+            this.set_tool_version();
             this.tool_state = data.tool_state;
-            this.tool_errors = data.tool_errors;
+            this.errors = data.errors;
             this.tooltip = data.tooltip ? data.tooltip : "";
             this.annotation = data.annotation;
             this.post_job_actions = data.post_job_actions ? data.post_job_actions : {};
-            this.setLabel(data.label);
+            this.label = data.label;
             this.uuid = data.uuid;
             this.workflow_outputs = data.workflow_outputs ? data.workflow_outputs : [];
-
             var node = this;
             var nodeView = new NodeView({
                 el: this.element[ 0 ],
                 node: node,
             });
             node.nodeView = nodeView;
-
             $.each( data.data_inputs, function( i, input ) {
                 nodeView.addDataInput( input );
             });
@@ -188,16 +189,62 @@ define(['mvc/workflow/workflow-view-node'], function( NodeView ) {
         },
         update_field_data : function( data ) {
             var node = this;
-                nodeView = node.nodeView;
-            this.tool_state = data.tool_state;
-            this.form_html = data.form_html;
-            this.tool_errors = data.tool_errors;
-            this.annotation = data['annotation'];
-            this.setLabel(data.label);
+            var nodeView = node.nodeView;
+            // remove unused output views and remove pre-existing output views from data.data_outputs,
+            // so that these are not added twice.
+            var unused_outputs = [];
+            // nodeView.outputViews contains pre-existing outputs,
+            // while data.data_output contains what should be displayed.
+            // Now we gather the unused outputs
+            $.each(nodeView.outputViews, function(i, output_view) {
+                var cur_name = output_view.output.name;
+                var data_names = data.data_outputs;
+                var cur_name_in_data_outputs = false;
+                _.each(data_names, function(data_name) {
+                    if (data_name.name == cur_name) {
+                        cur_name_in_data_outputs = true;
+                    }
+                });
+                if (cur_name_in_data_outputs === false) {
+                    unused_outputs.push(cur_name)
+                }
+            });
 
+            // Remove the unused outputs
+            _.each(unused_outputs, function(unused_output) {
+                _.each(nodeView.outputViews[unused_output].terminalElement.terminal.connectors, function(x) {
+                    if (x) {
+                            x.destroy();  // Removes the noodle connectors
+                        }
+                });
+                nodeView.outputViews[unused_output].remove();  // removes the rendered output
+                delete nodeView.outputViews[unused_output];  // removes the reference to the output
+                delete node.output_terminals[unused_output];  // removes the output terminal
+            });
+            $.each( node.workflow_outputs, function(i, wf_output){
+                if (wf_output && !node.output_terminals[wf_output.output_name]) {
+                    node.workflow_outputs.splice(i, 1);  // removes output from list of workflow outputs
+                }
+            });
+            $.each( data.data_outputs, function( i, output ) {
+                if (!nodeView.outputViews[output.name]) {
+                    nodeView.addDataOutput(output);  // add data output if it does not yet exist
+                } else {
+                    // the output already exists, but the output formats may have changed.
+                    // Therefore we update the datatypes and destroy invalid connections.
+                    node.output_terminals[ output.name ].datatypes = output.extensions;
+                    node.output_terminals[ output.name ].destroyInvalidConnections();
+                }
+            });
+            this.tool_state = data.tool_state;
+            this.config_form = data.config_form;
+            this.set_tool_version();
+            this.errors = data.errors;
+            this.annotation = data['annotation'];
+            this.label = data.label;
             if( "post_job_actions" in data ) {
                 // Won't be present in response for data inputs
-                var pja_in = $.parseJSON(data.post_job_actions);
+                var pja_in = data.post_job_actions;
                 this.post_job_actions = pja_in ? pja_in : {};
             }
             node.nodeView.renderToolErrors();
@@ -223,13 +270,11 @@ define(['mvc/workflow/workflow-view-node'], function( NodeView ) {
                 nodeView.updateDataOutput( data.data_outputs[ 0 ] );
             }
             old_body.replaceWith( new_body );
-
             if( "workflow_outputs" in data ) {
                 // Won't be present in response for data inputs
                 this.workflow_outputs = workflow_outputs ? workflow_outputs : [];
             }
-
-            // If active, reactivate with new form_html
+            // If active, reactivate with new config_form
             this.markChanged();
             this.redraw();
         },
@@ -237,7 +282,7 @@ define(['mvc/workflow/workflow-view-node'], function( NodeView ) {
             var b = $(this.element).find( ".toolFormBody" );
             b.find( "div" ).remove();
             var tmp = "<div style='color: red; text-style: italic;'>" + text + "</div>";
-            this.form_html = tmp;
+            this.config_form = tmp;
             b.html( tmp );
             this.app.workflow.node_changed( this );
         },

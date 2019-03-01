@@ -1,6 +1,10 @@
 import os, urllib, shelve, logging, json
 from xml.etree import ElementTree
+
 from galaxy.tools import Tool, DataSourceTool
+from galaxy.tools.deps import build_dependency_manager, CondaDependencyResolver, ToolRequirements
+from galaxy.tools.deps.conda_util import CondaTarget
+from galaxy.tools.deps.resolvers.conda import CONDA_SOURCE_CMD
 from galaxy.tools.parser.output_actions import ToolOutputActionGroup
 from galaxy.tools.parser.output_objects import ToolOutput
 from galaxy.tools.parser.output_collection_def import DEFAULT_DATASET_COLLECTOR_DESCRIPTION
@@ -8,9 +12,50 @@ from galaxy.util.odict import odict
 
 log = logging.getLogger( __name__ )
 
-### Proto Tools
+
+# Helper classes
+
+class ProtoCondaDependencyResolver(CondaDependencyResolver):
+    def _get_mulled_environment_name(self, requirements):
+        expanded_requirements = ToolRequirements(
+            [self._expand_requirement(r) for r in requirements])
+        conda_targets = [CondaTarget(r.name, version=r.version) for r in expanded_requirements]
+        return self.merged_environment_name(conda_targets)
+
+    def get_conda_activate_source(self, requirements):
+        env_name = self._get_mulled_environment_name(requirements)
+        environment_path = self.conda_context.env_path(env_name)
+        activate_bin_path = self.conda_context.activate
+        return CONDA_SOURCE_CMD % (
+                    environment_path,
+                    activate_bin_path,
+                    environment_path
+                )
+
+
+# Proto Tools
+
 class ProtoTool(DataSourceTool):
     tool_type = 'proto'
+
+    @property
+    def requires_galaxy_python_environment(self):
+        # Setting this to False will enable activation of tool-specific Conda environment by
+        # Galaxy, which by design excludes the Galaxy Python environment.
+        #
+        # The Galaxy Python environment can still be provided for ProTo tools by an
+        # adjustment in protoToolExecute.py, which adds the Galaxy "lib" directory to the
+        # beginning of PYTHONPATH. However, if the conda environment contains another Python
+        # installation, it will override the Galaxy Python environment. Thus this solution only
+        # works if the Conda environment does not contain Python.
+        #
+        # Do to the complicated issues described above, the default value is set to True. A
+        # different way of activating a tool-specific Conda environment is described in
+        # GeneralGuiTool.py.
+        #
+        # TODO: If some ProTo tools require this to be set to False, one should implement
+        # tool-specific configuration of this option, instead of this global one.
+        return True
 
     def parse_inputs( self, root ):
         Tool.parse_inputs( self, root )
@@ -58,9 +103,17 @@ class ProtoGenericTool(ProtoTool):
         proto_module = root.get('proto_tool_module')
         proto_class = root.get('proto_tool_class')
 
+        requirements = tool_source.parse_requirements_and_containers()[0]
+        if len(requirements) > 0:
+            dep_manager = build_dependency_manager(self.app.config)
+            conda_dep_resolver = ProtoCondaDependencyResolver(dep_manager)
+            conda_activate_source = conda_dep_resolver.get_conda_activate_source(requirements)
+        else:
+            conda_activate_source = None
+
         if proto_module and proto_class:
             s = shelve.open('database/proto-tool-cache.shelve')
-            s[tool_id] = (proto_module, proto_class)
+            s[tool_id] = (proto_module, proto_class, conda_activate_source)
             s.close()
 
         if root.find('inputs') is None:

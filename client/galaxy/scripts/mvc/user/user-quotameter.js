@@ -2,6 +2,7 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( baseMVC, _l ){
+'use strict';
 
 var logNamespace = 'user';
 //==============================================================================
@@ -27,7 +28,7 @@ var UserQuotaMeter = Backbone.View.extend( baseMVC.LoggableMixin ).extend(
         _.extend( this.options, options );
 
         //this.bind( 'all', function( event, data ){ this.log( this + ' event:', event, data ); }, this );
-        this.model.bind( 'change:quota_percent change:total_disk_usage', this.render, this );
+        this.listenTo( this.model, 'change:quota_percent change:total_disk_usage', this.render );
     },
 
     /** Re-load user model data from the api */
@@ -127,8 +128,8 @@ var UserQuotaMeter = Backbone.View.extend( baseMVC.LoggableMixin ).extend(
         return [
             '<div id="quota-meter" class="quota-meter progress">',
                 '<div class="progress-bar" style="width: ', data.quota_percent, '%"></div>',
-                '<div class="quota-meter-text" style="top: 6px"',
-                    (( data.nice_total_disk_usage )?( ' title="Using ' + data.nice_total_disk_usage + '">' ):( '>' )),
+                '<div class="quota-meter-text" data-placement="left" style="top: 6px"',
+                    (( data.nice_total_disk_usage )?( ' title="Using ' + data.nice_total_disk_usage + '.  This value is recalculated when you log out.">' ):( '>' )),
                     _l( 'Using' ), ' ', data.quota_percent, '%',
                 '</div>',
             '</div>'
@@ -138,7 +139,7 @@ var UserQuotaMeter = Backbone.View.extend( baseMVC.LoggableMixin ).extend(
     _templateUsage : function( data ){
         return [
             '<div id="quota-meter" class="quota-meter" style="background-color: transparent">',
-                '<div class="quota-meter-text" style="top: 6px; color: white">',
+                '<div class="quota-meter-text" data-placement="left" data-original-title="This value is recalculated when you log out." style="top: 6px; color: white">',
                     (( data.nice_total_disk_usage )?( _l( 'Using ' ) + data.nice_total_disk_usage ):( '' )),
                 '</div>',
             '</div>'

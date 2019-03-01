@@ -1,0 +1,4 @@
+<tool id="proto_proto_gui_test_tool3" name="Inputs and outputs:" version="1.0.0"
+  tool_type="proto_generic" proto_tool_module="proto.tools.guitest.ProtoGuiTestTool3" proto_tool_class="ProtoGuiTestTool3">
+  <description>Test tool #3 for Galaxy ProTo GUI</description>
+</tool>

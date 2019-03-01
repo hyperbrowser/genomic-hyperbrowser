@@ -5,7 +5,9 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( STATES, DC_LI, DC_VIEW, BASE_MVC, _l ){
-/* global Backbone */
+
+'use strict';
+
 //==============================================================================
 var _super = DC_LI.DCListItemView;
 /** @class Read only view for HistoryDatasetCollectionAssociation (a dataset collection inside a history).
@@ -13,18 +15,14 @@ var _super = DC_LI.DCListItemView;
 var HDCAListItemView = _super.extend(
 /** @lends HDCAListItemView.prototype */{
 
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
-
     className   : _super.prototype.className + " history-content",
 
     /** event listeners */
     _setUpListeners : function(){
         _super.prototype._setUpListeners.call( this );
-
-        this.model.on({
-            'change:populated change:visible' : function( model, options ){ this.render(); },
-        }, this );
+        this.listenTo( this.model, {
+            'change:tags change:populated change:visible' : function( model, options ){ this.render(); },
+        });
     },
 
     /** Override to provide the proper collections panels as the foldout */
@@ -36,6 +34,8 @@ var HDCAListItemView = _super.extend(
                 return DC_VIEW.PairCollectionView;
             case 'list:paired':
                 return DC_VIEW.ListOfPairsCollectionView;
+            case 'list:list':
+                return DC_VIEW.ListOfListsCollectionView;
         }
         throw new TypeError( 'Uknown collection_type: ' + this.model.get( 'collection_type' ) );
     },
@@ -43,7 +43,7 @@ var HDCAListItemView = _super.extend(
     /** In this override, add the state as a class for use with state-based CSS */
     _swapNewRender : function( $newRender ){
         _super.prototype._swapNewRender.call( this, $newRender );
-//TODO: model currently has no state
+        //TODO: model currently has no state
         var state = !this.model.get( 'populated' ) ? STATES.RUNNING : STATES.OK;
         //if( this.model.has( 'state' ) ){
         this.$el.addClass( 'state-' + state );
@@ -84,6 +84,13 @@ HDCAListItemView.prototype.templates = (function(){
                 '<span class="name"><%- collection.name %></span>',
             '</div>',
             '<div class="subtitle"></div>',
+            '<span class="nametags">',
+                '<% _.each(_.sortBy(_.uniq(collection.tags), function(x) { return x }), function(tag){ %>',
+                    '<% if (tag.indexOf("name:") == 0){ %>',
+                        '<span class="label label-info"><%- tag.slice(5) %></span>',
+                    '<% } %>',
+                '<% }); %>',
+            '</span>',
         '</div>'
     ], 'collection' );
 

@@ -1,7 +1,7 @@
 import sys
 from collections import OrderedDict
 from urllib import unquote
-from proto.hyper_gui import load_input_parameters, SelectElement, \
+from proto.gui import load_input_parameters, SelectElement, \
                       GalaxyWrapper, getDataFilePath
 from proto.config import Config
 

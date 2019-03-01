@@ -30,7 +30,7 @@ def parse_mime_type(mime_type):
        ('application', 'xhtml', {'q', '0.5'})
        """
     parts = mime_type.split(";")
-    params = dict( [tuple([s.strip() for s in param.split("=")]) for param in parts[1:] ] )
+    params = dict([tuple([s.strip() for s in param.split("=")]) for param in parts[1:]])
     full_type = parts[0].strip()
     # Java URLConnection class sends an Accept header that includes a single "*"
     # Turn it into a legal wildcard.
@@ -130,6 +130,7 @@ def best_match(supported, header):
                         for mime_type in supported]
     weighted_matches.sort()
     return weighted_matches[-1][0][1] and weighted_matches[-1][1] or ''
+
 
 if __name__ == "__main__":
     import unittest

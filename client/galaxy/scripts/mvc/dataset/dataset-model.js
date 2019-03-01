@@ -3,6 +3,7 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( STATES, BASE_MVC, _l ){
+'use strict';
 
 var logNamespace = 'dataset';
 //==============================================================================
@@ -21,18 +22,11 @@ var DatasetAssociation = Backbone.Model
         state               : STATES.NEW,
         deleted             : false,
         purged              : false,
-
-        // unreliable attribute
         name                : '(unnamed dataset)',
-
-//TODO: update to false when this is correctly passed from the API (when we have a security model for this)
         accessible          : true,
-
         // sniffed datatype (sam, tabular, bed, etc.)
         data_type           : '',
         file_ext            : '',
-
-        // size in bytes
         file_size           : 0,
 
         // array of associated file types (eg. [ 'bam_index', ... ])
@@ -64,26 +58,28 @@ var DatasetAssociation = Backbone.Model
 
     /** returns misc. web urls for rendering things like re-run, display, etc. */
     _generateUrls : function(){
-//TODO: would be nice if the API did this
         var id = this.get( 'id' );
         if( !id ){ return {}; }
         var urls = {
             'purge'         : 'datasets/' + id + '/purge_async',
             'display'       : 'datasets/' + id + '/display/?preview=True',
-            'edit'          : 'datasets/' + id + '/edit',
-            'download'      : 'datasets/' + id + '/display?to_ext=' + this.get( 'file_ext' ),
+            'edit'          : 'datasets/edit?dataset_id=' + id,
+            'download'      : 'datasets/' + id + '/display' + this._downloadQueryParameters(),
             'report_error'  : 'dataset/errors?id=' + id,
             'rerun'         : 'tool_runner/rerun?id=' + id,
             'show_params'   : 'datasets/' + id + '/show_params',
             'visualization' : 'visualization',
             'meta_download' : 'dataset/get_metadata_file?hda_id=' + id + '&metadata_name='
         };
-//TODO: global
         _.each( urls, function( value, key ){
             urls[ key ] = Galaxy.root + value;
         });
         this.urls = urls;
         return urls;
+    },
+
+    _downloadQueryParameters : function() {
+        return '?to_ext=' + this.get( 'file_ext' );
     },
 
     /** set up any event listeners
@@ -129,8 +125,9 @@ var DatasetAssociation = Backbone.Model
 
     /** Does this model already contain detailed data (as opposed to just summary level data)? */
     hasDetails : function(){
-        //?? this may not be reliable
-        return _.has( this.attributes, 'genome_build' );
+        // if it's inaccessible assume it has everything it needs
+        if( !this.get( 'accessible' ) ){ return true; }
+        return this.has( 'annotation' );
     },
 
     /** Convenience function to match dataset.has_data. */
@@ -147,6 +144,25 @@ var DatasetAssociation = Backbone.Model
             });
     },
 
+    /** override to use actual Dates objects for create/update times */
+    parse : function( response, options ){
+        var parsed = Backbone.Model.prototype.parse.call( this, response, options );
+        if( parsed.create_time ){
+            parsed.create_time = new Date( parsed.create_time );
+        }
+        if( parsed.update_time ){
+            parsed.update_time = new Date( parsed.update_time );
+        }
+        return parsed;
+    },
+
+    /** override to wait by default */
+    save : function( attrs, options ){
+        options = options || {};
+        options.wait = _.isUndefined( options.wait ) ? true : options.wait;
+        return Backbone.Model.prototype.save.call( this, attrs, options );
+    },
+
     //NOTE: subclasses of DA's will need to implement url and urlRoot in order to have these work properly
     /** save this dataset, _Mark_ing it as deleted (just a flag) */
     'delete' : function( options ){
@@ -161,25 +177,9 @@ var DatasetAssociation = Backbone.Model
 
     /** remove the file behind this dataset from the filesystem (if permitted) */
     purge : function _purge( options ){
-//TODO: use, override model.destroy, HDA.delete({ purge: true })
+        //TODO: use, override model.destroy, HDA.delete({ purge: true })
         if( this.get( 'purged' ) ){ return jQuery.when(); }
         options = options || {};
-        //var hda = this,
-        //    //xhr = jQuery.ajax( this.url() + '?' + jQuery.param({ purge: true }), _.extend({
-        //    xhr = jQuery.ajax( this.url(), _.extend({
-        //        type : 'DELETE',
-        //        data : {
-        //            purge : true
-        //        }
-        //    }, options ));
-        //
-        //xhr.done( function( response ){
-        //    hda.debug( 'response', response );
-        //    //hda.set({ deleted: true, purged: true });
-        //    hda.set( response );
-        //});
-        //return xhr;
-
         options.url = this.urls.purge;
 
         //TODO: ideally this would be a DELETE call to the api
@@ -207,8 +207,6 @@ var DatasetAssociation = Backbone.Model
     },
 
     // ........................................................................ searching
-    // see base-mvc, SearchableModelMixin
-
     /** what attributes of an HDA will be used in a text search */
     searchAttributes : [
         'name', 'file_ext', 'genome_build', 'misc_blurb', 'misc_info', 'annotation', 'tags'
@@ -324,13 +322,6 @@ var DatasetAssociationCollection = Backbone.Collection.extend( BASE_MVC.Loggable
             return dataset.matches( matchesWhat );
         });
     },
-
-    // ........................................................................ misc
-    ///** Convert this ad-hoc collection of hdas to a formal collection tracked
-    //    by the server.
-    //**/
-    //promoteToHistoryDatasetCollection : function _promote( history, collection_type, options ){
-    //},
 
     /** String representation. */
     toString : function(){
