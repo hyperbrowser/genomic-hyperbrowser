@@ -47,7 +47,6 @@ class TrackFindModule:
         self.logRequest(url, response.elapsed.total_seconds())
 
         return response.json()
-        #return json.loads(response.text)
 
     def getAttributeValues(self, repository, attribute, searchTerm=''):
         repo, hub = self.getRepoAndHub(repository)
@@ -106,11 +105,12 @@ class TrackFindModule:
         return query
 
     def logRequest(self, url, time = 0):
-        logfile = open("apilog", "a", 0)
+        # logfile = open("apilog", "a", 0)
 
-        logfile.write(str(time) + '   ' + url + '\n')
+        # logfile.write(str(time) + '   ' + url + '\n')
 
-        logfile.close()
+        # logfile.close()
+        pass
 
     def getRepoAndHub(self, repository):
         repo, hub = [s.strip() for s in repository.split('-')]
