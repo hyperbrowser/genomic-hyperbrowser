@@ -45,8 +45,6 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
 
-        attrBoxes.append(('', 'attributesListCache'))
-        attrBoxes.append(('', 'topAttributesListCache'))
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             attrBoxes.append((('', 'divider%s' % i)))
@@ -65,7 +63,6 @@ class TrackFindClientTool(GeneralGuiTool):
                               'valueList%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueCheckbox%s' % i))
-        attrBoxes.append(('', 'gsuiteCache'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
@@ -197,27 +194,6 @@ class TrackFindClientTool(GeneralGuiTool):
         return attributes
 
     @classmethod
-    def getOptionsBoxAttributesListCache(cls, prevChoices):
-        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
-            return
-
-        tfm = TrackFindModule()
-        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
-
-        return '__hidden__', attributesInRepo
-
-    @classmethod
-    def getOptionsBoxTopAttributesListCache(cls, prevChoices):
-        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
-            return
-
-        tfm = TrackFindModule()
-        topAttributesInRepo = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
-
-        return '__hidden__', topAttributesInRepo
-
-
-    @classmethod
     def _getValueListBox(cls, prevChoices, index):
         if index > 0 and getattr(prevChoices, 'valueList%s' % (index - 1)) \
                 in [None, cls.SELECT_CHOICE, '']:
@@ -317,21 +293,6 @@ class TrackFindClientTool(GeneralGuiTool):
         else:
             return '__hidden__', ''
 
-    @classmethod
-    def getOptionsBoxGsuiteCache(cls, prevChoices):
-        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
-            return
-
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        if not chosenOptions:
-            return
-
-        tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
-
-        if gsuite:
-            return '__hidden__', gsuite
 
     @classmethod
     def getGsuite(cls, prevChoices):
@@ -347,9 +308,6 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxTrackList(cls, prevChoices):
-        if not prevChoices.gsuiteCache:
-            return
-
         chosenDataTypes = cls.getChosenDataTypes(prevChoices)
         if not chosenDataTypes:
             return
@@ -386,7 +344,9 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxDataTypes(cls, prevChoices):
-        if not prevChoices.gsuiteCache:
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        if not chosenOptions:
             return
 
         dataTypes = defaultdict(int)
@@ -411,7 +371,9 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectTracks(cls, prevChoices):
-        if not prevChoices.gsuiteCache:
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        if not chosenOptions:
             return
 
         return [cls.ALL_TRACKS, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS, cls.MANUAL_TRACK_SELECT]
@@ -483,6 +445,11 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getChosenDataTypes(cls, prevChoices):
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+
+        if not chosenOptions:
+            return
+
         dataTypes = prevChoices.dataTypes
         if not dataTypes:
             return
