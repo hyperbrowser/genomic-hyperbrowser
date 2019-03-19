@@ -51,9 +51,6 @@ class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
             print(childTSR.getResult())
 
             rawResultsDict[key] = childTSR.getResult()
-        print("tmp1: %s" % self._catSummaryFunc)
-        print("tmp2: %s" % self._kwArgs["summaryFunc"])
-        print("Raw results: " + str(rawResults))
 
 
         if self._catSummaryFunc == 'RawResults':
