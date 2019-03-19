@@ -47,8 +47,6 @@ class SummarizedInteractionPerTsCatV2StatUnsplittable(StatisticV2):
             childTSR = child.getResult()
             tsResult[key] = childTSR
             rawResults.append(childTSR.getResult())
-            print(" Child raw result:")
-            print(childTSR.getResult())
 
             rawResultsDict[key] = childTSR.getResult()
 
