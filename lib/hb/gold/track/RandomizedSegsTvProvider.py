@@ -17,7 +17,7 @@ class PermutedSegsAndIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
     def getTrackView(self, region, origTrack, randIndex):
         if region not in self._poolDict:
             self._poolDict[region] = RandomizedSegsTvProviderPool(region, PermutedSegsAndIntersegsTrack)
-        self._poolDict[region].getTrackView(origTrack, randIndex)
+        return self._poolDict[region].getTrackView(origTrack, randIndex)
         # return PermutedSegsAndIntersegsTrack(origTrack, randIndex).getTrackView(region)
 
 class PermutedSegsAndSampledIntersegsTrackViewProvider(WithinTrackRandomTvProvider):
