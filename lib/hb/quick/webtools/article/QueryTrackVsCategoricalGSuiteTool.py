@@ -15,6 +15,7 @@ from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
     SummarizedInteractionPerTsCatV2StatUnsplittable
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
+from quick.statistic.TtestUnpairedTestStat import TtestUnpairedTestStat
 from quick.util import McEvaluators
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -364,10 +365,10 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         core = HtmlCore()
         core.divBegin()
         resTableDict = OrderedDict()
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-            columnNames = ["Query track", "Wilcoxon score", "P-value"]
+            columnNames = ["Query track", choices.randType + " score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
             # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
         else:
@@ -382,22 +383,25 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        wilcoxonResults = None
+        results = None
         resultsMC = None
         cls._startProgressOutput()
         results = cls._getResults(queryTS, catTS, analysisBins, choices)
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
-            wilcoxonResults = cls.getWilcoxonResults(analysisBins, catTS, choices, queryTS).getResult()
+            results = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, queryTS).getResult()
         else:
             resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices)
         cls._endProgressOutput()
-        cls._printResultsHtml(choices, results, resultsMC, wilcoxonResults, galaxyFn)
+        cls._printResultsHtml(choices, results, resultsMC, results, galaxyFn)
 
     @classmethod
-    def getWilcoxonResults(cls, analysisBins, catTS, choices, queryTS):
+    def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, queryTS):
         ts = cls.prepareTrackStructure(queryTS, catTS)
-        analysisSpec = AnalysisSpec(WilcoxonUnpairedTestRV2Stat)
+        stat = WilcoxonUnpairedTestRV2Stat
+        if choices.randType == "T-test":
+            stat = TtestUnpairedTestStat
+        analysisSpec = AnalysisSpec(stat)
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
@@ -426,18 +430,18 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return resultsMC
 
     @classmethod
-    def _printResultsHtml(cls, choices, results, resultsMC, wilcoxonResults, galaxyFn):
+    def _printResultsHtml(cls, choices, results, resultsMC, wilcoxonOrTtestResults, galaxyFn):
         core = HtmlCore()
         core.divBegin()
         core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
         choices.summaryFunc, choices.similarityFunc))
 
-        if wilcoxonResults:
+        if wilcoxonOrTtestResults:
             resTableDict = OrderedDict()
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()]
                 resTableDict[key].append("NA")
-            resTableDict['Wilcoxon'] = [wilcoxonResults['statistic'], wilcoxonResults['p.value']]
+            resTableDict['Wilcoxon'] = [wilcoxonOrTtestResults['statistic'], wilcoxonOrTtestResults['p.value']]
 
             columnNames = ["Group", "Score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
@@ -545,8 +549,11 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         if choices.randType == "Wilcoxon":
             analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
+        elif choices.randType == "T-test":
+            analysisSpec.addParameter('multitrackRawStatistic', TtestUnpairedTestStat.__name__)
         else:
             analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
         analysisSpec.addParameter('pairwiseStatistic',
