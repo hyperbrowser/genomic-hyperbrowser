@@ -383,17 +383,17 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        results = None
+        resultsWilcoxonTtest = None
         resultsMC = None
         cls._startProgressOutput()
         results = cls._getResults(queryTS, catTS, analysisBins, choices)
         if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
-            results = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, queryTS).getResult()
+            resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, queryTS).getResult()
         else:
             resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices)
         cls._endProgressOutput()
-        cls._printResultsHtml(choices, results, resultsMC, results, galaxyFn)
+        cls._printResultsHtml(choices, results, resultsMC, resultsWilcoxonTtest, galaxyFn)
 
     @classmethod
     def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, queryTS):
