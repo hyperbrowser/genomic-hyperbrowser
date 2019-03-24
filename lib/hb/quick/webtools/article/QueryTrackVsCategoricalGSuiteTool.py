@@ -331,7 +331,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Mandatory unless isRedirectTool() returns True.
         """
-        # DebugUtil.insertBreakPoint(5678)
+        DebugUtil.insertBreakPoint(5678)
 
         cls._setDebugModeIfSelected(choices)
 
@@ -488,12 +488,18 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def prepareAnalysis(cls, choices):
-        analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+
+        if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+            analysisSpec = AnalysisSpec(DiffOfSummarizedRanksPerTsCatV2Stat)
+            analysisSpec.addParameter('selectedCategory', choices.categoryVal)
+        else:
+            analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+            analysisSpec.addParameter('summaryFunc',
+                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('summaryFunc',
-                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         return analysisSpec
 
