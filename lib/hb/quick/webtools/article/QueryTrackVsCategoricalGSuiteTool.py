@@ -331,7 +331,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Mandatory unless isRedirectTool() returns True.
         """
-        DebugUtil.insertBreakPoint(5678)
+        # DebugUtil.insertBreakPoint(5678)
 
         cls._setDebugModeIfSelected(choices)
 
