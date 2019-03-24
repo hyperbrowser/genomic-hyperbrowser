@@ -455,8 +455,11 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 resTableDict[key].append("NA")
                 resTableDict[key].append("NA")
                 resTableDict[key].append("NA")
+            testStatLbl = 'TSMC_' + DiffOfSummarizedRanksPerTsCatV2Stat.__name__ if \
+                choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL else \
+                'TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__
             resTableDict[choices.catSummaryFunc] = [
-                resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
+                resultsMC[choices.categoryVal].getResult()[testStatLbl],
                 resultsMC[choices.categoryVal].getResult()[McEvaluators.PVAL_KEY],
                 resultsMC[choices.categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
                 resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
@@ -485,12 +488,17 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def prepareAnalysis(cls, choices):
-        analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+
+        if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+            analysisSpec = AnalysisSpec(DiffOfSummarizedRanksPerTsCatV2Stat)
+        else:
+            analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+            analysisSpec.addParameter('summaryFunc',
+                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('summaryFunc',
-                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         return analysisSpec
 
