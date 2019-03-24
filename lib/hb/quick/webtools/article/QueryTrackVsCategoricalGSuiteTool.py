@@ -488,17 +488,12 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def prepareAnalysis(cls, choices):
-
-        if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
-            analysisSpec = AnalysisSpec(DiffOfSummarizedRanksPerTsCatV2Stat)
-        else:
-            analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
-            analysisSpec.addParameter('summaryFunc',
-                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
-
+        analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
+        analysisSpec.addParameter('summaryFunc',
+                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         return analysisSpec
 
