@@ -21,6 +21,7 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
     def getToolName(cls):
         return "Operations on hGSuite"
 
+
     @classmethod
     def getInputBoxNames(cls):
         return [('Do you need two hGSuites', 'gSuiteNum'),

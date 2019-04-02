@@ -21,9 +21,11 @@ from gold.track.TrackStructure import SingleTrackTS, TrackStructureV2, FlatTrack
 from functools import partial
 from proto.hyperbrowser.StaticFile import StaticImage
 
-class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
 
-    MAIN_OPTIONS = ['Select one value', 'Show results for each value', 'Aggregate across this dimension']
+class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
+                                              DebugMixin):
+    MAIN_OPTIONS = ['Select one value', 'Show results for each value',
+                    'Aggregate across this dimension']
     OPTIONS_LIST = ['sum', 'average', 'max', 'min']
     COUNT = 'Count'
     MAX_NUM_OF_COLS_IN_GSUITE = 10
@@ -31,7 +33,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     MAX_NUM_OF_STAT = 1
     INFO_1 = 'You have define levels of dimensions in your hGSuite so by defualt your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
-    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's title."
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
     INFO_ALL = ''
     PHRASE = '-- SELECT --'
 
@@ -39,8 +41,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     NORMALIZESTAT = 'Normalize (Coverege divided by sum of coverages)'
     OBSVSEXPECTEDSTAT = 'Compare of observed coverege values vs expected coverage values'
 
-    SUMMARIZE = {'sum': 'sum', 'average': 'average', 'minimum': 'min', 'maximum': 'max', 'no': 'no', 'raw': 'raw'}
-    STAT_LIST = {NORMALIZESTAT: 'Count/SumStat', OBSVSEXPECTEDSTAT: 'ObsVsExpStat', COUNTSTAT: 'CountStat'}
+    SUMMARIZE = {'sum': 'sum', 'average': 'average', 'minimum': 'min', 'maximum': 'max',
+                 'no': 'no', 'raw': 'raw'}
+    STAT_LIST = {NORMALIZESTAT: 'Count/SumStat', OBSVSEXPECTEDSTAT: 'ObsVsExpStat',
+                 COUNTSTAT: 'CountStat'}
 
     @classmethod
     def getToolName(cls):
@@ -51,31 +55,31 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
         return [
                    ('Select hGSuite', 'gsuite')] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
+               cls.getInputBoxNamesForGenomeSelection() + \
                [('Select statistic ',
                  'selectedStat%s' % i) for i \
                 in range(cls.MAX_NUM_OF_STAT)] + \
                [('Information', 'groupDefined')] + \
                [('Do you want to specify groups', 'groupResponse')] + \
                [('', 'preselectedGroup')] + \
-               [('Select the column which define the group at level %s' % (i + 2) + '', 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('Select the column which define the group at level %s' % (i + 2) + '',
+                 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Do you want to have preselected presenting options', 'preselectedDecision')] + \
-               [('Select main option for the group at level %s' % (i + 1) + '', 'selectedMainOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+               [('Select main option for the group at level %s' % (i + 1) + '',
+                 'selectedMainOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('', 'selectedOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
-               # [('Do you want to summarize results within groups', 'summarizeResponse')] + \
-               # [('Select summary operation for results', 'summarize')] + \
-               # [('Do you treat two groups as the same', 'question')] + \
-               # [('Do you want to do above summarize data for column %s' % (
-               # i + 1) + ' from hGSuite (val1,val2;val3;val4 means val1 operation val2 and val3 operation val4)',
-               #    'selectedColumnOption%s' % i) for i in
-               #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-               # [('Text %s' % (i + 1) + ' from hGSuite ',
-               #                                    'selectedText%s' % i) for i in
-               #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-
-
+        # [('Do you want to summarize results within groups', 'summarizeResponse')] + \
+        # [('Select summary operation for results', 'summarize')] + \
+        # [('Do you treat two groups as the same', 'question')] + \
+        # [('Do you want to do above summarize data for column %s' % (
+        # i + 1) + ' from hGSuite (val1,val2;val3;val4 means val1 operation val2 and val3 operation val4)',
+        #    'selectedColumnOption%s' % i) for i in
+        #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+        # [('Text %s' % (i + 1) + ' from hGSuite ',
+        #                                    'selectedText%s' % i) for i in
+        #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -86,7 +90,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         if prevChoices.gsuite:
             if not any(cls.PHRASE in getattr(prevChoices, 'selectedStat%s' % i) for i in
                        xrange(index)):
-
                 attrList = [getattr(prevChoices, 'selectedStat%s' % i) for i in xrange(index)]
                 selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
 
@@ -95,12 +98,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def setupSelectedStatMethods(cls):
         for i in xrange(cls.MAX_NUM_OF_STAT):
-            setattr(cls, 'getOptionsBoxSelectedStat%s' % i, partial(cls._getOptionsBoxForSelectedStat, index=i))
-
+            setattr(cls, 'getOptionsBoxSelectedStat%s' % i,
+                    partial(cls._getOptionsBoxForSelectedStat, index=i))
 
     @classmethod
     def getOptionsBoxGroupDefined(cls, prevChoices):
-        #parse GSuite and get metadata about dimensions
+        # parse GSuite and get metadata about dimensions
         statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
         if len(statList) > 0:
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
@@ -120,11 +123,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 if len(statList) > 0:
                     return '__hidden__', 'yes'
 
-
     @classmethod
     def getOptionsBoxPreselectedGroup(cls, prevChoices):
         return '__rawstr__', cls.INFO_3
-    #coremine
+
+    # coremine
 
     @classmethod
     def getHowManyStatHaveBeenSelected(cls, prevChoices):
@@ -160,7 +163,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             if len(statList) > 0:
                 if prevChoices.groupResponse:
                     if prevChoices.groupResponse != 'no':
-                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i
+                                   in
                                    xrange(index)):
                             gSuiteTNFirst = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             selectionList += gSuiteTNFirst.attributes
@@ -199,13 +203,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def _getOptionsBoxForSelectedMainOption(cls, prevChoices, index):
         if prevChoices.gsuite:
-            #return cls.MAIN_OPTIONS
+            # return cls.MAIN_OPTIONS
             if prevChoices.preselectedDecision:
                 if prevChoices.preselectedDecision == 'no':
                     pass
                 else:
                     if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
-                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index)):
+                        if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i
+                                   in xrange(index)):
                             return cls.MAIN_OPTIONS
                     else:
                         if int(index) <= cls.MAX_NUM_OF_COLS:
@@ -222,23 +227,29 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         if prevChoices.gsuite:
             if prevChoices.preselectedDecision and prevChoices.preselectedDecision != 'no':
                 if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
-                    dfTF = any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index))
+                    dfTF = any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                               xrange(index))
                     if not dfTF:
                         attr = []
                         for i in xrange(index + 1):
                             attr.append(getattr(prevChoices, 'selectedColumn%s' % i))
-                            selOption = getattr(prevChoices, 'selectedMainOption%s' % i).encode('utf-8')
+                            selOption = getattr(prevChoices, 'selectedMainOption%s' % i).encode(
+                                'utf-8')
 
                         if cls.MAIN_OPTIONS[0] == selOption:
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
-                                return list(set(gSuite.allTrackTitles()))
+                                try:
+                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                except:
+                                    return list(set(gSuite.allTrackTitles()))
                             else:
-                                j = index-1
-                                selectedAttribute = getattr(prevChoices, 'selectedColumn%s' % j).encode('utf-8')
+                                j = index - 1
+                                selectedAttribute = getattr(prevChoices,
+                                                            'selectedColumn%s' % j).encode('utf-8')
                                 return list(set(gSuite.getAttributeValueList(selectedAttribute)))
                         elif cls.MAIN_OPTIONS[1] == selOption:
-                          pass
+                            pass
                         else:
                             return cls.OPTIONS_LIST
                 else:
@@ -246,21 +257,25 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         attr = []
                         for i in xrange(index + 1):
                             attr.append(getattr(prevChoices, 'selectedColumn%s' % i))
-                            selOption = getattr(prevChoices, 'selectedMainOption%s' % i).encode('utf-8')
+                            selOption = getattr(prevChoices, 'selectedMainOption%s' % i).encode(
+                                'utf-8')
 
                         if cls.MAIN_OPTIONS[0] == selOption:
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
-                                return list(set(gSuite.allTrackTitles()))
+                                try:
+                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                except:
+                                    return list(set(gSuite.allTrackTitles()))
                             else:
                                 j = index - 1
-                                selectedAttribute = getattr(prevChoices, 'selectedColumn%s' % j).encode('utf-8')
+                                selectedAttribute = getattr(prevChoices,
+                                                            'selectedColumn%s' % j).encode('utf-8')
                                 return list(set(gSuite.getAttributeValueList(selectedAttribute)))
                         elif cls.MAIN_OPTIONS[1] == selOption:
                             pass
                         else:
                             return cls.OPTIONS_LIST
-
 
     @classmethod
     def setupSelectedOptionMethods(cls):
@@ -356,15 +371,27 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         groupResponse = choices.groupResponse.encode('utf-8')
         preselectedDecision = choices.preselectedDecision.encode('utf-8')
-        #summarize = choices.summarize.encode('utf-8')
-        #summarizeResponse = choices.summarizeResponse.encode('utf-8')
-        #it need to be covered by javascript now
+        # summarize = choices.summarize.encode('utf-8')
+        # summarizeResponse = choices.summarizeResponse.encode('utf-8')
+        # it need to be covered by javascript now
         summarizeResponse = 'no'
         summarize = 'no'
 
+        orgnalTitleAll = {}
+        orgnalTitleAllCount = 0
+        try:
+            for x in gSuite.allTracks():
+                orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
+            orgnalTitleAllCount = 1
+        except:
+            pass
+
         if preselectedDecision != 'no':
-            mainOptionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedMainOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
-            optionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            mainOptionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(
+                choices, 'selectedMainOption%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
+            optionList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
+                                                                                         'selectedOption%s',
+                                                                                         cls.MAX_NUM_OF_COLS_IN_GSUITE)
 
             # print 'mainOptionList', mainOptionList, '<br>'
             # print 'optionList', optionList, '<br>'
@@ -421,11 +448,13 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'colList', colList, '<br>'
         # print 'columnOptionsDict', columnOptionsDict, '<br>'
 
-        #asked Sveinung for help
-        #regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        # asked Sveinung for help
+        # regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         regSpec, binSpec = "__chrs__", "*"
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=gSuite.genome)
-        statList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedStat%s', cls.MAX_NUM_OF_STAT)
+        statList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
+                                                                                   'selectedStat%s',
+                                                                                   cls.MAX_NUM_OF_STAT)
         selectedAnalysis = cls.addStat(choices, statList)
         gsuiteOutput = CountDescriptiveStatisticBetweenHGsuiteTool._getAttributes(gSuite, colList)
         whichGroups = cls.createGroups(gSuite, colList, gsuiteOutput)
@@ -444,10 +473,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 sumBp[stat] = 0
             for groupKey, groupItem in whichGroups.iteritems():
 
-                #if cls.SUMMARIZE[summarize] != 'no':
-                groupKey = CountDescriptiveStatisticBetweenHGsuiteTool.changeOptions(columnOptionsDict, groupKey)
+                # if cls.SUMMARIZE[summarize] != 'no':
+                groupKey = CountDescriptiveStatisticBetweenHGsuiteTool.changeOptions(
+                    columnOptionsDict, groupKey)
 
-                #print '-groupKey-', groupKey, '<br>'
+                # print '-groupKey-', groupKey, '<br>'
                 if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
                     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
 
@@ -459,16 +489,21 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     if stat == cls.NORMALIZESTAT or stat == cls.OBSVSEXPECTEDSTAT:
                         sumBp[stat] += countPerTrack
 
-                    #remove the opeation which happens before
-                    # if cls.SUMMARIZE[summarize] == 'no':
-                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append([gi.metadata['title'], gi.metadata['title'], countPerTrack])
-                    # else:
-                        #resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(countPerTrack)
+                        # remove the opeation which happens before
+                        # if cls.SUMMARIZE[summarize] == 'no':
+                        #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append([gi.metadata['title'], gi.metadata['title'], countPerTrack])
+                        # else:
+                        # resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(countPerTrack)
                     if cls.SUMMARIZE[summarize] == 'raw':
-                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append([gi.metadata['title'], countPerTrack])
+                        title = gi.metadata['title']
+                        if orgnalTitleAllCount == 1:
+                            orginalTitle = orgnalTitleAll[title]
+                        else:
+                            orginalTitle = title
+                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
+                            [orginalTitle, countPerTrack])
 
-
-        #print 'resultsDict',resultsDict, '<br>'
+        # print 'resultsDict',resultsDict, '<br>'
         # print 'colList', colList, '<br>'
         # print 'summarize', summarize, '<br>'
         # print 'sumBp', sumBp, '<br>'
@@ -480,21 +515,31 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 """
 
         htmlCore = HtmlCore()
-        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'], extraJavaScriptCode=extraJavaScriptCode)
+        htmlCore.begin(extraCssFns=['hb_base.css', 'hgsuite.css'],
+                       extraJavaScriptCode=extraJavaScriptCode)
 
         htmlCore.bigHeader('Results for descriptive statistic between hGSuite')
         htmlCore.header('Description')
         htmlCore.paragraph(
             'You can see results in two ways: table with results and plot. ')
         htmlCore.header('Interpretation of results')
-        htmlCore.paragraph('Click on the following options for selected statistic to see detailed results. ')
+        htmlCore.paragraph(
+            'Click on the following options for selected statistic to see detailed results. ')
 
-        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp, mainOptionList, optionList)
+        print 'galaxyFn', galaxyFn, '<br>'
+        print 'resultsDict', resultsDict, '<br>'
+        print 'colList', colList, '<br>'
+        print 'mainoptionlisy', mainOptionList, '<br>'
+        print 'otionList', optionList, '<br>'
+
+        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp,
+                         mainOptionList, optionList)
         htmlCore.end()
         print htmlCore
 
     @classmethod
-    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList, summarize, sumBp, mainOptionList, optionList):
+    def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
+                     summarize, sumBp, mainOptionList, optionList):
 
         cube = Cube()
         statNum = 0
@@ -512,10 +557,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         for g in groupKey:
                             if not g in expectedDict.keys():
                                 expectedDict[g] = 0
-                            # print groupItem, '<br>'
-                            # print sumBp, statKey, '<br>'
-                            expectedDict[g] += float(sum([g[-1] for g in groupItem]))/float(sumBp[statKey])
-
+                            # prinzt sumBp, statKey, '<br>'
+                            expectedDict[g] += float(sum([g[-1] for g in groupItem])) / float(
+                                sumBp[statKey])
 
                 for summarizeKey, summarizeItem in statItem.iteritems():
                     for groupKey, groupItem in summarizeItem.iteritems():
@@ -546,20 +590,23 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
-                #dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
+                # dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
                 dp = zip(*data)
+                print 'aa'
             elif summarizeKey == 'raw':
-                header = firstColumnList + secondColumnList + ['Title'] + [summarizeKey]
+                header = ['Title'] + firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
                 # print 'dataToPresent', dataToPresent,'<br>'
                 # print 'header', header,'<br>'
                 # headerToPresent = header
                 dp = zip(*dataToPresent)
+                print 'bb'
             else:
                 header = firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
-                #headerToPresent = header
+                # headerToPresent = header
                 dp = zip(*dataToPresent)
+                print 'cc'
 
             optionData = []
             for z in range(0, len(dp) - 1):
@@ -576,12 +623,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             fileStat = GalaxyRunSpecificFile([statKey + '.tabular'], galaxyFn)
             fileStatPath = fileStat.getDiskPath(ensurePath=True)
             wf = open(fileStatPath, 'w')
-            i=0
+            i = 0
             for d in data:
-                if i ==0:
-                    wf.write('\t'.join([str('attribute')+str(dd) for dd in range(0, len(d)+1)]) + '\n')
-                wf.write('-'.join([str(d[dd]) for dd in range(0, len(d)-1)]) + '\t' + '\t'.join([str(dd) for dd in d]) + '\n')
-                i+=1
+                if i == 0:
+                    wf.write('\t'.join(
+                        [str('attribute') + str(dd) for dd in range(0, len(d) + 1)]) + '\n')
+                wf.write('-'.join([str(d[dd]) for dd in range(0, len(d) - 1)]) + '\t' + '\t'.join(
+                    [str(dd) for dd in d]) + '\n')
+                i += 1
 
             divId = 'results' + str(statKey)
 
@@ -608,7 +657,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                   }
                                   else
                                   {
-                                      if (el.tagName == 'DIV' && el.id != 'resultsHeader-""" + str(statKey) + """')
+                                      if (el.tagName == 'DIV' && el.id != 'resultsHeader-""" + str(
+                statKey) + """')
                                       {
                                           if ($(el).attr('class') == "hidden") 
                                           {
@@ -621,7 +671,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                       }
                                   }
                                 }
-                                
+
                             });
                         });
                         </script>
@@ -646,9 +696,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.divEnd()
             htmlCore.divEnd()
 
-
             htmlCore.line(
-                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum, mainOptionList, optionList, option = 'raw'))
+                cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum,
+                                   mainOptionList, optionList, option='raw'))
             htmlCore.divEnd()
             htmlCore.divEnd()
 
@@ -672,10 +722,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             elif summarizeKey == 'max':
                 data.append(list(groupKey) + [
                     (float(max(groupItem)) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
-            elif summarizeKey == 'raw': #double check it
+            elif summarizeKey == 'raw':  # double check it
                 for g in groupItem:
                     try:
-                        data.append([g[0]] + list(groupKey) + [(float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+                        data.append([g[0]] + list(groupKey) + [
+                            (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
                     except:
                         data.append([g[0]] + [
                             (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
@@ -697,7 +748,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     def addStat(cls, choices, statList):
         selectedAnalysis = []
         for a in statList:
-            if cls.STAT_LIST[a] == 'CountStat' or cls.STAT_LIST[a] == 'Count/SumStat' or cls.STAT_LIST[a] == 'ObsVsExpStat':
+            if cls.STAT_LIST[a] == 'CountStat' or cls.STAT_LIST[a] == 'Count/SumStat' or \
+                            cls.STAT_LIST[a] == 'ObsVsExpStat':
                 analysisSpec = AnalysisSpec(SingleTSStat)
                 analysisSpec.addParameter('rawStatistic', CountStat.__name__)
                 selectedAnalysis.append(analysisSpec)
@@ -716,7 +768,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             attrTuple = tuple(attrTuple)
 
             sts = SingleTrackTS(PlainTrack(track.trackName),
-                          OrderedDict(title=track.title, genome=str(gSuite.genome)))
+                                OrderedDict(title=track.title, genome=str(gSuite.genome)))
             whichGroups[attrTuple].append(sts)
         return whichGroups
 
@@ -753,6 +805,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def isPublic(cls):
         return True
+
     #
     # @classmethod
     # def isRedirectTool(cls):
@@ -834,9 +887,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                           ]
 
         urlexample1Output = StaticImage(['hgsuite', 'img',
-                                      'CountDescriptiveStatisticForHGSuiteTool-img1.png']).getURL()
+                                         'CountDescriptiveStatisticForHGSuiteTool-img1.png']).getURL()
         urlexample2Output = StaticImage(['hgsuite', 'img',
-                                      'CountDescriptiveStatisticForHGSuiteTool-img2.png']).getURL()
+                                         'CountDescriptiveStatisticForHGSuiteTool-img2.png']).getURL()
 
         urlexample3Output = StaticImage(['hgsuite', 'img',
                                          'CountDescriptiveStatisticForHGSuiteTool-img3.png']).getURL()
@@ -847,7 +900,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                          'CountDescriptiveStatisticForHGSuiteTool-img5.png']).getURL()
         urlexample6Output = StaticImage(['hgsuite', 'img',
                                          'CountDescriptiveStatisticForHGSuiteTool-img6.png']).getURL()
-
 
         example = OrderedDict({'Example 1 - summarize within groups: no': ['', ["""
     ##location: local
@@ -860,16 +912,21 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     hb:/external/gsuite/c2/c298599af8b0d539/track3.bed	track3.bed	iota
     hb:/external/gsuite/c2/c298599af8b0d539/track4.bed	track4.bed	iota
                 """],
-                 [
-                     ['Select hGSuite', 'gsuite'],
-                     ['Select statistic 1', 'Coverage'],
-                     ['Summarize within groups', 'no'],
-                 ],
-                 [
-                 '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample1Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample2Output + '" /></div>'
-                  ]
-                ]
-                   ,'Example 2 - summarize within groups: maximum': ['', ["""
+                                                                           [
+                                                                               ['Select hGSuite',
+                                                                                'gsuite'],
+                                                                               [
+                                                                                   'Select statistic 1',
+                                                                                   'Coverage'],
+                                                                               [
+                                                                                   'Summarize within groups',
+                                                                                   'no'],
+                                                                           ],
+                                                                           [
+                                                                               '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample1Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample2Output + '" /></div>'
+                                                                           ]
+                                                                           ]
+                                  , 'Example 2 - summarize within groups: maximum': ['', ["""
     ##location: local
     ##file format: preprocessed
     ##track type: unknown
@@ -882,16 +939,24 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	CA	iota
     hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track6.bed	GT	iota
               """],
-                                         [
-                                             ['Select hGSuite', 'gsuite'],
-                                             ['Select statistic 1','Coverage'],
-                                             ['Summarize within groups', 'maximum'],
-                                             ['Select group 1', 'genotype']
-                                         ],
-                                         [
-                                             '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample3Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample4Output + '" /></div>']
-                                         ]
-            , 'Example 3 - summarize within groups: sum': ['', ["""
+                                                                                     [
+                                                                                         [
+                                                                                             'Select hGSuite',
+                                                                                             'gsuite'],
+                                                                                         [
+                                                                                             'Select statistic 1',
+                                                                                             'Coverage'],
+                                                                                         [
+                                                                                             'Summarize within groups',
+                                                                                             'maximum'],
+                                                                                         [
+                                                                                             'Select group 1',
+                                                                                             'genotype']
+                                                                                     ],
+                                                                                     [
+                                                                                         '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample3Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample4Output + '" /></div>']
+                                                                                     ]
+                                  , 'Example 3 - summarize within groups: sum': ['', ["""
     ##location: local
     ##file format: preprocessed
     ##track type: unknown
@@ -904,20 +969,34 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	CA	iota
     hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track6.bed	GT	iota
                """],
-                 [
-                     ['Select hGSuite', 'gsuite'],
-                     ['Select statistic 1','Coverage'],
-                     ['Summarize within groups','sum'],
-                     ['Select group 1','genotype'],
-                     ['Select group 2', 'mutation'],
-                     ['Do you want summarize data within group 1 from hGSuite ', ''],
-                     ['Do you want summarize data within group 2 from hGSuite ', 'CA,GT;CG,GC;'],
-                 ],
-                 [
-                     '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample5Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample6Output + '" /></div>']
-                 ]
+                                                                                 [
+                                                                                     [
+                                                                                         'Select hGSuite',
+                                                                                         'gsuite'],
+                                                                                     [
+                                                                                         'Select statistic 1',
+                                                                                         'Coverage'],
+                                                                                     [
+                                                                                         'Summarize within groups',
+                                                                                         'sum'],
+                                                                                     [
+                                                                                         'Select group 1',
+                                                                                         'genotype'],
+                                                                                     [
+                                                                                         'Select group 2',
+                                                                                         'mutation'],
+                                                                                     [
+                                                                                         'Do you want summarize data within group 1 from hGSuite ',
+                                                                                         ''],
+                                                                                     [
+                                                                                         'Do you want summarize data within group 2 from hGSuite ',
+                                                                                         'CA,GT;CG,GC;'],
+                                                                                 ],
+                                                                                 [
+                                                                                     '<div style = "margin: 0px auto;" ><img style="margin-left:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:left;padding-left:0px;" width="300" src="' + urlexample5Output + '" /><img  style="margin-right:30px;border-radius: 15px;border: 1px dotted #3d70b2;float:right;padding-left:0px;" width="300" src="' + urlexample6Output + '" /></div>']
+                                                                                 ]
 
-                   })
+                               })
 
         toolResult = '<p>The output of this tool is a page with visualizations. </p>' \
                      'Detailed information about results. You can <b>download raw file</b> with results <br>' \
@@ -926,14 +1005,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                      '- Show all series as one in the plots - show all data as one series <br>' \
                      "- Remove zeros from plots - remove value 0 from plots"
 
-
-
-
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,
                                           toolResult=toolResult,
                                           exampleDescription=example)
-
 
     #
     # @classmethod
@@ -975,13 +1050,13 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     def getInputBoxOrder(cls):
 
         data = ['selectedText%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
-        #dataText = ['selectedColumnOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
+        # dataText = ['selectedColumnOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
 
         mainOption = ['selectedMainOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
         option = ['selectedOption%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)]
         optionFlatList = [item for sublist in zip(mainOption, option) for item in sublist]
 
-        #flat_list = [item for sublist in zip(data, dataText) for item in sublist]
+        # flat_list = [item for sublist in zip(data, dataText) for item in sublist]
 
         bins = [x[1] for x in cls.getInputBoxNamesForUserBinSelection()]
 
@@ -990,30 +1065,30 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                ['preselectedGroup'] + \
                ['groupResponse'] + \
                ['groupDefined'] + \
-               ['selectedColumn%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + ['preselectedDecision'] + optionFlatList
-               # ['summarizeResponse', 'summarize', 'question'] + flat_list #+ bins
-
-
+               ['selectedColumn%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + [
+                   'preselectedDecision'] + optionFlatList
+        # ['summarizeResponse', 'summarize', 'question'] + flat_list #+ bins
 
     @classmethod
     def getOutputFormat(cls, choices):
         return 'customhtml'
 
 
-    #
-    # @classmethod
-    # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
-    #     """
-    #     The title (name) of the main output history element.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #     the name of the tool.
-    #     """
+        #
+        # @classmethod
+        # def getOutputName(cls, choices=None):
+        #     return cls.getToolSelectionName()
+        #     """
+        #     The title (name) of the main output history element.
+        #
+        #     Optional method. Default return value if method is not defined:
+        #     the name of the tool.
+        #     """
+
 
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedStatMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedMainOptionMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedOptionMethods()
-#CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnOptionMethods()
-#CountDescriptiveStatisticForHGSuiteTool.setupSelectedTextMethods()
+# CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnOptionMethods()
+# CountDescriptiveStatisticForHGSuiteTool.setupSelectedTextMethods()
