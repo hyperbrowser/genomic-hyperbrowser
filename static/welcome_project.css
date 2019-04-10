@@ -153,7 +153,6 @@
         }
 
         a:hover {
-            color: #f3ece7
         }
 
         
@@ -188,7 +187,6 @@
             .example p
             {
                 border:none;
-                font-weight: bold;
             }
             .exampleDesc a
             {
@@ -258,8 +256,38 @@
 
             .imgzoom img {
             max-width: 100%;
-            display: block;
         }
+
+            .main{
+                font-weight: normal;
+                width:100%;
+                overflow: hidden;
+                clear: both;
+            }
+            .leftMain{
+                float: left;
+                width: 25%;
+            }
+            .middleMain{
+                float: right;
+                width: 25%;
+            }
+            .rightMain{
+                width: 44%;
+                float: left;
+                margin: 20px;
+                overflow: hidden;
+            }
+
+            .onlyLeft{
+                float: left;
+                width: 25%;
+            }
+            .onlyRight{
+                float: left;
+                width: 70%;
+                overflow: hidden;
+            }
 
         .imgzoom {
 

@@ -1,50 +1,343 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script><link rel="stylesheet" href="welcome_project.css"><meta charset='UTF-8'><title>Beware the Jaccard: the choice of metric is important and non-trivial in genomic co-localisation analysis</title></head><body><div class='content'><div class ="tabs"> <ul class ="nav nav-tabs" id="tab-links"><li class="active" value="tab0"><a data-toggle="tab" href="#menu0">Main page</a></li><li  value="tab1"><a data-toggle="tab" href="#menu1"></a></li><li  value="tab2"><a data-toggle="tab" href="#menu2">List of other projects</a></li><li  value="tab3"><a data-toggle="tab" href="#menu3">About</a></li></ul></div> <div class="tab-content"><div id="menu0" class="tab-pane fade  in active"><div class="container">
-                            <div class="rowSpecial">
-                                <div class="colAll"><h2 class="projectTitle">Beware the Jaccard: the choice of metric is important and non-trivial in genomic co-localisation analysis</h2><div class = 'example'><h4 class = 'exampleTitle'>Model assumption 1 - Binary underlying reality</h4><div class = 'exampleDesc'><p class="paragraph">Link to original tracks used for the simulation analyses</p><a href = '../u/hb-superuser/h//datasetsmodel-assumption-1' >Data under model assumption 1</a></div></div>
-<div class = 'example'><h4 class = 'exampleTitle'>Subsetting of different tracks with constant 5% False discovery rate (FDR) under model assumption 1</h4><div class = 'exampleDesc'><p class="paragraph">The history elements show the 10 generated tracks subset from GATA2 using different subsetting probability</p><a href = '../u/hb-superuser/h/2-subsetting-from-gata2-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >Data generated for GATA2</a></div></div>
-<div class = 'example'><div class = 'exampleDesc'><p class="paragraph">The history elements show the 10 generated tracks subset from the transcription factor track using different subsetting probability</p><a href = '../u/hb-superuser/h/3-subsetting-from-transcription-factor-tf-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >Data generated for TF</a></div></div>
-<div class = 'example'><div class = 'exampleDesc'><p class="paragraph">The history elements show the 10 generated tracks subset from the histone modification track using different subsetting probability</p><a href = '../u/hb-superuser/h/4-subsetting-from-histone-modification-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >Data generated for histone modification</a></div></div>
-<div class = 'example'><h4 class = 'exampleTitle'>Subsetting of different tracks with constant 50% False discovery rate (FDR) under model assumption 1 </h4><div class = 'exampleDesc'><p class="paragraph">The history elements show the 10 generated tracks subset from GATA2 using different subsetting probabilities</p><a href = '../u/hb-superuser/h/5-subsetting-from-gata2-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >Data generated for GATA2</a></div></div>
-<div class = 'example'><div class = 'exampleDesc'><p class="paragraph">The history elements show the 10 generated tracks subset from the transcription factor track using different subsetting probabilities</p><a href = '../u/hb-superuser/h/6-subsetting-from-tf-track-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >Data generated for TF</a></div></div>
-<div class = 'example'><div class = 'exampleDesc'><p class="paragraph">The history elements show the 10 generated tracks subset from the histone modification track using different subsetting probabilities</p><a href = '../u/hb-superuser/h/7-subsetting-from-histone-modification-track-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >Data for histone modification</a></div></div>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="welcome_project.css"><meta charset='UTF-8'>
+    <title>Beware the Jaccard: the choice of metric is important and non-trivial in genomic co-localisation analysis</title></head><body>
+<div class='content'>
+    <div class ="tabs">
+        <ul class ="nav nav-tabs" id="tab-links">
+        <li class="active" value="tab0"><a data-toggle="tab" href="#menu0">Project page</a></li>
+        <li  value="tab2"><a data-toggle="tab" href="#menu2">List of other projects</a></li>
+        <li  value="tab3"><a data-toggle="tab" href="#menu3">About</a></li></ul>
+    </div>
+    <div class="tab-content">
+        <div id="menu0" class="tab-pane fade  in active">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAll">
+                    <h2 class="projectTitle">
+                        Beware the Jaccard: the choice of metric is important and non-trivial in genomic co-localisation analysis
+                    </h2>
+                    <p class="paragraph">The generation and systematic collection of genome-wide data is ever-increasing.
+                    This vast amount of data has enabled researchers to study relations between a variety of genomic and epigenomic features,
+                    including genetic variation, gene regulation, and phenotypic traits. Such relations are typically investigated by comparatively assessing genomic co-occurrence.
+                    Technically, this corresponds to assessing the similarity of pairs of genome-wide binary vectors. A variety of measures have been proposed for this problem in other fields
+                    like ecology. However, while several of these measures have been employed for assessing genomic co-occurrence, their appropriateness for the genomic setting has never been investigated.
+	                </p>
+                    <p class="paragraph">
+                    We show that the choice of measure may strongly influence results and propose two alternative modelling assumptions that can be used to guide this choice. On both
+                    simulated and real genomic data, the Jaccard index is strongly altered by dataset size and should be used with caution. The Forbes coefficient (fold change)
+                    and tetrachoric correlation are less influenced by dataset size, but one should be aware of increased variance for small datasets.
+                    </p>
+                    <p class="paragraph">
+                        To read more about this project go to paper <a href="https://www.biorxiv.org/content/10.1101/479253v1">Beware the Jaccard: the choice of metric is important and non-trivial in genomic colocalisation analysis</a>.
+                        To look at the code for <a href="https://github.com/uio-bmi/similarity-measures">figures 1-4, supplementary figures C1-C3</a>.
 
-</div> </div></div>
-                        <div class="containerNext">
-                            <div class="rowSpecialWithGap">
-                          <div class="colAll"> <div class = 'example'><h4 class = 'exampleTitle'>Model assumption 2 - Continuous underlying reality</h4><div class = 'exampleDesc'><p class="paragraph">Link to simulated tracks used for analyses</p><a href = '../u/hb-superuser/h/8-generating-datasetsmodel-assumption-2' >Data and results under model assumption 2</a></div></div>
-<div class = 'example'><h4 class = 'exampleTitle'>Empirical results</h4><div class = 'exampleDesc'><p class="paragraph">Large-scale empirical analysis of TF co-occurrence assessed by the three considered metrics on ChIP-seq datasets of varying size</p><a href = '../u/hb-superuser/h/9-empirical-results' >Plot generated on the empirical data</a></div></div>
+                    </p>
 
-</div>
-
-                
-                            </div>
-                        </div>
-                        
-            <div class="footer">
-                <div class = 'contactInfo'><h4 class = 'contactInfoTitle'>Correspondence person: stefasal@ifi.uio.no</h4></div></div>
-
-            </div>
-        </div><div id="menu1" class="tab-pane fade "><div class="container">
-                            <div class="rowSpecial">
-                                <div class="colAll">Content for column 1 and row 1</div> </div></div>
-            <div class="footer">
-                <div class = 'contactInfo'><h4 class = 'contactInfoTitle'>Correspondence person: stefasal@ifi.uio.no</h4></div></div>
-
-            </div>
-        </div><div id="menu2" class="tab-pane fade ">
-
-            <div class="container">
-                <div class="rowSpecial">
-                    <div class="colAllProjectList">
-
-                          <div id ='content'></div>
-                                <script>
-                                $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_sim-measure.txt");
-                                </script>
-                    </div>
                 </div>
             </div>
-            </div><div id="menu3" class="tab-pane fade ">
+        </div>
+        <div class="containerNext">
+            <div class="rowSpecialWithGap">
+              <div class="colAll">
+
+                  <h2 class="projectTitle">
+                      Model assumption 1 - Binary underlying reality (sections 2.1 and 3.1 in the paper)
+                  </h2>
+
+                  <p class="paragraph">
+                      Data preparation and all results on simulated and real data are described below. For more details go to related sections <b>Method</b> and <b>Results</b> in the paper.
+                    </p>
+
+                    <div class = 'example'>
+                        <h4 class = 'exampleTitle'>Data preparation</h4>
+                        <div class = 'exampleDesc'>
+                            At the following <a href="../u/hb-superuser/h//datasetsmodel-assumption-1">link</a> you can find element 17 which is a transcription factor track (TF), element 20 is a histone modification track and element 23 represents GATA2 genome track.
+                        </div>
+                    </div>
+
+                    <div class = 'example'>
+                        <h4 class = 'exampleTitle'>Subsetting of different tracks with constant 5% False discovery rate (FDR) under model assumption 1 (figure 1 and figure C1b)</h4>
+                        <div class="main">
+                            <div class="leftMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figure1.png" />
+                                </div>
+                            </div>
+
+                            <div class="rightMain">
+                                <p class="paragraph">
+                                Figure 1 (on the left) shows how the three considered measures behave when the datasets are simulated according to Model assumption 1.
+                                Datasets of varying sizes, but fixed (expected) false discovery rate of 5%, were generated from the fixed base reference track Y,
+                                representing the usually unknown underlying track, while a fixed query track Q was used.
+                                Consistent with the analytical derivations, the Forbes coefficient seems to be less dependent on track size, while the Jaccard index is highly influenced by track size.
+                                The Jaccard index drops dramatically when the size of the reference track decreases.
+                                The size effect dominates the underlying (biological) signal when large size differences are present.
+                                The tetrachoric correlation is also influenced by track size, but less  than the Jaccard index.
+                                </p>
+
+                                  <p class="paragraph">
+                                Figure C1b (on the right) shows the behaviour of the two additional similarity measures on simulated datasets with size varying according to Model assumption 1, and 5% false discovery rate.
+                                    Top panel: Simulation study showing the mean Sørensen-Dice similarity index between a fixed query track Q and reference tracks Rs corresponding to varying
+                                    sizes of a fixed base reference track (Y). We set up three simulations based on a GATA1 track as query track and respectively a GATA2 (blue line),
+                                    a transcription factor (green line), and an histone modification (grey line) track as a base reference (details in Methods). The x-axis shows the proportion
+                                    of occurrences in $R$ compared to the reference track $Y$, while the y-axis shows the resulting mean Sørensen-Dice index against the query track (continuous line)
+                                    and one standard deviation from the mean Sørensen-Dice index (dashed lines). The bottom panel shows the same for the Pearson correlation.
+                                </p>
+
+                                <p class="paragraph">
+                                    All the data and results for GATA2 (blue line) can be found <a href = '../u/hb-superuser/h/2-subsetting-from-gata2-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 52, while the query track Q is represented by element 53.
+                                    The similarity results by using the different similarity measures are represented by elements 58-60 and 63-64 for Forbes, Jaccard,  Thetracoric correlation,
+                                    Sorensen-Dice and Pearson correlation respectively.
+                                </p>
+
+                                <p class="paragraph">
+                                    All the data and results for transcription factor (green line) can be found <a href = '../u/hb-superuser/h/3-subsetting-from-transcription-factor-tf-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 51, while the query track Q is represented by element 48.
+                                    The similarity results by using the different similarity measures are represented by elements 56-58 and 61-62 for Jaccard, Forbes, Thetracoric correlation,
+                                    Sorensen-Dice and Pearson correlation respectively.
+                                </p>
+
+
+                                <p class="paragraph">
+                                    All the data and results for histone modification (grey line) can be found <a href = '../u/hb-superuser/h/4-subsetting-from-histone-modification-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 43, while the query track Q is represented by element 44.
+                                    The similarity results by using the different similarity measures are represented by elements 48-50 and 53-54 for Forbes, Jaccard,  Thetracoric correlation,
+                                    Sorensen-Dice and Pearson correlation respectively.
+                                </p>
+
+
+
+
+
+                            </div>
+
+                            <div class="middleMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figurePearsonSorensen5FDR.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                  <div class = 'example'>
+                        <h4 class = 'exampleTitle'>Subsetting of different tracks with constant 50% False discovery rate (FDR) under model assumption 1 (figure C1a and figure C1c)</h4>
+                        <div class="main">
+                            <div class="leftMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figureS1.png" />
+                                </div>
+                            </div>
+
+                            <div class="rightMain">
+                                <p class="paragraph">
+                                Figure C1a (on the left) shows how the three considered measures behave when the datasets are simulated according to Model assumption 1.
+                                Datasets of varying sizes, but fixed (expected) false discovery rate of 50%, were generated from the fixed base reference track Y,
+                                representing the usually unknown underlying track, while a fixed query track Q was used.
+                                Consistent with the analytical derivations, the Forbes coefficient seems to be less dependent on track size, while the Jaccard index is highly influenced by track size.
+                                The Jaccard index drops dramatically when the size of the reference track decreases.
+                                The size effect dominates the underlying (biological) signal when large size differences are present.
+                                The tetrachoric correlation is also influenced by track size, but less  than the Jaccard index.
+                                </p>
+
+                                  <p class="paragraph">
+                                Figure C1c (on the right) shows the behaviour of the two additional similarity measures on simulated datasets with size varying according to Model assumption 1, and 50% false discovery rate.
+                                    Top panel: Simulation study showing the mean Sørensen-Dice similarity index between a fixed query track Q and reference tracks Rs corresponding to varying
+                                    sizes of a fixed base reference track (Y). We set up three simulations based on a GATA1 track as query track and respectively a GATA2 (blue line),
+                                    a transcription factor (green line), and an histone modification (grey line) track as a base reference (details in Methods). The x-axis shows the proportion
+                                    of occurrences in $R$ compared to the reference track $Y$, while the y-axis shows the resulting mean Sørensen-Dice index against the query track (continuous line)
+                                    and one standard deviation from the mean Sørensen-Dice index (dashed lines). The bottom panel shows the same for the Pearson correlation.
+                                </p>
+
+                                <p class="paragraph">
+                                    All the data and results for GATA2 (blue line) can be found <a href = '../u/hb-superuser/h/5-subsetting-from-gata2-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >here</a>.
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 42, while the query track Q is represented by element 43.
+                                    The similarity results by using the different similarity measures are represented by elements 52-54 and 57-58 for Forbes, Jaccard,  Thetracoric correlation,
+                                    Sorensen-Dice and Pearson correlation respectively.
+                                </p>
+
+                                <p class="paragraph">
+                                    All the data and results for transcription factor (green line) can be found <a href = '../u/hb-superuser/h/6-subsetting-from-tf-track-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >here</a>.
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 46, while the query track Q is represented by element 43.
+                                    The similarity results by using the different similarity measures are represented by elements 52-54 and 56-57 for Forbes, Thetracoric correlation, Jaccard,
+                                    Sorensen-Dice and Pearson correlation respectively.
+                                </p>
+
+
+                                <p class="paragraph">
+                                    All the data and results for histone modification (grey line) can be found <a href = '../u/hb-superuser/h/7-subsetting-from-histone-modification-track-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >here</a>.
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 28, while the query track Q is represented by element 25.
+                                    The similarity results by using the different similarity measures are represented by elements 37-39 and 42-43 for Forbes, Jaccard,  Thetracoric correlation,
+                                    Sorensen-Dice and Pearson correlation respectively.
+                                </p>
+
+
+                            </div>
+
+                            <div class="middleMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figurePearsonSorensen50FDR.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="containerNext">
+            <div class="rowSpecialWithGap">
+              <div class="colAll">
+
+                  <h2 class="projectTitle">
+                      Model assumption 2 - Continuous underlying reality (sections 2.2 and 3.2 in the paper)
+                  </h2>
+
+                  <div class = 'example'>
+                      <h4 class = 'exampleTitle'></h4>
+
+                      <div class="main">
+                            <div class="leftMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figure2.png" />
+                                </div>
+                            </div>
+                          <div class="rightMain">
+                              <p class="paragraph">
+                              Figure 2 (on the left) shows how the three considered measures behave when datasets are simulated according to Model assumption 2.
+                              Datasets of varying sizes were generated by applying different thresholds on a fixed continuous base reference track (Y), while a fixed threshold was applied to the underlying
+                              continuous underlying reality X resulting in the query track Q. The tetrachoric correlation (bottom panel) provides a stable and unbiased estimate of the underlying correlation
+                              even when applying stringent thresholds (tracks with few occurrences). In contrast, the Forbes coefficient shows a systematic increase with stringent thresholds. The Jaccard index shows
+                              a very strong systematic pattern. Interestingly, the threshold level that gives rise to the peak value of the Jaccard index is dependent on the threshold used to construct the fixed query track.
+                              The same figure was made also for the Sørensen-Dice similarity index and the Pearson correlation - Figure C2 (on the right).
+                              </p>
+                              <p class="paragraph">
+                                  The simulation of the data and results for different thresholdings, and underlying correlation can be found <a href = '../u/hb-superuser/h/8-generating-datasetsmodel-assumption-2' >here</a>.
+
+                              </p>
+                            </div>
+                            <span class="middleMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figure2s_SorensenPearson.png" />
+                                </div>
+                            </span>
+                      </div>
+                  </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="containerNext">
+            <div class="rowSpecialWithGap">
+              <div class="colAll">
+
+                  <h2 class="projectTitle">
+                      Empirical analysis on a large collection of TF ChIP-seq peak datasets
+                  </h2>
+                  <div class = 'example'>
+                      <h4 class = 'exampleTitle'></h4>
+                      <div class = 'exampleDesc'>
+                          <p class="paragraph">
+                          To investigate the behaviour of the different measures on real data, we performed a large-scale study on
+                          ChIP-seq datasets for different TFs. Specifically, we have assessed how the estimated similarity for
+                          all pairwise combinations of TF ChIP-seq experiments is affected by the size of the datasets.
+                          </p>
+                          <p class="paragraph">
+                          Figure 3 (elements 68, 71 and 72 in <a href = '../u/hb-superuser/h/9-empirical-results' >history</a>) shows a large-scale empirical analysis of TF co-occurrence assessed by the three considered measures on ChIP-seq datasets of varying size.
+                          Top panel: Empirical analysis of the Forbes coefficient between 36,046 pairs of experimental (ChIP-seq) datasets
+                          for 269 tracks representing binding occurrences for 15 different TFs. The y-axis shows the rank of Forbes coefficient,
+                          while the x-axis gives the rank of the product of track sizes for the two experimental datasets compared.
+                          The red line and areas show the rolling averages, and the rolling averages +/- rolling standard deviations with a window size of 1000.
+                          The top and bottom panels show the same for the Jaccard index and the tetrachoric correlation, respectively.
+                          </p>
+                          <p class="paragraph">
+
+                          The same figures by substracting the group effect can be found in the same <a href = '../u/hb-superuser/h/9-empirical-results' >history</a> as
+                          elements 48-50.
+                          </p>
+
+
+                          <p class="paragraph">
+                              Figure 4 and supplementary figures C4 and C5 (elements 54-56 in the
+                              same <a href = '../u/hb-superuser/h/9-empirical-results' >history</a> respectively)
+                              shows the scatter plots of rankings of large-scale empirical analysis of TF co-occurrence assessed by
+                              the different measures on ChIP-seq datasets.
+                          </p>
+
+                      </div>
+                  </div>
+
+               </div>
+            </div>
+        </div>
+
+         <div class="containerNext">
+            <div class="rowSpecialWithGap">
+              <div class="colAll">
+
+                  <h2 class="projectTitle">
+                      Empirical analysis on Crohn's disease-associated variants (GWAS SNPs) and DNase hypersensitive sites (DHSs)
+                  </h2>
+                  <div class = 'example'>
+                      <h4 class = 'exampleTitle'></h4>
+                      <div class = 'exampleDesc'>
+                          <div class="main">
+                            <div class="onlyLeft">
+                                <div class="imgzoom">
+                                    <img src="../static/project/Fig5Maurano.png" />
+                                </div>
+                            </div>
+                          <div class="onlyRight">
+                              <p class="paragraph">
+                              To further illustrate how Jaccard and Forbes can result in a different conclusion being made when applied on real data,
+                                  we re-ran a previously published experiment on the co-occurrence of Crohn's
+                                  disease-associated variants (GWAS SNPs) and DNase hypersensitive sites (DHSs) (published in Franke,
+                                  Andre, et al. "Genome-wide meta-analysis increases to 71 the number of confirmed Crohn's disease susceptibility loci." Nature genetics 42.12 (2010): 1118.).
+                              </p>
+                              <p class="paragraph">
+                                  Figure 5 (on the left) shows the co-occurrence of Crohn's disease-associated variants (GWAS SNPs)
+                                  and DNase hypersensitive sites (DHSs). The top panel, shows the co-occurrence of the SNPs with DHS
+                                  from different cell types by Forbes (fold enrichment), while the bottom panel shows the same analyses by Jaccard.
+                              </p>
+
+                              <p class="paragraph">
+                                  The data processing and preparation of the public available data can be found at <a href="../u/hb-superuser/h/10-examplescrohn-disease-dataset">
+                                  history</a>, while the similarity assesment by Forbes and Jaccard with different p-value thresholds can be found at
+                                  <a href="../u/hb-superuser/h/101-examplescrohn-disease-analysis">history </a>.
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+
+               </div>
+            </div>
+        </div>
+                        
+        <div class="footer">
+            <div class = 'contactInfo'>
+                <p class="paragraph">If you have any questions, requests or comments regarding the project, please contact: <a href="mailto:stefasal@ifi.uio.no">Stefania Salvatore</a>.
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="menu2" class="tab-pane fade ">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAllProjectList">
+
+                      <div id ='content'></div>
+                            <script>
+                            $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_sim-measure.txt");
+                            </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="menu3" class="tab-pane fade ">
         <div class="container">
 
 
@@ -91,7 +384,10 @@
                 </div>
         </div>
 
+    </div>
+    </div>
+</div>
 
 
 
-        </div></div></div></body></html>
+</body></html>
