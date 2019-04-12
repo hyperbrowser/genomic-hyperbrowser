@@ -4,9 +4,11 @@
 <div class='content'>
     <div class ="tabs">
         <ul class ="nav nav-tabs" id="tab-links">
-        <li class="active" value="tab0"><a data-toggle="tab" href="#menu0">Project page</a></li>
-        <li  value="tab2"><a data-toggle="tab" href="#menu2">List of other projects</a></li>
-        <li  value="tab3"><a data-toggle="tab" href="#menu3">About</a></li></ul>
+            <li class="active" value="tab0"><a data-toggle="tab" href="#menu0">Project page</a></li>
+            <li  value="tab1"><a data-toggle="tab" href="#menu1">User Guide</a></li>
+            <li  value="tab2"><a data-toggle="tab" href="#menu2">List of other projects</a></li>
+            <li  value="tab3"><a data-toggle="tab" href="#menu3">About</a></li>
+        </ul>
     </div>
     <div class="tab-content">
         <div id="menu0" class="tab-pane fade  in active">
@@ -58,13 +60,14 @@
                     <div class = 'example'>
                         <h4 class = 'exampleTitle'>Subsetting of different tracks with constant 5% False discovery rate (FDR) under model assumption 1 (figure 1 and figure C1b)</h4>
                         <div class="main">
-                            <div class="leftMain">
-                                <div class="imgzoom">
-                                    <img src="../static/project/figure1.png" />
-                                </div>
-                            </div>
 
-                            <div class="rightMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figure1.png" style="float:left;width: 30%; height: 30%; margin-right:10px;" />
+                                </div>
+                                <div class="imgzoom">
+                                    <img src="../static/project/figurePearsonSorensen5FDR.png" style="float:right;width: 30%; height: 30%;  margin-left:10px;" />
+                                </div>
+
                                 <p class="paragraph">
                                 Figure 1 (on the left) shows how the three considered measures behave when the datasets are simulated according to Model assumption 1.
                                 Datasets of varying sizes, but fixed (expected) false discovery rate of 5%, were generated from the fixed base reference track Y,
@@ -110,13 +113,6 @@
 
 
 
-                            </div>
-
-                            <div class="middleMain">
-                                <div class="imgzoom">
-                                    <img src="../static/project/figurePearsonSorensen5FDR.png" />
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -124,13 +120,14 @@
                   <div class = 'example'>
                         <h4 class = 'exampleTitle'>Subsetting of different tracks with constant 50% False discovery rate (FDR) under model assumption 1 (figure C1a and figure C1c)</h4>
                         <div class="main">
-                            <div class="leftMain">
-                                <div class="imgzoom">
-                                    <img src="../static/project/figureS1.png" />
-                                </div>
-                            </div>
 
-                            <div class="rightMain">
+                                <div class="imgzoom">
+                                    <img src="../static/project/figureS1.png" style="float:left;width: 30%; height: 30%; margin-right:10px;" />
+                                </div>
+                                <div class="imgzoom">
+                                    <img src="../static/project/figurePearsonSorensen50FDR.png" style="float:right;width: 30%; height: 30%;  margin-left:10px;" />
+                                </div>
+
                                 <p class="paragraph">
                                 Figure C1a (on the left) shows how the three considered measures behave when the datasets are simulated according to Model assumption 1.
                                 Datasets of varying sizes, but fixed (expected) false discovery rate of 50%, were generated from the fixed base reference track Y,
@@ -173,13 +170,9 @@
                                 </p>
 
 
-                            </div>
 
-                            <div class="middleMain">
-                                <div class="imgzoom">
-                                    <img src="../static/project/figurePearsonSorensen50FDR.png" />
-                                </div>
-                            </div>
+
+
                         </div>
                     </div>
 
@@ -199,12 +192,14 @@
                       <h4 class = 'exampleTitle'></h4>
 
                       <div class="main">
-                            <div class="leftMain">
-                                <div class="imgzoom">
-                                    <img src="../static/project/figure2.png" />
-                                </div>
+
+                            <div class="imgzoom">
+                                <img src="../static/project/figure2.png"  style="float:left;width: 30%; height: 30%; margin-right:10px;" />
                             </div>
-                          <div class="rightMain">
+                            <div class="imgzoom">
+                                <img src="../static/project/figure2s_SorensenPearson.png"  style="float:right;width: 30%; height: 30%;  margin-left:10px;" />
+                            </div>
+
                               <p class="paragraph">
                               Figure 2 (on the left) shows how the three considered measures behave when datasets are simulated according to Model assumption 2.
                               Datasets of varying sizes were generated by applying different thresholds on a fixed continuous base reference track (Y), while a fixed threshold was applied to the underlying
@@ -217,12 +212,9 @@
                                   The simulation of the data and results for different thresholdings, and underlying correlation can be found <a href = '../u/hb-superuser/h/8-generating-datasetsmodel-assumption-2' >here</a>.
 
                               </p>
-                            </div>
-                            <span class="middleMain">
-                                <div class="imgzoom">
-                                    <img src="../static/project/figure2s_SorensenPearson.png" />
-                                </div>
-                            </span>
+
+
+
                       </div>
                   </div>
               </div>
@@ -321,8 +313,35 @@
             </div>
         </div>
     </div>
+        </div>
 
-
+    <div id="menu1" class="tab-pane fade ">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAllProjectList">
+                    <h2 class="projectTitle">
+                        General information about the Genomic HyperBrowser
+                    </h2>
+                    <p class="paragraph">
+                        The main window (project page) is
+                        divided into three parts; the first part (on the left) shows all the tools implemented in the
+                        Genomic HyperBrowser. The tools related to this specific project are available under
+                        the label 'SIMILARITY PROJECT TOOLS'. The second part (middle) is the main resulting page.
+                        The third part (on the right) shows all the
+                        history elements of the actions made (run tools, uploaded data, etc).
+                        On each of this history element one can run at least two operations:
+                        <ol>
+                            <li>by clicking on the icon 'eye' you can see the results of that element,</li>
+                            <li>by clicking on the title of the element you will see four new icons. Starting from the left
+                                you have possibility of downloading the data, viewing the details, re-running the tool and visualizing
+                                the results.
+                            </li>
+                        </ol>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="menu2" class="tab-pane fade ">
         <div class="container">
