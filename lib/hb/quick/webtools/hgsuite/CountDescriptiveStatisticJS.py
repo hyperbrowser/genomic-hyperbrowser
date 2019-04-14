@@ -1172,9 +1172,6 @@ class Cube():
         		        var partFlatAverage = {};
         				for (var j = 0; j < flat.length; j++) 
         				{
-        				    //console.log(flat[j].slice(i+1,flat[j].length));
-        					partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
-        					
         					newKey = flat[j].slice(0,flat[j].length-2);
         					
         					if (newKey in partFlatAverage)
@@ -1190,11 +1187,24 @@ class Cube():
         					
         					//console.log('111', 'j', j, 'partFlat[j]', partFlat[j]);
         				}
-        				//console.log('partFlatAverage', partFlatAverage);
+        				partFlatAverageNew = {}
+        				for (var j = 0; j < flat.length; j++) 
+        				{
+        				    console.log('j', j, 'i', i,  flat[j]);
+        					partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
+        					
+        					newKey = flat[j].slice(0,flat[j].length-2);
+        					partFlatAverageNew[j] = partFlatAverage[newKey];
+        				}
+        				
+        				
+        				console.log('partFlatAverage', partFlatAverage);
+        				console.log('partFlatAverageNew', partFlatAverageNew);
         				
         				flat = partFlat;
         			
         				var myDict = {};
+        				elNum = 0
         				for (var x in flat) 
         				{
         					if (x == 'alphanumSort')
@@ -1202,18 +1212,19 @@ class Cube():
         					}
         					else
         					{
-        						console.log('x', x, flat[x], flat[x].length-1);
+        						//console.log('x', x, flat[x], flat[x].length-1);
         						var value = parseFloat(flat[x][flat[x].length-1]);
         						var key = flat[x].slice(0,flat[x].length-1);
         				
-        						console.log('value', value, 'key', key);
+        						//console.log('value-111', value, 'key', key);
         						if (myDict[ key ] == undefined)
         						{
         							myDict[ key ] = 0;
         						}
-        						numberOfElementsInGroup = partFlatAverage[key];
+        						numberOfElementsInGroup = partFlatAverageNew[elNum];
 	        					myDict[ key ] += parseFloat(value)/parseFloat(numberOfElementsInGroup);
 	        				}
+	        				elNum += 1
         				}
         			
         				partFlat = [];
