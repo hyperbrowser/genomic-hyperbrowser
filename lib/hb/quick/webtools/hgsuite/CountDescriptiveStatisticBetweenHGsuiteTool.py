@@ -49,7 +49,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     MAX_NUM_OF_STAT = 1
     INFO_1 = 'You have define levels of dimensions in your hGSuite so by defualt your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
-    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's title."
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
 
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
@@ -323,7 +323,11 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         if cls.MAIN_OPTIONS[0] == selOption:
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
-                                return list(set(gSuite.allTrackTitles()))
+                                #return list(set(gSuite.allTrackTitles()))
+                                try:
+                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                except:
+                                    return list(set(gSuite.allTrackTitles()))
                             else:
                                 j = index - 1
                                 selectedAttribute = getattr(prevChoices,
@@ -346,12 +350,18 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         if cls.MAIN_OPTIONS[0] == selOption:
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
-                                return list(set(gSuite.allTrackTitles()))
+                                #return list(set(gSuite.allTrackTitles()))
+                                try:
+                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                except:
+                                    return list(set(gSuite.allTrackTitles()))
                             else:
                                 j = index - 1
-                                selectedAttribute = getattr(prevChoices,
-                                                            'selectedColumnFirst%s' % j).encode(
-                                    'utf-8')
+                                attrNone = getattr(prevChoices, 'selectedColumnFirst%s' % j)
+                                if attrNone == 'None':
+                                    return
+                                else:
+                                    selectedAttribute = attrNone.encode('utf-8')
                                 return list(
                                     set(gSuite.getAttributeValueList(selectedAttribute)))
                         elif cls.MAIN_OPTIONS[1] == selOption:
@@ -431,9 +441,13 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                                 return list(set(gSuite.allTrackTitles()))
                             else:
                                 j = index - 1
-                                selectedAttribute = getattr(prevChoices,
-                                                            'selectedColumnSecond%s' % j).encode(
-                                    'utf-8')
+
+                                attrNone = getattr(prevChoices, 'selectedColumnSecond%s' % j)
+                                if attrNone == 'None':
+                                    return
+                                else:
+                                    selectedAttribute = attrNone.encode('utf-8')
+
                                 return list(
                                     set(gSuite.getAttributeValueList(selectedAttribute)))
                         elif cls.MAIN_OPTIONS[1] == selOption:
@@ -577,7 +591,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         selectedAnalysis, statIndex = cls.addStat(choices, statList)
 
         resultsDict = cls.countStat(analysisBins, selectedAnalysis,
-                                    statIndex, whichGroups, statList, summarize, columnOptionsDict)
+                                    statIndex, whichGroups, statList, summarize, columnOptionsDict, gSuite, secondGSuite)
 
         summarize = 'raw'
 
@@ -964,8 +978,25 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
     @classmethod
     def countStat(cls, analysisBins, selectedAnalysis, statIndex, whichGroups, statList, summarize,
-                  columnOptionsDict):
+                  columnOptionsDict, gSuite, secondGSuite):
         resultsDict = OrderedDict()
+
+        orgnalTitleAll = {}
+        orgnalTitleAllCount = 0
+        orgnalTitleAllSecond = {}
+        orgnalTitleAllCountSecond = 0
+        try:
+            for x in gSuite.allTracks():
+                orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
+            orgnalTitleAllCount = 1
+        except:
+            pass
+        try:
+            for x in secondGSuite.allTracks():
+                orgnalTitleAllSecond[x.title] = x.getAttribute('orginaltitle')
+            orgnalTitleAllCountSecond = 1
+        except:
+            pass
 
         # print 'analysisBins', analysisBins, '<br>'
         # print 'selectedAnalysis', selectedAnalysis, '<br>'
@@ -998,9 +1029,24 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     else:
                         resVal = int(allResults['Both'])
 
+                    # if cls.SUMMARIZE[summarize] == 'raw':
+                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
+                    #         [queryTrackTitle, refTrackTitle, resVal])
+
                     if cls.SUMMARIZE[summarize] == 'raw':
+                        title = res.getTrackStructure()['query'].metadata['title']
+                        if orgnalTitleAllCount == 1:
+                            orginalTitle = orgnalTitleAll[title]
+                        else:
+                            orginalTitle = title
+                        titleSecond = res.getTrackStructure()['reference'].metadata['title']
+                        if orgnalTitleAllCountSecond == 1:
+                            orginalTitleSecond = orgnalTitleAllSecond[title]
+                        else:
+                            orginalTitleSecond = titleSecond
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
-                            [queryTrackTitle, refTrackTitle, resVal])
+                            [orginalTitle, orginalTitleSecond, resVal])
+
 
         return resultsDict
 
@@ -1051,12 +1097,16 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
                 if firstGSuiteColumn == 'title':
                     attr1 = trackFromFirst.title
+                elif firstGSuiteColumn == 'None':
+                    attr1 = 'None'
                 else:
                     attr1 = trackFromFirst.getAttribute(firstGSuiteColumn.encode('utf-8'))
 
 
                 if secondGSuiteColumn == 'title':
                     attr2 = trackFromSecond.title
+                elif secondGSuiteColumn == 'None':
+                    attr2 = 'None'
                 else:
                     attr2 = trackFromSecond.getAttribute(secondGSuiteColumn.encode('utf-8'))
 
@@ -1189,8 +1239,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
             else:
                 return 'Genomes from both hGSuites are not the same.'
 
-        analysisBins, columnOptionsDict, firstColumnList, ifAnyElements, secondColumnList, statList, summarize, whichGroups = cls.prepareElements(
-            choices)
+        analysisBins, columnOptionsDict, firstColumnList, ifAnyElements, secondColumnList, statList, summarize, whichGroups = cls.prepareElements(choices)
         if ifAnyElements == False:
             return 'No common values in columns for both hGSuites.'
 

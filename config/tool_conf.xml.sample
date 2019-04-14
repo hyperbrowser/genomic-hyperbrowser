@@ -11,6 +11,7 @@
 
   <section name="Customize a hGSuite" id="10customize_hGsuite" >
     <label text="For hGSuites" id="hgsuite_hgsuite"/>
+      <tool file="proto/hyperbrowser/hgsuite/ModifyMetadataInHGSuiteTool.xml" />
       <tool file="proto/hyperbrowser/hgsuite/DivideHgSuiteAccordingToColumnTool.xml" />
     <label text="For tracks" id="hgsuite_tracks_hgsuite"/>
       <tool file="proto/hyperbrowser/hgsuite/DivideGSuiteAccordingToColumnInTheTrackTool.xml" />

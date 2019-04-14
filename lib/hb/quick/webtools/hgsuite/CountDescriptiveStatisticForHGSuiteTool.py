@@ -526,11 +526,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         htmlCore.paragraph(
             'Click on the following options for selected statistic to see detailed results. ')
 
-        print 'galaxyFn', galaxyFn, '<br>'
-        print 'resultsDict', resultsDict, '<br>'
-        print 'colList', colList, '<br>'
-        print 'mainoptionlisy', mainOptionList, '<br>'
-        print 'otionList', optionList, '<br>'
+        # print 'galaxyFn', galaxyFn, '<br>'
+        # print 'resultsDict', resultsDict, '<br>'
+        # print 'colList', colList, '<br>'
+        # print 'mainoptionlisy', mainOptionList, '<br>'
+        # print 'otionList', optionList, '<br>'
 
         cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp,
                          mainOptionList, optionList)
@@ -592,7 +592,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 header = ['Column 1', 'Column 2', 'Value']
                 # dataToPresent, headerToPresent = CountDescriptiveStatisticBetweenHGsuiteTool.flatResults(header, data)
                 dp = zip(*data)
-                print 'aa'
+                # print 'aa'
             elif summarizeKey == 'raw':
                 header = ['Title'] + firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
@@ -600,13 +600,13 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 # print 'header', header,'<br>'
                 # headerToPresent = header
                 dp = zip(*dataToPresent)
-                print 'bb'
+                # print 'bb'
             else:
                 header = firstColumnList + secondColumnList + [summarizeKey]
                 dataToPresent = data
                 # headerToPresent = header
                 dp = zip(*dataToPresent)
-                print 'cc'
+                # print 'cc'
 
             optionData = []
             for z in range(0, len(dp) - 1):

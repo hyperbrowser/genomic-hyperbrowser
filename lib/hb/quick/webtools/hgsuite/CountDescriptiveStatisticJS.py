@@ -1169,10 +1169,29 @@ class Cube():
         		    else if (op == 'average')
         		    {
         		        var partFlat = [];
+        		        var partFlatAverage = {};
         				for (var j = 0; j < flat.length; j++) 
         				{
+        				    //console.log(flat[j].slice(i+1,flat[j].length));
         					partFlat[j]= flat[j].slice(0,i).concat(flat[j].slice(i+1,flat[j].length));
+        					
+        					newKey = flat[j].slice(0,flat[j].length-2);
+        					
+        					if (newKey in partFlatAverage)
+        					{
+        						//console.log('partFlatAverage', newKey);
+        						partFlatAverage[newKey] += 1
+        					}
+        					else
+        					{
+        						//console.log('111- partFlatAverage', newKey);
+        						partFlatAverage[newKey] = 1
+        					}
+        					
+        					//console.log('111', 'j', j, 'partFlat[j]', partFlat[j]);
         				}
+        				//console.log('partFlatAverage', partFlatAverage);
+        				
         				flat = partFlat;
         			
         				var myDict = {};
@@ -1183,16 +1202,17 @@ class Cube():
         					}
         					else
         					{
-        						//console.log('x', x, flat[x], flat[x].length-1);
+        						console.log('x', x, flat[x], flat[x].length-1);
         						var value = parseFloat(flat[x][flat[x].length-1]);
         						var key = flat[x].slice(0,flat[x].length-1);
         				
-        						//console.log('value', value, 'key', key);
+        						console.log('value', value, 'key', key);
         						if (myDict[ key ] == undefined)
         						{
         							myDict[ key ] = 0;
         						}
-	        					myDict[ key ] += parseFloat(value)/parseFloat(operationsReverse.length);
+        						numberOfElementsInGroup = partFlatAverage[key];
+	        					myDict[ key ] += parseFloat(value)/parseFloat(numberOfElementsInGroup);
 	        				}
         				}
         			
