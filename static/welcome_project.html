@@ -53,7 +53,7 @@
                     <div class = 'example'>
                         <h4 class = 'exampleTitle'>Data preparation</h4>
                         <div class = 'exampleDesc'>
-                            At the following <a href="../u/hb-superuser/h//datasetsmodel-assumption-1">link</a> you can find element 17 which is a transcription factor track (TF), element 20 is a histone modification track and element 23 represents GATA2 genome track.
+                            At the following <a href="../u/hb-superuser/h//datasetsmodel-assumption-1">link</a> you can find element 17 which is a transcription factor track (IRF1), element 20 is a histone modification track (H3K36me3) and element 28 represents GATA2 genome track.
                         </div>
                     </div>
 
@@ -80,11 +80,11 @@
 
                                   <p class="paragraph">
                                 Figure C1b (on the right) shows the behaviour of the two additional similarity measures on simulated datasets with size varying according to Model assumption 1, and 5% false discovery rate.
-                                    Top panel: Simulation study showing the mean Sørensen-Dice similarity index between a fixed query track Q and reference tracks Rs corresponding to varying
+                                    Top panel: Simulation study showing the mean Sorensen-Dice similarity index between a fixed query track Q and reference tracks Rs corresponding to varying
                                     sizes of a fixed base reference track (Y). We set up three simulations based on a GATA1 track as query track and respectively a GATA2 (blue line),
                                     a transcription factor (green line), and an histone modification (grey line) track as a base reference (details in Methods). The x-axis shows the proportion
-                                    of occurrences in $R$ compared to the reference track $Y$, while the y-axis shows the resulting mean Sørensen-Dice index against the query track (continuous line)
-                                    and one standard deviation from the mean Sørensen-Dice index (dashed lines). The bottom panel shows the same for the Pearson correlation.
+                                    of occurrences in $R$ compared to the reference track $Y$, while the y-axis shows the resulting mean Sorensen-Dice index against the query track (continuous line)
+                                    and one standard deviation from the mean Sorensen-Dice index (dashed lines). The bottom panel shows the same for the Pearson correlation.
                                 </p>
 
                                 <p class="paragraph">
@@ -95,7 +95,7 @@
                                 </p>
 
                                 <p class="paragraph">
-                                    All the data and results for transcription factor (green line) can be found <a href = '../u/hb-superuser/h/3-subsetting-from-transcription-factor-tf-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
+                                    All the data and results for transcription factor (IRF1, green line) can be found <a href = '../u/hb-superuser/h/3-subsetting-from-transcription-factor-tf-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
                                     The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 51, while the query track Q is represented by element 48.
                                     The similarity results by using the different similarity measures are represented by elements 56-58 and 61-62 for Jaccard, Forbes, Thetracoric correlation,
                                     Sorensen-Dice and Pearson correlation respectively.
@@ -103,7 +103,7 @@
 
 
                                 <p class="paragraph">
-                                    All the data and results for histone modification (grey line) can be found <a href = '../u/hb-superuser/h/4-subsetting-from-histone-modification-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
+                                    All the data and results for histone modification (H3K36me3, grey line) can be found <a href = '../u/hb-superuser/h/4-subsetting-from-histone-modification-track-and-constant-false-discovery-rate-fdr-of-5---under-model-assumption-1' >here</a>.
                                     The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 43, while the query track Q is represented by element 44.
                                     The similarity results by using the different similarity measures are represented by elements 48-50 and 53-54 for Forbes, Jaccard,  Thetracoric correlation,
                                     Sorensen-Dice and Pearson correlation respectively.
@@ -140,17 +140,17 @@
 
                                   <p class="paragraph">
                                 Figure C1c (on the right) shows the behaviour of the two additional similarity measures on simulated datasets with size varying according to Model assumption 1, and 50% false discovery rate.
-                                    Top panel: Simulation study showing the mean Sørensen-Dice similarity index between a fixed query track Q and reference tracks Rs corresponding to varying
+                                    Top panel: Simulation study showing the mean Sorensen-Dice similarity index between a fixed query track Q and reference tracks Rs corresponding to varying
                                     sizes of a fixed base reference track (Y). We set up three simulations based on a GATA1 track as query track and respectively a GATA2 (blue line),
                                     a transcription factor (green line), and an histone modification (grey line) track as a base reference (details in Methods). The x-axis shows the proportion
                                     of occurrences in $R$ compared to the reference track $Y$, while the y-axis shows the resulting mean Sørensen-Dice index against the query track (continuous line)
-                                    and one standard deviation from the mean Sørensen-Dice index (dashed lines). The bottom panel shows the same for the Pearson correlation.
+                                    and one standard deviation from the mean Sorensen-Dice index (dashed lines). The bottom panel shows the same for the Pearson correlation.
                                 </p>
 
                                 <p class="paragraph">
                                     All the data and results for GATA2 (blue line) can be found <a href = '../u/hb-superuser/h/5-subsetting-from-gata2-and-constant-false-discovery-rate-fdr-of-50---under-model-assumption-1' >here</a>.
-                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 42, while the query track Q is represented by element 43.
-                                    The similarity results by using the different similarity measures are represented by elements 52-54 and 57-58 for Forbes, Jaccard,  Thetracoric correlation,
+                                    The reference tracks obtained by subsetting the base track Y with different subsetting probabilities can be found in element 84, while the query track Q is represented by element 43.
+                                    The similarity results by using the different similarity measures are represented by elements 93-97 for Forbes, Jaccard,  Thetracoric correlation,
                                     Sorensen-Dice and Pearson correlation respectively.
                                 </p>
 
