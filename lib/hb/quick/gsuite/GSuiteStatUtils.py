@@ -16,8 +16,8 @@ T6_STANDARD_DEVIATIONS_OF_OBSERVED_MINUS_EXPECTED_OVERLAP = 'Ratio of observed t
 T7_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP = 'Normalized Forbes coefficient: ratio of observed to expected overlap normalized in relation to the reference GSuite'
 T8_CORRELATED_BIN_COVERAGE = 'Correlated bin coverage'
 T9_TETRA_CORRELATION = 'Tetrachoric correlation of query track base-pairs and base-pairs from the reference track'
-T10_SORENSEN_COEFFICIENT = 'Sorensen-Dice coefficient of overlap between query and reference tracks'
-T11_PEARSON_CORRELATION = 'Pearson correlation of overlap between query and reference tracks'
+T10_SORENSEN_COEFFICIENT = 'Sorensen-Dice coefficient of overlap between the query and reference tracks'
+T11_PEARSON_CORRELATION = 'Pearson correlation of overlap between the query and reference tracks'
 
 PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING = OrderedDict([
     (T5_RATIO_OF_OBSERVED_TO_EXPECTED_OVERLAP, 'ObservedVsExpectedStat'),
