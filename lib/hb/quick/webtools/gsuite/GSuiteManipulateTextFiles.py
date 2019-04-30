@@ -226,7 +226,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
         if listedParam:
             defaultStart = listedParam.find(' (')
             if defaultStart == -1:
-                return listedParam
+                return listedParam.encode('utf-8')
             else:
                 return listedParam[:defaultStart]
 
@@ -257,7 +257,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
             paramChoice = cls._getParamKeyFromListedParam(prevChoices, i)
             if paramChoice is not None and paramChoice != cls.NO_PARAM_TEXT:
                 paramValue = getattr(prevChoices, 'paramValue%s' % i)
-                paramDict[paramChoice] = paramValue
+                paramDict[paramChoice] = paramValue.encode('utf-8')
 
         return paramDict
 

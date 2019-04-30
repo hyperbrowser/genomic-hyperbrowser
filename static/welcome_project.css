@@ -332,4 +332,15 @@
   display: table;
 }
 
+.leftImg{
+    float:left;
+    width: 45%;
+    margin: 0 10px;
+}
+
+.rightImg{
+    float:right;
+    width: 45%;
+    margin: 0 10px;
+}
         
