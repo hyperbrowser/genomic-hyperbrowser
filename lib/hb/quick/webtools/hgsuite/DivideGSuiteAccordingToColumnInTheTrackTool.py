@@ -8,7 +8,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.origdata.UcscHandler import UcscHandler
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
-
+#if line.startswith(
 class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
@@ -17,6 +17,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
         return [('Select gSuite', 'gSuite'),
+                ('Select operation', 'operation'),
                 ('Select phrases (use colon to provide more than one phrase)', 'param'),
                 ('Add phrases separately', 'add')
                 ]
@@ -26,6 +27,11 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
+    def getOptionsBoxOperation(cls, prevChoices):
+        if prevChoices.gSuite:
+            return ['division by phrase', 'division by symbol']
+
+    @classmethod
     def getOptionsBoxParam(cls, prevChoices):
         if prevChoices.gSuite:
             return ''
@@ -33,32 +39,37 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxAdd(cls, prevChoices):
         if prevChoices.gSuite and prevChoices.param:
-            par = prevChoices.param.replace(' ', '').split(',')
-            lenPar = 0
-            tf = False
-            for pNum, p in enumerate(par):
-                if pNum == 0:
-                    lenPar = len(p)
-                if lenPar == len(p):
-                    tf = True
-                else:
-                    tf = False
+            if prevChoices.operation == 'division by phrase':
+                par = prevChoices.param.replace(' ', '').split(',')
+                lenPar = 0
+                tf = False
+                for pNum, p in enumerate(par):
+                    if pNum == 0:
+                        lenPar = len(p)
+                    if lenPar == len(p):
+                        tf = True
+                    else:
+                        tf = False
 
-            if tf == True:
-                return ['yes', 'no']
+                if tf == True:
+                    return ['yes', 'no']
 
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        par = choices.param.replace(' ','').split(',')
+        if choices.operation == 'division by phrase':
+            par = choices.param.replace(' ','').split(',')
+        else:
+            par = choices.param.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
         attrMut = OrderedDict()
 
-        if choices.add in ['yes', 'no']:
-            add = choices.add
-        else:
-            add = 'no'
+        if choices.operation == 'division by phrase':
+            if choices.add in ['yes', 'no']:
+                add = choices.add
+            else:
+                add = 'no'
 
         for a in gSuite.attributes:
             attrMut[a] = gSuite.getAttributeValueList(a)
@@ -70,45 +81,111 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             trackTitle = iTrack.title
             trackPath = iTrack.path
 
-            for p in par:
-
-                attr = OrderedDict()
-                for k in attrMut.keys():
-                    attr[k] = attrMut[k][i]
-                attr['orginalTitle'] = str(trackTitle)
-                if add == 'yes':
-                    for numPEl, pEl in enumerate(p):
-                        attr['attribute'+str(numPEl)] = str(pEl)
-                attr['attribute'] = str(p)
-
-
-                uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
-                                                    extraFileName=str(trackTitle) + '--' + str(p), suffix='bed')
-                gSuiteTrack = GSuiteTrack(uri)
-                outFn = gSuiteTrack.path
-                ensurePathExists(outFn)
-
-                lineAll = []
-                with open(trackPath, 'r') as f:
-                    for l in f.readlines():
-                        line = l.split('\t')
-                        try:
-                            if p in line[3]:
-                                lineAll.append(l)
-                        except:
-                            pass
-
-                with open(outFn, 'w') as contentFile:
-                    contentFile.write(''.join(lineAll))
-                contentFile.close()
-
-                gs = GSuiteTrack(uri, title=''.join(
-                    str(trackTitle) + '--' + str(p)), genome=gSuite.genome,
-                                 attributes=attr)
-
-                outputGSuite.addTrack(gs)
+            if choices.operation == 'division by phrase':
+                cls.divisionByPhrase(add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
+                                 trackTitle)
+            else:
+                cls.divisionBySymbol('', attrMut, gSuite, galaxyFn, i, outputGSuite, par,
+                                     trackPath,
+                                     trackTitle)
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+
+    @classmethod
+    def divisionByPhrase(cls, add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
+                         trackTitle):
+        for p in par:
+
+            attr = OrderedDict()
+            for k in attrMut.keys():
+                attr[k] = attrMut[k][i]
+            attr['orginalTitle'] = str(trackTitle)
+            if add == 'yes':
+                for numPEl, pEl in enumerate(p):
+                    attr['attribute' + str(numPEl)] = str(pEl)
+            attr['attribute'] = str(p)
+
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName=str(trackTitle) + '--' + str(p),
+                                                suffix='bed')
+            gSuiteTrack = GSuiteTrack(uri)
+            outFn = gSuiteTrack.path
+            ensurePathExists(outFn)
+
+            lineAll = []
+            with open(trackPath, 'r') as f:
+                for l in f.readlines():
+                    line = l.split('\t')
+                    try:
+                        if p in line[3]:
+                            lineAll.append(l)
+                    except:
+                        pass
+
+            with open(outFn, 'w') as contentFile:
+                contentFile.write(''.join(lineAll))
+            contentFile.close()
+
+            gs = GSuiteTrack(uri, title=''.join(
+                str(trackTitle) + '--' + str(p)), genome=gSuite.genome,
+                             attributes=attr)
+
+            outputGSuite.addTrack(gs)
+
+    @classmethod
+    def divisionBySymbol(cls, add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
+                         trackTitle):
+
+        #par = symbol
+
+        attr = OrderedDict()
+        for k in attrMut.keys():
+            attr[k] = attrMut[k][i]
+        attr['orginalTitle'] = str(trackTitle)
+
+        attrTemp = OrderedDict()
+        lineAll = {}
+        with open(trackPath, 'r') as f:
+            for l in f.readlines():
+                if l.startswith('track name='):
+                    for a in l.replace('track name=', '').strip('\n').split(par):
+                        attrTemp[a] = ''
+                    continue
+                line = l.strip('\n').split('\t')
+                if len(line) == 4:
+                    try:
+                        k = tuple(line[3].split(par))
+                        if not k in lineAll:
+                            lineAll[k] = ''
+                        lineAll[k] += l
+                    except:
+                        pass
+
+        for k, v in lineAll.iteritems():
+            kTit = '--'.join(k)
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn, extraFileName=str(trackTitle) + '--' + str(kTit), suffix='bed')
+            gSuiteTrack = GSuiteTrack(uri)
+            outFn = gSuiteTrack.path
+            ensurePathExists(outFn)
+            with open(outFn, 'w') as contentFile:
+                contentFile.write(lineAll[k])
+            contentFile.close()
+
+
+            ik = 0
+            for kt in attrTemp.keys():
+                attrTemp[kt] = k[ik]
+                ik += 1
+
+            gs = GSuiteTrack(uri, title=''.join(str(trackTitle) + '--' + str(kTit)), genome=gSuite.genome, attributes=cls.merge_two_dicts(attr, attrTemp))
+
+            outputGSuite.addTrack(gs)
+
+    @classmethod
+    def merge_two_dicts(cls, x, y):
+        z = x.copy()
+        z.update(y)
+        return z
 
     @classmethod
     def selectColumns(cls):

@@ -1,0 +1,4 @@
+<tool id="hb_convert_maf_file_to_bed_file_tool" name="Convert MAF file to BED file" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ConvertMAFFileToBEDFileTool" proto_tool_class="ConvertMAFFileToBEDFileTool">
+  <description></description>
+</tool>

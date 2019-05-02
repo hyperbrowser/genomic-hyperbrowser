@@ -760,6 +760,40 @@ class ConvertMafTo3ColBed(GeneralTrackDataModifier):
             chrPart, start, end = line.split('\t')[4:7]
             outF.write('\t'.join(['chr'+chrPart, str(int(start)-1), end ]) + '\n')
 
+class ConvertMafTo4ColBed(GeneralTrackDataModifier):
+    @classmethod
+    def parseFile(cls,inFn, outFn, **kwargs):
+        metadata = ''
+        iTF = True
+        iTFis = False
+        outF = open(outFn, 'w')
+
+
+        for line in open(inFn):
+            if line.startswith('#'):
+                continue
+            if line.startswith('Hugo_Symbol'): #header..
+                continue
+            lineSplit = line.split('\t')
+            chrPart, start, end = lineSplit[4:7]
+
+            rest = ''
+            if bool(kwargs) == True:
+                for key, value in kwargs.iteritems():
+                    if value != None:
+                        if iTF == True:
+                            iTFis = True
+                            metadata += str(key) + '--'
+                        rest += lineSplit[int(value)] + '--'
+                rest = str(rest[0:-2])
+
+            if iTFis == True:
+                iTF = False
+                iTFis = False
+                outF.write('track name=' + str(metadata[0:-2]) + '\n')
+
+            outF.write('\t'.join([chrPart, str(int(start)-1), end, rest]) + '\n')
+
 class ICGCToGTrack(GeneralTrackDataModifier):
     '''
     Converts an ICGC tsv file into GTrack format.
