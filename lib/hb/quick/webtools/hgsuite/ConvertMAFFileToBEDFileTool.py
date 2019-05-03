@@ -119,7 +119,7 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
             paramValue = getattr(prevChoices, 'selectedMetadata%s' % i)
             if paramValue is not None and paramValue is not '' and paramValue != cls.NO_PARAM_TEXT:
                 paramValue = paramValue.encode('utf-8')
-                paramDict[paramValue] = cls.METADATA_FROM_FILE.index(paramValue)
+                paramDict[paramValue] = cls.METADATA_FROM_FILE.index(paramValue) - 1
         return paramDict
 
     #

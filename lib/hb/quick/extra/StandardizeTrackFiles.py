@@ -784,7 +784,10 @@ class ConvertMafTo4ColBed(GeneralTrackDataModifier):
                         if iTF == True:
                             iTFis = True
                             metadata += str(key) + '--'
-                        rest += lineSplit[int(value)] + '--'
+                        if lineSplit[int(value)]  == '':
+                            rest += ' ' + '--'
+                        else:
+                            rest += lineSplit[int(value)] + '--'
                 rest = str(rest[0:-2])
 
             if iTFis == True:
