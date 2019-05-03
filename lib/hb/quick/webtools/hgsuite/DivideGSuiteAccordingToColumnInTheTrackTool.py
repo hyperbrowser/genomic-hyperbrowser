@@ -334,6 +334,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getOutputFormat(cls, choices):
         return 'gsuite'
+        #return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

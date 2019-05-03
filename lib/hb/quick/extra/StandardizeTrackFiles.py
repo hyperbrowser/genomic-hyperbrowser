@@ -778,24 +778,39 @@ class ConvertMafTo4ColBed(GeneralTrackDataModifier):
             chrPart, start, end = lineSplit[4:7]
 
             rest = ''
+            restTF = True
             if bool(kwargs) == True:
                 for key, value in kwargs.iteritems():
                     if value != None:
                         if iTF == True:
                             iTFis = True
                             metadata += str(key) + '--'
-                        if lineSplit[int(value)]  == '':
-                            rest += '.' + '--'
+
+                        vv = str(lineSplit[int(value[0])])
+                        if value[1] == 'yes':
+                            if len(vv) == 1:
+                                if vv == '-':
+                                    rest += '.' + '--'
+                                else:
+                                    rest += vv + '--'
+                            else:
+                                restTF = False
                         else:
-                            rest += lineSplit[int(value)] + '--'
-                rest = str(rest[0:-2])
+                            if vv == '' or vv == '-':
+                                rest += '.' + '--'
+                            else:
+                                rest += vv + '--'
+
+                if restTF == True:
+                    rest = str(rest[0:-2])
 
             if iTFis == True:
                 iTF = False
                 iTFis = False
                 outF.write('track name=' + str(metadata[0:-2]) + '\n')
 
-            outF.write('\t'.join([chrPart, str(int(start)-1), end, rest]) + '\n')
+            if restTF == True and rest != '':
+                outF.write('\t'.join([chrPart, str(int(start)-1), end, rest]) + '\n')
 
 class ICGCToGTrack(GeneralTrackDataModifier):
     '''

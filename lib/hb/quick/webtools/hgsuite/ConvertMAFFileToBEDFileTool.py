@@ -41,9 +41,10 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
                 ('Example track (from GSuite): ', 'exampleTrack'),
                 ('First %s lines of text file for example track: ' \
                  % cls.NUM_EXAMPLE_LINES, 'firstLinesIn')] + \
-               [('Select metatada %s' % (i + 1) + '', 'selectedMetadata%s' % i) for i in
-                range(cls.NUM_PARAM_BOXES)] + \
-               [('First %s lines of example track text file after manipulation: ' \
+                [x for x in chain(*((('Select metatada %s:' % (i) + '', 'selectedMetadata%s' % i), \
+                 ('Limit to single value %s:' % (i), 'selectedMetadataLimitation%s' % i)) \
+                for i in xrange(cls.NUM_PARAM_BOXES)))] + \
+        [('First %s lines of example track text file after manipulation: ' \
                  % cls.NUM_EXAMPLE_LINES, 'firstLinesOut')]
                 # ('Change file suffix (e.g. "bed") of output tracks?', 'changeSuffix'),
                 # ('New file suffix for all output tracks', 'suffix')]
@@ -117,11 +118,59 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
                 cls.METADATA_FROM_FILE = cls.getMetadataFromFile(prevChoices)
 
             paramValue = getattr(prevChoices, 'selectedMetadata%s' % i)
+            paramValueLimitation = getattr(prevChoices, 'selectedMetadataLimitation%s' % i)
             if paramValue is not None and paramValue is not '' and paramValue != cls.NO_PARAM_TEXT:
                 paramValue = paramValue.encode('utf-8')
-                paramDict[paramValue] = cls.METADATA_FROM_FILE.index(paramValue) - 1
+                paramDict[paramValue] = [cls.METADATA_FROM_FILE.index(paramValue) - 1, paramValueLimitation.encode('utf-8')]
         return paramDict
 
+
+
+    @classmethod
+    def _getOptionsBoxForSelectedMetadata(cls, prevChoices, index):
+        if prevChoices.history:
+            if not any(cls.NO_PARAM_TEXT in getattr(prevChoices, 'selectedMetadata%s' % i) for i in
+                       xrange(index)):
+
+                if cls.METADATA_FROM_FILE == '':
+                    return cls.getMetadataFromFile(prevChoices)
+                else:
+                    return cls.METADATA_FROM_FILE
+
+    @classmethod
+    def getMetadataFromFile(cls, prevChoices):
+        gSuite = getGSuiteFromGalaxyTN(prevChoices.history)
+        gSuiteTrack = gSuite.getTrackFromTitle(prevChoices.exampleTrack)
+        with open(gSuiteTrack.path) as trackFile:
+            for line in trackFile.readlines():
+                if line.startswith('#'):
+                    continue
+                if line.startswith('Hugo_Symbol'):
+                    cls.METADATA_FROM_FILE = [cls.NO_PARAM_TEXT] + line.strip('\n').split('\t')
+                    break
+        return cls.METADATA_FROM_FILE
+
+    @classmethod
+    def setupSelectedMetadataMethods(cls):
+        for i in xrange(cls.NUM_PARAM_BOXES):
+            setattr(cls, 'getOptionsBoxSelectedMetadata%s' % i,
+                    partial(cls._getOptionsBoxForSelectedMetadata, index=i))
+
+
+
+    @classmethod
+    def _getOptionsBoxForSelectedMetadataLimitation(cls, prevChoices, index):
+        if prevChoices.history:
+            if not any(cls.NO_PARAM_TEXT in getattr(prevChoices, 'selectedMetadata%s' % i) for i in
+                       xrange(index)):
+
+                return ['yes', 'no']
+
+    @classmethod
+    def setupSelectedMetadataLimitationMethods(cls):
+        for i in xrange(cls.NUM_PARAM_BOXES):
+            setattr(cls, 'getOptionsBoxSelectedMetadataLimitation%s' % i,
+                    partial(cls._getOptionsBoxForSelectedMetadataLimitation, index=i))
     #
     # @staticmethod
     # def _getParamKeyFromListedParam(prevChoices, index):
@@ -154,35 +203,9 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
     #         return paramDict[paramChoice]
     #
 
-    @classmethod
-    def _getOptionsBoxForSelectedMetadata(cls, prevChoices, index):
-        if prevChoices.history:
-            if not any(cls.NO_PARAM_TEXT in getattr(prevChoices, 'selectedMetadata%s' % i) for i in
-                       xrange(index)):
 
-                if cls.METADATA_FROM_FILE == '':
-                    return cls.getMetadataFromFile(prevChoices)
-                else:
-                    return cls.METADATA_FROM_FILE
 
-    @classmethod
-    def getMetadataFromFile(cls, prevChoices):
-        gSuite = getGSuiteFromGalaxyTN(prevChoices.history)
-        gSuiteTrack = gSuite.getTrackFromTitle(prevChoices.exampleTrack)
-        with open(gSuiteTrack.path) as trackFile:
-            for line in trackFile.readlines():
-                if line.startswith('#'):
-                    continue
-                if line.startswith('Hugo_Symbol'):
-                    cls.METADATA_FROM_FILE = [cls.NO_PARAM_TEXT] + line.strip('\n').split('\t')
-                    break
-        return cls.METADATA_FROM_FILE
 
-    @classmethod
-    def setupSelectedMetadataMethods(cls):
-        for i in xrange(cls.NUM_PARAM_BOXES):
-            setattr(cls, 'getOptionsBoxSelectedMetadata%s' % i,
-                    partial(cls._getOptionsBoxForSelectedMetadata, index=i))
 
 
     @classmethod
@@ -532,3 +555,4 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
 
 # ConvertMAFFileToBEDFileTool.setupParameterOptionBoxes()
 ConvertMAFFileToBEDFileTool.setupSelectedMetadataMethods()
+ConvertMAFFileToBEDFileTool.setupSelectedMetadataLimitationMethods()
