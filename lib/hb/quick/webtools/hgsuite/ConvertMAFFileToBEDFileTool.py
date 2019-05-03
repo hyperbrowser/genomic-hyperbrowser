@@ -33,7 +33,7 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Convert MAF file to BED file"
+        return "Convert MAF GSuite to BED GSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -44,9 +44,9 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
                [('Select metatada %s' % (i + 1) + '', 'selectedMetadata%s' % i) for i in
                 range(cls.NUM_PARAM_BOXES)] + \
                [('First %s lines of example track text file after manipulation: ' \
-                 % cls.NUM_EXAMPLE_LINES, 'firstLinesOut'),
-                ('Change file suffix (e.g. "bed") of output tracks?', 'changeSuffix'),
-                ('New file suffix for all output tracks', 'suffix')]
+                 % cls.NUM_EXAMPLE_LINES, 'firstLinesOut')]
+                # ('Change file suffix (e.g. "bed") of output tracks?', 'changeSuffix'),
+                # ('New file suffix for all output tracks', 'suffix')]
 
     @classmethod
     def setupParameterOptionBoxes(cls):
@@ -221,33 +221,34 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
         except:
             pass
 
-    @classmethod
-    def getOptionsBoxChangeSuffix(cls, prevChoices):
-        return ['bed']
+    # @classmethod
+    # def getOptionsBoxChangeSuffix(cls, prevChoices):
+    #     return ['bed']
 
     @staticmethod
     def _getTrackSuffix(gSuiteTrack):
-        if gSuiteTrack.suffix:
-            return 'bed'
-        else:
-            return 'txt'
+        return 'bed'
+        # if gSuiteTrack.suffix:
+        #     return 'bed'
+        # else:
+        #     return 'txt'
 
-    @classmethod
-    def _getSuffix(cls, choices, gSuiteTrack):
-        if choices.changeSuffix == 'Yes':
-            return choices.suffix
-        else:
-            return cls._getTrackSuffix(gSuiteTrack)
-
-    @classmethod
-    def getOptionsBoxSuffix(cls, prevChoices):
-        if prevChoices.changeSuffix == 'Yes':
-            try:
-                gSuite = getGSuiteFromGalaxyTN(prevChoices.history)
-                for track in gSuite.allTracks():
-                    return cls._getTrackSuffix(track)
-            except:
-                pass
+    # @classmethod
+    # def _getSuffix(cls, choices, gSuiteTrack):
+    #     if choices.changeSuffix == 'Yes':
+    #         return choices.suffix
+    #     else:
+    #         return cls._getTrackSuffix(gSuiteTrack)
+    #
+    # @classmethod
+    # def getOptionsBoxSuffix(cls, prevChoices):
+    #     if prevChoices.changeSuffix == 'Yes':
+    #         try:
+    #             gSuite = getGSuiteFromGalaxyTN(prevChoices.history)
+    #             for track in gSuite.allTracks():
+    #                 return cls._getTrackSuffix(track)
+    #         except:
+    #             pass
 
     @classmethod
     def getInfoForOptionsBoxOperation(cls, prevChoices):
@@ -376,8 +377,8 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
             return 'An error occured testing operation "%s": ' % operation + str(
                 e)
 
-        if choices.changeSuffix == 'Yes' and choices.suffix.strip() == '':
-            return 'Please select a file suffix'
+        # if choices.changeSuffix == 'Yes' and choices.suffix.strip() == '':
+        #     return 'Please select a file suffix'
 
     @classmethod
     def getOutputName(cls, choices):
