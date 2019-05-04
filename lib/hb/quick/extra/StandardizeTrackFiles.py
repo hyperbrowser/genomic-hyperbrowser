@@ -760,6 +760,19 @@ class ConvertMafTo3ColBed(GeneralTrackDataModifier):
             chrPart, start, end = line.split('\t')[4:7]
             outF.write('\t'.join(['chr'+chrPart, str(int(start)-1), end ]) + '\n')
 
+class ConvertTxtTo3ColBed(GeneralTrackDataModifier):
+    @classmethod
+    def parseFile(cls,inFn, outFn, **kwargs):
+        outF = open(outFn, 'w')
+        for line in open(inFn):
+            if line.startswith('GDC_Aliquot'): #header..
+                continue
+            lineSplit = line.split('\t')
+            chrPart, start, end = lineSplit[1:4]
+
+            outF.write('\t'.join(['chr'+ str(chrPart), start, end]) + '\n')
+
+
 class ConvertMafTo4ColBed(GeneralTrackDataModifier):
     @classmethod
     def parseFile(cls,inFn, outFn, **kwargs):

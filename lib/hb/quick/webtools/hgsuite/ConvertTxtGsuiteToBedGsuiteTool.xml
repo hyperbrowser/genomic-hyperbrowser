@@ -1,0 +1,4 @@
+<tool id="hb_convert_txt_gsuite_to_bed_gsuite_tool" name="Convert TXT Gsuite to BED GSuite" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ConvertTxtGsuiteToBedGsuiteTool" proto_tool_class="ConvertTxtGsuiteToBedGsuiteTool">
+  <description></description>
+</tool>
