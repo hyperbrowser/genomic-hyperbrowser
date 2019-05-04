@@ -13,6 +13,7 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
 
     NUM_EXAMPLE_LINES = 12
     NUM_PARAM_BOXES = 10
+    TITLE = 'title'
 
     ALL_PUBLIC_OPERATIONS = OrderedDict([('Convert maf to 4-column bed', 'ConvertMafTo4ColBed')])
     ALL_OPERATIONS = ALL_PUBLIC_OPERATIONS

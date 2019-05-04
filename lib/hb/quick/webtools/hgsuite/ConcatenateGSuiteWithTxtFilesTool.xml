@@ -1,0 +1,4 @@
+<tool id="hb_concatenate_g_suite_with_txt_files_tool" name="Update hGSuite metadta using information from TXT file" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ConcatenateGSuiteWithTxtFilesTool" proto_tool_class="ConcatenateGSuiteWithTxtFilesTool">
+  <description></description>
+</tool>
