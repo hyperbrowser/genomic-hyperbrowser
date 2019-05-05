@@ -44,8 +44,10 @@
   </section>
 
   <section name="Additional" id="14additional_hGsuite" >
-    <label text="For hGSuites" id="additional_hgsuite_hgsuite"/>
+    <tool file="proto/hyperbrowser/hgsuite/ConvertTxtGsuiteToBedGsuiteTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/ConvertMAFFileToBEDFileTool.xml" />
+    <label text="For hGSuites" id="additional_hgsuite_hgsuite"/>
+    <tool file="proto/hyperbrowser/hgsuite/ConcatenateGSuiteWithTxtFilesTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/OperationsOnHierarchicalGSuiteTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/ModifyTracksResolutionTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/GenerateGsuiteFileWithHotSpotRegions.xml" />
