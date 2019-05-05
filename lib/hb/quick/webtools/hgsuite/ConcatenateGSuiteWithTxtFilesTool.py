@@ -15,7 +15,7 @@ class ConcatenateGSuiteWithTxtFilesTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
 
-        return "Update hGSuite metadta using information from TXT file"
+        return "Update hGSuite metadata using information from TXT file"
 
     @classmethod
     def getInputBoxNames(cls):
