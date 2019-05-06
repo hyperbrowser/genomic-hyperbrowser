@@ -278,9 +278,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-
-        exit()
-
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         groupResponse = choices.groupResponse.encode('utf-8')
         preselectedDecision = choices.preselectedDecision.encode('utf-8')
