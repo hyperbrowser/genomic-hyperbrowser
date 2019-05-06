@@ -88,14 +88,15 @@ class ConcatenateGSuiteWithTxtFilesTool(GeneralGuiTool):
             else:
                 attr = track.getAttribute(keyFirst)
             existingAttr = track.attributes
-            attrDict = cls.merge_two_dicts(existingAttr, extraMetadata[attr])
+            if attr in extraMetadata.keys():
+                attrDict = cls.merge_two_dicts(existingAttr, extraMetadata[attr])
 
-            gs = GSuiteTrack(track.uri,
-                             title=''.join(str(track.title)),
-                             genome=gSuite.genome,
-                             attributes=attrDict)
+                gs = GSuiteTrack(track.uri,
+                                 title=''.join(str(track.title)),
+                                 genome=gSuite.genome,
+                                 attributes=attrDict)
 
-            outputGSuite.addTrack(gs)
+                outputGSuite.addTrack(gs)
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
@@ -131,16 +132,9 @@ class ConcatenateGSuiteWithTxtFilesTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
+    @classmethod
+    def isPublic(cls):
+        return True
     #
     # @classmethod
     # def isRedirectTool(cls):
