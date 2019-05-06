@@ -202,7 +202,15 @@ class GSuite(object):
     
     def getAttributeValueList(self, attrName):
         assert attrName in self.attributes, attrName
-        return [x.getAttribute(attrName) for x in self.allTracks()]
+        attr = []
+        for x in self.allTracks():
+            try:
+                a = x.getAttribute(attrName)
+            except:
+                a = '.'
+            attr.append(a)
+
+        return attr
 
     def __getattribute__(self, attr):
         if not object.__getattribute__(self, '_updatedHeaders') and \

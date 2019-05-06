@@ -62,8 +62,6 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 selectionList = []
                 if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumns%s' % i) for i in
                            xrange(index)):
-                    attrList = [getattr(prevChoices, 'selectedColumns%s' % i) for i in
-                                xrange(index)]
                     selectionList = attr
 
                 if selectionList:
@@ -218,7 +216,10 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 if column == cls.TITLE:
                     t = iTrack.title
                 else:
-                    t = iTrack.getAttribute(column)
+                    try:
+                        t = iTrack.getAttribute(column)
+                    except:
+                        t = '.'
 
                 for p in par:
                     if t != None:

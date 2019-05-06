@@ -366,6 +366,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                                                                    'selectedStat%s',
                                                                                    cls.MAX_NUM_OF_STAT)
         selectedAnalysis = cls.addStat(choices, statList)
+
         gsuiteOutput = CountDescriptiveStatisticBetweenHGsuiteTool._getAttributes(gSuite, colList)
         whichGroups = cls.createGroups(gSuite, colList, gsuiteOutput)
 
