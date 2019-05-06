@@ -33,7 +33,7 @@ class ConcatenateGSuiteWithTxtFilesTool(GeneralGuiTool):
     def getOptionsBoxKeyFirst(cls, prevChoices):
         if prevChoices.gsuite:
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return [cls.NO_OPERATION_TEXT] + [cls.NO_OPERATION_TEXT] + gSuite.attributes
+            return [cls.NO_OPERATION_TEXT] + [cls.TITLE] + gSuite.attributes
 
     @classmethod
     def getOptionsBoxSelFile(cls, prevChoices):

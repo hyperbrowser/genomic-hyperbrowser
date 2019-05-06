@@ -31,11 +31,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS = 10
     MAX_NUM_OF_STAT = 1
-    INFO_1 = 'You have define levels of dimensions in your hGSuite so by defualt your groups and their hierarchy is specified.'
+    INFO_1 = 'You have define levels of dimensions in your hGSuite so by default your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
     INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
     INFO_ALL = ''
     PHRASE = '-- SELECT --'
+
+    SELECTED_STAT = ''
+    DIMENSIONS = ''
 
     COUNTSTAT = 'Coverage (Counts of elements)'
     NORMALIZESTAT = 'Normalize (Coverege divided by sum of coverages)'
@@ -53,33 +56,20 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def getInputBoxNames(cls):
 
-        return [
-                   ('Select hGSuite', 'gsuite')] + \
-               cls.getInputBoxNamesForGenomeSelection() + \
-               [('Select statistic ',
-                 'selectedStat%s' % i) for i \
-                in range(cls.MAX_NUM_OF_STAT)] + \
+        return [('Select hGSuite', 'gsuite')] + cls.getInputBoxNamesForGenomeSelection() + \
+               [('Select statistic ', 'selectedStat%s' % i) for i in range(cls.MAX_NUM_OF_STAT)]  + \
                [('Information', 'groupDefined')] + \
                [('Do you want to specify groups', 'groupResponse')] + \
                [('', 'preselectedGroup')] + \
                [('Select the column which define the group at level %s' % (i + 2) + '',
-                 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+                  'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('Do you want to have preselected presenting options', 'preselectedDecision')] + \
                [('Select main option for the group at level %s' % (i + 1) + '',
                  'selectedMainOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                [('', 'selectedOption%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
                cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
-        # [('Do you want to summarize results within groups', 'summarizeResponse')] + \
-        # [('Select summary operation for results', 'summarize')] + \
-        # [('Do you treat two groups as the same', 'question')] + \
-        # [('Do you want to do above summarize data for column %s' % (
-        # i + 1) + ' from hGSuite (val1,val2;val3;val4 means val1 operation val2 and val3 operation val4)',
-        #    'selectedColumnOption%s' % i) for i in
-        #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
-        # [('Text %s' % (i + 1) + ' from hGSuite ',
-        #                                    'selectedText%s' % i) for i in
-        #  range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + \
+
 
     @classmethod
     def getOptionsBoxGsuite(cls):
@@ -104,11 +94,13 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def getOptionsBoxGroupDefined(cls, prevChoices):
         # parse GSuite and get metadata about dimensions
-        statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-        if len(statList) > 0:
+        #statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+        cls.SELECTED_STAT = cls.getHowManyStatHaveBeenSelected(prevChoices)
+        if len(cls.SELECTED_STAT) > 0:
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            dimensions = gSuite.getCustomHeader('levels')
-            if str(dimensions) != 'None':
+            #dimensions = gSuite.getCustomHeader('levels')
+            cls.DIMENSIONS = gSuite.getCustomHeader('levels')
+            if str(cls.DIMENSIONS) != 'None':
                 cls.INFO_ALL = cls.INFO_1
                 return '__rawstr__', cls.INFO_1
             else:
@@ -119,15 +111,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     def getOptionsBoxGroupResponse(cls, prevChoices):
         if prevChoices.gsuite:
             if cls.INFO_ALL != cls.INFO_1:
-                statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-                if len(statList) > 0:
+                #statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+                if len(cls.SELECTED_STAT) > 0:
                     return '__hidden__', 'yes'
-
     @classmethod
     def getOptionsBoxPreselectedGroup(cls, prevChoices):
         return '__rawstr__', cls.INFO_3
-
-    # coremine
 
     @classmethod
     def getHowManyStatHaveBeenSelected(cls, prevChoices):
@@ -141,28 +130,29 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             else:
                 statList.append(attr)
         return statList
-
-    @classmethod
-    def getHowManyColumnHaveBeenSelected(cls, prevChoices):
-        statList = []
-        for i in xrange(cls.MAX_NUM_OF_COLS):
-            attr = getattr(prevChoices, 'selectedColumn%s' % i)
-            if cls.PHRASE in [attr]:
-                pass
-            elif str(attr) == 'None':
-                pass
-            else:
-                statList.append(attr)
-        return statList
-
+    #
+    # @classmethod
+    # def getHowManyColumnHaveBeenSelected(cls, prevChoices):
+    #     statList = []
+    #     for i in xrange(cls.MAX_NUM_OF_COLS):
+    #         attr = getattr(prevChoices, 'selectedColumn%s' % i)
+    #         if cls.PHRASE in [attr]:
+    #             pass
+    #         elif str(attr) == 'None':
+    #             pass
+    #         else:
+    #             statList.append(attr)
+    #     return statList
+    #
     @classmethod
     def _getOptionsBoxForSelectedColumn(cls, prevChoices, index):
         if prevChoices.gsuite:
             selectionList = []
-            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-            if len(statList) > 0:
+            ##statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+
+            if len(cls.SELECTED_STAT) > 0:
                 if prevChoices.groupResponse:
-                    if prevChoices.groupResponse != 'no':
+                    if prevChoices.groupResponse.encode('utf-8') == 'yes':
                         if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i
                                    in
                                    xrange(index)):
@@ -177,9 +167,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         if selectionList:
                             return selectionList
                 else:
-                    gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                    dimensions = gSuite.getCustomHeader('levels')
-                    dimensions = dimensions.split(',')
+                    #gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    #dimensions = gSuite.getCustomHeader('levels')
+                    dimensions = cls.DIMENSIONS.split(',')
                     attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in
                                 xrange(index)]
                     selectionList = [item for item in dimensions if item not in attrList]
@@ -196,8 +186,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     @classmethod
     def getOptionsBoxPreselectedDecision(cls, prevChoices):
         if prevChoices.gsuite:
-            statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-            if len(statList) > 0:
+            #statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
+            if len(cls.SELECTED_STAT) > 0:
                 return ['no', 'yes']
 
     @classmethod
@@ -283,91 +273,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             setattr(cls, 'getOptionsBoxSelectedOption%s' % i,
                     partial(cls._getOptionsBoxForSelectedOption, index=i))
 
-    # @classmethod
-    # def getOptionsBoxSummarizeResponse(cls, prevChoices):
-    #     if prevChoices.gsuite:
-    #         if prevChoices.groupResponse and prevChoices.groupResponse != 'no':
-    #             statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-    #             columnList = cls.getHowManyColumnHaveBeenSelected(prevChoices)
-    #             if len(statList) > 0:
-    #                 if len(columnList) > 0:
-    #                     return ['no', 'yes']
-    #
-    # @classmethod
-    # def getOptionsBoxSummarize(cls, prevChoices):
-    #     if prevChoices.gsuite:
-    #         if prevChoices.summarizeResponse and prevChoices.summarizeResponse != 'no':
-    #             statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-    #             columnList = cls.getHowManyColumnHaveBeenSelected(prevChoices)
-    #             if len(statList) > 0:
-    #                 if len(columnList) > 0:
-    #                     tempDict = cls.SUMMARIZE.copy()
-    #                     del tempDict['no']
-    #                     return tempDict.keys()
-    #
 
-    #
-    # @classmethod
-    # def getOptionsBoxQuestion(cls, prevChoices):
-    #     if prevChoices.gsuite:
-    #         if prevChoices.summarizeResponse and prevChoices.summarizeResponse != 'no':
-    #             statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
-    #             columnList = cls.getHowManyColumnHaveBeenSelected(prevChoices)
-    #             if len(statList) > 0:
-    #                 if len(columnList) > 0:
-    #                     return ['no', 'yes']
-    #
-    # @classmethod
-    # def _getOptionsBoxForSelectedColumnOption(cls, prevChoices, index):
-    #     if prevChoices.gsuite:
-    #         if prevChoices.question and prevChoices.question != 'no':
-    #             if prevChoices.summarize and prevChoices.summarize != 'no':
-    #                 attr = []
-    #                 for i in xrange(index + 1):
-    #                     attr.append(getattr(prevChoices, 'selectedColumn%s' % i))
-    #
-    #                 if cls.PHRASE in attr or None in attr:
-    #                     pass
-    #                 else:
-    #                     return ''
-    #
-    # @classmethod
-    # def setupSelectedColumnOptionMethods(cls):
-    #     from functools import partial
-    #     for i in xrange(cls.MAX_NUM_OF_COLS):
-    #         setattr(cls, 'getOptionsBoxSelectedColumnOption%s' % i, partial(cls._getOptionsBoxForSelectedColumnOption, index=i))
-    #
-    # @classmethod
-    # def _getOptionsBoxForSelectedText(cls, prevChoices, index):
-    #     if prevChoices.gsuite:
-    #         if prevChoices.question and prevChoices.question != 'no':
-    #             if prevChoices.summarize and prevChoices.summarize != 'no':
-    #                 attr = []
-    #                 inx = index
-    #                 for i in xrange(index+1):
-    #                     a = getattr(prevChoices, 'selectedColumn%s' % i)
-    #                     if a != None:
-    #                         attr.append(a)
-    #
-    #
-    #                 if cls.PHRASE in attr or None in attr:
-    #                     pass
-    #                 else:
-    #                     if prevChoices.gsuite:
-    #                         gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-    #                         return [list(set(gsuite.getAttributeValueList(attr[-1])))]
-    #
-    #
-    #
-    # @classmethod
-    # def setupSelectedTextMethods(cls):
-    #     from functools import partial
-    #     for i in xrange(cls.MAX_NUM_OF_COLS):
-    #         setattr(cls, 'getOptionsBoxSelectedText%s' % i,
-    #                 partial(cls._getOptionsBoxForSelectedText, index=i))
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+
+
+        exit()
+
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         groupResponse = choices.groupResponse.encode('utf-8')
         preselectedDecision = choices.preselectedDecision.encode('utf-8')
@@ -783,94 +696,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             if not gsuite.isPreprocessed():
                 return 'hGSuite need to preprocessed.'
 
-        # if cls.PHRASE in getattr(choices, 'selectedStat%s' % 0):
-        #     return 'Select statistic'
-
-
 
         return None
 
-    # @classmethod
-    # def getSubToolClasses(cls):
-    #     """
-    #     Specifies a list of classes for subtools of the main tool. These
-    #     subtools will be selectable from a selection box at the top of the
-    #     page. The input boxes will change according to which subtool is
-    #     selected.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
+
     @classmethod
     def isPublic(cls):
         return True
 
-    #
-    # @classmethod
-    # def isRedirectTool(cls):
-    #     """
-    #     Specifies whether the tool should redirect to an URL when the Execute
-    #     button is clicked.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
-    # @classmethod
-    # def getRedirectURL(cls, choices):
-    #     """
-    #     This method is called to return an URL if the isRedirectTool method
-    #     returns True.
-    #
-    #     Mandatory method if isRedirectTool() returns True.
-    #     """
-    #     return ''
-    #
-    # @classmethod
-    # def isHistoryTool(cls):
-    #     """
-    #     Specifies if a History item should be created when the Execute button
-    #     is clicked.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return True
-    #
-    # @classmethod
-    # def isBatchTool(cls):
-    #     """
-    #     Specifies if this tool could be run from batch using the batch. The
-    #     batch run line can be fetched from the info box at the bottom of the
-    #     tool.
-    #
-    #     Optional method. Default return value if method is not defined:
-    #         same as isHistoryTool()
-    #     """
-    #     return cls.isHistoryTool()
-    #
-    # @classmethod
-    # def isDynamic(cls):
-    #     """
-    #     Specifies whether changing the content of textboxes causes the page
-    #     to reload. Returning False stops the need for reloading the tool
-    #     after each input, resulting in less lags for the user.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return True
-    #
-    # @classmethod
-    # def getResetBoxes(cls):
-    #     """
-    #     Specifies a list of input boxes which resets the subsequent stored
-    #     choices previously made. The input boxes are specified by index
-    #     (starting with 1) or by key.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return []
-    #
 
     @classmethod
     def getToolDescription(cls):
@@ -1010,41 +843,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                                           toolResult=toolResult,
                                           exampleDescription=example)
 
-    #
-    # @classmethod
-    # def getToolIllustration(cls):
-    #     """
-    #     Specifies an id used by StaticFile.py to reference an illustration
-    #     file on disk. The id is a list of optional directory names followed
-    #     by a filename. The base directory is STATIC_PATH as defined by
-    #     Config.py. The full path is created from the base directory
-    #     followed by the id.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def getFullExampleURL(cls):
-    #     """
-    #     Specifies an URL to an example page that describes the tool, for
-    #     instance a Galaxy page.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
-    #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
 
     @classmethod
     def getInputBoxOrder(cls):
@@ -1074,21 +872,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         return 'customhtml'
 
 
-        #
-        # @classmethod
-        # def getOutputName(cls, choices=None):
-        #     return cls.getToolSelectionName()
-        #     """
-        #     The title (name) of the main output history element.
-        #
-        #     Optional method. Default return value if method is not defined:
-        #     the name of the tool.
-        #     """
 
 
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedStatMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedMainOptionMethods()
 CountDescriptiveStatisticForHGSuiteTool.setupSelectedOptionMethods()
-# CountDescriptiveStatisticForHGSuiteTool.setupSelectedColumnOptionMethods()
-# CountDescriptiveStatisticForHGSuiteTool.setupSelectedTextMethods()
