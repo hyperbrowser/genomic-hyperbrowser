@@ -515,7 +515,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 dp = zip(*data)
                 # print 'aa'
             elif summarizeKey == 'raw':
-                header = ['Title'] + firstColumnList + secondColumnList + [summarizeKey]
+                header =  firstColumnList + secondColumnList + [summarizeKey] + ['Title']
                 dataToPresent = data
                 # print 'dataToPresent', dataToPresent,'<br>'
                 # print 'header', header,'<br>'

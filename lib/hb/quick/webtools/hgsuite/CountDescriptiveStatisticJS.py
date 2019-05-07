@@ -1,6 +1,17 @@
 class Cube():
 
     @classmethod
+    def changeQuotes(cls,optionsToUniqueList ):
+        for op1, a in enumerate(optionsToUniqueList):
+            for op2, b in enumerate(optionsToUniqueList[op1]):
+                if isinstance(optionsToUniqueList[op1][op2], int) or isinstance(optionsToUniqueList[op1][op2], float):
+                    pass
+                else:
+                    optionsToUniqueList[op1][op2] = optionsToUniqueList[op1][op2].replace("'", '')
+
+        return optionsToUniqueList
+
+    @classmethod
     def addSelectList(cls, fileNameList, optionsToUniqueList, data, divId, statNum, mainOptionList, optionList, option = 'no'):
 
         # print 'fileNameList', fileNameList, '<br>'
@@ -11,6 +22,9 @@ class Cube():
         # print 'mainOptionList', mainOptionList, '<br>'
         # print 'optionList', optionList, '<br>'
         # print 'data', data, '<br>'
+
+        optionsToUniqueList = cls.changeQuotes(optionsToUniqueList)
+        data = cls.changeQuotes(data)
 
         operList = ['sum', 'average', 'max', 'min']
 
