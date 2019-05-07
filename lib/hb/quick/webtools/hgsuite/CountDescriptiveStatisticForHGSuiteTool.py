@@ -37,6 +37,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     INFO_ALL = ''
     PHRASE = '-- SELECT --'
 
+    TRACKS_LIMIT = 300
+    TRACKS_NUMBER = 0
+
     SELECTED_STAT = ''
     DIMENSIONS = ''
 
@@ -98,6 +101,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         cls.SELECTED_STAT = cls.getHowManyStatHaveBeenSelected(prevChoices)
         if len(cls.SELECTED_STAT) > 0:
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            cls.TRACKS_NUMBER = gSuite.numTracks()
             #dimensions = gSuite.getCustomHeader('levels')
             cls.DIMENSIONS = gSuite.getCustomHeader('levels')
             if str(cls.DIMENSIONS) != 'None':
@@ -204,7 +208,13 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             return cls.MAIN_OPTIONS
                     else:
                         if int(index) <= cls.MAX_NUM_OF_COLS:
-                            return cls.MAIN_OPTIONS
+                            if cls.TRACKS_NUMBER < cls.TRACKS_LIMIT:
+                                return cls.MAIN_OPTIONS
+                            else:
+                                if index == 0:
+                                    return [cls.MAIN_OPTIONS[2]]
+                                else:
+                                    return cls.MAIN_OPTIONS
 
     @classmethod
     def setupSelectedMainOptionMethods(cls):
