@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<head><meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="welcome_project.css">
+    <meta charset='UTF-8'>
+    <title>Differential colocalization analysis in genomics</title>
+</head>
+<body>
+<div class='content'>
+    <div class ="tabs">
+        <ul class ="nav nav-tabs" id="tab-links">
+            <li class="active" value="tab0"><a data-toggle="tab" href="#menu0">Project page</a></li>
+            <li  value="tab1"><a data-toggle="tab" href="#menu1">User Guide</a></li>
+            <li  value="tab2"><a data-toggle="tab" href="#menu2">List of other projects</a></li>
+            <li  value="tab3"><a data-toggle="tab" href="#menu3">About</a></li>
+        </ul>
+    </div>
+    <div class="tab-content">
+        <div id="menu0" class="tab-pane fade  in active">
+            <div class="container">
+                <div class="rowSpecial">
+                    <div class="colAll">
+                        <h2 class="projectTitle">
+                            Differential colocalization analysis in genomics
+                        </h2>
+                        <p class="paragraph">
+                            A broad variety of chip- and high throughput sequencing-based methods produce sets of genomic regions as their main output.
+                            Hence, the statistical analysis of genomic colocalization is a fundamental approach for integrative genomics.
+                            Since individual genomic datasets may be affected by noise, experimental artifacts or particularities of individual donors or cell types,
+                            it would be preferable to search for signals associated with sets of related experimental datasets.
+                            However, such analyses are challenging to devise due to the many dependencies along the genome and across related genomic features.
+                            Hence, no principled methodology is currently available for such investigations.
+
+                        </p>
+                        <p class="paragraph">
+                        We here consider the question of whether two sets of genomic datasets differ significantly in their degree of colocalization with a query genomic feature.
+                            For instance, the two sets could be two active chromatin sets, and the query feature GWAS SNPs, so the investigation of interest would be in which chromatin set the GWAS SNPs are more active.
+                            We suggest that the problem involves two main challenges, namely that there is often a strong and varying degree of dependence between related (epi-)genomic features,
+                            and that general hidden confounders influence both the expected value and variance of colocalization between datasets.
+                            We define three benchmarks that together reflect these main challenges. We propose several alternative analytical approaches and investigate their behavior on the defined benchmarks,
+                            as well as applying those methods on a real biological case. We show that a non parametric approach based on a rank-order test statistic perform adequately on all three defined benchmarks.
+                            We offer this approach as well as the tested alternatives in an open source tool available through a web interface.
+                        </p>
+
+                        <p class="paragraph">
+                            The GitHub repository with the full functionality underlying the web-provided tools is available at <a href="https://github.com/hyperbrowser/genomic-hyperbrowser/tree/pr_rand_ts/group_test" >tools functionality</a>.
+                        </p>
+
+                        <p class="paragraph">
+                              Data preparation and all results on simulated and real data are described below. For more details go to related sections <b>Method</b> and <b>Results</b> in the paper.
+                        </p>
+
+
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                  <div class="colAll">
+
+                      <h2 class="projectTitle">
+                          Benchmark 1 - Existence of an empirical correlation structure across tracks in the sets
+
+                      </h2>
+
+
+                        <div class = 'example'>
+                            <div class = 'exampleDesc'>
+
+                             <div class="onlyLeft">
+                                    <div class="imgzoom">
+                                        <img src="../static/project/BM1.png" style="float:left;width: 70%; height: 20%; margin-right:10px;" />
+                                    </div>
+                             </div>
+                                The figure on the left, shows the randomization procedure used in this benchmark, and
+                                at the following <a href="../u/stefania/h/imported-gdt--benchmark-1">link</a> you can find the 100 generated tracks (element 1).
+                                Elements 9, 11, 13, 25, 31 show the resulting p-values obtained when applying methods 1-4 and the t-test respectively on this benchmark.
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                  <div class="colAll">
+
+                      <h2 class="projectTitle">
+                          Benchmark 2 - Existence of a baseline correlation between query and each reference track
+                      </h2>
+                      <div class = 'exampleDesc'>
+                            <div class="imgzoom">
+                                <img src="../static/project/bm2.png" style="float:right;width: 30%; height: 30%; margin-right:10px;" />
+                            </div>
+
+                            The figure on the left, shows the randomization procedure used in this benchmark, and
+                            at the following <a href="../u/stefania/h/1-simulated-tracks-under-benchmark2">link</a> you can find the tracks generated under this benchmark.
+                            Element 8 in the history is the reference single track, while elements 18, 24, 43, 22 are the tracks simulated under benchmark 2, assuming no difference between
+                            the two sets of tracks and a signal factor of 1.01, 1.02 and 1.05 respectively.
+                            <p class="paragraph">
+                            The resulting p-values obtained by applying the different methods on these simulated tracks are available at
+                                <a href="../u/stefania/h/imported-gdt---benchmark-two-v2">link</a>.
+                            </p>
+                      </div>
+                  </div>
+                </div>
+            </div>
+
+
+
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                  <div class="colAll">
+
+                      <h2 class="projectTitle">
+                          Benchmark 3: Fully preserved empirical correlation structure with randomly assigning set membership
+                      </h2>
+                        <div class="imgzoom">
+                                        <img src="../static/project/bm3.png" style="float:left;width: 30%; height: 30%; margin-right:10px;" />
+                                    </div>
+
+                        <div class = 'example'>
+
+                            <div class = 'exampleDesc'>
+                                The figure on the left, shows the randomization procedure used in this benchmark, and
+                                at the following <a href="../u/stefania/h/2-gdt---benchmark-3">link</a> you can find the 100 tracks with randomized set labels (element 6) and the single reference track (element 4).
+                                Elements 9, 47, 39, 49, 51 show the resulting p-values obtained when applying methods 1-4 and the t-test respectively on this benchmark.
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+         <div class="containerNext">
+            <div class="rowSpecialWithGap">
+              <div class="colAll">
+
+                  <h2 class="projectTitle">
+                      Empirical analysis on Crohn's disease-associated variants (GWAS SNPs) and DNase hypersensitive sites (DHSs)
+                  </h2>
+                  <div class = 'example'>
+                      <h4 class = 'exampleTitle'></h4>
+                      <div class = 'exampleDesc'>
+                              <div class="main">
+                                        <div class="onlyLeft">
+
+                                        </div>
+                                      <div class="onlyRight">
+                                          <p class="paragraph">
+                                          To further illustrate how the different methods behave on real data,
+                                              we re-ran all of them on a previously published experiment on the co-occurrence of Crohn's
+                                              disease-associated variants (GWAS SNPs) and DNase hypersensitive sites (DHSs) (published in Franke,
+                                              Andre, et al. "Genome-wide meta-analysis increases to 71 the number of confirmed Crohn's disease susceptibility loci." Nature genetics 42.12 (2010): 1118.).
+                                          </p>
+                                          <p class="paragraph">
+                                              The data processing and the filtering of the public available data can be found at <a href="../u/stefania/h/group-test-10---crohns-data-with-different-filtering">
+                                              history</a>, while the application of the different methods for the empirical analyses of the Crohn’s disease associated variants (GWAS SNPs) and DNase hypersensitive sites
+                                              (DHSs) in different cell types can be found as following
+                                              <a href="../u/hb-superuser/h/group-test---13---bm2-analysis">Wilcoxon </a>, <a href="../u/hb-superuser/h/group-test---12---monte-carlo---method2">Method 2 </a>,
+                                              <a href="../u/hb-superuser/h/group-test---15---monte-carlo---method3 ">Method 3 </a>, <a href="../u/hb-superuser/h/group-test---16---monte-carlo---method6">Method 4 </a> and
+                                              <a href="../u/hb-superuser/h/group-test---14---t-test">T-test </a>.
+                                          </p>
+                                      </div>
+                                </div>
+                         </div>
+
+                    </div>
+                </div>
+            </div>
+         </div>
+
+        <div class="footer">
+            <div class = 'contactInfo'>
+                <p class="paragraph">If you have any questions, requests or comments regarding the project, please contact: <a href="mailto:stefasal@ifi.uio.no">Stefania Salvatore</a> or <a href="mailto:geirksa@ifi.uio.no">Geir Kjetil Sandve</a>.
+            </div>
+        </div>
+    </div>
+
+    <div id="menu1" class="tab-pane fade ">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAllProjectList">
+                    <h2 class="projectTitle">
+                        General information about the Genomic HyperBrowser
+                    </h2>
+                    <p class="paragraph">
+                        The main window (project page) is
+                        divided into three parts; the first part (on the left) shows all the tools implemented in the
+                        Genomic HyperBrowser. The tools related to this specific project are available under
+                        the label 'SIMILARITY PROJECT TOOLS'. The second part (middle) is the main resulting page.
+                        The third part (on the right) shows all the
+                        history elements of the actions made (run tools, uploaded data, etc).
+                        On each of this history element one can run at least two operations:
+                        <ol>
+                            <li>by clicking on the icon 'eye' you can see the results of that element,</li>
+                            <li>by clicking on the title of the element you will see four new icons. Starting from the left
+                                you have possibility of downloading the data, viewing the details, re-running the tool and visualizing
+                                the results.
+                            </li>
+                        </ol>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class = 'contactInfo'>
+                <p class="paragraph">If you have any questions, requests or comments regarding the project, please contact: <a href="mailto:stefasal@ifi.uio.no">Stefania Salvatore</a> or <a href="mailto:geirksa@ifi.uio.no">Geir Kjetil Sandve</a>.
+            </div>
+        </div>
+    </div>
+
+    <div id="menu2" class="tab-pane fade ">
+        <div class="container">
+            <div class="rowSpecial">
+                <div class="colAllProjectList">
+
+                      <div id ='content'></div>
+                            <script>
+                            $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_group_test.txt");
+                            </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="menu3" class="tab-pane fade ">
+        <div class="container">
+
+
+				<div class="contact">
+
+				    <b>Note:</b>
+                        <p>
+                        This is a specialized version of The Genomic Hyperbrowser,
+                        focusing on new functionality for analyzing collections of genomic track.
+                        More information on the general HyperBrowser functionality can be
+                        found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
+                        </p>
+				    <b>Contact information</b>
+                        <p>
+                        If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
+                        <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
+                       </p>
+
+				        <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
+				         A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
+				        </p>
+
+				</div>
+
+		</div>
+
+        <div class="containerNext">
+            <div class="rowSpecial">
+                <div class ="infoAboutHB">
+                <p class="blocktext">
+                This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
+                supported by various national and local bodies.
+                </p>
+                <p class="blocktext">
+                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+                </p>
+         </div>
+          </div>
+		</div>
+
+        <div class="footer">
+                <div class="section">
+                  <img src="hyperbrowser/images/logo/HB_support.png" class="center">
+                </div>
+        </div>
+
+    </div>
+    </div>
+</div>
+
+
+
+</body></html>
