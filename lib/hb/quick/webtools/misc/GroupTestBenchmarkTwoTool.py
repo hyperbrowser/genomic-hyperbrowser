@@ -228,11 +228,13 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             for cat, subTS in catTS.items():
                 randQuerySTS = querySTS
                 randCatTS = subTS
-                if randInput == TrackStructureV2.QUERY_KEY:
+                #if randInput == TrackStructureV2.QUERY_KEY:
+                if randInput == 'reference':
                     randQuerySTS = querySTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)
-                elif randInput == TrackStructureV2.REF_KEY:
+                #elif randInput == TrackStructureV2.REF_KEY:
+                elif randInput == 'case-control':
                     randCatTS = subTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)

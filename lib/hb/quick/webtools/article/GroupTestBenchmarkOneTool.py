@@ -240,11 +240,13 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             for queryTitle, querySTS in queryTS.items():
                 randQuerySTS = querySTS
                 randCatTS = catTS
-                if choices.randInput == TrackStructureV2.QUERY_KEY:
+                #if choices.randInput == TrackStructureV2.QUERY_KEY:
+                if choices.randInput == 'reference':
                     randQuerySTS = querySTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)
-                elif choices.randInput == TrackStructureV2.REF_KEY:
+                #elif choices.randInput == TrackStructureV2.REF_KEY:
+                elif choices.randInput == 'case-control':
                     randCatTS = catTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)

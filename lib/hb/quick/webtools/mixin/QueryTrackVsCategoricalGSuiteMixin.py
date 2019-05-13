@@ -87,7 +87,8 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
     def getOptionsBoxRandInput(cls, prevChoices):
         if prevChoices.randType not in ["Wilcoxon", "T-test"] and cls.RANDOMIZABLE_INPUTS and \
                 len(cls.RANDOMIZABLE_INPUTS) > 1:
-            return cls.RANDOMIZABLE_INPUTS
+            return ['reference', 'case-control']
+            #return cls.RANDOMIZABLE_INPUTS
 
 
     @classmethod
