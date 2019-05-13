@@ -111,7 +111,60 @@
                             Why do you want to use it?
                         </h4>
                         <div class = 'project'>
-                            <div class = 'projectDesc'>description</div>
+                            <div class = 'projectDesc'>
+
+                                The hGSuite HyperBrowser web platform is a set of independent tools that
+can be used together to cover a full analysis scenario from data
+preparation to result exploration. In figure, the pipeline used to
+analyse a collection of genomic tracks based on metadata of interest is
+displayed. The pipeline can be divided into four major steps.
+<ol>
+<li>Data - A user can upload their own data or the data can be downloaded from
+external repositories using tools 'Create a GSuite from an integrated
+catalog of genomic datasets' and 'Create a remote GSuite from a public
+repository'. Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a
+tar or zip file (using tool 'Create a GSuite from an archive (Zip/tar)
+in history'). A hGSuite can be created from an uploaded tar file (using
+tool 'Create a GSuite from an archive (Zip/tar) in history'), where the
+folder structure of uploaded data will be reflected as metadata columns
+in the hGSuite. To rename metadata columns in the hGSuite can be used
+tool 'Modify metadata in hGSuite'. To add metadata we can use tool 'Add
+a metadata column in hGSuite'.</li>
+
+<li>Data pre-processing - Within the web platform, collections of datasets
+are represented in the GSuite format, which isi.e. a
+simple tabular text format that includes metadata for each track in a
+given collection. The platform includes tools for preprocessing the
+GSuite 'Preprocess a GSuite for analysis'. </li>
+
+<li>Statistical analysis and visualization - Analysis are provided within
+collection of genomic tracks (using tool 'Compute Pivot table for
+hGSuite') as well as pairwise combination of genomic tracks (using tool
+'Compute Pivot table for relations between hGSuites'). They are
+restricted by the their metadata. hGSuites need to have matched
+metadata. To specify the metadata can be used tool 'Create or modify
+hierarchy of hGSuite'.</li>
+
+<li>Exploration of analysis results - The results of analysis for each genomic
+track is represented as a data cube (multidimensional array of values).
+A data cube is an arrangement of data suitable for analysis from
+different perspectives through operations like slicing, dicing,
+pivoting, and aggregation. We use the metadata of the genomic
+tracks based on the user input to carry out the above operation on the
+data cube. The results of that would be a two dimensional array, that
+would enable the user to draw overall conclusions in a time efficient
+manner. The tool 'Compute Pivot table for hGSuite' allows user to
+compute statistics for single hGSuite, while tool 'Compute Pivot table
+for relations between hGSuites' is used to represent results as data
+cube for two HGSuites. </li>
+</ol>
+
+                                <div style="width:49%;margin: 10px auto;float:left">
+                                    <img class="img-thumbnail" src="../static/project/paper-image.png" \>
+                                    </div>
+
+
+                            </div>
                         </div>
                     </div>
                 </div>

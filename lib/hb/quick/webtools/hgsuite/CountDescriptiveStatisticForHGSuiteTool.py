@@ -863,16 +863,16 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         optionFlatList = [item for sublist in zip(mainOption, option) for item in sublist]
 
         # flat_list = [item for sublist in zip(data, dataText) for item in sublist]
-
+        genome = [x[1] for x in cls.getInputBoxNamesForGenomeSelection()]
         bins = [x[1] for x in cls.getInputBoxNamesForUserBinSelection()]
 
-        return ['gsuite'] + \
+        return ['gsuite'] +  genome + \
                ['selectedStat%s' % i for i in range(cls.MAX_NUM_OF_STAT)] + \
                ['preselectedGroup'] + \
                ['groupResponse'] + \
                ['groupDefined'] + \
                ['selectedColumn%s' % i for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE)] + [
-                   'preselectedDecision'] + optionFlatList
+                   'preselectedDecision'] + optionFlatList + bins
         # ['summarizeResponse', 'summarize', 'question'] + flat_list #+ bins
 
     @classmethod
