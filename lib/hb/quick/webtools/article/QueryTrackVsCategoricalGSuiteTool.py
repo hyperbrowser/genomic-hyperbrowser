@@ -334,7 +334,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         """
         # DebugUtil.insertBreakPoint(5678)
 
-        cls._setDebugModeIfSelected(choices)
+        # cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)

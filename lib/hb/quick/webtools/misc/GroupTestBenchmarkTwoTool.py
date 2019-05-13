@@ -65,8 +65,8 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
              ('Select GSuite column with group labels', 'catTwoLbl')] + \
             cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
             cls.getInputBoxNamesForUserBinSelection() \
-            #    + \
-            # cls.getInputBoxNamesForDebug()
+               + \
+            cls.getInputBoxNamesForDebug()
              # ('Select primary group category value', 'categoryVal'),
              # ('Select track to track similarity/distance measure', 'similarityFunc'),
              # ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
@@ -165,7 +165,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         Mandatory unless isRedirectTool() returns True.
         """
 
-        cls._setDebugModeIfSelected(choices)
+        # cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
@@ -456,16 +456,16 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return True
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
     #
     @classmethod
     def getOutputFormat(cls, choices):
