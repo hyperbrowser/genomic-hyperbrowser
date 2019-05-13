@@ -239,7 +239,6 @@ class GSuiteTrack(object):
                     raise InvalidFormatError('Empty attribute contents not allowed. '
                                              'Please use ".", the period character, to '
                                              'indicate missing values')
-
                 if self._doUnquote:
                     val = urlDecodePhrase(val)
                 if key.lower() in self._attributes:
@@ -259,6 +258,8 @@ class GSuiteTrack(object):
     def getAttribute(self, attrName):
         if attrName in self._attributes:
             return self._attributes[attrName]
+        else:
+            return '.'
 
     @staticmethod
     def _checkHeaderValAllowed(param, header):
