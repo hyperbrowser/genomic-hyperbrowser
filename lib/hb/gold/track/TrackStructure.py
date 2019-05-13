@@ -70,8 +70,8 @@ class TrackStructureV2(dict):
     # and its existence has to be checked with hasattr(ts,'results')
 
     TRACK_NAME_SEPARATOR = "#&&#"
-    QUERY_KEY = 'query'
-    REF_KEY = 'reference'
+    QUERY_KEY = 'reference'
+    REF_KEY = 'case-control'
 
     @takes('TrackStructureV2', basestring, 'TrackStructureV2')
     def __setitem__(self, key, value):

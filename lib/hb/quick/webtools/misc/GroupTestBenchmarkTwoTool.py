@@ -25,7 +25,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
     CAT_LBL_KEY = 'catTwoLbl'
     INFO_HIST_ELEMENT = 'BM2 info'
-    REF_GSUITE_INPUT_LBL = 'Select a GSuite of reference tracks simulated from the query'
+    REF_GSUITE_INPUT_LBL = 'Select a GSuite of case-control tracks simulated from the reference'
 
     @classmethod
     def getToolName(cls):
@@ -58,14 +58,15 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select query track (simulated or real)', 'queryTrack'),
+        return [('Select reference track', 'queryTrack'),
                (cls.REF_GSUITE_INPUT_LBL, 'gsuite')] + \
             cls.getInputBoxNamesForGenomeSelection() + \
             [('Select GSuite column with sub-GSuite labels', 'catOneLbl'),
              ('Select GSuite column with group labels', 'catTwoLbl')] + \
             cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
-            cls.getInputBoxNamesForUserBinSelection() + \
-            cls.getInputBoxNamesForDebug()
+            cls.getInputBoxNamesForUserBinSelection() \
+            #    + \
+            # cls.getInputBoxNamesForDebug()
              # ('Select primary group category value', 'categoryVal'),
              # ('Select track to track similarity/distance measure', 'similarityFunc'),
              # ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
@@ -455,16 +456,16 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     #     """
     #     return None
     #
-    @classmethod
-    def isDebugMode(cls):
-        """
-        Specifies whether the debug mode is turned on. Debug mode is
-        currently mostly used within the Genomic HyperBrowser and will make
-        little difference in a plain Galaxy ProTo installation.
-
-        Optional method. Default return value if method is not defined: False
-        """
-        return True
+    # @classmethod
+    # def isDebugMode(cls):
+    #     """
+    #     Specifies whether the debug mode is turned on. Debug mode is
+    #     currently mostly used within the Genomic HyperBrowser and will make
+    #     little difference in a plain Galaxy ProTo installation.
+    #
+    #     Optional method. Default return value if method is not defined: False
+    #     """
+    #     return True
     #
     @classmethod
     def getOutputFormat(cls, choices):
