@@ -1,0 +1,4 @@
+<tool id="hb_group_test_bm3_shuffle_groups_in_g_suite_tool" name="Group difference test - Shuffle group labels in GSuite (BM3)" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.misc.GroupTestBM3ShuffleGroupsInGSuiteTool" proto_tool_class="GroupTestBM3ShuffleGroupsInGSuiteTool">
+  <description></description>
+</tool>
