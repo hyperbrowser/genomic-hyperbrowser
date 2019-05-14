@@ -443,7 +443,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()]
                 resTableDict[key].append("NA")
-            resTableDict['Wilcoxon'] = [wilcoxonOrTtestResults['statistic'], wilcoxonOrTtestResults['p.value']]
+            resTableDict[choices.randType] = [wilcoxonOrTtestResults['statistic'], wilcoxonOrTtestResults['p.value']]
 
             columnNames = ["Group", "Score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
