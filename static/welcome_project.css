@@ -314,4 +314,37 @@
 
 
 
+        .main{
+                font-weight: normal;
+                width:100%;
+                overflow: hidden;
+                clear: both;
+            }
+            .leftMain{
+                float: left;
+                width: 25%;
+            }
+            .middleMain{
+                float: right;
+                width: 25%;
+            }
+            .rightMain{
+                width: 44%;
+                float: left;
+                margin: 20px;
+                overflow: hidden;
+            }
+
+            .onlyLeft{
+                float: left;
+                width: 50%;
+            }
+            .onlyRight{
+                float: left;
+                width: 45%;
+                overflow: hidden;
+            }
+
+
+
         
