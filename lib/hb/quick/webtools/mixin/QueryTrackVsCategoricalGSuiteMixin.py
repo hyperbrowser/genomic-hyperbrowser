@@ -14,15 +14,15 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def getInputBoxNamesForQueryTrackVsCatGSuite(cls):
-        return [('Select primary group label', 'categoryVal'),
-                ('Null model', 'randType'),
+        return [('Select primary case label', 'categoryVal'),
+                ('Select null model', 'randType'),
                 ('Select pairwise similarity measure', 'similarityFunc'),
                 ('Select between group summary function', 'catSummaryFunc'),
                 ('Select within group summary function', 'summaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Select tail alternative for the hypothesis test', 'tail'),
                 ('Select preservation and randomization scheme', 'randAlg'),
-                ('Randomize query or reference?', 'randInput')
+                ('Randomize reference or case-control tracks?', 'randInput')
                 ]
 
     @classmethod
@@ -87,7 +87,8 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
     def getOptionsBoxRandInput(cls, prevChoices):
         if prevChoices.randType not in ["Wilcoxon", "T-test"] and cls.RANDOMIZABLE_INPUTS and \
                 len(cls.RANDOMIZABLE_INPUTS) > 1:
-            return cls.RANDOMIZABLE_INPUTS
+            return ['reference', 'case-control']
+            #return cls.RANDOMIZABLE_INPUTS
 
 
     @classmethod
@@ -162,16 +163,16 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
             elif choices.randType == 'Within tracks':
                 if choices.randAlg == \
                         'Permute segments and sampled inter-segment regions (size of inter-segment regions is random)':
-                    if choices.randInput == "query":
+                    if choices.randInput == "reference":
                         return 2
                     else:
                         return 3
             elif choices.randType == 'Between tracks':
                 if choices.randAlg == 'Shuffle between tracks':
-                    if choices.randInput == "reference":
+                    if choices.randInput == "case-control":
                         return 4
         else:
-            if choices.randInput == "query":
+            if choices.randInput == "reference":
                 if choices.randAlg == \
                         'Permute segments and sampled inter-segment regions (size of inter-segment regions is random)':
 

@@ -70,6 +70,8 @@ class TrackStructureV2(dict):
     # and its existence has to be checked with hasattr(ts,'results')
 
     TRACK_NAME_SEPARATOR = "#&&#"
+    # QUERY_KEY = 'reference'
+    # REF_KEY = 'case-control'
     QUERY_KEY = 'query'
     REF_KEY = 'reference'
 

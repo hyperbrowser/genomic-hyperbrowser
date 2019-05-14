@@ -25,7 +25,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
     CAT_LBL_KEY = 'catTwoLbl'
     INFO_HIST_ELEMENT = 'BM2 info'
-    REF_GSUITE_INPUT_LBL = 'Select a GSuite of reference tracks simulated from the query'
+    REF_GSUITE_INPUT_LBL = 'Select a GSuite of case-control tracks simulated from the reference'
 
     @classmethod
     def getToolName(cls):
@@ -58,13 +58,14 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select query track (simulated or real)', 'queryTrack'),
+        return [('Select reference track', 'queryTrack'),
                (cls.REF_GSUITE_INPUT_LBL, 'gsuite')] + \
             cls.getInputBoxNamesForGenomeSelection() + \
             [('Select GSuite column with sub-GSuite labels', 'catOneLbl'),
              ('Select GSuite column with group labels', 'catTwoLbl')] + \
             cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
-            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForUserBinSelection() \
+               + \
             cls.getInputBoxNamesForDebug()
              # ('Select primary group category value', 'categoryVal'),
              # ('Select track to track similarity/distance measure', 'similarityFunc'),
@@ -164,7 +165,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         Mandatory unless isRedirectTool() returns True.
         """
 
-        cls._setDebugModeIfSelected(choices)
+        # cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
@@ -227,11 +228,13 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             for cat, subTS in catTS.items():
                 randQuerySTS = querySTS
                 randCatTS = subTS
-                if randInput == TrackStructureV2.QUERY_KEY:
+                #if randInput == TrackStructureV2.QUERY_KEY:
+                if randInput == 'reference':
                     randQuerySTS = querySTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)
-                elif randInput == TrackStructureV2.REF_KEY:
+                #elif randInput == TrackStructureV2.REF_KEY:
+                elif randInput == 'case-control':
                     randCatTS = subTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)

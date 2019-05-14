@@ -75,14 +75,15 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select GSuite of simulate query tracks', 'queryGsuite'),
-                ('Select categorical GSuite of real reference tracks', 'refGsuite'),
-                ('Select GSuite column with group labels', 'categoryName'),
+        return [('Select GSuite of simulated reference tracks', 'queryGsuite'),
+                ('Select GSuite of case-control tracks', 'refGsuite'),
+                ('Select GSuite column with case-control labels', 'categoryName'),
                 ] + \
                cls.getInputBoxNamesForGenomeSelection() + \
                 cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
-               cls.getInputBoxNamesForUserBinSelection() + \
-               cls.getInputBoxNamesForDebug()
+               cls.getInputBoxNamesForUserBinSelection() \
+               # + \
+               # cls.getInputBoxNamesForDebug()
 
 
     @classmethod
@@ -171,7 +172,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         # from quick.util.debug import DebugUtil
         # DebugUtil.insertBreakPoint(5678)
 
-        cls._setDebugModeIfSelected(choices)
+        # cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
@@ -239,11 +240,13 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             for queryTitle, querySTS in queryTS.items():
                 randQuerySTS = querySTS
                 randCatTS = catTS
-                if choices.randInput == TrackStructureV2.QUERY_KEY:
+                #if choices.randInput == TrackStructureV2.QUERY_KEY:
+                if choices.randInput == 'reference':
                     randQuerySTS = querySTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)
-                elif choices.randInput == TrackStructureV2.REF_KEY:
+                #elif choices.randInput == TrackStructureV2.REF_KEY:
+                elif choices.randInput == 'case-control':
                     randCatTS = catTS.getRandomizedVersion(
                         randAlgorithm,
                         binSource=analysisBins)
@@ -447,16 +450,16 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
     #     """
     #     return None
     #
-    @classmethod
-    def isDebugMode(cls):
-        """
-        Specifies whether the debug mode is turned on. Debug mode is
-        currently mostly used within the Genomic HyperBrowser and will make
-        little difference in a plain Galaxy ProTo installation.
-
-        Optional method. Default return value if method is not defined: False
-        """
-        return True
+    # @classmethod
+    # def isDebugMode(cls):
+    #     """
+    #     Specifies whether the debug mode is turned on. Debug mode is
+    #     currently mostly used within the Genomic HyperBrowser and will make
+    #     little difference in a plain Galaxy ProTo installation.
+    #
+    #     Optional method. Default return value if method is not defined: False
+    #     """
+    #     return True
 
     @classmethod
     def getOutputFormat(cls, choices):

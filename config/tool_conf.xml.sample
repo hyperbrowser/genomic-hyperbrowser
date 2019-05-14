@@ -1,5 +1,18 @@
 <?xml version='1.0' encoding='utf-8'?>
 <toolbox monitor="true">
+
+  <label text="Benchmarking project tools" id="benchmarking_project_tools" />
+
+  <section name="Benchmarks" id="benchmark_tools">
+      <tool file="proto/hyperbrowser/article/GroupTestBenchmarkOneTool.xml" />
+      <tool file="proto/hyperbrowser/misc/GroupTestBenchmarkTwoTool.xml" />
+      <tool file="proto/hyperbrowser/misc/GroupTestBenchmarkThreeTool.xml" />
+  </section>
+    <section name="Methods" id="methods_tools">
+      <tool file="proto/hyperbrowser/article/QueryTrackVsCategoricalGSuiteTool.xml" />
+  </section>
+
+
   <label text="GSuite HyperBrowser tools" id="hb_gsuite_tools" />
 
   <section name="Create a GSuite of genomic tracks" id="gsuite_compile_tools">
