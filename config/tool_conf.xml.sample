@@ -6,6 +6,7 @@
   <section name="Benchmarks" id="benchmark_tools">
       <tool file="proto/hyperbrowser/article/GroupTestBenchmarkOneTool.xml" />
       <tool file="proto/hyperbrowser/misc/GroupTestBenchmarkTwoTool.xml" />
+      <tool file="proto/hyperbrowser/misc/GroupTestSimulateGSuiteFromQueryTrackBM2Tool.xml" />
       <tool file="proto/hyperbrowser/misc/GroupTestBenchmarkThreeTool.xml" />
   </section>
     <section name="Methods" id="methods_tools">
