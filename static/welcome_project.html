@@ -1,715 +1,714 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="welcome_project.css">
-    <meta charset='UTF-8'>
-    <title>
-        hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis
-    </title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <link rel="stylesheet" href="welcome_project.css">
+   <meta charset='UTF-8'>
+   <title>
+       hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis
+   </title>
 </head>
 <body>
 <div class='content'>
-    <div class ="tabs">
-        <ul class ="nav nav-tabs" id="tab-links">
-            <li class="active" value="tab0">
-                <a data-toggle="tab" href="#menu0">hGSuite</a>
-            </li>
-            <li  value="tab2">
-                <a data-toggle="tab" href="#menu2">Examples</a>
-            </li>
-            <li  value="tab1">
-                <a data-toggle="tab" href="#menu5">Tools</a>
-            </li>
-            <!--<li  value="tab1">-->
-                <!--<a data-toggle="tab" href="#menu1">Technical details</a>-->
-            <!--</li>-->
-            <li  value="tab3">
-                <a data-toggle="tab" href="#menu3">List of other projects</a>
-            </li>
-            <li  value="tab4">
-                <a data-toggle="tab" href="#menu4">About</a>
-            </li>
-        </ul>
-    </div>
-    <div class="tab-content">
-        <div id="menu0" class="tab-pane fade  in active">
-            <div class="container">
-                <div class="rowSpecial">
-                    <div class="colAll">
-                        <h2 class="projectTitle">
-                            hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis</h2>
-                        <div class = 'project'>
-                            <div class = 'projectDesc'>description</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                High dimensional genomic data
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                High dimensional genomic data can be presented as a matrix, with each column representing levels of samples/groups (for example, a patient, a cell type, genotype, an experimental condition and so on), and each row representing a genomic tracks, which is represented by collection of features (for example, genes, genomic locus and so on).
-                                <br /><br />
-                                Here, we represented high dimensional genomic data in a GSuite format, which is a format of representing collection of genomic tracks.
-                                To read more about it look at <a href = "../tool_runner/data_source_redirect?tool_id=gsuite_spec">GSuite specification</a>.
-                                You can also look at the below example, where every single genomic track is represented by the set of characteristic defined by selected columns (genotype and mutation type) [or where each characteristics of genomic tracks are represneted by columns ( i.e. genotype and mutation type)].
-                                <div style="width:50%;margin: 10px auto;display:block;">
-                                <img class="img-thumbnail" src="../static/project/hdGSuite.png" \>
-                                </div>
-                                <p class="paragraph">
-                                This way of representing data allow for effective analysis of collections of single genomic data as well as analysis within levels of groups and among levels of groups of genomic data.
-                                </p>
-                                <p class="paragraph">
-                                Depending on the biological question, one can divide the same set of data into different groups.
-                                Let assume that one is interested in the following statistic: average number of genomic elements per defined group, where the group is defined by the
-                                genotype (look at the left figure) or the group is defined by combination of genotype and mutation type (look at the right figure).
-                                </p>
-                                <p class="paragraph">
-                                For the genotype groups, average number of genomic elements is counted for eta and iota, respectively. So for the given example, we calculated the number of genomic elements for tracks 1-3 separately and averaged them out (eta group), and we did the same procedure for the group iota.
-                                For the groups defined by the combinations of genotype and mutation type, we calculated a number of genomic elements for tracks 1-2 separately and averaged them out (eta-CA group), and we did the same for the other groups (eta-CG, iota-CA, iota-CG, iota-CT).
-                                <div style="display: block">
-                                    <div style="width:49%;margin: 10px auto;float:left">
-                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups1.png" \>
-                                    </div>
-                                    <div style="width:49%;margin: 10px auto;float:right">
-                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups2.png" \>
-                                    </div>
-                                </div>
+   <div class ="tabs">
+       <ul class ="nav nav-tabs" id="tab-links">
+           <li class="active" value="tab0">
+               <a data-toggle="tab" href="#menu0">hGSuite</a>
+           </li>
+           <li  value="tab2">
+               <a data-toggle="tab" href="#menu2">Examples</a>
+           </li>
+           <li  value="tab1">
+               <a data-toggle="tab" href="#menu5">Tools</a>
+           </li>
+           <!--<li  value="tab1">-->
+               <!--<a data-toggle="tab" href="#menu1">Technical details</a>-->
+           <!--</li>-->
+           <li  value="tab3">
+               <a data-toggle="tab" href="#menu3">List of other projects</a>
+           </li>
+           <li  value="tab4">
+               <a data-toggle="tab" href="#menu4">About</a>
+           </li>
+       </ul>
+   </div>
+   <div class="tab-content">
+       <div id="menu0" class="tab-pane fade  in active">
+           <div class="container">
+               <div class="rowSpecial">
+                   <div class="colAll">
+                       <h2 class="projectTitle">
+                           hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis</h2>
+                       <div class = 'project'>
+                           <div class = 'projectDesc'>description</div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Multi dimensional genomic data
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               Multidimensional genomic data can be presented as a matrix, with each row representing a genomic track and the column containing the features of the track. A collection of features of a track typically represents a cell type, mutation type, experimental condition and so on. These collections are also known metadata of the tracks. Here we present the multi dimensional genomic data in a GSuite format, that entitles each track along with its metadata. To know more about GSuite format please read <a href = "../tool_runner/data_source_redirect?tool_id=gsuite_spec">GSuite specification</a>
+
+                               <br /><br />
 
 
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!--<div class="containerNext">-->
-                <!--<div class="rowSpecialWithGap">-->
-                    <!--<div class="colHalfLeft">-->
-                        <!--<div class = 'project'>-->
-                            <!--<div class = 'projectDesc'>description</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                    <!--<div class="colHalfRight">-->
-                        <!--<div class = 'project'>-->
-                            <!--<div class = 'projectDesc'>description</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <h4 class = 'descriptionTitle'>
-                            Why do you want to use it?
-                        </h4>
-                        <div class = 'project'>
-                            <div class = 'projectDesc'>
+                               In the example below, each row represents a genomic tracks and its set of characteristics in each column (i.e. genotype and mutation type). This representation of the data allows for effective analysis of single genomic track collections as well as analysis within groups of genomic tracks.
+                               <div style="width:50%;margin: 10px auto;display:block;">
+                               <img class="img-thumbnail" src="../static/project/hdGSuite.png" \>
+                               </div>
+                               <p class="paragraph">
+
+                               </p>
+                               <p class="paragraph">
+                               The data can be grouped based on the question of interest, enabling easier analysis. For example if we are interested in statistical analysis like average number of genomic elements per defined group, where the group is defined by the character genotype (look at the left figure) or it can also be a group defined in combination with genotype and mutation type (look at the right figure).                                </p>
+                               <p class="paragraph">
+                               In the example below, we calculated the average number of genomic elements for each tracks and calculated the average based on the group, eta and iota respectively. For the groups defined by the combinations of genotype and mutation type, we calculated the number of genomic elementa for track 1 and 2 separately and calculated the average based genotype and mutation types like eta-CA group, eta-CG, iota-CA, iota-CT.
+                               For the groups defined by the combinations of genotype and mutation type, we calculated a number of genomic elements for tracks 1-2 separately and averaged them out (eta-CA group), and we did the same for the other groups (eta-CG, iota-CA, iota-CG, iota-CT).
+                               <div style="display: block">
+                                   <div style="width:49%;margin: 10px auto;float:left">
+                                   <img class="img-thumbnail" src="../static/project/hdGSuite-groups1.png" \>
+                                   </div>
+                                   <div style="width:49%;margin: 10px auto;float:right">
+                                   <img class="img-thumbnail" src="../static/project/hdGSuite-groups2.png" \>
+                                   </div>
+                               </div>
+
+
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <!--<div class="containerNext">-->
+               <!--<div class="rowSpecialWithGap">-->
+                   <!--<div class="colHalfLeft">-->
+                       <!--<div class = 'project'>-->
+                           <!--<div class = 'projectDesc'>description</div>-->
+                       <!--</div>-->
+                   <!--</div>-->
+                   <!--<div class="colHalfRight">-->
+                       <!--<div class = 'project'>-->
+                           <!--<div class = 'projectDesc'>description</div>-->
+                       <!--</div>-->
+                   <!--</div>-->
+               <!--</div>-->
+           <!--</div>-->
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <h4 class = 'descriptionTitle'>
+                           Why do you want to use it?
+                       </h4>
+                       <div class = 'project'>
+                           <div class = 'projectDesc'>
 
                                 The hGSuite HyperBrowser web platform is a set of independent tools that
-can be used together to cover a full analysis scenario from data
-preparation to result exploration. In figure, the pipeline used to
-analyse a collection of genomic tracks based on metadata of interest is
-displayed. The pipeline can be divided into four major steps.
-<ol>
-<li>Data - A user can upload their own data or the data can be downloaded from
-external repositories using tools 'Create a GSuite from an integrated
-catalog of genomic datasets' and 'Create a remote GSuite from a public
-repository'. Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a
-tar or zip file (using tool 'Create a GSuite from an archive (Zip/tar)
-in history'). A hGSuite can be created from an uploaded tar file (using
-tool 'Create a GSuite from an archive (Zip/tar) in history'), where the
-folder structure of uploaded data will be reflected as metadata columns
-in the hGSuite. To rename metadata columns in the hGSuite can be used
-tool 'Modify metadata in hGSuite'. To add metadata we can use tool 'Add
-a metadata column in hGSuite'.</li>
+                                can be used together to cover a full analysis scenario from data
+                                preparation to result exploration. In figure, the pipeline used to
+                                analyse a collection of genomic tracks based on metadata of interest is
+                                displayed. The pipeline can be divided into four major steps.
+                                <ol>
+                                <li>Data - A user can upload their own data or the data can be downloaded from
+                                external repositories using tools 'Create a GSuite from an integrated
+                                catalog of genomic datasets' and 'Create a remote GSuite from a public
+                                repository'. Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a
+                                tar or zip file (using tool 'Create a GSuite from an archive (Zip/tar)
+                                in history'). A hGSuite can be created from an uploaded tar file (using
+                                tool 'Create a GSuite from an archive (Zip/tar) in history'), where the
+                                folder structure of uploaded data will be reflected as metadata columns
+                                in the hGSuite. To rename metadata columns in the hGSuite can be used
+                                tool 'Modify metadata in hGSuite'. To add metadata we can use tool 'Add
+                                a metadata column in hGSuite'.</li>
 
-<li>Data pre-processing - Within the web platform, collections of datasets
-are represented in the GSuite format, which isi.e. a
-simple tabular text format that includes metadata for each track in a
-given collection. The platform includes tools for preprocessing the
-GSuite 'Preprocess a GSuite for analysis'. </li>
+                                <li>Data pre-processing - Within the web platform, collections of datasets
+                                are represented in the GSuite format, which isi.e. a
+                                simple tabular text format that includes metadata for each track in a
+                                given collection. The platform includes tools for preprocessing the
+                                GSuite 'Preprocess a GSuite for analysis'. </li>
 
-<li>Statistical analysis and visualization - Analysis are provided within
-collection of genomic tracks (using tool 'Compute Pivot table for
-hGSuite') as well as pairwise combination of genomic tracks (using tool
-'Compute Pivot table for relations between hGSuites'). They are
-restricted by the their metadata. hGSuites need to have matched
-metadata. To specify the metadata can be used tool 'Create or modify
-hierarchy of hGSuite'.</li>
+                                <li>Statistical analysis and visualization - Analysis are provided within
+                                collection of genomic tracks (using tool 'Compute Pivot table for
+                                hGSuite') as well as pairwise combination of genomic tracks (using tool
+                                'Compute Pivot table for relations between hGSuites'). They are
+                                restricted by the their metadata. hGSuites need to have matched
+                                metadata. To specify the metadata can be used tool 'Create or modify
+                                hierarchy of hGSuite'.</li>
 
-<li>Exploration of analysis results - The results of analysis for each genomic
-track is represented as a data cube (multidimensional array of values).
-A data cube is an arrangement of data suitable for analysis from
-different perspectives through operations like slicing, dicing,
-pivoting, and aggregation. We use the metadata of the genomic
-tracks based on the user input to carry out the above operation on the
-data cube. The results of that would be a two dimensional array, that
-would enable the user to draw overall conclusions in a time efficient
-manner. The tool 'Compute Pivot table for hGSuite' allows user to
-compute statistics for single hGSuite, while tool 'Compute Pivot table
-for relations between hGSuites' is used to represent results as data
-cube for two HGSuites. </li>
-</ol>
+                                <li>Exploration of analysis results - The results of analysis for each genomic
+                                track is represented as a data cube (multidimensional array of values).
+                                A data cube is an arrangement of data suitable for analysis from
+                                different perspectives through operations like slicing, dicing,
+                                pivoting, and aggregation. We use the metadata of the genomic
+                                tracks based on the user input to carry out the above operation on the
+                                data cube. The results of that would be a two dimensional array, that
+                                would enable the user to draw overall conclusions in a time efficient
+                                manner. The tool 'Compute Pivot table for hGSuite' allows user to
+                                compute statistics for single hGSuite, while tool 'Compute Pivot table
+                                for relations between hGSuites' is used to represent results as data
+                                cube for two HGSuites. </li>
+                                </ol>
 
-                                <div style="width:49%;margin: 10px auto;float:left">
-                                    <img class="img-thumbnail" src="../static/project/paper-image.png" \>
-                                    </div>
-
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer">
-                <div class = 'contactInfo'>
-                    <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
-                </div>
-            </div>
-        </div>
-
-        <!--<div id="menu1" class="tab-pane fade">-->
-            <!--<div class="container">-->
-                <!--<div class="rowSpecial">-->
-                    <!--<div class="colAll">-->
-                        <!--<h2 class="projectTitle">-->
-                            <!--Technical details</h2>-->
-                        <!--<div class = 'project'>-->
-                            <!--<div class = 'projectDesc'>-->
-                                <!--Before you started, you need to prepare your data in a GSuite format.-->
-                                <!--Once you do it and preprocess the data, you can use it in all available instances such as: ...-->
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-            <!--<div class="containerNext">-->
-                <!--<div class="rowSpecialWithGap">-->
-                    <!--<div class="colAll">-->
-                        <!--<div class = 'description'>-->
-                            <!--<h4 class = 'descriptionTitle'>-->
-                                <!--Before you started using the Genomic HyperBrowser first time-->
-                            <!--</h4>-->
-                            <!--<div class = 'descriptionDesc'>-->
-                                <!--<div id="q1" class='question'>Would you like to know how The Genomic HyperBrowser works?</div>-->
-                                <!--Here should be link to short video and plot, to see where are tools, what is the history and 5 more button explained plus sentence: "To know more about The Genomic HyperBrowser go to Galaxy ...".-->
-                                <!--<div id="q2" class='question'>Do you have data?</div>-->
-                                <!--<p>Subquestion 1: Would you like to upload you own data?</p>-->
-                                <!--Infromation about possible formats (including zip/tar of data), conversions: link to proper page-->
-
-                                <!--<p>Subquestion 2: Would you like to use data which are in the GenomicHyperbrowser repository?</p>-->
-                                <!--<p>Subquestion 3: Would you like to use data from public repositories (they can be directly download using available tools in HB)?</p>-->
-                                <!--<p>Subquestion 4: Would you like to upload data by ftp?</p>-->
-                                <!--<div class='question'>What are the available instances in the Genomic HyperBrowser?</div>-->
-                                <!--<div class='question'>How can you run tool and what where can you find results?</div>-->
-                                <!--<div class='question'>What I can do if I work on collections of data (not on single genomic track) ?</div>-->
-                                <!--All the other questions with possible answers you can find in the main page: https://hyperbrowser.uio.no-->
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-
-            <!--<div class="footer">-->
-                <!--<div class = 'contactInfo'>-->
-                    <!--<h4 class = 'contactInfoTitle'><p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.</h4>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-
-        <div id="menu5" class="tab-pane fade">
-            <div class="container">
-                <div class="rowSpecial">
-                    <div class="colAll">
-                        <h2 class="projectTitle">
-                            Domain specific tools</h2>
-                        <div class = 'project'>
-                            <div class = 'projectDesc'>
-                                Tools are divided into 5 sections:
-                                <ul>
-                                    <li>
-                                    Create a hGSuite
-                                    </li>
-                                    <li>
-                                    Customize a hGSuite
-                                    </li>
-                                    <li>
-                                    Statistical analysis of hGSuites
-                                    </li>
-                                    <li>
-                                    Visual analysis
-                                    </li>
-                                    <li>
-                                    Additional
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                Create a hGSuite
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite</a></b> - tool used to specify the levels (hierarchy) of hGSuite.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                Customize a hGSuite
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool">Divide/Filter hGSuite according to metadata</a></b> - tool used to divide hGSuite</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGsuite</a></b> - tool used to concatenate tracks in hGSuite according to selected phrases in the selected columns.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Create hGSuite based on phrases in title column in tracks</a></b> - tool used to create hGSuite based on the column 'title' (inside genomic track) </p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_h_gsuite_from_csv_file_tool">Combain metadata for hGsuite</a></b> - tool used to combain metadata of hGSuite  </p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add a metadata column in hGSuite</a></b> - tool used to  add metadata for GSuite (hGSuite)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                Statistical analysis of hGSuites
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_basic_statistic_for_groups_in_h_gsuite_tool">Expand hGSuite with group summary statistics</a></b> - tool used to provide overview of groups such as number of tracks, number of elements, base-pair coverage, average length of segments in hGSuite.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite</a></b> - tool used to count descriptive statistics for hGSuite.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites</a></b> - tool used to count descriptive statistics for relations between hGSuites. </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                Visual analysis
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Plot data for tabular file or hGSuite</a></b> - tool used to present metadata columns from hGSuite or results from tabular file in the chart.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_box_plot_for_file_tool">Create box plot for tabular file or hGSuite</a></b> - tool used to present metadata columns from gSuite or results from tabular file in the box chart.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                Additional
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_operations_on_hierarchical_g_suite_tool">Operations on hierarchical gSuite</a></b> - tool used to proceed operations: intersection or subtract between hGSuites .</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_modify_tracks_resolution_tool">Modify resolution of hGSuite</a></b> - tool used to expand the resolution of hGSuite.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_generate_gsuite_file_with_hot_spot_regions">Generate hGSuite with hotspot regions</a></b> - tool used to generate hGSuite with selected hotspot regions.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_h_clust_tool">Plot hierarchical clustering</a></b> - tool used to plot hierarchical clustering from columns of hGSuite or results from tabular file.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_operation_on_track_tool">Operations on track</a></b> - tool used to proceed operations: intersection or subtract between tracks or genome and track.</p>
-                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Change rows with columns (transpose)</a></b> - tool used to transpose tabular file.</p>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="footer">
-                <div class = 'contactInfo'>
-                    <h4 class = 'contactInfoTitle'>
-                         <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
-                    </h4>
-                </div>
-            </div>
-        </div>
-
-        <div id="menu2" class="tab-pane fade">
-            <div class="container">
-                <div class="rowSpecial">
-                    <div class="colAll">
-                        <h2 class="projectTitle">
-                            Introduction</h2>
-                            <div class = 'project'>
-                                <div class = 'projectDesc'>
-                                    <p>
-                                        To help you properly understand the possible grouping of your data,
-                                    we decided to share our story with you (section 1).
-                                    </p>
-                                    <p>
-                                    If you are ready to begin with analysis, go to section look at our examples: 1 and 2.
-                                        If you want to know more about tools itself go to tab called: Tools, if you want to know more about The Genomic HyperBrowser
-                                        got to tab: Technical details.
-                                    </p>
-                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <p class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                1. Before you start analysis, look at a possible structure of your data
-                            </h4>
-                            <div class = 'descriptionDesc'>
-                                <p>
-                                    Our goal in this project is to explore the nature of DNA repair enzymes and mutations in knockout mouse data.
-                                    We started from the point, where usually most researchers start; we received data from our collaborators and we wanted to investigate those data. We got around 30 different genomic tracks (let's call them query tracks).
-                                    Full of enthusiasm, we started by preparing sketches for different possible analyses.
-
-                                </p>
-                                <p>
-                                    We started from a quantitative overview of the query tracks, by counting several summary statistics e.g.
-                                    base-pair coverage per genomic track, segment distance average per genomic track etc and
-                                    as well as local measurements such as coverage proportion per track per chromosome, count per track per chromosome etc.
-
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/story1.png" \>
-                                    </div>
-
-                                    Therefore we downloaded reference genomic tracks from different databases: ENCODE, UCSC etc.
-                                    We collected around 10 genomic reference tracks and we repeated all the above analyses for the reference tracks and after that we computed
-                                    different pairwise similarity measures ( the Forbes coefficient, the Jaccard index and the tetrachoric correlation) between every pair of query and reference tracks.
-
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/story2.png" \>
-                                    </div>
+                               <div style="width:80%;margin: 10px auto;">
+                                   <img class="img-thumbnail" src="../static/project/paper-image-v2.png" \>
+                               </div>
 
 
-                                </p>
-                                <p >
-                                    However, after all these analyses, we realized that these genomic data had a really important difference compared to previous projects.
-                                    Firstly, every query track was characterized by different mutation type (e.g. C>A, C>T, C>G, A>T, A>G, A>C, T>A etc), and therefore the query tracks should have been divided into two
-                                    smaller tracks based on mutation types, resulting in 360 new genomic query tracks( 30 X 12 = 360 ).
-                                     And, it was really insufficient to interpret the results in a reasonable amount of time.
 
-                                </p>
-                                <p>
-                                    So we had go  back to the first step and realized that the structure of our data was multi dimensional, with two possible levels.
-                                    The first level of the data was specified by different DNA repair enzymes, while the second level was identified by type of mutations.
-                                    We ended up with 7 individual groups in the first level and 12 groups in the second level, and at this point we could  start again with our analysis.
+                       </div>
+                   </div>
+               </div>
+           </div>
+          <div class="footer">
+               <div class = 'contactInfo'>
+                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
+               </div>
+           </div>
+       </div>
+       </div>
 
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/story3.png" \>
-                                    </div>
+       <!--<div id="menu1" class="tab-pane fade">-->
+           <!--<div class="container">-->
+               <!--<div class="rowSpecial">-->
+                   <!--<div class="colAll">-->
+                       <!--<h2 class="projectTitle">-->
+                           <!--Technical details</h2>-->
+                       <!--<div class = 'project'>-->
+                           <!--<div class = 'projectDesc'>-->
+                               <!--Before you started, you need to prepare your data in a GSuite format.-->
+                               <!--Once you do it and preprocess the data, you can use it in all available instances such as: ...-->
+                           <!--</div>-->
+                       <!--</div>-->
+                   <!--</div>-->
+               <!--</div>-->
+           <!--</div>-->
+           <!--<div class="containerNext">-->
+               <!--<div class="rowSpecialWithGap">-->
+                   <!--<div class="colAll">-->
+                       <!--<div class = 'description'>-->
+                           <!--<h4 class = 'descriptionTitle'>-->
+                               <!--Before you started using the Genomic HyperBrowser first time-->
+                           <!--</h4>-->
+                           <!--<div class = 'descriptionDesc'>-->
+                               <!--<div id="q1" class='question'>Would you like to know how The Genomic HyperBrowser works?</div>-->
+                               <!--Here should be link to short video and plot, to see where are tools, what is the history and 5 more button explained plus sentence: "To know more about The Genomic HyperBrowser go to Galaxy ...".-->
+                               <!--<div id="q2" class='question'>Do you have data?</div>-->
+                               <!--<p>Subquestion 1: Would you like to upload you own data?</p>-->
+                               <!--Infromation about possible formats (including zip/tar of data), conversions: link to proper page-->
 
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                               <!--<p>Subquestion 2: Would you like to use data which are in the GenomicHyperbrowser repository?</p>-->
+                               <!--<p>Subquestion 3: Would you like to use data from public repositories (they can be directly download using available tools in HB)?</p>-->
+                               <!--<p>Subquestion 4: Would you like to upload data by ftp?</p>-->
+                               <!--<div class='question'>What are the available instances in the Genomic HyperBrowser?</div>-->
+                               <!--<div class='question'>How can you run tool and what where can you find results?</div>-->
+                               <!--<div class='question'>What I can do if I work on collections of data (not on single genomic track) ?</div>-->
+                               <!--All the other questions with possible answers you can find in the main page: https://hyperbrowser.uio.no-->
+                           <!--</div>-->
+                       <!--</div>-->
+                   <!--</div>-->
+               <!--</div>-->
+           <!--</div>-->
 
-                <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                2. Example: Explore DNA repair enzymes and mutations (i.e  knockout mouse data)
-                            </h4>
-                            <div class = 'example'>
-                                <h4 class = 'exampleTitle'>
-                                    Preparing the data: (<a href = "../u/hb-superuser/h/dataset---10">Click here to view an example</a>)
-                                </h4>
+           <!--<div class="footer">-->
+               <!--<div class = 'contactInfo'>-->
+                   <!--<h4 class = 'contactInfoTitle'><p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.</h4>-->
+               <!--</div>-->
+           <!--</div>-->
+       <!--</div>-->
 
-                                <div class = 'exampleDesc'>
-                                    The following examples are based on the randomized version of the data which has been given by collaborators.
-                                Data are characterized by their genotype: ung, eta and wt. Also, data were additionally divided by their type of mutation: T>G,T>A,T>C,G>A,G>T,G>C,C>A,C>T,C>G,A>T,A>G,A>C
-                                    and then grouped by complement nucleotide base pairs: T>G with A>C, T>A with A>T, T>C with A>G, C>A with G>T, C>T with G>A and C>G with G>C.
+       <div id="menu5" class="tab-pane fade">
+           <div class="container">
+               <div class="rowSpecial">
+                   <div class="colAll">
+                       <h2 class="projectTitle">
+                           Domain specific tools</h2>
+                       <div class = 'project'>
+                           <div class = 'projectDesc'>
+                               Tools are divided into 5 sections:
+                               <ul>
+                                   <li>
+                                   Create a hGSuite
+                                   </li>
+                                   <li>
+                                   Customize a hGSuite
+                                   </li>
+                                   <li>
+                                   Statistical analysis of hGSuites
+                                   </li>
+                                   <li>
+                                   Visual analysis
+                                   </li>
+                                   <li>
+                                   Additional
+                                   </li>
+                               </ul>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Create a hGSuite
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite</a></b> - tool used to specify the levels (hierarchy) of hGSuite.
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Customize a hGSuite
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool">Divide/Filter hGSuite according to metadata</a></b> - tool used to divide hGSuite</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGsuite</a></b> - tool used to concatenate tracks in hGSuite according to selected phrases in the selected columns.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Create hGSuite based on phrases in title column in tracks</a></b> - tool used to create hGSuite based on the column 'title' (inside genomic track) </p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_h_gsuite_from_csv_file_tool">Combain metadata for hGsuite</a></b> - tool used to combain metadata of hGSuite  </p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add a metadata column in hGSuite</a></b> - tool used to  add metadata for GSuite (hGSuite)</p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Statistical analysis of hGSuites
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_basic_statistic_for_groups_in_h_gsuite_tool">Expand hGSuite with group summary statistics</a></b> - tool used to provide overview of groups such as number of tracks, number of elements, base-pair coverage, average length of segments in hGSuite.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite</a></b> - tool used to count descriptive statistics for hGSuite.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites</a></b> - tool used to count descriptive statistics for relations between hGSuites. </p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Visual analysis
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Plot data for tabular file or hGSuite</a></b> - tool used to present metadata columns from hGSuite or results from tabular file in the chart.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_box_plot_for_file_tool">Create box plot for tabular file or hGSuite</a></b> - tool used to present metadata columns from gSuite or results from tabular file in the box chart.</p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Additional
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_operations_on_hierarchical_g_suite_tool">Operations on hierarchical gSuite</a></b> - tool used to proceed operations: intersection or subtract between hGSuites .</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_modify_tracks_resolution_tool">Modify resolution of hGSuite</a></b> - tool used to expand the resolution of hGSuite.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_generate_gsuite_file_with_hot_spot_regions">Generate hGSuite with hotspot regions</a></b> - tool used to generate hGSuite with selected hotspot regions.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_h_clust_tool">Plot hierarchical clustering</a></b> - tool used to plot hierarchical clustering from columns of hGSuite or results from tabular file.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_operation_on_track_tool">Operations on track</a></b> - tool used to proceed operations: intersection or subtract between tracks or genome and track.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Change rows with columns (transpose)</a></b> - tool used to transpose tabular file.</p>
+
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+          <div class="footer">
+               <div class = 'contactInfo'>
+                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
+               </div>
+           </div>
+       </div>
+
+       <div id="menu2" class="tab-pane fade">
+           <div class="container">
+               <div class="rowSpecial">
+                   <div class="colAll">
+                       <h2 class="projectTitle">
+                           Introduction</h2>
+                           <div class = 'project'>
+                               <div class = 'projectDesc'>
+                                   <p>
+                                       To help you properly understand the possible grouping of your data,
+                                   we decided to share our story with you (section 1).
+                                   </p>
+                                   <p>
+                                   If you are ready to begin with analysis, go to section look at our examples: 1 and 2.
+                                       If you want to know more about tools itself go to tab called: Tools, if you want to know more about The Genomic HyperBrowser
+                                       got to tab: Technical details.
+                                   </p>
                                 </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <p class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               1. Before you start analysis, look at a possible structure of your data
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <p>
+                                   Our goal in this project is to explore the nature of DNA repair enzymes and mutations in knockout mouse data.
+                                   We started from the point, where usually most researchers start; we received data from our collaborators and we wanted to investigate those data. We got around 30 different genomic tracks (let's call them query tracks).
+                                   Full of enthusiasm, we started by preparing sketches for different possible analyses.
 
-                                <div class = 'exampleDesc'>
-                                - hGSuite contains of 6 tracks with genotype metadata (dataset 1) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 8, 11 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Use tool to create GSuite</a> and then <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">use tool to add metadata with values to GSuite</a>
-                                </div>
+                               </p>
+                               <p>
+                                   We started from a quantitative overview of the query tracks, by counting several summary statistics e.g.
+                                   base-pair coverage per genomic track, segment distance average per genomic track etc and
+                                   as well as local measurements such as coverage proportion per track per chromosome, count per track per chromosome etc.
 
-                                <div class = 'exampleDesc'>
-                                - hGSuite contains of 72 tracks with genotype metadata and divided by mutation type (dataset 2) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 12, 15 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Use tool to create hGSuite based on phrases in title column in tracks </a>
-                                </div>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/story1.png" \>
+                                   </div>
 
-                                <div class = 'exampleDesc'>
-                                - hGSuite contains of 36 tracks with genotype metadata and divided by mutation type (dataset 3) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 20, 23 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Use tool to concatenate tracks in hGsuite </a>
-                                </div>
+                                   Therefore we downloaded reference genomic tracks from different databases: ENCODE, UCSC etc.
+                                   We collected around 10 genomic reference tracks and we repeated all the above analyses for the reference tracks and after that we computed
+                                   different pairwise similarity measures ( the Forbes coefficient, the Jaccard index and the tetrachoric correlation) between every pair of query and reference tracks.
 
-                                <div class = 'exampleDesc'>
-                                - hGSuite contains of 36 tracks with genotype metadata and divided by mutation type with specified levels (dataset 4) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 24, 25 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Use tool to create or modify hierarchy of hGSuite </a>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div class = 'example'>
-
-                            <h4 class = 'exampleTitle'>
-                                <b>Analysis</b>
-                            </h4>
-
-                            <div class = 'example'>
-                                <h4 class = 'exampleTitle'>
-                                    Check whether some mutation are more active in certain genotype
-                                </h4>
-
-                                <div class = 'exampleDesc'>
-                                    <p class="paragraph">
-                                     Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 1 compute coverage of data.
-                                     <a href = "../u/hb-superuser/h/analysis-q1---11">Click here to view an example, el. 2</a>
-                                        The result of the tool is a Pivot table. During computation user can select columns which will show up in the result page.
-                                        In this case, the selected column is genotype, so all results are counted separately for every track and every genotype.
-                                        User have several possibilities to look at the results. Every value can be shown separately, the results can be shown for each value or the results can be aggregated across the dimensions.
-                                    </p>
-
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/ex1.png" \>
-                                    </div>
-                                </div>
-
-                                <h4 class = 'exampleTitle'>
-                                    Check whether some mutation are more active in certain mutation type
-                                </h4>
-
-                                <div class = 'exampleDesc'>
-                                    <p class="paragraph">
-                                     Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 3 compute coverage of data.
-                                     <a href = "../u/hb-superuser/h/analysis-q2---12 ">Click here to view an example, el. 2</a>
-                                    </p>
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/ex2.png" \>
-                                    </div>
-                                </div>
-
-                                <h4 class = 'exampleTitle'>
-                                    Check whether some mutation types are enriched in certain genotype more than you would expected by chance
-                                </h4>
-
-                                <div class = 'exampleDesc'>
-                                    <p class="paragraph">
-                                     Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 3 compute coverage of data.
-                                     <a href = "../u/hb-superuser/h/analysis-q3---13">Click here to view an example, el. 2</a>
-                                    </p>
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/ex3.png" \>
-                                    </div>
-                                </div>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/story2.png" \>
+                                   </div>
 
 
-                                <h4 class = 'exampleTitle'>
-                                    Check whether data are enriched within different 3-mers
-                                </h4>
+                               </p>
+                               <p >
+                                   However, after all these analyses, we realized that these genomic data had a really important difference compared to previous projects.
+                                   Firstly, every query track was characterized by different mutation type (e.g. C>A, C>T, C>G, A>T, A>G, A>C, T>A etc), and therefore the query tracks should have been divided into two
+                                   smaller tracks based on mutation types, resulting in 360 new genomic query tracks( 30 X 12 = 360 ).
+                                    And, it was really insufficient to interpret the results in a reasonable amount of time.
 
-                                <div class = 'exampleDesc'>
-                                    <p class="paragraph">
-                                     Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> and data from dataset 2 compute overlap of data.
-                                     <a href = "../u/hb-superuser/h/analysis-q4---14">Click here to view an example, el. 3</a>
-                                    </p>
-                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                    <img class="img-thumbnail" src="../static/project/ex4.png" \>
-                                    </div>
-                                </div>
+                               </p>
+                               <p>
+                                   So we had go  back to the first step and realized that the structure of our data was multi dimensional, with two possible levels.
+                                   The first level of the data was specified by different DNA repair enzymes, while the second level was identified by type of mutations.
+                                   We ended up with 7 individual groups in the first level and 12 groups in the second level, and at this point we could  start again with our analysis.
 
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/story3.png" \>
+                                   </div>
 
-                            </div>
+                               </p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
 
+               <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               2. Example: Explore DNA repair enzymes and mutations (i.e  knockout mouse data)
+                           </h4>
+                           <div class = 'example'>
+                               <h4 class = 'exampleTitle'>
+                                   Preparing the data: (<a href = "../u/hb-superuser/h/dataset---10">Click here to view an example</a>)
+                               </h4>
 
+                               <div class = 'exampleDesc'>
+                                   The following examples are based on the randomized version of the data which has been given by collaborators.
+                               Data are characterized by their genotype: ung, eta and wt. Also, data were additionally divided by their type of mutation: T>G,T>A,T>C,G>A,G>T,G>C,C>A,C>T,C>G,A>T,A>G,A>C
+                                   and then grouped by complement nucleotide base pairs: T>G with A>C, T>A with A>T, T>C with A>G, C>A with G>T, C>T with G>A and C>G with G>C.
+                               </div>
 
-                        </div>
-                    </div>
-                </div>
-                    </div>
+                               <div class = 'exampleDesc'>
+                               - hGSuite contains of 6 tracks with genotype metadata (dataset 1) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 8, 11 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Use tool to create GSuite</a> and then <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">use tool to add metadata with values to GSuite</a>
+                               </div>
 
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                2. Example: Explore the schizophrenia-associated gene variants within primary cells of DNase I hypersensitive sites genomic tracks
-                            </h4>
-                            <div class = 'example'>
-                                <h4 class = 'exampleTitle'>
-                                    Preparing the data (<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">click here to view an example</a>)
-                                </h4>
+                               <div class = 'exampleDesc'>
+                               - hGSuite contains of 72 tracks with genotype metadata and divided by mutation type (dataset 2) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 12, 15 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Use tool to create hGSuite based on phrases in title column in tracks </a>
+                               </div>
 
-                                <div class = 'exampleDesc'>
-                                - hGSuite contains of 1 track contains 3447 schizophrenia associated SNPs (dataset 1) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 8 (preprocessed)</a>.
-                                </div>
+                               <div class = 'exampleDesc'>
+                               - hGSuite contains of 36 tracks with genotype metadata and divided by mutation type (dataset 3) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 20, 23 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Use tool to concatenate tracks in hGsuite </a>
+                               </div>
 
-                                <div class = 'exampleDesc'>
-                                - hGSuite contains of 87 DNase I hypersensitive sites genomic tracks (dataset 2) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 3 (preprocessed)</a>.
-                                </div>
+                               <div class = 'exampleDesc'>
+                               - hGSuite contains of 36 tracks with genotype metadata and divided by mutation type with specified levels (dataset 4) - <a href = "../u/hb-superuser/h/dataset---10">here to view an example, el. 24, 25 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Use tool to create or modify hierarchy of hGSuite </a>
+                               </div>
 
-
-
-                            </div>
-                        </div>
+                           </div>
+                       </div>
 
                        <div class = 'example'>
-                            <h4 class = 'exampleTitle'>
-                                Check average Forbes coefficient of schizophrenia-associated variants
-                            </h4>
 
-                            <div class = 'exampleDesc'>
-                                <p class="paragraph">
-                                 Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> you can compute
-                                    Forbes coefficient between datasets. In pour example we compute data cube between el. 2 and el. 3.
-                                 <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">Click here to view an example. Results are available in el. 13</a>
+                           <h4 class = 'exampleTitle'>
+                               <b>Analysis</b>
+                           </h4>
 
-                                </p>
+                           <div class = 'example'>
+                               <h4 class = 'exampleTitle'>
+                                   Check whether some mutation are more active in certain genotype
+                               </h4>
 
-                                <div style="width:100%;margin: 10px auto; overlap: hidden;display:block;">
-                                    <div class="leftImg">
-                                        <img class="img-thumbnail" src="../static/project/scz21.png" \>
-                                    </div>
-                                    <div class="rightImg">
-                                        <img class="img-thumbnail" src="../static/project/scz22.png" \>
-                                    </div>
-                                </div>
-                            </div>
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 1 compute coverage of data.
+                                    <a href = "../u/hb-superuser/h/analysis-q1---11">Click here to view an example, el. 2</a>
+                                       The result of the tool is a Pivot table. During computation user can select columns which will show up in the result page.
+                                       In this case, the selected column is genotype, so all results are counted separately for every track and every genotype.
+                                       User have several possibilities to look at the results. Every value can be shown separately, the results can be shown for each value or the results can be aggregated across the dimensions.
+                                   </p>
 
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex1.png" \>
+                                   </div>
+                               </div>
 
-            <div class="containerNext">
-                <div class="rowSpecialWithGap">
-                    <div class="colAll">
-                        <div class = 'description'>
-                            <h4 class = 'descriptionTitle'>
-                                4. TCGA
-                            </h4>
-                            <div class = 'example'>
-                                <!--<h4 class = 'exampleTitle'>-->
-                                    <!--Preparing the data (<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">click here to view an example</a>)-->
-                                <!--</h4>-->
+                               <h4 class = 'exampleTitle'>
+                                   Check whether some mutation are more active in certain mutation type
+                               </h4>
 
-                                <!--<div class = 'exampleDesc'>-->
-                                <!-- - hGSuite contains of 1 track contains 3447 schizophrenia associated SNPs (dataset 1) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 8 (preprocessed)</a>.-->
-                                <!--</div>-->
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 3 compute coverage of data.
+                                    <a href = "../u/hb-superuser/h/analysis-q2---12 ">Click here to view an example, el. 2</a>
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex2.png" \>
+                                   </div>
+                               </div>
 
-                                <!--<div class = 'exampleDesc'>-->
-                                <!-- - hGSuite contains of 87 DNase I hypersensitive sites genomic tracks (dataset 2) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 3 (preprocessed)</a>.-->
-                                <!--</div>-->
+                               <h4 class = 'exampleTitle'>
+                                   Check whether some mutation types are enriched in certain genotype more than you would expected by chance
+                               </h4>
+
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 3 compute coverage of data.
+                                    <a href = "../u/hb-superuser/h/analysis-q3---13">Click here to view an example, el. 2</a>
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex3.png" \>
+                                   </div>
+                               </div>
 
 
+                               <h4 class = 'exampleTitle'>
+                                   Check whether data are enriched within different 3-mers
+                               </h4>
 
-                            </div>
-                        </div>
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> and data from dataset 2 compute overlap of data.
+                                    <a href = "../u/hb-superuser/h/analysis-q4---14">Click here to view an example, el. 3</a>
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex4.png" \>
+                                   </div>
+                               </div>
 
-                       <div class = 'example'>
-                            <!--<h4 class = 'exampleTitle'>-->
-                                <!--Check average Forbes coefficient of schizophrenia-associated variants-->
-                            <!--</h4>-->
 
-                            <!--<div class = 'exampleDesc'>-->
-                                <!--<p class="paragraph">-->
-                                 <!--Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> you can compute-->
-                                    <!--Forbes coefficient between datasets. In pour example we compute data cube between el. 2 and el. 3.-->
-                                 <!--<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">Click here to view an example, el. 9</a>-->
-
-                                <!--</p>-->
-
-                                <!--<div style="width:100%;margin: 10px auto;display:block;">-->
-                                <!--<img class="img-thumbnail" src="../static/project/ex-TCGA.png" \>-->
-                                <!--</div>-->
-                            <!--</div>-->
-
-                        </div>
+                           </div>
 
 
 
-                        </div>
-                    </div>
-                </div>
+                       </div>
+                   </div>
+               </div>
+                   </div>
 
-            <div class="footer">
-                <div class = 'contactInfo'>
-                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>
-                </div>
-            </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               2. Example: Explore the schizophrenia-associated gene variants within primary cells of DNase I hypersensitive sites genomic tracks
+                           </h4>
+                           <div class = 'example'>
+                               <h4 class = 'exampleTitle'>
+                                   Preparing the data (<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">click here to view an example</a>)
+                               </h4>
 
-    </div>
+                               <div class = 'exampleDesc'>
+                               - hGSuite contains of 1 track contains 3447 schizophrenia associated SNPs (dataset 1) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 8 (preprocessed)</a>.
+                               </div>
 
-    <div id="menu3" class="tab-pane fade ">
-        <div class="container">
-            <div class="rowSpecial">
-                <div class="colAllProjectList">
-                    <div id ='content'></div>
-                    <script>
-                    $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_hdGSuite.txt");
-                    </script>
-                </div>
-            </div>
-        </div>
-    </div>
+                               <div class = 'exampleDesc'>
+                               - hGSuite contains of 87 DNase I hypersensitive sites genomic tracks (dataset 2) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 3 (preprocessed)</a>.
+                               </div>
 
-    <div id="menu4" class="tab-pane fade ">
-        <div class="container">
-            <div class="contact">
-                <b>Note:</b>
-                <p>
-                This is a specialized version of The Genomic Hyperbrowser,
-                focusing on new functionality for analyzing collections of genomic track.
-                More information on the general HyperBrowser functionality can be
-                found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
-                </p>
-                <b>Contact information</b>
-                <p>
-                If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
-                <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
-                </p>
-                <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
-                 A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
-                </p>
-            </div>
-		</div>
 
-        <div class="containerNext">
-            <div class="rowSpecial">
-                <div class ="infoAboutHB">
-                <p class="blocktext">
-                This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
-                supported by various national and local bodies.
-                </p>
-                <p class="blocktext">
-                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
-                </p>
-                </div>
-            </div>
-        </div>
 
-        <div class="footer">
-            <div class="section">
-                <img src="hyperbrowser/images/logo/HB_support.png" class="center">
-            </div>
-        </div>
-    </div>
+                           </div>
+                       </div>
+
+                      <div class = 'example'>
+                           <h4 class = 'exampleTitle'>
+                               Check average Forbes coefficient of schizophrenia-associated variants
+                           </h4>
+
+                           <div class = 'exampleDesc'>
+                               <p class="paragraph">
+                                Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> you can compute
+                                   Forbes coefficient between datasets. In pour example we compute data cube between el. 2 and el. 3.
+                                <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">Click here to view an example. Results are available in el. 13</a>
+
+                               </p>
+
+                               <div style="width:100%;margin: 10px auto; overlap: hidden;display:block;">
+                                   <div class="leftImg">
+                                       <img class="img-thumbnail" src="../static/project/scz21.png" \>
+                                   </div>
+                                   <div class="rightImg">
+                                       <img class="img-thumbnail" src="../static/project/scz22.png" \>
+                                   </div>
+                               </div>
+                           </div>
+
+                       </div>
+                   </div>
+               </div>
+           </div>
+
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               4. TCGA
+                           </h4>
+                           <div class = 'example'>
+                               <!--<h4 class = 'exampleTitle'>-->
+                                   <!--Preparing the data (<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">click here to view an example</a>)-->
+                               <!--</h4>-->
+
+                               <!--<div class = 'exampleDesc'>-->
+                               <!-- - hGSuite contains of 1 track contains 3447 schizophrenia associated SNPs (dataset 1) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 8 (preprocessed)</a>.-->
+                               <!--</div>-->
+
+                               <!--<div class = 'exampleDesc'>-->
+                               <!-- - hGSuite contains of 87 DNase I hypersensitive sites genomic tracks (dataset 2) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 3 (preprocessed)</a>.-->
+                               <!--</div>-->
+
+
+
+                           </div>
+                       </div>
+
+                      <div class = 'example'>
+                           <!--<h4 class = 'exampleTitle'>-->
+                               <!--Check average Forbes coefficient of schizophrenia-associated variants-->
+                           <!--</h4>-->
+
+                           <!--<div class = 'exampleDesc'>-->
+                               <!--<p class="paragraph">-->
+                                <!--Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> you can compute-->
+                                   <!--Forbes coefficient between datasets. In pour example we compute data cube between el. 2 and el. 3.-->
+                                <!--<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">Click here to view an example, el. 9</a>-->
+
+                               <!--</p>-->
+
+                               <!--<div style="width:100%;margin: 10px auto;display:block;">-->
+                               <!--<img class="img-thumbnail" src="../static/project/ex-TCGA.png" \>-->
+                               <!--</div>-->
+                           <!--</div>-->
+
+                       </div>
+
+
+
+                       </div>
+                   </div>
+               </div>
+
+           <div class="footer">
+               <div class = 'contactInfo'>
+                  <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>
+               </div>
+           </div>
+
+   </div>
+
+   <div id="menu3" class="tab-pane fade ">
+       <div class="container">
+           <div class="rowSpecial">
+               <div class="colAllProjectList">
+                   <div id ='content'></div>
+                   <script>
+                   $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_hdGSuite.txt");
+                   </script>
+               </div>
+           </div>
+       </div>
+   </div>
+
+   <div id="menu4" class="tab-pane fade ">
+       <div class="container">
+           <div class="contact">
+               <b>Note:</b>
+               <p>
+               This is a specialized version of The Genomic Hyperbrowser,
+               focusing on new functionality for analyzing collections of genomic track.
+               More information on the general HyperBrowser functionality can be
+               found on the <a href="https://hyperbrowser.uio.no/hb/" target="_blank">main project site</a>.
+               </p>
+               <b>Contact information</b>
+               <p>
+               If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
+               <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
+               </p>
+               <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
+                A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
+               </p>
+           </div>
+     </div>
+
+       <div class="containerNext">
+           <div class="rowSpecial">
+               <div class ="infoAboutHB">
+               <p class="blocktext">
+               This project is being developed by the Norwegian bioinformatics community as an open-source project under the GPL  license v3,
+               supported by various national and local bodies.
+               </p>
+               <p class="blocktext">
+                 For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no">www.bioinfo.no</a>.
+               </p>
+               </div>
+           </div>
+       </div>
+
+       <div class="footer">
+           <div class="section">
+               <img src="hyperbrowser/images/logo/HB_support.png" class="center">
+           </div>
+       </div>
+   </div>
 </div>
 </div>
 </body>
 </html>
+
+

@@ -2,7 +2,6 @@
 <toolbox monitor="true">
 
 
-
   <label text="Hierarchical GSuite tools" id="hgsuite_tools" />
 
   <section name="Create a hdGSuite" id="hgsuite_create_tools">
