@@ -29,19 +29,18 @@
                             A broad variety of chip- and high throughput sequencing-based methods produce sets of genomic regions as their main output.
                             Hence, the statistical analysis of genomic colocalization is a fundamental approach for integrative genomics.
                             Since individual genomic datasets may be affected by noise, experimental artifacts or particularities of individual donors or cell types,
-                            it would be preferable to search for signals associated with sets of related experimental datasets.
-                            However, such analyses are challenging to devise due to the many dependencies along the genome and across related genomic features.
-                            Hence, no principled methodology is currently available for such investigations.
+                            it would be preferable to search for signals associated with sets of related experimental datasets. However, such analyses are challenging to
+                            devise due to the many dependencies along the genome and across related genomic features, and no principled methodology is currently available for such investigations.
+
 
                         </p>
                         <p class="paragraph">
-                        We here consider the question of whether two sets of genomic datasets differ significantly in their degree of colocalization with a query genomic feature.
-                            For instance, the two sets could be two active chromatin sets, and the query feature GWAS SNPs, so the investigation of interest would be in which chromatin set the GWAS SNPs are more active.
-                            We suggest that the problem involves two main challenges, namely that there is often a strong and varying degree of dependence between related (epi-)genomic features,
-                            and that general hidden confounders influence both the expected value and variance of colocalization between datasets.
-                            We define three benchmarks that together reflect these main challenges. We propose several alternative analytical approaches and investigate their behavior on the defined benchmarks,
-                            as well as applying those methods on a real biological case. We show that a non parametric approach based on a rank-order test statistic perform adequately on all three defined benchmarks.
-                            We offer this approach as well as the tested alternatives in an open source tool available through a web interface.
+                        We here consider the question of whether two sets of genomic datasets differ significantly in their degree of colocalization with a reference genomic feature.
+                            For instance, the two sets could be two active chromatin sets, and the reference feature GWAS SNPs, so the investigation of interest would be in which chromatin
+                            set the GWAS SNPs are more active. The problem involves two main challenges; the often strong and varying degree of dependence between related (epi-)genomic features,
+                            and the general hidden confounders influencing both the expected value and variance of colocalization between datasets. We define three benchmarks that together reflect
+                            these main challenges. We propose several alternative analytical approaches and investigate their behavior on the defined benchmarks, as well as applying those methods on a
+                            real biological case. We show that a non parametric approach based on a rank-order test statistic perform adequately on all three defined benchmarks.
                         </p>
 
                         <p class="paragraph">
@@ -61,7 +60,7 @@
                   <div class="colAll">
 
                       <h2 class="projectTitle">
-                          Benchmark 1 - Existence of an empirical correlation structure across tracks in the sets
+                          Benchmarks: The figure below shows the randomization procedure adopted in each benchmark.
 
                       </h2>
 
@@ -69,15 +68,40 @@
                         <div class = 'example'>
                             <div class = 'exampleDesc'>
                             <div class="main">
-                                 <div class="onlyLeft">
+                                 <div class="onlyTop">
                                         <div class="imgzoom">
-                                            <img src="../static/project/BM1.png" style="float:left;width: 100%; height: 20%; margin-right:10px;" />
+                                            <img src="../static/project/BMs.png" style="float:left;width: 100%; height: 20%; margin-right:10px;" />
                                         </div>
                                  </div>
                                     <div class="onlyRight" style="margin-left:10px;">
-                                    The figure on the left, shows the randomization procedure used in this benchmark, and
-                                    at the following <a href="../u/stefania/h/imported-gdt--benchmark-1">link</a> you can find the 100 generated tracks (element 1).
-                                    Elements 9, 11, 13, 25, 31 show the resulting p-values obtained when applying methods 1-4 and the t-test respectively on this benchmark.
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="containerNext">
+                <div class="rowSpecialWithGap">
+                  <div class="colAll">
+
+                      <h2 class="projectTitle">
+                          Benchmark 1 - Existence of an empirical correlation structure across case tracks and control tracks
+
+                      </h2>
+
+
+                        <div class = 'example'>
+                            <div class = 'exampleDesc'>
+                            <div class="main">
+
+                                    <div class="onlyRight" style="margin-left:10px;">
+                                    All the results of this benchmark are available
+                                    at the following <a href="../u/hbsuperuser/h/21-gdt--benchmark-one">link</a> you can find the 100 generated tracks (element 1).
+                                    Elements 9, 11, 13, 25, 27 show the resulting p-values obtained when applying the Wilcoxon, MC1-3 and the t-test respectively.
                                     </div>
 
                                 </div>
@@ -93,25 +117,22 @@
                   <div class="colAll">
 
                       <h2 class="projectTitle">
-                          Benchmark 2 - Existence of a baseline correlation between query and each reference track
+                          Benchmark 2 - Existence of an increased level of colocalization for both case and control tracks against the reference
                       </h2>
                       <div class = 'exampleDesc'>
                           <div class="main">
-                                  <div class="onlyLeft">
-                                    <div class="imgzoom">
-                                        <img src="../static/project/bm2.png" style="float:right;width: 100%; height: 30%; margin-right:10px;" />
-                                     </div>
-                                  </div>
+
 
                                   <div class="onlyRight" style="margin-left:10px;">
 
-                                    The figure on the left, shows the randomization procedure used in this benchmark, and
-                                    at the following <a href="../u/stefania/h/1-simulated-tracks-under-benchmark2">link</a> you can find the tracks generated under this benchmark.
+                                    All the results of this benchmark are available
+                                    at the following <a href="../u/hbsuperuser/h/22-gdt---benchmark-two">link</a>.
                                     Element 8 in the history is the reference single track, while elements 18, 24, 43, 22 are the tracks simulated under benchmark 2, assuming no difference between
-                                    the two sets of tracks and a signal factor of 1.01, 1.02 and 1.05 respectively.
+                                    the two sets of tracks and a signal factor of 1.01, 1.02 and 1.05 respectively. The p-values obtained by applying the different methods on these simulated datasets
+                                      are shown by elements
                                     <p class="paragraph">
-                                    The resulting p-values obtained by applying the different methods on these simulated tracks are available at
-                                        <a href="../u/stefania/h/imported-gdt---benchmark-two-v2">link</a>.
+                                    The resulting p-values obtained by applying the different methods on these simulated tracks are available at the same link.
+
                                     </p>
                                   </div>
                           </div>
@@ -127,22 +148,18 @@
                   <div class="colAll">
 
                       <h2 class="projectTitle">
-                          Benchmark 3: Fully preserved empirical correlation structure with randomly assigning set membership
+                          Benchmark 3: Existence of increased level of colocalization and non-differentiating correlation structure
                       </h2>
                       <div class = 'example'>
 
                             <div class = 'exampleDesc'>
                       <div class="main">
-                          <div class="onlyLeft">
-                                <div class="imgzoom">
-                                    <img src="../static/project/bm3.png" style="float:left;width: 100%; height: 30%; margin-right:10px;" />
-                                </div>
-                          </div>
+
                           <div class="onlyRight">
 
-                                The figure on the left, shows the randomization procedure used in this benchmark, and
-                                at the following <a href="../u/stefania/h/2-gdt---benchmark-3">link</a> you can find the 100 tracks with randomized set labels (element 6) and the single reference track (element 4).
-                                Elements 9, 47, 39, 49, 51 show the resulting p-values obtained when applying methods 1-4 and the t-test respectively on this benchmark.
+                                All the results of this benchmark are available
+                                    at the following <a href="../u/hbsuperuser/h/23-gdt---benchmark-three">link</a> you can find the 100 tracks with randomized labels (element 6) and the single reference track (element 4).
+                                Elements 9, 47, 39, 49, 51 show the resulting p-values obtained when applying the Wilcoxon, MC1-3 and the t-test respectively.
 
                             </div>
                             </div>
@@ -158,7 +175,7 @@
               <div class="colAll">
 
                   <h2 class="projectTitle">
-                      Empirical analysis on Crohn's disease-associated variants (GWAS SNPs) and DNase hypersensitive sites (DHSs)
+                      Case example: immune cell association with Crohn’s disease
                   </h2>
                   <div class = 'example'>
                       <h4 class = 'exampleTitle'></h4>
@@ -167,18 +184,16 @@
 
 
                       <p class="paragraph">
-                      To further illustrate how the different methods behave on real data,
-                          we re-ran all of them on a previously published experiment on the co-occurrence of Crohn's
+                      Moreover, we applied the method that performed the best (MC3) on a previously published experiment on the co-occurrence of Crohn's
                           disease-associated variants (GWAS SNPs) and DNase hypersensitive sites (DHSs) (published in Franke,
                           Andre, et al. "Genome-wide meta-analysis increases to 71 the number of confirmed Crohn's disease susceptibility loci." Nature genetics 42.12 (2010): 1118.).
                       </p>
                       <p class="paragraph">
-                          The data processing and the filtering of the public available data can be found at <a href="../u/stefania/h/group-test-10---crohns-data-with-different-filtering">
-                          history</a>, while the application of the different methods for the empirical analyses of the Crohn’s disease associated variants (GWAS SNPs) and DNase hypersensitive sites
-                          (DHSs) in different cell types can be found as following
-                          <a href="../u/hb-superuser/h/group-test---13---bm2-analysis">Wilcoxon </a>, <a href="../u/hb-superuser/h/group-test---12---monte-carlo---method2">Method 2 </a>,
-                          <a href="../u/hb-superuser/h/group-test---15---monte-carlo---method3 ">Method 3 </a>, <a href="../u/hb-superuser/h/group-test---16---monte-carlo---method6">Method 4 </a> and
-                          <a href="../u/hb-superuser/h/group-test---14---t-test">T-test </a>.
+                          The data processing and the filtering of the public available data can be found at <a href="../u/hbsuperuser/h/10---crohns-data-with-different-filtering">
+                          history</a>, while the results obtained by applying MC3 for the empirical analyses of the Crohn’s disease associated variants (GWAS SNPs) and DNase hypersensitive sites
+                          (DHSs) in different cell types can be found at
+                           <a href="../u/hbsuperuser/h/14-monte-carlo---mc3">MC3 </a>.
+
                       </p>
                              </div>
 
