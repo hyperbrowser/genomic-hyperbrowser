@@ -25,9 +25,8 @@ class ContacenateTwoOrMoreHGsuitesTool(ConcatenateGSuitesTool):
         if choices.categorize == 'No':
             concatenatedGSuite = concatenateGSuites(gSuiteList)
         else:
-            categoryList = [getattr(choices, 'categoryEntry%s' % i).strip()
+            categoryList = [getattr(choices, 'categoryEntry%s' % i).strip().encode('utf-8')
                             for i in xrange(len(gSuiteList))]
-            concatenatedGSuite = concatenateGSuitesAddingCategories(
-                gSuiteList, choices.columnTitle, categoryList)
+            concatenatedGSuite = concatenateGSuitesAddingCategories(gSuiteList, choices.columnTitle, categoryList)
 
         composeToFile(concatenatedGSuite, galaxyFn)

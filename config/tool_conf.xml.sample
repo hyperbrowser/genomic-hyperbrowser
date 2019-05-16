@@ -55,6 +55,7 @@
     <tool file="proto/hyperbrowser/hgsuite/OperationOnTrackTool.xml" />
     <label text="For tabular files" id="16additional_tabular_hgsuite"/>
     <tool file="proto/hyperbrowser/hgsuite/ChangeRowsWithColumnsTool.xml" />
+    <tool file="proto/hyperbrowser/nmer/CreateKmersTool.xml" />
     <!--<tool file="proto/hyperbrowser/hgsuite/GSuiteTracksBasicAnalysisTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/hgsuite/ModifyMetadataAccordingToUserOperationsTool.xml" />-->
   </section>

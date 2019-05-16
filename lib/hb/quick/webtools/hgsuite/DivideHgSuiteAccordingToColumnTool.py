@@ -315,7 +315,10 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
     @classmethod
     def _filterValues(cls, valTrack, action, valUser):
 
-        valAction = eval(str(valTrack) + action + str(valUser))
+        if str(valTrack) == None or str(valTrack) == '.':
+            return 1
+        else:
+            valAction = eval(str(valTrack) + action + str(valUser))
 
         if valAction == False:
             return 1
