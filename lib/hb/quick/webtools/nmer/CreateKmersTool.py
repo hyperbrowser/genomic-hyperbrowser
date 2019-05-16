@@ -58,6 +58,10 @@ class CreateKmersTool(GeneralGuiTool):
 #     @staticmethod
 #     def getOutputFormat(choices=None):
 #         return 'gsuite'
+
+    @classmethod
+    def isPublic(cls):
+        return True
          
     @classmethod
     def getExtraHistElements(cls, choices):
