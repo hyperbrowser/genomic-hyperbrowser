@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from functools import partial
 
 from proto.StaticFile import StaticImage
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -16,6 +17,9 @@ from tempfile import NamedTemporaryFile
 class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     TITLE = 'title'
+    MAX_NUM_OF_COL = 10
+    PHRASE = '--Select--'
+    ATTRIBUTES = []
 
     @classmethod
     def getToolName(cls):
@@ -27,8 +31,9 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
         return [('Do you need two hGSuites', 'gSuiteNum'),
                 ('Select first hGSuite', 'gsuite')] + \
                     cls.getInputBoxNamesForGenomeSelection() + \
-               [('Select column from first hGSuite', 'firstGSuiteColumn'),
-                ('Select second hGSuite', 'secondGSuite'),
+               [('Select column from first hGSuite', 'firstGSuiteColumn')] + \
+               [('Select column ', 'selectedColumn%s' % i) for i in range(cls.MAX_NUM_OF_COL)] + \
+               [('Select second hGSuite', 'secondGSuite'),
                 ('Select column from second hGSuite', 'secondGSuiteColumn'),
                 ('Select operations', 'operations')
         ]
@@ -49,10 +54,30 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
             if prevChoices.gSuiteNum == 'yes':
                 gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                 return ['None'] + [cls.TITLE] + gSuiteTN.attributes
-            else:
-                gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                return ['all'] + gSuiteTN.attributes
+            # else:
+            #     gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            #     return ['all'] + gSuiteTN.attributes
 
+    @classmethod
+    def _getOptionsBoxForSelectedColumn(cls, prevChoices, index):
+        if prevChoices.gsuite:
+            if not any(cls.PHRASE in getattr(prevChoices, 'selectedColumn%s' % i) for i in
+                       xrange(index)):
+                attrList = [getattr(prevChoices, 'selectedColumn%s' % i) for i in xrange(index)]
+
+                if len(cls.ATTRIBUTES) == 0:
+                    gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                    cls.ATTRIBUTES = [cls.PHRASE] + ['all'] + gSuiteTN.attributes
+                #selectionList = [cls.PHRASE] + list(set(cls.STAT_LIST.keys()) - set(attrList))
+                selectionList = cls.ATTRIBUTES
+
+                return selectionList
+
+    @classmethod
+    def setupSelectedColumnMethods(cls):
+        for i in xrange(cls.MAX_NUM_OF_COL):
+            setattr(cls, 'getOptionsBoxSelectedColumn%s' % i,
+                    partial(cls._getOptionsBoxForSelectedColumn, index=i))
 
     @classmethod
     def getOptionsBoxSecondGSuite(cls, prevChoices):
@@ -76,14 +101,13 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
     def execute(cls, choices, galaxyFn=None, username=''):
 
         firstGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
         oper = choices.operations.encode('utf-8')
 
         outputGSuite = GSuite()
         trackNum = 0
 
         if choices.gSuiteNum == 'yes':
-
+            firstGSuiteColumn = choices.firstGSuiteColumn.encode('utf-8')
             secondGSuite = getGSuiteFromGalaxyTN(choices.secondGSuite)
             secondGSuiteColumn = choices.secondGSuiteColumn.encode('utf-8')
 
@@ -183,14 +207,22 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                         trackNum += 1
         else:
             trackGroupDict = OrderedDict()
-            if firstGSuiteColumn == 'all':
+            selectedColumns = OperationsOnHierarchicalGSuiteTool._getSelectedOptions(
+                choices,
+                'selectedColumn%s',
+                cls.MAX_NUM_OF_COL)
+
+            if selectedColumns == ['all']:
                 if not 'all' in trackGroupDict.keys():
                     trackGroupDict['all'] = []
                 for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
                     trackGroupDict['all'].append(trackFromFirst)
-            else:
+            else:#here
                 for iTrackFromFirst, trackFromFirst in enumerate(firstGSuite.allTracks()):
-                    attr1 = trackFromFirst.getAttribute(firstGSuiteColumn)
+                    attr1 = []
+                    for sc in selectedColumns:
+                        attr1.append(trackFromFirst.getAttribute(sc))
+                    attr1 = tuple(attr1)
                     if not attr1 in trackGroupDict.keys():
                         trackGroupDict[attr1] = []
                     trackGroupDict[attr1].append(trackFromFirst)
@@ -201,10 +233,10 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                 results = ''
                 if oper == "merge":
                     results += ''
-
+                # (tr, A, C)
                 for trackFromFirst in trackGroupDict[attr1]:
 
-                    ttNew = attr1
+                    ttNew = '-'.join(attr1)
                     track1 = trackFromFirst.path
 
                     text = ''
@@ -250,24 +282,42 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
         return tmpFn1
 
     @classmethod
+    def _getSelectedOptions(cls, choices, division, num):
+        cols = []
+        for i in range(0, num):
+            cols.append(getattr(choices, division % i))
+        return cls._getDatafromSelectedStat(cols)
+
+    @classmethod
+    def _getDatafromSelectedStat(cls, cols):
+        selectedCols = []
+        if len(cols) >= 1:
+            for c in cols:
+                if c != None:
+                    c = c.encode('utf-8')
+                    if c != cls.PHRASE and c != '':
+                        selectedCols.append(c)
+        return selectedCols
+
+    @classmethod
     def validateAndReturnErrors(cls, choices):
 
         if not choices.gsuite and choices.gSuiteNum is not 'yes':
             return 'Select first hGSuite'
 
-        if choices.gsuite and choices.gSuiteNum is not 'yes':
-            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-            if gsuite.isPreprocessed():
-                return 'hGSuite need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
+        # if choices.gsuite and choices.gSuiteNum is not 'yes':
+        #     gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        #     if gsuite.isPreprocessed():
+        #         return 'hGSuite need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
+        #
+        # if (not choices.gsuite or not choices.secondGSuite) and choices.gSuiteNum is 'yes':
+        #     return 'Select first and second hGSuite'
 
-        if (not choices.gsuite or not choices.secondGSuite) and choices.gSuiteNum is 'yes':
-            return 'Select first and second hGSuite'
-
-        if choices.gsuite and choices.secondGSuite:
-            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
-            secondGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-            if gsuite.isPreprocessed() or secondGSuite.isPreprocessed():
-                return 'hGSuites need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
+        # if choices.gsuite and choices.secondGSuite:
+        #     gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        #     secondGSuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        #     if gsuite.isPreprocessed() or secondGSuite.isPreprocessed():
+        #         return 'hGSuites need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'
 
 
     # @classmethod
@@ -498,3 +548,4 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+OperationsOnHierarchicalGSuiteTool.setupSelectedColumnMethods()
