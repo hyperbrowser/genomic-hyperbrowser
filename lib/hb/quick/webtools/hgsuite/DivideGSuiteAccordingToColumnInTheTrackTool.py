@@ -29,12 +29,13 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxOperation(cls, prevChoices):
         if prevChoices.gSuite:
-            return ['division by phrase', 'division by symbol']
+            return ['division by phrase', 'division by symbol', 'division by individual titles']
 
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
         if prevChoices.gSuite:
-            return ''
+            if prevChoices.operation != 'division by individual titles':
+                return ''
 
     @classmethod
     def getOptionsBoxAdd(cls, prevChoices):
@@ -60,6 +61,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
 
         if choices.operation == 'division by phrase':
             par = choices.param.replace(' ','').split(',')
+        elif choices.operation == 'division by individual titles':
+            par = ''
         else:
             par = choices.param.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
@@ -84,12 +87,57 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             if choices.operation == 'division by phrase':
                 cls.divisionByPhrase(add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
                                  trackTitle)
+            elif choices.operation == 'division by individual titles':
+                cls.divisionByIndividualTitles('', attrMut, gSuite, galaxyFn, i, outputGSuite, par,
+                                     trackPath,
+                                     trackTitle)
             else:
                 cls.divisionBySymbol('', attrMut, gSuite, galaxyFn, i, outputGSuite, par,
                                      trackPath,
                                      trackTitle)
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+
+    @classmethod
+    def divisionByIndividualTitles(cls, add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
+                         trackTitle):
+
+        lineDict = {}
+        with open(trackPath, 'r') as f:
+            for l in f.readlines():
+                line = l.strip('\n').split('\t')
+                try:
+                    if not line[3] in lineDict.keys():
+                        lineDict[line[3]] = []
+                    lineDict[line[3]].append(l)
+                except:
+                    pass
+
+        #print lineDict
+        for p, it in lineDict.iteritems():
+
+            attr = OrderedDict()
+            for k in attrMut.keys():
+                attr[k] = attrMut[k][i]
+            attr['orginalTitle'] = str(trackTitle)
+            attr['orginalTitleFromTrack'] = str(p)
+
+            uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
+                                                extraFileName=str(trackTitle) + '--' + str(p),
+                                                suffix='bed')
+            gSuiteTrack = GSuiteTrack(uri)
+            outFn = gSuiteTrack.path
+            ensurePathExists(outFn)
+
+            with open(outFn, 'w') as contentFile:
+                contentFile.write(''.join(it))
+            contentFile.close()
+
+            gs = GSuiteTrack(uri, title=''.join(
+                str(trackTitle) + '--' + str(p)), genome=gSuite.genome,
+                             attributes=attr)
+
+            outputGSuite.addTrack(gs)
 
     @classmethod
     def divisionByPhrase(cls, add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
@@ -197,8 +245,9 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         if not choices.gSuite:
             return 'Select gSuite'
 
-        if not choices.param:
-            return 'Select phrases'
+            if choices.operation != 'division by individual titles':
+                if not choices.param:
+                    return 'Select phrases'
 
         if choices.gSuite:
             gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
