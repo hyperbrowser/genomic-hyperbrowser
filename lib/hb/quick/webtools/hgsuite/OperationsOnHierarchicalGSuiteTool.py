@@ -234,6 +234,12 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                 if oper == "merge":
                     results += ''
                 # (tr, A, C)
+
+                attributesDict = OrderedDict()
+                for scNum, sc in enumerate(selectedColumns):
+                    if not sc in attributesDict.keys():
+                        attributesDict[sc] = attr1[scNum]
+
                 for trackFromFirst in trackGroupDict[attr1]:
 
                     ttNew = '-'.join(attr1)
@@ -248,6 +254,8 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                     f.close()
                     results += text
 
+
+
                 uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                     extraFileName=ttNew,
                                                     suffix='bed')
@@ -259,7 +267,7 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                 wr.write(results)
                 wr.close()
 
-                gs = GSuiteTrack(uri, title=ttNew, genome=firstGSuite.genome)
+                gs = GSuiteTrack(uri, title=ttNew, genome=firstGSuite.genome, attributes=attributesDict)
 
                 outputGSuite.addTrack(gs)
 
