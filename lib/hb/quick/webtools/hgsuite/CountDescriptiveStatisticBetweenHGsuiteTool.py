@@ -1040,8 +1040,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         else:
                             orginalTitle = title
                         titleSecond = res.getTrackStructure()['reference'].metadata['title']
+                        # print 'orgnalTitleAllSecond', orgnalTitleAllSecond, '<br>'
+                        # print 'titleSecond', titleSecond, '<br>'
                         if orgnalTitleAllCountSecond == 1:
-                            orginalTitleSecond = orgnalTitleAllSecond[title]
+                            orginalTitleSecond = orgnalTitleAllSecond[titleSecond]
                         else:
                             orginalTitleSecond = titleSecond
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
