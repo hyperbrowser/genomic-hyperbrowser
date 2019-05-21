@@ -121,7 +121,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
                 attr[k] = attrMut[k][i]
             attr['orginalTitle'] = str(trackTitle)
             attr['orginalTitleFromTrack'] = str(p)
-            attr['chr'] = str(it.strip('\n').split('\t')[0])
+            if len(it) == 1:
+                attr['chr'] = str(it[0].strip('\n').split('\t')[0])
 
             uri = GalaxyGSuiteTrack.generateURI(galaxyFn=galaxyFn,
                                                 extraFileName=str(trackTitle) + '--' + str(p),
