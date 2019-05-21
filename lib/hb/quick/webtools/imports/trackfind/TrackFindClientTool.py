@@ -22,11 +22,11 @@ class TrackFindClientTool(GeneralGuiTool):
     RANDOM_50_TRACKS = 'Select 50 random tracks'
     MANUAL_TRACK_SELECT = 'Select tracks manually'
     
-    TYPE_OF_DATA_ATTR = 'type->datatype_term'
+    TYPE_OF_DATA_ATTR = 'content_type->term_value'
     GENOME_ASSEMBLY_ATTR = 'genome_assembly'
-    CELL_TISSUE_ATTR = 'sample->type->sample_type_term'
-    TARGET_ATTR = 'experiment->target'
-    FILE_FORMAT_ATTR = 'type->fileformat_term'
+    CELL_TISSUE_ATTR = 'samples->sample_type->term_value'
+    TARGET_ATTR = 'experiments->target->term_value'
+    FILE_FORMAT_ATTR = 'file_format->term_value'
     
 
     @classmethod
@@ -44,6 +44,7 @@ class TrackFindClientTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
+        attrBoxes.append(('Select hub: ', 'selectHub'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -90,19 +91,29 @@ class TrackFindClientTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxSelectRepository(cls):
         tfm = TrackFindModule()
-        hubs = tfm.getRepositories()
-        repos = []
-        for hub in hubs:
-            repos.append(hub['repository'] + ' - ' + hub['hub'])
-
+        repos = tfm.getRepositories()
         repos.sort()
         repos.insert(0, cls.SELECT_CHOICE)
 
         return repos
 
     @classmethod
-    def _getDivider(cls, prevChoices, index):
+    def getOptionsBoxSelectHub(cls, prevChoices):
         if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        tfm = TrackFindModule()
+        hubs = tfm.getHubs(prevChoices.selectRepository)
+
+        hubs.sort()
+
+        hubs.insert(0, cls.SELECT_CHOICE)
+
+        return hubs
+
+    @classmethod
+    def _getDivider(cls, prevChoices, index):
+        if prevChoices.selectHub in [None, cls.SELECT_CHOICE, '']:
             return
 
         if index > 0 and getattr(prevChoices, 'valueList%s' % (index - 1)) \
@@ -115,7 +126,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def _getSubAttributeListBox(cls, prevChoices, level, index):
-        if level == 0 and prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+        if level == 0 and prevChoices.selectHub in [None, cls.SELECT_CHOICE, '']:
             return
 
         if index > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level, index-1)) in [None, cls.SELECT_CHOICE, '']:
@@ -133,7 +144,7 @@ class TrackFindClientTool(GeneralGuiTool):
         subattributePath = ''
         if index == 0:
             tfm = TrackFindModule()
-            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub)
 
         else:
             attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
@@ -169,24 +180,24 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         #filter out attributes that have no subattributes left
-        tfm = TrackFindModule()
-        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
-
-        for prevChoice in prevChoicesList:
-            if prevChoice in attributesInRepo:
-                attributesInRepo.remove(prevChoice)
-
-        for choice in currentChoicesMap.keys():
-            found = False
-            for repoAttr in attributesInRepo:
-                if repoAttr.startswith(choice + '->') or repoAttr == choice:
-                    found = True
-                    break
-            if not found:
-                attributes.remove(currentChoicesMap[choice])
-
-        if not attributes:
-            return
+        # tfm = TrackFindModule()
+        # attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub)
+        #
+        # for prevChoice in prevChoicesList:
+        #     if prevChoice in attributesInRepo:
+        #         attributesInRepo.remove(prevChoice)
+        #
+        # for choice in currentChoicesMap.keys():
+        #     found = False
+        #     for repoAttr in attributesInRepo:
+        #         if repoAttr.startswith(choice + '->') or repoAttr == choice:
+        #             found = True
+        #             break
+        #     if not found:
+        #         attributes.remove(currentChoicesMap[choice])
+        #
+        # if not attributes:
+        #     return
 
         attributes.sort()
         attributes.insert(0, cls.SELECT_CHOICE)
@@ -226,7 +237,7 @@ class TrackFindClientTool(GeneralGuiTool):
             if not searchTerm:
                 return
             tfm = TrackFindModule()
-            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository,
+            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository, prevChoices.selectHub,
                                                     subattributePath, searchTerm)
 
             valuesDict = OrderedDict()
@@ -241,22 +252,29 @@ class TrackFindClientTool(GeneralGuiTool):
     @classmethod
     def getValues(cls, prevChoices, index):
         prevSubattributes = []
-        for i in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
-            attr = getattr(prevChoices, 'subAttributeList%s_%s' % (index, i))
-            if attr is None:
-                break
-
-            prevSubattributes.append(attr)
-
-        subattributePath = ('->'.join(prevSubattributes))
-
         tfm = TrackFindModule()
         if index == 0:
-            values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
-        else:
-            chosenOptions = cls.getPreviousChoices(prevChoices, index)
-            jsonData = tfm.getJsonData(prevChoices.selectRepository, chosenOptions)
+            category = getattr(prevChoices, 'subAttributeList%s_%s' % (index, 0))
+            for i in range(1, cls.MAX_NUM_OF_SUB_LEVELS):
+                attr = getattr(prevChoices, 'subAttributeList%s_%s' % (index, i))
+                if attr is None:
+                    break
 
+                prevSubattributes.append(attr)
+            subattributePath = ('->'.join(prevSubattributes))
+            values = tfm.getAttributeValues(prevChoices.selectRepository, prevChoices.selectHub, category, subattributePath)
+        else:
+            for i in range(cls.MAX_NUM_OF_SUB_LEVELS):
+                attr = getattr(prevChoices, 'subAttributeList%s_%s' % (index, i))
+                if attr is None:
+                    break
+
+                prevSubattributes.append(attr)
+
+
+            chosenOptions = cls.getPreviousChoices(prevChoices, index)
+            jsonData = tfm.getJsonData(prevChoices.selectRepository, prevChoices.selectHub, chosenOptions)
+            subattributePath = ('->'.join(prevSubattributes))
             values = set()
             for jsonItem in jsonData:
                 try:
@@ -268,6 +286,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         values = list(values)
         values.sort()
+
 
         return values, subattributePath
 
@@ -302,7 +321,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, prevChoices.selectHub, chosenOptions)
 
         return gsuite
 
@@ -405,7 +424,8 @@ class TrackFindClientTool(GeneralGuiTool):
     @classmethod
     def getSubattributes(cls, prevChoices, level, index):
         prevSubattributes = []
-        for i in xrange(index):
+        category = getattr(prevChoices, 'subAttributeList%s_%s' % (level, 0))
+        for i in range(1, index):
             attr = getattr(prevChoices, 'subAttributeList%s_%s' % (level, i))
             if attr is None or attr == cls.SELECT_CHOICE:
                 break
@@ -415,25 +435,29 @@ class TrackFindClientTool(GeneralGuiTool):
         tfm = TrackFindModule()
         subattributePath = ('->'.join(prevSubattributes))
 
-        attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository,
-                                                            subattributePath)
+        attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub,
+                                                            category, subattributePath)
 
         return attributes, subattributePath
 
     @classmethod
     def getPreviousChoices(cls, prevChoices, level):
         chosenOptions = {}
-        for i in xrange(level):
+        for i in range(level):
             val = getattr(prevChoices, 'valueList%s' % i)
             if val in [None, cls.SELECT_CHOICE, '']:
                 break
 
             subattributes = []
-            for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
+            for j in range(cls.MAX_NUM_OF_SUB_LEVELS):
                 attr = getattr(prevChoices, 'subAttributeList%s_%s' % (i, j))
                 if attr in [None, cls.SELECT_CHOICE, '']:
                     break
-                subattributes.append("'{}'".format(attr))
+                # category
+                if j == 0:
+                    subattributes.append(attr + '.content')
+                else:
+                    subattributes.append("'{}'".format(attr))
             path = ('->'.join(subattributes))
 
             if type(val) is OrderedDict:
