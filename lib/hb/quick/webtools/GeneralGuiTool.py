@@ -190,7 +190,8 @@ class GeneralGuiToolMixin(object):
 
         galaxyFn = ExternalTrackManager.extractFnFromGalaxyTN(galaxyTN)
         outFile = StringIO()
-        ok = GSuiteParser.validate(galaxyFn, outFile=outFile, printHelpText=False)
+        ok = GSuiteParser.validate(galaxyFn, outFile=outFile, printHelpText=False,
+                                   allowTrackSummaryToOverrideHeaders=True)
         if not ok:
             return outFile.getvalue()
 
