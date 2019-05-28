@@ -36,7 +36,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                     'Aggregate across this dimension']
     OPTIONS_LIST = ['sum', 'average', 'max', 'min']
     MAX_NUM_OF_COLS = 15
-    MAX_NUM_OF_COLS_IN_GSUITE = 2
+    MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED=MAX_NUM_OF_COLS_IN_GSUITE+2
     MERGED_SIGN = ' - '
     PHRASE = '-- SELECT --'
@@ -47,16 +47,19 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     TITLE = 'title'
     INFO_ALL = ''
     MAX_NUM_OF_STAT = 1
-    INFO_1 = 'You have define levels of dimensions in your hGSuite so by defualt your groups and their hierarchy is specified.'
+    INFO_1 = 'You have define levels of dimensionsat least in one of youy hGSuite so by defualt your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
     INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
+
+    DIMENSIONS1 = ''
+    DIMENSIONS2 = ''
 
     MERGE_INTRA_OVERLAPS = 'Merge any overlapping points/segments within the same track'
     ALLOW_MULTIPLE_OVERLAP = 'Allow multiple overlapping points/segments within the same track'
 
     @classmethod
     def getToolName(cls):
-        return "Compute Pivot table for relations between hGSuites"
+        return "Compute data cube for relations between hGSuites"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -75,7 +78,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                  'selectedColumnFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
                [('Select the column for second hGSuite which define the group at level %s' % (i + 2) + '',
                  'selectedColumnSecond%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
-               [('Do you want to have preselected presenting options for first hGSuite', 'preselectedDecision')] + \
+               [('Do you want to have preselected presenting options for hGSuites', 'preselectedDecision')] + \
                [('Select main option for first hGSuite for the group at level %s' % (i + 1) + '',
                  'selectedMainOptionFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
                [('', 'selectedOptionFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
@@ -149,9 +152,17 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         # parse GSuite and get metadata about dimensions
         statList = cls.getHowManyStatHaveBeenSelected(prevChoices)
         if len(statList) > 0:
+            dimensions = ''
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            dimensions = gSuite.getCustomHeader('levels')
-            if str(dimensions) != 'None':
+            cls.DIMENSIONS1 = gSuite.getCustomHeader('levels')
+            if cls.DIMENSIONS1 != None:
+                dimensions += cls.DIMENSIONS1
+            secondGSuite = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
+            cls.DIMENSIONS2 = secondGSuite.getCustomHeader('levels')
+            if cls.DIMENSIONS2 != None:
+                dimensions += cls.DIMENSIONS2
+
+            if str(dimensions) != '':
                 cls.INFO_ALL = cls.INFO_1
                 return '__rawstr__', cls.INFO_1
             else:
@@ -221,15 +232,16 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         if selectionList:
                             return selectionList
                 else:
-                    gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-                    dimensions = gSuite.getCustomHeader('levels')
-                    dimensions = dimensions.split(',')
-                    attrList = [getattr(prevChoices, 'selectedColumnFirst%s' % i) for i in
-                                xrange(index)]
-                    selectionList = [item for item in dimensions if item not in attrList]
-                    cls.MAX_NUM_OF_COLS = len(dimensions)
-                    if selectionList:
-                        return selectionList
+                    dimensions = ''
+                    if cls.DIMENSIONS1 != None:
+                        dimensions += cls.DIMENSIONS1
+                        dimensions = dimensions.split(',')
+                        attrList = [getattr(prevChoices, 'selectedColumnFirst%s' % i) for i in
+                                    xrange(index)]
+                        selectionList = [item for item in dimensions if item not in attrList]
+                        cls.MAX_NUM_OF_COLS = len(dimensions)
+                        if selectionList:
+                            return selectionList
 
     @classmethod
     def setupSelectedColumnMethodsFirst(cls):
@@ -260,15 +272,16 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         if selectionList:
                             return selectionList
                 else:
-                    gSuite = getGSuiteFromGalaxyTN(prevChoices.secondGSuite)
-                    dimensions = gSuite.getCustomHeader('levels')
-                    dimensions = dimensions.split(',')
-                    attrList = [getattr(prevChoices, 'selectedColumnSecond%s' % i) for i in
-                                xrange(index)]
-                    selectionList = [item for item in dimensions if item not in attrList]
-                    cls.MAX_NUM_OF_COLS = len(dimensions)
-                    if selectionList:
-                        return selectionList
+                    dimensions = ''
+                    if cls.DIMENSIONS2 != None:
+                        dimensions += cls.DIMENSIONS2
+                        dimensions = dimensions.split(',')
+                        attrList = [getattr(prevChoices, 'selectedColumnSecond%s' % i) for i in
+                                    xrange(index)]
+                        selectionList = [item for item in dimensions if item not in attrList]
+                        cls.MAX_NUM_OF_COLS = len(dimensions)
+                        if selectionList:
+                            return selectionList
 
     @classmethod
     def setupSelectedColumnMethodsSecond(cls):
@@ -358,7 +371,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                             else:
                                 j = index - 1
                                 attrNone = getattr(prevChoices, 'selectedColumnFirst%s' % j)
-                                if attrNone == 'None':
+
+                                if attrNone == None:
                                     return
                                 else:
                                     selectedAttribute = attrNone.encode('utf-8')
@@ -443,7 +457,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                                 j = index - 1
 
                                 attrNone = getattr(prevChoices, 'selectedColumnSecond%s' % j)
-                                if attrNone == 'None':
+                                if attrNone == None:
                                     return
                                 else:
                                     selectedAttribute = attrNone.encode('utf-8')
@@ -990,7 +1004,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
             orgnalTitleAllCount = 1
         except:
-            pass
+            for x in gSuite.allTracks():
+                orgnalTitleAll[x.title] = x.title
+            orgnalTitleAllCount = 1
         try:
             for x in secondGSuite.allTracks():
                 orgnalTitleAllSecond[x.title] = x.getAttribute('orginaltitle')
