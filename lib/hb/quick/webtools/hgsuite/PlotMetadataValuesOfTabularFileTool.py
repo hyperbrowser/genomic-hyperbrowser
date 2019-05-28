@@ -23,7 +23,7 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
     @staticmethod
     def getToolName():
-        return "Plot data for tabular file or hGSuite"
+        return "Visualization plot for tabular file or hGSuite"
 
     @staticmethod
     def getInputBoxNames():

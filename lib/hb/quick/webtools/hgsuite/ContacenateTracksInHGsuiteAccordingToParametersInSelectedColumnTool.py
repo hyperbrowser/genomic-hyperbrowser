@@ -21,15 +21,15 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
     @classmethod
     def getToolName(cls):
-        return "Concatenate tracks in hGSuite"
+        return "Concatenate tracks in hGSuite based on metadata"
 
     @classmethod
     def getInputBoxNames(cls):
         return [('Select hGSuite', 'gSuite'),
-                ('Select column, you want to use to combain tracks', 'column'),
-                ('Show possible phrases', 'possibleColumns')
+                ('Select column, you want to use to combine tracks', 'column'),
+                ('Show possible keywords', 'possibleColumns')
         ] + \
-                [('Select phrase %s' % (i+1) + ', you want to combain (use colon to combain)', 'selectedColumns%s' % i) for i \
+                [('Select keyword %s' % (i+1) + ', you want to combain (use colon to combine)', 'selectedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)] + \
                 [('Select column %s' % (i+1) + ' which you would like to treat as unique (datasets will be combain separately to selected groups)', 'excludedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)]

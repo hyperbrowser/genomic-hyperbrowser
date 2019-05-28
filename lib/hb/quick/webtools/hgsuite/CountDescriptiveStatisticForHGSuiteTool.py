@@ -54,7 +54,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def getToolName(cls):
-        return "Compute Pivot table for hGSuite"
+        return "Compute data cube for hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -369,8 +369,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'columnOptionsDict', columnOptionsDict, '<br>'
 
         # asked Sveinung for help
-        # regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        regSpec, binSpec = "__chrs__", "*"
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        # regSpec, binSpec = "__chrs__", "*"
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=gSuite.genome)
         statList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
                                                                                    'selectedStat%s',

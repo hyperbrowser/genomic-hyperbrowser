@@ -4,6 +4,7 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.CountDescriptiveStatisticBetweenHGsuiteTool import \
     CountDescriptiveStatisticBetweenHGsuiteTool
+from quick.webtools.hgsuite.Legend import Legend
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
 class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
@@ -282,6 +283,24 @@ class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
     #     """
     #     return False
     #
+
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = "This tool creates or modifies hierarchy of hGSuite"
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select group which define hdGSuite at level N'
+                          ]
+        toolResult = 'The output of this tool is one hGsuite with definied field called levels.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
+
     @classmethod
     def getOutputFormat(cls, choices):
         return 'gsuite'
