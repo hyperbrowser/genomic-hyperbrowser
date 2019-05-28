@@ -33,7 +33,7 @@ class TrackFindModule:
         return response.json()
 
     def getAttributesForRepository(self, repo, hub):
-        url = self.URL + '/' + repo + '/' + hub + '/attributes?raw=true'
+        url = self.URL + '/metamodel/' + repo + '/' + hub + '?flat=true'
 
         response = requests.get(url)
         self.logRequest(url, response.elapsed.total_seconds())
@@ -76,12 +76,9 @@ class TrackFindModule:
         return response.json()
 
     def getJsonData(self, repo, hub, attrValueMap):
-        self.logRequest('********************************************* getting JSON++++++++')
         headers = {'Accept': 'application/json'}
 
         response = self.getData(repo, hub, attrValueMap, headers)
-
-        self.logRequest('++++++JSON++++++++' + str(response.json()))
 
         return response.json()
 
@@ -91,8 +88,6 @@ class TrackFindModule:
         response = self.getData(repo, hub, attrValueMap, headers, includeExtraAttributes)
 
         gsuite = GSuiteParser.parseFromString(response.text)
-
-        # self.logRequest(str(gsuite))
 
         return gsuite
 

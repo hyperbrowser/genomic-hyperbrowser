@@ -178,25 +178,30 @@ class TrackFindClientTool(GeneralGuiTool):
         if not attributes:
             return
 
-        #filter out attributes that have no subattributes left
-        # tfm = TrackFindModule()
-        # attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub)
-        #
-        # for prevChoice in prevChoicesList:
-        #     if prevChoice in attributesInRepo:
-        #         attributesInRepo.remove(prevChoice)
-        #
-        # for choice in currentChoicesMap.keys():
-        #     found = False
-        #     for repoAttr in attributesInRepo:
-        #         if repoAttr.startswith(choice + '->') or repoAttr == choice:
-        #             found = True
-        #             break
-        #     if not found:
-        #         attributes.remove(currentChoicesMap[choice])
-        #
-        # if not attributes:
-        #     return
+
+        # filter out attributes that have no subattributes left
+        tfm = TrackFindModule()
+        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub)
+
+        possiblePaths = []
+        for category in attributesInRepo:
+            possiblePaths += [(category + '->' + key) for key in attributesInRepo[category].keys()]
+
+        for prevChoice in prevChoicesList:
+            if prevChoice in possiblePaths:
+                possiblePaths.remove(prevChoice)
+
+        for choice in currentChoicesMap.keys():
+            found = False
+            for repoAttr in possiblePaths:
+                if repoAttr.startswith(choice + '->') or repoAttr == choice:
+                    found = True
+                    break
+            if not found:
+                attributes.remove(currentChoicesMap[choice])
+
+        if not attributes:
+            return
 
         attributes.sort()
         attributes.insert(0, cls.SELECT_CHOICE)
