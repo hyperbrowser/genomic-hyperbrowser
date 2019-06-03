@@ -330,17 +330,22 @@ class GenericToolController(BaseToolController):
                     opts = (val, 1, False)
 
             elif isinstance(opts, tuple):
-                if opts[0] == '__history__':
+                if opts[0] in ['__history__', '__toolhistory__']:
                     self.inputTypes += opts[:1]
-                    opts = self.galaxy.optionsFromHistoryFn(exts = opts[1:] if len(opts)>1 else None, select = val)
-                    if val is None and opts and len(opts[1]) > 0:
-                        val = opts[1][0]
-                    #opts = self.galaxy.getHistory(GalaxyInterface.getSupportedGalaxyFileFormats())
-                elif opts[0] == '__toolhistory__':
-                    self.inputTypes += opts[:1]
-                    opts = self.galaxy.optionsFromHistoryFn(tools = opts[1:] if len(opts)>1 else None, select = val)
-                    if val is None and opts and len(opts[1]) > 0:
-                        val = opts[1][0]
+
+                    if opts[0] == '__history__':
+                        opts = self.galaxy.optionsFromHistoryFn(exts=opts[1:] if len(opts) > 1 else None, select=val)
+                    else:
+                        opts = self.galaxy.optionsFromHistoryFn(tools=opts[1:] if len(opts) > 1 else None, select=val)
+
+                    if opts and len(opts[1]) > 0:
+                        if val is None:
+                            val = opts[1][0]
+                        else:
+                            for opt in opts[1][1:]:
+                                if val[:3] == opt[:3]:  # ignore history renaming
+                                    val = opt
+                                    break
                 elif opts[0] == '__multihistory__':
                     self.inputTypes += opts[:1]
                     opts = self.galaxy.itemsFromHistoryFn(opts[1:] if len(opts)>1 else None)
