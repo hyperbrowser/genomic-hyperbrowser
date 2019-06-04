@@ -100,6 +100,7 @@ class GalaxyWrapper:
     def optionsFromHistoryFn(self, exts = None, tools = None, select = None):
         html = '<option value=""> --- Select --- </option>\n'
         vals = [None]
+        sel_val = None
         for dataset in self.getHistory(exts):
             if tools:
                 job = getJobFromDataset(dataset)
