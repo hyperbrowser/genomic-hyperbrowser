@@ -116,7 +116,7 @@ class GalaxyWrapper:
     def itemsFromHistoryFn(self, exts = None):
         items = OrderedDict()
         for dataset in self.getHistory(exts):
-            option_tag, val = self.makeHistoryOption(dataset)
+            option_tag, val = self.makeHistoryOption(dataset)[:2]
             items[unicode(dataset.dataset_id)] = val
         return items
 
