@@ -334,18 +334,17 @@ class GenericToolController(BaseToolController):
                     self.inputTypes += opts[:1]
 
                     if opts[0] == '__history__':
-                        opts = self.galaxy.optionsFromHistoryFn(exts=opts[1:] if len(opts) > 1 else None, select=val)
+                        opts_html, opts_val, sel_val = self.galaxy.optionsFromHistoryFn(exts=opts[1:] if len(opts) > 1 else None, select=val)
                     else:
-                        opts = self.galaxy.optionsFromHistoryFn(tools=opts[1:] if len(opts) > 1 else None, select=val)
+                        opts_html, opts_val, sel_val = self.galaxy.optionsFromHistoryFn(tools=opts[1:] if len(opts) > 1 else None, select=val)
+                    opts = (opts_html, opts_val)
 
-                    if opts and len(opts[1]) > 0:
+                    if opts_val and len(opts_val) > 0:
                         if val is None:
-                            val = opts[1][0]
-                        else:
-                            for opt in opts[1][1:]:
-                                if val[:3] == opt[:3]:  # ignore history renaming
-                                    val = opt
-                                    break
+                            val = opts_val[0]
+                        elif sel_val:
+                            val = sel_val
+
                 elif opts[0] == '__multihistory__':
                     self.inputTypes += opts[:1]
                     opts = self.galaxy.itemsFromHistoryFn(opts[1:] if len(opts)>1 else None)
