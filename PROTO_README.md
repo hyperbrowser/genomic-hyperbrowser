@@ -398,6 +398,7 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v1.2.5: Fixed checkboxes
 * v1.2.4: Bugfix for job rerun when dataset label has changed. Formatting of README.md.
 * v1.2.3: Bugfix to support full paths from galaxy.ini
 * v1.2.2: Small addition in StaticFile.
