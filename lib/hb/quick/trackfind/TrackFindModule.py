@@ -32,7 +32,8 @@ class TrackFindModule:
 
         return response.json()
 
-    def getAttributesForRepository(self, repo, hub):
+    def getAttributesForRepository(self, repoAndHub):
+        repo, hub = self.getRepoAndHub(repoAndHub)
         url = self.URL + '/metamodel/' + repo + '/' + hub + '?flat=true'
 
         response = requests.get(url)
@@ -40,7 +41,8 @@ class TrackFindModule:
 
         return response.json()
 
-    def getTopLevelAttributesForRepository(self, repo, hub):
+    def getTopLevelAttributesForRepository(self, repoAndHub):
+        repo, hub = self.getRepoAndHub(repoAndHub)
         url = self.URL + '/categories/' + repo + '/' + hub
 
         response = requests.get(url)
@@ -48,7 +50,8 @@ class TrackFindModule:
 
         return response.json()
 
-    def getSubLevelAttributesForRepository(self, repo, hub, path):
+    def getSubLevelAttributesForRepository(self, repoAndHub, path):
+        repo, hub = self.getRepoAndHub(repoAndHub)
         if '->' in path:
             category, path = path.split('->', 1)
             url = self.URL + '/attributes/' + repo + '/' + hub + '/' + category + '?path=' + path
@@ -60,7 +63,8 @@ class TrackFindModule:
 
         return response.json()
 
-    def getAttributeValues(self, repo, hub, path, searchTerm=''):
+    def getAttributeValues(self, repoAndHub, path, searchTerm=''):
+        repo, hub = self.getRepoAndHub(repoAndHub)
         if '->' in path:
             category, path = path.split('->', 1)
             url = self.URL + '/values/' + repo + '/' + hub + '/' + category + '?path=' + path
@@ -75,14 +79,16 @@ class TrackFindModule:
 
         return response.json()
 
-    def getJsonData(self, repo, hub, attrValueMap):
+    def getJsonData(self, repoAndHub, attrValueMap):
+        repo, hub = self.getRepoAndHub(repoAndHub)
         headers = {'Accept': 'application/json'}
 
         response = self.getData(repo, hub, attrValueMap, headers)
 
         return response.json()
 
-    def getGSuite(self, repo, hub, attrValueMap, includeExtraAttributes=False):
+    def getGSuite(self, repoAndHub, attrValueMap, includeExtraAttributes=False):
+        repo, hub = self.getRepoAndHub(repoAndHub)
         headers = {'Accept': 'text/plain'}
 
         response = self.getData(repo, hub, attrValueMap, headers, includeExtraAttributes)
@@ -129,6 +135,9 @@ class TrackFindModule:
 
         logfile.close()
         pass
+
+    def getRepoAndHub(self, repoHub):
+        return repoHub.split(' - ')
 
 
 

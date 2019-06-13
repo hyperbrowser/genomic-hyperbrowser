@@ -45,7 +45,7 @@ class TrackFindClientTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
-        attrBoxes.append(('Select hub: ', 'selectHub'))
+        #attrBoxes.append(('Select hub: ', 'selectHub'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -65,11 +65,12 @@ class TrackFindClientTool(GeneralGuiTool):
                               'valueList%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueCheckbox%s' % i))
-        attrBoxes.append(('Include non-standard attributes in search results', 'extraAttributes'))
+
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
+        attrBoxes.append(('Include non-standard attributes in search results', 'extraAttributes'))
 
 
         return attrBoxes
@@ -94,28 +95,34 @@ class TrackFindClientTool(GeneralGuiTool):
     def getOptionsBoxSelectRepository(cls):
         tfm = TrackFindModule()
         repos = tfm.getRepositories()
-        repos.sort()
-        repos.insert(0, cls.SELECT_CHOICE)
+        reposAndHubs = []
+        for repo in repos:
+            hubs = tfm.getHubs(repo)
+            for hub in hubs:
+                reposAndHubs.append(repo + ' - ' + hub)
 
-        return repos
+        reposAndHubs.sort()
+        reposAndHubs.insert(0, cls.SELECT_CHOICE)
 
-    @classmethod
-    def getOptionsBoxSelectHub(cls, prevChoices):
-        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
-            return
+        return reposAndHubs
 
-        tfm = TrackFindModule()
-        hubs = tfm.getHubs(prevChoices.selectRepository)
-
-        hubs.sort()
-
-        hubs.insert(0, cls.SELECT_CHOICE)
-
-        return hubs
+    # @classmethod
+    # def getOptionsBoxSelectHub(cls, prevChoices):
+    #     if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+    #         return
+    #
+    #     tfm = TrackFindModule()
+    #     hubs = tfm.getHubs(prevChoices.selectRepository)
+    #
+    #     hubs.sort()
+    #
+    #     hubs.insert(0, cls.SELECT_CHOICE)
+    #
+    #     return hubs
 
     @classmethod
     def _getDivider(cls, prevChoices, index):
-        if prevChoices.selectHub in [None, cls.SELECT_CHOICE, '']:
+        if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
         if index > 0 and (cls.getChosenValues(prevChoices, index-1) in [None, cls.SELECT_CHOICE, '']):
@@ -125,7 +132,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def _getSubAttributeListBox(cls, prevChoices, level, index):
-        if level == 0 and prevChoices.selectHub in [None, cls.SELECT_CHOICE, '']:
+        if level == 0 and prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
         if index > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level, index-1)) in [None, cls.SELECT_CHOICE, '']:
@@ -143,7 +150,7 @@ class TrackFindClientTool(GeneralGuiTool):
         subattributePath = ''
         if index == 0:
             tfm = TrackFindModule()
-            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub)
+            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
 
         else:
             attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
@@ -181,7 +188,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         # filter out attributes that have no subattributes left
         tfm = TrackFindModule()
-        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub)
+        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
 
         possiblePaths = []
         for category in attributesInRepo:
@@ -242,7 +249,7 @@ class TrackFindClientTool(GeneralGuiTool):
                 return OrderedDict([(value, True) for value in values])
 
             tfm = TrackFindModule()
-            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository, prevChoices.selectHub,
+            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository, prevChoices.selectRepository,
                                                     subattributePath, searchTerm)
 
             valuesDict = OrderedDict()
@@ -266,10 +273,10 @@ class TrackFindClientTool(GeneralGuiTool):
 
         subattributePath = ('->'.join(prevSubattributes))
         if index == 0:
-            values = tfm.getAttributeValues(prevChoices.selectRepository, prevChoices.selectHub, subattributePath)
+            values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
         else:
             chosenOptions = cls.getPreviousChoices(prevChoices, index)
-            jsonData = tfm.getJsonData(prevChoices.selectRepository, prevChoices.selectHub, chosenOptions)
+            jsonData = tfm.getJsonData(prevChoices.selectRepository, chosenOptions)
 
             values = set()
             for jsonItem in jsonData:
@@ -307,17 +314,17 @@ class TrackFindClientTool(GeneralGuiTool):
             return '__hidden__', ''
 
     @classmethod
-    def getGsuite(cls, prevChoices):
+    def getGsuite(cls, prevChoices, includeExtraAttributes=False):
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
 
         if not chosenOptions:
             return
 
         tfm = TrackFindModule()
-        if prevChoices.extraAttributes == cls.YES:
-            gsuite = tfm.getGSuite(prevChoices.selectRepository, prevChoices.selectHub, chosenOptions, True)
+        if includeExtraAttributes:
+            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, True)
         else:
-            gsuite = tfm.getGSuite(prevChoices.selectRepository, prevChoices.selectHub, chosenOptions)
+            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
         return gsuite
 
@@ -439,7 +446,7 @@ class TrackFindClientTool(GeneralGuiTool):
         tfm = TrackFindModule()
         subattributePath = ('->'.join(prevSubattributes))
 
-        attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository, prevChoices.selectHub,
+        attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository,
                                                             subattributePath)
 
         return attributes, subattributePath
@@ -533,7 +540,10 @@ class TrackFindClientTool(GeneralGuiTool):
         selectedTracks = cls.getSelectedTracks(choices)
 
         newGSuite = GSuite()
-        gsuite = cls.getGsuite(choices)
+        if choices.extraAttributes == cls.YES:
+            gsuite = cls.getGsuite(choices, True)
+        else:
+            gsuite = cls.getGsuite(choices)
 
         for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
