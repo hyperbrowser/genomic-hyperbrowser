@@ -580,7 +580,9 @@ class TrackFindClientTool(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-
+        chosenDataTypes = cls.getChosenDataTypes(choices)
+        if not chosenDataTypes:
+            return 'No tracks to be exported available'
 
     # @classmethod
     # def getSubToolClasses(cls):
