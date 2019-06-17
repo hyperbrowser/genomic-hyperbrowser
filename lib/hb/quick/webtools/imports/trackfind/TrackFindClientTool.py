@@ -30,6 +30,11 @@ class TrackFindClientTool(GeneralGuiTool):
 
     YES = 'Yes'
 
+    ATTRIBUTE_SHORTCUT = {'* Cell/Tissue type': ['samples', 'sample_type', 'term_value'],
+                          '* Experiment type': ['experiments', 'tech_type', 'term_value'],
+                          '* Genome build': ['tracks', 'genome_assembly'],
+                          '* Target': ['experiments', 'target', 'term_value']}
+
     @classmethod
     def getToolName(cls):
         """
@@ -70,9 +75,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
-        attrBoxes.append(('Include non-standard attributes in search results', 'extraAttributes'))
-
-
+        attrBoxes.append(('Include non-standard attributes in the result gsuite', 'extraAttributes'))
         return attrBoxes
 
     @classmethod
@@ -105,20 +108,6 @@ class TrackFindClientTool(GeneralGuiTool):
         reposAndHubs.insert(0, cls.SELECT_CHOICE)
 
         return reposAndHubs
-
-    # @classmethod
-    # def getOptionsBoxSelectHub(cls, prevChoices):
-    #     if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
-    #         return
-    #
-    #     tfm = TrackFindModule()
-    #     hubs = tfm.getHubs(prevChoices.selectRepository)
-    #
-    #     hubs.sort()
-    #
-    #     hubs.insert(0, cls.SELECT_CHOICE)
-    #
-    #     return hubs
 
     @classmethod
     def _getDivider(cls, prevChoices, index):
@@ -161,13 +150,7 @@ class TrackFindClientTool(GeneralGuiTool):
         prevChoicesList = []
         if level > 0:
             for l in range(level):
-                subattributes = []
-                for i in range(cls.MAX_NUM_OF_SUB_LEVELS):
-                    attr = getattr(prevChoices, 'subAttributeList%s_%s' % (l, i))
-                    if attr is None or attr == '':
-                        break
-                    subattributes.append(attr)
-                path = ('->'.join(subattributes))
+                path = cls.getSubattributePath(prevChoices, l, cls.MAX_NUM_OF_SUB_LEVELS)
                 prevChoicesList.append(path)
 
         currentChoicesMap = {}
@@ -211,6 +194,15 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         attributes.sort()
+
+
+        #add shortcuts to most used attributes
+        if index == 0:
+            attributes.insert(0, '* Target')
+            attributes.insert(0, '* Genome build')
+            attributes.insert(0, '* Experiment type')
+            attributes.insert(0, '* Cell/Tissue type')
+
         attributes.insert(0, cls.SELECT_CHOICE)
 
         return attributes
@@ -262,16 +254,9 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getValues(cls, prevChoices, index):
-        prevSubattributes = []
+        subattributePath, prevSubattributes = cls.getSubattributePath(prevChoices, index, cls.MAX_NUM_OF_SUB_LEVELS, returnSubattrList=True)
+
         tfm = TrackFindModule()
-        for i in range(cls.MAX_NUM_OF_SUB_LEVELS):
-            attr = getattr(prevChoices, 'subAttributeList%s_%s' % (index, i))
-            if attr is None:
-                break
-
-            prevSubattributes.append(attr)
-
-        subattributePath = ('->'.join(prevSubattributes))
         if index == 0:
             values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
         else:
@@ -332,7 +317,8 @@ class TrackFindClientTool(GeneralGuiTool):
     def getOptionsBoxTrackList(cls, prevChoices):
         chosenDataTypes = cls.getChosenDataTypes(prevChoices)
         if not chosenDataTypes:
-            return
+            if not isinstance(chosenDataTypes, list):
+                return
 
         selectedTracks = cls.getSelectedTracks(prevChoices)
         gsuite = cls.getGsuite(prevChoices)
@@ -343,7 +329,7 @@ class TrackFindClientTool(GeneralGuiTool):
             attributes = []
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
-            if dataType not in chosenDataTypes:
+            if dataType and dataType not in chosenDataTypes:
                 continue
             if selectedTracks is not None and title not in selectedTracks:
                 continue
@@ -359,7 +345,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         html = HtmlCore()
-        html.tableFromDictionary(tableDict, columnNames=['Sample name', 'Type of data', 'Cell/tissue type', 'Target', 'Genome build', 'File format'],  \
+        html.tableFromDictionary(tableDict, columnNames=['Track title', 'Type of data', 'Cell/tissue type', 'Target', 'Genome build', 'File format'],  \
                                  tableId='t1', expandable=True)
 
         return '__rawstr__', unicode(html)
@@ -381,7 +367,7 @@ class TrackFindClientTool(GeneralGuiTool):
                 dataTypes[attr] += 1
 
         if not dataTypes:
-            return
+            return OrderedDict()
 
         dataTypes = OrderedDict(sorted(dataTypes.items()))
 
@@ -435,43 +421,60 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getSubattributes(cls, prevChoices, level, index):
-        prevSubattributes = []
-        for i in range(index):
-            attr = getattr(prevChoices, 'subAttributeList%s_%s' % (level, i))
-            if attr is None or attr == cls.SELECT_CHOICE:
-                break
-
-            prevSubattributes.append(attr)
+        subattributePath = cls.getSubattributePath(prevChoices, level, index)
 
         tfm = TrackFindModule()
-        subattributePath = ('->'.join(prevSubattributes))
-
         attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository,
                                                             subattributePath)
 
         return attributes, subattributePath
 
     @classmethod
+    def getSubattributePath(cls, prevChoices, level, index, returnSubattrList=False, inQueryForm=False):
+        prevSubattributes = []
+        for i in range(index):
+            attr = getattr(prevChoices, 'subAttributeList%s_%s' % (level, i))
+            if attr is None or attr == cls.SELECT_CHOICE:
+                break
+
+            if attr.startswith('* '):
+                prevSubattributes = cls.ATTRIBUTE_SHORTCUT[attr]
+                if inQueryForm:
+                    prevSubattributesTmp = prevSubattributes[:]
+                    prevSubattributes = []
+                    for j, attr in enumerate(prevSubattributesTmp):
+                        prevSubattributes.append(cls.convertAttributeToQueryForm(attr, j))
+
+            else:
+                if inQueryForm:
+                    attr = cls.convertAttributeToQueryForm(attr, i)
+                prevSubattributes.append(attr)
+
+        subattributePath = ('->'.join(prevSubattributes))
+
+        if returnSubattrList:
+            return subattributePath, prevSubattributes
+        else:
+            return subattributePath
+
+    @classmethod
+    def convertAttributeToQueryForm(self, attr, index):
+        if index == 0:
+            attr = attr + '.content'
+        else:
+            attr = "'{}'".format(attr)
+
+        return attr
+
+    @classmethod
     def getPreviousChoices(cls, prevChoices, level):
         chosenOptions = {}
         for i in range(level):
+            path = cls.getSubattributePath(prevChoices, i, cls.MAX_NUM_OF_SUB_LEVELS, inQueryForm=True)
+
             val = cls.getChosenValues(prevChoices, i)
             if val in [None, cls.SELECT_CHOICE, '']:
                 break
-
-            subattributes = []
-            for j in range(cls.MAX_NUM_OF_SUB_LEVELS):
-                attr = getattr(prevChoices, 'subAttributeList%s_%s' % (i, j))
-                if attr in [None, cls.SELECT_CHOICE, '']:
-                    break
-                # category
-                if j == 0:
-                    subattributes.append(attr + '.content')
-                else:
-                    subattributes.append("'{}'".format(attr))
-
-            path = ('->'.join(subattributes))
-
             if type(val) is OrderedDict:
                 options = [option for option, checked in val.items() if checked]
                 if options:
@@ -490,7 +493,10 @@ class TrackFindClientTool(GeneralGuiTool):
 
         dataTypes = prevChoices.dataTypes
         if not dataTypes:
-            return
+            if isinstance(dataTypes, OrderedDict):
+                return []
+            else:
+                return
 
         chosenDataTypes = [option.split(' [')[0] for option, checked in
                            prevChoices.dataTypes.items() if checked]
