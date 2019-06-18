@@ -31,7 +31,7 @@ class UniversalConverterTool(GeneralGuiTool):
     def getOptionsBoxHistory(prevChoices):
         return '__history__', 'gtrack', 'bed', 'point.bed', 'category.bed', \
                               'valued.bed', 'wig', 'targetcontrol.bedgraph', \
-                              'bedgraph', 'gff', 'gff3', 'fasta'
+                              'bedgraph', 'gff', 'gff3', 'fasta', 'bigbed'
         
     @staticmethod
     def getOptionsBoxConversion(prevChoices):

@@ -68,7 +68,7 @@ class BigBedGenomeElementSource(GenomeElementSource):
         entries = self._bigBedFile.entries(str(chrName), 0, chrLengths)
         # self._extraColNames are initialized during the first iteration
         if self._extraColNames is None:
-            self._initExtraCols()
+            self._initExtraCols(entries)
 
         start, end = self._parseStartAndEnd(entries)
 
