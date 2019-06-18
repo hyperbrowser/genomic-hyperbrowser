@@ -71,8 +71,10 @@ class TabularToGtrackTool(GeneralGuiTool):
     @staticmethod
     def getOptionsBoxHistory(prevChoices):
         if prevChoices.source == 'Tabular file from history':
-            from galaxy.model import datatypes_registry
-            return ('__history__', type(datatypes_registry.get_datatype_by_extension('tabular')))
+            from galaxy.datatypes.registry import Registry
+            registry = Registry()
+            registry.load_datatypes()
+            return ('__history__', type(registry.get_datatype_by_extension('tabular')))
 
     @staticmethod
     def getOptionsBoxInput(prevChoices):
