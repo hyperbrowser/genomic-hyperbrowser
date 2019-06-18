@@ -2,6 +2,8 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.trackfind.TrackFindModule import TrackFindModule
 from functools import partial
 from collections import OrderedDict
+
+from gold.gsuite.GSuiteTrack import GSuiteTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
 import operator
 import gold.gsuite.GSuiteComposer as GSuiteComposer
@@ -33,7 +35,10 @@ class TrackFindClientTool(GeneralGuiTool):
     ATTRIBUTE_SHORTCUT = {'* Cell/Tissue type': ['samples', 'sample_type', 'term_value'],
                           '* Experiment type': ['experiments', 'tech_type', 'term_value'],
                           '* Genome build': ['tracks', 'genome_assembly'],
-                          '* Target': ['experiments', 'target', 'term_value']}
+                          '* Target': ['experiments', 'target', 'term_value'],
+                          '* File format': ['tracks', 'file_format', 'term_value']}
+
+    SUFFIX_REPLACE_MAP = {'bb': 'bigbed'}
 
     @classmethod
     def getToolName(cls):
@@ -198,6 +203,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         #add shortcuts to most used attributes
         if index == 0:
+            attributes.insert(0, '* File format')
             attributes.insert(0, '* Target')
             attributes.insert(0, '* Genome build')
             attributes.insert(0, '* Experiment type')
@@ -317,8 +323,7 @@ class TrackFindClientTool(GeneralGuiTool):
     def getOptionsBoxTrackList(cls, prevChoices):
         chosenDataTypes = cls.getChosenDataTypes(prevChoices)
         if not chosenDataTypes:
-            if not isinstance(chosenDataTypes, list):
-                return
+            return
 
         selectedTracks = cls.getSelectedTracks(prevChoices)
         gsuite = cls.getGsuite(prevChoices)
@@ -365,9 +370,6 @@ class TrackFindClientTool(GeneralGuiTool):
             attr = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
             if attr:
                 dataTypes[attr] += 1
-
-        if not dataTypes:
-            return OrderedDict()
 
         dataTypes = OrderedDict(sorted(dataTypes.items()))
 
@@ -434,7 +436,7 @@ class TrackFindClientTool(GeneralGuiTool):
         prevSubattributes = []
         for i in range(index):
             attr = getattr(prevChoices, 'subAttributeList%s_%s' % (level, i))
-            if attr is None or attr == cls.SELECT_CHOICE:
+            if not attr or attr == cls.SELECT_CHOICE:
                 break
 
             if attr.startswith('* '):
@@ -467,10 +469,10 @@ class TrackFindClientTool(GeneralGuiTool):
         return attr
 
     @classmethod
-    def getPreviousChoices(cls, prevChoices, level):
+    def getPreviousChoices(cls, prevChoices, level, inQueryForm=True):
         chosenOptions = {}
         for i in range(level):
-            path = cls.getSubattributePath(prevChoices, i, cls.MAX_NUM_OF_SUB_LEVELS, inQueryForm=True)
+            path = cls.getSubattributePath(prevChoices, i, cls.MAX_NUM_OF_SUB_LEVELS, inQueryForm=inQueryForm)
 
             val = cls.getChosenValues(prevChoices, i)
             if val in [None, cls.SELECT_CHOICE, '']:
@@ -486,20 +488,17 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getChosenDataTypes(cls, prevChoices):
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES, False)
 
         if not chosenOptions:
             return
 
         dataTypes = prevChoices.dataTypes
         if not dataTypes:
-            if isinstance(dataTypes, OrderedDict):
-                return []
-            else:
-                return
+            return
 
         chosenDataTypes = [option.split(' [')[0] for option, checked in
-                           prevChoices.dataTypes.items() if checked]
+                           dataTypes.items() if checked]
 
         return chosenDataTypes
     
@@ -540,9 +539,6 @@ class TrackFindClientTool(GeneralGuiTool):
         """
 
         chosenDataTypes = cls.getChosenDataTypes(choices)
-        if not chosenDataTypes:
-            return
-
         selectedTracks = cls.getSelectedTracks(choices)
 
         newGSuite = GSuite()
@@ -559,6 +555,11 @@ class TrackFindClientTool(GeneralGuiTool):
             if selectedTracks is not None and track.title not in selectedTracks:
                 continue
 
+            if track.suffix in  cls.SUFFIX_REPLACE_MAP:
+                newUri = track.uriWithoutSuffix + ';{}'.format(cls.SUFFIX_REPLACE_MAP[track.suffix])
+                track  = GSuiteTrack(uri=newUri, title=track.title, fileFormat=track.fileFormat,
+                                     trackType=track.trackType, genome=track.genome,
+                                     attributes=track.attributes)
             newGSuite.addTrack(track)
 
         if choices.selectTracks == cls.RANDOM_10_TRACKS:
@@ -674,6 +675,8 @@ class TrackFindClientTool(GeneralGuiTool):
         #boxes.append('selectRepository')
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             boxes.append('textSearch%s' % i)
+            # boxes.append('valueList%s' % i)
+            #boxes.append('valueCheckbox%s' % i)
 
         return boxes
 
