@@ -12,7 +12,7 @@ parse_common_args() {
                 common_startup_args="$common_startup_args $1"
                 shift
                 ;;
-            --skip-tool-dependency-initialization)
+                --skip-tool-dependency-initialization)
                 INITIALIZE_TOOL_DEPENDENCIES=0
                 shift
                 ;;
