@@ -3,10 +3,11 @@
 """
 Middleware for logging requests, using Apache combined log format
 """
-
 import logging
 import time
 import urllib
+
+from six import string_types
 
 
 class TransLogger(object):
@@ -66,20 +67,20 @@ class TransLogger(object):
                 if name.lower() == 'content-length':
                     bytes = value
             self.write_log(environ, method, req_uri, start, status, bytes)
-            return start_response( status, headers, exc_info )
+            return start_response(status, headers, exc_info)
         return self.application(environ, replacement_start_response)
 
     def write_log(self, environ, method, req_uri, start, status, bytes):
         if bytes is None:
             bytes = '-'
         if time.daylight:
-                offset = time.altzone / 60 / 60 * -100
+            offset = time.altzone / 60 / 60 * -100
         else:
-                offset = time.timezone / 60 / 60 * -100
+            offset = time.timezone / 60 / 60 * -100
         if offset >= 0:
-                offset = "+%0.4d" % (offset)
+            offset = "+%0.4d" % (offset)
         elif offset < 0:
-                offset = "%0.4d" % (offset)
+            offset = "%0.4d" % (offset)
         d = {
             'REMOTE_ADDR': environ.get('REMOTE_ADDR') or '-',
             'REMOTE_USER': environ.get('REMOTE_USER') or '-',
@@ -104,9 +105,9 @@ def make_filter(
         setup_console_handler=True,
         set_logger_level=logging.DEBUG):
     from paste.util.converters import asbool
-    if isinstance(logging_level, basestring):
+    if isinstance(logging_level, string_types):
         logging_level = logging._levelNames[logging_level]
-    if isinstance(set_logger_level, basestring):
+    if isinstance(set_logger_level, string_types):
         set_logger_level = logging._levelNames[set_logger_level]
     return TransLogger(
         app,
@@ -115,5 +116,6 @@ def make_filter(
         logger_name=logger_name,
         setup_console_handler=asbool(setup_console_handler),
         set_logger_level=set_logger_level)
+
 
 make_filter.__doc__ = TransLogger.__doc__

@@ -20,10 +20,11 @@ var webpack = require( 'webpack' ),
         'libs/jquery/jquery-ui',
         'libs/bootstrap',
         'libs/bootstrap-tour',
+        'libs/jquery.complexify',
+        'libs/jquery/jquery.autocomplete',
         // mvc
         'libs/underscore',
         'libs/backbone',
-        'libs/handlebars.runtime',
         // all pages get these
         'ui/autocom_tagging',
         'layout/modal',
@@ -38,6 +39,7 @@ module.exports = {
         libs    : commonLibs,
         login   : './galaxy/scripts/apps/login.js',
         analysis: './galaxy/scripts/apps/analysis.js',
+        admin   : './galaxy/scripts/apps/admin.js',
     },
     output  : {
         path        : '../static/scripts/bundled',
@@ -54,7 +56,10 @@ module.exports = {
     },
     module : {
         loaders : [
-            { test : /\.handlebars$/, loader : 'handlebars-loader' },
+            { test: /\.js$/,
+              exclude: /node_modules/,
+              loader: 'babel-loader',
+              query: { compact: false } },
         ],
     },
     resolveLoader : {
@@ -74,7 +79,6 @@ module.exports = {
             'window.jQuery':    'jquery',
             _:                  "underscore",
             Backbone:           'libs/backbone',
-            Handlebars:         'libs/handlebars.runtime'
         }),
         // new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 })
     ],

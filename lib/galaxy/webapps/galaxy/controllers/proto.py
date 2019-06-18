@@ -104,13 +104,13 @@ class ProtoController( BaseUIController ):
 
     def _index(self, trans, mako, **kwd):
 
-        if kwd.has_key('rerun_hda_id'):
-            self._import_job_params(trans, kwd['rerun_hda_id'])
-                    
+        if kwd.has_key('rerun_job_id'):
+            self._import_rerun_job_params(trans, kwd['rerun_job_id'])
+
         if isinstance(mako, list):
             mako = mako[0]
 
-        timeout = 60
+        timeout = 30
         retry = 3
         while retry > 0:
             retry -= 1
@@ -179,40 +179,16 @@ class ProtoController( BaseUIController ):
         return rval
 
 
-    def _import_job_params(self, trans, id=None):
-        """
-        Copied from ToolController.rerun()
-        Given a HistoryDatasetAssociation id, find the job and that created
-        the dataset, extract the parameters.
-        """
-        if not id:
-            error( "'id' parameter is required" );
+    def _import_rerun_job_params(self, trans, job_id):
         try:
-            id = int( id )
+            job_id = int(job_id)
         except:
-            error( "Invalid value for 'id' parameter" )
-        # Get the dataset object
-        data = trans.sa_session.query( trans.app.model.HistoryDatasetAssociation ).get( id )
-        #only allow rerunning if user is allowed access to the dataset.
-        if not trans.app.security_agent.can_access_dataset( trans.get_current_user_roles(), data.dataset ):
-            error( "You are not allowed to access this dataset" )
-        # Get the associated job, if any. If this hda was copied from another,
-        # we need to find the job that created the origial hda
-        job_hda = data
-        while job_hda.copied_from_history_dataset_association:#should this check library datasets as well?
-            job_hda = job_hda.copied_from_history_dataset_association
-        if not job_hda.creating_job_associations:
-            error( "Could not find the job for this dataset" )
-        # Get the job object
-        job = None
-        for assoc in job_hda.creating_job_associations:
-            job = assoc.job
-            break   
-        if not job:
-            raise Exception("Failed to get job information for dataset hid %d" % data.hid)
-        ## Get the job's parameters
+            job_id = trans.security.decode_id(job_id)
+
+        job = trans.sa_session.query(trans.app.model.Job).get(job_id)
+        ## Get the parameters to rerun the job with
         try:
             trans.request.rerun_job_params = job.get_param_values( trans.app, ignore_errors = True )
             trans.request.rerun_job_params['tool_id'] = job.tool_id
         except:
-            raise Exception( "Failed to get parameters for dataset id %d " % data.id )
+            raise Exception( "Failed to get parameters for job id %d " % job_id )

@@ -384,10 +384,25 @@
     <!-- end hidden tools -->
   </section>
 
+  <section id="protoApiDoc" name="ProTo API documentation">
+    <tool file="proto/doc/proto_api_doc.xml" />
+    <tool file="proto/doc/tool_template_doc.xml" />
+  </section>
+
+  <section id="protoGuiTestTools" name="ProTo GUI test tools">
+    <tool file="proto/guitest/ProtoGuiTestTool1.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool2.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool3.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool4.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool5.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool6.xml" />
+    <tool file="proto/guitest/ProtoGuiTestTool7.xml" />
+  </section>
+
   <label text=" " id="space0"/>
-  
+
   <label text="Standard Galaxy tools" id="galaxy_tools" />
-  
+
   <section id="getext" name="Get Data">
     <tool file="data_source/upload.xml" />
     <tool file="data_source/ucsc_tablebrowser.xml" />
@@ -412,12 +427,21 @@
     <tool file="data_source/zebrafishmine.xml" />
     <tool file="data_source/eupathdb.xml" />
     <tool file="data_source/hbvar.xml" />
-    <tool file="genomespace/genomespace_file_browser_prod.xml" />
     <tool file="genomespace/genomespace_importer.xml" />
-    <tool file="validation/fix_errors.xml" />
+    <tool file="genomespace/genomespace_push.xml" />
   </section>
   <section id="send" name="Send Data">
     <tool file="genomespace/genomespace_exporter.xml" />
+  </section>
+  <section id="collection_operations" name="Collection Operations">
+    <tool file="${model_tools_path}/unzip_collection.xml" />
+    <tool file="${model_tools_path}/zip_collection.xml" />
+    <tool file="${model_tools_path}/filter_failed_collection.xml" />
+    <tool file="${model_tools_path}/flatten_collection.xml" />
+    <tool file="${model_tools_path}/merge_collection.xml" />
+    <tool file="${model_tools_path}/relabel_from_file.xml" />
+    <tool file="${model_tools_path}/filter_from_file.xml" />
+    <tool file="${model_tools_path}/sort_collection_list.xml" />
   </section>
   <section id="liftOver" name="Lift-Over">
     <tool file="extract/liftOver_wrapper.xml" />
@@ -444,7 +468,7 @@
     <tool file="stats/filtering.xml" />
     <tool file="filters/sorter.xml" />
     <tool file="filters/grep.xml" />
-    
+
     <label id="gff" text="GFF" />
     <tool file="filters/gff/extract_GFF_Features.xml" />
     <tool file="filters/gff/gff_filter_by_attribute.xml" />

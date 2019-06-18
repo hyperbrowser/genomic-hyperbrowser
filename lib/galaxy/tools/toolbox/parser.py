@@ -1,31 +1,36 @@
-from abc import ABCMeta
-from abc import abstractmethod
+"""This module is used to parse tool_conf files.
+
+These files define tool lists, sections, labels, etc... the elements of the
+Galaxy tool panel.
+"""
+from abc import ABCMeta, abstractmethod
+
+import six
+import yaml
 
 from galaxy.util import parse_xml, string_as_bool
-import yaml
 
 DEFAULT_MONITOR = False
 
 
+@six.add_metaclass(ABCMeta)
 class ToolConfSource(object):
-    """ This interface represents an abstract source to parse tool
-    information from.
-    """
-    __metaclass__ = ABCMeta
+    """Interface represents a container of tool references."""
 
     @abstractmethod
     def parse_items(self):
-        """ Return a list of ToolConfItem
-        """
+        """Return a list of ToolConfItem describing source."""
 
     @abstractmethod
     def parse_tool_path(self):
-        """ Return tool_path for tools in this toolbox.
-        """
+        """Return tool_path for tools in this toolbox or None."""
+
+    @abstractmethod
+    def is_shed_tool_conf(self):
+        """Decide if this tool conf is a shed tool conf."""
 
     def parse_monitor(self):
-        """ Monitor the toolbox configuration source for changes and
-        reload. """
+        """Monitor the toolbox configuration source for changes and reload."""
         return DEFAULT_MONITOR
 
 
@@ -39,7 +44,12 @@ class XmlToolConfSource(ToolConfSource):
         return self.root.get('tool_path')
 
     def parse_items(self):
-        return map(ensure_tool_conf_item, self.root.getchildren())
+        return [ensure_tool_conf_item(_) for _ in self.root]
+
+    def is_shed_tool_conf(self):
+        has_tool_path = self.parse_tool_path() is not None
+        is_shed_conf = string_as_bool(self.root.get("is_shed_conf", "True"))
+        return has_tool_path and is_shed_conf
 
     def parse_monitor(self):
         return string_as_bool(self.root.get('monitor', DEFAULT_MONITOR))
@@ -49,22 +59,26 @@ class YamlToolConfSource(ToolConfSource):
 
     def __init__(self, config_filename):
         with open(config_filename, "r") as f:
-            as_dict = yaml.load(f)
+            as_dict = yaml.safe_load(f)
         self.as_dict = as_dict
 
     def parse_tool_path(self):
         return self.as_dict.get('tool_path')
 
     def parse_items(self):
-        return map(ToolConfItem.from_dict, self.as_dict.get('items'))
+        return [ToolConfItem.from_dict(_) for _ in self.as_dict.get('items')]
 
     def parse_monitor(self):
         return self.as_dict.get('monitor', DEFAULT_MONITOR)
 
+    def is_shed_tool_conf(self):
+        return False
+
 
 class ToolConfItem(object):
-    """ This interface represents an abstract source to parse tool
-    information from.
+    """Abstract description of a tool conf item.
+
+    These may include tools, labels, sections, and workflows.
     """
 
     def __init__(self, type, attributes, elem=None):
@@ -79,7 +93,7 @@ class ToolConfItem(object):
         del as_dict['type']
         attributes = as_dict
         if type == 'section':
-            items = map(cls.from_dict, as_dict['items'])
+            items = [cls.from_dict(_) for _ in as_dict['items']]
             del as_dict['items']
             item = ToolConfSection(attributes, items)
         else:
@@ -103,7 +117,7 @@ class ToolConfItem(object):
     def labels(self):
         labels = None
         if "labels" in self.attributes:
-            labels = [ label.strip() for label in self.attributes["labels"].split( "," ) ]
+            labels = [label.strip() for label in self.attributes["labels"].split(",")]
         return labels
 
 
@@ -126,13 +140,19 @@ def ensure_tool_conf_item(xml_or_item):
         if type != "section":
             return ToolConfItem(type, attributes, elem)
         else:
-            items = map(ensure_tool_conf_item, elem.getchildren())
+            items = [ensure_tool_conf_item(_) for _ in elem]
             return ToolConfSection(attributes, items, elem=elem)
 
 
 def get_toolbox_parser(config_filename):
-    is_yaml = any(map(lambda e: config_filename.endswith(e), [".yml", ".yaml", ".json"]))
+    is_yaml = any(config_filename.endswith(e) for e in [".yml", ".yaml", ".json"])
     if is_yaml:
         return YamlToolConfSource(config_filename)
     else:
         return XmlToolConfSource(config_filename)
+
+
+__all__ = (
+    "get_toolbox_parser",
+    "ensure_tool_conf_item",
+)

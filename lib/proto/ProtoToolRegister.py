@@ -14,10 +14,10 @@ MULTI_GENERAL_GUI_TOOL = 'MultiGeneralGuiTool'
 
 EXPLORE_TOOLS_TOOL_CLS_NAME = 'ExploreToolsTool'
 
-DEFAULT_INSTALLED_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate'),
-                                ('proto.tools.ToolTemplateMinimal', 'ToolTemplate'),
-                                ('quick.webtools.ToolTemplate', 'ToolTemplate'),
-                                ('quick.webtools.ToolTemplateMinimal', 'ToolTemplate')]
+DEFAULT_INSTALLED_CLASS_INFO = [('proto.tools.ToolTemplate', 'ToolTemplate', None),
+                                ('proto.tools.ToolTemplateMinimal', 'ToolTemplate', None),
+                                ('quick.webtools.ToolTemplate', 'ToolTemplate', None),
+                                ('quick.webtools.ToolTemplateMinimal', 'ToolTemplate', None)]
 
 HIDDEN_MODULES_CONFIG_FN = \
     os.path.join(CONFIG_DIR, 'proto_tool_explorer_hidden_modules.txt')
@@ -78,9 +78,10 @@ def getToolPrototype(toolId):
     tool_shelve = None
     try:
         tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
-        module_name, class_name = tool_shelve[str(toolId)]
+        module_name, class_name, conda_activate_source = \
+            tool_shelve[str(toolId)]
         module = __import__(module_name, fromlist=[class_name])
-        prototype = getattr(module, class_name)(toolId)
+        prototype = getattr(module, class_name)(toolId, conda_activate_source)
     #except KeyError:
     #    prototype = None
     finally:
@@ -109,7 +110,8 @@ def _commonGetProtoToolList(tool_dir=PROTO_TOOL_DIR, except_modules_set=set(), d
 def _findInstalledClassesSet():
     installed_class_info = DEFAULT_INSTALLED_CLASS_INFO + getInstalledProtoTools()
     installed_classes_set = set([getUniqueKeyForClass(module, class_name) for
-                                 module, class_name in installed_class_info])
+                                 module, class_name, conda_activate_source
+                                 in installed_class_info])
     return installed_classes_set
 
 

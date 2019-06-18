@@ -14,11 +14,14 @@ database/citations
 database/community_files
 database/compiled_templates
 database/files
+database/jobs_directory
 database/job_working_directory
 database/pbs
+database/test_errors
 database/tmp
 database/*.sqlite
 database/openid_consumer_cache
+database/dependencies
 database/proto-tool-cache.shelve
 database/hb_config.shelve
 
@@ -41,6 +44,9 @@ lib/tool_shed/scripts/bootstrap_tool_shed/user_info.xml
 reports_webapp.lock
 reports_webapp.log
 reports_webapp.pid
+
+# Jupyter Runtime Files
+.ipynb_checkpoints
 
 # Config files
 universe_wsgi.ini
@@ -66,6 +72,8 @@ object_store_conf.xml
 job_metrics_conf.xml
 workflow_schedulers_conf.xml
 config/*
+config/plugins/interactive_environments/**/*.ini
+!config/plugins
 static/welcome.html.*
 static/welcome.html
 
@@ -88,12 +96,13 @@ tool-data/genome/*
 tool-data/*.sample
 tool-data/testtoolshed.g2.bx.psu.edu/
 tool-data/toolshed.g2.bx.psu.edu/
-
+tool-data/**/*.fa
 
 # Test output
 test-data-cache
 run_framework_tests.html
 run_functional_tests.html
+run_toolshed_tests.html
 run_api_tests.html
 test/tool_shed/tmp/*
 .coverage
@@ -115,12 +124,21 @@ tool-data/shared/jars/
 sprite-*.less
 
 # JS, Local node_modules, and bower_components directories
-static/scripts/bundled
+static/scripts/bundled/[0-9]*
 node_modules
 bower_components
 
 # Documentation build files.
 doc/build
+doc/schema.md
+doc/source/dev/schema.rst
+
+# Galaxy ProTo doc files
+lib/proto/doc/_build
+lib/proto/doc/_static
+lib/proto/doc/_templates
+lib/proto/doc/modules.rst
+lib/proto/doc/proto*.rst
 
 # Misc
 *.orig

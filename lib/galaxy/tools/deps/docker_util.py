@@ -1,4 +1,12 @@
+"""Utilities for building up Docker commands...
+
+...using common defaults and configuration mechanisms.
+"""
 import os
+
+from six.moves import shlex_quote
+
+from .commands import argv_to_str
 
 DEFAULT_DOCKER_COMMAND = "docker"
 DEFAULT_SUDO = True
@@ -20,7 +28,7 @@ class DockerVolume(object):
         self.from_path = path
         self.to_path = to_path or path
         if not DockerVolume.__valid_how(how):
-            raise ValueError("Invalid way to specify docker volume %s" % how)
+            raise ValueError("Invalid way to specify Docker volume %s" % how)
         self.how = how
 
     @staticmethod
@@ -28,12 +36,12 @@ class DockerVolume(object):
         if not volumes_as_str:
             return []
         volume_strs = [v.strip() for v in volumes_as_str.split(",")]
-        return map(DockerVolume.volume_from_str, volume_strs)
+        return [DockerVolume.volume_from_str(_) for _ in volume_strs]
 
     @staticmethod
     def volume_from_str(as_str):
         if not as_str:
-            raise ValueError("Failed to parse docker volume from %s" % as_str)
+            raise ValueError("Failed to parse Docker volume from %s" % as_str)
         parts = as_str.split(":", 2)
         kwds = dict(path=parts[0])
         if len(parts) == 2:
@@ -54,6 +62,22 @@ class DockerVolume(object):
         return ":".join([self.from_path, self.to_path, self.how])
 
 
+def kill_command(
+    container,
+    signal=None,
+    **kwds
+):
+    args = (["-s", signal] if signal else []) + [container]
+    return command_list("kill", args, **kwds)
+
+
+def logs_command(
+    container,
+    **kwds
+):
+    return command_list("logs", **kwds)
+
+
 def build_command(
     image,
     docker_build_path,
@@ -61,9 +85,7 @@ def build_command(
 ):
     if os.path.isfile(docker_build_path):
         docker_build_path = os.path.dirname(os.path.abspath(docker_build_path))
-    build_command_parts = __docker_prefix(**kwds)
-    build_command_parts.extend(["build", "-t", image, docker_build_path])
-    return build_command_parts
+    return command_list("build", ["-t", image, docker_build_path], **kwds)
 
 
 def build_save_image_command(
@@ -71,47 +93,33 @@ def build_save_image_command(
     destination,
     **kwds
 ):
-    build_command_parts = __docker_prefix(**kwds)
-    build_command_parts.extend(["save", "-o", destination, image])
-    return build_command_parts
+    return command_list("save", ["-o", destination, image], **kwds)
 
 
 def build_pull_command(
     tag,
     **kwds
 ):
-    build_command_parts = __docker_prefix(**kwds)
-    build_command_parts.extend(["pull", tag])
-    return build_command_parts
+    return command_list("pull", [tag], **kwds)
 
 
 def build_docker_cache_command(
     image,
     **kwds
 ):
-    inspect_command_parts = __docker_prefix(**kwds)
-    inspect_command_parts.extend(["inspect", image])
-    inspect_image_command = " ".join(inspect_command_parts)
-
-    pull_command_parts = __docker_prefix(**kwds)
-    pull_command_parts.extend(["pull", image])
-    pull_image_command = " ".join(pull_command_parts)
+    inspect_image_command = command_shell("inspect", [image], **kwds)
+    pull_image_command = command_shell("pull", [image], **kwds)
     cache_command = "%s > /dev/null 2>&1\n[ $? -ne 0 ] && %s > /dev/null 2>&1\n" % (inspect_image_command, pull_image_command)
     return cache_command
 
 
 def build_docker_images_command(truncate=True, **kwds):
-    images_command_parts = __docker_prefix(**kwds)
-    images_command_parts.append("images")
-    if not truncate:
-        images_command_parts.append("--no-trunc")
-    return " ".join(images_command_parts)
+    args = ["--no-trunc"] if not truncate else[]
+    return command_shell("images", args, **kwds)
 
 
 def build_docker_load_command(**kwds):
-    load_command_parts = __docker_prefix(**kwds)
-    load_command_parts.append("load")
-    return " ".join(load_command_parts)
+    return command_shell("load", [])
 
 
 def build_docker_run_command(
@@ -135,7 +143,7 @@ def build_docker_run_command(
     set_user=DEFAULT_SET_USER,
     host=DEFAULT_HOST,
 ):
-    command_parts = __docker_prefix(
+    command_parts = _docker_prefix(
         docker_cmd=docker_cmd,
         sudo=sudo,
         sudo_cmd=sudo_cmd,
@@ -147,19 +155,19 @@ def build_docker_run_command(
     if terminal:
         command_parts.append("-t")
     for env_directive in env_directives:
-        command_parts.extend(["-e", env_directive])
+        command_parts.extend(["-e", shlex_quote(env_directive)])
     for volume in volumes:
-        command_parts.extend(["-v", str(volume)])
+        command_parts.extend(["-v", shlex_quote(str(volume))])
     if volumes_from:
-        command_parts.extend(["--volumes-from", str(volumes_from)])
+        command_parts.extend(["--volumes-from", shlex_quote(str(volumes_from))])
     if memory:
-        command_parts.extend(["-m", memory])
+        command_parts.extend(["-m", shlex_quote(memory)])
     if name:
-        command_parts.extend(["-name", name])
+        command_parts.extend(["--name", shlex_quote(name)])
     if working_directory:
-        command_parts.extend(["-w", working_directory])
+        command_parts.extend(["-w", shlex_quote(working_directory)])
     if net:
-        command_parts.extend(["--net", net])
+        command_parts.extend(["--net", shlex_quote(net)])
     if auto_rm:
         command_parts.append("--rm")
     if run_extra_arguments:
@@ -172,20 +180,37 @@ def build_docker_run_command(
     full_image = image
     if tag:
         full_image = "%s:%s" % (full_image, tag)
-    command_parts.append(full_image)
+    command_parts.append(shlex_quote(full_image))
     command_parts.append(container_command)
     return " ".join(command_parts)
 
 
-def __docker_prefix(
+def command_list(command, command_args=[], **kwds):
+    """Return Docker command as an argv list."""
+    command_parts = _docker_prefix(**kwds)
+    command_parts.append(command)
+    command_parts.extend(command_args)
+    return command_parts
+
+
+def command_shell(command, command_args=[], **kwds):
+    """Return Docker command as a string for a shell or command-list."""
+    cmd = command_list(command, command_args, **kwds)
+    to_str = kwds.get("to_str", True)
+    if to_str:
+        return argv_to_str(cmd)
+    else:
+        return cmd
+
+
+def _docker_prefix(
     docker_cmd=DEFAULT_DOCKER_COMMAND,
     sudo=DEFAULT_SUDO,
     sudo_cmd=DEFAULT_SUDO_COMMAND,
     host=DEFAULT_HOST,
     **kwds
 ):
-    """ Prefix to issue a docker command.
-    """
+    """Prefix to issue a docker command."""
     command_parts = []
     if sudo:
         command_parts.append(sudo_cmd)

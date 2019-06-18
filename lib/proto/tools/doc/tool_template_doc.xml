@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<tool tool_type="proto" name="ProTo API docs:" id="tool_template_doc">
+
+	<description>ToolTemplate module</description>
+
+	<command></command>
+
+	<display></display>
+
+	<inputs action="/static/proto/doc/html/proto.tools.ToolTemplate.html" check_values="false" method="get">
+		<param name="x" type="hidden" value="x" />
+	</inputs>
+    <uihints minwidth="800"/>
+
+</tool>
+

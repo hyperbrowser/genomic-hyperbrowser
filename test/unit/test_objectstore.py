@@ -1,9 +1,12 @@
 import os
+
+from contextlib import contextmanager
 from shutil import rmtree
 from string import Template
 from tempfile import mkdtemp
+
 from galaxy import objectstore
-from contextlib import contextmanager
+from galaxy.exceptions import ObjectInvalid
 
 DISK_TEST_CONFIG = """<?xml version="1.0"?>
 <object_store type="disk">
@@ -68,6 +71,42 @@ def test_disk_store():
         assert object_store.delete(to_delete_dataset)
         assert not object_store.exists(to_delete_dataset)
         assert not os.path.exists(to_delete_real_path)
+
+
+def test_disk_store_alt_name_relpath():
+    """ Test that alt_name cannot be used to access arbitrary paths using a
+    relative path
+    """
+    with TestConfig(DISK_TEST_CONFIG) as (directory, object_store):
+        empty_dataset = MockDataset(1)
+        directory.write("", "files1/000/dataset_1.dat")
+        directory.write("foo", "foo.txt")
+        try:
+            assert object_store.get_data(
+                empty_dataset,
+                extra_dir='dataset_1_files',
+                alt_name='../../../foo.txt') != 'foo'
+        except ObjectInvalid:
+            pass
+
+
+def test_disk_store_alt_name_abspath():
+    """ Test that alt_name cannot be used to access arbitrary paths using a
+    absolute path
+    """
+    with TestConfig(DISK_TEST_CONFIG) as (directory, object_store):
+        empty_dataset = MockDataset(1)
+        directory.write("", "files1/000/dataset_1.dat")
+        absfoo = os.path.abspath(os.path.join(directory.temp_directory, "foo.txt"))
+        with open(absfoo, 'w') as f:
+            f.write("foo")
+        try:
+            assert object_store.get_data(
+                empty_dataset,
+                extra_dir='dataset_1_files',
+                alt_name=absfoo) != 'foo'
+        except ObjectInvalid:
+            pass
 
 
 HIERARCHICAL_TEST_CONFIG = """<?xml version="1.0"?>
@@ -164,7 +203,8 @@ class TestConfig(object):
         directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        expanded_contents = Template(contents).safe_substitute(temp_directory=self.temp_directory)
+        contents_template = Template(contents)
+        expanded_contents = contents_template.safe_substitute(temp_directory=self.temp_directory)
         open(path, "w").write(expanded_contents)
         return path
 
@@ -175,7 +215,7 @@ class MockConfig(object):
         self.file_path = temp_directory
         self.object_store_config_file = os.path.join(temp_directory, "store.xml")
         self.object_store_check_old_style = False
-        self.job_working_directory = temp_directory
+        self.jobs_directory = temp_directory
         self.new_file_path = temp_directory
         self.umask = 0000
 

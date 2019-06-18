@@ -15,8 +15,13 @@ BoxGroup = namedtuple('BoxGroup', ['label', 'first', 'last'])
 
 
 class GeneralGuiTool(object):
-    def __init__(self, toolId=None):
+    def __init__(self, toolId=None, conda_activate_source=None):
         self.__class__.toolId = toolId
+        # In order to activate a tool-specific Conda environment (defined by Conda requirements
+        # in the XML file of a tool), just call the cls.conda_activate_source script from a
+        # subprocess from the execute method. This script is automatically set as a class
+        # variable during Galaxy startup.
+        self.__class__.conda_activate_source = conda_activate_source
 
     # API methods
     @staticmethod
@@ -88,6 +93,10 @@ class GeneralGuiTool(object):
     @staticmethod
     def validateAndReturnErrors(choices):
         return None
+
+    @staticmethod
+    def shouldAppendHtmlHeaderAndFooter(outputFormat):
+        return outputFormat == 'html'
 
     # Convenience methods
 

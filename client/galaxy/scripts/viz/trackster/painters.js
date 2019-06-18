@@ -168,12 +168,6 @@ Painter.prototype._chrom_pos_to_draw_pos = function(chrom_pos, w_scale, offset) 
 
 var LinePainter = function(data, view_start, view_end, prefs, mode) {
     Painter.call( this, data, view_start, view_end, prefs, mode );
-    if ( this.prefs.min_value === undefined ) {
-        this.prefs.min_value = _.min( _.map(this.data, function(d) { return d[1]; }) ) || 0;
-    }
-    if ( this.prefs.max_value === undefined ) {
-        this.prefs.max_value = _.max( _.map(this.data, function(d) { return d[1]; }) ) || 0;
-    }
 };
 
 LinePainter.prototype.default_prefs = { min_value: undefined, max_value: undefined, mode: "Histogram", color: "#000", overflow_color: "#F66" };
@@ -200,12 +194,14 @@ LinePainter.prototype.draw = function(ctx, width, height, w_scale) {
     }
 
     ctx.beginPath();
-    var x_scaled, y, delta_x_px;
+    var x_scaled, y, delta_x_pxs;
     if (data.length > 1) {
-        delta_x_px = Math.ceil((data[1][0] - data[0][0]) * w_scale);
+        delta_x_pxs = _.map(data.slice(0,-1), function(d, i) {
+            return Math.ceil((data[i+1][0] - data[i][0]) * w_scale);
+        });
     }
     else {
-        delta_x_px = 10;
+        delta_x_pxs = [10];
     }
 
     // Painter color can be in either block_color (FeatureTrack) or color pref (LineTrack).
@@ -220,12 +216,14 @@ LinePainter.prototype.draw = function(ctx, width, height, w_scale) {
 
 
     // Paint track.
+    var delta_x_px;
     for (var i = 0, len = data.length; i < len; i++) {
         // Reset attributes for next point.
         ctx.fillStyle = ctx.strokeStyle = painter_color;
         top_overflow = bot_overflow = false;
+        delta_x_px = delta_x_pxs[i];
 
-        x_scaled = Math.ceil((data[i][0] - view_start) * w_scale);
+        x_scaled = Math.floor((data[i][0] - view_start - 0.5) * w_scale);
         y = data[i][1];
 
         // Process Y (scaler) value.
@@ -518,7 +516,7 @@ _.extend(LinkedFeaturePainter.prototype, FeaturePainter.prototype, {
             thickness, y_start, thick_start = null, thick_end = null,
             // TODO: is there any reason why block, label color cannot be set at the Painter level?
             // For now, assume '.' === '+'
-            block_color = (!feature_strand || feature_strand === "+" || feature_strand === "." ? this.prefs.block_color : this.prefs.reverse_strand_color);
+            block_color = (!feature_strand || feature_strand === "+" || feature_strand === "." ? this.prefs.block_color : this.prefs.reverse_strand_color),
             label_color = this.prefs.label_color;
 
         // Set global alpha.
@@ -1225,7 +1223,7 @@ Color.prototype = {
     },
 
     mix: function (color2, weight) {
-        color1 = this;
+        var color1 = this;
 
         var p = weight; // .value / 100.0;
         var w = p * 2 - 1;
@@ -1545,8 +1543,8 @@ _.extend(VariantPainter.prototype, Painter.prototype, {
                     // Draw allele fractions onto summary.
                     for (j = 0; j < alt.length; j++) {
                         ctx.fillStyle = ( alt[j].type === 'deletion' ? 'black' : this.base_color_fn(alt[j].value) );
-                        allele_frac = allele_counts / sample_gts.length;
-                        draw_height = Math.ceil(this.prefs.summary_height * allele_frac);
+                        var allele_frac = allele_counts / sample_gts.length;
+                        var draw_height = Math.ceil(this.prefs.summary_height * allele_frac);
                         ctx.fillRect(draw_x_start, draw_y_start - draw_height, base_px, draw_height);
                         draw_y_start -= draw_height;
                     }
