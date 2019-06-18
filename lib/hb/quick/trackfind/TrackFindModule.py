@@ -6,7 +6,7 @@ import requests
 from gold.gsuite import GSuiteParser
 
 
-class TrackFindModule:
+class TrackFindModule(object):
     URL = 'http://158.37.63.104/api/v1'
 
     STANDARD_CATEGORIES = 'experiments,studies,samples,tracks'

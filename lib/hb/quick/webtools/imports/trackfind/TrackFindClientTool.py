@@ -2,6 +2,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.trackfind.TrackFindModule import TrackFindModule
 from functools import partial
 from collections import OrderedDict
+from copy import copy
 
 from gold.gsuite.GSuiteTrack import GSuiteTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -59,6 +60,7 @@ class TrackFindClientTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
+        attrBoxes.append(('', 'categories'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -119,6 +121,12 @@ class TrackFindClientTool(GeneralGuiTool):
         return reposAndHubs
 
     @classmethod
+    def getOptionsBoxCategories(cls, prevChoices):
+        if not prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+            tfm = TrackFindModule()
+            return '__hidden__', tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+
+    @classmethod
     def _getDivider(cls, prevChoices, index):
         if prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
@@ -147,8 +155,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         subattributePath = ''
         if index == 0:
-            tfm = TrackFindModule()
-            attributes = tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+            attributes = copy(prevChoices.categories)
 
         else:
             attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
@@ -675,24 +682,24 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return True
     #
-    @classmethod
-    def getResetBoxes(cls):
-        """
-        Specifies a list of input boxes which resets the subsequent stored
-        choices previously made. The input boxes are specified by index
-        (starting with 1) or by key.
-
-        Optional method. Default return value if method is not defined: True
-        """
-
-        boxes = []
-        #boxes.append('selectRepository')
-        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-            boxes.append('textSearch%s' % i)
-            # boxes.append('valueList%s' % i)
-            #boxes.append('valueCheckbox%s' % i)
-
-        return boxes
+    # @classmethod
+    # def getResetBoxes(cls):
+    #     """
+    #     Specifies a list of input boxes which resets the subsequent stored
+    #     choices previously made. The input boxes are specified by index
+    #     (starting with 1) or by key.
+    #
+    #     Optional method. Default return value if method is not defined: True
+    #     """
+    #
+    #     boxes = []
+    #     #boxes.append('selectRepository')
+    #     for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+    #         boxes.append('textSearch%s' % i)
+    #         # boxes.append('valueList%s' % i)
+    #         #boxes.append('valueCheckbox%s' % i)
+    #
+    #     return boxes
 
     # @classmethod
     # def getToolDescription(cls):
@@ -778,27 +785,30 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    @classmethod
-    def getInputBoxGroups(cls, choices=None):
-        """
-        Creates a visual separation of groups of consecutive option boxes
-        from the rest (fieldset). Each such group has an associated label
-        (string), which is shown to the user. To define groups of option
-        boxes, return a list of BoxGroup namedtuples with the label, the key
-        (or index) of the first and last options boxes (inclusive).
-
-        Example:
-           from quick.webtool.GeneralGuiTool import BoxGroup
-           return [BoxGroup(label='A group of choices', first='firstKey',
-                            last='secondKey')]
-
-        Optional method. Default return value if method is not defined: None
-        """
-
-        return [
-                BoxGroup(label='A group of choices', first='subAttributeList0_0',
-                         last='valueCheckbox0')
-                ]
+    # @classmethod
+    # def getInputBoxGroups(cls, choices=None):
+    #     """
+    #     Creates a visual separation of groups of consecutive option boxes
+    #     from the rest (fieldset). Each such group has an associated label
+    #     (string), which is shown to the user. To define groups of option
+    #     boxes, return a list of BoxGroup namedtuples with the label, the key
+    #     (or index) of the first and last options boxes (inclusive).
+    #
+    #     Example:
+    #        from quick.webtool.GeneralGuiTool import BoxGroup
+    #        return [BoxGroup(label='A group of choices', first='firstKey',
+    #                         last='secondKey')]
+    #
+    #     Optional method. Default return value if method is not defined: None
+    #     """
+    #
+    #     group = []
+    #     return [
+    #             BoxGroup(label='A group of choices', first='subAttributeList0_0',
+    #                      last='valueCheckbox0',
+    #                      ), BoxGroup(label='A group of choices', first='subAttributeList1_0',
+    #                      last='valueCheckbox1')
+    #             ]
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
