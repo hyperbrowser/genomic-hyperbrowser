@@ -11,6 +11,8 @@ from collections import defaultdict
 from gold.gsuite.GSuite import GSuite
 import quick.gsuite.GSuiteUtils as GSuiteUtils
 
+from proto.tools.GeneralGuiTool import BoxGroup
+
 
 class TrackFindClientTool(GeneralGuiTool):
     MAX_NUM_OF_EXTRA_BOXES = 10
@@ -40,6 +42,8 @@ class TrackFindClientTool(GeneralGuiTool):
 
     SUFFIX_REPLACE_MAP = {'bb': 'bigbed'}
 
+    TRACK_TABLE_LIMIT = 200
+
     @classmethod
     def getToolName(cls):
         """
@@ -55,7 +59,6 @@ class TrackFindClientTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
-        #attrBoxes.append(('Select hub: ', 'selectHub'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -80,6 +83,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
+        # attrBoxes.append(('Only the first ' + cls.TRACK_TABLE_LIMIT + ' tracks are displayed. Do you want to display all?', 'displayAllTracks'))
         attrBoxes.append(('Include non-standard attributes in the result gsuite', 'extraAttributes'))
         return attrBoxes
 
@@ -318,6 +322,16 @@ class TrackFindClientTool(GeneralGuiTool):
             gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
         return gsuite
+
+    # @classmethod
+    # def getOptionsBoxDisplayAllTracks(cls, prevChoices):
+    #     chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+    #     if not chosenDataTypes:
+    #         return
+    #
+    #     gsuite = cls.getGsuite(prevChoices)
+    #
+    #
 
     @classmethod
     def getOptionsBoxTrackList(cls, prevChoices):
@@ -764,23 +778,27 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def getInputBoxGroups(cls, choices=None):
-    #     """
-    #     Creates a visual separation of groups of consecutive option boxes
-    #     from the rest (fieldset). Each such group has an associated label
-    #     (string), which is shown to the user. To define groups of option
-    #     boxes, return a list of BoxGroup namedtuples with the label, the key
-    #     (or index) of the first and last options boxes (inclusive).
-    #
-    #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey',
-    #                         last='secondKey')]
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        """
+        Creates a visual separation of groups of consecutive option boxes
+        from the rest (fieldset). Each such group has an associated label
+        (string), which is shown to the user. To define groups of option
+        boxes, return a list of BoxGroup namedtuples with the label, the key
+        (or index) of the first and last options boxes (inclusive).
+
+        Example:
+           from quick.webtool.GeneralGuiTool import BoxGroup
+           return [BoxGroup(label='A group of choices', first='firstKey',
+                            last='secondKey')]
+
+        Optional method. Default return value if method is not defined: None
+        """
+
+        return [
+                BoxGroup(label='A group of choices', first='subAttributeList0_0',
+                         last='valueCheckbox0')
+                ]
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
