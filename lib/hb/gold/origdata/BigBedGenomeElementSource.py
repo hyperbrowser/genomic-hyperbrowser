@@ -132,8 +132,8 @@ class BigBedGenomeElementSource(GenomeElementSource):
             val = 0
         else:
             val = int(strVal)
-        if val < 0 or val > 1000:
-            raise InvalidFormatError("Error: BigBed score column must be an integer between 0 and 1000")
+        # if val < 0 or val > 1000:
+        #     raise InvalidFormatError("Error: BigBed score column must be an integer between 0 and 1000")
         return val
 
     @classmethod
