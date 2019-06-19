@@ -104,8 +104,7 @@ class BigBedGenomeElementSource(GenomeElementSource):
             raise InvalidFormatError('No chromosomes defined in BigBed file')
 
         ge = GenomeElement(genome=self._genome, chr=currentChrom, start=np.array([0]), end=np.array([1]))
-        for colName in self._extraColNames():
-            setattr(ge, colName, np.array(['.']))
+
         return ge
 
     def _initExtraCols(self, entries):
