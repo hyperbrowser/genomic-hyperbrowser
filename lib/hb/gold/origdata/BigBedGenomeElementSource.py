@@ -94,18 +94,20 @@ class BigBedGenomeElementSource(GenomeElementSource):
 
         return ge
 
-    def parseFirstDataLine(self):
-        geIter = self.__iter__()
-        geIter._printWarnings = False
-
-        currentChrom = next(self._chrIter, None)
-        if not currentChrom:
-            self._bigBedFile.close()
-            raise InvalidFormatError('No chromosomes defined in BigBed file')
-
-        ge = GenomeElement(genome=self._genome, chr=currentChrom, start=np.array([0]), end=np.array([1]))
-
-        return ge
+    # def parseFirstDataLine(self):
+    #     geIter = self.__iter__()
+    #     geIter._printWarnings = False
+    #
+    #     currentChrom = next(self._chrIter, None)
+    #     if not currentChrom:
+    #         self._bigBedFile.close()
+    #         raise InvalidFormatError('No chromosomes defined in BigBed file')
+    #
+    #     ge = GenomeElement(genome=self._genome, chr=currentChrom, start=np.array([0]), end=np.array([1]))
+    #     # TODO: Add support for extra columns correctly
+    #     # for colName in self._extraColNames:
+    #     #     setattr(ge, colName, np.array(['.']))
+    #     return ge
 
     def _initExtraCols(self, entries):
         numOfCols = len(entries[0])
