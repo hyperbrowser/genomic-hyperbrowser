@@ -453,6 +453,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'mainoptionlisy', mainOptionList, '<br>'
         # print 'otionList', optionList, '<br>'
 
+
         cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp,
                          mainOptionList, optionList)
         htmlCore.end()
