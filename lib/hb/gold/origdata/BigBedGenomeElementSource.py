@@ -98,9 +98,6 @@ class BigBedGenomeElementSource(GenomeElementSource):
         geIter = self.__iter__()
         geIter._printWarnings = False
 
-        from gold.application.Logetup import logMessage
-        logMessage(currentChrom)
-
         currentChrom = next(self._chrIter, None)
         if not currentChrom:
             self._bigBedFile.close()
