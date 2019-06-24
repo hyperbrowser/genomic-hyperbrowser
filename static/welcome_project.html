@@ -202,10 +202,10 @@
         </div>
     </div>
 
-    <div id="menu1" class="tab-pane fade ">
+   <div id="menu1" class="tab-pane fade ">
         <div class="container">
             <div class="rowSpecial">
-                <div class="colAllProjectList">
+                <p class="colAllProjectList">
                     <h2 class="projectTitle">
                         General information about the Genomic HyperBrowser
                     </h2>
@@ -213,24 +213,113 @@
                         The main window (project page) is
                         divided into three parts; the first part (on the left) shows all the tools implemented in the
                         Genomic HyperBrowser. The tools related to this specific project are available under
-                        the label 'SIMILARITY PROJECT TOOLS'. The second part (middle) is the main resulting page.
+                        the label 'BENCHMARKING PROJECT TOOLS'. The second part (middle) is the main resulting page.
                         The third part (on the right) shows all the
                         history elements of the actions made (run tools, uploaded data, etc).
                         On each of this history element one can run at least two operations:
                         <ol>
-                            <li>by clicking on the icon 'eye' you can see the results of that element,</li>
+                            <li>by clicking on the icon 'eye' you can see the results of that element,
+                            </li>
                             <li>by clicking on the title of the element you will see four new icons. Starting from the left
                                 you have possibility of downloading the data, viewing the details, re-running the tool and visualizing
                                 the results.
                             </li>
+                            <li>However, if the user wants to re-run a specific element of the history, it is important that the history is imported first, by clicking
+                                on the statement ‘Import history’ at the top right of the history page.
+                            </li>
                         </ol>
                     </p>
-                </div>
-            </div>
-        </div>
-        <div class="footer">
-            <div class = 'contactInfo'>
-                <p class="paragraph">If you have any questions, requests or comments regarding the project, please contact: <a href="mailto:geirksa@ifi.uio.no">Geir Kjetil Sandve</a>.
+
+                    <div class = 'example'>
+                        <h4 class = 'exampleTitle'>Detailed example for re-running an history element:</h4>
+                        <div class="main">
+                            <p class="paragraph">
+                                Let us assume that we want to re-run the analyses connected to the results for Benchmark 1 - Existence of an empirical correlation structure across case tracks and control tracks.
+                            </p>
+                        </div>
+
+
+                            <p class="main">
+                                <p class="paragraph">
+                                    <div>
+                                        <ol>
+                                            <li>
+                                                By clicking on the marked link, the history page called <b>‘[2.1]: GDT- Benchmark one’</b> will appear:
+                                                <div class="">
+                                                <img src="../static/project/step1.png"  style="width: 80%; margin-top: 15px;margin-bottom: 15px" />
+                                            </div>
+                                            </li>
+
+                                            <li>
+                                                Let’s now import the history, by clicking on ‘Import history (make a copy of this history and switch to it)'
+                                                <div class="">
+                                                    <img src="../static/project/step2.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div>
+                                            </li>
+
+
+
+                                            <li style="margin-bottom: 10px">The copy of the history will be generated and will appear (on the right part of the page):
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step3.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div>
+                                            </li>
+
+                                            <li>
+                                                <div>
+                                                    Let’s assume that we want to re-run the element <b>‘27: Benchmark One - T-test’</b>. For doing that, we need to click on the name of the element. Three new symbols will appear. By clicking on the third symbol starting from the right (‘run this job’):
+                                                </div>
+
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step4.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+
+                                                </div> The main page will change and look like the following:
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step5.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div>
+                                                Now the element in the first selection box is the reference track, while in the second selection box, we have the case-control tracks.
+                                                The third selection box shows the name of the column with case-controls labels.
+                                                In this example we used as null model the 'T-test', the Forbes coefficient as similarity measure, the avarage as within group summary function and the right tailed test.
+
+                                                <p>
+                                                Now, we can ‘Execute’ the analysis by clicking on the ‘Execute’ command at the bottom of the page, and the new history element will start to run.
+                                                </p>
+                                                <p>
+                                                The new history element is initially yellow while the job is running and will become green when the results are ready:
+                                                </p>
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step6.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div>
+                                            </li>
+
+                                            <li style="margin-bottom: 10px">By clicking on the ‘eye’ of the element is possible to see the results of the analysis:
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step7.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div> The name of the element is <b>‘Group difference test - Benchmark One’</b>, however by clicking on the symbol ‘edit’ it is possible to rename the element depending on the analysis carried out, as we did for all the history elements.
+                                            </li>
+
+                                            <li>By clicking on ‘Import table to history (tabular)’ at the top of the table, a tabular format of the results is added to the history (element 31):
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step8.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div>
+                                            </li>
+
+                                            <li>Finally, the results can be download, by clicking on the name of the element and then on the download symbol:
+                                                <div class="imgzoom">
+                                                    <img src="../static/project/step9.png"  style="width: 80%; margin-top: 10px;margin-bottom: 15px" />
+                                                </div>
+                                                <div>
+                                                    This last step, allows the user to download the data and plot the results by using the chosen software.
+                                                </div>
+                                            </li>
+                                        </ol>
+                                    </div>
+                                </p>
+                            </p>
+
+                    </div>
+
+
             </div>
         </div>
     </div>
@@ -242,7 +331,7 @@
 
                       <div id ='content'></div>
                             <script>
-                            $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_group_test.txt");
+                            $("#content").load("/dianadom_dev/static/hyperbrowser/files/projects/projects_sim-measure.txt");
                             </script>
                 </div>
             </div>
@@ -263,7 +352,7 @@
                         </p>
 				    <b>Contact information</b>
                         <p>
-                        If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help"  target="_blank">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
+                        If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
                         <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
                        </p>
 
@@ -283,7 +372,7 @@
                 supported by various national and local bodies.
                 </p>
                 <p class="blocktext">
-                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no"  target="_blank">www.bioinfo.no</a>.
+                  For further information on Norwegian bioinformatics, please visit <a href="http://www.bioinfo.no" target="_top">www.bioinfo.no</a>.
                 </p>
          </div>
           </div>
