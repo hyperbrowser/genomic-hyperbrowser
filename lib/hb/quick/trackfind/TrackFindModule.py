@@ -32,7 +32,7 @@ class TrackFindModule(object):
 
         return response.json()
 
-    def getAttributesForRepository(self, repoAndHub):
+    def getMetamodelForRepository(self, repoAndHub):
         repo, hub = self.getRepoAndHub(repoAndHub)
         url = self.URL + '/metamodel/' + repo + '/' + hub + '?flat=true'
 
@@ -83,6 +83,7 @@ class TrackFindModule(object):
         repo, hub = self.getRepoAndHub(repoAndHub)
         headers = {'Accept': 'application/json'}
 
+        self.logRequest('json', 0)
         response = self.getData(repo, hub, attrValueMap, headers)
 
         return response.json()
@@ -91,6 +92,7 @@ class TrackFindModule(object):
         repo, hub = self.getRepoAndHub(repoAndHub)
         headers = {'Accept': 'text/plain'}
 
+        self.logRequest('gsuite', 0)
         response = self.getData(repo, hub, attrValueMap, headers, includeExtraAttributes)
 
         gsuite = GSuiteParser.parseFromString(response.text)
@@ -113,7 +115,7 @@ class TrackFindModule(object):
 
     def createQuery(self, attrValueMap):
         queryList = []
-        self.logRequest(str(attrValueMap), 0)
+        #self.logRequest(str(attrValueMap), 0)
 
         for attribute, value in attrValueMap.iteritems():
             queryPart = attribute
@@ -129,11 +131,11 @@ class TrackFindModule(object):
         return query
 
     def logRequest(self, url, time = 0):
-        logfile = open("apilog", "a", 0)
-
-        logfile.write(str(time) + '   ' + url + '\n')
-
-        logfile.close()
+        # logfile = open("apilog", "a", 0)
+        #
+        # logfile.write(str(time) + '   ' + url + '\n')
+        #
+        # logfile.close()
         pass
 
     def getRepoAndHub(self, repoHub):

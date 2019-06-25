@@ -61,6 +61,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
         attrBoxes.append(('', 'categories'))
+        attrBoxes.append(('', 'metamodel'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -80,7 +81,7 @@ class TrackFindClientTool(GeneralGuiTool):
                               'valueList%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueCheckbox%s' % i))
-
+        #attrBoxes.append(('', 'gsuite'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
@@ -122,9 +123,16 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxCategories(cls, prevChoices):
-        if not prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
+        if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
             tfm = TrackFindModule()
             return '__hidden__', tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+
+    @classmethod
+    def getOptionsBoxMetamodel(cls, prevChoices):
+        if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
+            tfm = TrackFindModule()
+            return '__hidden__', tfm.getMetamodelForRepository(
+                prevChoices.selectRepository)
 
     @classmethod
     def _getDivider(cls, prevChoices, index):
@@ -186,8 +194,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
 
         # filter out attributes that have no subattributes left
-        tfm = TrackFindModule()
-        attributesInRepo = tfm.getAttributesForRepository(prevChoices.selectRepository)
+        attributesInRepo = prevChoices.metamodel
 
         possiblePaths = []
         for category in attributesInRepo:
@@ -316,17 +323,26 @@ class TrackFindClientTool(GeneralGuiTool):
             return '__hidden__', ''
 
     @classmethod
-    def getGsuite(cls, prevChoices, includeExtraAttributes=False):
+    def getOptionsBoxGsuite(cls, prevChoices):
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
 
         if not chosenOptions:
             return
 
         tfm = TrackFindModule()
-        if includeExtraAttributes:
-            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, True)
-        else:
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+
+        return '__hidden__', gsuite
+
+    @classmethod
+    def getGsuite(cls, prevChoices, includeExtraAttributes=False):
+        tfm = TrackFindModule()
+        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
+        if not includeExtraAttributes:
+            #gsuite = prevChoices.gsuite
             gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+        else:
+            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, True)
 
         return gsuite
 
