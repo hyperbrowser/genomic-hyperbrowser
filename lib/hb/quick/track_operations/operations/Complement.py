@@ -1,8 +1,8 @@
 
 from collections import OrderedDict
 
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
-from gtrackcore.track.format.TrackFormat import TrackFormat
+from gold.track.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormat
 
 from quick.track_operations.raw_operations.Complement import complement
 
@@ -41,7 +41,6 @@ class Complement(Operator):
 
         # Get genome size.
         regionSize = len(region)
-
         ret = complement(starts, ends, strands, regionSize,
                          useStrands=self._useStrands,
                          treatMissingAsNegative=self._treatMissingAsNegative)

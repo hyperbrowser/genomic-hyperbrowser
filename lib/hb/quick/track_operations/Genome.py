@@ -2,7 +2,7 @@ from collections import OrderedDict
 import json
 import yaml
 
-from gtrackcore.track.core.GenomeRegion import GenomeRegion
+from gold.track.GenomeRegion import GenomeRegion
 
 class Genome(object):
     """

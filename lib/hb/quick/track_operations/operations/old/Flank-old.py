@@ -1,18 +1,13 @@
 
 
-from gtrackcore.track.core.TrackView import TrackView
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
-from gtrackcore.track.format.TrackFormat import TrackFormat
+
+from gold.track.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormat
 
 from quick.track_operations.operations.Operator import Operator
-from quick.track_operations.TrackContents import TrackContents
-import gtrackcore.track_operations.raw_operations.flank.Segments as Segments
-from quick.track_operations.exeptions.Operations import \
-    OutputTrackTypeNotSupportedError
 
 from quick.track_operations.Genome import Genome
-from quick.track_operations.utils.TrackHandling import \
-    createTrackContentFromFile
+from quick.track_operations.utils.TrackHandling import createTrackContentFromFile
 
 # Add strand!
 # Config as properties

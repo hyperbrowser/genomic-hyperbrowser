@@ -1,57 +1,51 @@
 
 import sys
-import os
+
 import numpy as np
 import logging
 
 from collections import OrderedDict
 from cStringIO import StringIO
 
-from gtrackcore.core.Api import importFile
-from gtrackcore.core.Api import _trackNameExists
-from gtrackcore.core.Api import listAvailableGenomes
-from gtrackcore.core.Api import listAvailableTracks
+from gold.track.Track import Track
+from gold.track.TrackFormat import TrackFormatReq
 
-from gtrackcore.track.core.Track import Track
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
-from gtrackcore.track.format.TrackFormat import TrackFormat
-from gtrackcore.track.core.TrackView import TrackView
-from gtrackcore.track.format.TrackFormat import TrackFormat
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
+from gold.track.TrackView import TrackView
+
 
 
 from quick.track_operations.TrackContents import TrackContents
 
 # *** Gtrackcore API ***
 
-def isTrackInGtrack(genome, trackName):
-    """
-    Add this functionality to API..
-    """
-
-    with Capturing() as output:
-        listAvailableTracks(genome)
-
-    for i in output:
-        if trackName in i:
-            return True
-    return False
-
-def importTrackIntoGTrack(trackName, genome, path):
-    """
-    Load a gtrack tabular file into GTrackCore.
-
-    :param trackName:
-    :param genome:
-    :param path:
-    :return:
-    """
-
-    if not isTrackInGtrack(genome.name, trackName):
-        print("not in gtrack")
-        importFile(path, genome.name, trackName)
-    else:
-        print("in gtrack")
+# def isTrackInGtrack(genome, trackName):
+#     """
+#     Add this functionality to API..
+#     """
+#
+#     with Capturing() as output:
+#         listAvailableTracks(genome)
+#
+#     for i in output:
+#         if trackName in i:
+#             return True
+#     return False
+#
+# def importTrackIntoGTrack(trackName, genome, path):
+#     """
+#     Load a gtrack tabular file into GTrackCore.
+#
+#     :param trackName:
+#     :param genome:
+#     :param path:
+#     :return:
+#     """
+#
+#     if not isTrackInGtrack(genome.name, trackName):
+#         print("not in gtrack")
+#         importFile(path, genome.name, trackName)
+#     else:
+#         print("in gtrack")
 
 # *** Misc ***
 
@@ -391,22 +385,22 @@ def extractTrackFromGTrackCore(genome, trackName):
     return createTrackContentFromTrack(track, genome)
 
 
-def createTrackContentFromFile(genome, path, allowOverlaps=False):
-    # TODO fix
-
-    #trackName = trackName.split(':')
-    # NOT SYSTEM safe!! Fix this later!
-    trackName = path.split('/')[-1]
-    trackName = trackName.split('.')[0]
-
-    importTrackIntoGTrack(trackName, genome, path)
-
-    track = Track(trackName.split(':'))
-
-    # We do not want to set this..
-    track.addFormatReq(TrackFormatReq(allowOverlaps=allowOverlaps, borderHandling='crop'))
-
-    return createTrackContentFromTrack(track, genome)
+# def createTrackContentFromFile(genome, path, allowOverlaps=False):
+#     # TODO fix
+#
+#     #trackName = trackName.split(':')
+#     # NOT SYSTEM safe!! Fix this later!
+#     trackName = path.split('/')[-1]
+#     trackName = trackName.split('.')[0]
+#
+#     importTrackIntoGTrack(trackName, genome, path)
+#
+#     track = Track(trackName.split(':'))
+#
+#     # We do not want to set this..
+#     track.addFormatReq(TrackFormatReq(allowOverlaps=allowOverlaps, borderHandling='crop'))
+#
+#     return createTrackContentFromTrack(track, genome)
 
 def createTrackContentFromTrack(track, genome):
     trackViewList = OrderedDict()

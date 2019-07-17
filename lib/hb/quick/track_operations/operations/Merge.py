@@ -2,7 +2,7 @@
 import logging
 from collections import OrderedDict
 
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormatReq
 
 from quick.track_operations.operations.Operator import Operator
 from quick.track_operations.operations.Operator import KwArgumentInfo
@@ -88,7 +88,7 @@ class Merge(Operator):
                             False)),
             ('useStrands',
              KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
-                            bool, True)),
+                            bool, False)),
             ('treatMissingAsNegative',
              KwArgumentInfo('treatMissingAsNegative', 'n',
                             'Treat any missing strand as if they are '

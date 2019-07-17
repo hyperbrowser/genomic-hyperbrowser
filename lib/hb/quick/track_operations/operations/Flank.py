@@ -5,8 +5,8 @@ from collections import OrderedDict
 from collections import namedtuple
 
 from gtrackcore.track.core.TrackView import TrackView
-from gtrackcore.track.format.TrackFormat import TrackFormat
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormat
+from gold.track.TrackFormat import TrackFormatReq
 
 from quick.track_operations.operations.Operator import Operator
 from quick.track_operations.operations.Operator import KwArgumentInfo

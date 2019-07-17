@@ -1,7 +1,7 @@
 __author__ = 'skh'
 
-from gtrackcore.core.Api import importTrackFromTrackContents
-from gtrackcore.track.format.TrackFormat import TrackFormat
+#from gtrackcore.core.Api import importTrackFromTrackContents
+from gold.track.TrackFormat import TrackFormat
 from quick.track_operations.Genome import Genome
 from quick.track_operations.exeptions.Track import TrackContentsEmptyError
 from quick.track_operations.exeptions.Track import TrackNameExistsError
@@ -37,16 +37,16 @@ class TrackContents(object):
         # TODO remove. Check if used and change to the property
         return self._trackViews
 
-    def save(self, name, allowOverlaps=True):
-        """
-        Save this track into GTrackCore
-        :param name: Name of track
-        :return:
-        """
-        try:
-            importTrackFromTrackContents(self, name, allowOverlaps)
-        except TrackNameExistsError, e:
-            print(e)
+    # def save(self, name, allowOverlaps=True):
+    #     """
+    #     Save this track into GTrackCore
+    #     :param name: Name of track
+    #     :return:
+    #     """
+    #     try:
+    #         importTrackFromTrackContents(self, name, allowOverlaps)
+    #     except TrackNameExistsError, e:
+    #         print(e)
 
     def isEmpty(self):
         if len(self.regions) == 0:
@@ -114,3 +114,12 @@ class TrackContents(object):
     def getTrackViewsList(self):
         return self._trackViews.values()
 
+    def __str__(self):
+        attrs = vars(self)
+
+        retStr = 'Track contents:'
+        #retStr += ', '.join("%s: %s" % item for item in attrs.items())
+        for k,v in self._trackViews.iteritems():
+            retStr += str(k) + ' ' + str(v)
+
+        return retStr

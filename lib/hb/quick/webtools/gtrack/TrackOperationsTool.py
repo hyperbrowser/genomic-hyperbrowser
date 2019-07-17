@@ -1,4 +1,21 @@
+import os
+from collections import OrderedDict
+
 from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent, getTitleWithSuffixReplaced
+from gold.track.Track import Track
+from gold.track.TrackFormat import TrackFormatReq
+from proto.hyperbrowser.HtmlCore import HtmlCore
+from quick.extra.ProgressViewer import ProgressViewer
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+from quick.track_operations.Genome import Genome
+from quick.track_operations.TrackContents import TrackContents
+from quick.track_operations.operations.Complement import Complement
+from quick.track_operations.operations.Merge import Merge
+from quick.track_operations.operations.PrintTrack import PrintTrack
+from quick.track_operations.operations.Union import Union
+from quick.track_operations.utils.TrackHandling import createTrackContentFromTrack
+from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
@@ -199,7 +216,95 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
+        import gold.gsuite.GSuiteComposer as GSuiteComposer
+        from gold.gsuite.GSuite import GSuite
+        from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack
+        from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
+        from gold.origdata.FileFormatComposer import getComposerClsFromFileSuffix
+        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+        from quick.application.ExternalTrackManager import ExternalTrackManager
+        from quick.application.GalaxyInterface import GalaxyInterface
+        from quick.application.UserBinSource import UserBinSource
+        from quick.extra.TrackExtractor import TrackExtractor
+
+        genomeName = choices.genome
+        gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+
+        if choices.withOverlaps == cls.NO_OVERLAPS:
+            if choices.trackSource == cls.FROM_HISTORY_TEXT:
+                filterTrackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genomeName,
+                                                                                        choices.trackHistory)
+            else:
+                filterTrackName = choices.track.split(':')
+        else:
+            if choices.trackSource == cls.FROM_HISTORY_TEXT:
+                regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.trackHistory)
+                binSpec = ExternalTrackManager.extractFnFromGalaxyTN(choices.trackHistory)
+            else:
+                regSpec = 'track'
+                binSpec = choices.track
+
+            #userBinSource = UserBinSource(regSpec, binSpec, genomeName)
+
+        desc = cls.OUTPUT_GSUITE_DESCRIPTION
+        # emptyFn = cls.extraGalaxyFn \
+        #     [getGSuiteHistoryOutputName('nointersect', description=desc,
+        #                                 datasetInfo=choices.gSuite)]
+        # primaryFn = cls.extraGalaxyFn \
+        #     [getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
+        # errorFn = cls.extraGalaxyFn \
+        #     [getGSuiteHistoryOutputName('nopreprocessed', description=desc,
+        #                                 datasetInfo=choices.gSuite)]
+        # preprocessedFn = cls.extraGalaxyFn \
+        #     [getGSuiteHistoryOutputName('preprocessed', description=desc,
+        #                                 datasetInfo=choices.gSuite)]
+        # hiddenStorageFn = cls.extraGalaxyFn \
+        #     [getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
+        #
+        # analysisDef = '-> TrackIntersectionStat'
+        # #         analysisDef = '-> TrackIntersectionWithValStat'
+
+        numTracks = gSuite.numTracks()
+        # progressViewer = ProgressViewer([(cls.PROGRESS_INTERSECT_MSG, numTracks),
+        #                                  (cls.PROGRESS_PREPROCESS_MSG, numTracks)], galaxyFn)
+        emptyGSuite = GSuite()
+        primaryGSuite = GSuite()
+
+
+        print('bla bla')
+
+        for gsuiteTrack in gSuite.allTracks():
+            newSuffix = cls.OUTPUT_TRACKS_SUFFIX
+            extraFileName = os.path.sep.join(gsuiteTrack.trackName)
+            extraFileName = changeSuffixIfPresent(extraFileName, newSuffix=newSuffix)
+            title = getTitleWithSuffixReplaced(gsuiteTrack.title, newSuffix)
+            genomeDict = GenomeInfo.getStdChrLengthDict(genomeName)
+
+            genome = Genome(genomeName, genomeDict)
+            track = Track(gsuiteTrack.trackName)
+
+
+            track.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
+            trackContents = createTrackContentFromTrack(track, genome)
+            #print str(trackContents)
+            #
+
+            # res = Complement(trackContents, useStrands=False)
+            # newTrack = res.calculate()
+            #print str(newTrack)
+            #
+            filterTrack = Track(filterTrackName)
+            filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
+            filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
+
+            print 'union'
+            res = Union(trackContents, filterTrackContents, useStrands=False)
+            new = res.calculate()
+            print str(new)
+
+        print 'end'
+
+
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -343,8 +448,8 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #
     #     Optional method. Default return value if method is not defined: False
     #     """
-    #     return False
-    #
+    #     return True
+
     # @classmethod
     # def getOutputFormat(cls, choices):
     #     """
@@ -362,7 +467,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #     Optional method. Default return value if method is not defined:
     #     'html'
     #     """
-    #     return 'html'
+    #     return 'customhtml'
     #
     # @classmethod
     # def getOutputName(cls, choices=None):

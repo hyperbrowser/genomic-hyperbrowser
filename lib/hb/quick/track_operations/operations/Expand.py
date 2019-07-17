@@ -2,8 +2,8 @@ __author__ = 'skh'
 
 from collections import OrderedDict
 
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
-from gtrackcore.track.format.TrackFormat import TrackFormat
+from gold.track.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormat
 
 from quick.track_operations.operations.Operator import Operator
 from quick.track_operations.operations.Operator import KwArgumentInfo

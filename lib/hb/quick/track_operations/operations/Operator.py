@@ -5,8 +5,8 @@ from collections import OrderedDict
 from collections import namedtuple
 from os.path import dirname, basename, isfile
 
-from gtrackcore.track.core.TrackView import TrackView
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
+from gold.track.TrackView import TrackView
+from gold.track.TrackFormat import TrackFormatReq
 from quick.track_operations.TrackContents import TrackContents
 
 
@@ -217,6 +217,7 @@ class Operator(object):
 
         result = OrderedDict()
         for region in self.getResultRegion():
+
             trackViewPerArg = [track.getTrackView(region) for track in
                                computedTracks]
             tv = self._calculate(region, *trackViewPerArg)

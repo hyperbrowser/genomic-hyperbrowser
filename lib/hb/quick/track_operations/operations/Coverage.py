@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormatReq
 
 from quick.track_operations.raw_operations.Coverage import coverage
 

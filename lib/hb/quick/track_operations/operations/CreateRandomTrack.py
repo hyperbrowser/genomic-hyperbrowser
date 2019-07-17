@@ -2,7 +2,7 @@
 import logging
 import sys
 
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormatReq
 
 from quick.track_operations.operations.Operator import Operator
 from quick.track_operations.utils.TrackHandling import \
