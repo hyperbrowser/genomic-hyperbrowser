@@ -3,9 +3,11 @@ from collections import OrderedDict
 
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent, getTitleWithSuffixReplaced
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from proto.hyperbrowser.HtmlCore import HtmlCore
+from proto.tools.GeneralGuiTool import HistElement
 from quick.extra.ProgressViewer import ProgressViewer
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.track_operations.Genome import Genome
@@ -182,26 +184,24 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #     """
     #     return ['testChoice1', '..']
     #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+    @classmethod
+    def getExtraHistElements(cls, choices):
+        desc = cls.OUTPUT_GSUITE_DESCRIPTION
+        # return [HistElement(getGSuiteHistoryOutputName(
+        #     'nointersect', description=desc, datasetInfo=choices.gSuite),
+        #     GSuiteConstants.GSUITE_SUFFIX),
+        return [HistElement(getGSuiteHistoryOutputName(
+                'primary', description=desc, datasetInfo=choices.gSuite),
+                GSuiteConstants.GSUITE_SUFFIX),
+            # HistElement(getGSuiteHistoryOutputName(
+            #     'nopreprocessed', description=desc, datasetInfo=choices.gSuite),
+            #     GSuiteConstants.GSUITE_SUFFIX),
+            # HistElement(getGSuiteHistoryOutputName(
+            #     'preprocessed', description=desc, datasetInfo=choices.gSuite),
+            #     GSuiteConstants.GSUITE_SUFFIX),
+            HistElement(getGSuiteHistoryOutputName(
+                'storage', description=desc, datasetInfo=choices.gSuite),
+                GSuiteConstants.GSUITE_STORAGE_SUFFIX, hidden=True)]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -250,16 +250,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         # emptyFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nointersect', description=desc,
         #                                 datasetInfo=choices.gSuite)]
-        # primaryFn = cls.extraGalaxyFn \
-        #     [getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
+        primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
         # errorFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nopreprocessed', description=desc,
         #                                 datasetInfo=choices.gSuite)]
         # preprocessedFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('preprocessed', description=desc,
         #                                 datasetInfo=choices.gSuite)]
-        # hiddenStorageFn = cls.extraGalaxyFn \
-        #     [getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
+        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
         #
         # analysisDef = '-> TrackIntersectionStat'
         # #         analysisDef = '-> TrackIntersectionWithValStat'
@@ -270,8 +268,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         emptyGSuite = GSuite()
         primaryGSuite = GSuite()
 
-
-        print('bla bla')
 
         for gsuiteTrack in gSuite.allTracks():
             newSuffix = cls.OUTPUT_TRACKS_SUFFIX
@@ -286,6 +282,18 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
             track.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
             trackContents = createTrackContentFromTrack(track, genome)
+
+
+            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName,
+                suffix=newSuffix if not extraFileName.endswith(newSuffix) else '')
+
+            primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
+                                       attributes=gsuiteTrack.attributes)
+
+            trackContents.createTrack(extraFileName, primaryTrack.path)
+
+            primaryGSuite.addTrack(primaryTrack)
+
             #print str(trackContents)
             #
 
@@ -293,16 +301,16 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             # newTrack = res.calculate()
             #print str(newTrack)
             #
-            filterTrack = Track(filterTrackName)
-            filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
-            filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
+            # filterTrack = Track(filterTrackName)
+            # filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
+            # filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
+            #
+            # print 'union'
+            # res = Union(trackContents, filterTrackContents, useStrands=False)
+            # newTrack = res.calculate()
+            # #print str(new)
 
-            print 'union'
-            res = Union(trackContents, filterTrackContents, useStrands=False)
-            new = res.calculate()
-            print str(new)
-
-        print 'end'
+        GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
 
 
 

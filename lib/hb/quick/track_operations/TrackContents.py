@@ -1,3 +1,6 @@
+from gold.origdata.GtrackComposer import StdGtrackComposer
+from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
+
 __author__ = 'skh'
 
 #from gtrackcore.core.Api import importTrackFromTrackContents
@@ -5,6 +8,7 @@ from gold.track.TrackFormat import TrackFormat
 from quick.track_operations.Genome import Genome
 from quick.track_operations.exeptions.Track import TrackContentsEmptyError
 from quick.track_operations.exeptions.Track import TrackNameExistsError
+from quick.util.CommonFunctions import convertTNstrToTNListFormat
 
 
 class TrackContents(object):
@@ -113,6 +117,16 @@ class TrackContents(object):
     #returns only chrs that are included in the track...
     def getTrackViewsList(self):
         return self._trackViews.values()
+
+    def createTrack(self, trackName, path, allowOverlaps=True):
+        genomeName = self._genome.name
+
+        trackName = convertTNstrToTNListFormat(trackName, doUnquoting=True)
+
+        geSource = TrackViewListGenomeElementSource(genomeName, self.getTrackViewsList(),
+                                                    trackName, allowOverlaps=allowOverlaps)
+
+        StdGtrackComposer(geSource).composeToFile(path)
 
     def __str__(self):
         attrs = vars(self)
