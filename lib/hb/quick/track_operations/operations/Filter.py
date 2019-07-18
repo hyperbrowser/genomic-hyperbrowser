@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackFormat import TrackFormat
-from gtrackcore.track.core.TrackView import TrackView
+from gold.track.TrackView import TrackView
 
 from quick.track_operations.operations.Operator import Operator
 from quick.track_operations.operations.Operator import KwArgumentInfo
@@ -29,7 +29,7 @@ class Filter(Operator):
     _trackRequirements = [TrackFormatReq()]
 
     def _calculate(self, region, tv):
-        logging.debug("Start call! region:{0}".format(region))
+        #logging.debug("Start call! region:{0}".format(region))
 
         starts = tv.startsAsNumpyArray()
         ends = tv.endsAsNumpyArray()

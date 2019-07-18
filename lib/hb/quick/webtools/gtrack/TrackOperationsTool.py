@@ -184,24 +184,24 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #     """
     #     return ['testChoice1', '..']
     #
-    @classmethod
-    def getExtraHistElements(cls, choices):
-        desc = cls.OUTPUT_GSUITE_DESCRIPTION
-        # return [HistElement(getGSuiteHistoryOutputName(
-        #     'nointersect', description=desc, datasetInfo=choices.gSuite),
-        #     GSuiteConstants.GSUITE_SUFFIX),
-        return [HistElement(getGSuiteHistoryOutputName(
-                'primary', description=desc, datasetInfo=choices.gSuite),
-                GSuiteConstants.GSUITE_SUFFIX),
-            # HistElement(getGSuiteHistoryOutputName(
-            #     'nopreprocessed', description=desc, datasetInfo=choices.gSuite),
-            #     GSuiteConstants.GSUITE_SUFFIX),
-            # HistElement(getGSuiteHistoryOutputName(
-            #     'preprocessed', description=desc, datasetInfo=choices.gSuite),
-            #     GSuiteConstants.GSUITE_SUFFIX),
-            HistElement(getGSuiteHistoryOutputName(
-                'storage', description=desc, datasetInfo=choices.gSuite),
-                GSuiteConstants.GSUITE_STORAGE_SUFFIX, hidden=True)]
+    # @classmethod
+    # def getExtraHistElements(cls, choices):
+    #     desc = cls.OUTPUT_GSUITE_DESCRIPTION
+    #     # return [HistElement(getGSuiteHistoryOutputName(
+    #     #     'nointersect', description=desc, datasetInfo=choices.gSuite),
+    #     #     GSuiteConstants.GSUITE_SUFFIX),
+    #     return [HistElement(getGSuiteHistoryOutputName(
+    #             'primary', description=desc, datasetInfo=choices.gSuite),
+    #             GSuiteConstants.GSUITE_SUFFIX),
+    #         # HistElement(getGSuiteHistoryOutputName(
+    #         #     'nopreprocessed', description=desc, datasetInfo=choices.gSuite),
+    #         #     GSuiteConstants.GSUITE_SUFFIX),
+    #         # HistElement(getGSuiteHistoryOutputName(
+    #         #     'preprocessed', description=desc, datasetInfo=choices.gSuite),
+    #         #     GSuiteConstants.GSUITE_SUFFIX),
+    #         HistElement(getGSuiteHistoryOutputName(
+    #             'storage', description=desc, datasetInfo=choices.gSuite),
+    #             GSuiteConstants.GSUITE_STORAGE_SUFFIX, hidden=True)]
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -250,14 +250,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         # emptyFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nointersect', description=desc,
         #                                 datasetInfo=choices.gSuite)]
-        primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
+        #primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
         # errorFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nopreprocessed', description=desc,
         #                                 datasetInfo=choices.gSuite)]
         # preprocessedFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('preprocessed', description=desc,
         #                                 datasetInfo=choices.gSuite)]
-        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
+        #hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
         #
         # analysisDef = '-> TrackIntersectionStat'
         # #         analysisDef = '-> TrackIntersectionWithValStat'
@@ -284,21 +284,21 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             trackContents = createTrackContentFromTrack(track, genome)
 
 
-            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName,
-                suffix=newSuffix if not extraFileName.endswith(newSuffix) else '')
-
-            primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
-                                       attributes=gsuiteTrack.attributes)
-
-            trackContents.createTrack(extraFileName, primaryTrack.path)
-
-            primaryGSuite.addTrack(primaryTrack)
-
-            #print str(trackContents)
+            # primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName,
+            #     suffix=newSuffix if not extraFileName.endswith(newSuffix) else '')
             #
+            # primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
+            #                            attributes=gsuiteTrack.attributes)
 
-            # res = Complement(trackContents, useStrands=False)
-            # newTrack = res.calculate()
+
+
+            res = Complement(trackContents, useStrands=False)
+            newTrackContents = res.calculate()
+
+            # newTrackContents.createTrack(extraFileName, primaryTrack.path)
+            #
+            # primaryGSuite.addTrack(primaryTrack)
+
             #print str(newTrack)
             #
             # filterTrack = Track(filterTrackName)
@@ -310,7 +310,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             # newTrack = res.calculate()
             # #print str(new)
 
-        GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
+        #GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
 
 
 

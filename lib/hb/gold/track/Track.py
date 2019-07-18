@@ -6,6 +6,8 @@ from gold.util.CustomExceptions import IncompatibleTracksError
 from gold.formatconversion.AllFormatConverters import getFormatConverters, getFormatConverterByName
 from gold.description.TrackInfo import TrackInfo
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.track_operations.Genome import Genome
+
 
 class Track(object):
     IS_MEMOIZABLE = True
@@ -28,7 +30,11 @@ class Track(object):
         self._trackId = None
 
     def _getRawTrackView(self, region, borderHandling, allowOverlaps):
-        trackData = self._trackSource.getTrackData(self.trackName, region.genome, region.chr, allowOverlaps)
+        if isinstance(region.genome, Genome):
+            genomeName = region.genome.name
+        else:
+            genomeName = region.genome
+        trackData = self._trackSource.getTrackData(self.trackName, genomeName, region.chr, allowOverlaps)
         return self._trackViewLoader.loadTrackView(trackData, region, borderHandling, allowOverlaps, self.trackName)
 
     def getTrackView(self, region):

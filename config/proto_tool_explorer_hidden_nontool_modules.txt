@@ -11,3 +11,4 @@
 /hb/quick/webtools/restricted/EncodeDatabase
 /hb/quick/webtools/restricted/visualization/visualizationGraphs
 /proto/tools/GeneralGuiTool
+/hb/quick/webtools/HbExploreToolsTool

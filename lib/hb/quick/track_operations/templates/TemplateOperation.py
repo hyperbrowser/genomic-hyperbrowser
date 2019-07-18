@@ -1,6 +1,6 @@
-from gtrackcore.track.core.TrackView import TrackView
-from gtrackcore.track.format.TrackFormat import TrackFormatReq
-from gtrackcore.track.format.TrackFormat import TrackFormat
+from gold.track.TrackView import TrackView
+from gold.track.TrackFormat import TrackFormatReq
+from gold.track.TrackFormat import TrackFormat
 from quick.track_operations.operations.Operator import Operator
 from quick.track_operations.utils.TrackHandling import \
             createRawResultTrackView
