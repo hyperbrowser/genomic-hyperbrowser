@@ -57,6 +57,7 @@ class Complement(Operator):
                                           self._resultAllowOverlaps,
                                           newStarts=starts, newEnds=ends,
                                           newStrands=strands)
+
             return tv
         else:
             return None

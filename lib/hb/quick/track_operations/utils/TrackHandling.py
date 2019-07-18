@@ -134,7 +134,7 @@ def createRawResultTrackView(index, region, baseTrack, allowOverlap,
     :return: TrackView.
     """
 
-    logging.debug("Creating new raw result track view")
+    #logging.debug("Creating new raw result track view")
 
     if newStarts is not None and newEnds is not None:
         assert len(newStarts) == len(newEnds)

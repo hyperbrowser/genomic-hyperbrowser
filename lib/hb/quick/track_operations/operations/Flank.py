@@ -4,7 +4,7 @@ import logging
 from collections import OrderedDict
 from collections import namedtuple
 
-from gtrackcore.track.core.TrackView import TrackView
+from gold.track.TrackView import TrackView
 from gold.track.TrackFormat import TrackFormat
 from gold.track.TrackFormat import TrackFormatReq
 
@@ -27,7 +27,7 @@ class Flank(Operator):
 
     def _calculate(self, region, tv):
         # Remove RawOperationsContent
-        logging.debug("Start call! region:{0}".format(region))
+        #logging.debug("Start call! region:{0}".format(region))
         starts = tv.startsAsNumpyArray()
         ends = tv.endsAsNumpyArray()
         strands = tv.strandsAsNumpyArray()
