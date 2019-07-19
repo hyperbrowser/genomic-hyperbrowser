@@ -1,5 +1,7 @@
+import importlib
 import os
 from collections import OrderedDict
+from functools import partial
 
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent, getTitleWithSuffixReplaced
@@ -12,9 +14,12 @@ from quick.extra.ProgressViewer import ProgressViewer
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.track_operations.Genome import Genome
 from quick.track_operations.TrackContents import TrackContents
+from quick.track_operations.gtools.OperationHelp import OperationHelp
 from quick.track_operations.operations.Complement import Complement
 from quick.track_operations.operations.Merge import Merge
-from quick.track_operations.operations.PrintTrack import PrintTrack
+from quick.track_operations.operations.Operator import getOperation, importOperations, \
+    getKwArgOperationDict
+from quick.track_operations.operations._PrintTrack import PrintTrack
 from quick.track_operations.operations.Union import Union
 from quick.track_operations.utils.TrackHandling import createTrackContentFromTrack
 from quick.util.GenomeInfo import GenomeInfo
@@ -53,67 +58,53 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     PROGRESS_INTERSECT_MSG = 'Intersect tracks'
     PROGRESS_PREPROCESS_MSG = 'Preprocess tracks'
 
+    OPERATIONS_TWO_TRACKS = ['Intersect', 'Subtract', 'Union']
+    SELECT_CHOICE = '--- Select ---'
+
+    OPERATIONS = importOperations()
+    KW_OPERATION_DICT = getKwArgOperationDict(OPERATIONS)
+
+
     @classmethod
     def getToolName(cls):
-        """
-        Specifies a header of the tool, which is displayed at the top of the
-        page.
-
-        Mandatory method for all ProTo tools.
-        """
         return "Track operations"
 
     @classmethod
     def getInputBoxNames(cls):
-        """
-        Specifies a list of headers for the input boxes, and implicitly also
-        the number of input boxes to display on the page. The returned list
-        can have two syntaxes:
+        attrBoxes = []
+        attrBoxes.append(('Select operation', 'operation'))
+        attrBoxes.append(('Operation help', 'operationHelp'))
+        attrBoxes.append(('Select GSuite file from history:', 'gSuite'))
+        attrBoxes += cls.getInputBoxNamesForGenomeSelection()
+        attrBoxes.append(('Select source of filtering track:', 'trackSource'))
+        attrBoxes.append(('Select track from history:', 'trackHistory'))
+        attrBoxes.append(('Select track:', 'track'))
+        attrBoxes.append(('Overlap handling:', 'withOverlaps'))
+        attrBoxes += cls.getInputBoxNamesForKwArgs()
 
-            1) A list of strings denoting the headers for the input boxes in
-               numerical order.
-            2) A list of tuples of strings, where each tuple has
-               two items: a header and a key.
-
-        The contents of each input box must be defined by the function
-        getOptionsBoxK, where K is either a number in the range of 1 to the
-        number of boxes (case 1), or the specified key (case 2).
-
-        Note: the key has to be camelCase and start with a non-capital letter
-              (e.g. "firstKey")
-
-        Optional method. Default return value if method is not defined: []
-        """
-        return [('Select GSuite file from history:', 'gSuite')] + cls.getInputBoxNamesForGenomeSelection() +\
-               [('Select source of filtering track:', 'trackSource'),
-                ('Select track from history:', 'trackHistory'),
-                ('Select track:', 'track'),
-                ('Overlap handling:', 'withOverlaps')]
-
+        return attrBoxes
 
     @classmethod
-    def getInputBoxNamesForGenomeSelection(cls):
-        return [(cls.OPTIONS_BOX_MSG % cls.WHAT_GENOME_IS_USED_FOR, 'specifyGenomeFromGsuites'),
-                ('Genome mismatch note', 'genomeMismatchNote'),
-                ('Genome build:', 'specifyGenomeFromList'),
-                ('Genome', 'genome')]
+    def setupExtraBoxMethods(cls):
+        for kwArg, ops in cls.KW_OPERATION_DICT.items():
+            setattr(cls, 'getOptionsBox' + kwArg[:1].upper() + kwArg[1:], partial(cls._getBooleanBox, ops=ops))
 
     @classmethod
-    def getOptionsBoxGSuite(cls):  # Alternatively: getOptionsBox2()
-        '''
-        See getOptionsBoxFirstKey().
+    def _getBooleanBox(cls, prevChoices, ops):
+        if prevChoices.operation in ops:
+            return ['True', 'False']
 
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-        '''
+    @classmethod
+    def getOptionsBoxGSuite(cls, prevChoices):
+        if prevChoices.operation in [None, cls.SELECT_CHOICE, '']:
+            return
+
         return cls.getHistorySelectionElement('gsuite')
 
     @classmethod
     def getOptionsBoxTrackSource(cls, prevChoices):
-        return [cls.FROM_HISTORY_TEXT, cls.FROM_HYPERBROWSER_TEXT]
+        if prevChoices.operation in cls.OPERATIONS_TWO_TRACKS:
+            return [cls.FROM_HISTORY_TEXT, cls.FROM_HYPERBROWSER_TEXT]
 
     @classmethod
     def getOptionsBoxTrackHistory(cls, prevChoices):
@@ -131,6 +122,41 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         if prevChoices.trackHistory or prevChoices.track:
             return [cls.NO_OVERLAPS, cls.WITH_OVERLAPS]
 
+    @classmethod
+    def getOptionsBoxOperation(cls):
+        operations = cls._getOperationList()
+
+        operations.insert(0, cls.SELECT_CHOICE)
+        return operations
+
+    @classmethod
+    def getOptionsBoxOperationHelp(cls, prevChoices):
+        if prevChoices.operation in [None, cls.SELECT_CHOICE, '']:
+            return
+        operationCls = cls.OPERATIONS[prevChoices.operation]
+        operationHelp = OperationHelp(operationCls)
+        # print operationHelp.getHelpStr()
+        # print operationHelp.getTrackHelp()
+        # print operationHelp.getKwArgHelp()
+
+        return (operationHelp.getHelpStr() + '\n' + operationHelp.getKwArgHelp() , 5, True)
+
+    @classmethod
+    def _getOperationList(cls):
+
+        return cls.OPERATIONS.keys()
+
+    @classmethod
+    def getInputBoxNamesForKwArgs(cls):
+        boxes = []
+        for kwArg in cls.KW_OPERATION_DICT.keys():
+            boxes.append((kwArg, kwArg))
+
+        return boxes
+
+    
+
+
     # @classmethod
     # def getInputBoxOrder(cls):
     #     """
@@ -143,23 +169,23 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #     """
     #     return None
     #
-    # @classmethod
-    # def getInputBoxGroups(cls, choices=None):
-    #     """
-    #     Creates a visual separation of groups of consecutive option boxes
-    #     from the rest (fieldset). Each such group has an associated label
-    #     (string), which is shown to the user. To define groups of option
-    #     boxes, return a list of BoxGroup namedtuples with the label, the key
-    #     (or index) of the first and last options boxes (inclusive).
-    #
-    #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
-    #        return [BoxGroup(label='A group of choices', first='firstKey',
-    #                         last='secondKey')]
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+    @classmethod
+    def getInputBoxGroups(cls, choices=None):
+        """
+        Creates a visual separation of groups of consecutive option boxes
+        from the rest (fieldset). Each such group has an associated label
+        (string), which is shown to the user. To define groups of option
+        boxes, return a list of BoxGroup namedtuples with the label, the key
+        (or index) of the first and last options boxes (inclusive).
+
+        Example:
+           from quick.webtool.GeneralGuiTool import BoxGroup
+           return [BoxGroup(label='A group of choices', first='firstKey',
+                            last='secondKey')]
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return None
 
 
     # @classmethod
@@ -218,33 +244,21 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         """
         import gold.gsuite.GSuiteComposer as GSuiteComposer
         from gold.gsuite.GSuite import GSuite
-        from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack
-        from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
-        from gold.origdata.FileFormatComposer import getComposerClsFromFileSuffix
+        from gold.gsuite.GSuiteTrack import GSuiteTrack
         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
         from quick.application.ExternalTrackManager import ExternalTrackManager
-        from quick.application.GalaxyInterface import GalaxyInterface
-        from quick.application.UserBinSource import UserBinSource
-        from quick.extra.TrackExtractor import TrackExtractor
+
+        operationCls = cls.OPERATIONS[choices.operation]
 
         genomeName = choices.genome
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
 
-        if choices.withOverlaps == cls.NO_OVERLAPS:
-            if choices.trackSource == cls.FROM_HISTORY_TEXT:
-                filterTrackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genomeName,
-                                                                                        choices.trackHistory)
-            else:
-                filterTrackName = choices.track.split(':')
+        #if choices.withOverlaps == cls.NO_OVERLAPS:
+        if choices.trackSource == cls.FROM_HISTORY_TEXT:
+            filterTrackName = ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(genomeName,
+                                                                                    choices.trackHistory)
         else:
-            if choices.trackSource == cls.FROM_HISTORY_TEXT:
-                regSpec = ExternalTrackManager.extractFileSuffixFromGalaxyTN(choices.trackHistory)
-                binSpec = ExternalTrackManager.extractFnFromGalaxyTN(choices.trackHistory)
-            else:
-                regSpec = 'track'
-                binSpec = choices.track
-
-            #userBinSource = UserBinSource(regSpec, binSpec, genomeName)
+            filterTrackName = choices.track.split(':')
 
         desc = cls.OUTPUT_GSUITE_DESCRIPTION
         # emptyFn = cls.extraGalaxyFn \
@@ -266,35 +280,35 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
 
         for gsuiteTrack in gSuite.allTracks():
-            newSuffix = cls.OUTPUT_TRACKS_SUFFIX
             extraFileName = os.path.sep.join(gsuiteTrack.trackName)
-            extraFileName = changeSuffixIfPresent(extraFileName, newSuffix=newSuffix)
-            title = getTitleWithSuffixReplaced(gsuiteTrack.title, newSuffix)
+            title = gsuiteTrack.title
             genomeDict = GenomeInfo.getStdChrLengthDict(genomeName)
-
             genome = Genome(genomeName, genomeDict)
+
             track = Track(gsuiteTrack.trackName)
-
-
             track.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
             trackContents = createTrackContentFromTrack(track, genome)
 
+            if choices.operation in cls.OPERATIONS_TWO_TRACKS:
+                filterTrack = Track(filterTrackName)
+                filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
+                filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
 
-            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName,
-                suffix=newSuffix if not extraFileName.endswith(newSuffix) else '')
+                res = operationCls(trackContents, filterTrackContents, useStrands=False)
+                newTrackContents = res.calculate()
 
+            else:
+                res = operationCls(trackContents, useStrands=False)
+                newTrackContents = res.calculate()
+
+
+            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
+                                                            extraFileName=extraFileName)
             primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
                                        attributes=gsuiteTrack.attributes)
-
-            filterTrack = Track(filterTrackName)
-            filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
-            filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
-
-            res = Union(trackContents, filterTrackContents, useStrands=False)
-            newTrackContents = res.calculate()
-
             newTrackContents.createTrack(extraFileName, primaryTrack.path)
             primaryGSuite.addTrack(primaryTrack)
+
 
         GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
 
@@ -472,3 +486,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+
+
+TrackOperationsTool.setupExtraBoxMethods()

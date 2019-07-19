@@ -78,7 +78,7 @@ class Complement(Operator):
         self._resultTrackFormat = TrackFormat(strandList=[], endList=[])
 
     @classmethod
-    def getKwArgumentInfoDict(cls):
+    def _getKwArgumentInfoDict(cls):
         return OrderedDict([
             ('debug',
              KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),

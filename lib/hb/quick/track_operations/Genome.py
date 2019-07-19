@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import json
-import yaml
+#import yaml
 
 from gold.track.GenomeRegion import GenomeRegion
 

@@ -1,6 +1,7 @@
 
 import abc
 import glob
+import importlib
 from collections import OrderedDict
 from collections import namedtuple
 from os.path import dirname, basename, isfile
@@ -465,3 +466,43 @@ def getOperation():
     module = '.'.join(__name__.split('.')[:-1])
 
     return module, operations
+
+
+def importOperations():
+    """
+    Import all defined operations
+    :return: None
+    """
+    module, operations = getOperation()
+
+    importedOperations = {}
+
+    for operation in operations:
+        m = "{0}.{1}".format(module, operation)
+
+        mod = importlib.import_module(m)
+        operationClass = getattr(mod, operation)
+
+        # TODO check if class
+
+        importedOperations[operation] = operationClass
+
+    return importedOperations
+
+
+def getKwArgOperationDict(operations):
+    opDict = {}
+    kwDict = {}
+    for op, opCls in operations.items():
+        opDict[op] = opCls.getKwArgumentInfoDict().keys()
+
+    for op, kwArgs in opDict.items():
+        for kw in kwArgs:
+            kwDict.setdefault(kw, []).append(op)
+
+    kwDict.pop('debug')
+
+    return kwDict
+
+
+

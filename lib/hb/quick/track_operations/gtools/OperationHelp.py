@@ -28,6 +28,8 @@ class OperationHelp(object):
     def getKwArgHelp(self):
         kwArgStr = 'Keyword arguments: \n'
         for k, kw in self._kwArgs.iteritems():
+            if k == 'debug':
+                continue
             helpStr = kw.key + ' ({}): '
             if kw.shortkey is None:
                 # required

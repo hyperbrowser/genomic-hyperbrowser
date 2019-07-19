@@ -423,12 +423,6 @@ class TrackView(object):
     def hasExtra(self, key):
         return key in self._extraLists
 
-    def __str__(self):
-        attrs = vars(self)
-        retStr = 'Track view:'
-        retStr += ', '.join("%s: %s" % item for item in attrs.items())
-
-        return retStr
 
 class TrackViewSlider(object):
     def __init__(self, fullTV):
