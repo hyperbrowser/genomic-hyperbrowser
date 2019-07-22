@@ -149,6 +149,9 @@ class Operator(object):
         Return the operations keyword arguments.
         :return:
         """
+        kwArgDict = cls._getKwArgumentInfoDict()
+        kwArgDict.pop('debug')
+
         return cls._getKwArgumentInfoDict()
 
     @classmethod

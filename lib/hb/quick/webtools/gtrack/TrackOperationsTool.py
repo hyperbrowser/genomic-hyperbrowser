@@ -64,6 +64,9 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     OPERATIONS = importOperations()
     KW_OPERATION_DICT = getKwArgOperationDict(OPERATIONS)
 
+    NO = 'No'
+    YES = 'Yes'
+
 
     @classmethod
     def getToolName(cls):
@@ -74,25 +77,65 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         attrBoxes = []
         attrBoxes.append(('Select operation', 'operation'))
         attrBoxes.append(('Operation help', 'operationHelp'))
+        attrBoxes.append(('Show optional keyword parameters', 'showOptionalKwArgs'))
+        attrBoxes += cls.getInputBoxNamesForKwArgs()
         attrBoxes.append(('Select GSuite file from history:', 'gSuite'))
         attrBoxes += cls.getInputBoxNamesForGenomeSelection()
         attrBoxes.append(('Select source of filtering track:', 'trackSource'))
         attrBoxes.append(('Select track from history:', 'trackHistory'))
         attrBoxes.append(('Select track:', 'track'))
         attrBoxes.append(('Overlap handling:', 'withOverlaps'))
-        attrBoxes += cls.getInputBoxNamesForKwArgs()
 
         return attrBoxes
 
     @classmethod
     def setupExtraBoxMethods(cls):
-        for kwArg, ops in cls.KW_OPERATION_DICT.items():
-            setattr(cls, 'getOptionsBox' + kwArg[:1].upper() + kwArg[1:], partial(cls._getBooleanBox, ops=ops))
+        for kwArg, opNames in cls.KW_OPERATION_DICT.items():
+            defaultVals = []
+            isRequired = []
+            firstKwArgs = cls.OPERATIONS[opNames[0]].getKwArgumentInfoDict()
+            argInfo = firstKwArgs[kwArg]
+            argType = argInfo.contentType
+            for opName in opNames:
+                kwArgs = cls.OPERATIONS[opName].getKwArgumentInfoDict()
+                argInfo = kwArgs[kwArg]
+
+                defaultVal = argInfo.defaultValue
+                defaultVals.append(defaultVal)
+
+                required = argInfo.shortkey is None
+                isRequired.append(required)
+
+            if argType == bool:
+                setattr(cls, 'getOptionsBox' + kwArg[:1].upper() + kwArg[1:], partial(cls._getBooleanBox, ops=opNames, defaultVals=defaultVals, isRequired=isRequired))
+            else:
+                setattr(cls, 'getOptionsBox' + kwArg[:1].upper() + kwArg[1:], partial(cls._getTextBox, ops=opNames, defaultVals=defaultVals, isRequired=isRequired))
 
     @classmethod
-    def _getBooleanBox(cls, prevChoices, ops):
+    def _getBooleanBox(cls, prevChoices, ops, defaultVals, isRequired):
         if prevChoices.operation in ops:
-            return ['True', 'False']
+            required = isRequired[ops.index(prevChoices.operation)]
+            if not required and prevChoices.showOptionalKwArgs == cls.NO:
+                return
+
+            defaultVal = defaultVals[ops.index(prevChoices.operation)]
+
+            return [defaultVal, not defaultVal]
+
+    @classmethod
+    def _getTextBox(cls, prevChoices, ops, defaultVals, isRequired):
+        if prevChoices.operation in ops:
+            required = isRequired[ops.index(prevChoices.operation)]
+
+            if not required and prevChoices.showOptionalKwArgs == cls.NO:
+                return
+
+            defaultVal = defaultVals[ops.index(prevChoices.operation)]
+
+            if defaultVal:
+                return str(defaultVal)
+            else:
+                return ''
 
     @classmethod
     def getOptionsBoxGSuite(cls, prevChoices):
@@ -100,6 +143,13 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             return
 
         return cls.getHistorySelectionElement('gsuite')
+
+    @classmethod
+    def getOptionsBoxShowOptionalKwArgs(cls, prevChoices):
+        if prevChoices.operation in [None, cls.SELECT_CHOICE, '']:
+            return
+
+        return [cls.NO, cls.YES]
 
     @classmethod
     def getOptionsBoxTrackSource(cls, prevChoices):
