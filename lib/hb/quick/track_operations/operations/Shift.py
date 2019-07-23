@@ -74,32 +74,32 @@ class Shift(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info',
+             KwArgumentInfo('debug', False, 'Print debug info',
                             bool, False)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap','o',
+             KwArgumentInfo('resultAllowOverlap',False,
                             'Allow overlap in the result track.',
                             bool, False)),
             ('shiftLength',
-             KwArgumentInfo('shiftLength', None,
+             KwArgumentInfo('shiftLength', True,
                             'Length of shift in number of base pairs or as a '
                             'fraction of the elements length',
                             float, None)),
             ('useFraction',
-             KwArgumentInfo('useFraction', 'f',
+             KwArgumentInfo('useFraction', False,
                             'Shift each element a fraction of its length '
                             'instead of given number of base pairs',
                             bool, True)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, True)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative', False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as '
                             'positive',
                             bool, False)),
             ('mergeValuesFunction',
-             KwArgumentInfo('mergeValuesFunction', 'v',
+             KwArgumentInfo('mergeValuesFunction', False,
                             'Use a custom function when merging values',
                             None, None))])

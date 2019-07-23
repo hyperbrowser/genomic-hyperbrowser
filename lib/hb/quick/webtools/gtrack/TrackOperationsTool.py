@@ -1,30 +1,24 @@
-import importlib
 import os
-from collections import OrderedDict
 from functools import partial
 
 from gold.gsuite import GSuiteConstants
-from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent, getTitleWithSuffixReplaced
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
-from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import HistElement
-from quick.extra.ProgressViewer import ProgressViewer
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.track_operations.Genome import Genome
-from quick.track_operations.TrackContents import TrackContents
 from quick.track_operations.gtools.OperationHelp import OperationHelp
-from quick.track_operations.operations.Complement import Complement
-from quick.track_operations.operations.Merge import Merge
-from quick.track_operations.operations.Operator import getOperation, importOperations, \
-    getKwArgOperationDict
-from quick.track_operations.operations._PrintTrack import PrintTrack
-from quick.track_operations.operations.Union import Union
+from quick.track_operations.operations.Operator import importOperations, getKwArgOperationDict
 from quick.track_operations.utils.TrackHandling import createTrackContentFromTrack
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+import gold.gsuite.GSuiteComposer as GSuiteComposer
+from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GSuiteTrack
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.application.ExternalTrackManager import ExternalTrackManager
 
 
 class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
@@ -49,7 +43,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
                                  GSuiteConstants.MULTIPLE]
 
-    OUTPUT_TRACKS_SUFFIX = 'bed'
     GSUITE_OUTPUT_LOCATION = GSuiteConstants.LOCAL
     GSUITE_OUTPUT_FILE_FORMAT = GSuiteConstants.PREPROCESSED
     GSUITE_OUTPUT_TRACK_TYPE = GSuiteConstants.SEGMENTS
@@ -103,7 +96,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 defaultVal = argInfo.defaultValue
                 defaultVals.append(defaultVal)
 
-                required = argInfo.shortkey is None
+                required = argInfo.required
                 isRequired.append(required)
 
             if argType == bool:
@@ -132,7 +125,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
             defaultVal = defaultVals[ops.index(prevChoices.operation)]
 
-            if defaultVal:
+            if defaultVal is not None:
                 return str(defaultVal)
             else:
                 return ''
@@ -185,9 +178,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             return
         operationCls = cls.OPERATIONS[prevChoices.operation]
         operationHelp = OperationHelp(operationCls)
-        # print operationHelp.getHelpStr()
-        # print operationHelp.getTrackHelp()
-        # print operationHelp.getKwArgHelp()
 
         return (operationHelp.getHelpStr() + '\n' + operationHelp.getKwArgHelp() , 5, True)
 
@@ -292,13 +282,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        import gold.gsuite.GSuiteComposer as GSuiteComposer
-        from gold.gsuite.GSuite import GSuite
-        from gold.gsuite.GSuiteTrack import GSuiteTrack
-        from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-        from quick.application.ExternalTrackManager import ExternalTrackManager
 
-        operationCls = cls.OPERATIONS[choices.operation]
 
         genomeName = choices.genome
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
@@ -311,23 +295,48 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             filterTrackName = choices.track.split(':')
 
         desc = cls.OUTPUT_GSUITE_DESCRIPTION
+
+        primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
+
+        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
         # emptyFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nointersect', description=desc,
         #                                 datasetInfo=choices.gSuite)]
-        primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
         # errorFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nopreprocessed', description=desc,
         #                                 datasetInfo=choices.gSuite)]
         # preprocessedFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('preprocessed', description=desc,
         #                                 datasetInfo=choices.gSuite)]
-        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
-
         # progressViewer = ProgressViewer([(cls.PROGRESS_INTERSECT_MSG, numTracks),
         #                                  (cls.PROGRESS_PREPROCESS_MSG, numTracks)], galaxyFn)
-        emptyGSuite = GSuite()
+
         primaryGSuite = GSuite()
 
+        operationCls = cls.OPERATIONS[choices.operation]
+        operationKwArgs = operationCls.getKwArgumentInfoDict()
+        kwArgs = {}
+        val = None
+        for kwArg, info in operationKwArgs.items():
+            dataType = info.contentType
+            chosenVal = getattr(choices, kwArg)
+            # find out which type and parse the value
+            if dataType == bool:
+                if chosenVal == cls.YES:
+                    val = True
+                else:
+                    val = False
+            elif dataType == str:
+                val = chosenVal
+            elif dataType == float:
+                val = float(chosenVal)
+
+            kwArgs[kwArg] = val
+            #check if this works
+
+        #temporary
+        if 'useStrands' in kwArgs:
+            kwArgs['useStrands'] = False
 
         for gsuiteTrack in gSuite.allTracks():
             extraFileName = os.path.sep.join(gsuiteTrack.trackName)
@@ -344,16 +353,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
                 filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
 
-                res = operationCls(trackContents, filterTrackContents, useStrands=False)
+                res = operationCls(trackContents, filterTrackContents, **kwArgs)
                 newTrackContents = res.calculate()
 
             else:
-                res = operationCls(trackContents, useStrands=False)
+                res = operationCls(trackContents, **kwArgs)
                 newTrackContents = res.calculate()
 
-
-            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn,
-                                                            extraFileName=extraFileName)
+            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName)
             primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
                                        attributes=gsuiteTrack.attributes)
             newTrackContents.createTrack(extraFileName, primaryTrack.path)

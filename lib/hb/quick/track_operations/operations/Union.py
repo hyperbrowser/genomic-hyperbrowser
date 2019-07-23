@@ -101,16 +101,16 @@ class Union(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap', 'o',
+             KwArgumentInfo('resultAllowOverlap', False,
                             'Allow overlap in the result track.', bool,
                             False)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, True)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative', False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as positive',
                             bool, False))])

@@ -20,7 +20,7 @@ class Flank(Operator):
     Creates a new track of flanking segments.
     """
     _trackHelpList = ['Track to create flank track from']
-    _operationHelp = "Create a flanking track from a given track"
+    _operationHelp = "Create a flanking track from a given track. Keyword arguments 'upstream' and/or 'downstream' or 'both' have to be used"
     _numTracks = 1
     _resultIsTrack = True
     _trackRequirements = [TrackFormatReq(dense=False)]
@@ -46,8 +46,7 @@ class Flank(Operator):
                     downstream=self._downstream, upstream=self._upstream,
                     both=self._both, useStrands=self._useStrands,
                     useFraction=self._useFraction,
-                    treatMissingAsNegative=self._treatMissingAsNegative,
-                    debug=self._debug)
+                    treatMissingAsNegative=self._treatMissingAsNegative)
 
         if ret is not None and len(ret[0]) != 0:
             assert len(ret) == 3
@@ -58,15 +57,7 @@ class Flank(Operator):
             starts = ret[0]
             ends = ret[1]
             strands = ret[2]
-
-            if self._debug:
-                print("------------------")
-                print("res _calculate")
-                print("starts: {}".format(starts))
-                print("ends: {}".format(ends))
-                print("strands: {}".format(strands))
-                print("------------------")
-
+            
             tv = TrackView(region, starts, ends, None, strands, None,
                            None, None, borderHandling='crop',
                            allowOverlaps=True)
@@ -95,32 +86,32 @@ class Flank(Operator):
     def _getKwArgumentInfoDict(cls):
         return OrderedDict([
             ('both',
-             KwArgumentInfo('both', 'b', 'Creating flank in both directions.',
+             KwArgumentInfo('both', False, 'Creating flank in both directions.',
                             float, None)),
             ('upstream',
-             KwArgumentInfo('upstream', 'u',
+             KwArgumentInfo('upstream', False,
                             'Size of the upstream flank. In number of base '
                             'pairs', float, None)),
             ('downstream',
-             KwArgumentInfo('downstream', 'w',
+             KwArgumentInfo('downstream', False,
                             'Size of the downstream flank. In number of base '
                             'pairs', float, None)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap','o',
+             KwArgumentInfo('resultAllowOverlap',False,
                             'Allow overlap in the result track.', bool,
                             False)),
             ('useFraction',
-             KwArgumentInfo('useFraction', 'f',
+             KwArgumentInfo('useFraction', False,
                             'Interpret flak size as a fraction of the '
                             'element size', bool, False)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, True)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative', False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as positive',
                             bool, False)),
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False))
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False))
             ])

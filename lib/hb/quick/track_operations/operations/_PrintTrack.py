@@ -49,5 +49,5 @@ class PrintTrack(Operator):
     @classmethod
     def _getKwArgumentInfoDict(cls):
         return OrderedDict([
-            ('debug', KwArgumentInfo('debug', 'd', 'Print debug info', bool,
+            ('debug', KwArgumentInfo('debug', False, 'Print debug info', bool,
                                      False))])

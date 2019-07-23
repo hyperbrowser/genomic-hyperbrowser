@@ -36,7 +36,7 @@ class UniquifyLinks(Operator):
         ids = tv.idsAsNumpyArray()
         edges = tv.edgesAsNumpyArray()
 
-        ret = uniquifyLinks(ids, edges, self._identifier, self._debug)
+        ret = uniquifyLinks(ids, edges, self._identifier)
 
         if ret is not None and len(ret) != 0:
             assert len(ret) == 3
@@ -65,12 +65,12 @@ class UniquifyLinks(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('useGlobal',
-             KwArgumentInfo('useGlobal','g',
+             KwArgumentInfo('useGlobal',False,
                             'Check the ids globally.', bool,
                             False)),
             ('identifier',
-             KwArgumentInfo('identifier', 'i',
+             KwArgumentInfo('identifier', False,
                             'Identifier to add to the ids',
                             str, None))])

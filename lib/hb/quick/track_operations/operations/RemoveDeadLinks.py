@@ -83,12 +83,12 @@ class RemoveDeadLinks(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('useGlobal',
-             KwArgumentInfo('useGlobal','g',
+             KwArgumentInfo('useGlobal',False,
                             'Check the ids globally.', bool,
                             False)),
             ('newId',
-             KwArgumentInfo('newId', 'm',
+             KwArgumentInfo('newId', False,
                             'Move the dead links to this id instead of '
                             'removing them', str, None))])

@@ -19,7 +19,7 @@ class Expand(Operator):
     Extends all of the segments in a track a given number of BP.
     """
     _trackHelpList = ['Track to expand']
-    _operationHelp = "Expand the elements in a track."
+    _operationHelp = "Expand the elements in a track. Keyword arguments 'upstream' and/or 'downstream' or 'both' have to be used"
     _numTracks = 1
     _resultIsTrack = True
     _trackRequirements = [TrackFormatReq(dense=False)]
@@ -45,8 +45,7 @@ class Expand(Operator):
                      downstream=self._downstream, upstream=self._upstream,
                      both=self._both, useFraction=self._useFraction,
                      useStrands=self._useStrands,
-                     treatMissingAsNegative=self._treatMissingAsNegative,
-                     debug=self._debug)
+                     treatMissingAsNegative=self._treatMissingAsNegative)
 
         # Returns start, ends, strands, index
         if ret is not None and len(ret[0]) != 0:
@@ -72,32 +71,32 @@ class Expand(Operator):
     def _getKwArgumentInfoDict(cls):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap','o',
+             KwArgumentInfo('resultAllowOverlap',False,
                             'Allow overlap in the result track.', bool,
                             False)),
             ('both',
-             KwArgumentInfo('both', 'b',
+             KwArgumentInfo('both',  False,
                             'Extract the segments in in both directions.',
                             float, None)),
             ('upstream',
-             KwArgumentInfo('upstream', 'u',
+             KwArgumentInfo('upstream',  False,
                             'Size of the upstream flank. In number of base '
                             'pairs', float, None)),
             ('downstream',
-             KwArgumentInfo('downstream', 'w',
+             KwArgumentInfo('downstream',  False,
                             'Size of the downstream flank. In number of base '
                             'pairs', float, None)),
             ('useFraction',
-             KwArgumentInfo('useFraction', 'f',
+             KwArgumentInfo('useFraction',  False,
                             'Interpret flak size as a fraction of the '
                             'element size', bool, False)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, True)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative',  False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as '
                             'positive',bool, False))])

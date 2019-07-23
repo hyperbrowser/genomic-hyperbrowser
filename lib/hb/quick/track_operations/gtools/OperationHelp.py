@@ -20,7 +20,7 @@ class OperationHelp(object):
             trackStr += 'track{}: '.format(i) + v + '\n'
         for k, kw in self._kwArgs.iteritems():
             #required param
-            if kw.shortkey is None:
+            if kw.required:
                 params.append(kw.key)
         usageStr += '(' + ', '.join(params) + ')'
         return usageStr + '\n' + trackStr
@@ -31,7 +31,7 @@ class OperationHelp(object):
             if k == 'debug':
                 continue
             helpStr = kw.key + ' ({}): '
-            if kw.shortkey is None:
+            if kw.required:
                 # required
                 helpStr = helpStr.format('required')
             else:

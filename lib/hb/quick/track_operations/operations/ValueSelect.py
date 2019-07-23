@@ -29,7 +29,7 @@ class ValueSelect(Operator):
 
         ret = valueSelect(starts, ends, values=values, limit=self._limit,
                           compareFunction=self._compareFunction,
-                          allowOverlap=self._allowOverlap, debug=self._debug)
+                          allowOverlap=self._allowOverlap)
 
         if ret is not None and len(ret) != 0:
             assert len(ret) == 3
@@ -56,13 +56,13 @@ class ValueSelect(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info',
+             KwArgumentInfo('debug', False, 'Print debug info',
                             bool, False)),
             ('limit',
-             KwArgumentInfo('limit', None,
+             KwArgumentInfo('limit', True,
                             'Value limit to select based on',
                             float, 0)),
             ('compareFunction',
-             KwArgumentInfo('compareFunction', 's',
+             KwArgumentInfo('compareFunction', False,
                             'Custom compare function',
                             None, None))])

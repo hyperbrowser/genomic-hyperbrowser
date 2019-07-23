@@ -30,7 +30,7 @@ class AverageLinkWeight(Operator):
     def _getKwArgumentInfoDict(cls):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('customAverageFunction',
-             KwArgumentInfo('customAverageFunction','c',
+             KwArgumentInfo('customAverageFunction',False,
                             'Use a custom average function', None, None))])

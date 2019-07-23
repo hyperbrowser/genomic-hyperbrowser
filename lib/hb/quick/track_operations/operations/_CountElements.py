@@ -27,12 +27,12 @@ class CountElements(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap','o',
+             KwArgumentInfo('resultAllowOverlap',False,
                             'Allow overlap in the result track.', bool,
                             False)),
             ('total',
-             KwArgumentInfo('total', 't',
+             KwArgumentInfo('total', False,
                             'Sum the coverage for all regions',
                             bool, False))])

@@ -65,8 +65,7 @@ class Complement(Operator):
     def _postCalculation(self):
         track = self._tracks[0]
         merged = Merge(track, useStrands=self._useStrands,
-                       treatMissingAsNegative=self._treatMissingAsNegative,
-                       debug=self._debug)
+                       treatMissingAsNegative=self._treatMissingAsNegative)
         self._tracks = [merged]
 
     def _setResultTrackFormat(self):
@@ -81,12 +80,12 @@ class Complement(Operator):
     def _getKwArgumentInfoDict(cls):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, True)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative', False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as positive',
                             bool, False))])

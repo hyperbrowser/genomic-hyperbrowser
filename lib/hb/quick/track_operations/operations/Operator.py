@@ -112,10 +112,7 @@ class Operator(object):
             except KeyError:
                 raise AttributeError("{} not found in kwarg".format(name))
         else:
-            if self._debug:
-                raise AttributeError("{} not defined!".format(name))
-            else:
-                raise AttributeError
+            raise AttributeError
 
     def _parseKwargs(self, **kwargs):
         """
@@ -128,9 +125,7 @@ class Operator(object):
         # Extract the default values
 
         kw = {k: v.defaultValue for k, v in
-              self.__class__.getKwArgumentInfoDict(
-
-        ).iteritems()}
+              self.__class__.getKwArgumentInfoDict().iteritems()}
 
         for k, v in kwargs.iteritems():
             if k in kw:
@@ -150,9 +145,9 @@ class Operator(object):
         :return:
         """
         kwArgDict = cls._getKwArgumentInfoDict()
-        kwArgDict.pop('debug')
+        kwArgDict.pop('debug', None)
 
-        return cls._getKwArgumentInfoDict()
+        return kwArgDict
 
     @classmethod
     def _getKwArgumentInfoDict(cls):
@@ -443,7 +438,7 @@ class Operator(object):
 
 
 # Named tuple uses to define the keyword arguments of a operation
-KwArgumentInfo = namedtuple('KwArgumentInfo', ['key', 'shortkey', 'help',
+KwArgumentInfo = namedtuple('KwArgumentInfo', ['key', 'required', 'help',
                                                'contentType', 'defaultValue'])
 
 
@@ -502,8 +497,6 @@ def getKwArgOperationDict(operations):
     for op, kwArgs in opDict.items():
         for kw in kwArgs:
             kwDict.setdefault(kw, []).append(op)
-
-    kwDict.pop('debug')
 
     return kwDict
 

@@ -39,8 +39,7 @@ class Merge(Operator):
         ret = merge(starts, ends, strands=strands, values=values, ids=ids,
                     edges=edges, weights=weights, useStrands=self._useStrands,
                     treatMissingAsNegative=self._treatMissingAsNegative,
-                    mergeValuesFunction=self._mergeValuesFunction,
-                    debug=self._debug)
+                    mergeValuesFunction=self._mergeValuesFunction)
 
         if ret is not None and len(ret[0]) != 0:
             assert len(ret) == 7
@@ -80,21 +79,21 @@ class Merge(Operator):
     @classmethod
     def _getKwArgumentInfoDict(cls):
         return OrderedDict([
-            ('debug', KwArgumentInfo('debug', 'd', 'Print debug info', bool,
+            ('debug', KwArgumentInfo('debug', False, 'Print debug info', bool,
                                      False)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap','o',
+             KwArgumentInfo('resultAllowOverlap',False,
                             'Allow overlap in the result track.', bool,
                             False)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, False)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative', False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as '
                             'positive', bool, False)),
             ('mergeValuesFunction',
-             KwArgumentInfo('mergeValuesFunction', 'v',
+             KwArgumentInfo('mergeValuesFunction', False,
                             'Use a custom function when merging values',
                             None, None))])

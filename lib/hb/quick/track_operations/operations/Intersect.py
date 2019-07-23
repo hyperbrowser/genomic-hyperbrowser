@@ -35,7 +35,7 @@ class Intersect(Operator):
 
         t2Starts = tv2.startsAsNumpyArray()
         t2Ends = tv2.endsAsNumpyArray()
-        ret = intersect(t1Starts, t1Ends, t2Starts, t2Ends, debug=self._debug)
+        ret = intersect(t1Starts, t1Ends, t2Starts, t2Ends)
 
         if ret is not None and len(ret[0]) != 0:
             assert len(ret) == 4
@@ -83,16 +83,16 @@ class Intersect(Operator):
     def _getKwArgumentInfoDict(self):
         return OrderedDict([
             ('debug',
-             KwArgumentInfo('debug', 'd', 'Print debug info', bool, False)),
+             KwArgumentInfo('debug', False, 'Print debug info', bool, False)),
             ('resultAllowOverlap',
-             KwArgumentInfo('resultAllowOverlap','o',
+             KwArgumentInfo('resultAllowOverlap',False,
                             'Allow overlap in the result track.', bool,
                             False)),
             ('useStrands',
-             KwArgumentInfo('useStrands', 's', 'Follow the strand direction',
+             KwArgumentInfo('useStrands', False, 'Follow the strand direction',
                             bool, True)),
             ('treatMissingAsNegative',
-             KwArgumentInfo('treatMissingAsNegative', 'n',
+             KwArgumentInfo('treatMissingAsNegative', False,
                             'Treat any missing strand as if they are '
                             'negative. The default is to treat them as positive',
                             bool, False))])
