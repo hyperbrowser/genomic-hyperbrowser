@@ -44,7 +44,7 @@ class TrackSourceTestTool(MultiGeneralGuiTool):
                 CGAtlasTrackSearchTool,
                 # FANTOM5TrackSearchTool,
                 ICGCTrackSearchTool,
-                #EBIHubTrackSearchTool,
+                EBIHubTrackSearchTool,
                 GWASTrackSearchTool
                 ]
 
