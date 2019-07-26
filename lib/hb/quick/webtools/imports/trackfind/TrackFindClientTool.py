@@ -85,8 +85,9 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
+        attrBoxes.append(('By default, only the first ' + str(cls.TRACK_TABLE_LIMIT) + ' tracks are displayed. Do you want to display all?',
+                         'displayAllTracks'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
-        # attrBoxes.append(('Only the first ' + cls.TRACK_TABLE_LIMIT + ' tracks are displayed. Do you want to display all?', 'displayAllTracks'))
         attrBoxes.append(('Include non-standard attributes in the result gsuite', 'extraAttributes'))
         return attrBoxes
 
@@ -346,15 +347,39 @@ class TrackFindClientTool(GeneralGuiTool):
 
         return gsuite
 
-    # @classmethod
-    # def getOptionsBoxDisplayAllTracks(cls, prevChoices):
-    #     chosenDataTypes = cls.getChosenDataTypes(prevChoices)
-    #     if not chosenDataTypes:
-    #         return
-    #
-    #     gsuite = cls.getGsuite(prevChoices)
-    #
-    #
+    @classmethod
+    def getOptionsBoxDisplayAllTracks(cls, prevChoices):
+        chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+        if not chosenDataTypes:
+            return
+
+        selectedTracks = cls.getSelectedTracks(prevChoices)
+
+        gsuite = cls.getGsuite(prevChoices)
+        numTracks = gsuite.numTracks()
+        if numTracks < cls.TRACK_TABLE_LIMIT:
+            return
+
+        counter = 0
+        for track in gsuite.allTracks():
+            if counter == cls.TRACK_TABLE_LIMIT:
+                break
+            title = track.title
+
+            dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
+
+            if dataType and dataType not in chosenDataTypes:
+                continue
+            if selectedTracks is not None and title not in selectedTracks:
+                continue
+
+            counter += 1
+
+        if counter < cls.TRACK_TABLE_LIMIT:
+            return
+
+        return ['No', cls.YES]
+
 
     @classmethod
     def getOptionsBoxTrackList(cls, prevChoices):
@@ -366,7 +391,10 @@ class TrackFindClientTool(GeneralGuiTool):
         gsuite = cls.getGsuite(prevChoices)
 
         tableDict = {}
+        counter = 0
         for track in gsuite.allTracks():
+            if counter == cls.TRACK_TABLE_LIMIT and prevChoices.displayAllTracks != cls.YES:
+                break
             title = track.title
             attributes = []
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
@@ -382,6 +410,8 @@ class TrackFindClientTool(GeneralGuiTool):
             attributes.append(track.getAttribute(cls.GENOME_ASSEMBLY_ATTR))
             attributes.append(track.getAttribute(cls.FILE_FORMAT_ATTR))
             tableDict[title] = attributes
+
+            counter += 1
 
         if not tableDict:
             return
