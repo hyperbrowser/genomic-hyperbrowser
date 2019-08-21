@@ -81,7 +81,7 @@ class TrackFindClientTool(GeneralGuiTool):
                               'valueList%s' % i))
             attrBoxes.append(('Select value:', \
                               'valueCheckbox%s' % i))
-        #attrBoxes.append(('', 'gsuite'))
+        attrBoxes.append(('', 'gsuite'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
@@ -340,8 +340,8 @@ class TrackFindClientTool(GeneralGuiTool):
         tfm = TrackFindModule()
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
         if not includeExtraAttributes:
-            #gsuite = prevChoices.gsuite
-            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+            gsuite = prevChoices.gsuite
+            #gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
         else:
             gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, True)
 
