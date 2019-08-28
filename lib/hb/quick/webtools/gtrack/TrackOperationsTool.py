@@ -1,16 +1,23 @@
 import os
 from functools import partial
 
+from gold.application.HBAPI import doAnalysis
+from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
+from gold.origdata.GtrackComposer import StdGtrackComposer
+from gold.origdata.PreProcessTracksJob import PreProcessTrackGESourceJob
+from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from proto.tools.GeneralGuiTool import HistElement
+from quick.application.UserBinSource import GlobalBinSource
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.track_operations.Genome import Genome
 from quick.track_operations.gtools.OperationHelp import OperationHelp
 from quick.track_operations.operations.Operator import importOperations, getKwArgOperationDict
 from quick.track_operations.utils.TrackHandling import createTrackContentFromTrack
+from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -341,29 +348,52 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         for gsuiteTrack in gSuite.allTracks():
             extraFileName = os.path.sep.join(gsuiteTrack.trackName)
             title = gsuiteTrack.title
-            genomeDict = GenomeInfo.getStdChrLengthDict(genomeName)
-            genome = Genome(genomeName, genomeDict)
 
             track = Track(gsuiteTrack.trackName)
-            track.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
-            trackContents = createTrackContentFromTrack(track, genome)
+            #track.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
+            # trackContents = createTrackContentFromTrack(track, genome)
 
             if choices.operation in cls.OPERATIONS_TWO_TRACKS:
                 filterTrack = Track(filterTrackName)
-                filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
-                filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
+                #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
 
-                res = operationCls(trackContents, filterTrackContents, **kwArgs)
-                newTrackContents = res.calculate()
+                analysisSpecStr = '-> TrackIntersectionStat'
+                analysisSpec = AnalysisDefHandler(analysisSpecStr)
 
-            else:
-                res = operationCls(trackContents, **kwArgs)
-                newTrackContents = res.calculate()
+
+                analysisBins = GlobalBinSource(choices.genome)
+                res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
+
+                trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
+
+                trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
+
+                tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
+
+
+                # geSource = TrackViewListGenomeElementSource(genome,  trackContents.getTrackViewsList(),
+                #                                             trackName,
+                #                                             allowOverlaps=allowOverlaps)
+                # job = PreProcessTrackGESourceJob(genomeName, trackName, tvGeSource)
+                # job.process()
+
+
+
+                # filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
+                #
+                # res = operationCls(trackContents, filterTrackContents, **kwArgs)
+                # newTrackContents = res.calculate()
+
+            # else:
+            #     # res = operationCls(trackContents, **kwArgs)
+            #     # newTrackContents = res.calculate()
 
             primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName)
             primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
                                        attributes=gsuiteTrack.attributes)
-            newTrackContents.createTrack(extraFileName, primaryTrack.path)
+
+            StdGtrackComposer(tvGeSource).composeToFile(primaryTrack.path)
+            # newTrackContents.createTrack(extraFileName, primaryTrack.path)
             primaryGSuite.addTrack(primaryTrack)
 
 

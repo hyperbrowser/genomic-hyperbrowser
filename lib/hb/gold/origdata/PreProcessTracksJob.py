@@ -7,11 +7,13 @@ import traceback
 
 from gold.description.TrackInfo import TrackInfo
 from gold.origdata.ChrMemmapFolderMerger import ChrMemmapFolderMerger
-from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, RegionBasedGESourceManager
+from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, \
+    RegionBasedGESourceManager, TrackGESourceManager
 from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.origdata.PreProcessGeSourceJob import PreProcessGeSourceJob
 from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.origdata.PreProcessUtils import PreProcessUtils
+from gold.origdata.TrackGenomeElementSource import TrackGenomeElementSource
 from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import createOrigPath, createDirPath, prettyPrintTrackName
 from gold.util.CustomExceptions import NotSupportedError, AbstractClassError, Warning, ShouldNotOccurError
@@ -323,6 +325,29 @@ class PreProcessCustomTrackJob(PreProcessTracksJob):
 
     def _shouldMergeChrFolders(self):
         return self._mergeChrFolders
+
+class PreProcessTrackGESourceJob(PreProcessTracksJob):
+    PASS_ON_EXCEPTIONS = True
+
+    def __init__(self, genome, trackName, trackGESource, username=''):
+
+        PreProcessTracksJob.__init__(self, genome, username=username)
+        self._trackName = trackName
+        assert isinstance(trackGESource, TrackGenomeElementSource)
+        self._geSource = trackGESource
+
+    def _allTrackNames(self):
+        return [self._trackName]
+
+    def _allGESources(self, trackName):
+        return [self._geSource]
+
+    def _getGESourceManagerFromGESource(self, geSource):
+        return TrackGESourceManager(geSource)
+
+    def _shouldPrintProcessMessages(self):
+        return True
+
 
 
 if __name__ == "__main__":
