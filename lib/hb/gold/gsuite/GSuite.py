@@ -207,7 +207,7 @@ class GSuite(object):
     def __getattribute__(self, attr):
         if not object.__getattribute__(self, '_updatedHeaders') and \
                 not attr.startswith('_') and \
-                attr not in ('addTrack', 'addTracks'):
+                attr not in ('addTrack', 'addTracks', 'numTracks'):
             self._updateGSuiteHeaders()
         return object.__getattribute__(self, attr)
 
