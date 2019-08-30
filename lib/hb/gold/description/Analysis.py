@@ -141,15 +141,23 @@ class Analysis(AnalysisDefHandler):
 #                print statClass.__name__ + ': Trying (' + self.getDefAfterChoices() + ')'
 
             #for reversed, trackA, trackB in [(False, self._track, self._track2), (True, self._track2, self._track) ]:
-            tracks = (self._track, self._track2)
-            trackUniqueKeys = [tr.getUniqueKey(self._genome) for tr in tracks if tr is not None]
 
-            trackA, trackB = tracks
+            trackA, trackB = self._track, self._track2
             if trackA is None:
                 continue
 
             try:
-                StatJob(dummyGESource, trackA, trackB, statClass, minimal=True, **self.getChoices(filterByActivation=True)).run(False)
+                # The hackiest of all hacks!
+                # TODO: reimplement together with TrackStructure
+                job = StatJob(dummyGESource, trackA, trackB, statClass, minimal=True,
+                              **self.getChoices(filterByActivation=True))
+                stat = job._getSingleResult(dummyGESource[0])[-1]
+                tracks = stat._tracks if hasattr(stat, '_tracks') else [trackA, trackB]
+                trackUniqueKeys = [Track(tr.trackName).getUniqueKey(self._genome) for tr in tracks
+                                   if tr is not None]
+
+                StatJob(dummyGESource, trackA, trackB, statClass, minimal=True,
+                        **self.getChoices(filterByActivation=True)).run(False)
                 #In order not to mess up integration tests
                 initSeed()
 

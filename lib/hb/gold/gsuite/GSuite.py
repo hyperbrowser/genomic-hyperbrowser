@@ -1,15 +1,18 @@
 from collections import OrderedDict
-from gold.util.CustomExceptions import InvalidFormatError, NotSupportedError
+from gold.util.CustomExceptions import InvalidFormatError, NotSupportedError, ArgumentValueError
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, FILE_FORMAT_HEADER, \
                                         TRACK_TYPE_HEADER, GENOME_HEADER, LOCATION_MEMBER, \
                                         FILE_FORMAT_MEMBER, TRACK_TYPE_MEMBER, GENOME_MEMBER, \
                                         UNKNOWN, MULTIPLE, LOCAL, PREPROCESSED
+from quick.util.CommonFunctions import urlDecodePhrase
+
 
 class GSuite(object):
-    def __init__(self, trackList=[]):
+    def __init__(self, trackList=[], customHeaders=OrderedDict()):
         self._trackList = []
         self._titleToTrackDict = {}
         self._updatedHeaders = False
+        self.customHeaders = customHeaders
 
         self.addTracks(trackList)
 
@@ -20,13 +23,14 @@ class GSuite(object):
     def _updateLocation(self):
         self._location = self._getCombinedHeaderValue(LOCATION_HEADER, LOCATION_MEMBER,
                                                       self._combineEqualVals)
+
     @property
     def fileFormat(self):
         return self._fileFormat
 
     def _updateFileFormat(self):
         self._fileFormat = self._getCombinedHeaderValue(FILE_FORMAT_HEADER, FILE_FORMAT_MEMBER,
-                                                      self._combineEqualVals)
+                                                        self._combineEqualVals)
 
     @property
     def trackType(self):
@@ -55,7 +59,8 @@ class GSuite(object):
 
         return curVal
 
-    def _combineTrackValPair(self, curVal, nextVal, combineValPairFunc):
+    @staticmethod
+    def _combineTrackValPair(curVal, nextVal, combineValPairFunc):
         try:
             return combineValPairFunc(curVal, nextVal)
         except (InvalidFormatError, NotSupportedError):
@@ -64,7 +69,8 @@ class GSuite(object):
             else:
                 return MULTIPLE
 
-    def _combineEqualVals(self, curVal, nextVal):
+    @staticmethod
+    def _combineEqualVals(curVal, nextVal):
         if curVal == nextVal:
             return curVal
         raise InvalidFormatError('%s != %s' % (curVal, nextVal))
@@ -74,8 +80,8 @@ class GSuite(object):
             return self._combineEqualVals(curVal, nextVal)
         except InvalidFormatError:
             from gold.track.TrackFormat import TrackFormatReq
-            curReq = TrackFormatReq(name = curVal)
-            nextReq = TrackFormatReq(name = nextVal)
+            curReq = TrackFormatReq(name=curVal)
+            nextReq = TrackFormatReq(name=nextVal)
 
             maxCommonCoreType = TrackFormatReq.maxCommonCoreFormat(curReq, nextReq)
             if maxCommonCoreType is not None:
@@ -83,6 +89,36 @@ class GSuite(object):
 
             raise InvalidFormatError('Track types "%s" and "%s" are not possible to combine. '
                                      % (curVal, nextVal))
+
+    @property
+    def customHeaders(self):
+        return self._customHeaders
+
+    @customHeaders.setter
+    def customHeaders(self, customHeaders):
+        self._customHeaders = OrderedDict()
+
+        for key, val in customHeaders.iteritems():
+            if val is not None:
+                if val == '':
+                    raise InvalidFormatError('Empty header values not allowed. '
+                                             'Please use ".", the period character, to '
+                                             'indicate missing values')
+
+                if key.lower() in self._customHeaders:
+                    raise ArgumentValueError('Custom header "{}" appears multiple times in the '
+                                             'header list. Note that custom headers are case '
+                                             'insensitive (e.g., "ABC" and "abc" is the same '
+                                             'header).'.format(key))
+                self.setCustomHeader(key, val)
+
+    def setCustomHeader(self, headerName, headerVal):
+        headerName = headerName.lower()
+        self._customHeaders[headerName] = urlDecodePhrase(headerVal)
+
+    def getCustomHeader(self, headerName):
+        if headerName in self._customHeaders:
+            return self._customHeaders[headerName]
 
     @property
     def attributes(self):
@@ -109,7 +145,8 @@ class GSuite(object):
                         track.title = candTitle
                         break
             else:
-                raise InvalidFormatError('Multiple tracks with the same title is not allowed: ' + track.title)
+                raise InvalidFormatError('Multiple tracks with the same title is not allowed: ' +
+                                         track.title)
 
         self._updatedHeaders = False
         self._titleToTrackDict[track.title] = track
@@ -170,6 +207,13 @@ class GSuite(object):
     def __getattribute__(self, attr):
         if not object.__getattribute__(self, '_updatedHeaders') and \
                 not attr.startswith('_') and \
-                attr not in ('addTrack', 'addTracks'):
+                attr not in ('addTrack', 'addTracks', 'numTracks'):
             self._updateGSuiteHeaders()
         return object.__getattribute__(self, attr)
+
+    def __getattr__(self, item):
+        try:
+            return self.__dict__['_customHeaders'][item]
+        except KeyError:
+            raise AttributeError("Member '%s' not found in class '%s'" %
+                                 (item, self.__class__.__name__))
