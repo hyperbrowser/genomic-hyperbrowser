@@ -2,6 +2,7 @@ import os
 from functools import partial
 
 from gold.application.HBAPI import doAnalysis
+from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
@@ -15,7 +16,8 @@ from quick.application.UserBinSource import GlobalBinSource
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.track_operations.Genome import Genome
 from quick.track_operations.gtools.OperationHelp import OperationHelp
-from quick.track_operations.operations.Operator import importOperations, getKwArgOperationDict
+from quick.track_operations.operations.Operator import importOperations, getKwArgOperationDict, \
+    getKwArgOperationDictStat
 from quick.track_operations.utils.TrackHandling import createTrackContentFromTrack
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.util.GenomeInfo import GenomeInfo
@@ -26,6 +28,7 @@ from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from gold.statistic.AllStatistics import STAT_CLASS_DICT
 
 
 class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
@@ -58,15 +61,23 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     PROGRESS_INTERSECT_MSG = 'Intersect tracks'
     PROGRESS_PREPROCESS_MSG = 'Preprocess tracks'
 
-    OPERATIONS_TWO_TRACKS = ['Intersect', 'Subtract', 'Union']
+    OPERATIONS_TWO_TRACKS = ['IntersectionStat', 'Subtract', 'Union']
     SELECT_CHOICE = '--- Select ---'
 
-    OPERATIONS = importOperations()
-    KW_OPERATION_DICT = getKwArgOperationDict(OPERATIONS)
+    ANALYSIS_SPEC_STRS = ['Track operations - intersection: test of track operations '
+                          '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=True:TrueLabel/False:FalseLabel]'
+                          ' -> IntersectionStat']
+
+    ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
+    ANALYSIS_SPECS = {spec.getStatClass().__name__: spec for spec in ANALYSIS_SPECS_LIST}
+    
+    OPERATIONS = {statClassName:spec.getStatClass() for statClassName,spec in ANALYSIS_SPECS.iteritems()}
+    KW_OPERATION_DICT = getKwArgOperationDictStat(ANALYSIS_SPECS)
 
     NO = 'No'
     YES = 'Yes'
-
 
     @classmethod
     def getToolName(cls):
@@ -93,23 +104,30 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         for kwArg, opNames in cls.KW_OPERATION_DICT.items():
             defaultVals = []
             isRequired = []
-            firstKwArgs = cls.OPERATIONS[opNames[0]].getKwArgumentInfoDict()
-            argInfo = firstKwArgs[kwArg]
-            argType = argInfo.contentType
+            # firstKwArgs = cls.OPERATIONS[opNames[0]].getKwArgumentInfoDict()
+            # argInfo = firstKwArgs[kwArg]
+            # argType = argInfo.contentType
             for opName in opNames:
-                kwArgs = cls.OPERATIONS[opName].getKwArgumentInfoDict()
-                argInfo = kwArgs[kwArg]
+                analysisSpec = cls.ANALYSIS_SPECS[opName]
 
-                defaultVal = argInfo.defaultValue
+                defaultVal = analysisSpec.getChoice(kwArg)
                 defaultVals.append(defaultVal)
 
-                required = argInfo.required
+                required = True
                 isRequired.append(required)
 
+            argType = cls.determineArgType(defaultVals[0])
             if argType == bool:
                 setattr(cls, 'getOptionsBox' + kwArg[:1].upper() + kwArg[1:], partial(cls._getBooleanBox, ops=opNames, defaultVals=defaultVals, isRequired=isRequired))
             else:
                 setattr(cls, 'getOptionsBox' + kwArg[:1].upper() + kwArg[1:], partial(cls._getTextBox, ops=opNames, defaultVals=defaultVals, isRequired=isRequired))
+
+    @classmethod
+    def determineArgType(cls, defaultVal):
+        if defaultVal in ['True', 'False']:
+            return bool
+
+        return str
 
     @classmethod
     def _getBooleanBox(cls, prevChoices, ops, defaultVals, isRequired):
@@ -118,9 +136,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             if not required and prevChoices.showOptionalKwArgs == cls.NO:
                 return
 
-            defaultVal = defaultVals[ops.index(prevChoices.operation)]
+            defaultValStr = defaultVals[ops.index(prevChoices.operation)]
 
-            return [defaultVal, not defaultVal]
+            if defaultValStr == 'True':
+                defaultVal = True
+            else:
+                defaultVal = False
+
+            return [str(defaultVal), str(not defaultVal)]
 
     @classmethod
     def _getTextBox(cls, prevChoices, ops, defaultVals, isRequired):
@@ -183,10 +206,17 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     def getOptionsBoxOperationHelp(cls, prevChoices):
         if prevChoices.operation in [None, cls.SELECT_CHOICE, '']:
             return
-        operationCls = cls.OPERATIONS[prevChoices.operation]
-        operationHelp = OperationHelp(operationCls)
 
-        return (operationHelp.getHelpStr() + '\n' + operationHelp.getKwArgHelp() , 5, True)
+        operationSpec = cls.ANALYSIS_SPECS[prevChoices.operation]
+        operationLabel = operationSpec.getText()
+        kwArgsLabels = operationSpec.getOptionsAsKeysAndTexts()
+
+        kwArgsPrint = ''
+
+        for key,label in kwArgsLabels:
+            kwArgsPrint += key + ': ' + label + '\n'
+
+        return (operationLabel + '\n' + kwArgsPrint, 5 , True)
 
     @classmethod
     def _getOperationList(cls):
@@ -276,6 +306,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 'storage', description=desc, datasetInfo=choices.gSuite),
                 GSuiteConstants.GSUITE_STORAGE_SUFFIX, hidden=True)]
 
+
+    def checkIsFloat(self, val):
+        import re
+        if re.match("^\d+?\.\d+?$", val) is None:
+            return False
+
+        return True
+
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         """
@@ -320,33 +358,54 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         primaryGSuite = GSuite()
 
-        operationCls = cls.OPERATIONS[choices.operation]
-        operationKwArgs = operationCls.getKwArgumentInfoDict()
+        # operationCls = cls.OPERATIONS[choices.operation]
+        analysisSpec = cls.ANALYSIS_SPECS[choices.operation]
+        operationKwArgs = analysisSpec.getOptionsAsKeys().keys()
         kwArgs = {}
-        val = None
-        for kwArg, info in operationKwArgs.items():
-            dataType = info.contentType
+        for kwArg in operationKwArgs:
             chosenVal = getattr(choices, kwArg)
-            # find out which type and parse the value
-            if dataType == bool:
-                if chosenVal == cls.YES:
-                    val = True
-                else:
-                    val = False
-            elif dataType == str:
-                val = chosenVal
-            elif dataType == float:
-                val = float(chosenVal)
+            #trying to find out the datatype and parse
+            # if chosenVal == 'True':
+            #     val = True
+            # elif chosenVal == 'False':
+            #     val = False
+            # elif chosenVal.isalnum():
+            #     val = int(chosenVal)
+            # elif cls.checkIsFloat(chosenVal):
+            #     val = float(chosenVal)
+            # else:
+            #     val = chosenVal
+            kwArgs[kwArg] = chosenVal
 
-            kwArgs[kwArg] = val
-            #check if this works
+        print 'kwargs with vals: '
+        print kwArgs
 
-        #temporary
-        if 'useStrands' in kwArgs:
-            kwArgs['useStrands'] = False
+        # val = None
+        # for kwArg, info in operationKwArgs.items():
+        #     dataType = info.contentType
+        #     chosenVal = getattr(choices, kwArg)
+        #     # find out which type and parse the value
+        #     if dataType == bool:
+        #         if chosenVal == cls.YES:
+        #             val = True
+        #         else:
+        #             val = False
+        #     elif dataType == str:
+        #         val = chosenVal
+        #     elif dataType == float:
+        #         val = float(chosenVal)
+        #
+        #     kwArgs[kwArg] = val
+        #     #check if this works
+
+        # #temporary
+        # if 'useStrands' in kwArgs:
+        #     kwArgs['useStrands'] = False
+        for kwArg,val in kwArgs.iteritems():
+            analysisSpec.setChoice(kwArg, val)
 
         for gsuiteTrack in gSuite.allTracks():
-            extraFileName = os.path.sep.join(gsuiteTrack.trackName)
+            extraFileName = 'result_' + gsuiteTrack.title
             title = gsuiteTrack.title
 
             track = Track(gsuiteTrack.trackName)
@@ -355,13 +414,31 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
             if choices.operation in cls.OPERATIONS_TWO_TRACKS:
                 filterTrack = Track(filterTrackName)
-                #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
+                #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop')
 
-                analysisSpecStr = '-> TrackIntersectionStat'
-                analysisSpec = AnalysisDefHandler(analysisSpecStr)
+
+                #analysisSpec.addParameter("withOverlaps", "no")
+
+                print 'getOptionsAsText'
+                print analysisSpec.getOptionsAsText()
+                print 'getOptionsAsKeys'
+                print analysisSpec.getOptionsAsKeys()
+                print 'getAllOptionsAsKeys'
+                print analysisSpec.getAllOptionsAsKeys()
+                print 'getChoices'
+                print analysisSpec.getChoices()
+                print 'getChoicesAsText'
+                print analysisSpec.getChoicesAsText()
+                print 'gettext'
+                print analysisSpec.getText()
+                print 'getclass'
+                print str(analysisSpec.getStatClass()) + ' : ' + analysisSpec.getStatClass().__name__
 
 
                 analysisBins = GlobalBinSource(choices.genome)
+
+                setupDebugModeAndLogging()
+
                 res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
 
                 trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
