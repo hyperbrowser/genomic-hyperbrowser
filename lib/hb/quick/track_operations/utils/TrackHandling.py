@@ -368,6 +368,7 @@ def createRawResultTrackView(index, region, baseTrack, allowOverlap,
 
     tv = TrackView(region, starts, ends, vals, strands, ids, edges, weights,
                    borderHandling='crop', allowOverlaps=allowOverlap)
+
     return tv
 
 def extractTrackFromGTrackCore(genome, trackName):

@@ -159,6 +159,11 @@ class AnalysisDefHandler(AnalysisSpec):
     def getOptionLabelsAsText(self):
         return [part.getLabelText() for part in self._analysisParts if isinstance(part, AnalysisOption)\
                  and part.getLabelText()!='']
+
+    def getOptionKeysAsText(self):
+        return [part.getLabelKey() for part in self._analysisParts if
+                isinstance(part, AnalysisOption) \
+                and part.getLabelKey() != '']
     
     def getOptionsAsText(self):
         return dict([(part.getLabelText(), part.getAllChoiceTexts()) for part in self._analysisParts \
@@ -175,6 +180,12 @@ class AnalysisDefHandler(AnalysisSpec):
     def getOptionsAsKeys(self):
         return dict([(part.getLabelKey(), part.getAllChoiceKeys()) for part in self._analysisParts \
             if isinstance(part, AnalysisOption) and part.getLabelText()!=''])
+
+    def getOptionsAsKeysAndTexts(self):
+        return [(part.getLabelKey(), part.getLabelText()) for part in self._analysisParts if
+                isinstance(part, AnalysisOption)]
+
+
         
     def getFirstOptionKeyAndValues(self):
         '''
@@ -206,6 +217,19 @@ class AnalysisDefHandler(AnalysisSpec):
         return ''.join( [( part.getDef() if isinstance(part, AnalysisOption) else str(part) ) \
                          for part in self._analysisParts] ) \
                          + ' -> ' + ','.join([x.__name__ for x in self._statClassList])
+
+    def getText(self):
+        text = ''
+        for part in self._analysisParts:
+            if not isinstance(part, AnalysisOption):
+                text += str(part)
+
+        return text
+
+    #only supports one class in the def
+    def getStatClass(self):
+        return self._statClassList[0]
+
 
     @staticmethod
     def splitAnalysisText(text):

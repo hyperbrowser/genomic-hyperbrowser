@@ -29,7 +29,7 @@ class CountDistanceStatUnsplittable(Statistic):
         countResList=[]
         c=0
         prevVal=0
-        for i in range(0, len(valResNumpyListBelowValue)):            
+        for i in range(0, len(valResNumpyListBelowValue)):
             if valResNumpyListBelowValue[i]==False:
                 countResList.append(c+1)       
                 c=0

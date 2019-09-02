@@ -20,7 +20,7 @@ class OutputDirectory(object):
             self._indexFiles = None
             
         self._elementsAreSorted = elementsAreSorted
-        
+
     def writeElement(self, genomeElement):
         for f in self._files.values():
             f.writeElement(genomeElement)
