@@ -418,6 +418,26 @@ def createTrackContentFromTrack(track, genome):
     return TrackContents(genome, trackViewList)
 
 
+def getKwArgOperationDictStat(analysisSpecsDict):
+    opDict = {}
+    kwDict = {}
+    # for op, opCls in operations.items():
+    #
+    #     #opDict[op] = opCls.getKwArgumentInfoDict().keys()
+
+    for statName,spec in analysisSpecsDict.iteritems():
+        kwArgs = spec.getOptionsAsKeys().keys()
+        opDict[statName] = kwArgs
+
+    print opDict
+
+    for op, kwArgs in opDict.items():
+        for kw in kwArgs:
+            kwDict.setdefault(kw, []).append(op)
+
+    return kwDict
+
+
 class Capturing(list):
     """
     Class used to capture the print output from the API. This should be

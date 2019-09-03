@@ -501,23 +501,5 @@ def getKwArgOperationDict(operations):
     return kwDict
 
 
-def getKwArgOperationDictStat(analysisSpecsDict):
-    opDict = {}
-    kwDict = {}
-    # for op, opCls in operations.items():
-    #
-    #     #opDict[op] = opCls.getKwArgumentInfoDict().keys()
 
-    for statName,spec in analysisSpecsDict.iteritems():
-        kwArgs = spec.getOptionsAsKeys().keys()
-        opDict[statName] = kwArgs
-
-    print opDict
-
-    for op, kwArgs in opDict.items():
-        for kw in kwArgs:
-            kwDict.setdefault(kw, []).append(op)
-
-    print kwDict
-    return kwDict
 

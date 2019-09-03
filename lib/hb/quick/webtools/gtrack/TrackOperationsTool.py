@@ -1,34 +1,26 @@
-import os
 from functools import partial
 
+import gold.gsuite.GSuiteComposer as GSuiteComposer
 from gold.application.HBAPI import doAnalysis
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.gsuite import GSuiteConstants
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
-from gold.origdata.GtrackComposer import StdGtrackComposer
-from gold.origdata.PreProcessTracksJob import PreProcessTrackGESourceJob
-from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
-from gold.track.Track import Track
-from gold.track.TrackFormat import TrackFormatReq
-from proto.tools.GeneralGuiTool import HistElement
-from quick.application.UserBinSource import GlobalBinSource
-from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
-from quick.track_operations.Genome import Genome
-from quick.track_operations.gtools.OperationHelp import OperationHelp
-from quick.track_operations.operations.Operator import importOperations, getKwArgOperationDict, \
-    getKwArgOperationDictStat
-from quick.track_operations.utils.TrackHandling import createTrackContentFromTrack
-from quick.util.CommonFunctions import convertTNstrToTNListFormat
-from quick.util.GenomeInfo import GenomeInfo
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.webtools.mixin.GenomeMixin import GenomeMixin
-import gold.gsuite.GSuiteComposer as GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
-from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
+from gold.origdata.GtrackComposer import StdGtrackComposer
+from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
+from gold.track.Track import Track
+from proto.tools.GeneralGuiTool import HistElement
 from quick.application.ExternalTrackManager import ExternalTrackManager
-from gold.statistic.AllStatistics import STAT_CLASS_DICT
+from quick.application.UserBinSource import GlobalBinSource
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat
+
+from quick.util.CommonFunctions import convertTNstrToTNListFormat
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
 
 class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
@@ -61,14 +53,21 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     PROGRESS_INTERSECT_MSG = 'Intersect tracks'
     PROGRESS_PREPROCESS_MSG = 'Preprocess tracks'
 
-    OPERATIONS_TWO_TRACKS = ['IntersectionStat', 'Subtract', 'Union']
+    OPERATIONS_TWO_TRACKS = ['IntersectionStat']
     SELECT_CHOICE = '--- Select ---'
 
     ANALYSIS_SPEC_STRS = ['Track operations - intersection: test of track operations '
                           '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=True:TrueLabel/False:FalseLabel]'
-                          ' -> IntersectionStat']
+                          ' -> IntersectionStat',
+                          'Track operations - complement: test of track operations2 '
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          ' -> ComplementStat'
+                          ]
+
+
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
     ANALYSIS_SPECS = {spec.getStatClass().__name__: spec for spec in ANALYSIS_SPECS_LIST}
@@ -104,9 +103,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         for kwArg, opNames in cls.KW_OPERATION_DICT.items():
             defaultVals = []
             isRequired = []
-            # firstKwArgs = cls.OPERATIONS[opNames[0]].getKwArgumentInfoDict()
-            # argInfo = firstKwArgs[kwArg]
-            # argType = argInfo.contentType
             for opName in opNames:
                 analysisSpec = cls.ANALYSIS_SPECS[opName]
 
@@ -328,7 +324,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         Mandatory unless isRedirectTool() returns True.
         """
 
-
         genomeName = choices.genome
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
 
@@ -380,27 +375,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         print 'kwargs with vals: '
         print kwArgs
 
-        # val = None
-        # for kwArg, info in operationKwArgs.items():
-        #     dataType = info.contentType
-        #     chosenVal = getattr(choices, kwArg)
-        #     # find out which type and parse the value
-        #     if dataType == bool:
-        #         if chosenVal == cls.YES:
-        #             val = True
-        #         else:
-        #             val = False
-        #     elif dataType == str:
-        #         val = chosenVal
-        #     elif dataType == float:
-        #         val = float(chosenVal)
-        #
-        #     kwArgs[kwArg] = val
-        #     #check if this works
-
-        # #temporary
-        # if 'useStrands' in kwArgs:
-        #     kwArgs['useStrands'] = False
         for kwArg,val in kwArgs.iteritems():
             analysisSpec.setChoice(kwArg, val)
 
@@ -409,74 +383,35 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             title = gsuiteTrack.title
 
             track = Track(gsuiteTrack.trackName)
+            analysisBins = GlobalBinSource(genomeName)
+            setupDebugModeAndLogging()
             #track.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop'))
-            # trackContents = createTrackContentFromTrack(track, genome)
 
             if choices.operation in cls.OPERATIONS_TWO_TRACKS:
                 filterTrack = Track(filterTrackName)
                 #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop')
 
-
-                #analysisSpec.addParameter("withOverlaps", "no")
-
-                print 'getOptionsAsText'
-                print analysisSpec.getOptionsAsText()
-                print 'getOptionsAsKeys'
-                print analysisSpec.getOptionsAsKeys()
-                print 'getAllOptionsAsKeys'
-                print analysisSpec.getAllOptionsAsKeys()
-                print 'getChoices'
-                print analysisSpec.getChoices()
-                print 'getChoicesAsText'
-                print analysisSpec.getChoicesAsText()
-                print 'gettext'
-                print analysisSpec.getText()
-                print 'getclass'
-                print str(analysisSpec.getStatClass()) + ' : ' + analysisSpec.getStatClass().__name__
-
-
-                analysisBins = GlobalBinSource(choices.genome)
-
-                setupDebugModeAndLogging()
-
                 res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
 
-                trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
-
-                trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
-
-                tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
-
-
-                # geSource = TrackViewListGenomeElementSource(genome,  trackContents.getTrackViewsList(),
-                #                                             trackName,
-                #                                             allowOverlaps=allowOverlaps)
                 # job = PreProcessTrackGESourceJob(genomeName, trackName, tvGeSource)
                 # job.process()
 
+            else:
+                res = doAnalysis(analysisSpec, analysisBins, [track])
 
+            trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
+            trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
 
-                # filterTrackContents = createTrackContentFromTrack(filterTrack, genome)
-                #
-                # res = operationCls(trackContents, filterTrackContents, **kwArgs)
-                # newTrackContents = res.calculate()
-
-            # else:
-            #     # res = operationCls(trackContents, **kwArgs)
-            #     # newTrackContents = res.calculate()
+            tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
 
             primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName)
-            primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=choices.genome,
+            primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=genomeName,
                                        attributes=gsuiteTrack.attributes)
-
             StdGtrackComposer(tvGeSource).composeToFile(primaryTrack.path)
-            # newTrackContents.createTrack(extraFileName, primaryTrack.path)
+
             primaryGSuite.addTrack(primaryTrack)
 
-
         GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
-
-
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -653,3 +588,4 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
 
 TrackOperationsTool.setupExtraBoxMethods()
+
