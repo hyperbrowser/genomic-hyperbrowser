@@ -12,8 +12,6 @@ from collections import defaultdict
 from gold.gsuite.GSuite import GSuite
 import quick.gsuite.GSuiteUtils as GSuiteUtils
 
-from proto.tools.GeneralGuiTool import BoxGroup
-
 
 class TrackFindClientTool(GeneralGuiTool):
     MAX_NUM_OF_EXTRA_BOXES = 10
@@ -61,7 +59,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
         attrBoxes.append(('', 'categories'))
-        attrBoxes.append(('', 'metamodel'))
+        #attrBoxes.append(('', 'metamodel'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -128,12 +126,12 @@ class TrackFindClientTool(GeneralGuiTool):
             tfm = TrackFindModule()
             return '__hidden__', tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
 
-    @classmethod
-    def getOptionsBoxMetamodel(cls, prevChoices):
-        if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
-            tfm = TrackFindModule()
-            return '__hidden__', tfm.getMetamodelForRepository(
-                prevChoices.selectRepository)
+    # @classmethod
+    # def getOptionsBoxMetamodel(cls, prevChoices):
+    #     if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
+    #         tfm = TrackFindModule()
+    #         return '__hidden__', tfm.getMetamodelForRepository(
+    #             prevChoices.selectRepository)
 
     @classmethod
     def _getDivider(cls, prevChoices, index):
@@ -194,28 +192,28 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
 
-        # filter out attributes that have no subattributes left
-        attributesInRepo = prevChoices.metamodel
-
-        possiblePaths = []
-        for category in attributesInRepo:
-            possiblePaths += [(category + '->' + key) for key in attributesInRepo[category].keys()]
-
-        for prevChoice in prevChoicesList:
-            if prevChoice in possiblePaths:
-                possiblePaths.remove(prevChoice)
-
-        for choice in currentChoicesMap.keys():
-            found = False
-            for repoAttr in possiblePaths:
-                if repoAttr.startswith(choice + '->') or repoAttr == choice:
-                    found = True
-                    break
-            if not found:
-                attributes.remove(currentChoicesMap[choice])
-
-        if not attributes:
-            return
+        # # filter out attributes that have no subattributes left
+        # attributesInRepo = prevChoices.metamodel
+        #
+        # possiblePaths = []
+        # for category in attributesInRepo:
+        #     possiblePaths += [(category + '->' + key) for key in attributesInRepo[category].keys()]
+        #
+        # for prevChoice in prevChoicesList:
+        #     if prevChoice in possiblePaths:
+        #         possiblePaths.remove(prevChoice)
+        #
+        # for choice in currentChoicesMap.keys():
+        #     found = False
+        #     for repoAttr in possiblePaths:
+        #         if repoAttr.startswith(choice + '->') or repoAttr == choice:
+        #             found = True
+        #             break
+        #     if not found:
+        #         attributes.remove(currentChoicesMap[choice])
+        #
+        # if not attributes:
+        #     return
 
         attributes.sort()
 
