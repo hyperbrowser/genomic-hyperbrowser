@@ -4,8 +4,7 @@ from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq, TrackFormat
 from gold.track.TrackView import TrackView
 from quick.track_operations.raw_operations.Intersect import intersect
-from quick.track_operations.utils.TrackHandling import createRawResultTrackView
-from gold.statistic.RawOverlapStat import RawOverlapStatUnsplittable
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean
 
 
 class IntersectionStat(MagicStatFactory):
@@ -13,6 +12,11 @@ class IntersectionStat(MagicStatFactory):
 
 
 class IntersectionStatUnsplittable(Statistic):
+
+    def _init(self, resultAllowOverlap=False, useStrands=True, treatMissingAsNegative=True, **kwargs):
+        self._resultAllowOverlap = parseBoolean(resultAllowOverlap)
+        self._useStrands = parseBoolean(useStrands)
+        self._treatMissingAsNegative = parseBoolean(treatMissingAsNegative)
 
     def _compute(self):
         tv1, tv2 = self._children[0].getResult(), self._children[1].getResult()
@@ -24,22 +28,13 @@ class IntersectionStatUnsplittable(Statistic):
         t2Ends = tv2.endsAsNumpyArray()
         ret = intersect(t1Starts, t1Ends, t2Starts, t2Ends)
 
-
-        print 'kwargs'
-        print self._kwArgs
-
-
         if ret is not None and len(ret[0]) != 0:
             assert len(ret) == 4
 
-            starts = ret[0]
-            ends = ret[1]
-            index = ret[2]
-            encoding = ret[3]
+            starts, ends, index, encoding = ret
 
-            #hardcode not allow overlaps and trackFormat
             tv = createRawResultTrackView(index, self._region, [tv1, tv2],
-                                            False,
+                                            self._resultAllowOverlap,
                                             newStarts=starts, newEnds=ends,
                                             encoding=encoding,
                                             trackFormat=TrackFormat(startList=[], endList=[]))

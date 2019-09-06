@@ -437,6 +437,14 @@ def getKwArgOperationDictStat(analysisSpecsDict):
 
     return kwDict
 
+def parseBoolean(val):
+    if val == 'True':
+        val = True
+    elif val == 'False':
+        val = False
+
+    return val
+
 
 class Capturing(list):
     """
