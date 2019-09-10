@@ -64,7 +64,12 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           'Track operations - complement: test of track operations2 '
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
-                          ' -> ComplementStat'
+                          ' -> ComplementStat',
+                          'Track operations - merge: Merge any overlapping elements in a track '
+                          '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          ' -> MergeStat'
                           ]
 
 
@@ -377,6 +382,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         for kwArg,val in kwArgs.iteritems():
             analysisSpec.setChoice(kwArg, val)
+
 
         for gsuiteTrack in gSuite.allTracks():
             extraFileName = 'result_' + gsuiteTrack.title
