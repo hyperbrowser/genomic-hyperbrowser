@@ -16,7 +16,7 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.UserBinSource import GlobalBinSource
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat
+from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat, parseBoolean
 
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -69,7 +69,16 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
-                          ' -> MergeStat'
+                          ' -> MergeStat',
+                          'Track operations - expand: Expand the elements in a track '
+                          '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          '[useFraction:Interpret flak size as a fraction of the element size=False:FalseLabel/True:TrueLabel]'
+                          '[upstream:Size of the upstream flank. In number of base pairs=0]'
+                          '[downstream:Size of the downstream flank. In number of base pairs=0]'
+                          '[both:Extract the segments in in both directions. In number of base pairs=0]'
+                          ' -> ExpandStat'
                           ]
 
 
@@ -360,27 +369,17 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         # operationCls = cls.OPERATIONS[choices.operation]
         analysisSpec = cls.ANALYSIS_SPECS[choices.operation]
-        operationKwArgs = analysisSpec.getOptionsAsKeys().keys()
+        operationKwArgs = analysisSpec.getOptionsAsKeys()
         kwArgs = {}
-        for kwArg in operationKwArgs:
+        for kwArg in operationKwArgs.keys():
             chosenVal = getattr(choices, kwArg)
-            #trying to find out the datatype and parse
-            # if chosenVal == 'True':
-            #     val = True
-            # elif chosenVal == 'False':
-            #     val = False
-            # elif chosenVal.isalnum():
-            #     val = int(chosenVal)
-            # elif cls.checkIsFloat(chosenVal):
-            #     val = float(chosenVal)
-            # else:
-            #     val = chosenVal
             kwArgs[kwArg] = chosenVal
 
-        print 'kwargs with vals: '
-        print kwArgs
-
         for kwArg,val in kwArgs.iteritems():
+            if parseBoolean(val) is None:
+                #handling float values like this for now..
+                if val not in operationKwArgs[kwArg]:
+                    analysisSpec.changeChoices(kwArg, [[str(val), str(val)]])
             analysisSpec.setChoice(kwArg, val)
 
 

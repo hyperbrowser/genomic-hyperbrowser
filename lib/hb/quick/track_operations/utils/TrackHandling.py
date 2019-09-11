@@ -442,8 +442,25 @@ def parseBoolean(val):
         val = True
     elif val == 'False':
         val = False
+    else:
+        return None
 
     return val
+
+def parseInt(val):
+    if val:
+        try:
+            return int(val)
+        except ValueError:
+            return None
+
+    return None
+
+def createEmptyTrackView(tv):
+    return TrackView(genomeAnchor=tv.genomeAnchor, startList=[],
+                     endList=[], valList=None, strandList=None,
+                     idList=None, edgesList=None, weightsList=None,
+                     borderHandling=tv.borderHandling, allowOverlaps=False)
 
 
 class Capturing(list):
