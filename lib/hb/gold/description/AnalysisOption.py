@@ -53,6 +53,7 @@ class AnalysisOption(object):
             if choiceKeyOrText in [self._choiceList[i][x] for x in [0,1]]:
                 self._choice = i
                 return
+        print 'not found: ' + str(choiceKeyOrText)
         raise ShouldNotOccurError
 
     def setDefaultChoice(self):
