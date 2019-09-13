@@ -1,7 +1,7 @@
 
 import numpy as np
 
-def _mergeIds(ids, overlapIndex, removeIndex, mergeNr, idsDict, debug=False):
+def _mergeIds(ids, overlapIndex, removeIndex, mergeNr, idsDict, debug=True):
     if debug:
         print("start _mergeIds")
 
@@ -583,6 +583,9 @@ def merge(starts, ends, strands=None, values=None, ids=None, edges=None,
         return starts, ends, strands, values, ids, edges, weights
 
     else:
+        if strands is not None:
+            strands = strands.copy()
+            values = values.copy()
         if debug:
             print("Merging without using strands")
             print("weights: {}".format(weights))
