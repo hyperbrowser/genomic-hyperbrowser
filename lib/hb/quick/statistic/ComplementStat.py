@@ -2,9 +2,9 @@ from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
 from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq
-from gold.track.TrackView import TrackView
 from quick.track_operations.raw_operations.Complement import complement
-from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean, \
+    createEmptyTrackView
 
 
 class ComplementStat(MagicStatFactory):
@@ -47,10 +47,7 @@ class ComplementStatUnsplittable(Statistic):
             return tv
 
         else:
-            return TrackView(genomeAnchor=tv1.genomeAnchor, startList=[],
-                             endList=[], valList=None, strandList=None,
-                             idList=None, edgesList=None, weightsList=None,
-                             borderHandling=tv1.borderHandling, allowOverlaps=False)
+            return createEmptyTrackView(tv1)
 
     def _createChildren(self):
         self._addChild(RawDataStat(self._region, self._track, TrackFormatReq(dense=False)))

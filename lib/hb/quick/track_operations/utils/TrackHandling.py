@@ -457,8 +457,9 @@ def parseInt(val):
     return None
 
 def createEmptyTrackView(tv):
-    return TrackView(genomeAnchor=tv.genomeAnchor, startList=[],
-                     endList=[], valList=None, strandList=None,
+    from numpy import array
+    return TrackView(genomeAnchor=tv.genomeAnchor, startList=array([]),
+                     endList=array([]), valList=None, strandList=None,
                      idList=None, edgesList=None, weightsList=None,
                      borderHandling=tv.borderHandling, allowOverlaps=False)
 

@@ -65,8 +65,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
                           ' -> ComplementStat',
-                          'Track operations - merge: Merge any overlapping elements in a track '
-                          '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          'Track operations - merge: Merge any overlapping elements in a track '                          
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
                           ' -> MergeStat',
