@@ -4,11 +4,13 @@ import gold.gsuite.GSuiteComposer as GSuiteComposer
 from gold.application.HBAPI import doAnalysis
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
+from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
 from gold.origdata.GtrackComposer import StdGtrackComposer
+from gold.origdata.PreProcessTracksJob import PreProcessTrackGESourceJob
 from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
 from gold.track.Track import Track
 from proto.tools.GeneralGuiTool import HistElement
@@ -397,23 +399,27 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
                 res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
 
-                # job = PreProcessTrackGESourceJob(genomeName, trackName, tvGeSource)
-                # job.process()
-
             else:
                 res = doAnalysis(analysisSpec, analysisBins, [track])
 
             trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
+
             trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
 
             tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
+
+            # job = PreProcessTrackGESourceJob(genomeName, trackName, tvGeSource)
+            # job.process()
+            # trackType = TrackInfo(choices.genome, trackName).trackFormatName.lower()
+            # hbUri = HbGSuiteTrack.generateURI(trackName=trackName)
+            # primaryGSuite.addTrack(GSuiteTrack(hbUri, title=title, trackType=trackType, genome=genomeName))
 
             primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName)
             primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=genomeName,
                                        attributes=gsuiteTrack.attributes)
             StdGtrackComposer(tvGeSource).composeToFile(primaryTrack.path)
-
             primaryGSuite.addTrack(primaryTrack)
+
 
         GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
 
