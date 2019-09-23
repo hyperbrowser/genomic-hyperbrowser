@@ -385,7 +385,8 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
 
         for gsuiteTrack in gSuite.allTracks():
-            extraFileName = 'result_' + gsuiteTrack.title
+            import time
+            extraFileName = 'result_' + gsuiteTrack.title + '_' + str(time.time())
             title = gsuiteTrack.title
 
             track = Track(gsuiteTrack.trackName)
@@ -408,17 +409,17 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
             tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
 
-            # job = PreProcessTrackGESourceJob(genomeName, trackName, tvGeSource)
-            # job.process()
-            # trackType = TrackInfo(choices.genome, trackName).trackFormatName.lower()
-            # hbUri = HbGSuiteTrack.generateURI(trackName=trackName)
-            # primaryGSuite.addTrack(GSuiteTrack(hbUri, title=title, trackType=trackType, genome=genomeName))
+            job = PreProcessTrackGESourceJob(genomeName, trackName, tvGeSource)
+            job.process()
+            trackType = TrackInfo(choices.genome, trackName).trackFormatName.lower()
+            hbUri = HbGSuiteTrack.generateURI(trackName=trackName)
+            primaryGSuite.addTrack(GSuiteTrack(hbUri, title=title, trackType=trackType, genome=genomeName))
 
-            primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName)
-            primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=genomeName,
-                                       attributes=gsuiteTrack.attributes)
-            StdGtrackComposer(tvGeSource).composeToFile(primaryTrack.path)
-            primaryGSuite.addTrack(primaryTrack)
+            # primaryTrackUri = GalaxyGSuiteTrack.generateURI(galaxyFn=hiddenStorageFn, extraFileName=extraFileName)
+            # primaryTrack = GSuiteTrack(primaryTrackUri, title=title, genome=genomeName,
+            #                            attributes=gsuiteTrack.attributes)
+            # StdGtrackComposer(tvGeSource).composeToFile(primaryTrack.path)
+            # primaryGSuite.addTrack(primaryTrack)
 
 
         GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
