@@ -237,6 +237,8 @@ class TrackGESourceManager(GESourceManager):
     def _calcStatisticsInExtraPass(self):
         if not self._hasCalculatedStats:
             for brTuple in self._geSource.getBoundingRegionTuples():
+                if brTuple.elCount == 0:
+                    continue
                 chr = brTuple.region.chr
 
                 self._numElements[chr] += brTuple.elCount
