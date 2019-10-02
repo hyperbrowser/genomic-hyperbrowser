@@ -429,7 +429,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 filterTrack = Track(filterTrackName)
                 #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop')
 
-                #res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
+                res = doAnalysisYaml(operationYaml, analysisBins, [track, filterTrack], **kwArgs)
 
             else:
                 res = doAnalysisYaml(operationYaml, analysisBins, [track], **kwArgs)

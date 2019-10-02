@@ -1,5 +1,7 @@
 import sys
 import traceback
+
+from gold.statistic.CoreStatistics import STAT_CLASS_DICT
 from gold.util.CommonFunctions import insertTrackNames, getClassName, prettyPrintTrackName
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import Track
@@ -257,3 +259,27 @@ class Analysis(AnalysisDefHandler):
         
     #def setChoice(self, optionLabelText, choiceText):
     #    raise ShouldNotOccurError
+
+class AnalysisYaml():
+    def __init__(self, analysisDefYaml, genome, trackName1, trackName2, **kwArgs):
+        #print 'IN ANALYSIS: ',analysisLine
+        #AnalysisDefHandler.__init__(self, analysisLine, reversed)
+        self._genome = genome
+        # self._setTracks(trackName1, trackName2)
+        # self._useConvertersFromId()
+        self._validStatClass = None
+        statName = analysisDefYaml['statClass']
+        self._statClass = STAT_CLASS_DICT[statName]
+        self._kwArgs = kwArgs
+
+    def getWrappedStat(self):
+        validStatClass = wrapClass(self._statClass, keywords=self._kwArgs)  # fixme: Perhaps return validStatClass, self.getChoices() instead?
+        # self.setConverters( self._track.formatConverters, self._track2.formatConverters if self._track2 is not None else None)
+        # self._updateOptions()
+        # if DebugConfig.VERBOSE:
+        #     logMessage(self._statClass.__name__ + ': OK')
+        # #                        print statClass.__name__ + ': OK'
+        return validStatClass
+
+    def getChoice(self, name):
+        return None

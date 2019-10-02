@@ -2,6 +2,7 @@
 import time
 import datetime
 
+
 from gold.statistic.CoreStatistics import STAT_CLASS_DICT
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.util.CustomExceptions import SplittableStatNotAvailableError
@@ -325,7 +326,7 @@ class AnalysisDefJob(StatJob):
 class AnalysisDefJobYaml(AnalysisDefJob):
     def __init__(self, analysisDefYaml, trackName1, trackName2, userBinSource,
             genome=None, galaxyFn=None, *args, **kwArgs):
-        from gold.description.Analysis import Analysis
+        from gold.description.Analysis import AnalysisYaml
 
         #  to be removed later.. Just for convenience with development now..
         #self._analysisDef = analysisDef
@@ -337,18 +338,15 @@ class AnalysisDefJobYaml(AnalysisDefJob):
 
         self._galaxyFn = galaxyFn
 
-        #self._analysis = Analysis(analysisDef, genome, trackName1, trackName2)
+        self._analysis = AnalysisYaml(analysisDefYaml, genome, trackName1, trackName2, **kwArgs)
         #self._setRandomSeedIfNeeded()
 
         track = Track(trackName1)
         track2 = Track(trackName2)
 
-        #to be parsed from analysis def yam
-        statName = analysisDefYaml['statClass']
-        self._statClass = STAT_CLASS_DICT[statName]
         #track, track2 = self._analysis.getTracks()
         StatJob.__init__(self, userBinSource, track, track2,
-                         self._statClass, *args, **kwArgs)
+                         self._analysis.getWrappedStat(), *args, **kwArgs)
 
     
 class Progress():
