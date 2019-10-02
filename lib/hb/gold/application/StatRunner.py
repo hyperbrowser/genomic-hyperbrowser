@@ -2,6 +2,7 @@
 import time
 import datetime
 
+from gold.statistic.CoreStatistics import STAT_CLASS_DICT
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.util.CustomExceptions import SplittableStatNotAvailableError
 from gold.result.Results import Results
@@ -290,9 +291,10 @@ class AnalysisDefJob(StatJob):
             res = resDict[0]
         else:
             res = StatJob.run(self, printProgress=printProgress)
-        
-        res.setAnalysis(self._analysis)
-        res.setAnalysisText(str(self._analysis))
+
+
+        # res.setAnalysis(self._analysis)
+        # res.setAnalysisText(str(self._analysis))
         
         ResultsMemoizer.flushStoredResults()
         
@@ -321,12 +323,12 @@ class AnalysisDefJob(StatJob):
         #return res
 
 class AnalysisDefJobYaml(AnalysisDefJob):
-    def __init__(self, analysisDef, trackName1, trackName2, userBinSource,
+    def __init__(self, analysisDefYaml, trackName1, trackName2, userBinSource,
             genome=None, galaxyFn=None, *args, **kwArgs):
         from gold.description.Analysis import Analysis
 
         #  to be removed later.. Just for convenience with development now..
-        self._analysisDef = analysisDef
+        #self._analysisDef = analysisDef
         #  self._trackName1 = trackName1
         #  self._trackName2 = trackName2
 
@@ -335,18 +337,18 @@ class AnalysisDefJobYaml(AnalysisDefJob):
 
         self._galaxyFn = galaxyFn
 
-        self._analysis = Analysis(analysisDef, genome, trackName1, trackName2)
-        self._setRandomSeedIfNeeded()
+        #self._analysis = Analysis(analysisDef, genome, trackName1, trackName2)
+        #self._setRandomSeedIfNeeded()
 
-        track, track2 = self._analysis.getTracks()
+        track = Track(trackName1)
+        track2 = Track(trackName2)
+
+        #to be parsed from analysis def yam
+        statName = analysisDefYaml['statClass']
+        self._statClass = STAT_CLASS_DICT[statName]
+        #track, track2 = self._analysis.getTracks()
         StatJob.__init__(self, userBinSource, track, track2,
-                         self._analysis.getStat(), *args, **kwArgs)
-
-    def _setRandomSeedIfNeeded(self):
-        from gold.util.RandomUtil import getRandomSeed
-        randSeedChoice = self._analysis.getChoice('randomSeed')
-        if randSeedChoice == 'Random':
-            self._analysis.changeChoices('randomSeed', [(str(getRandomSeed()),) * 2])
+                         self._statClass, *args, **kwArgs)
 
     
 class Progress():

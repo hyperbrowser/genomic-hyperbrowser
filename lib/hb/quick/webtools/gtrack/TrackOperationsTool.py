@@ -1,7 +1,10 @@
+import os
 from functools import partial
 
+import yaml
+
 import gold.gsuite.GSuiteComposer as GSuiteComposer
-from gold.application.HBAPI import doAnalysis
+from gold.application.HBAPI import doAnalysis, doAnalysisYaml
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.TrackInfo import TrackInfo
@@ -369,19 +372,47 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         primaryGSuite = GSuite()
 
         # operationCls = cls.OPERATIONS[choices.operation]
-        analysisSpec = cls.ANALYSIS_SPECS[choices.operation]
-        operationKwArgs = analysisSpec.getOptionsAsKeys()
+        # analysisSpec = cls.ANALYSIS_SPECS[choices.operation]
+        # operationKwArgs = analysisSpec.getOptionsAsKeys()
+        # kwArgs = {}
+        # for kwArg in operationKwArgs.keys():
+        #     chosenVal = getattr(choices, kwArg)
+        #     kwArgs[kwArg] = chosenVal
+
+        analysisYaml = ''
+        #print os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'analysis.yaml'), 'r') as stream:
+            analysisYaml = yaml.safe_load(stream)
+
+        print analysisYaml
+        operationYaml = {}
+        #later there will probably be a dict with op name as a key
+        for analysis in analysisYaml:
+            if analysis['statClass'] == choices.operation:
+                operationYaml = analysis
+
+
+        operationKwArgs = []
+        for param in operationYaml['parameters']:
+            operationKwArgs.append(param['name'])
+
         kwArgs = {}
-        for kwArg in operationKwArgs.keys():
+        print operationKwArgs
+        for kwArg in operationKwArgs:
             chosenVal = getattr(choices, kwArg)
             kwArgs[kwArg] = chosenVal
 
-        for kwArg,val in kwArgs.iteritems():
-            if parseBoolean(val) is None:
-                #handling float values like this for now..
-                if val not in operationKwArgs[kwArg]:
-                    analysisSpec.changeChoices(kwArg, [[str(val), str(val)]])
-            analysisSpec.setChoice(kwArg, val)
+
+        # temporary
+        if 'useStrands' in kwArgs:
+            kwArgs['useStrands'] = 'False'
+
+        # for kwArg,val in kwArgs.iteritems():
+        #     if parseBoolean(val) is None:
+        #         #handling float values like this for now..
+        #         if val not in operationKwArgs[kwArg]:
+        #             analysisSpec.changeChoices(kwArg, [[str(val), str(val)]])
+        #     analysisSpec.setChoice(kwArg, val)
 
 
         for gsuiteTrack in gSuite.allTracks():
@@ -398,10 +429,11 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 filterTrack = Track(filterTrackName)
                 #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop')
 
-                res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
+                #res = doAnalysis(analysisSpec, analysisBins, [track, filterTrack])
 
             else:
-                res = doAnalysis(analysisSpec, analysisBins, [track])
+                res = doAnalysisYaml(operationYaml, analysisBins, [track], **kwArgs)
+                #print 'got res ' + str(res)
 
             trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
 

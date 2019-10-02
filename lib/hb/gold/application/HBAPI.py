@@ -1,7 +1,7 @@
 #For doAnalysis
 import logging
 from gold.application.LogSetup import setupDebugModeAndLogging
-from gold.application.StatRunner import AnalysisDefJob
+from gold.application.StatRunner import AnalysisDefJob, AnalysisDefJobYaml
 
 #For getTrackData
 from gold.track.Track import Track, PlainTrack
@@ -56,6 +56,16 @@ def doAnalysis(analysisSpec, analysisBins, tracks):
                          tracks[0].trackName,
                          tracks[1].trackName if len(tracks) > 1 else None,
                          analysisBins, galaxyFn=None)
+    res = job.run(printProgress=False)  # printProgress should be optional?
+    return res
+
+
+def doAnalysisYaml(analysisDefYaml, analysisBins, tracks, **kwArgs):
+
+    job = AnalysisDefJobYaml(analysisDefYaml,
+                        tracks[0].trackName,
+                        tracks[1].trackName if len(tracks) > 1 else None,
+                        analysisBins, galaxyFn=None, **kwArgs)
     res = job.run(printProgress=False)  # printProgress should be optional?
     return res
 
