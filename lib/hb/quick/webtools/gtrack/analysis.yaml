@@ -9,11 +9,12 @@
       info: Allow overlap in the result track
       datatype: boolean
       defaultValue: False
+      required: True
       values:
         - val: True
-          label: Yes
+          label: 'Yes'
         - val: False
-          label: No
+          label: 'No'
     - name: useStrands
       info: Follow the strand direction
       datatype: boolean
@@ -33,26 +34,3 @@
         - val: False
           label: 'No'
 
-- name: Complement tmp
-  label: Complement label (test of track operations)
-  info: Find the intersect between two tracks
-  statClass: ComplementStat
-  parameters:
-    - name: useStrands
-      info: Follow the strand direction
-      datatype: boolean
-      defaultValue: True
-      values:
-        - val: True
-          label: 'Yes'
-        - val: False
-          label: 'No'
-    - name: treatMissingAsNegative
-      info: Treat any missing strand as if they are negative
-      datatype: boolean
-      defaultValue: True
-      values:
-        - val: True
-          label: 'Yes'
-        - val: False
-          label: 'No'

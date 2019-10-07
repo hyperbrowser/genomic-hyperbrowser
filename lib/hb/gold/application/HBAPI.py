@@ -60,12 +60,12 @@ def doAnalysis(analysisSpec, analysisBins, tracks):
     return res
 
 
-def doAnalysisYaml(analysisDefYaml, analysisBins, tracks, **kwArgs):
+def doAnalysisYaml(analysisDefYaml, analysisBins, tracks):
 
     job = AnalysisDefJobYaml(analysisDefYaml,
                         tracks[0].trackName,
                         tracks[1].trackName if len(tracks) > 1 else None,
-                        analysisBins, galaxyFn=None, **kwArgs)
+                        analysisBins, galaxyFn=None)
     res = job.run(printProgress=False)  # printProgress should be optional?
     return res
 

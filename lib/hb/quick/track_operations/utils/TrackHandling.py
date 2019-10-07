@@ -1,4 +1,4 @@
-
+import os
 import sys
 
 import numpy as np
@@ -7,6 +7,9 @@ import logging
 from collections import OrderedDict
 from cStringIO import StringIO
 
+import yaml
+
+from gold.description.AnalysisDefHandler import YamlAnalysisDefHandler
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 
@@ -436,6 +439,16 @@ def getKwArgOperationDictStat(analysisSpecsDict):
             kwDict.setdefault(kw, []).append(op)
 
     return kwDict
+
+def getYamlAnalysisSpecs(filePath):
+    yamlAnalysisSpecList = []
+    with open(filePath, 'r') as stream:
+        analysisList = yaml.safe_load(stream)
+        for analysis in analysisList:
+            yamlAnalysisSpec = YamlAnalysisDefHandler(analysis)
+            yamlAnalysisSpecList.append(yamlAnalysisSpec)
+
+    return yamlAnalysisSpecList
 
 def parseBoolean(val):
     if val == 'True':

@@ -29,8 +29,6 @@ class IntersectionStatUnsplittable(Statistic):
         ret = intersect(t1Starts, t1Ends, t2Starts, t2Ends)
 
         if ret is not None and len(ret[0]) != 0:
-            assert len(ret) == 4
-
             starts, ends, index, encoding = ret
 
             tv = createRawResultTrackView(index, self._region, [tv1, tv2],

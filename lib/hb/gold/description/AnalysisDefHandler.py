@@ -1,4 +1,6 @@
 import re
+from collections import namedtuple
+
 from gold.description.AnalysisOption import AnalysisOption
 from gold.util.CustomExceptions import ShouldNotOccurError
 from gold.application.LogSetup import logging, logException, logMessage
@@ -354,3 +356,134 @@ class AnalysisDefHandler(AnalysisSpec):
         
     def getIllustrationFn(self):
         return self.getChoice(self.ILLUSTRATION_FN_KEY)
+
+# KwArgumentInfo = namedtuple('KwArgumentInfo', ['key', 'required', 'help',
+#                                                'contentType', 'defaultValue'])
+
+class YamlAnalysisDefHandler():
+    def __init__(self, analysisYaml):
+        self._analysisYaml = analysisYaml
+        self._parseDef(analysisYaml)
+
+    def _parseDef(self, analysisYaml):
+        self._statClassName = analysisYaml['statClass']
+        from gold.statistic.AllStatistics import STAT_CLASS_DICT
+        self._statClass = STAT_CLASS_DICT[self._statClassName]
+        self._analysisKwArgs = {}
+        for param in analysisYaml['parameters']:
+            self._analysisKwArgs[(param['name'])] = KwArgumentInfo(param)
+
+    def getKwArgs(self):
+        return self._analysisKwArgs.keys()
+
+    def getKwArgsWithInfo(self):
+        return self._analysisKwArgs
+
+    #temporary, to keep smae method signature for TrackHandling.getKwArgOperationDictStat
+    def getOptionsAsKeys(self):
+        return self.getKwArgsWithInfo()
+
+    def getStatClass(self):
+        return self._statClass
+
+class YamlAnalysisDefHandlerWithChoices():
+    def __init__(self, yamlAnalysisDefHandler):
+        self._analysisDefHandler = yamlAnalysisDefHandler
+        self._choices = {}
+
+    def setChoices(self, kwArgsWithChoices):
+        availableKwArgs = self._analysisDefHandler.getKwArgs()
+        for kwArg, val in kwArgsWithChoices.iteritems():
+            #TODO also check datatype
+            if kwArg not in availableKwArgs:
+                print 'kwArg ' + kwArg + ' not found in avalilable kwArgs: ' + str(availableKwArgs)
+                continue
+            else:
+                self._choices[kwArg] = val
+
+    def getChoices(self):
+        return self._choices
+
+    def getChoice(self, kwArg):
+        if kwArg in self._choices:
+            return self._choices[kwArg]
+        else:
+            return None
+
+    def setChoice(self, kwArg, val):
+        if kwArg in self._analysisDefHandler.getKwArgs():
+            self._choices[kwArg] = val
+        else:
+            print 'KwArg ' + kwArg  + ' not found'
+
+
+class KwArgumentInfo():
+    def __init__(self, yamlParam):
+        self._name = yamlParam['name']
+        self._info = yamlParam['info']
+        self._datatype = yamlParam['datatype']
+        if 'defaultValue' in yamlParam:
+            self._defaultValue = yamlParam['defaultValue']
+        else:
+            self._defaultValue = None
+        self._possibleValues = []
+        for valItem in yamlParam['values']:
+            val = valItem['val']
+            if 'label' not in valItem:
+                label = str(val)
+            else:
+                label = valItem['label']
+            self._possibleValues.append((val, label))
+
+        if 'required' in yamlParam:
+            self._required = yamlParam['required']
+        else:
+            if self._defaultValue is None:
+                self._required = True
+            else:
+                self._required = False
+
+    def getName(self):
+        return self._name
+
+    def getInfo(self):
+        return self._info
+
+    def getDatatype(self):
+        return self._datatype
+
+    def getDefaultValue(self):
+        return self._defaultValue
+
+    def getPossibleValues(self):
+        vals = []
+        for (val, label) in  self._possibleValues:
+            vals.append(val)
+
+        return vals
+
+    def getPossibleValuesWithLabels(self):
+        return self._possibleValues
+
+    def getPossibleValuesLabels(self):
+        labels = []
+        for (val, label) in self._possibleValues:
+            labels.append(label)
+
+        return labels
+
+    def isRequired(self):
+        return self._required
+
+
+
+
+
+
+
+
+
+
+
+
+

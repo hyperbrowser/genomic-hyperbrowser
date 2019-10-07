@@ -6,7 +6,8 @@ import yaml
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 from gold.application.HBAPI import doAnalysis, doAnalysisYaml
 from gold.application.LogSetup import setupDebugModeAndLogging
-from gold.description.AnalysisDefHandler import AnalysisDefHandler
+from gold.description.AnalysisDefHandler import AnalysisDefHandler, YamlAnalysisDefHandler, \
+    YamlAnalysisDefHandlerWithChoices
 from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
@@ -21,7 +22,8 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.UserBinSource import GlobalBinSource
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat, parseBoolean
+from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat, parseBoolean, \
+    getYamlAnalysisSpecs
 
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -89,12 +91,21 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
     ANALYSIS_SPECS = {spec.getStatClass().__name__: spec for spec in ANALYSIS_SPECS_LIST}
-    
+
+    YAML_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'analysis.yaml')
+    YAML_ANALYSIS_SPECS_LIST = getYamlAnalysisSpecs(YAML_FILE_PATH)
+    YAML_ANALYSIS_SPECS = {spec.getStatClass().__name__: spec for spec in YAML_ANALYSIS_SPECS_LIST}
+
     OPERATIONS = {statClassName:spec.getStatClass() for statClassName,spec in ANALYSIS_SPECS.iteritems()}
+    YAML_OPERATIONS = {statClassName:spec.getStatClass() for statClassName,spec in YAML_ANALYSIS_SPECS.iteritems()}
+
     KW_OPERATION_DICT = getKwArgOperationDictStat(ANALYSIS_SPECS)
+    YAML_KW_OPERATION_DICT = getKwArgOperationDictStat(ANALYSIS_SPECS)
 
     NO = 'No'
     YES = 'Yes'
+
+    YAML_DEF_OPERATIONS = ['IntersectionStat']
 
     @classmethod
     def getToolName(cls):
@@ -356,7 +367,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
 
-        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
+        # hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
         # emptyFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nointersect', description=desc,
         #                                 datasetInfo=choices.gSuite)]
@@ -370,49 +381,43 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         #                                  (cls.PROGRESS_PREPROCESS_MSG, numTracks)], galaxyFn)
 
         primaryGSuite = GSuite()
+        chosenOperation = choices.operation
 
-        # operationCls = cls.OPERATIONS[choices.operation]
-        # analysisSpec = cls.ANALYSIS_SPECS[choices.operation]
-        # operationKwArgs = analysisSpec.getOptionsAsKeys()
-        # kwArgs = {}
-        # for kwArg in operationKwArgs.keys():
-        #     chosenVal = getattr(choices, kwArg)
-        #     kwArgs[kwArg] = chosenVal
+        if chosenOperation in cls.YAML_DEF_OPERATIONS:
+            analysisSpec = cls.YAML_ANALYSIS_SPECS[choices.operation]
 
-        analysisYaml = ''
-        #print os.path.dirname(os.path.abspath(__file__))
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'analysis.yaml'), 'r') as stream:
-            analysisYaml = yaml.safe_load(stream)
+            operationKwArgs = analysisSpec.getKwArgsWithInfo()
 
-        print analysisYaml
-        operationYaml = {}
-        #later there will probably be a dict with op name as a key
-        for analysis in analysisYaml:
-            if analysis['statClass'] == choices.operation:
-                operationYaml = analysis
+            kwArgsWithChoices = cls.getKwArgsFromChoices(choices, operationKwArgs)
+
+            analysisWithChoices = YamlAnalysisDefHandlerWithChoices(analysisSpec)
+            analysisWithChoices.setChoices(kwArgsWithChoices)
+
+            doAnalysisMethod = doAnalysisYaml
+
+        else:
+            #operationCls = cls.OPERATIONS[choices.operation]
+            analysisSpec = cls.ANALYSIS_SPECS[choices.operation]
+            operationKwArgs = analysisSpec.getOptionsAsKeys()
+
+            kwArgsWithChoices = cls.getKwArgsFromChoices(choices, operationKwArgs)
+
+            for kwArg, val in kwArgsWithChoices.iteritems():
+                if parseBoolean(val) is None:
+                    # handling float values like this for now..
+                    if val not in operationKwArgs[kwArg]:
+                        analysisSpec.changeChoices(kwArg, [[str(val), str(val)]])
+                analysisSpec.setChoice(kwArg, val)
 
 
-        operationKwArgs = []
-        for param in operationYaml['parameters']:
-            operationKwArgs.append(param['name'])
+            doAnalysisMethod = doAnalysis
 
-        kwArgs = {}
-        print operationKwArgs
-        for kwArg in operationKwArgs:
-            chosenVal = getattr(choices, kwArg)
-            kwArgs[kwArg] = chosenVal
 
+        #print operationKwArgs
 
         # temporary
-        if 'useStrands' in kwArgs:
-            kwArgs['useStrands'] = 'False'
-
-        # for kwArg,val in kwArgs.iteritems():
-        #     if parseBoolean(val) is None:
-        #         #handling float values like this for now..
-        #         if val not in operationKwArgs[kwArg]:
-        #             analysisSpec.changeChoices(kwArg, [[str(val), str(val)]])
-        #     analysisSpec.setChoice(kwArg, val)
+        if 'useStrands' in kwArgsWithChoices:
+            kwArgsWithChoices['useStrands'] = 'False'
 
 
         for gsuiteTrack in gSuite.allTracks():
@@ -429,10 +434,10 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 filterTrack = Track(filterTrackName)
                 #filterTrack.addFormatReq(TrackFormatReq(allowOverlaps=False, borderHandling='crop')
 
-                res = doAnalysisYaml(operationYaml, analysisBins, [track, filterTrack], **kwArgs)
+                res = doAnalysisMethod(analysisSpec, analysisBins, [track, filterTrack])
 
             else:
-                res = doAnalysisYaml(operationYaml, analysisBins, [track], **kwArgs)
+                res = doAnalysisMethod(analysisSpec, analysisBins, [track])
                 #print 'got res ' + str(res)
 
             trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
@@ -455,6 +460,15 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
 
         GSuiteComposer.composeToFile(primaryGSuite, primaryFn)
+
+    @classmethod
+    def getKwArgsFromChoices(cls, choices, operationKwArgs):
+        kwArgs = {}
+        for kwArg in operationKwArgs:
+            chosenVal = getattr(choices, kwArg)
+            kwArgs[kwArg] = chosenVal
+
+        return kwArgs
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

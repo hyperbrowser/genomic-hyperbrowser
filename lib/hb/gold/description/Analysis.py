@@ -268,8 +268,8 @@ class AnalysisYaml():
         # self._setTracks(trackName1, trackName2)
         # self._useConvertersFromId()
         self._validStatClass = None
-        statName = analysisDefYaml['statClass']
-        self._statClass = STAT_CLASS_DICT[statName]
+        self._statClass = analysisDefYaml.getStatClass()
+
         self._kwArgs = kwArgs
 
     def getWrappedStat(self):
