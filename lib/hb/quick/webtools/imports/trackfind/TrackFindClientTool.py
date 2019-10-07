@@ -240,7 +240,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if selectionType != cls.SINGLE_SELECTION:
             return
 
-        values = cls.getValues(prevChoices, index)[0]
+        values, _ = cls.getValues(prevChoices, index)
 
         values.insert(0, cls.SELECT_CHOICE)
         return values
@@ -264,8 +264,8 @@ class TrackFindClientTool(GeneralGuiTool):
                 return OrderedDict([(value, True) for value in values])
 
             tfm = TrackFindModule()
-            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository, prevChoices.selectRepository,
-                                                    subattributePath, searchTerm)
+            filteredValues = tfm.getAttributeValues(prevChoices.selectRepository,
+                                                    subattributePath, searchTerm=searchTerm)
 
             valuesDict = OrderedDict()
             for value in values:
@@ -284,18 +284,19 @@ class TrackFindClientTool(GeneralGuiTool):
             values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath)
         else:
             chosenOptions = cls.getPreviousChoices(prevChoices, index)
-            jsonData = tfm.getJsonData(prevChoices.selectRepository, chosenOptions)
-
-            values = set()
-            for jsonItem in jsonData:
-                try:
-                    value = reduce(operator.getitem, prevSubattributes, jsonItem)
-                except (KeyError, TypeError):
-                    continue
-                if value:
-                    values.add(value)
-
-        values = list(values)
+            values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath, attrValueMap=chosenOptions)
+        #     jsonData = tfm.getJsonData(prevChoices.selectRepository, chosenOptions)
+        #
+        #     values = set()
+        #     for jsonItem in jsonData:
+        #         try:
+        #             value = reduce(operator.getitem, prevSubattributes, jsonItem)
+        #         except (KeyError, TypeError):
+        #             continue
+        #         if value:
+        #             values.add(value)
+        #
+        # values = list(values)
         values.sort()
 
         return values, subattributePath
@@ -430,6 +431,8 @@ class TrackFindClientTool(GeneralGuiTool):
         dataTypes = defaultdict(int)
 
         gsuite = cls.getGsuite(prevChoices)
+
+
 
         for track in gsuite.allTracks():
             attr = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
@@ -622,7 +625,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
             if track.suffix in  cls.SUFFIX_REPLACE_MAP:
                 newUri = track.uriWithoutSuffix + ';{}'.format(cls.SUFFIX_REPLACE_MAP[track.suffix])
-                track  = GSuiteTrack(uri=newUri, title=track.title, fileFormat=track.fileFormat,
+                track = GSuiteTrack(uri=newUri, title=track.title, fileFormat=track.fileFormat,
                                      trackType=track.trackType, genome=track.genome,
                                      attributes=track.attributes)
             newGSuite.addTrack(track)

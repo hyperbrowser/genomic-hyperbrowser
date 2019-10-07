@@ -63,7 +63,7 @@ class TrackFindModule(object):
 
         return response.json()
 
-    def getAttributeValues(self, repoAndHub, path, searchTerm=''):
+    def getAttributeValues(self, repoAndHub, path, searchTerm='', attrValueMap=None):
         repo, hub = self.getRepoAndHub(repoAndHub)
         if '->' in path:
             category, path = path.split('->', 1)
@@ -72,7 +72,17 @@ class TrackFindModule(object):
             url = self.URL + '/values/' + repo + '/' + hub + '/' + path
 
         if searchTerm:
-            url += '&filter=' + searchTerm
+            if '?' in url:
+                url += '&filter=' + searchTerm
+            else:
+                url += '?filter=' + searchTerm
+
+        if attrValueMap:
+            query = self.createQuery(attrValueMap)
+            if '?' in url:
+                url += '&query=' + query
+            else:
+                url += '?query=' + query
 
         response = requests.get(url)
         self.logRequest(url, response.elapsed.total_seconds())
@@ -131,11 +141,11 @@ class TrackFindModule(object):
         return query
 
     def logRequest(self, url, time = 0):
-        # logfile = open("apilog", "a", 0)
-        #
-        # logfile.write(str(time) + '   ' + url + '\n')
-        #
-        # logfile.close()
+        logfile = open("apilog-new", "a", 0)
+
+        logfile.write(str(time) + '   ' + url + '\n')
+
+        logfile.close()
         pass
 
     def getRepoAndHub(self, repoHub):
