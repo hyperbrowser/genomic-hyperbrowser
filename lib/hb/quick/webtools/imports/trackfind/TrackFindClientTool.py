@@ -1,3 +1,4 @@
+from gold.gsuite import GSuiteParser
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.trackfind.TrackFindModule import TrackFindModule
 from functools import partial
@@ -86,7 +87,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes.append(('By default, only the first ' + str(cls.TRACK_TABLE_LIMIT) + ' tracks are displayed. Do you want to display all?',
                          'displayAllTracks'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
-        attrBoxes.append(('Include non-standard attributes in the result gsuite', 'extraAttributes'))
+        attrBoxes.append(('Include non-standard attributes in the result GSuite', 'extraAttributes'))
         return attrBoxes
 
     @classmethod
@@ -330,19 +331,22 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+        gsuiteStr = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
-        return '__hidden__', gsuite
+        return '__hidden__', gsuiteStr
 
     @classmethod
     def getGsuite(cls, prevChoices, includeExtraAttributes=False):
         tfm = TrackFindModule()
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
         if not includeExtraAttributes:
-            gsuite = prevChoices.gsuite
+            gsuiteStr = prevChoices.gsuite
+
             #gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
         else:
-            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, True)
+            gsuiteStr = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, includeExtraAttributes=True)
+
+        gsuite = GSuiteParser.parseFromString(gsuiteStr)
 
         return gsuite
 
