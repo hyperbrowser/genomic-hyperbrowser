@@ -1,17 +1,15 @@
-from gold.gsuite import GSuiteParser
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.trackfind.TrackFindModule import TrackFindModule
-from functools import partial
 from collections import OrderedDict
+from collections import defaultdict
 from copy import copy
+from functools import partial
 
+import gold.gsuite.GSuiteComposer as GSuiteComposer
+import quick.gsuite.GSuiteUtils as GSuiteUtils
+from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
-import operator
-import gold.gsuite.GSuiteComposer as GSuiteComposer
-from collections import defaultdict
-from gold.gsuite.GSuite import GSuite
-import quick.gsuite.GSuiteUtils as GSuiteUtils
+from quick.trackfind.TrackFindModule import TrackFindModule
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class TrackFindClientTool(GeneralGuiTool):
@@ -60,7 +58,6 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes = []
         attrBoxes.append(('Select repository: ', 'selectRepository'))
         attrBoxes.append(('', 'categories'))
-        #attrBoxes.append(('', 'metamodel'))
 
         selectAttributeStr = 'Select attribute: '
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
@@ -88,6 +85,7 @@ class TrackFindClientTool(GeneralGuiTool):
                          'displayAllTracks'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
         attrBoxes.append(('Include non-standard attributes in the result GSuite', 'extraAttributes'))
+
         return attrBoxes
 
     @classmethod
@@ -126,13 +124,6 @@ class TrackFindClientTool(GeneralGuiTool):
         if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
             tfm = TrackFindModule()
             return '__hidden__', tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
-
-    # @classmethod
-    # def getOptionsBoxMetamodel(cls, prevChoices):
-    #     if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
-    #         tfm = TrackFindModule()
-    #         return '__hidden__', tfm.getMetamodelForRepository(
-    #             prevChoices.selectRepository)
 
     @classmethod
     def _getDivider(cls, prevChoices, index):
@@ -192,32 +183,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if not attributes:
             return
 
-
-        # # filter out attributes that have no subattributes left
-        # attributesInRepo = prevChoices.metamodel
-        #
-        # possiblePaths = []
-        # for category in attributesInRepo:
-        #     possiblePaths += [(category + '->' + key) for key in attributesInRepo[category].keys()]
-        #
-        # for prevChoice in prevChoicesList:
-        #     if prevChoice in possiblePaths:
-        #         possiblePaths.remove(prevChoice)
-        #
-        # for choice in currentChoicesMap.keys():
-        #     found = False
-        #     for repoAttr in possiblePaths:
-        #         if repoAttr.startswith(choice + '->') or repoAttr == choice:
-        #             found = True
-        #             break
-        #     if not found:
-        #         attributes.remove(currentChoicesMap[choice])
-        #
-        # if not attributes:
-        #     return
-
         attributes.sort()
-
 
         #add shortcuts to most used attributes
         if index == 0:
@@ -286,18 +252,7 @@ class TrackFindClientTool(GeneralGuiTool):
         else:
             chosenOptions = cls.getPreviousChoices(prevChoices, index)
             values = tfm.getAttributeValues(prevChoices.selectRepository, subattributePath, attrValueMap=chosenOptions)
-        #     jsonData = tfm.getJsonData(prevChoices.selectRepository, chosenOptions)
-        #
-        #     values = set()
-        #     for jsonItem in jsonData:
-        #         try:
-        #             value = reduce(operator.getitem, prevSubattributes, jsonItem)
-        #         except (KeyError, TypeError):
-        #             continue
-        #         if value:
-        #             values.add(value)
-        #
-        # values = list(values)
+
         values.sort()
 
         return values, subattributePath
@@ -331,22 +286,19 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         tfm = TrackFindModule()
-        gsuiteStr = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
-        return '__hidden__', gsuiteStr
+        return '__hidden__', gsuite
 
     @classmethod
     def getGsuite(cls, prevChoices, includeExtraAttributes=False):
-        tfm = TrackFindModule()
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
         if not includeExtraAttributes:
-            gsuiteStr = prevChoices.gsuite
+            gsuite = prevChoices.gsuite
 
-            #gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
         else:
-            gsuiteStr = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, includeExtraAttributes=True)
-
-        gsuite = GSuiteParser.parseFromString(gsuiteStr)
+            tfm = TrackFindModule()
+            gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, includeExtraAttributes=True)
 
         return gsuite
 
@@ -433,10 +385,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         dataTypes = defaultdict(int)
-
         gsuite = cls.getGsuite(prevChoices)
-
-
 
         for track in gsuite.allTracks():
             attr = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
@@ -479,7 +428,6 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         trackTitles = []
-
         gsuite = cls.getGsuite(prevChoices)
 
         for track in gsuite.allTracks():
@@ -610,15 +558,18 @@ class TrackFindClientTool(GeneralGuiTool):
         Mandatory unless isRedirectTool() returns True.
         """
 
-        chosenDataTypes = cls.getChosenDataTypes(choices)
-        selectedTracks = cls.getSelectedTracks(choices)
+        if choices.extraAttributes == cls.YES:
+            extraAttrs = True
+        else:
+            extraAttrs = False
+
+        tfm = TrackFindModule()
+        chosenOptions = cls.getPreviousChoices(choices, cls.MAX_NUM_OF_EXTRA_BOXES)
+        gsuite = tfm.getGSuite(choices.selectRepository, chosenOptions, includeExtraAttributes=extraAttrs)
 
         newGSuite = GSuite()
-        if choices.extraAttributes == cls.YES:
-            gsuite = cls.getGsuite(choices, True)
-        else:
-            gsuite = cls.getGsuite(choices)
-
+        chosenDataTypes = cls.getChosenDataTypes(choices)
+        selectedTracks = cls.getSelectedTracks(choices)
         for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
@@ -733,24 +684,22 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return True
     #
-    # @classmethod
-    # def getResetBoxes(cls):
-    #     """
-    #     Specifies a list of input boxes which resets the subsequent stored
-    #     choices previously made. The input boxes are specified by index
-    #     (starting with 1) or by key.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #
-    #     boxes = []
-    #     #boxes.append('selectRepository')
-    #     for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-    #         boxes.append('textSearch%s' % i)
-    #         # boxes.append('valueList%s' % i)
-    #         #boxes.append('valueCheckbox%s' % i)
-    #
-    #     return boxes
+    @classmethod
+    def getResetBoxes(cls):
+        """
+        Specifies a list of input boxes which resets the subsequent stored
+        choices previously made. The input boxes are specified by index
+        (starting with 1) or by key.
+
+        Optional method. Default return value if method is not defined: True
+        """
+
+        boxes = []
+        #boxes.append('gsuite')
+        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+            boxes.append('textSearch%s' % i)
+
+        return boxes
 
     # @classmethod
     # def getToolDescription(cls):

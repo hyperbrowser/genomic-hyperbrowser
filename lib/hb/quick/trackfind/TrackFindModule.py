@@ -105,10 +105,9 @@ class TrackFindModule(object):
         self.logRequest('gsuite', 0)
         response = self.getData(repo, hub, attrValueMap, headers, includeExtraAttributes)
 
-        #gsuite = GSuiteParser.parseFromString(response.text)
-        gsuiteStr = response.text
+        gsuite = GSuiteParser.parseFromString(response.text)
 
-        return gsuiteStr
+        return gsuite
 
     def getData(self, repo, hub, attrValueMap, headers, includeExtraAttributes=False):
         query = self.createQuery(attrValueMap)
@@ -126,7 +125,6 @@ class TrackFindModule(object):
 
     def createQuery(self, attrValueMap):
         queryList = []
-        #self.logRequest(str(attrValueMap), 0)
 
         for attribute, value in attrValueMap.iteritems():
             queryPart = attribute
