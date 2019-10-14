@@ -127,6 +127,8 @@ class TrackFindModule(object):
         queryList = []
 
         for attribute, value in attrValueMap.iteritems():
+            if value is None:
+                continue
             queryPart = attribute
             if type(value) is list:
                 queryPart += urllib.quote('?| array[' + (', '.join("'{0}'".format(v) for v in value)) + ']')

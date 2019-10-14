@@ -11,6 +11,9 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.trackfind.TrackFindModule import TrackFindModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
+import logging
+log = logging.getLogger( __name__ )
+
 
 class TrackFindClientTool(GeneralGuiTool):
     MAX_NUM_OF_EXTRA_BOXES = 10
@@ -33,7 +36,7 @@ class TrackFindClientTool(GeneralGuiTool):
     YES = 'Yes'
 
     ATTRIBUTE_SHORTCUT = {'* Cell/Tissue type': ['samples', 'sample_type', 'term_value'],
-                          '* Experiment type': ['experiments', 'tech_type', 'term_value'],
+                          '* Experiment type': ['experiments', 'technique', 'term_value'],
                           '* Genome build': ['tracks', 'genome_assembly'],
                           '* Target': ['experiments', 'target', 'term_value'],
                           '* File format': ['tracks', 'file_format', 'term_value']}
@@ -78,6 +81,7 @@ class TrackFindClientTool(GeneralGuiTool):
             attrBoxes.append(('Select value:', \
                               'valueCheckbox%s' % i))
         attrBoxes.append(('', 'gsuite'))
+        attrBoxes.append(('', 'gsuiteHash'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
@@ -282,13 +286,34 @@ class TrackFindClientTool(GeneralGuiTool):
     def getOptionsBoxGsuite(cls, prevChoices):
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
 
-        if not chosenOptions:
+        if not chosenOptions or (len(chosenOptions) == 1 and None in chosenOptions.values()):
             return
 
+        # if len(chosenOptions) > 1 and None in chosenOptions.values():
+        #     log.debug('gsuite in get options box: ')
+        #     log.debug(prevChoices.gsuite)
+        #     log.debug(type(prevChoices.gsuite))
+        #
+        #     log.debug('prev choices repo')
+        #
+        #     log.debug(prevChoices.selectRepository)
+        #     log.debug(type(prevChoices.selectRepository))
+        #
+        #     gsuite = prevChoices.gsuite
+        # else:
         tfm = TrackFindModule()
         gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
         return '__hidden__', gsuite
+
+    @classmethod
+    def getOptionsBoxGsuiteHash(cls, prevChoices):
+        gsuite = prevChoices.gsuite
+        if gsuite:
+            gsuiteHash = hash(tuple(sorted(hash(track.uri) for track in gsuite.allTracks())))
+        else:
+            gsuiteHash = ''
+        return '__hidden__', gsuiteHash
 
     @classmethod
     def getGsuite(cls, prevChoices, includeExtraAttributes=False):
@@ -379,9 +404,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxDataTypes(cls, prevChoices):
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        if not chosenOptions:
+        if not prevChoices.gsuite:
             return
 
         dataTypes = defaultdict(int)
@@ -402,25 +425,21 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxExtraAttributes(cls, prevChoices):
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        if not chosenOptions:
+        if not prevChoices.gsuite:
             return
 
         return ['No', 'Yes']
 
     @classmethod
     def getOptionsBoxSelectTracks(cls, prevChoices):
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
-
-        if not chosenOptions:
+        if not prevChoices.gsuite:
             return
 
         return [cls.ALL_TRACKS, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS, cls.MANUAL_TRACK_SELECT]
 
     @classmethod
     def getOptionsBoxSelectTracksManually(cls, prevChoices):
-        if not prevChoices.selectTracks == cls.MANUAL_TRACK_SELECT:
+        if not prevChoices.selectTracks in (cls.MANUAL_TRACK_SELECT, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
             return
 
         chosenDataTypes = cls.getChosenDataTypes(prevChoices)
@@ -430,15 +449,29 @@ class TrackFindClientTool(GeneralGuiTool):
         trackTitles = []
         gsuite = cls.getGsuite(prevChoices)
 
+        randomGSuite = None
+        if prevChoices.selectTracks == cls.RANDOM_10_TRACKS:
+            randomGSuite = GSuiteUtils.getRandomGSuite(gsuite, 10)
+        elif prevChoices.selectTracks == cls.RANDOM_50_TRACKS:
+            randomGSuite = GSuiteUtils.getRandomGSuite(gsuite, 50)
+
+        randomTrackTitles = []
+        if randomGSuite is not None:
+            for track in randomGSuite.allTracks():
+                randomTrackTitles.append(track.title)
+
         for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if dataType not in chosenDataTypes:
                 continue
 
-            trackTitles.append(track.title)
+            if randomTrackTitles and track.title not in randomTrackTitles:
+                trackTitles.append((track.title, False))
+            else:
+                trackTitles.append((track.title, True))
 
-        return OrderedDict([(title, True) for title in trackTitles])
+        return OrderedDict([title for title in trackTitles])
 
 
     @classmethod
@@ -494,23 +527,22 @@ class TrackFindClientTool(GeneralGuiTool):
         for i in range(level):
             path = cls.getSubattributePath(prevChoices, i, cls.MAX_NUM_OF_SUB_LEVELS, inQueryForm=inQueryForm)
 
-            val = cls.getChosenValues(prevChoices, i)
-            if val in [None, cls.SELECT_CHOICE, '']:
-                break
-            if type(val) is OrderedDict:
-                options = [option for option, checked in val.items() if checked]
-                if options:
-                    chosenOptions[path] = options
-            else:
-                chosenOptions[path] = val
+            if path:
+                val = cls.getChosenValues(prevChoices, i)
+                if val in [None, cls.SELECT_CHOICE, '']:
+                    chosenOptions[path] = None
+                if type(val) is OrderedDict:
+                    options = [option for option, checked in val.items() if checked]
+                    if options:
+                        chosenOptions[path] = options
+                else:
+                    chosenOptions[path] = val
 
         return chosenOptions
 
     @classmethod
     def getChosenDataTypes(cls, prevChoices):
-        chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES, False)
-
-        if not chosenOptions:
+        if not prevChoices.gsuite:
             return
 
         dataTypes = prevChoices.dataTypes
@@ -529,7 +561,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getSelectedTracks(cls, prevChoices):
-        if prevChoices.selectTracks != cls.MANUAL_TRACK_SELECT:
+        if prevChoices.selectTracks not in (cls.MANUAL_TRACK_SELECT, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
             return None
         selectedTracks = [track for track, checked in prevChoices.selectTracksManually.items() if checked]
 
@@ -578,17 +610,12 @@ class TrackFindClientTool(GeneralGuiTool):
             if selectedTracks is not None and track.title not in selectedTracks:
                 continue
 
-            if track.suffix in  cls.SUFFIX_REPLACE_MAP:
+            if track.suffix in cls.SUFFIX_REPLACE_MAP:
                 newUri = track.uriWithoutSuffix + ';{}'.format(cls.SUFFIX_REPLACE_MAP[track.suffix])
                 track = GSuiteTrack(uri=newUri, title=track.title, fileFormat=track.fileFormat,
                                      trackType=track.trackType, genome=track.genome,
                                      attributes=track.attributes)
             newGSuite.addTrack(track)
-
-        if choices.selectTracks == cls.RANDOM_10_TRACKS:
-            newGSuite = GSuiteUtils.getRandomGSuite(newGSuite, 10)
-        elif choices.selectTracks == cls.RANDOM_50_TRACKS:
-            newGSuite = GSuiteUtils.getRandomGSuite(newGSuite, 50)
 
         GSuiteComposer.composeToFile(newGSuite, galaxyFn)
 
@@ -695,9 +722,11 @@ class TrackFindClientTool(GeneralGuiTool):
         """
 
         boxes = []
-        #boxes.append('gsuite')
+        boxes.append('gsuiteHash')
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             boxes.append('textSearch%s' % i)
+
+        boxes.append('selectTracks')
 
         return boxes
 
