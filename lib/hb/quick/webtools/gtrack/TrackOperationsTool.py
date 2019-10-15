@@ -422,7 +422,8 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         for gsuiteTrack in gSuite.allTracks():
             import time
-            extraFileName = 'result_' + gsuiteTrack.title + '_' + str(time.time())
+            trackName = constructGalaxyTnFromSuitedFn(galaxyFn, name=os.path.basename(gsuiteTrack.path))
+            # extraFileName = 'result_' + gsuiteTrack.title + '_' + str(time.time())
             title = gsuiteTrack.title
 
             track = Track(gsuiteTrack.trackName)
@@ -442,7 +443,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
             trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
 
-            trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
+            # trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
 
             tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
 
