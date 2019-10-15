@@ -1,3 +1,4 @@
+import time
 from collections import OrderedDict
 from collections import defaultdict
 from copy import copy
@@ -85,6 +86,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes.append(('Select type of data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
+        attrBoxes.append(('', 'selectRandomTracks'))
         attrBoxes.append(('By default, only the first ' + str(cls.TRACK_TABLE_LIMIT) + ' tracks are displayed. Do you want to display all?',
                          'displayAllTracks'))
         attrBoxes.append(('Found tracks: ', 'trackList'))
@@ -221,6 +223,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if index > 0 and cls.getChosenValues(prevChoices, index-1) \
                 in [None, cls.SELECT_CHOICE, '']:
             return
+
         selectionType = getattr(prevChoices, 'selectionType%s' % index)
         if selectionType not in [cls.MULTIPLE_SELECTION, cls.TEXT_SEARCH]:
             return
@@ -286,21 +289,9 @@ class TrackFindClientTool(GeneralGuiTool):
     def getOptionsBoxGsuite(cls, prevChoices):
         chosenOptions = cls.getPreviousChoices(prevChoices, cls.MAX_NUM_OF_EXTRA_BOXES)
 
-        if not chosenOptions or (len(chosenOptions) == 1 and None in chosenOptions.values()):
+        if not chosenOptions:
             return
 
-        # if len(chosenOptions) > 1 and None in chosenOptions.values():
-        #     log.debug('gsuite in get options box: ')
-        #     log.debug(prevChoices.gsuite)
-        #     log.debug(type(prevChoices.gsuite))
-        #
-        #     log.debug('prev choices repo')
-        #
-        #     log.debug(prevChoices.selectRepository)
-        #     log.debug(type(prevChoices.selectRepository))
-        #
-        #     gsuite = prevChoices.gsuite
-        # else:
         tfm = TrackFindModule()
         gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
 
@@ -439,7 +430,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxSelectTracksManually(cls, prevChoices):
-        if not prevChoices.selectTracks in (cls.MANUAL_TRACK_SELECT, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
+        if prevChoices.selectTracks != cls.MANUAL_TRACK_SELECT:
             return
 
         chosenDataTypes = cls.getChosenDataTypes(prevChoices)
@@ -449,29 +440,44 @@ class TrackFindClientTool(GeneralGuiTool):
         trackTitles = []
         gsuite = cls.getGsuite(prevChoices)
 
-        randomGSuite = None
-        if prevChoices.selectTracks == cls.RANDOM_10_TRACKS:
-            randomGSuite = GSuiteUtils.getRandomGSuite(gsuite, 10)
-        elif prevChoices.selectTracks == cls.RANDOM_50_TRACKS:
-            randomGSuite = GSuiteUtils.getRandomGSuite(gsuite, 50)
-
-        randomTrackTitles = []
-        if randomGSuite is not None:
-            for track in randomGSuite.allTracks():
-                randomTrackTitles.append(track.title)
-
         for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
             if dataType not in chosenDataTypes:
                 continue
 
-            if randomTrackTitles and track.title not in randomTrackTitles:
-                trackTitles.append((track.title, False))
-            else:
-                trackTitles.append((track.title, True))
+            if prevChoices.selectTracks == cls.MANUAL_TRACK_SELECT:
+                trackTitles.append(track.title)
 
-        return OrderedDict([title for title in trackTitles])
+        return OrderedDict([(title, True) for title in trackTitles])
+
+
+    @classmethod
+    def getOptionsBoxSelectRandomTracks(cls, prevChoices):
+        if prevChoices.selectTracks not in (cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
+            return
+
+        chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+        if not chosenDataTypes:
+            return
+
+        gsuite = cls.getGsuite(prevChoices)
+
+        filteredGsuite = GSuite()
+        for track in gsuite.allTracks():
+            dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
+
+            if dataType not in chosenDataTypes:
+                continue
+
+            filteredGsuite.addTrack(track)
+
+        if prevChoices.selectTracks == cls.RANDOM_10_TRACKS:
+            randomTracks = GSuiteUtils.getRandomTracks(filteredGsuite, 10, seed=time.time())
+        else:
+            randomTracks = GSuiteUtils.getRandomTracks(filteredGsuite, 50, seed=time.time())
+
+        return '__hidden__', [track.title for track in randomTracks]
 
 
     @classmethod
@@ -527,16 +533,15 @@ class TrackFindClientTool(GeneralGuiTool):
         for i in range(level):
             path = cls.getSubattributePath(prevChoices, i, cls.MAX_NUM_OF_SUB_LEVELS, inQueryForm=inQueryForm)
 
-            if path:
-                val = cls.getChosenValues(prevChoices, i)
-                if val in [None, cls.SELECT_CHOICE, '']:
-                    chosenOptions[path] = None
-                if type(val) is OrderedDict:
-                    options = [option for option, checked in val.items() if checked]
-                    if options:
-                        chosenOptions[path] = options
-                else:
-                    chosenOptions[path] = val
+            val = cls.getChosenValues(prevChoices, i)
+            if val in [None, cls.SELECT_CHOICE, '']:
+                break
+            if type(val) is OrderedDict:
+                options = [option for option, checked in val.items() if checked]
+                if options:
+                    chosenOptions[path] = options
+            else:
+                chosenOptions[path] = val
 
         return chosenOptions
 
@@ -563,7 +568,12 @@ class TrackFindClientTool(GeneralGuiTool):
     def getSelectedTracks(cls, prevChoices):
         if prevChoices.selectTracks not in (cls.MANUAL_TRACK_SELECT, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
             return None
-        selectedTracks = [track for track, checked in prevChoices.selectTracksManually.items() if checked]
+
+        selectedTracks = None
+        if prevChoices.selectTracks == cls.MANUAL_TRACK_SELECT:
+            selectedTracks = [track for track, checked in prevChoices.selectTracksManually.items() if checked]
+        elif prevChoices.selectTracks in (cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
+            selectedTracks = prevChoices.selectRandomTracks
 
         return selectedTracks
 
@@ -605,9 +615,9 @@ class TrackFindClientTool(GeneralGuiTool):
         for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
-            if dataType not in chosenDataTypes:
-                continue
             if selectedTracks is not None and track.title not in selectedTracks:
+                continue
+            if dataType not in chosenDataTypes:
                 continue
 
             if track.suffix in cls.SUFFIX_REPLACE_MAP:
@@ -633,7 +643,7 @@ class TrackFindClientTool(GeneralGuiTool):
         """
         chosenDataTypes = cls.getChosenDataTypes(choices)
         if not chosenDataTypes:
-            return 'No tracks to be exported available'
+            return ''
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -726,7 +736,8 @@ class TrackFindClientTool(GeneralGuiTool):
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
             boxes.append('textSearch%s' % i)
 
-        boxes.append('selectTracks')
+        # boxes.append('selectTracks')
+        # boxes.append('dataTypes')
 
         return boxes
 
