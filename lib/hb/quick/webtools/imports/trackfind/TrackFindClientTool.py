@@ -27,20 +27,28 @@ class TrackFindClientTool(GeneralGuiTool):
     RANDOM_10_TRACKS = 'Select 10 random tracks'
     RANDOM_50_TRACKS = 'Select 50 random tracks'
     MANUAL_TRACK_SELECT = 'Select tracks manually'
-    
-    TYPE_OF_DATA_ATTR = 'content_type->term_value'
-    GENOME_ASSEMBLY_ATTR = 'genome_assembly'
-    CELL_TISSUE_ATTR = 'samples->sample_type->term_value'
-    TARGET_ATTR = 'experiments->target->term_value'
-    FILE_FORMAT_ATTR = 'file_format->term_value'
+
+    CELL_TISSUE_PATH = ['samples', 'sample_type', 'term_value']
+    EXPERIMENT_TYPE_PATH = ['experiments', 'technique', 'term_value']
+    GENOME_ASSEMBLY_PATH = ['tracks', 'genome_assembly']
+    TARGET_PATH = ['experiments', 'target', 'term_value']
+    FILE_FORMAT_PATH = ['tracks', 'file_format', 'term_value']
+    TYPE_OF_DATA_PATH = ['tracks', 'content_type', 'term_value']
+
+    CELL_TISSUE_ATTR = '->'.join(CELL_TISSUE_PATH)
+    GENOME_ASSEMBLY_ATTR = '->'.join(GENOME_ASSEMBLY_PATH[1:])
+    TARGET_ATTR = '->'.join(TARGET_PATH)
+    FILE_FORMAT_ATTR = '->'.join(FILE_FORMAT_PATH[1:])
+    TYPE_OF_DATA_ATTR = '->'.join(TYPE_OF_DATA_PATH[1:])
 
     YES = 'Yes'
 
-    ATTRIBUTE_SHORTCUT = {'* Cell/Tissue type': ['samples', 'sample_type', 'term_value'],
-                          '* Experiment type': ['experiments', 'technique', 'term_value'],
-                          '* Genome build': ['tracks', 'genome_assembly'],
-                          '* Target': ['experiments', 'target', 'term_value'],
-                          '* File format': ['tracks', 'file_format', 'term_value']}
+    ATTRIBUTE_SHORTCUTS = OrderedDict([('* Cell/Tissue type', CELL_TISSUE_PATH),
+                          ('* Experiment type', EXPERIMENT_TYPE_PATH),
+                          ('* Genome build', GENOME_ASSEMBLY_PATH),
+                          ('* Target', TARGET_PATH),
+                          ('* File format', FILE_FORMAT_PATH),
+                          ('* Type of data', TYPE_OF_DATA_PATH)])
 
     SUFFIX_REPLACE_MAP = {'bb': 'bigbed'}
 
@@ -158,46 +166,20 @@ class TrackFindClientTool(GeneralGuiTool):
                 if True not in prev.values():
                     return
 
-        subattributePath = ''
         if index == 0:
             attributes = copy(prevChoices.categories)
 
         else:
-            attributes, subattributePath = cls.getSubattributes(prevChoices, level, index)
+            attributes = cls.getSubattributes(prevChoices, level, index)
             if cls.isBottomLevel(attributes):
                 return
-
-        #filter out previously chosen attributes
-        prevChoicesList = []
-        if level > 0:
-            for l in range(level):
-                path = cls.getSubattributePath(prevChoices, l, cls.MAX_NUM_OF_SUB_LEVELS)
-                prevChoicesList.append(path)
-
-        currentChoicesMap = {}
-        for attr in attributes:
-            if subattributePath:
-                currentChoicesMap[subattributePath + '->' + attr] = attr
-            else:
-                currentChoicesMap[attr] = attr
-
-        for choice in currentChoicesMap.keys():
-            if choice in prevChoicesList:
-                attributes.remove(currentChoicesMap[choice])
-                currentChoicesMap.pop(choice)
-
-        if not attributes:
-            return
 
         attributes.sort()
 
         #add shortcuts to most used attributes
         if index == 0:
-            attributes.insert(0, '* File format')
-            attributes.insert(0, '* Target')
-            attributes.insert(0, '* Genome build')
-            attributes.insert(0, '* Experiment type')
-            attributes.insert(0, '* Cell/Tissue type')
+            for shortcut in cls.ATTRIBUTE_SHORTCUTS:
+                attributes.insert(0, shortcut)
 
         attributes.insert(0, cls.SELECT_CHOICE)
 
@@ -216,6 +198,7 @@ class TrackFindClientTool(GeneralGuiTool):
         values, _ = cls.getValues(prevChoices, index)
 
         values.insert(0, cls.SELECT_CHOICE)
+
         return values
 
     @classmethod
@@ -272,7 +255,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if getattr(prevChoices, 'subAttributeList%s_%s' % (index, 0)) in [None, cls.SELECT_CHOICE, '']:
             return
 
-        attributes = cls.getSubattributes(prevChoices, index, cls.MAX_NUM_OF_SUB_LEVELS)[0]
+        attributes = cls.getSubattributes(prevChoices, index, cls.MAX_NUM_OF_SUB_LEVELS)
 
         if cls.isBottomLevel(attributes):
             return [cls.SINGLE_SELECTION, cls.MULTIPLE_SELECTION, cls.TEXT_SEARCH]
@@ -350,7 +333,6 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         return ['No', cls.YES]
-
 
     @classmethod
     def getOptionsBoxTrackList(cls, prevChoices):
@@ -488,7 +470,7 @@ class TrackFindClientTool(GeneralGuiTool):
         attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository,
                                                             subattributePath)
 
-        return attributes, subattributePath
+        return attributes
 
     @classmethod
     def getSubattributePath(cls, prevChoices, level, index, returnSubattrList=False, inQueryForm=False):
@@ -499,7 +481,7 @@ class TrackFindClientTool(GeneralGuiTool):
                 break
 
             if attr.startswith('* '):
-                prevSubattributes = cls.ATTRIBUTE_SHORTCUT[attr]
+                prevSubattributes = cls.ATTRIBUTE_SHORTCUTS[attr]
                 if inQueryForm:
                     prevSubattributesTmp = prevSubattributes[:]
                     prevSubattributes = []
