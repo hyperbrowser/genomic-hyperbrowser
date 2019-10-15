@@ -466,8 +466,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         cube = Cube()
         statNum = 0
 
+        ###### exp vs obs is only counted for first attribute :  talk to GKS
+
         expectedDict = OrderedDict()
         expectedOrderedDict = OrderedDict()
+        extraCalc = OrderedDict()
         for statKey, statItem in resultsDict.iteritems():
 
             if sumBp[statKey] == 0:
@@ -476,20 +479,39 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             if statKey == cls.OBSVSEXPECTEDSTAT:
                 for summarizeKey, summarizeItem in statItem.iteritems():
                     for groupKey, groupItem in summarizeItem.iteritems():
-                        for g in groupKey:
-                            if not g in expectedDict.keys():
-                                expectedDict[g] = 0
-                            # prinzt sumBp, statKey, '<br>'
-                            expectedDict[g] += float(sum([g[-1] for g in groupItem])) / float(
-                                sumBp[statKey])
 
+                        for g in groupItem:
+                            if not g[0] in expectedDict.keys():
+                                expectedDict[g[0]] = 0
+                            expectedDict[g[0]] += g[1]
+
+                            if not groupKey[0] in extraCalc.keys():
+                                extraCalc[groupKey[0]] = 0
+                            extraCalc[groupKey[0]] += g[1]
+
+                            # for g in groupKey:
+                            #     if not g in expectedDict.keys():
+                            #         expectedDict[g] = 0
+
+                            # expectedDict[g] += float(sum([g[-1] for g in groupItem])) / float(
+                            #     sumBp[statKey])
+
+        for statKey, statItem in resultsDict.iteritems():
+            if statKey == cls.OBSVSEXPECTEDSTAT:
                 for summarizeKey, summarizeItem in statItem.iteritems():
                     for groupKey, groupItem in summarizeItem.iteritems():
-                        for g in groupKey:
-                            if not groupKey in expectedOrderedDict.keys():
-                                expectedOrderedDict[groupKey] = 1
-                            expectedOrderedDict[groupKey] *= expectedDict[g]
+                        for g in groupItem:
+                            # print g[0], '<br>'
+                            # print groupKey[0], '<br>'
+                            # print 'tuple(g[0], groupKey[0])', str((g[0], groupKey[0])), '<br>'
+                            if not (g[0], groupKey[0]) in expectedOrderedDict.keys():
+                                expectedOrderedDict[(g[0], groupKey[0])] = 1
+                            # print 'expectedOrderedDict[groupKey]', str(expectedOrderedDict[groupKey]), '<br>'
+                            # expectedOrderedDict[groupKey] *= expectedDict[g]
+                            expectedOrderedDict[(g[0], groupKey[0])] = extraCalc[groupKey[0]] * \
+                                                                       expectedDict[g[0]]
 
+        for statKey, statItem in resultsDict.iteritems():
             data = []
             for summarizeKey, summarizeItem in statItem.iteritems():
                 # print 'summarizeKey', summarizeKey
@@ -648,10 +670,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 for g in groupItem:
                     try:
                         data.append([g[0]] + list(groupKey) + [
-                            (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+                            (float(g[1]) * sumBp[statKey]) / expectedOrderedDict[(g[0], groupKey[0])]])
                     except:
                         data.append([g[0]] + [
-                            (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+                            (float(g[1]) * sumBp[statKey]) / expectedOrderedDict[(g[0], groupKey[0])]])
         else:
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])
