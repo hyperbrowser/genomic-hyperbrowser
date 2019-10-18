@@ -17,7 +17,7 @@ log = logging.getLogger( __name__ )
 
 
 class TrackFindClientTool(GeneralGuiTool):
-    MAX_NUM_OF_EXTRA_BOXES = 10
+    MAX_NUM_OF_LEVELS = 8
     MAX_NUM_OF_SUB_LEVELS = 5
     SELECT_CHOICE = '--- Select ---'
     SINGLE_SELECTION = 'Single selection'
@@ -73,23 +73,18 @@ class TrackFindClientTool(GeneralGuiTool):
         attrBoxes.append(('', 'categories'))
 
         selectAttributeStr = 'Select attribute: '
-        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-            attrBoxes.append((('', 'divider%s' % i)))
+        for i in xrange(cls.MAX_NUM_OF_LEVELS):
+            attrBoxes.append(('', 'divider%s' % i))
             for j in xrange(cls.MAX_NUM_OF_SUB_LEVELS):
                 if j == 0:
-                    attrBoxes.append((selectAttributeStr, \
-                              'subAttributeList%s_%s' % (i,j)))
+                    attrBoxes.append((selectAttributeStr, 'subAttributeList%s_%s' % (i,j)))
                 else:
                     attrBoxes.append(((len(selectAttributeStr) + 6)*'&nbsp;' + (j*'&emsp;') + '|_', \
                                       'subAttributeList%s_%s' % (i, j)))
-            attrBoxes.append(('Selection type:', \
-                              'selectionType%s' % i))
-            attrBoxes.append(('Text to search for', \
-                              'textSearch%s' % i))
-            attrBoxes.append(('Select value:', \
-                              'valueList%s' % i))
-            attrBoxes.append(('Select value:', \
-                              'valueCheckbox%s' % i))
+            attrBoxes.append(('Selection type:', 'selectionType%s' % i))
+            attrBoxes.append(('Text to search for', 'textSearch%s' % i))
+            attrBoxes.append(('Select value:', 'valueList%s' % i))
+            attrBoxes.append(('Select value:', 'valueCheckbox%s' % i))
         attrBoxes.append(('', 'gsuite'))
         attrBoxes.append(('', 'gsuiteHash'))
         attrBoxes.append(('Select type of data', 'dataTypes'))
@@ -105,7 +100,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
     @classmethod
     def setupExtraBoxMethods(cls):
-        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+        for i in xrange(cls.MAX_NUM_OF_LEVELS):
             setattr(cls, 'getOptionsBoxValueList%s' % i, \
                     partial(cls._getValueListBox, level=i))
             setattr(cls, 'getOptionsBoxValueCheckbox%s' % i, \
@@ -138,7 +133,9 @@ class TrackFindClientTool(GeneralGuiTool):
     def getOptionsBoxCategories(cls, prevChoices):
         if prevChoices.selectRepository not in [None, cls.SELECT_CHOICE, '']:
             tfm = TrackFindModule()
-            return '__hidden__', tfm.getTopLevelAttributesForRepository(prevChoices.selectRepository)
+            categories = tfm.getCategoriesForRepository(prevChoices.selectRepository)
+            categories.sort()
+            return '__hidden__', categories
 
     @classmethod
     def _getDivider(cls, prevChoices, level):
@@ -155,31 +152,29 @@ class TrackFindClientTool(GeneralGuiTool):
         if level == 0 and prevChoices.selectRepository in [None, cls.SELECT_CHOICE, '']:
             return
 
-        if index > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level, index-1)) in [None, cls.SELECT_CHOICE, '']:
-            return
         if level > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level-1, 0)) in [None, cls.SELECT_CHOICE, '']:
             return
-        if index == 0 and level > 0:
-            prev = cls.getChosenValues(prevChoices, level - 1)
-            if prev in [None, cls.SELECT_CHOICE, '']:
-                return
-            if type(prev) is OrderedDict:
-                if True not in prev.values():
-                    return
+        if index > 0 and getattr(prevChoices, 'subAttributeList%s_%s' % (level, index-1)) in [None, cls.SELECT_CHOICE, '']:
+            return
 
         if index == 0:
+            if level > 0:
+                prev = cls.getChosenValues(prevChoices, level-1)
+                if prev in [None, cls.SELECT_CHOICE, '']:
+                    return
+                if type(prev) is OrderedDict:
+                    if True not in prev.values():
+                        return
             attributes = copy(prevChoices.categories)
+            # add shortcuts to most used attributes
+            for shortcut in cls.ATTRIBUTE_SHORTCUTS:
+                attributes.insert(0, shortcut)
         else:
             attributes = cls.getSubattributes(prevChoices, level)
             if cls.isBottomLevel(attributes):
                 return
 
-        attributes.sort()
-
-        #add shortcuts to most used attributes
-        if index == 0:
-            for shortcut in cls.ATTRIBUTE_SHORTCUTS:
-                attributes.insert(0, shortcut)
+            attributes.sort()
 
         attributes.insert(0, cls.SELECT_CHOICE)
 
@@ -291,7 +286,7 @@ class TrackFindClientTool(GeneralGuiTool):
         return '__hidden__', gsuiteHash
 
     @classmethod
-    def getGsuite(cls, prevChoices, includeExtraAttributes=False):
+    def getGSuite(cls, prevChoices, includeExtraAttributes=False):
         if not includeExtraAttributes:
             gsuite = prevChoices.gsuite
 
@@ -310,7 +305,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         selectedTracks = cls.getSelectedTracks(prevChoices)
 
-        gsuite = cls.getGsuite(prevChoices)
+        gsuite = cls.getGSuite(prevChoices)
         numTracks = gsuite.numTracks()
         if numTracks < cls.TRACK_TABLE_LIMIT:
             return
@@ -342,12 +337,12 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         selectedTracks = cls.getSelectedTracks(prevChoices)
-        gsuite = cls.getGsuite(prevChoices)
+        gsuite = cls.getGSuite(prevChoices)
 
         tableDict = {}
         counter = 0
         for track in gsuite.allTracks():
-            if counter == cls.TRACK_TABLE_LIMIT and prevChoices.displayAllTracks != cls.YES:
+            if counter == cls.TRACK_TABLE_LIMIT+1 and prevChoices.displayAllTracks != cls.YES:
                 break
             title = track.title
             attributes = []
@@ -382,7 +377,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         dataTypes = defaultdict(int)
-        gsuite = cls.getGsuite(prevChoices)
+        gsuite = cls.getGSuite(prevChoices)
 
         for track in gsuite.allTracks():
             attr = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
@@ -421,7 +416,7 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         trackTitles = []
-        gsuite = cls.getGsuite(prevChoices)
+        gsuite = cls.getGSuite(prevChoices)
 
         for track in gsuite.allTracks():
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
@@ -444,7 +439,7 @@ class TrackFindClientTool(GeneralGuiTool):
         if not chosenDataTypes:
             return
 
-        gsuite = cls.getGsuite(prevChoices)
+        gsuite = cls.getGSuite(prevChoices)
 
         filteredGsuite = GSuite()
         for track in gsuite.allTracks():
@@ -508,7 +503,7 @@ class TrackFindClientTool(GeneralGuiTool):
     @classmethod
     def getPreviousChoices(cls, prevChoices, inQueryForm=True):
         chosenOptions = {}
-        for level in range(cls.MAX_NUM_OF_EXTRA_BOXES):
+        for level in range(cls.MAX_NUM_OF_LEVELS):
             path = cls.getSubattributePath(prevChoices, level, inQueryForm=inQueryForm)
             if not path:
                 break
@@ -716,7 +711,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         boxes = []
         boxes.append('gsuiteHash')
-        for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
+        for i in xrange(cls.MAX_NUM_OF_LEVELS):
             boxes.append('textSearch%s' % i)
 
         # boxes.append('selectTracks')

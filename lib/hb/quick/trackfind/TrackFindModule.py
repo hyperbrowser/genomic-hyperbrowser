@@ -4,6 +4,11 @@ import urllib
 import requests
 
 from gold.gsuite import GSuiteParser
+import datetime
+
+import logging
+log = logging.getLogger( __name__ )
+
 
 
 class TrackFindModule(object):
@@ -32,16 +37,7 @@ class TrackFindModule(object):
 
         return response.json()
 
-    def getMetamodelForRepository(self, repoAndHub):
-        repo, hub = self.getRepoAndHub(repoAndHub)
-        url = self.URL + '/metamodel/' + repo + '/' + hub + '?flat=true'
-
-        response = requests.get(url)
-        self.logRequest(url, response.elapsed.total_seconds())
-
-        return response.json()
-
-    def getTopLevelAttributesForRepository(self, repoAndHub):
+    def getCategoriesForRepository(self, repoAndHub):
         repo, hub = self.getRepoAndHub(repoAndHub)
         url = self.URL + '/categories/' + repo + '/' + hub
 
@@ -89,27 +85,20 @@ class TrackFindModule(object):
 
         return response.json()
 
-    def getJsonData(self, repoAndHub, attrValueMap):
-        repo, hub = self.getRepoAndHub(repoAndHub)
-        headers = {'Accept': 'application/json'}
-
-        self.logRequest('json', 0)
-        response = self.getData(repo, hub, attrValueMap, headers)
-
-        return response.json()
-
     def getGSuite(self, repoAndHub, attrValueMap, includeExtraAttributes=False):
         repo, hub = self.getRepoAndHub(repoAndHub)
         headers = {'Accept': 'text/plain'}
 
         self.logRequest('gsuite', 0)
-        response = self.getData(repo, hub, attrValueMap, headers, includeExtraAttributes)
+        response = self.getSearchResults(repo, hub, attrValueMap, headers, includeExtraAttributes)
 
+        #log.debug('before gsuite parsing ' + str(datetime.datetime.now()))
         gsuite = GSuiteParser.parseFromString(response.text)
+        #log.debug('after gsuite parsing ' + str(datetime.datetime.now()))
 
         return gsuite
 
-    def getData(self, repo, hub, attrValueMap, headers, includeExtraAttributes=False):
+    def getSearchResults(self, repo, hub, attrValueMap, headers, includeExtraAttributes=False):
         query = self.createQuery(attrValueMap)
 
         url = self.URL + '/search/' + repo + '/' + hub + '?query=' + query
