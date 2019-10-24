@@ -416,6 +416,18 @@ class YamlAnalysisDefHandlerWithChoices():
         else:
             print 'KwArg ' + kwArg  + ' not found'
 
+    def getKwArgs(self):
+        return self._analysisDefHandler.getKwArgs()
+
+    def getKwArgsWithInfo(self):
+        return self._analysisDefHandler.getKwArgsWithInfo()
+
+    def getOptionsAsKeys(self):
+        return self._analysisDefHandler.getOptionsAsKeys()
+
+    def getStatClass(self):
+        return self._analysisDefHandler.getStatClass()
+
 
 class KwArgumentInfo():
     def __init__(self, yamlParam):

@@ -1,18 +1,15 @@
 import os
 from functools import partial
 
-import yaml
-
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 from gold.application.HBAPI import doAnalysis, doAnalysisYaml
 from gold.application.LogSetup import setupDebugModeAndLogging
-from gold.description.AnalysisDefHandler import AnalysisDefHandler, YamlAnalysisDefHandler, \
+from gold.description.AnalysisDefHandler import AnalysisDefHandler, \
     YamlAnalysisDefHandlerWithChoices
 from gold.description.TrackInfo import TrackInfo
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack
-from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack
+from gold.gsuite.GSuiteTrack import GSuiteTrack, HbGSuiteTrack, GalaxyGSuiteTrack
 from gold.origdata.GtrackComposer import StdGtrackComposer
 from gold.origdata.PreProcessTracksJob import PreProcessTrackGESourceJob
 from gold.origdata.TrackGenomeElementSource import TrackViewListGenomeElementSource
@@ -88,7 +85,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           ]
 
 
-
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
     ANALYSIS_SPECS = {spec.getStatClass().__name__: spec for spec in ANALYSIS_SPECS_LIST}
 
@@ -133,7 +129,17 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             defaultVals = []
             isRequired = []
             for opName in opNames:
-                analysisSpec = cls.ANALYSIS_SPECS[opName]
+                if opName in cls.YAML_DEF_OPERATIONS:
+                    kwArgInfo = cls.YAML_ANALYSIS_SPECS[opName].getKwArgsWithInfo()[kwArg]
+
+                    defaultVal = kwArgInfo.getDefaultValue()
+                    defaultVals.append(str(defaultVal))
+
+                    required = kwArgInfo.isRequired()
+                    isRequired.append(required)
+                    pass
+                else:
+                    analysisSpec = cls.ANALYSIS_SPECS[opName]
 
                     defaultVal = analysisSpec.getChoice(kwArg)
                     defaultVals.append(defaultVal)
@@ -367,7 +373,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         primaryFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('primary', description=desc, datasetInfo=choices.gSuite)]
 
-        # hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
+        hiddenStorageFn = cls.extraGalaxyFn[getGSuiteHistoryOutputName('storage', description=desc, datasetInfo=choices.gSuite)]
         # emptyFn = cls.extraGalaxyFn \
         #     [getGSuiteHistoryOutputName('nointersect', description=desc,
         #                                 datasetInfo=choices.gSuite)]
@@ -384,14 +390,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         chosenOperation = choices.operation
 
         if chosenOperation in cls.YAML_DEF_OPERATIONS:
-            analysisSpec = cls.YAML_ANALYSIS_SPECS[choices.operation]
+            analysisDef = cls.YAML_ANALYSIS_SPECS[choices.operation]
 
-            operationKwArgs = analysisSpec.getKwArgsWithInfo()
+            operationKwArgs = analysisDef.getKwArgsWithInfo()
 
             kwArgsWithChoices = cls.getKwArgsFromChoices(choices, operationKwArgs)
 
-            analysisWithChoices = YamlAnalysisDefHandlerWithChoices(analysisSpec)
-            analysisWithChoices.setChoices(kwArgsWithChoices)
+            analysisSpec = YamlAnalysisDefHandlerWithChoices(analysisDef)
+            analysisSpec.setChoices(kwArgsWithChoices)
 
             doAnalysisMethod = doAnalysisYaml
 
@@ -409,7 +415,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                         analysisSpec.changeChoices(kwArg, [[str(val), str(val)]])
                 analysisSpec.setChoice(kwArg, val)
 
-
             doAnalysisMethod = doAnalysis
 
 
@@ -417,7 +422,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
         # temporary
         if 'useStrands' in kwArgsWithChoices:
-            kwArgsWithChoices['useStrands'] = 'False'
+            analysisSpec.setChoice('useStrands', 'False')
 
 
         for gsuiteTrack in gSuite.allTracks():
