@@ -24,10 +24,10 @@ from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat, parseBoolean, \
     getYamlAnalysisSpecs
-
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.application.ExternalTrackManager import ExternalTrackManager as etm
 
 
 class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
@@ -135,11 +135,11 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
             for opName in opNames:
                 analysisSpec = cls.ANALYSIS_SPECS[opName]
 
-                defaultVal = analysisSpec.getChoice(kwArg)
-                defaultVals.append(defaultVal)
+                    defaultVal = analysisSpec.getChoice(kwArg)
+                    defaultVals.append(defaultVal)
 
-                required = True
-                isRequired.append(required)
+                    required = True
+                    isRequired.append(required)
 
             argType = cls.determineArgType(defaultVals[0])
             if argType == bool:
@@ -421,9 +421,8 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
 
 
         for gsuiteTrack in gSuite.allTracks():
-            import time
-            trackName = constructGalaxyTnFromSuitedFn(galaxyFn, name=os.path.basename(gsuiteTrack.path))
-            # extraFileName = 'result_' + gsuiteTrack.title + '_' + str(time.time())
+            trackName = etm.createStdTrackName(etm.extractIdFromGalaxyFn(galaxyFn), name=gsuiteTrack.title)
+
             title = gsuiteTrack.title
 
             track = Track(gsuiteTrack.trackName)
@@ -442,8 +441,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                 #print 'got res ' + str(res)
 
             trackViewList = [res[key]['Result'] for key in sorted(res.keys())]
-
-            # trackName = convertTNstrToTNListFormat(extraFileName, doUnquoting=True)
 
             tvGeSource = TrackViewListGenomeElementSource(genomeName, trackViewList, trackName)
 
