@@ -372,6 +372,8 @@ class YamlAnalysisDefHandler():
         self._analysisKwArgs = {}
         for param in analysisYaml['parameters']:
             self._analysisKwArgs[(param['name'])] = KwArgumentInfo(param)
+        self._info = analysisYaml['info']
+        self._label = analysisYaml['label']
 
     def getKwArgs(self):
         return self._analysisKwArgs.keys()
@@ -385,6 +387,12 @@ class YamlAnalysisDefHandler():
 
     def getStatClass(self):
         return self._statClass
+
+    def getInfo(self):
+        return self._info
+
+    def getLabel(self):
+        return self._label
 
 class YamlAnalysisDefHandlerWithChoices():
     def __init__(self, yamlAnalysisDefHandler):

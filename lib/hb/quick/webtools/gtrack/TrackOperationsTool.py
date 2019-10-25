@@ -20,7 +20,7 @@ from quick.application.UserBinSource import GlobalBinSource
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat, parseBoolean, \
-    getYamlAnalysisSpecs
+    getYamlAnalysisSpecs, getAnalysisSpecsDict
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -60,15 +60,12 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     OPERATIONS_TWO_TRACKS = ['IntersectionStat']
     SELECT_CHOICE = '--- Select ---'
 
-    ANALYSIS_SPEC_STRS = ['Track operations - intersection: test of track operations '
-                          '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
-                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
-                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=True:TrueLabel/False:FalseLabel]'
-                          ' -> IntersectionStat',
-                          'Track operations - complement: test of track operations2 '
+    ANALYSIS_SPEC_STRS = ['Track operations - complement: test of track operations2 '
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
-                          ' -> ComplementStat',
+                          '[rawStatistic:=ComplementStat]'
+                          '[postprocessStatistic:=MergeStat]'
+                          ' -> TrackOperationsManagerStat',
                           'Track operations - merge: Merge any overlapping elements in a track '                          
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
@@ -81,12 +78,15 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[upstream:Size of the upstream flank. In number of base pairs=0]'
                           '[downstream:Size of the downstream flank. In number of base pairs=0]'
                           '[both:Extract the segments in in both directions. In number of base pairs=0]'
-                          ' -> ExpandStat'
+                          '[rawStatistic:=ExpandStat]'
+                          '[postprocessStatistic:=MergeStat]'
+                          '[shouldPostprocess:=resultsAllowOverlap]'
+                          ' -> TrackOperationsManagerStat'
                           ]
 
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
-    ANALYSIS_SPECS = {spec.getStatClass().__name__: spec for spec in ANALYSIS_SPECS_LIST}
+    ANALYSIS_SPECS = getAnalysisSpecsDict(ANALYSIS_SPECS_LIST)
 
     YAML_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'analysis.yaml')
     YAML_ANALYSIS_SPECS_LIST = getYamlAnalysisSpecs(YAML_FILE_PATH)
@@ -238,21 +238,31 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         if prevChoices.operation in [None, cls.SELECT_CHOICE, '']:
             return
 
-        operationSpec = cls.ANALYSIS_SPECS[prevChoices.operation]
-        operationLabel = operationSpec.getText()
-        kwArgsLabels = operationSpec.getOptionsAsKeysAndTexts()
-
         kwArgsPrint = ''
+        if prevChoices.operation in cls.YAML_DEF_OPERATIONS:
+            operationSpec = cls.YAML_ANALYSIS_SPECS[prevChoices.operation]
+            operationLabel = operationSpec.getLabel() + '\n' + operationSpec.getInfo()
+            kwArgs = operationSpec.getKwArgsWithInfo()
+            for key, info in kwArgs.iteritems():
+                kwArgsPrint += key + ': ' + info.getInfo() + '\n'
 
-        for key,label in kwArgsLabels:
-            kwArgsPrint += key + ': ' + label + '\n'
+        else:
+            operationSpec = cls.ANALYSIS_SPECS[prevChoices.operation]
+            operationLabel = operationSpec.getText()
+            kwArgsLabels = operationSpec.getOptionsAsKeysAndTexts()
+
+            for key,label in kwArgsLabels:
+                kwArgsPrint += key + ': ' + label + '\n'
 
         return (operationLabel + '\n' + kwArgsPrint, 5 , True)
 
     @classmethod
     def _getOperationList(cls):
 
-        return cls.OPERATIONS.keys()
+        ops = cls.OPERATIONS.keys()
+        ops.extend(cls.YAML_OPERATIONS.keys())
+
+        return ops
 
     @classmethod
     def getInputBoxNamesForKwArgs(cls):
@@ -423,7 +433,6 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
         # temporary
         if 'useStrands' in kwArgsWithChoices:
             analysisSpec.setChoice('useStrands', 'False')
-
 
         for gsuiteTrack in gSuite.allTracks():
             trackName = etm.createStdTrackName(etm.extractIdFromGalaxyFn(galaxyFn), name=gsuiteTrack.title)
