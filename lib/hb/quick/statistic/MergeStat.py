@@ -13,9 +13,12 @@ class MergeStat(MagicStatFactory):
 
 class MergeStatUnsplittable(Statistic):
 
-    def _init(self, useStrands=False, treatMissingAsNegative=False, **kwargs):
+    def _init(self, useStrands=False, treatMissingAsNegative=False, rawStatistic=None, **kwargs):
         self._useStrands = parseBoolean(useStrands)
         self._treatMissingAsNegative = parseBoolean(treatMissingAsNegative)
+        self._rawStatistic = None
+        if rawStatistic is not None:
+            self._rawStatistic = self.getRawStatisticClass(rawStatistic)
 
         if 'resultAllowOverlap' in self._kwArgs:
             self._resultAllowOverlap = parseBoolean(self._kwArgs['resultAllowOverlap'])
@@ -64,8 +67,10 @@ class MergeStatUnsplittable(Statistic):
                                       trackFormat=tv.trackFormat)
         return tv
 
-
-
     def _createChildren(self):
-        self._addChild(RawDataStat(self._region, self._track, TrackFormatReq(dense=False)))
+        track2 = self._track2 if hasattr(self, '_track2') else None
+        if self._rawStatistic:
+            self._addChild(self._rawStatistic(self._region, self._track, track2, **self._kwArgs))
+        else:
+            self._addChild(RawDataStat(self._region, self._track, TrackFormatReq(dense=False)))
 

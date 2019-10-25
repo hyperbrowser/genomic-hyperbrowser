@@ -450,7 +450,21 @@ def getYamlAnalysisSpecs(filePath):
 
     return yamlAnalysisSpecList
 
+def getAnalysisSpecsDict(analysisSpecList):
+    specDict = {}
+    for spec in analysisSpecList:
+        if spec.getStatClass().__name__ == 'TrackOperationsManagerStat':
+            name = spec.getChoice('rawStatistic')
+            specDict[name] = spec
+        else:
+            specDict[spec.getStatClass().__name__] = spec
+
+    return specDict
+
+
 def parseBoolean(val):
+    if type(val) == bool:
+        return val
     if val == 'True':
         val = True
     elif val == 'False':
