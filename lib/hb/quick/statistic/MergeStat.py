@@ -20,16 +20,9 @@ class MergeStatUnsplittable(Statistic):
         if rawStatistic is not None:
             self._rawStatistic = self.getRawStatisticClass(rawStatistic)
 
-        if 'resultAllowOverlap' in self._kwArgs:
-            self._resultAllowOverlap = parseBoolean(self._kwArgs['resultAllowOverlap'])
-        else:
-            self._resultAllowOverlap = False
-
     def _compute(self):
         tv = self._children[0].getResult()
-        print 'tv: '
-        print tv
-        
+
         starts = tv.startsAsNumpyArray()
         ends = tv.endsAsNumpyArray()
         strands = tv.strandsAsNumpyArray()
@@ -42,21 +35,14 @@ class MergeStatUnsplittable(Statistic):
             if strands is None:
                 self._useStrands = False
 
-        if not self._resultAllowOverlap:
-            ret = merge(starts, ends, strands=strands, values=values, ids=ids,
-                        edges=edges, weights=weights, useStrands=self._useStrands,
-                        treatMissingAsNegative=self._treatMissingAsNegative)
+        ret = merge(starts, ends, strands=strands, values=values, ids=ids,
+                    edges=edges, weights=weights, useStrands=self._useStrands,
+                    treatMissingAsNegative=self._treatMissingAsNegative)
 
-            if ret is not None and len(ret[0]) != 0:
-                assert len(ret) == 7
-                # We do not care about info from the base track..
-                # the new track will only contain starts, ends and strands if
-                # present.
-
-                # starts, ends, values, strands, ids, edges, weights
-                starts, ends, values, strands, ids, edges, weights = ret
-            else:
-                return createEmptyTrackView(tv)
+        if ret is not None and len(ret[0]) != 0:
+            starts, ends, values, strands, ids, edges, weights = ret
+        else:
+            return createEmptyTrackView(tv)
 
         tv = createRawResultTrackView(None, self._region, None,
                                       False,
