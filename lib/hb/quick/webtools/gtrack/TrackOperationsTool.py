@@ -91,7 +91,14 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[rawStatistic:=ShiftStat]'
                           '[postprocessStatistic:=MergeStat]'
                           '[shouldPostprocessVar:=resultNoOverlap]'
-                          ' -> TrackOperationsManagerStat'
+                          ' -> TrackOperationsManagerStat',
+                          'Track operations - filter: Filter out unwanted data from a track '
+                          '[removeStrands:Remove all strands=False:FalseLabel/True:TrueLabel]'
+                          '[removeValues:Remove all values=False:FalseLabel/True:TrueLabel]'
+                          '[removeLinks:Remove all link info, if present=False:FalseLabel/True:TrueLabel]'
+                          '[removeWeights:Remove all weight info, if present=False:FalseLabel/True:TrueLabel]'
+                          '[removeExtras:Remove all extra information, if present=False:FalseLabel/True:TrueLabel]'
+                          ' -> FilterStat',
                           ]
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
