@@ -71,7 +71,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
                           ' -> MergeStat',
                           'Track operations - expand: Expand the elements in a track '
-                          '[resultAllowOverlap:Allow overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          '[resultNoOverlap:Remove overlap in the result track=False:FalseLabel/True:TrueLabel]'
                           '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
                           '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
                           '[useFraction:Interpret flak size as a fraction of the element size=False:FalseLabel/True:TrueLabel]'
@@ -80,10 +80,19 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[both:Extract the segments in in both directions. In number of base pairs=0]'
                           '[rawStatistic:=ExpandStat]'
                           '[postprocessStatistic:=MergeStat]'
-                          '[shouldPostprocess:=resultsAllowOverlap]'
+                          '[shouldPostprocessVar:=resultNoOverlap]'
+                          ' -> TrackOperationsManagerStat',
+                          'Track operations - shift: Shifts the elements in a track '
+                          '[resultNoOverlap:Remove overlap in the result track=True:TrueLabel/False:FalseLabel]'
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          '[useFraction:Shift each element a fraction of its length instead of given number of base pairs=False:FalseLabel/True:TrueLabel]'
+                          '[shiftLength:Length of shift in number of base pairs or as a fraction of the elements length=0]'
+                          '[rawStatistic:=ShiftStat]'
+                          '[postprocessStatistic:=MergeStat]'
+                          '[shouldPostprocessVar:=resultNoOverlap]'
                           ' -> TrackOperationsManagerStat'
                           ]
-
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
     ANALYSIS_SPECS = getAnalysisSpecsDict(ANALYSIS_SPECS_LIST)
@@ -572,16 +581,16 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     #     """
     #     return True
     #
-    # @classmethod
-    # def getResetBoxes(cls):
-    #     """
-    #     Specifies a list of input boxes which resets the subsequent stored
-    #     choices previously made. The input boxes are specified by index
-    #     (starting with 1) or by key.
-    #
-    #     Optional method. Default return value if method is not defined: True
-    #     """
-    #     return []
+    @classmethod
+    def getResetBoxes(cls):
+        """
+        Specifies a list of input boxes which resets the subsequent stored
+        choices previously made. The input boxes are specified by index
+        (starting with 1) or by key.
+
+        Optional method. Default return value if method is not defined: True
+        """
+        return ['operation']
     #
     # @classmethod
     # def getToolDescription(cls):

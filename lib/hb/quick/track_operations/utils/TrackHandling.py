@@ -430,9 +430,11 @@ def getKwArgOperationDictStat(analysisSpecsDict):
 
     for statName,spec in analysisSpecsDict.iteritems():
         kwArgs = spec.getOptionsAsKeys().keys()
+        # print 'op: ' + statName
+        # print kwArgs
         opDict[statName] = kwArgs
 
-    print opDict
+    #print opDict
 
     for op, kwArgs in opDict.items():
         for kw in kwArgs:
