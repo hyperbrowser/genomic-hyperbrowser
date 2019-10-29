@@ -585,6 +585,7 @@ def merge(starts, ends, strands=None, values=None, ids=None, edges=None,
     else:
         if strands is not None:
             strands = strands.copy()
+        if values is not None:
             values = values.copy()
         if debug:
             print("Merging without using strands")

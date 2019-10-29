@@ -99,6 +99,18 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[removeWeights:Remove all weight info, if present=False:FalseLabel/True:TrueLabel]'
                           '[removeExtras:Remove all extra information, if present=False:FalseLabel/True:TrueLabel]'
                           ' -> FilterStat',
+                          'Track operations - flank: Create a flanking track from a given track '
+                          '[resultNoOverlap:Remove overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          '[useFraction:Interpret flak size as a fraction of the element size=False:FalseLabel/True:TrueLabel]'
+                          '[upstream:Size of the upstream flank. In number of base pairs=0]'
+                          '[downstream:Size of the downstream flank. In number of base pairs=0]'
+                          '[both:Extract the segments in in both directions. In number of base pairs=0]'
+                          '[rawStatistic:=FlankStat]'
+                          '[postprocessStatistic:=MergeStat]'
+                          '[shouldPostprocessVar:=resultNoOverlap]'
+                          ' -> TrackOperationsManagerStat',
                           ]
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
