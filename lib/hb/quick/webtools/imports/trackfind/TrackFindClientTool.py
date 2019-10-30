@@ -3,6 +3,7 @@ from collections import OrderedDict
 from collections import defaultdict
 from copy import copy
 from functools import partial
+from ast import literal_eval
 
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteUtils as GSuiteUtils
@@ -318,7 +319,6 @@ class TrackFindClientTool(GeneralGuiTool):
 
         return OrderedDict([(title, True) for title in trackTitles])
 
-
     @classmethod
     def getOptionsBoxSelectRandomTracks(cls, prevChoices):
         if prevChoices.selectTracks not in (cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
@@ -564,6 +564,8 @@ class TrackFindClientTool(GeneralGuiTool):
             selectedTracks = [track for track, checked in prevChoices.selectTracksManually.items() if checked]
         elif prevChoices.selectTracks in (cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS):
             selectedTracks = prevChoices.selectRandomTracks
+            if type(selectedTracks) is not list:
+                selectedTracks = literal_eval(prevChoices.selectRandomTracks)
 
         return selectedTracks
 
