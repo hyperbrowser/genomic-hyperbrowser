@@ -57,7 +57,7 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
     PROGRESS_INTERSECT_MSG = 'Intersect tracks'
     PROGRESS_PREPROCESS_MSG = 'Preprocess tracks'
 
-    OPERATIONS_TWO_TRACKS = ['IntersectionStat']
+    OPERATIONS_TWO_TRACKS = ['IntersectionStat', 'UnionStat', 'SubtractStat']
     SELECT_CHOICE = '--- Select ---'
 
     ANALYSIS_SPEC_STRS = ['Track operations - complement: test of track operations2 '
@@ -111,6 +111,31 @@ class TrackOperationsTool(GeneralGuiTool, GenomeMixin):
                           '[postprocessStatistic:=MergeStat]'
                           '[shouldPostprocessVar:=resultNoOverlap]'
                           ' -> TrackOperationsManagerStat',
+                          'Track operations - remove dead links: Remove any dead links in a linked track '
+                          '[useGlobal:Check the ids globally=False:FalseLabel/True:TrueLabel]'
+                          '[newId:Move the dead links to this id instead of removing them=None]'
+                          ' -> RemoveDeadLinksStat',
+                          'Track operations - subtract: Subtract one track from another '
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          '[rawStatistic:=SubtractStat]'
+                          '[postprocessStatistic:=RemoveDeadLinksStat]'
+                          ' -> TrackOperationsManagerStat',
+                          'Track operations - uniquify links:Make all ids in a track more unique by adding a extra tag to all ids'
+                          '[useGlobal:Check the ids globally=False:FalseLabel/True:TrueLabel]'
+                          '[identifier:Identifier to add to the ids=newId]'
+                          ' -> UniquifyLinksStat',
+                          'Track operations - union: Combine two tracks into one '
+                          '[resultNoOverlap:Remove overlap in the result track=False:FalseLabel/True:TrueLabel]'
+                          '[useStrands:Follow the strand direction=True:TrueLabel/False:FalseLabel]'
+                          '[treatMissingAsNegative:Treat any missing strand as if they are negative=False:FalseLabel/True:TrueLabel]'
+                          '[rawStatistic:=UnionStat]'
+                          '[postprocessStatistic:=MergeStat]'
+                          '[shouldPostprocessVar:=resultNoOverlap]'
+                          ' -> TrackOperationsManagerStat',
+                          'Track operations - value select: Select the elements in a track that have a value bigger then some given value '
+                          '[limit:Value limit to select based on=0]'
+                          ' -> ValueSelectStat'
                           ]
 
     ANALYSIS_SPECS_LIST = [AnalysisDefHandler(analysisSpecStr) for analysisSpecStr in ANALYSIS_SPEC_STRS]
