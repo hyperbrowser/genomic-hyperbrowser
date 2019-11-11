@@ -3,8 +3,8 @@ from gold.statistic.RawDataStat import RawDataStat
 from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq
 from quick.track_operations.raw_operations.RemoveDeadLinks import removeDeadLinks
-from quick.track_operations.utils.TrackHandling import parseBoolean, \
-    createEmptyTrackView, createRawResultTrackView
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView
+from hb.quick.track_operations.TrackOperationsModule import parseBoolean, createEmptyTrackView
 
 
 class RemoveDeadLinksStat(MagicStatFactory):

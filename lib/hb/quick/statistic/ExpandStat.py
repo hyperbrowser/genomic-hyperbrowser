@@ -3,8 +3,9 @@ from gold.statistic.RawDataStat import RawDataStat
 from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq, TrackFormat
 from quick.track_operations.raw_operations.Expand import expand
-from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean, \
-    parseInt, createEmptyTrackView
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView
+from hb.quick.track_operations.TrackOperationsModule import parseBoolean, parseInt, \
+    createEmptyTrackView
 
 
 class ExpandStat(MagicStatFactory):

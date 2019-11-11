@@ -4,7 +4,8 @@ from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.RawDataStat import RawDataStat
 from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq, TrackFormat
-from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView
+from hb.quick.track_operations.TrackOperationsModule import parseBoolean
 
 
 class FilterStat(MagicStatFactory):

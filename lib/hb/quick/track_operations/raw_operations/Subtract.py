@@ -148,7 +148,7 @@ def subtract(t1Starts, t1Ends, t2Starts, t2Ends, t1Strands=None,
 
     if len(t2Starts) == 0:
         # Nothing to subtract, returning track 1
-        return t1Starts, t1Ends, t1Strands, t1Index
+        return t1Starts, t1Ends, t1Index
 
     if useStrands:
         if treatMissingAsNegative:

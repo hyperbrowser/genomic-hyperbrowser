@@ -4,8 +4,9 @@ from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq
 from quick.track_operations.raw_operations.Shift import shift
 
-from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean, \
-    createEmptyTrackView, parseInt
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView
+from hb.quick.track_operations.TrackOperationsModule import parseBoolean, parseInt, \
+    createEmptyTrackView
 
 
 class ShiftStat(MagicStatFactory):

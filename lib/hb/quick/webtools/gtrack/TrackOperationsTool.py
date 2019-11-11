@@ -19,8 +19,8 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.UserBinSource import GlobalBinSource
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.track_operations.utils.TrackHandling import getKwArgOperationDictStat, parseBoolean, \
-    getYamlAnalysisSpecs, getAnalysisSpecsDict
+from hb.quick.track_operations.TrackOperationsModule import getKwArgOperationDictStat, \
+    getYamlAnalysisSpecs, getAnalysisSpecsDict, parseBoolean
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.GenomeMixin import GenomeMixin

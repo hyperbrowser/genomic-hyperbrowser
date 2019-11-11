@@ -2,8 +2,8 @@ from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from quick.statistic.MergeStat import MergeStat
 from quick.track_operations.raw_operations.Subtract import subtract
-from quick.track_operations.utils.TrackHandling import createRawResultTrackView, parseBoolean, \
-    createEmptyTrackView
+from quick.track_operations.utils.TrackHandling import createRawResultTrackView
+from hb.quick.track_operations.TrackOperationsModule import parseBoolean, createEmptyTrackView
 
 
 class SubtractStat(MagicStatFactory):
@@ -15,6 +15,8 @@ class SubtractStatUnsplittable(Statistic):
     def _init(self, useStrands=True, treatMissingAsNegative=True, **kwargs):
         self._useStrands = parseBoolean(useStrands)
         self._treatMissingAsNegative = parseBoolean(treatMissingAsNegative)
+        if 'rawStatistic' in self._kwArgs:
+            del self._kwArgs['rawStatistic']
 
     def _compute(self):
         tv1, tv2 = self._children[0].getResult(), self._children[1].getResult()

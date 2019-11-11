@@ -4,8 +4,8 @@ from gold.statistic.Statistic import Statistic
 from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackView import TrackView
 from quick.track_operations.raw_operations.Flank import flank
-from quick.track_operations.utils.TrackHandling import parseBoolean, \
-    parseInt, createEmptyTrackView
+from hb.quick.track_operations.TrackOperationsModule import parseBoolean, parseInt, \
+    createEmptyTrackView
 
 
 class FlankStat(MagicStatFactory):
