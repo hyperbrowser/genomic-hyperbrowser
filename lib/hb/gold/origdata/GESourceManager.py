@@ -50,69 +50,42 @@ class GESourceManager(object):
             prevPrintWarnings = self._geSource.getPrintWarnings()
             self._geSource.setPrintWarnings(False)
 
-            prefixList = self.getPrefixList()
-            for el in self._geSource:
-                if self._geSource.isSliceSource():
-                    self._updateStatsFromSliceGenomeElement(el, prefixList)
-                else:
-                    self._updateStatsFromStdGenomeElement(el)
+            if self._geSource.isSliceSource():
+                if len(self._getMaxStrLensKeys()):
+                    raise NotImplementedError('Dimension calculation not yet implemented for slice-based GenomeElementSources.')
+
+                prefixList = self._geSource.getPrefixList()
+                for el in self._geSource:
+                    chr = el.chr
+                    self._numElements[chr] += len(getattr(el, prefixList[0]))
+            else:
+                for el in self._geSource:
+                    chr = el.chr
+                    self._numElements[chr] += 1
+
+                    if el.isBlankElement:
+                        continue
+
+                    if self._areValsCategorical:
+                        self._valCategories.add(el.val)
+
+                    if self._areEdgeWeightsCategorical:
+                        self._edgeWeightCategories |= set(el.weights)
+
+                    for prefix in self._maxStrLens[chr]:
+                        content = getattr(el, prefix, None)
+
+                        if content is not None:
+                            self._maxStrLens[chr][prefix] = \
+                                    max( self._maxStrLens[chr][prefix], \
+                                         max(1, len(content)) if isinstance(content, basestring) else \
+                                            max([1] + [len(x) for x in flatten(content)]) )
+
+                            if prefix == 'edges':
+                                self._maxNumEdges[chr] = max(self._maxNumEdges[chr], len(el.edges))
 
             self._geSource.setPrintWarnings(prevPrintWarnings)
             self._hasCalculatedStats = True
-
-    def _updateStatsFromStdGenomeElement(self, el):
-        chr = el.chr
-        self._numElements[chr] += 1
-
-        if el.isBlankElement:
-            return
-
-        if self._areValsCategorical:
-            self._valCategories.add(el.val)
-
-        if self._areEdgeWeightsCategorical:
-            self._edgeWeightCategories |= set(el.weights)
-
-        for prefix in self._maxStrLens[chr]:
-            content = getattr(el, prefix, None)
-
-            if content is not None:
-                self._maxStrLens[chr][prefix] = \
-                    max(self._maxStrLens[chr][prefix],
-                        max(1, len(content)) if isinstance(content, basestring) else \
-                            max([1] + [len(x) for x in flatten(content)]))
-
-                if prefix == 'edges':
-                    self._maxNumEdges[chr] = max(self._maxNumEdges[chr], len(el.edges))
-
-    def _updateStatsFromNumpyArrays(self, chr, arrays):
-        if self._areValsCategorical:
-            from numpy import unique
-            self._valCategories |= set(unique(arrays['val']))
-
-        if self._areEdgeWeightsCategorical:
-            from numpy import unique
-            self._edgeWeightCategories |= set(unique(arrays['weights']))
-
-        for prefix in self._maxStrLens[chr]:
-            array = arrays[prefix]
-
-            dtypeStr = str(array.dtype).replace('|', '')
-            assert dtypeStr[0] == 'S', dtypeStr + ', ' + prefix
-            strLen = int(dtypeStr[1:])
-            self._maxStrLens[chr][prefix] = max(self._maxStrLens[chr][prefix], strLen)
-
-            if prefix == 'edges':
-                self._maxNumEdges[chr] = max(self._maxNumEdges[chr], array.shape[1])
-
-    def _updateStatsFromSliceGenomeElement(self, el, prefixList):
-        numpyArrays = {}
-
-        self._numElements[el.chr] += len(getattr(el, prefixList[0]))
-        for prefix in self._maxStrLens[el.chr]:
-            numpyArrays[prefix] = getattr(el, prefix, None)
-
-        self._updateStatsFromNumpyArrays(el.chr, numpyArrays)
 
     def getGESource(self):
         return self._geSource

@@ -6,8 +6,6 @@ from quick.util.CommonFunctions import isNan, ensurePathExists
 from gold.util.CommonConstants import BINARY_MISSING_VAL
 from gold.origdata.GEDependentAttributesHolder import GEDependentAttributesHolder
 
-from gold.origdata.GENumpyArrayConverter import GENumpyArrayConverter
-
 MatchResult = namedtuple('MatchResult', ['match', 'trackFormatName'])
 ComposerInfo = namedtuple('ComposerInfo', ['trackFormatName','fileFormatName','fileSuffix'])
 
@@ -43,8 +41,6 @@ class FileFormatComposer(object):
 
     def __init__(self, geSource):
         try:
-            if geSource.isSliceSource():
-                geSource = GENumpyArrayConverter(geSource)
             if not geSource.hasBoundingRegionTuples():
                 self._geSource = GEDependentAttributesHolder(geSource)
             else:
