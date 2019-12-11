@@ -344,7 +344,6 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
             d2=[]
             for dNum, d in enumerate(e):
                 try:
-                    int(d[0])
                     newdataForPlot.append(dataForPlot[eNum][dNum])
                     newseriesName.append(seriesName[eNum][dNum])
                 except:

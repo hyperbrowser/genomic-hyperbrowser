@@ -301,8 +301,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         orgnalTitleAllCount = 0
         try:
             for x in gSuite.allTracks():
-                orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
-            orgnalTitleAllCount = 1
+                if x.getAttribute('orginaltitle') != '.':
+                    orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
+                    orgnalTitleAllCount = 1
         except:
             pass
 
@@ -417,6 +418,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         # resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(countPerTrack)
                     if cls.SUMMARIZE[summarize] == 'raw':
                         title = gi.metadata['title']
+                        #print 'title', title, orgnalTitleAllCount, '<br>'
                         if orgnalTitleAllCount == 1:
                             orginalTitle = orgnalTitleAll[title]
                         else:
@@ -510,7 +512,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             # expectedOrderedDict[groupKey] *= expectedDict[g]
                             expectedOrderedDict[(g[0], groupKey[0])] = extraCalc[groupKey[0]] * \
                                                                        expectedDict[g[0]]
-
+        # print 'resultsDict', resultsDict, '<br> '
         for statKey, statItem in resultsDict.iteritems():
             data = []
             for summarizeKey, summarizeItem in statItem.iteritems():
@@ -531,6 +533,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     else:
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
                                            sumBp, summarizeKey)
+
+            # print 'data', data, '<br>'
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
@@ -639,6 +643,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.divEnd()
             htmlCore.divEnd()
             htmlCore.divEnd()
+
+            # print 'header[:len(header) - 1]', header[:len(header) - 1], '<br>'
+            # print 'optionData', optionData, '<br>'
+            # print 'mainOptionList', mainOptionList, '<br>'
+            # print 'optionList', optionList, '<br>'
 
             htmlCore.line(
                 cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum,
