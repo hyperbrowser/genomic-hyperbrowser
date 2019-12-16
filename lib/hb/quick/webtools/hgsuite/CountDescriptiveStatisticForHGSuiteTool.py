@@ -33,7 +33,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     MAX_NUM_OF_STAT = 1
     INFO_1 = 'You have define levels of dimensions in your hGSuite so by default your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
-    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's originaltitle, if you do not have it then it is take column title."
     INFO_ALL = ''
     PHRASE = '-- SELECT --'
 
@@ -240,7 +240,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
                                 try:
-                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                    return list(set(gSuite.getAttributeValueList('originaltitle')))
                                 except:
                                     return list(set(gSuite.allTrackTitles()))
                             else:
@@ -264,7 +264,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
                                 try:
-                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                    return list(set(gSuite.getAttributeValueList('originaltitle')))
                                 except:
                                     return list(set(gSuite.allTrackTitles()))
                             else:
@@ -301,8 +301,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         orgnalTitleAllCount = 0
         try:
             for x in gSuite.allTracks():
-                if x.getAttribute('orginaltitle') != '.':
-                    orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
+                if x.getAttribute('originaltitle') != '.':
+                    orgnalTitleAll[x.title] = x.getAttribute('originaltitle')
                     orgnalTitleAllCount = 1
         except:
             pass

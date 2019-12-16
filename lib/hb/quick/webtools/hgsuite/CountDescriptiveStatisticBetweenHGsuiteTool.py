@@ -49,7 +49,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     MAX_NUM_OF_STAT = 1
     INFO_1 = 'You have define levels of dimensionsat least in one of youy hGSuite so by defualt your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
-    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's originaltitle, if you do not have it then it is take column title."
 
     DIMENSIONS1 = ''
     DIMENSIONS2 = ''
@@ -336,18 +336,18 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         if cls.MAIN_OPTIONS[0] == selOption:
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
-                                #return list(set(gSuite.allTrackTitles()))
-                                try:
-                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
-                                except:
+                                if 'originaltitle' in gSuite.attributes:
+                                    return list(set(gSuite.getAttributeValueList('originaltitle')))
+
+                                else:
                                     return list(set(gSuite.allTrackTitles()))
+
                             else:
                                 j = index - 1
                                 selectedAttribute = getattr(prevChoices,
                                                             'selectedColumnFirst%s' % j).encode(
                                     'utf-8')
-                                return list(
-                                    set(gSuite.getAttributeValueList(selectedAttribute)))
+                                return list(set(gSuite.getAttributeValueList(selectedAttribute)))
                         elif cls.MAIN_OPTIONS[1] == selOption:
                             pass
                         else:
@@ -363,10 +363,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         if cls.MAIN_OPTIONS[0] == selOption:
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
-                                #return list(set(gSuite.allTrackTitles()))
-                                try:
-                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
-                                except:
+                                if 'originaltitle' in  gSuite.attributes:
+                                    return list(set(gSuite.getAttributeValueList('originaltitle')))
+                                else:
                                     return list(set(gSuite.allTrackTitles()))
                             else:
                                 j = index - 1
@@ -999,20 +998,27 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         orgnalTitleAllCount = 0
         orgnalTitleAllSecond = {}
         orgnalTitleAllCountSecond = 0
-        try:
+
+        if 'originaltitle' in gSuite.attributes:
             for x in gSuite.allTracks():
-                orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
+                orgnalTitleAll[x.title] = x.getAttribute('originaltitle')
             orgnalTitleAllCount = 1
-        except:
+        else:
             for x in gSuite.allTracks():
                 orgnalTitleAll[x.title] = x.title
             orgnalTitleAllCount = 1
-        try:
+
+        if 'originaltitle' in secondGSuite.attributes:
             for x in secondGSuite.allTracks():
-                orgnalTitleAllSecond[x.title] = x.getAttribute('orginaltitle')
+                orgnalTitleAllSecond[x.title] = x.getAttribute('originaltitle')
             orgnalTitleAllCountSecond = 1
-        except:
-            pass
+        else:
+            for x in secondGSuite.allTracks():
+                #print 'x.title', x.title
+                orgnalTitleAllSecond[x.title] = x.title
+            orgnalTitleAllCountSecond = 1
+
+
 
         # print 'analysisBins', analysisBins, '<br>'
         # print 'selectedAnalysis', selectedAnalysis, '<br>'
@@ -1056,8 +1062,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         else:
                             orginalTitle = title
                         titleSecond = res.getTrackStructure()['reference'].metadata['title']
-                        # print 'orgnalTitleAllSecond', orgnalTitleAllSecond, '<br>'
-                        # print 'titleSecond', titleSecond, '<br>'
+                        #print 'orgnalTitleAllSecond', orgnalTitleAllSecond, '<br>'
+                        #print 'titleSecond', titleSecond, '<br>'
                         if orgnalTitleAllCountSecond == 1:
                             orginalTitleSecond = orgnalTitleAllSecond[titleSecond]
                         else:

@@ -122,8 +122,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             attr = OrderedDict()
             for k in attrMut.keys():
                 attr[k] = attrMut[k][i]
-            attr['orginalTitle'] = str(trackTitle)
-            attr['orginalTitleFromTrack'] = str(p)
+            attr['originaltitle'] = str(trackTitle)
+            attr['originalTitleFromTrack'] = str(p)
             if len(it) == 1:
                 attr['chr'] = str(it[0].strip('\n').split('\t')[0])
 
@@ -152,7 +152,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             attr = OrderedDict()
             for k in attrMut.keys():
                 attr[k] = attrMut[k][i]
-            attr['orginalTitle'] = str(trackTitle)
+            attr['originalTitle'] = str(trackTitle)
             if add == 'yes':
                 for numPEl, pEl in enumerate(p):
                     attr['attribute' + str(numPEl)] = str(pEl)
@@ -194,7 +194,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         attr = OrderedDict()
         for k in attrMut.keys():
             attr[k] = attrMut[k][i]
-        attr['orginalTitle'] = str(trackTitle)
+        attr['originalTitle'] = str(trackTitle)
 
         attrTemp = OrderedDict()
         lineAll = {}
