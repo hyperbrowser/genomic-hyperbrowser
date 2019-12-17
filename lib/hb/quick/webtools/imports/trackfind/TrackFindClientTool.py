@@ -18,7 +18,7 @@ log = logging.getLogger( __name__ )
 
 
 class TrackFindClientTool(GeneralGuiTool):
-    MAX_NUM_OF_LEVELS = 8
+    MAX_NUM_OF_LEVELS = 7
     MAX_NUM_OF_SUB_LEVELS = 5
     SELECT_CHOICE = '--- Select ---'
     SINGLE_SELECTION = 'Single selection'
@@ -29,30 +29,35 @@ class TrackFindClientTool(GeneralGuiTool):
     RANDOM_50_TRACKS = 'Select 50 random tracks'
     MANUAL_TRACK_SELECT = 'Select tracks manually'
 
-    CELL_TISSUE_PATH = ['samples', 'sample_type', 'term_value']
-    EXPERIMENT_TYPE_PATH = ['experiments', 'technique', 'term_value']
-    GENOME_ASSEMBLY_PATH = ['tracks', 'genome_assembly']
-    TARGET_PATH = ['experiments', 'target', 'term_value']
-    FILE_FORMAT_PATH = ['tracks', 'file_format', 'term_value']
-    TYPE_OF_DATA_PATH = ['tracks', 'content_type', 'term_value']
+    CELL_TISSUE_PATH = ['samples', 'sample_type', 'summary']
+    EXPERIMENT_TYPE_PATH = ['experiments', 'technique', 'term_label']
+    GENOME_ASSEMBLY_PATH = ['tracks', 'assembly_name']
+    TARGET_PATH = ['experiments', 'target', 'summary']
+    FILE_FORMAT_PATH = ['tracks', 'file_format', 'term_label']
+    TYPE_OF_DATA_PATH = ['tracks', 'type_of_condensed_data']
+    PHENOTYPE_PATH = ['samples', 'phenotype', 'term_label']
+    GEOMETRIC_TRACK_TYPE_PATH = ['tracks', 'geometric_track_type']
 
     CELL_TISSUE_ATTR = '->'.join(CELL_TISSUE_PATH)
     GENOME_ASSEMBLY_ATTR = '->'.join(GENOME_ASSEMBLY_PATH[1:])
     TARGET_ATTR = '->'.join(TARGET_PATH)
     FILE_FORMAT_ATTR = '->'.join(FILE_FORMAT_PATH[1:])
     TYPE_OF_DATA_ATTR = '->'.join(TYPE_OF_DATA_PATH[1:])
+    LONG_LABEL_ATTR = 'label_long'
+    PHENOTYPE_ATTR = '->'.join(PHENOTYPE_PATH)
+    GEOMETRIC_TRACK_TYPE_ATTR = '->'.join(GEOMETRIC_TRACK_TYPE_PATH[1:])
 
     YES = 'Yes'
     NO = 'No'
 
     ATTRIBUTE_SHORTCUTS = OrderedDict([('* Cell/Tissue type', CELL_TISSUE_PATH),
                           ('* Experiment type', EXPERIMENT_TYPE_PATH),
-                          ('* Genome build', GENOME_ASSEMBLY_PATH),
+                          ('* Genome assembly', GENOME_ASSEMBLY_PATH),
                           ('* Target', TARGET_PATH),
                           ('* File format', FILE_FORMAT_PATH),
-                          ('* Type of data', TYPE_OF_DATA_PATH)])
-
-    SUFFIX_REPLACE_MAP = {'bb': 'bigbed'}
+                          ('* Type of condensed data', TYPE_OF_DATA_PATH),
+                          ('* Phenotype', PHENOTYPE_PATH),
+                          ('* Geometric track type', GEOMETRIC_TRACK_TYPE_PATH)])
 
     TRACK_TABLE_LIMIT = 200
 
@@ -393,7 +398,7 @@ class TrackFindClientTool(GeneralGuiTool):
         for track in gsuite.allTracks():
             if counter == cls.TRACK_TABLE_LIMIT and prevChoices.displayAllTracks != cls.YES:
                 break
-            title = track.title
+            title = track.getAttribute(cls.LONG_LABEL_ATTR)
             attributes = []
             dataType = track.getAttribute(cls.TYPE_OF_DATA_ATTR)
 
@@ -402,10 +407,12 @@ class TrackFindClientTool(GeneralGuiTool):
             if selectedTracks is not None and title not in selectedTracks:
                 continue
 
-            attributes.append(dataType)
+            attributes.append(track.getAttribute(cls.GENOME_ASSEMBLY_ATTR))
+            attributes.append(track.getAttribute(cls.PHENOTYPE_ATTR))
             attributes.append(track.getAttribute(cls.CELL_TISSUE_ATTR))
             attributes.append(track.getAttribute(cls.TARGET_ATTR))
-            attributes.append(track.getAttribute(cls.GENOME_ASSEMBLY_ATTR))
+            attributes.append(dataType)
+            attributes.append(track.getAttribute(cls.GEOMETRIC_TRACK_TYPE_ATTR))
             attributes.append(track.getAttribute(cls.FILE_FORMAT_ATTR))
             tableDict[title] = attributes
 
@@ -416,8 +423,8 @@ class TrackFindClientTool(GeneralGuiTool):
 
         html = HtmlCore()
         html.tableFromDictionary(tableDict,
-                                 columnNames=['Track title', 'Type of data', 'Cell/tissue type',
-                                              'Target', 'Genome build', 'File format'],
+                                 columnNames=['Track title', 'Genome build', 'Phenotype',  'Cell/tissue type',
+                                              'Target', 'Type of condensed data', 'Geometric track type', 'File format'],
                                  tableId='t1', expandable=True)
 
         return '__rawstr__', unicode(html)
@@ -616,11 +623,6 @@ class TrackFindClientTool(GeneralGuiTool):
             if dataType not in chosenDataTypes:
                 continue
 
-            if track.suffix in cls.SUFFIX_REPLACE_MAP:
-                newUri = track.uriWithoutSuffix + ';{}'.format(cls.SUFFIX_REPLACE_MAP[track.suffix])
-                track = GSuiteTrack(uri=newUri, title=track.title, fileFormat=track.fileFormat,
-                                     trackType=track.trackType, genome=track.genome,
-                                     attributes=track.attributes)
             newGSuite.addTrack(track)
 
         GSuiteComposer.composeToFile(newGSuite, galaxyFn)
@@ -640,6 +642,8 @@ class TrackFindClientTool(GeneralGuiTool):
         chosenDataTypes = cls.getChosenDataTypes(choices)
         if not chosenDataTypes:
             return ''
+
+
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -735,15 +739,29 @@ class TrackFindClientTool(GeneralGuiTool):
 
         return boxes
 
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
+    @classmethod
+    def getToolDescription(cls):
+        """
+        Specifies a help text in HTML that is displayed below the tool.
+
+        Optional method. Default return value if method is not defined: ''
+        """
+
+        core = HtmlCore()
+        core.paragraph('This tool is a client for the <a href="https://trackfind.elixir.no/">TrackFind</a> service. '
+                       'After selecting a repository of genomic tracks, it is possible to select one or several attributes. '
+                       'The hierarchy of the attributes follows the hierarchy of the data according to the FairTracks standard. '
+                       'It is possible to select one or several values for each attribute.')
+
+        core.paragraph('After at least one value is selected, the tool shows a table with tracks that match the selected criteria. '
+                       'As more attributes and values are selected, the list of tracks is getting more filtered. '
+                       'When the list of tracks is suitable, the tracks can be exported by clicking on the "Execute" button. '
+                       'The tracks will then be exported as GSuite. ')
+        core.divider()
+        core.paragraph('More information about the FairTracks standard can be found here: <a href="https://fairtracks.github.io/">FairTracks</a>')
+
+        return str(core)
+
     # @classmethod
     # def getToolIllustration(cls):
     #     """
@@ -853,17 +871,17 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def getDemoSelections(cls):
-    #     """
-    #     Defines a set of demo inputs to the option boxes in the
-    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
-    #     If not None, a Demo button appears in the interface. Clicking the
-    #     button fills the option boxed with the defined demo values.
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return ['testChoice1', '..']
+    @classmethod
+    def getDemoSelections(cls):
+        """
+        Defines a set of demo inputs to the option boxes in the
+        order defined by getOptionBoxNames and getOptionsBoxOrder.
+        If not None, a Demo button appears in the interface. Clicking the
+        button fills the option boxed with the defined demo values.
+
+        Optional method. Default return value if method is not defined: None
+        """
+        return ['Blueprint - Blueprint', 'experiments', 'technique', 'term_id', 'None', 'None', 'None', cls.SINGLE_SELECTION, ('__hidden__', ''), 'http://purl.obolibrary.org/obo/OBI_0000748', 'None']
     #
     # @classmethod
     # def getExtraHistElements(cls, choices):
