@@ -175,7 +175,7 @@ class TrackFindClientTool(GeneralGuiTool):
             for shortcut in cls.ATTRIBUTE_SHORTCUTS:
                 attributes.insert(0, shortcut)
         else:
-            attributes = cls.getSubattributes(prevChoices, level)
+            attributes = cls.getSubattributes(prevChoices, level, index)
             if cls.isBottomLevel(attributes):
                 return
 
@@ -438,8 +438,8 @@ class TrackFindClientTool(GeneralGuiTool):
 
 
     @classmethod
-    def getSubattributes(cls, prevChoices, level):
-        subattributePath = cls.getSubattributePath(prevChoices, level)
+    def getSubattributes(cls, prevChoices, level, index=None):
+        subattributePath = cls.getSubattributePath(prevChoices, level, index=index)
 
         tfm = TrackFindModule()
         attributes = tfm.getSubLevelAttributesForRepository(prevChoices.selectRepository,
@@ -448,9 +448,13 @@ class TrackFindClientTool(GeneralGuiTool):
         return attributes
 
     @classmethod
-    def getSubattributePath(cls, prevChoices, level, inQueryForm=False):
+    def getSubattributePath(cls, prevChoices, level, inQueryForm=False, index=None):
         prevSubattributes = []
-        for i in range(cls.MAX_NUM_OF_SUB_LEVELS):
+        if index:
+            maxIndex = index
+        else:
+            maxIndex = cls.MAX_NUM_OF_SUB_LEVELS
+        for i in range(maxIndex):
             if hasattr(prevChoices, 'subAttributeList%s_%s' % (level, i)):
                 attr = cls.getChoice(prevChoices, 'subAttributeList', level, i)
                 if not attr or attr == cls.SELECT_CHOICE:
@@ -871,17 +875,17 @@ class TrackFindClientTool(GeneralGuiTool):
     #     """
     #     return None
     #
-    @classmethod
-    def getDemoSelections(cls):
-        """
-        Defines a set of demo inputs to the option boxes in the
-        order defined by getOptionBoxNames and getOptionsBoxOrder.
-        If not None, a Demo button appears in the interface. Clicking the
-        button fills the option boxed with the defined demo values.
-
-        Optional method. Default return value if method is not defined: None
-        """
-        return ['Blueprint - Blueprint', 'experiments', 'technique', 'term_id', 'None', 'None', 'None', cls.SINGLE_SELECTION, ('__hidden__', ''), 'http://purl.obolibrary.org/obo/OBI_0000748', 'None']
+    # @classmethod
+    # def getDemoSelections(cls):
+    #     """
+    #     Defines a set of demo inputs to the option boxes in the
+    #     order defined by getOptionBoxNames and getOptionsBoxOrder.
+    #     If not None, a Demo button appears in the interface. Clicking the
+    #     button fills the option boxed with the defined demo values.
+    #
+    #     Optional method. Default return value if method is not defined: None
+    #     """
+    #     return ['Blueprint - Blueprint', 'experiments', 'technique', 'term_id', 'None', 'None', 'None', cls.SINGLE_SELECTION, ('__hidden__', ''), 'http://purl.obolibrary.org/obo/OBI_0000748', 'None']
     #
     # @classmethod
     # def getExtraHistElements(cls, choices):
