@@ -71,7 +71,7 @@
                                <p class="paragraph">
                                The data can be grouped based on the question of interest, enabling easier analysis. For example if we are interested in statistical analysis like average number of genomic elements per defined group, where the group is defined by the character genotype (look at the left figure) or it can also be a group defined in combination with genotype and mutation type (look at the right figure).                                </p>
                                <p class="paragraph">
-                               In the example below, we calculated the average number of genomic elements for each tracks and calculated the average based on the group, eta and iota respectively. For the groups defined by the combinations of genotype and mutation type, we calculated the number of genomic elementa for track 1 and 2 separately and calculated the average based genotype and mutation types like eta-CA group, eta-CG, iota-CA, iota-CT.
+                               In the example below, we calculated the average number of genomic elements for each tracks and calculated the average based on the group, eta and iota respectively. For the groups defined by the combinations of genotype and mutation type, we calculated the number of genomic elements for track 1 and 2 separately and calculated the average based genotype and mutation types like eta-CA group, eta-CG, iota-CA, iota-CT.
                                For the groups defined by the combinations of genotype and mutation type, we calculated a number of genomic elements for tracks 1-2 separately and averaged them out (eta-CA group), and we did the same for the other groups (eta-CG, iota-CA, iota-CG, iota-CT).
                                <div style="display: block">
                                    <div style="width:49%;margin: 10px auto;float:left">
@@ -112,10 +112,14 @@
                            <div class = 'projectDesc'>
 
                                 The hGSuite HyperBrowser web platform is a set of independent tools that
-                                can be used together to cover a full analysis scenario from data
-                                preparation to result exploration. In figure, the pipeline used to
-                                analyse a collection of genomic tracks based on metadata of interest is
-                                displayed. The pipeline can be divided into four major steps.
+                                can be used  in combination to perform an entire analysis starting from data
+                                preparation to result exploration. It offers an easy straight forward way to
+                                manage and analyse your data collection. At the core of the system is GSuite,
+                                a simple tabular format representing genomic track collection along with related
+                                metadata. hgSuite works on the metadata of such tracks.
+                                The figure below shows a pipeline used to
+                                analyse a collection of genomic tracks based on metadata of interest.
+                                The pipeline can be divided into four major steps.
                                 <ol>
                                 <li>Data - A user can upload their own data or the data can be downloaded from
                                 external repositories using tools 'Create a GSuite from an integrated
@@ -139,9 +143,8 @@
                                 collection of genomic tracks (using tool 'Compute Pivot table for
                                 hGSuite') as well as pairwise combination of genomic tracks (using tool
                                 'Compute Pivot table for relations between hGSuites'). They are
-                                restricted by the their metadata. hGSuites need to have matched
-                                metadata. To specify the metadata can be used tool 'Create or modify
-                                hierarchy of hGSuite'.</li>
+                                restricted by the their metadata where hGSuites requires the metadata to be match.
+                                'Create or modify hierarchy of hGSuite' tool is used to specify the metadata.</li>
 
                                 <li>Exploration of analysis results - The results of analysis for each genomic
                                 track is represented as a data cube (multidimensional array of values).
@@ -357,11 +360,13 @@
                            <div class = 'project'>
                                <div class = 'projectDesc'>
                                    <p>
-                                       To help you properly understand the possible grouping of your data,
-                                   we decided to share our story with you (section 1).
+                                       hgSuite can be used effectively on your data
+                                   only if you can group them according to the meta information. Below are
+                                   few examples of analysis done using different types of data ranging from self-uploaded to the data
+                                       downloaded from public repo. These examples will help you understand how grouping works and
+                                       helps in displaying results. Below are the examples to understand the tool better.
                                    </p>
                                    <p>
-                                   If you are ready to begin with analysis, go to section look at our examples: 1 and 2.
                                        If you want to know more about tools itself go to tab called: Tools, if you want to know more about The Genomic HyperBrowser
                                        got to tab: Technical details.
                                    </p>
@@ -375,45 +380,25 @@
                    <div class="colAll">
                        <p class = 'description'>
                            <h4 class = 'descriptionTitle'>
-                               1. Before you start analysis, look at a possible structure of your data
+                               1. Explore DNA repair enzymes and mutations (i.e  knockout mouse data)
                            </h4>
                            <div class = 'descriptionDesc'>
                                <p>
                                    Our goal in this project is to explore the nature of DNA repair enzymes and mutations in knockout mouse data.
-                                   We started from the point, where usually most researchers start; we received data from our collaborators and we wanted to investigate those data. We got around 30 different genomic tracks (let's call them query tracks).
-                                   Full of enthusiasm, we started by preparing sketches for different possible analyses.
-
-                               </p>
-                               <p>
-                                   We started from a quantitative overview of the query tracks, by counting several summary statistics e.g.
-                                   base-pair coverage per genomic track, segment distance average per genomic track etc and
-                                   as well as local measurements such as coverage proportion per track per chromosome, count per track per chromosome etc.
-
-                                   <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/story1.png" \>
-                                   </div>
-
-                                   Therefore we downloaded reference genomic tracks from different databases: ENCODE, UCSC etc.
-                                   We collected around 10 genomic reference tracks and we repeated all the above analyses for the reference tracks and after that we computed
-                                   different pairwise similarity measures ( the Forbes coefficient, the Jaccard index and the tetrachoric correlation) between every pair of query and reference tracks.
-
-                                   <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/story2.png" \>
-                                   </div>
-
-
-                               </p>
-                               <p >
-                                   However, after all these analyses, we realized that these genomic data had a really important difference compared to previous projects.
-                                   Firstly, every query track was characterized by different mutation type (e.g. C>A, C>T, C>G, A>T, A>G, A>C, T>A etc), and therefore the query tracks should have been divided into two
-                                   smaller tracks based on mutation types, resulting in 360 new genomic query tracks( 30 X 12 = 360 ).
-                                    And, it was really insufficient to interpret the results in a reasonable amount of time.
-
-                               </p>
-                               <p>
-                                   So we had go  back to the first step and realized that the structure of our data was multi dimensional, with two possible levels.
+                                   We received 30 genomic tracks from our collaborators, these are called query tracks. The quantitative overview of
+                                   the tracks such as count statistics of base-pair coverage per genomic track, segment distance average per genomic track and
+                                   the local measurements such as coverage proportion per track per chromosome and counts per track per chromosome. The reference genome
+                                   was downloaded from different databases such as ENCODE and UCSC and the different pairwise similarity measure analysis was repeated for every single
+                                   query and reference track combination. This set of analysis produces several summary statistics and results that is informative, but not easily interpretable
+                                   Grouping of the query tracks based on the metadata was used. Firstly, every query track was characterized by different mutation type (e.g. C>A, C>T, C>G, A>T, A>G, A>C, T>A etc),
+                                   and therefore the query tracks were divided into two
+                                   smaller tracks based on mutation types, resulting in 360 new genomic query tracks( 30 X 12 = 360 ). This shows that the data is multi dimensional, with two possible levels.
                                    The first level of the data was specified by different DNA repair enzymes, while the second level was identified by type of mutations.
                                    We ended up with 7 individual groups in the first level and 12 groups in the second level, and at this point we could  start again with our analysis.
+
+                               </p>
+                               <p>
+                                   So we decided to make the grouping based on the meta levels.
 
                                    <div style="width:100%;margin: 10px auto;display:block;">
                                    <img class="img-thumbnail" src="../static/project/story3.png" \>
@@ -430,7 +415,7 @@
                    <div class="colAll">
                        <div class = 'description'>
                            <h4 class = 'descriptionTitle'>
-                               2. Example: Explore DNA repair enzymes and mutations (i.e  knockout mouse data)
+                               2. Data preparation
                            </h4>
                            <div class = 'example'>
                                <h4 class = 'exampleTitle'>
@@ -439,24 +424,24 @@
 
                                <div class = 'exampleDesc'>
                                    The following examples are based on the randomized version of the data which has been given by collaborators.
-                               Data are characterized by their genotype: ung, eta and wt. Also, data were additionally divided by their type of mutation: T>G,T>A,T>C,G>A,G>T,G>C,C>A,C>T,C>G,A>T,A>G,A>C
+                               Data are characterized by their genotype: ung, eta and wt. Also, data was divided based on the type of mutation: T>G,T>A,T>C,G>A,G>T,G>C,C>A,C>T,C>G,A>T,A>G,A>C
                                    and then grouped by complement nucleotide base pairs: T>G with A>C, T>A with A>T, T>C with A>G, C>A with G>T, C>T with G>A and C>G with G>C.
                                </div>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains of 6 tracks with genotype metadata (dataset 1) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 8, 11 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Use tool to create GSuite</a> and then <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">use tool to add metadata with values to GSuite</a>
+                               - hGSuite contains 6 tracks with genotype metadata (dataset 1) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 8, 11 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Use tool to create GSuite</a> and then <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">use tool to add metadata with values to GSuite</a>
                                </div>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains of 72 tracks with genotype metadata and divided by mutation type (dataset 2) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 12, 15 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Use tool to create hGSuite based on phrases in title column in tracks </a>
+                               - hGSuite contains 72 tracks with genotype metadata and divided by mutation type (dataset 2) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 12, 15 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Use tool to create hGSuite based on phrases in title column in tracks </a>
                                </div>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains of 36 tracks with genotype metadata and divided by mutation type (dataset 3) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 20, 23 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Use tool to concatenate tracks in hGsuite </a>
+                               - hGSuite contains 36 tracks with genotype metadata and divided by mutation type (dataset 3) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 20, 23 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Use tool to concatenate tracks in hGsuite </a>
                                </div>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains of 36 tracks with genotype metadata and divided by mutation type with specified levels (dataset 4) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 24, 25 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Use tool to create or modify hierarchy of hGSuite </a>
+                               - hGSuite contains 36 tracks with genotype metadata and divided by mutation type with specified levels (dataset 4) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 24, 25 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Use tool to create or modify hierarchy of hGSuite </a>
                                </div>
 
                            </div>
@@ -475,7 +460,7 @@
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 1 compute coverage of data.
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite </a> and data from dataset 1 to compute coverage of data.
                                     <a href = "../u/hbsuperuser/h/analysis-q1---11">Click here to view an example, el. 2</a>
                                        The result of the tool is a Pivot table. During computation user can select columns which will show up in the result page.
                                        In this case, the selected column is genotype, so all results are counted separately for every track and every genotype.
@@ -488,12 +473,12 @@
                                </div>
 
                                <h4 class = 'exampleTitle'>
-                                   Check whether some mutation are more active in certain mutation type
+                                   To Check whether some mutation are more active in certain mutation type
                                </h4>
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 3 compute coverage of data.
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite </a> and data from dataset 3 compute coverage of data.
                                     <a href = "../u/hbsuperuser/h/analysis-q2---12 ">Click here to view an example, el. 2</a>
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
@@ -502,12 +487,12 @@
                                </div>
 
                                <h4 class = 'exampleTitle'>
-                                   Check whether some mutation types are enriched in certain genotype more than you would expected by chance
+                                   To check whether some mutation types are enriched in certain genotype more than you would expected by chance
                                </h4>
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute Pivot table for hGSuite </a> and data from dataset 3 compute coverage of data.
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite </a> and data from dataset 3 compute coverage of data.
                                     <a href = "../u/hbsuperuser/h/analysis-q3---13">Click here to view an example, el. 2</a>
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
@@ -517,12 +502,12 @@
 
 
                                <h4 class = 'exampleTitle'>
-                                   Check whether data are enriched within different 3-mers
+                                   To check whether data are enriched within different 3-mers
                                </h4>
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> and data from dataset 2 compute overlap of data.
+                                    Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute data cube for relations between hGSuites </a> and data from dataset 2 compute overlap of data.
                                     <a href = "../u/hbsuperuser/h/analysis-q4---14">Click here to view an example, el. 3</a>
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
@@ -553,11 +538,11 @@
                                </h4>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains of 1 track contains 3447 schizophrenia associated SNPs (dataset 1) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 8 (preprocessed)</a>.
+                               - hGSuite contains of 1 track having 3447 schizophrenia associated SNPs (dataset 1) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 8 (preprocessed)</a>.
                                </div>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains of 87 DNase I hypersensitive sites genomic tracks (dataset 2) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 3 (preprocessed)</a>.
+                               - hGSuite contains of 87 tracks of DNase I hypersensitive sites (dataset 2) - <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">here to view an example, el. 3 (preprocessed)</a>.
                                </div>
 
 
@@ -567,12 +552,12 @@
 
                       <div class = 'example'>
                            <h4 class = 'exampleTitle'>
-                               Check average Forbes coefficient of schizophrenia-associated variants
+                               To check average Forbes coefficient of schizophrenia-associated variants
                            </h4>
 
                            <div class = 'exampleDesc'>
                                <p class="paragraph">
-                                Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute Pivot table for relations between hGSuites </a> you can compute
+                                Using tool: <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute data cube for relations between hGSuites </a> you can compute
                                    Forbes coefficient between datasets. In pour example we compute data cube between el. 2 and el. 3.
                                 <a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">Click here to view an example. Results are available in el. 13</a>
 

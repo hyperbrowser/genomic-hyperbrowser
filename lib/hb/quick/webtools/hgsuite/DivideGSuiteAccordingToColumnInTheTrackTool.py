@@ -29,7 +29,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxOperation(cls, prevChoices):
         if prevChoices.gSuite:
-            return ['division by phrase', 'division by symbol', 'division by individual titles']
+            return ['division by phrase', 'division by individual titles']
+            #return ['division by phrase', 'division by symbol', 'division by individual titles']
 
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
@@ -66,7 +67,10 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         else:
             par = choices.param.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-        attrMut = OrderedDict()
+
+
+        print "par", par
+
 
         if choices.operation == 'division by phrase':
             if choices.add in ['yes', 'no']:
@@ -74,10 +78,12 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             else:
                 add = 'no'
 
+        attrMut = OrderedDict()
         for a in gSuite.attributes:
             attrMut[a] = gSuite.getAttributeValueList(a)
 
         outputGSuite = GSuite()
+
 
         for i, iTrack in enumerate(gSuite.allTracks()):
 
@@ -119,8 +125,35 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             attr = OrderedDict()
             for k in attrMut.keys():
                 attr[k] = attrMut[k][i]
-            attr['orginalTitle'] = str(trackTitle)
-            attr['orginalTitleFromTrack'] = str(p)
+
+            ot = 'originaltitle'
+            otft = 'originaltitlefromtrack'
+            attrMutOt = []
+            for s in attrMut.keys():
+                if ot in s:
+                    if otft in s:
+                        continue;
+                    else:
+                        attrMutOt.append(s)
+
+
+            if len(attrMutOt) > 0:
+                newNum = len(attrMutOt) +1
+                attr[ot + str(newNum)] = str(trackTitle)
+            else:
+                attr[ot] = str(trackTitle)
+
+            otft = 'originaltitlefromtrack'
+            attrMutOtft = []
+            for s in attrMut.keys():
+                if otft in s:
+                    attrMutOtft.append(s)
+            if len(attrMutOtft) > 0:
+                newNumft = len(attrMutOtft) +1
+                attr[otft + str(newNumft)] = str(p)
+            else:
+                attr[otft] = str(p)
+            #attr['originalTitleFromTrack'] = str(p)
             if len(it) == 1:
                 attr['chr'] = str(it[0].strip('\n').split('\t')[0])
 
@@ -144,12 +177,15 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def divisionByPhrase(cls, add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
                          trackTitle):
+
         for p in par:
 
+            #get old metadata
             attr = OrderedDict()
             for k in attrMut.keys():
                 attr[k] = attrMut[k][i]
-            attr['orginalTitle'] = str(trackTitle)
+            #add own metadata
+            attr['originalTitle'] = str(trackTitle)
             if add == 'yes':
                 for numPEl, pEl in enumerate(p):
                     attr['attribute' + str(numPEl)] = str(pEl)
@@ -191,7 +227,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         attr = OrderedDict()
         for k in attrMut.keys():
             attr[k] = attrMut[k][i]
-        attr['orginalTitle'] = str(trackTitle)
+        attr['originalTitle'] = str(trackTitle)
 
         attrTemp = OrderedDict()
         lineAll = {}
@@ -250,6 +286,12 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             if choices.operation != 'division by individual titles':
                 if not choices.param:
                     return 'Select phrases'
+
+        if choices.gSuite:
+            gsuite = getGSuiteFromGalaxyTN(choices.gSuite)
+            if gsuite.isPreprocessed():
+                return 'hGSuite need to primary. Use tool to change from preprocessed to primary'
+
 
         if choices.gSuite:
             gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
