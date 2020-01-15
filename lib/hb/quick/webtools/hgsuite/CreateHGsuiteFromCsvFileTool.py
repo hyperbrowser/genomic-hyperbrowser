@@ -13,14 +13,14 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
 
-        return "Combain metadata"
+        return "Combine metadata for hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
 
         return [('Select hGSuite', 'gSuite'),
                 ('See columns', 'possibleColumns'),
-                ('Select columns numbers which you want to combain (e.g. 1,2, 4-6)', 'selectedColumns')
+                ('Select columns numbers which you want to combine (e.g. 1,2, 4-6)', 'selectedColumns')
                 ]
 
     @classmethod

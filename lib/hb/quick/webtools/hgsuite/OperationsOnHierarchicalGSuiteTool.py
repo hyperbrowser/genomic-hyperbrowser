@@ -236,7 +236,7 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
                 # (tr, A, C)
 
                 attributesDict = OrderedDict()
-                attributesDict['orginaltitle'] = '-'.join(attr1)
+                attributesDict['originaltitle'] = '-'.join(attr1)
                 for scNum, sc in enumerate(selectedColumns):
                     if not sc in attributesDict.keys():
                         attributesDict[sc] = attr1[scNum]

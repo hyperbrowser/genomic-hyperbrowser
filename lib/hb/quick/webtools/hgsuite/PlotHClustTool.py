@@ -124,10 +124,13 @@ class PlotHClustTool(GeneralGuiTool):
                     dataAll, categories = CreateBoxPlotForFileTool.openGSuiteFile(choices.selFile, {choices.selCol:True})
 
                 howManycY = 0
-                cY = 0
+                i = 0
+                cY=0
                 for keyD, itD in dataAll.iteritems():
-                    cY += CreateBoxPlotForFileTool._checkType(dataAll[keyD])
-                    howManycY += 1
+                    if i != 0:
+                        cY += CreateBoxPlotForFileTool._checkType(dataAll[keyD])
+                        howManycY += 1
+                    i+=1
 
                 if cY != howManycY:
                     return 'All the values need to be number type.'

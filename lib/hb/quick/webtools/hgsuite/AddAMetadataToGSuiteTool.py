@@ -14,7 +14,7 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Add a metadata column in hGSuite"
+        return "Add metadata column in hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):

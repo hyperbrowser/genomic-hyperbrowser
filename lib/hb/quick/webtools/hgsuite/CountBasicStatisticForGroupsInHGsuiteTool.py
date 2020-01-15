@@ -49,7 +49,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     @classmethod
     def getToolName(cls):
-        return "Expand hGSuite with group summary statistics"
+        return "Expand hGSuite with summary statistics per group"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -344,7 +344,6 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
             d2=[]
             for dNum, d in enumerate(e):
                 try:
-                    int(d[0])
                     newdataForPlot.append(dataForPlot[eNum][dNum])
                     newseriesName.append(seriesName[eNum][dNum])
                 except:
@@ -486,7 +485,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
         l = Legend()
 
-        toolDescription = "This tool provide overview of groups such as " + cls.NUMTRACK.lower() + ", " + cls.NUMELEMENTS.lower() + ", " + cls.BPELEMENTS.lower() + ", " + cls.AVGLENGTHSEG.lower() + " in hGSuite."
+        toolDescription = "This tool provide overview of groups (defined by metadata values) such as " + cls.NUMTRACK.lower() + ", " + cls.NUMELEMENTS.lower() + ", " + cls.BPELEMENTS.lower() + ", " + cls.AVGLENGTHSEG.lower() + " in hGSuite."
 
         stepsToRunTool = ['Select hGSuite',
                           'Select statistic',

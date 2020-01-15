@@ -16,7 +16,7 @@ from quick.webtools.hgsuite.Legend import Legend
 class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     DIVISION_BY_COLUMN = 'by column'
-    DIVISION_BY_PHRASE = 'by phrase in column'
+    DIVISION_BY_PHRASE = 'by word in column'
     DIVISION_BY_VALUE = 'by value'
     TITLE = 'title'
     NUM_CATEGORY_FIELDS = 5
@@ -28,7 +28,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
     @classmethod
     def getToolName(cls):
-        return "Divide/Filter hGSuite according to metadata"
+        return "Filter hGSuite according to metadata"
 
     @classmethod
     def getInputBoxNames(cls):

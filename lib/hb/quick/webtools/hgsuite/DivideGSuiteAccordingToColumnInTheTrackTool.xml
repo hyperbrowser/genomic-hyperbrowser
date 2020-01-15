@@ -1,4 +1,4 @@
-<tool id="hb_divide_g_suite_according_to_column_in_the_track_tool" name="Create hGSuite based on phrases in title column in tracks" version="1.0.0"
+<tool id="hb_divide_g_suite_according_to_column_in_the_track_tool" name="Filter hGSuite based on words in the title column of tracks" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.DivideGSuiteAccordingToColumnInTheTrackTool" proto_tool_class="DivideGSuiteAccordingToColumnInTheTrackTool">
   <description></description>
 </tool>

@@ -33,7 +33,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     MAX_NUM_OF_STAT = 1
     INFO_1 = 'You have define levels of dimensions in your hGSuite so by default your groups and their hierarchy is specified.'
     INFO_2 = "You can define levels of dimensions in your hGSuite. Either you use the tool: 'Create hierarchy of GSuite' to build the hGSuite with predefined dimensions or you will specify order of levels in this tool"
-    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's orginaltitle, if you do not have it then it is take column title."
+    INFO_3 = "Information: There is always one preselected column. It defines group at the first level and it is represented by track's originaltitle, if you do not have it then it is take column title."
     INFO_ALL = ''
     PHRASE = '-- SELECT --'
 
@@ -54,7 +54,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def getToolName(cls):
-        return "Compute Pivot table for hGSuite"
+        return "Compute data cube for hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -240,7 +240,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
                                 try:
-                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                    return list(set(gSuite.getAttributeValueList('originaltitle')))
                                 except:
                                     return list(set(gSuite.allTrackTitles()))
                             else:
@@ -264,7 +264,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                             if index == 0:
                                 try:
-                                    return list(set(gSuite.getAttributeValueList('orginaltitle')))
+                                    return list(set(gSuite.getAttributeValueList('originaltitle')))
                                 except:
                                     return list(set(gSuite.allTrackTitles()))
                             else:
@@ -301,8 +301,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         orgnalTitleAllCount = 0
         try:
             for x in gSuite.allTracks():
-                orgnalTitleAll[x.title] = x.getAttribute('orginaltitle')
-            orgnalTitleAllCount = 1
+                if x.getAttribute('originaltitle') != '.':
+                    orgnalTitleAll[x.title] = x.getAttribute('originaltitle')
+                    orgnalTitleAllCount = 1
         except:
             pass
 
@@ -369,8 +370,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'columnOptionsDict', columnOptionsDict, '<br>'
 
         # asked Sveinung for help
-        # regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        regSpec, binSpec = "__chrs__", "*"
+        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
+        # regSpec, binSpec = "__chrs__", "*"
         analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=gSuite.genome)
         statList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
                                                                                    'selectedStat%s',
@@ -417,6 +418,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         # resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(countPerTrack)
                     if cls.SUMMARIZE[summarize] == 'raw':
                         title = gi.metadata['title']
+                        #print 'title', title, orgnalTitleAllCount, '<br>'
                         if orgnalTitleAllCount == 1:
                             orginalTitle = orgnalTitleAll[title]
                         else:
@@ -453,6 +455,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'mainoptionlisy', mainOptionList, '<br>'
         # print 'otionList', optionList, '<br>'
 
+
         cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp,
                          mainOptionList, optionList)
         htmlCore.end()
@@ -465,8 +468,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         cube = Cube()
         statNum = 0
 
+        ###### exp vs obs is only counted for first attribute :  talk to GKS
+
         expectedDict = OrderedDict()
         expectedOrderedDict = OrderedDict()
+        extraCalc = OrderedDict()
         for statKey, statItem in resultsDict.iteritems():
 
             if sumBp[statKey] == 0:
@@ -475,20 +481,39 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             if statKey == cls.OBSVSEXPECTEDSTAT:
                 for summarizeKey, summarizeItem in statItem.iteritems():
                     for groupKey, groupItem in summarizeItem.iteritems():
-                        for g in groupKey:
-                            if not g in expectedDict.keys():
-                                expectedDict[g] = 0
-                            # prinzt sumBp, statKey, '<br>'
-                            expectedDict[g] += float(sum([g[-1] for g in groupItem])) / float(
-                                sumBp[statKey])
 
+                        for g in groupItem:
+                            if not g[0] in expectedDict.keys():
+                                expectedDict[g[0]] = 0
+                            expectedDict[g[0]] += g[1]
+
+                            if not groupKey[0] in extraCalc.keys():
+                                extraCalc[groupKey[0]] = 0
+                            extraCalc[groupKey[0]] += g[1]
+
+                            # for g in groupKey:
+                            #     if not g in expectedDict.keys():
+                            #         expectedDict[g] = 0
+
+                            # expectedDict[g] += float(sum([g[-1] for g in groupItem])) / float(
+                            #     sumBp[statKey])
+
+        for statKey, statItem in resultsDict.iteritems():
+            if statKey == cls.OBSVSEXPECTEDSTAT:
                 for summarizeKey, summarizeItem in statItem.iteritems():
                     for groupKey, groupItem in summarizeItem.iteritems():
-                        for g in groupKey:
-                            if not groupKey in expectedOrderedDict.keys():
-                                expectedOrderedDict[groupKey] = 1
-                            expectedOrderedDict[groupKey] *= expectedDict[g]
-
+                        for g in groupItem:
+                            # print g[0], '<br>'
+                            # print groupKey[0], '<br>'
+                            # print 'tuple(g[0], groupKey[0])', str((g[0], groupKey[0])), '<br>'
+                            if not (g[0], groupKey[0]) in expectedOrderedDict.keys():
+                                expectedOrderedDict[(g[0], groupKey[0])] = 1
+                            # print 'expectedOrderedDict[groupKey]', str(expectedOrderedDict[groupKey]), '<br>'
+                            # expectedOrderedDict[groupKey] *= expectedDict[g]
+                            expectedOrderedDict[(g[0], groupKey[0])] = extraCalc[groupKey[0]] * \
+                                                                       expectedDict[g[0]]
+        # print 'resultsDict', resultsDict, '<br> '
+        for statKey, statItem in resultsDict.iteritems():
             data = []
             for summarizeKey, summarizeItem in statItem.iteritems():
                 # print 'summarizeKey', summarizeKey
@@ -508,6 +533,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     else:
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
                                            sumBp, summarizeKey)
+
+            # print 'data', data, '<br>'
 
             if summarizeKey == 'no':
                 header = ['Column 1', 'Column 2', 'Value']
@@ -617,6 +644,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             htmlCore.divEnd()
             htmlCore.divEnd()
 
+            # print 'header[:len(header) - 1]', header[:len(header) - 1], '<br>'
+            # print 'optionData', optionData, '<br>'
+            # print 'mainOptionList', mainOptionList, '<br>'
+            # print 'optionList', optionList, '<br>'
+
             htmlCore.line(
                 cube.addSelectList(header[:len(header) - 1], optionData, data, divId, statNum,
                                    mainOptionList, optionList, option='raw'))
@@ -647,10 +679,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 for g in groupItem:
                     try:
                         data.append([g[0]] + list(groupKey) + [
-                            (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+                            (float(g[1]) * sumBp[statKey]) / expectedOrderedDict[(g[0], groupKey[0])]])
                     except:
                         data.append([g[0]] + [
-                            (float(g[1]) / sumBp[statKey]) / expectedOrderedDict[groupKey]])
+                            (float(g[1]) * sumBp[statKey]) / expectedOrderedDict[(g[0], groupKey[0])]])
         else:
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])

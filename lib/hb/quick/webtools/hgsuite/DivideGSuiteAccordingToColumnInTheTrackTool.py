@@ -9,17 +9,20 @@ from quick.origdata.UcscHandler import UcscHandler
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #if line.startswith(
+from quick.webtools.hgsuite.Legend import Legend
+
+
 class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getToolName(cls):
-        return "Create hGSuite based on phrases in title column in tracks"
+        return "Filter hGSuite based on words in the title column of tracks"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select gSuite', 'gSuite'),
+        return [('Select hGSuite', 'gSuite'),
                 ('Select operation', 'operation'),
-                ('Select phrases (use colon to provide more than one phrase)', 'param'),
-                ('Add phrases separately', 'add')
+                ('Select words (use colon to provide more than one word)', 'param'),
+                ('Add words separately', 'add')
                 ]
 
     @classmethod
@@ -29,19 +32,18 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxOperation(cls, prevChoices):
         if prevChoices.gSuite:
-            return ['division by phrase', 'division by individual titles']
-            #return ['division by phrase', 'division by symbol', 'division by individual titles']
+            return ['filter by word', 'filter by symbol', 'filter by individual titles']
 
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
         if prevChoices.gSuite:
-            if prevChoices.operation != 'division by individual titles':
+            if prevChoices.operation != 'filter by individual titles':
                 return ''
 
     @classmethod
     def getOptionsBoxAdd(cls, prevChoices):
         if prevChoices.gSuite and prevChoices.param:
-            if prevChoices.operation == 'division by phrase':
+            if prevChoices.operation == 'filter by word':
                 par = prevChoices.param.replace(' ', '').split(',')
                 lenPar = 0
                 tf = False
@@ -60,40 +62,35 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
-        if choices.operation == 'division by phrase':
+        if choices.operation == 'filter by word':
             par = choices.param.replace(' ','').split(',')
-        elif choices.operation == 'division by individual titles':
+        elif choices.operation == 'filter by individual titles':
             par = ''
         else:
             par = choices.param.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        attrMut = OrderedDict()
 
-
-        print "par", par
-
-
-        if choices.operation == 'division by phrase':
+        if choices.operation == 'filter by word':
             if choices.add in ['yes', 'no']:
                 add = choices.add
             else:
                 add = 'no'
 
-        attrMut = OrderedDict()
         for a in gSuite.attributes:
             attrMut[a] = gSuite.getAttributeValueList(a)
 
         outputGSuite = GSuite()
-
 
         for i, iTrack in enumerate(gSuite.allTracks()):
 
             trackTitle = iTrack.title
             trackPath = iTrack.path
 
-            if choices.operation == 'division by phrase':
+            if choices.operation == 'filter by word':
                 cls.divisionByPhrase(add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
                                  trackTitle)
-            elif choices.operation == 'division by individual titles':
+            elif choices.operation == 'filter by individual titles':
                 cls.divisionByIndividualTitles('', attrMut, gSuite, galaxyFn, i, outputGSuite, par,
                                      trackPath,
                                      trackTitle)
@@ -125,35 +122,8 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             attr = OrderedDict()
             for k in attrMut.keys():
                 attr[k] = attrMut[k][i]
-
-            ot = 'originaltitle'
-            otft = 'originaltitlefromtrack'
-            attrMutOt = []
-            for s in attrMut.keys():
-                if ot in s:
-                    if otft in s:
-                        continue;
-                    else:
-                        attrMutOt.append(s)
-
-
-            if len(attrMutOt) > 0:
-                newNum = len(attrMutOt) +1
-                attr[ot + str(newNum)] = str(trackTitle)
-            else:
-                attr[ot] = str(trackTitle)
-
-            otft = 'originaltitlefromtrack'
-            attrMutOtft = []
-            for s in attrMut.keys():
-                if otft in s:
-                    attrMutOtft.append(s)
-            if len(attrMutOtft) > 0:
-                newNumft = len(attrMutOtft) +1
-                attr[otft + str(newNumft)] = str(p)
-            else:
-                attr[otft] = str(p)
-            #attr['originalTitleFromTrack'] = str(p)
+            attr['originaltitle'] = str(trackTitle)
+            attr['originalTitleFromTrack'] = str(p)
             if len(it) == 1:
                 attr['chr'] = str(it[0].strip('\n').split('\t')[0])
 
@@ -177,14 +147,11 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     @classmethod
     def divisionByPhrase(cls, add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
                          trackTitle):
-
         for p in par:
 
-            #get old metadata
             attr = OrderedDict()
             for k in attrMut.keys():
                 attr[k] = attrMut[k][i]
-            #add own metadata
             attr['originalTitle'] = str(trackTitle)
             if add == 'yes':
                 for numPEl, pEl in enumerate(p):
@@ -281,17 +248,11 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     def validateAndReturnErrors(cls, choices):
 
         if not choices.gSuite:
-            return 'Select gSuite'
+            return 'Select hGSuite'
 
-            if choices.operation != 'division by individual titles':
+            if choices.operation != 'filter by individual titles':
                 if not choices.param:
-                    return 'Select phrases'
-
-        if choices.gSuite:
-            gsuite = getGSuiteFromGalaxyTN(choices.gSuite)
-            if gsuite.isPreprocessed():
-                return 'hGSuite need to primary. Use tool to change from preprocessed to primary'
-
+                    return 'Select words'
 
         if choices.gSuite:
             gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
@@ -424,6 +385,25 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     #     """
     #     return False
     #
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = "This tool filters hGSuite according to words or symbols in the title column of tracks"
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select operation',
+                          'Select words (use colon to provide more than one word)',
+                          'Add words separately'
+                          ]
+        toolResult = 'The output of this tool is one hGsuite.'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
+
     @classmethod
     def getOutputFormat(cls, choices):
         return 'gsuite'

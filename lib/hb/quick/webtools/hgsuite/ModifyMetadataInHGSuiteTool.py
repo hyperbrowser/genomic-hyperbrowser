@@ -6,6 +6,7 @@ from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 
 
 class ModifyMetadataInHGSuiteTool(GeneralGuiTool):
@@ -130,6 +131,25 @@ class ModifyMetadataInHGSuiteTool(GeneralGuiTool):
     # def isDebugMode(cls):
     #     return False
     #
+
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = "This tool creates or modifies hierarchy of hGSuite"
+
+        stepsToRunTool = ['Select hGSuite',
+                          'Select group which define hdGSuite at level N'
+                          ]
+        toolResult = 'The output of this tool is one hGsuite with definied field called levels.'
+
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                      stepsToRunTool=stepsToRunTool,
+                                      toolResult=toolResult)
+
+
     @classmethod
     def getOutputFormat(cls, choices):
         return 'gsuite'
