@@ -178,7 +178,29 @@ class PytestRunnerTool(GeneralGuiTool):
 
         folderNames.sort()
 
-        return OrderedDict([(folderName, True) for folderName in folderNames])
+        testFiles = prevChoices.getTestFiles
+        filenameTestDict = prevChoices.countTestsInFiles
+
+        folderFilenameDict = OrderedDict()
+        for folderName in folderNames:
+            folderFilenameDict[folderName] = []
+
+        for testFile in testFiles:
+            for folderName in folderNames:
+                if testFile.startswith(folderName):
+                    folderFilenameDict[folderName].append(testFile)
+
+        output = OrderedDict()
+        for folderName, fileNames in folderFilenameDict.iteritems():
+            fileNamesCount = len(fileNames)
+            testsCount = 0
+            for fileName in fileNames:
+                testsCount += filenameTestDict[fileName]
+            if testsCount:
+                key = folderName + ' (' + str(fileNamesCount) + ' files, ' + str(testsCount) + ' tests' + ')'
+                output[key] = True
+
+        return output
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
