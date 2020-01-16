@@ -9,6 +9,7 @@ from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import pytest
 import pytest_html_profiling
+import ast
 
 
 class PytestRunnerTool(GeneralGuiTool):
@@ -51,9 +52,9 @@ class PytestRunnerTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: []
         """
         return [('Test targets: ', 'selectTestTarget'),
-                ('Select test folders', 'selectTestFolders'),
-                ('', 'collectTests'),
+                ('', 'collectTests'), ('', 'getTestFiles'), ('', 'getTests'), ('', 'countTestsInFiles'),
                 ('Select test files', 'selectTestFiles'),('Select tests', 'selectTests'),
+                ('Select test folders', 'selectTestFolders'),
                 ('', 'getErrors')]
 
     @classmethod
@@ -61,10 +62,8 @@ class PytestRunnerTool(GeneralGuiTool):
         return [cls.FOLDERS, cls.FILES, cls.TESTS]
 
     @classmethod
-    def getOptionsBoxSelectTests(cls, prevChoices):
+    def getOptionsBoxGetTests(cls, prevChoices):
         if not prevChoices.collectTests:
-            return
-        if prevChoices.selectTestTarget != cls.TESTS:
             return
 
         outputLines = prevChoices.collectTests.splitlines()
@@ -74,16 +73,22 @@ class PytestRunnerTool(GeneralGuiTool):
                 break
             else:
                 if line.startswith(cls.PATH_PREFIX):
-                    tests.append(os.path.relpath(line, HB_SOURCE_CODE_BASE_DIR))
+                    tests.append(str(line.split(cls.PATH_PREFIX, 1)[1])[1:])
         tests.sort()
+
+        return '__hidden__', tests
+
+    @classmethod
+    def getOptionsBoxSelectTests(cls, prevChoices):
+        if prevChoices.selectTestTarget != cls.TESTS:
+            return
+
+        tests = prevChoices.getTests
 
         return OrderedDict([(test, True) for test in tests])
 
     @classmethod
     def getOptionsBoxCollectTests(cls, prevChoices):
-        if prevChoices.selectTestTarget != cls.TESTS:
-            return
-
         os.environ['PY_IGNORE_IMPORTMISMATCH'] = '1'
 
         pytestArgs = [
@@ -94,11 +99,11 @@ class PytestRunnerTool(GeneralGuiTool):
 
         out = cls.capture(pytest.main, pytestArgs)
 
-        return '__hidden__',out
+        return '__hidden__', out
 
     @classmethod
     def getOptionsBoxGetErrors(cls, prevChoices):
-        if not prevChoices.collectTests:
+        if prevChoices.selectTestTarget != cls.TESTS:
             return
 
         outputLines = prevChoices.collectTests.splitlines()
@@ -114,12 +119,41 @@ class PytestRunnerTool(GeneralGuiTool):
 
         return errors, 30
 
+    @classmethod
+    def getOptionsBoxCountTestsInFiles(cls, prevChoices):
+        if not prevChoices.getTests or not prevChoices.getTestFiles:
+            return
+
+        tests = prevChoices.getTests
+        testFiles = prevChoices.getTestFiles
+        filenamesDict = {}
+        for filename in testFiles:
+            filenamesDict[filename] = 0
+
+        for test in tests:
+            for testFile in testFiles:
+                if test.startswith(testFile):
+                    filenamesDict[testFile] += 1
+                    break
+
+        return '__hidden__', filenamesDict
+
 
     @classmethod
     def getOptionsBoxSelectTestFiles(cls, prevChoices):
         if prevChoices.selectTestTarget != cls.FILES:
             return
 
+        if not prevChoices.countTestsInFiles:
+            return
+
+        testFiles = prevChoices.getTestFiles
+        filenamesDict = prevChoices.countTestsInFiles
+
+        return OrderedDict([(testFile + ' (' + str(filenamesDict[testFile]) + ' tests)', True) for testFile in testFiles if filenamesDict[testFile] != 0])
+
+    @classmethod
+    def getOptionsBoxGetTestFiles(cls, prevChoices):
         testNames = []
 
         for path, subdirs, files in os.walk(cls.TEST_FOLDER_PATH):
@@ -129,7 +163,7 @@ class PytestRunnerTool(GeneralGuiTool):
 
         testNames.sort()
 
-        return OrderedDict([(testName, True) for testName in testNames])
+        return '__hidden__', testNames
 
     @classmethod
     def getOptionsBoxSelectTestFolders(cls, prevChoices):
@@ -159,37 +193,32 @@ class PytestRunnerTool(GeneralGuiTool):
 
         Mandatory unless isRedirectTool() returns True.
         """
-        print 'Executing...'
-        testPaths = []
 
-        if choices.selectTestTarget == cls.FOLDERS:
-            chosenFolders = [folder for folder, checked in choices.selectTestFolders.items() if checked]
-            testPaths = [os.path.join(HB_SOURCE_CODE_BASE_DIR, folder) for folder in chosenFolders]
-
-
-        elif choices.selectTestTarget == cls.FILES:
-            pass
-        elif choices.selectTestTarget == cls.TESTS:
-            pass
+        if choices.selectTestTarget == cls.TESTS:
+            chosenTests = [test for test, checked in choices.selectTests.items() if checked]
+            testPaths = [HB_SOURCE_CODE_BASE_DIR + '/' + test for test in chosenTests]
+        else:
+            if choices.selectTestTarget == cls.FOLDERS:
+                chosenItems = [folder for folder, checked in choices.selectTestFolders.items() if checked]
+            else:
+                chosenItems = [f for f, checked in choices.selectTestFiles.items() if checked]
+            testPaths = [os.path.join(HB_SOURCE_CODE_BASE_DIR, item) for item in chosenItems]
 
         report = GalaxyRunSpecificFile(['report.html'], galaxyFn)
         baseDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
 
-        pytestArgs = ["--html", report.getDiskPath(), "--html-profiling",
-                     '--html-profile-dir', baseDir, '--html-call-graph',
-                    "--css", cls.CSS_PATH]
-
+        pytestArgs = ["--html", report.getDiskPath(), "--html-profiling", '--html-profile-dir',
+                      baseDir, '--html-call-graph',  "--css", cls.CSS_PATH]
         pytestArgs.extend(testPaths)
-        print pytestArgs
 
         os.environ['PY_IGNORE_IMPORTMISMATCH'] = '1'
         pytestOutput = cls.capture(pytest.main, pytestArgs)
 
         htmlCore = HtmlCore()
         htmlCore.begin()
-        htmlCore.paragraph(pytestOutput)
+        htmlCore.preformatted(pytestOutput)
         htmlCore.divider()
-        htmlCore.link('Link to report', report.getURL())
+        htmlCore.link('Link to report: ', report.getURL())
         htmlCore.end()
 
         print htmlCore
