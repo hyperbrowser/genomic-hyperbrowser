@@ -4,6 +4,7 @@ from StringIO import StringIO
 from collections import OrderedDict
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
+from proto.CommonFunctions import ensurePathExists
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -85,7 +86,7 @@ class PytestRunnerTool(GeneralGuiTool):
 
         tests = prevChoices.getTests
 
-        return OrderedDict([(test, True) for test in tests])
+        return OrderedDict([(test, False) for test in tests])
 
     @classmethod
     def getOptionsBoxCollectTests(cls, prevChoices):
@@ -148,9 +149,13 @@ class PytestRunnerTool(GeneralGuiTool):
             return
 
         testFiles = prevChoices.getTestFiles
+        if isinstance(testFiles, unicode):
+            testFiles = ast.literal_eval(testFiles)
         filenamesDict = prevChoices.countTestsInFiles
+        if isinstance(filenamesDict, unicode):
+            filenamesDict = ast.literal_eval(filenamesDict)
 
-        return OrderedDict([(testFile + ' (' + str(filenamesDict[testFile]) + ' tests)', True) for testFile in testFiles if filenamesDict[testFile] != 0])
+        return OrderedDict([(testFile + ' (' + str(filenamesDict[testFile]) + ' tests)', False) for testFile in testFiles if filenamesDict[testFile] != 0])
 
     @classmethod
     def getOptionsBoxGetTestFiles(cls, prevChoices):
@@ -179,7 +184,11 @@ class PytestRunnerTool(GeneralGuiTool):
         folderNames.sort()
 
         testFiles = prevChoices.getTestFiles
+        if isinstance(testFiles, unicode):
+            testFiles = ast.literal_eval(testFiles)
         filenameTestDict = prevChoices.countTestsInFiles
+        if isinstance(filenameTestDict, unicode):
+            filenameTestDict = ast.literal_eval(filenameTestDict)
 
         folderFilenameDict = OrderedDict()
         for folderName in folderNames:
@@ -198,7 +207,7 @@ class PytestRunnerTool(GeneralGuiTool):
                 testsCount += filenameTestDict[fileName]
             if testsCount:
                 key = folderName + ' (' + str(fileNamesCount) + ' files, ' + str(testsCount) + ' tests' + ')'
-                output[key] = True
+                output[key] = False
 
         return output
 
@@ -221,26 +230,40 @@ class PytestRunnerTool(GeneralGuiTool):
             testPaths = [HB_SOURCE_CODE_BASE_DIR + '/' + test for test in chosenTests]
         else:
             if choices.selectTestTarget == cls.FOLDERS:
-                chosenItems = [folder for folder, checked in choices.selectTestFolders.items() if checked]
+                chosenItemsWithCounts = [folder for folder, checked in choices.selectTestFolders.items() if checked]
             else:
-                chosenItems = [f for f, checked in choices.selectTestFiles.items() if checked]
+                chosenItemsWithCounts = [f for f, checked in choices.selectTestFiles.items() if checked]
+            chosenItems = [item.split(' (')[0] for item in chosenItemsWithCounts]
             testPaths = [os.path.join(HB_SOURCE_CODE_BASE_DIR, item) for item in chosenItems]
 
         report = GalaxyRunSpecificFile(['report.html'], galaxyFn)
         baseDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
 
         pytestArgs = ["--html", report.getDiskPath(), "--html-profiling", '--html-profile-dir',
-                      baseDir, '--html-call-graph',  "--css", cls.CSS_PATH]
+                      baseDir, '--html-call-graph',  "--css", cls.CSS_PATH, '--continue-on-collection-errors']
         pytestArgs.extend(testPaths)
 
         os.environ['PY_IGNORE_IMPORTMISMATCH'] = '1'
-        pytestOutput = cls.capture(pytest.main, pytestArgs)
+        #pytestOutput = cls.capture(pytest.main, pytestArgs)
+
+        old_stdout = sys.stdout
+        o = GalaxyRunSpecificFile(['pytest-output'], galaxyFn)
+        ensurePathExists(o.getDiskPath())
+        outfile = open(o.getDiskPath(), 'w')
+        sys.stdout = outfile
+        pytest.main(pytestArgs)
+        sys.stdout = old_stdout
+        outfile.close()
+
+        pytestOutput = ''
+        with(open(o.getDiskPath(), 'r')) as f:
+            pytestOutput = f.read()
 
         htmlCore = HtmlCore()
         htmlCore.begin()
         htmlCore.preformatted(pytestOutput)
         htmlCore.divider()
-        htmlCore.link('Link to report: ', report.getURL())
+        htmlCore.link('Link to report', report.getURL())
         htmlCore.end()
 
         print htmlCore
