@@ -4,13 +4,15 @@ from StringIO import StringIO
 from collections import OrderedDict
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
-from proto.CommonFunctions import ensurePathExists
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
+from proto.tools.GeneralGuiTool import HistElement
+from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 import pytest
 import pytest_html_profiling
 import ast
+import subprocess
 
 
 class PytestRunnerTool(GeneralGuiTool):
@@ -20,6 +22,8 @@ class PytestRunnerTool(GeneralGuiTool):
     FILES = 'files'
     TESTS = 'tests'
     PATH_PREFIX = 'lib/hb'
+    YES = 'Yes'
+    NO = 'No'
 
     @classmethod
     def getToolName(cls):
@@ -54,9 +58,10 @@ class PytestRunnerTool(GeneralGuiTool):
         """
         return [('Test targets: ', 'selectTestTarget'),
                 ('', 'collectTests'), ('', 'getTestFiles'), ('', 'getTests'), ('', 'countTestsInFiles'),
-                ('Select test files', 'selectTestFiles'),('Select tests', 'selectTests'),
-                ('Select test folders', 'selectTestFolders'),
-                ('', 'getErrors')]
+                ('Select test files', 'selectTestFiles'), ('Select tests', 'selectTests'),
+                ('Select test folders', 'selectTestFolders'), ('Run profiling', 'runProfiling'),
+                ('Create call graphs', 'createCallGraphs'),  ('Show pytest collection output', 'showPytestCollectionOutput'),
+                ('Test collection output', 'getPytestOutput')]
 
     @classmethod
     def getOptionsBoxSelectTestTarget(cls):
@@ -103,8 +108,16 @@ class PytestRunnerTool(GeneralGuiTool):
         return '__hidden__', out
 
     @classmethod
-    def getOptionsBoxGetErrors(cls, prevChoices):
-        if prevChoices.selectTestTarget != cls.TESTS:
+    def getOptionsBoxShowPytestCollectionOutput(cls, prevChoices):
+        if not prevChoices.collectTests:
+            return
+
+        return [cls.NO, cls.YES]
+
+
+    @classmethod
+    def getOptionsBoxGetPytestOutput(cls, prevChoices):
+        if prevChoices.showPytestCollectionOutput == cls.NO:
             return
 
         outputLines = prevChoices.collectTests.splitlines()
@@ -196,7 +209,7 @@ class PytestRunnerTool(GeneralGuiTool):
 
         for testFile in testFiles:
             for folderName in folderNames:
-                if testFile.startswith(folderName):
+                if testFile.startswith(folderName + '/'):
                     folderFilenameDict[folderName].append(testFile)
 
         output = OrderedDict()
@@ -210,6 +223,18 @@ class PytestRunnerTool(GeneralGuiTool):
                 output[key] = False
 
         return output
+
+    @classmethod
+    def getOptionsBoxRunProfiling(cls, prevChoices):
+        return [cls.YES, cls.NO]
+
+    @classmethod
+    def getOptionsBoxCreateCallGraphs(cls, prevChoices):
+        if prevChoices.runProfiling == cls.NO:
+            return
+
+        return [cls.NO, cls.YES]
+
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -237,36 +262,41 @@ class PytestRunnerTool(GeneralGuiTool):
             testPaths = [os.path.join(HB_SOURCE_CODE_BASE_DIR, item) for item in chosenItems]
 
         report = GalaxyRunSpecificFile(['report.html'], galaxyFn)
-        baseDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
 
-        pytestArgs = ["--html", report.getDiskPath(), "--html-profiling", '--html-profile-dir',
-                      baseDir, '--html-call-graph',  "--css", cls.CSS_PATH, '--continue-on-collection-errors']
+        pytestArgs = ["--html", report.getDiskPath(), "--css", cls.CSS_PATH, '--continue-on-collection-errors']
+
+        if choices.runProfiling == cls.YES:
+            baseDir = GalaxyRunSpecificFile([], galaxyFn).getDiskPath()
+            pytestArgs.extend(["--html-profiling", '--html-profile-dir', baseDir])
+            if choices.createCallGraphs == cls.YES:
+                pytestArgs.append('--html-call-graph')
+
         pytestArgs.extend(testPaths)
 
         os.environ['PY_IGNORE_IMPORTMISMATCH'] = '1'
-        #pytestOutput = cls.capture(pytest.main, pytestArgs)
 
-        old_stdout = sys.stdout
-        o = GalaxyRunSpecificFile(['pytest-output'], galaxyFn)
-        ensurePathExists(o.getDiskPath())
-        outfile = open(o.getDiskPath(), 'w')
-        sys.stdout = outfile
-        pytest.main(pytestArgs)
-        sys.stdout = old_stdout
+        pytestOut = GalaxyRunSpecificFile(['pytest-output'], galaxyFn)
+        outfile = open(pytestOut.getDiskPath(ensurePath=True), 'w')
+        subprocess.call(['pytest'] + pytestArgs, stderr=subprocess.STDOUT, stdout=outfile)
         outfile.close()
 
-        pytestOutput = ''
-        with(open(o.getDiskPath(), 'r')) as f:
+        with(open(pytestOut.getDiskPath(), 'r')) as f:
             pytestOutput = f.read()
 
-        htmlCore = HtmlCore()
-        htmlCore.begin()
-        htmlCore.preformatted(pytestOutput)
-        htmlCore.divider()
-        htmlCore.link('Link to report', report.getURL())
-        htmlCore.end()
+        outputFileCore = HtmlCore()
+        outputFileCore.begin()
+        outputFileCore.preformatted(pytestOutput)
+        outputFileCore.end()
+        pytestOutputFn = cls.extraGalaxyFn['Pytest output']
+        with open(pytestOutputFn, 'w') as outputFile:
+            outputFile.write(str(outputFileCore))
 
-        print htmlCore
+        linkCore = HtmlCore()
+        linkCore.begin()
+        linkCore.link('Link to report', report.getURL())
+        linkCore.end()
+
+        print linkCore
 
 
     @classmethod
@@ -344,26 +374,27 @@ class PytestRunnerTool(GeneralGuiTool):
     #     """
     #     return ['testChoice1', '..']
     #
-    # @classmethod
-    # def getExtraHistElements(cls, choices):
-    #     """
-    #     Defines extra history elements to be created when clicking execute.
-    #     This is defined by a list of HistElement objects, as in the
-    #     following example:
-    #
-    #        from proto.GeneralGuiTool import HistElement
-    #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
-    #
-    #     It is good practice to use class constants for longer strings.
-    #
-    #     In the execute() method, one typically needs to fetch the path to
-    #     the dataset referred to by the extra history element. To fetch the
-    #     path, use the dict cls.extraGalaxyFn with the defined history title
-    #     as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
-    #
-    #     Optional method. Default return value if method is not defined: None
-    #     """
-    #     return None
+    @classmethod
+    def getExtraHistElements(cls, choices):
+        """
+        Defines extra history elements to be created when clicking execute.
+        This is defined by a list of HistElement objects, as in the
+        following example:
+
+           from proto.GeneralGuiTool import HistElement
+           return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
+
+        It is good practice to use class constants for longer strings.
+
+        In the execute() method, one typically needs to fetch the path to
+        the dataset referred to by the extra history element. To fetch the
+        path, use the dict cls.extraGalaxyFn with the defined history title
+        as key, e.g. "cls.extraGalaxyFn[cls.HISTORY_TITLE]".
+
+        Optional method. Default return value if method is not defined: None
+        """
+
+        return [HistElement('Pytest output', 'customhtml')]
 
     # @classmethod
     # def getSubToolClasses(cls):
