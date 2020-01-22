@@ -1,18 +1,15 @@
+import ast
 import os
-import sys
-from StringIO import StringIO
+import subprocess
 from collections import OrderedDict
+
+import pytest_html_profiling
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
 from proto.tools.GeneralGuiTool import HistElement
-from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import pytest
-import pytest_html_profiling
-import ast
-import subprocess
 
 
 class PytestRunnerTool(GeneralGuiTool):
@@ -103,9 +100,15 @@ class PytestRunnerTool(GeneralGuiTool):
             cls.TEST_FOLDER_PATH
         ]
 
-        out = cls.capture(pytest.main, pytestArgs)
+        pytestFn = 'pytest-collect'
+        outfile = open(pytestFn, 'w')
+        subprocess.call(['pytest'] + pytestArgs, stderr=subprocess.STDOUT, stdout=outfile)
+        outfile.close()
 
-        return '__hidden__', out
+        with(open(pytestFn, 'r')) as f:
+            pytestOutput = f.read()
+
+        return '__hidden__', pytestOutput
 
     @classmethod
     def getOptionsBoxShowPytestCollectionOutput(cls, prevChoices):
@@ -312,15 +315,6 @@ class PytestRunnerTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: None
         """
         return None
-
-    @classmethod
-    def capture(cls, func, *args, **kwArgs):
-        out = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = out
-        func(*args, **kwArgs)
-        sys.stdout = old_stdout
-        return out.getvalue()
 
     # @classmethod
     # def getInputBoxOrder(cls):
