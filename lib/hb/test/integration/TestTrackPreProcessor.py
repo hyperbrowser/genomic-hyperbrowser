@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 import ast
-import unittest
 import os
 import sys
+import unittest
 from collections import OrderedDict
 from copy import deepcopy
 
-from gold.util.CommonFunctions import createDirPath
 from gold.origdata.GenomeElementSource import BoundingRegionTuple
+from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
 from gold.track.GenomeRegion import GenomeRegion
-from quick.util.GenomeInfo import GenomeInfo
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackView import AutonomousTrackElement
-from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
+from gold.util.CommonFunctions import createDirPath
+from quick.util.GenomeInfo import GenomeInfo
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
-from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
+from test.util.Asserts import TestCaseWithImprovedAsserts
 
 PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
 
-class TestTrackPreProcessor(ProfiledIntegrationTest, TestWithGeSourceData):
+class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
     GENOME = 'TestGenome'
 
     def _preProcess(self, trackName, noOverlapsFileCount=None, withOverlapsFileCount=None, \

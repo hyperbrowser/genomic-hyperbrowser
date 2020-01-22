@@ -1,20 +1,18 @@
 import os
-import functools
-#from proto.RSetup import r
 
-from config.Config import HB_SOURCE_CODE_BASE_DIR
 import config.Config
+from config.Config import HB_SOURCE_CODE_BASE_DIR
+
+# from proto.RSetup import r
 
 LOG_PATH = HB_SOURCE_CODE_BASE_DIR + os.sep + '.testlogs'
 
-import gold.statistic.Statistic
 import gold.application.StatRunner
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.application.GalaxyInterface import GalaxyInterface
 
 import gold.description.Analysis
-from test.util.Asserts import smartRecursiveAssertList
-from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
+from test.util.Asserts import TestCaseWithImprovedAsserts
 
 gold.application.StatRunner.PRINT_PROGRESS = False
 #gold.description.Analysis.PASS_ON_VALIDSTAT_EXCEPTIONS = True
@@ -25,7 +23,7 @@ GalaxyInterface.APPEND_ASSEMBLY_GAPS = False
 GalaxyInterface.APPEND_COUNTS = False
 #quick.application.GalaxyInterface.DEFAULT_GENOME ='TestGenome'
 
-class GalaxyIntegrationTest(ProfiledIntegrationTest):
+class GalaxyIntegrationTest(TestCaseWithImprovedAsserts):
     
     def _assertEqualResults(self, target, res):
         resList = [sorted(res[region].items()) for region in res.getAllRegionKeys()]
