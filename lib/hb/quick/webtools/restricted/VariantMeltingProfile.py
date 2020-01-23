@@ -570,7 +570,7 @@ class VariantMeltingProfile(GeneralGuiTool):
         for i in range(0, len(cmdList)):
             header = True
             ri = 0
-            for resultline in open(os.path.join(dir, str(i), 'results._files', 'results.tsv')):
+            for resultline in open(os.path.join(dir, str(i), 'results.tsv')):
                 if header:
                     header = False
                     if i == 0:
@@ -580,7 +580,7 @@ class VariantMeltingProfile(GeneralGuiTool):
                 else:
                     results.write(str(i) + '\t' + resultline)
                     if resultline.count('?') == 0:
-                        link = '<a href="%d/results._files/html/chart-%d.html">%d (graph)</a>' % (i, ri, i)
+                        link = '<a href="%d/html/chart-%d.html">%d (graph)</a>' % (i, ri, i)
                     else:
                         link = str(i)
                     html.tableLine([link] + resultline.split('\t'))
