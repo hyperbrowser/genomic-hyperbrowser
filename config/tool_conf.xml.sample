@@ -53,6 +53,7 @@
     <tool file="proto/hyperbrowser/hgsuite/PlotHClustTool.xml" />
     <label text="For tracks" id="15additional_hgsuite_tracks_hgsuite"/>
     <tool file="proto/hyperbrowser/hgsuite/OperationOnTrackTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/SelectRegexTool.xml" />
     <label text="For tabular files" id="16additional_tabular_hgsuite"/>
     <tool file="proto/hyperbrowser/hgsuite/ChangeRowsWithColumnsTool.xml" />
     <tool file="proto/hyperbrowser/nmer/CreateKmersTool.xml" />
