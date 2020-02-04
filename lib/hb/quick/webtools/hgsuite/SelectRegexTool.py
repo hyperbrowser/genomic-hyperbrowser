@@ -17,7 +17,7 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
 
         Mandatory method for all ProTo tools.
         """
-        return "Select lines based on Regex "
+        return "Select lines based on Regex"
 
     @classmethod
     def getInputBoxNames(cls):
