@@ -46,11 +46,12 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     COUNTSTAT = 'Coverage (Counts of elements)'
     NORMALIZESTAT = 'Normalize (Coverege divided by sum of coverages)'
     OBSVSEXPECTEDSTAT = 'Compare of observed coverege values vs expected coverage values'
+    OBSVSEXPINREGIONSTAT = 'Compare of observed coverege values vs expected coverage values within bin track'
 
     SUMMARIZE = {'sum': 'sum', 'average': 'average', 'minimum': 'min', 'maximum': 'max',
                  'no': 'no', 'raw': 'raw'}
     STAT_LIST = {NORMALIZESTAT: 'Count/SumStat', OBSVSEXPECTEDSTAT: 'ObsVsExpStat',
-                 COUNTSTAT: 'CountStat'}
+                 COUNTSTAT: 'CountStat', OBSVSEXPINREGIONSTAT: 'ObsVsExpInRegionStat'}
 
     @classmethod
     def getToolName(cls):
@@ -701,11 +702,15 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     def addStat(cls, choices, statList):
         selectedAnalysis = []
         for a in statList:
-            if cls.STAT_LIST[a] == 'CountStat' or cls.STAT_LIST[a] == 'Count/SumStat' or \
-                            cls.STAT_LIST[a] == 'ObsVsExpStat':
+            if cls.STAT_LIST[a] == 'CountStat'  or cls.STAT_LIST[a] == 'ObsVsExpStat':
                 analysisSpec = AnalysisSpec(SingleTSStat)
                 analysisSpec.addParameter('rawStatistic', CountStat.__name__)
                 selectedAnalysis.append(analysisSpec)
+            if cls.STAT_LIST[a] == 'Count/SumStat':
+                analysisSpec = AnalysisSpec(SingleTSStat)
+                analysisSpec.addParameter('rawStatistic', CountStat.__name__)
+                selectedAnalysis.append(analysisSpec)
+        print 'selectedAnalysis', selectedAnalysis
         return selectedAnalysis
 
     @classmethod
