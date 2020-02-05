@@ -149,10 +149,11 @@ class GenomeImporter:
     @classmethod
     def createGenome(cls, genome, fullName, chromNamesDict, standardChromosomes, username=''):
         basePath = cls.getBasePathSequence(genome)
-        trackName=GenomeInfo.getSequenceTrackName(genome)
+        trackName = GenomeInfo.getSequenceTrackName(genome)
         print "Splitting genome file into chromosomes."
         SplitFasta.parseFiles(genome, trackName, chromNamesDict=chromNamesDict)
         print "Processing genome"
+        PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
         PreProcessAllTracksJob(genome).process()
 
         #print "Writing name file.:", fullName
@@ -168,7 +169,7 @@ class GenomeImporter:
         createAssemblyGapsFile(genome)
         print "Generating genome annotations (if any)"
         cls.generateGenomeAnnotations(genome)
-        print "Processing genome"
+        print "Processing genome tracks"
         PreProcessAllTracksJob(genome).process()
         print genome + " genome added"
 

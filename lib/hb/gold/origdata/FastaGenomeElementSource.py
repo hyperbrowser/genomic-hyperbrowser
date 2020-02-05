@@ -4,7 +4,7 @@ import numpy as np
 from gold.origdata.GenomeElementSource import GenomeElementSource, BoundingRegionTuple
 from gold.track.GenomeRegion import GenomeRegion
 from gold.origdata.GenomeElement import GenomeElement
-from gold.util.CustomExceptions import InvalidFormatError
+from gold.util.CustomExceptions import InvalidFormatError, InvalidFormatWarning
 
 
 class FastaGenomeElementSource(GenomeElementSource):
@@ -33,7 +33,11 @@ class FastaGenomeElementSource(GenomeElementSource):
         if line.startswith('>'):
             self._appendBoundingRegionTuple()
             self._elCount = 0
-            self._chr = self._checkValidChr(line[1:].split()[0])
+            try:
+                self._chr = self._checkValidChr(line[1:].split()[0])
+            except InvalidFormatWarning as e:
+                raise InvalidFormatError(str(e))
+
         else:
             if self._chr is None:
                 raise InvalidFormatError('FASTA file does not start with the ">" character.')
