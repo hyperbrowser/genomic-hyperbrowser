@@ -87,6 +87,8 @@ class PytestRunnerTool(GeneralGuiTool):
             return
 
         tests = prevChoices.getTests
+        if isinstance(tests, unicode):
+            tests = ast.literal_eval(tests)
 
         return OrderedDict([(test, False) for test in tests])
 
@@ -255,6 +257,7 @@ class PytestRunnerTool(GeneralGuiTool):
 
         if choices.selectTestTarget == cls.TESTS:
             chosenTests = [test for test, checked in choices.selectTests.items() if checked]
+
             testPaths = [HB_SOURCE_CODE_BASE_DIR + '/' + test for test in chosenTests]
         else:
             if choices.selectTestTarget == cls.FOLDERS:
