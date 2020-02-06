@@ -33,7 +33,7 @@ class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
 
         aeval = Interpreter()
         aeval.symtable.update({'PreProcessAllTracksJob': PreProcessAllTracksJob})
-        aeval.eval('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' +  repr(trackName) + ', username="Test").process()')
+        aeval.eval('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' + repr(trackName) + ', username="Test").process()')
 
         if noOverlapsFileCount is not None:
             self.assertEquals(noOverlapsFileCount, len([x for x in os.listdir(noOverlapsPath) if not x.startswith('.')]))

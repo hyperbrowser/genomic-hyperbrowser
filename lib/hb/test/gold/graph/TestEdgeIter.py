@@ -128,44 +128,44 @@ class TestGraphView(TestCaseWithImprovedAsserts):
     #                                                              [2,np.nan,np.nan,np.nan], [np.nan,6,np.nan,np.nan]], dtype='float64'))]), \
     #                            self.wgv.getEdgeWeightMatrixRepresentation(completeMatrix=True, rowsAsFromNodes=False, missingEdgeWeight=np.nan))
     #    
-    def testGetEdgeWeightMatrixRepresentationOptimized(self):
-        print "Testing GetEdgeWeightMatrixRepresentationOptimized:"
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array([], dtype='S')), \
-                                             ('Cols', np.array([], dtype='S')), \
-                                             ('Matrix', np.array([], dtype='float64'))]), \
-                                self.emptyWgv.getEdgeWeightMatrixRepresentationOptimized())
-        
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array([], dtype='S')), \
-                                             ('Cols', np.array([], dtype='S')), \
-                                             ('Matrix', np.array([], dtype='float64'))]), \
-                                self.emptyWgv.getEdgeWeightMatrixRepresentationOptimized(rowsAsFromNodes=False))
-        
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array([], dtype='S')), \
-                                             ('Cols', np.array([], dtype='S')), \
-                                             ('Matrix', np.array([], dtype='float64'))]), \
-                                self.emptyWgv.getEdgeWeightMatrixRepresentationOptimized(completeMatrix=True))
-        
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('125'))), \
-                                             ('Cols', np.array(list('1235'))), \
-                                             ('Matrix', np.array([[0,1,2,0], [4,5,0,6], [0,7,0,0]], dtype='float64'))]), \
-                                self.wgv.getEdgeWeightMatrixRepresentationOptimized())
-
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('1235'))), \
-                                             ('Cols', np.array(list('125'))), \
-                                             ('Matrix', np.array([[0,4,0], [1,5,7], [2,0,0], [0,6,0]], dtype='float64'))]), \
-                                self.wgv.getEdgeWeightMatrixRepresentationOptimized(rowsAsFromNodes=False))
-        
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('1235'))), \
-                                             ('Cols', np.array(list('1235'))), \
-                                             ('Matrix', np.array([[0,1,2,0], [4,5,0,6], [0,0,0,0], [0,7,0,0]], dtype='float64'))]), \
-                                self.wgv.getEdgeWeightMatrixRepresentationOptimized(completeMatrix=True))
-
-        self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('1235'))), \
-                                             ('Cols', np.array(list('1235'))), \
-                                             ('Matrix', np.array([[np.nan,4,np.nan,np.nan], [1,5,np.nan,7], \
-                                                                  [2,np.nan,np.nan,np.nan], [np.nan,6,np.nan,np.nan]], dtype='float64'))]), \
-                                self.wgv.getEdgeWeightMatrixRepresentationOptimized(completeMatrix=True, rowsAsFromNodes=False, missingEdgeWeight=np.nan))
-        
+    # def testGetEdgeWeightMatrixRepresentationOptimized(self):
+    #     print "Testing GetEdgeWeightMatrixRepresentationOptimized:"
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array([], dtype='S')), \
+    #                                          ('Cols', np.array([], dtype='S')), \
+    #                                          ('Matrix', np.array([], dtype='float64'))]), \
+    #                             self.emptyWgv.getEdgeWeightMatrixRepresentationOptimized())
+    #
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array([], dtype='S')), \
+    #                                          ('Cols', np.array([], dtype='S')), \
+    #                                          ('Matrix', np.array([], dtype='float64'))]), \
+    #                             self.emptyWgv.getEdgeWeightMatrixRepresentationOptimized(rowsAsFromNodes=False))
+    #
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array([], dtype='S')), \
+    #                                          ('Cols', np.array([], dtype='S')), \
+    #                                          ('Matrix', np.array([], dtype='float64'))]), \
+    #                             self.emptyWgv.getEdgeWeightMatrixRepresentationOptimized(completeMatrix=True))
+    #
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('125'))), \
+    #                                          ('Cols', np.array(list('1235'))), \
+    #                                          ('Matrix', np.array([[0,1,2,0], [4,5,0,6], [0,7,0,0]], dtype='float64'))]), \
+    #                             self.wgv.getEdgeWeightMatrixRepresentationOptimized())
+    #
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('1235'))), \
+    #                                          ('Cols', np.array(list('125'))), \
+    #                                          ('Matrix', np.array([[0,4,0], [1,5,7], [2,0,0], [0,6,0]], dtype='float64'))]), \
+    #                             self.wgv.getEdgeWeightMatrixRepresentationOptimized(rowsAsFromNodes=False))
+    #
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('1235'))), \
+    #                                          ('Cols', np.array(list('1235'))), \
+    #                                          ('Matrix', np.array([[0,1,2,0], [4,5,0,6], [0,0,0,0], [0,7,0,0]], dtype='float64'))]), \
+    #                             self.wgv.getEdgeWeightMatrixRepresentationOptimized(completeMatrix=True))
+    #
+    #     self.assertListsOrDicts(OrderedDict([('Rows', np.array(list('1235'))), \
+    #                                          ('Cols', np.array(list('1235'))), \
+    #                                          ('Matrix', np.array([[np.nan,4,np.nan,np.nan], [1,5,np.nan,7], \
+    #                                                               [2,np.nan,np.nan,np.nan], [np.nan,6,np.nan,np.nan]], dtype='float64'))]), \
+    #                             self.wgv.getEdgeWeightMatrixRepresentationOptimized(completeMatrix=True, rowsAsFromNodes=False, missingEdgeWeight=np.nan))
+    #
         
 if __name__ == "__main__":
     unittest.main()

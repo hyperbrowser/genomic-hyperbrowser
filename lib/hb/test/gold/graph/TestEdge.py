@@ -7,9 +7,9 @@ class TestEdge(unittest.TestCase):
     def setUp(self):
         pass
 
-    def testEdge(self):
-        raise Exception
-        #e = Edge()
+    # def testEdge(self):
+    #     raise Exception
+    #     #e = Edge()
     
 if __name__ == "__main__":
     unittest.main()
