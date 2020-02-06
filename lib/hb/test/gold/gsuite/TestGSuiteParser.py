@@ -1006,33 +1006,33 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
-    def testIncorrectLocationHeaderNoTrackLinesShouldBeUnknown(self):
-        contents = \
-            '##location: local\n'
-
-        # self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
-
-    def testIncorrectFileFormatHeaderNoTrackLinesShouldBeUnknown(self):
-        contents = \
-            '##file format: primary\n'
-
-        # self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
-
-    def testIncorrectTrackTypeHeaderNoTrackLinesShouldBeUnknown(self):
-        contents = \
-            '##track type: segments\n'
-
-        # self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
-
-    def testIncorrectGenomeHeaderNoTrackLinesShouldBeUnknown(self):
-        contents = \
-            '##genome: hg19\n'
-
-        # self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
+    # def testIncorrectLocationHeaderNoTrackLinesShouldBeUnknown(self):
+    #     contents = \
+    #         '##location: local\n'
+    #
+    #     # self._parseContents(contents)
+    #     self._assertInvalidFormatWhenParsing(contents)
+    #
+    # def testIncorrectFileFormatHeaderNoTrackLinesShouldBeUnknown(self):
+    #     contents = \
+    #         '##file format: primary\n'
+    #
+    #     # self._parseContents(contents)
+    #     self._assertInvalidFormatWhenParsing(contents)
+    #
+    # def testIncorrectTrackTypeHeaderNoTrackLinesShouldBeUnknown(self):
+    #     contents = \
+    #         '##track type: segments\n'
+    #
+    #     # self._parseContents(contents)
+    #     self._assertInvalidFormatWhenParsing(contents)
+    #
+    # def testIncorrectGenomeHeaderNoTrackLinesShouldBeUnknown(self):
+    #     contents = \
+    #         '##genome: hg19\n'
+    #
+    #     # self._parseContents(contents)
+    #     self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectMultipleFileFormatHeaderNoColumn(self):
         contents = \
@@ -1311,13 +1311,6 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         contents = \
             '###uri\ttrack_type\n' \
             'ftp://server.somewhere.com/path/to/file1.bed\tsegmentation\n'
-
-        # self._parseContents(contents)
-        self._assertInvalidFormatWhenParsing(contents)
-
-    def testErrorInGenomeHeader(self):
-        contents = \
-            '##genome: .\n'
 
         # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)

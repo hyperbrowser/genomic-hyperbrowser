@@ -5,7 +5,7 @@ import numpy
 
 class BedGenomeElementSource(GenomeElementSource):
     _VERSION = '1.2'
-    #FILE_SUFFIXES = ['bed']
+    FILE_SUFFIXES = ['bed']
     FILE_FORMAT_NAME = 'BED'
     _numHeaderLines = 0
 
@@ -91,8 +91,8 @@ class PointBedGenomeElementSource(BedGenomeElementSource):
 
 class BedValuedGenomeElementSource(BedGenomeElementSource):
     _VERSION = '1.1'
-#    FILE_SUFFIXES = ['valued.bed', 'marked.bed']
-    FILE_SUFFIXES = ['bed', 'valued.bed', 'marked.bed']
+    FILE_SUFFIXES = ['valued.bed', 'marked.bed']
+    #FILE_SUFFIXES = ['bed', 'valued.bed', 'marked.bed']
     FILE_FORMAT_NAME = 'Valued BED'
 
 #    MIN_NUM_COLS = 5
