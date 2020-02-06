@@ -16,6 +16,7 @@ from gold.util.CommonFunctions import createDirPath
 from quick.util.GenomeInfo import GenomeInfo
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
 from test.util.Asserts import TestCaseWithImprovedAsserts
+from third_party.asteval_raise_errors import Interpreter
 
 PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
 
@@ -30,9 +31,9 @@ class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
         self._removeDir(noOverlapsPath, trackName)
         self._removeDir(withOverlapsPath, trackName)
 
-        self._runWithProfiling('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' +
-                               repr(trackName) + ', username="Test").process()',
-                               {'PreProcessAllTracksJob', PreProcessAllTracksJob})
+        aeval = Interpreter()
+        aeval.symtable.update({'PreProcessAllTracksJob': PreProcessAllTracksJob})
+        aeval.eval('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' +  repr(trackName) + ', username="Test").process()')
 
         if noOverlapsFileCount is not None:
             self.assertEquals(noOverlapsFileCount, len([x for x in os.listdir(noOverlapsPath) if not x.startswith('.')]))
@@ -45,8 +46,6 @@ class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
 
         if withOverlapsChrElCount is not None:
             self.assertChrElCounts(trackName, withOverlapsChrElCount, True, customBins)
-
-        self._storeProfile()
 
     def assertChrElCounts(self, trackName, chrElCountDict, allowOverlaps, customBins):
         for chr in chrElCountDict.keys():
