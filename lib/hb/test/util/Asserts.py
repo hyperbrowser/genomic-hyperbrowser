@@ -12,6 +12,8 @@ def AssertList(list1, list2, assertFunc=None):
         assertFunc(x, y)
 
 class TestCaseWithImprovedAsserts(unittest.TestCase):
+    VERBOSE = False
+
     def assertEqual(self, a, b):
         if not self._assertIsNan(a, b):
             unittest.TestCase.assertEqual(self, a, b)

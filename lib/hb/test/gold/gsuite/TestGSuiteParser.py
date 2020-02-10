@@ -811,11 +811,11 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
 
     def _assertInvalidFormatWhenParsing(self, contents):
         self.assertRaises(InvalidFormatError,
-                          GSuiteParser.parseLines, contents.split('\n'))
+                          GSuiteParser.parseLines, contents.split('\n'), allowTrackSummaryToOverrideHeaders=False)
 
     def _assertValueErrorWhenParsing(self, contents):
         self.assertRaises(ValueError,
-                          GSuiteParser.parseLines, contents.split('\n'))
+                          GSuiteParser.parseLines, contents.split('\n'), allowTrackSummaryToOverrideHeaders=False)
 
     def testNonAscii(self):
         contents = \
@@ -1006,33 +1006,33 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
         # self._parseContents(contents)
         self._assertInvalidFormatWhenParsing(contents)
 
-    # def testIncorrectLocationHeaderNoTrackLinesShouldBeUnknown(self):
-    #     contents = \
-    #         '##location: local\n'
-    #
-    #     # self._parseContents(contents)
-    #     self._assertInvalidFormatWhenParsing(contents)
-    #
-    # def testIncorrectFileFormatHeaderNoTrackLinesShouldBeUnknown(self):
-    #     contents = \
-    #         '##file format: primary\n'
-    #
-    #     # self._parseContents(contents)
-    #     self._assertInvalidFormatWhenParsing(contents)
-    #
-    # def testIncorrectTrackTypeHeaderNoTrackLinesShouldBeUnknown(self):
-    #     contents = \
-    #         '##track type: segments\n'
-    #
-    #     # self._parseContents(contents)
-    #     self._assertInvalidFormatWhenParsing(contents)
-    #
-    # def testIncorrectGenomeHeaderNoTrackLinesShouldBeUnknown(self):
-    #     contents = \
-    #         '##genome: hg19\n'
-    #
-    #     # self._parseContents(contents)
-    #     self._assertInvalidFormatWhenParsing(contents)
+    def testIncorrectLocationHeaderNoTrackLinesShouldBeUnknown(self):
+        contents = \
+            '##location: local\n'
+
+        # self._parseContents(contents)
+        self._assertInvalidFormatWhenParsing(contents)
+
+    def testIncorrectFileFormatHeaderNoTrackLinesShouldBeUnknown(self):
+        contents = \
+            '##file format: primary\n'
+
+        # self._parseContents(contents)
+        self._assertInvalidFormatWhenParsing(contents)
+
+    def testIncorrectTrackTypeHeaderNoTrackLinesShouldBeUnknown(self):
+        contents = \
+            '##track type: segments\n'
+
+        # self._parseContents(contents)
+        self._assertInvalidFormatWhenParsing(contents)
+
+    def testIncorrectGenomeHeaderNoTrackLinesShouldBeUnknown(self):
+        contents = \
+            '##genome: hg19\n'
+
+        # self._parseContents(contents)
+        self._assertInvalidFormatWhenParsing(contents)
 
     def testIncorrectMultipleFileFormatHeaderNoColumn(self):
         contents = \

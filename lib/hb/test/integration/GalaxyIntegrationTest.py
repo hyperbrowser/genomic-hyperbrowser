@@ -76,17 +76,11 @@ class GalaxyIntegrationTest(TestCaseWithImprovedAsserts):
         args[2] = analysisDef[0] + " -> " + analysisDef[1]
         
         for runType in self._runTypeGenerator():
-            if self._usesProfiling():
-                DebugConfig.USE_PROFILING = True
-                
             res = GalaxyInterface.run(*args, **{'genome':'TestGenome'})
 
             self._assertEqualResults(target, res)
             if kwArgs.get('globalTarget') != None:
                 self._assertEqualGlobalResults(kwArgs['globalTarget'], res)
-                
-            # if self._usesProfiling():
-            #     self._storeProfile(diskMemo)
     
     def _assertBatchEqual(self, target, *args):
         for runType in self._runTypeGenerator():
