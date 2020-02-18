@@ -710,7 +710,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 analysisSpec = AnalysisSpec(SingleTSStat)
                 analysisSpec.addParameter('rawStatistic', CountStat.__name__)
                 selectedAnalysis.append(analysisSpec)
-        print 'selectedAnalysis', selectedAnalysis
+
         return selectedAnalysis
 
     @classmethod

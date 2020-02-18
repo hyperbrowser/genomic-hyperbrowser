@@ -27,6 +27,9 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 from quick.statistic.AvgSegLenStat import AvgSegLenStat
 
+from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+
+
 class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, DebugMixin, UserBinMixin):
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS = 10
@@ -144,9 +147,11 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
             resDict[stat] = OrderedDict()
 
         #count overview
+        trackTitles = {}
         i = 0
         for iTrack in gSuite.allTracks():
             for stat in statList:
+
                 tupleList = []
                 if len(attrNameList) == 0:
                     tupleList = tuple(iTrack.title)
@@ -157,6 +162,13 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                             at = 'No group'
                         tupleList.append(at)
                     tupleList = tuple(tupleList)
+
+                if not stat in trackTitles.keys():
+                    trackTitles[stat] = {}
+                if not str(iTrack.title) in trackTitles[stat].keys():
+                    trackTitles[stat][str(iTrack.title)] = {}
+                if not str(tupleList) in trackTitles[stat][str(iTrack.title)].keys():
+                    trackTitles[stat][str(iTrack.title)][str(tupleList)] = 0
 
                 if not tupleList in resDict[stat].keys():
                     if stat == cls.NUMTRACK:
@@ -186,6 +198,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
 
                     resDict[stat][tupleList].append(res.getGlobalResult()['Result'].getResult())
+                    trackTitles[stat][str(iTrack.title)][str(tupleList)] = res.getGlobalResult()['Result'].getResult()
 
                 if stat == cls.NUMTRACK:
                     resDict[stat][tupleList] += 1
@@ -194,6 +207,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         #exclude which will now have min-max
         notToExcludeFromResults = [cls.NUMTRACK]
         deleteElements = []
+
 
         group = []
         groupTuple =[]
@@ -228,21 +242,26 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         for de in deleteElements:
             del resDict[de]
 
-        resDictMerged = cls.mergeTwodicts(resDict, resDictExtra)
+        #resDictMerged = cls.mergeTwodicts(resDict, resDictExtra)
+        if stat == cls.NUMTRACK:
+            resDictExtra = resDict
 
         ########################################################################
         ###################### SUMMARIZE RESULTS ###############################
         ########################################################################
         #Overview table
 
+        resDictDraw = resDictExtra.copy()
+        cls.createGSuiteWithExtraFields(attrNameList, gSuite, resDictExtra, trackTitles)
 
-        cls.createGSuiteWithExtraFields(attrNameList, gSuite, resDictMerged)
-        core = cls.drawPlots(group, groupTuple, resDictMerged)
+
+        core = cls.drawPlots(group, groupTuple, resDictDraw, choices, galaxyFn)
+        core.end()
 
         print core
 
     @classmethod
-    def createGSuiteWithExtraFields(cls, attrNameList, gSuite, resDictMerged):
+    def createGSuiteWithExtraFields(cls, attrNameList, gSuite, resDictMerged, trackTitles):
 
         # add column for which we counted data
         for i, iTrack in enumerate(gSuite.allTracks()):
@@ -268,6 +287,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                     at = 'No group'
                 attr[str(a)] = str(at)
 
+
             tupleList = []
             if len(attrNameList) == 0:
                 tupleList = tuple(trackTitle)
@@ -285,22 +305,30 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
                 attr[attrChange] = str(resDictMerged[s][tupleList])
 
+
+
+            for s in trackTitles.keys():
+                attrChange = str(s)
+                attr[attrChange] = str(trackTitles[s][str(iTrack.title)][str(tupleList)])
+
             trackType = iTrack.trackType
 
             cls._buildTrack(outGSuite, trackTitle, gSuite.genome, trackPath, attr, trackType)
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['overview gSuite'])
 
     @classmethod
-    def drawPlots(cls, group, groupTuple, resDictMerged):
+    def drawPlots(cls, group, groupTuple, resDictExtra, choices, galaxyFn):
         dataForPlot = []
         seriesName = []
         categoriesForPlot = []
         rdmList = []
-        for rdm in resDictMerged.keys():
+
+        for rdm in resDictExtra.keys():
             k = rdm.replace('-min', '').replace('-max', '').replace('-avg', '')
             if not k in rdmList:
                 rdmList.append(k)
         titleText = []
+
 
         for k in rdmList:
             if cls.NUMTRACK == k:
@@ -309,20 +337,20 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                 for g in groupTuple:
                     if group not in categoriesForPlot:
                         categoriesForPlot.append(group)
-                    data.append(resDictMerged[k][g])
+                    data.append(resDictExtra[k][g])
                 dataForPlot.append(data)
             else:
                 newK = []
                 newD = []
                 inxK = 0
-                for r in sorted(resDictMerged.keys()):
+                for r in sorted(resDictExtra.keys()):
                     if k in r:
                         newK.append(r.replace(k, ''))
                         data = []
                         for g in groupTuple:
                             if inxK == 0:
                                 categoriesForPlot.append(group)
-                            data.append(resDictMerged[r][g])
+                            data.append(resDictExtra[r][g])
                         newD.append(data)
                         inxK = 1
                 new = zip(newK, newD)
@@ -337,17 +365,24 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         core.paragraph('Summary results')
         core.divBegin()
 
+        newresDictExtra = {}
         newdataForPlot = []
         newseriesName = []
         for eNum, e in enumerate(dataForPlot):
-            d1=[]
-            d2=[]
             for dNum, d in enumerate(e):
                 try:
                     newdataForPlot.append(dataForPlot[eNum][dNum])
                     newseriesName.append(seriesName[eNum][dNum])
+                    if not seriesName[eNum][dNum] in newresDictExtra.keys():
+                        newresDictExtra[seriesName[eNum][dNum]] = []
+
+                    if cls.NUMTRACK != rdmList[0]:
+                        newresDictExtra[seriesName[eNum][dNum]] = dataForPlot[eNum][dNum]
                 except:
                     pass
+
+        if cls.NUMTRACK == rdmList[0]:
+            newresDictExtra[cls.NUMTRACK] = newdataForPlot
 
         plot = vg.drawColumnCharts([newdataForPlot],
                                    height=300,
@@ -355,6 +390,19 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                                    seriesName=[newseriesName],
                                    xAxisRotation=90,
                                    titleText=titleText)
+
+
+
+        shortQuestion = 'results'
+        addTableWithTabularAndGsuiteImportButtons(
+            core,
+            choices,
+            galaxyFn,
+            shortQuestion,
+            tableDict=newresDictExtra,
+            columnNames=['Column'] + group
+        )
+
         core.line(plot)
         core.divEnd()
         core.end()
