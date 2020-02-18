@@ -122,7 +122,6 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             else:
                 attr = iTrack.getAttribute(colNameAttributes)
 
-
             if not attr in dataAll.keys():
                 dataAll[attr] = []
             val = iTrack.getAttribute(selCol)
@@ -134,6 +133,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                     dataAll[attr].append(float(val))
             except:
                 pass
+
 
         return dataAll, categories
 
@@ -149,9 +149,6 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             for line in f:
                 l = line.strip('\n').split('\t')
                 if i == 0:
-                    # inxColName = l.index(k.encode('utf-8'))
-                    # allData[inxColName] = {}
-                    #categories.append(k.encode('utf-8'))
                     cna = l.index(colNameAttributes)
                     k = l.index(colName)
 
@@ -243,12 +240,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
     def printResultsForBoxPlot(cls, selCol, categories, choices, dataAll, galaxyFn, resValue):
         dataForBoxPlot = []
         prettyResults = {}
-        i = 0
 
-        # print 'categories', categories, '<br>'
-        # print 'dataAll', dataAll, '<br>'
+        categoriesOrder = []
 
-        for data in dataAll.itervalues():
+        for k, data in dataAll.iteritems():
 
             if resValue == 'no':
                 data = [d for d in data if d > 0]
@@ -258,16 +253,14 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             s = 0
             if len(data) > 0:
                 s = float(sum(data)) / float(len(data))
-            prettyResults[categories[i]] = countedData + [s, float(sum(data)), float(len(data))]
-            i += 1
+            prettyResults[k] = countedData + [s, float(sum(data)), float(len(data))]
+            categoriesOrder.append(k)
         vg = visualizationGraphs()
 
-
-
-        categoriesSorted, dataForBoxPlotSorted = (list(t) for t in
-                                                  zip(*sorted(zip(categories, dataForBoxPlot))))
+        categoriesOrder, dataForBoxPlotSorted = (list(t) for t in
+                                                  zip(*sorted(zip(categoriesOrder, dataForBoxPlot))))
         plot = vg.drawBoxPlotChart(dataForBoxPlotSorted,
-                                   categories=categoriesSorted,
+                                   categories=categoriesOrder,
                                    seriesName='values',
                                    xAxisRotation=90,
                                    titleText=selCol)
