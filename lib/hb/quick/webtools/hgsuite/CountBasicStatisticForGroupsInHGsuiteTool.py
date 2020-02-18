@@ -305,11 +305,10 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
                 attr[attrChange] = str(resDictMerged[s][tupleList])
 
-
+            attr['--'.join(attrNameList)] = '--'.join(tupleList)
 
             for s in trackTitles.keys():
-                attrChange = str(s)
-                attr[attrChange] = str(trackTitles[s][str(iTrack.title)][str(tupleList)])
+                attr[str(s)] = str(trackTitles[s][str(iTrack.title)][str(tupleList)])
 
             trackType = iTrack.trackType
 
