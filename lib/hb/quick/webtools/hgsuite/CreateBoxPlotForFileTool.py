@@ -109,13 +109,24 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
 
         dataAll = OrderedDict()
 
-        categories = list(set(gSuite.getAttributeValueList(colNameAttributes)))
+        if colNameAttributes != cls.TITLE:
+            categories = list(set(gSuite.getAttributeValueList(colNameAttributes)))
+        else:
+            categories = []
+
         for i, iTrack in enumerate(gSuite.allTracks()):
 
-            attr = iTrack.getAttribute(colNameAttributes)
+            if colNameAttributes == cls.TITLE:
+                attr = iTrack.title
+                categories.append(attr)
+            else:
+                attr = iTrack.getAttribute(colNameAttributes)
+
+
             if not attr in dataAll.keys():
                 dataAll[attr] = []
             val = iTrack.getAttribute(selCol)
+
             try:
                 if val == 'nan' or val == None:
                     dataAll[attr].append(0)
@@ -204,12 +215,14 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             for k, it in selCol.iteritems():
                 if it != False:
                     sc = k
-                    responseValue = choices.responseValue
+
+                    responseValue = choices.responseValue.encode('utf-8')
                     if suffixForFile == 'tabular':
                         dataAll, categories = cls.openFileWithCategories(selFile, sc, responseValue)
 
                     if suffixForFile == 'gsuite':
                         dataAll, categories = cls.openGSuiteFileWithCategories(selFile, sc, responseValue)
+
 
                     #outputFile = open(cls.makeHistElement(galaxyExt='customhtml', title=sc), 'w')
                     res += str(cls.printResultsForBoxPlot(sc, categories, choices, dataAll, galaxyFn, resValue))
@@ -231,6 +244,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
         dataForBoxPlot = []
         prettyResults = {}
         i = 0
+
+        # print 'categories', categories, '<br>'
+        # print 'dataAll', dataAll, '<br>'
+
         for data in dataAll.itervalues():
 
             if resValue == 'no':
@@ -244,6 +261,9 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             prettyResults[categories[i]] = countedData + [s, float(sum(data)), float(len(data))]
             i += 1
         vg = visualizationGraphs()
+
+
+
         categoriesSorted, dataForBoxPlotSorted = (list(t) for t in
                                                   zip(*sorted(zip(categories, dataForBoxPlot))))
         plot = vg.drawBoxPlotChart(dataForBoxPlotSorted,
