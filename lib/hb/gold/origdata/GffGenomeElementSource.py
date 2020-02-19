@@ -3,6 +3,7 @@ from urllib import unquote
 
 from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.origdata.GenomeElement import GenomeElement
+from gold.util.CommonConstants import BINARY_MISSING_VAL
 from gold.util.CustomExceptions import InvalidFormatError
 
 class GffGenomeElementSource(GenomeElementSource):

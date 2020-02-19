@@ -64,6 +64,8 @@ class RemoveGenomeTool(GeneralGuiTool):
 
             if os.path.exists(origPath):
                 print 'Moving ' + genome + ' to .trash in folder: ' + p + os.linesep
+                if os.path.exists(trashPath):
+                    shutil.rmtree(trashPath)
                 ensurePathExists(trashPath)
                 shutil.move(origPath, trashPath)
 

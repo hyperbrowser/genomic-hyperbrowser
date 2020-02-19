@@ -1,10 +1,14 @@
 import os
+import shutil
 from collections import OrderedDict
 from copy import copy
 from datetime import datetime
 
+from config.Config import NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_DATA_PATH, \
+    NMER_CHAIN_DATA_PATH
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.GenomeImporter import GenomeImporter
+from quick.util.CommonFunctions import createDirPath, ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
@@ -12,6 +16,16 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 class InstallGenomeTool(GeneralGuiTool):
     
     NON_UNIQUE_CHROMOSOME_NAME_TEXT="NON_UNIQUE_NAME_NUMBER"
+
+    TRACK_PATHS = OrderedDict([#('collectedTracks', NONSTANDARD_DATA_PATH),
+                             ('standardizedTracks', ORIG_DATA_PATH),
+                             ('parsingErrorTracks', PARSING_ERROR_DATA_PATH),
+                             ('nmerChains', NMER_CHAIN_DATA_PATH),
+                             # ('preProcessedTracks (noOverlaps)',
+                             #  createDirPath('', '', allowOverlaps=False)),
+                             # ('preProcessedTracks (withOverlaps)',
+                             #  createDirPath('', '', allowOverlaps=True))
+                             ])
     
     @staticmethod
     def getToolName():
@@ -202,12 +216,24 @@ class InstallGenomeTool(GeneralGuiTool):
     #@staticmethod
     #def getDemoSelections():
     #    return ['testChoice1','..']
+
+    @classmethod
+    def getChosenGenome(self, prevChoices):
+        uploadedGenomeHist = ExternalTrackManager.extractFnFromGalaxyTN(prevChoices[0].split(":"))
+        genomeName = GenomeImporter.getGenomeAbbrv(uploadedGenomeHist)
+        gi = GenomeInfo(genomeName)
+
+        return gi
     
     @staticmethod
     def validateAndReturnErrors(choices):
         if choices[0] is None:
             return ''
-        
+
+        chosenGenome = InstallGenomeTool.getChosenGenome(choices)
+        # if chosenGenome.isInstalled():
+        #     return 'Genome ' + chosenGenome.genome + ' is already installed. Please remove it before trying to install it again.'
+
         numOrigChrs = len(InstallGenomeTool._getTempChromosomeNames(choices[0]).split(os.linesep))
         
         if choices[1] == 'Show':
@@ -273,6 +299,17 @@ class InstallGenomeTool(GeneralGuiTool):
         tempinfofile=ExternalTrackManager.extractFnFromGalaxyTN(choices[0].split(":"))
         abbrv=GenomeImporter.getGenomeAbbrv(tempinfofile)
         gi = GenomeInfo(abbrv)
+
+        for name, path in cls.TRACK_PATHS.iteritems():
+            genomePath = os.path.join(path, gi.genome)
+            if os.path.exists(genomePath):
+                trashPath = os.path.join(path, ".trash", gi.genome)
+                if os.path.exists(trashPath):
+                    shutil.rmtree(trashPath)
+
+                ensurePathExists(trashPath)
+                shutil.move(genomePath, trashPath)
+
         #chrNamesInFasta=gi.sourceChrNames
         chrNamesInFasta = cls._getTempChromosomeNames(choices[0]).split(os.linesep)
         
