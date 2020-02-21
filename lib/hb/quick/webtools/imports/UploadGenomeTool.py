@@ -1,13 +1,17 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.extra.GenomeImporter import GenomeImporter
 import os
 import sys
-from quick.util.GenomeInfo import GenomeInfo
-from gold.util.CustomExceptions import InvalidFormatError
-from quick.webtools.util.CommonFunctionsForTools import validateURLs, validateURL, validateUcscValues
 from shutil import copyfile
+
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.extra.GenomeImporter import GenomeImporter
+from quick.genome.GenomeCommonFunctions import storeGenomeProperties, downloadGenomeFromUrls, \
+    downloadGenomeGffFileFromUrls
 from quick.util.CommonFunctions import ensurePathExists
+from quick.util.GenomeInfo import GenomeInfo
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.util.CommonFunctionsForTools import validateURLs, validateURL, \
+    validateUcscValues
+
 
 class UploadGenomeTool(GeneralGuiTool):
     @staticmethod
@@ -208,17 +212,11 @@ class UploadGenomeTool(GeneralGuiTool):
         if gi.hasOrigFiles():
             sys.stderr.write( "Genome "+abbrv+ " is already in the Genomic HyperBrowser. Remove the old first.")
         else:
-            gi.fullName = name
             if choices[2] == 'URL':
                 urls = choices[3].split()
-                gi.sourceUrls = urls
-                for url in urls:
-                    try:
-                        GenomeImporter.downloadGenomeSequence(abbrv, url)
-                    except InvalidFormatError:
-                        return
+                downloadGenomeFromUrls(gi, urls)
             else:
-                basePath =  GenomeImporter.getBasePathSequence(abbrv)
+                basePath = GenomeImporter.getBasePathSequence(abbrv)
                 fnSource = ExternalTrackManager.extractFnFromGalaxyTN(choices[4].split(':'))
                 fnDest = basePath + os.path.sep + abbrv + '.fa'
                 ensurePathExists(fnDest)
@@ -226,41 +224,29 @@ class UploadGenomeTool(GeneralGuiTool):
 
             if choices[16] == 'from URL':
                 urls = choices[3].split()
-                gi.sourceUrls = urls
-                for url in urls:
-                    try:
-                        GenomeImporter.downloadGffFile(abbrv, url)
-                    except InvalidFormatError:
-                        return
+                downloadGenomeGffFileFromUrls(gi, urls)
             elif choices[16] == 'from history':
                 fnSource = ExternalTrackManager.extractFnFromGalaxyTN(choices[18].split(':'))
-                fnDest =  GenomeImporter.getCollectedPathGFF(abbrv)
+                fnDest = GenomeImporter.getCollectedPathGFF(abbrv)
                 ensurePathExists(fnDest)
                 copyfile(fnSource, fnDest)
 
-            chrs=GenomeImporter.extractChromosomesFromGenome(abbrv)
-            #gi.sourceChrNames = chrs
-            gi.installedBy = username
-            gi.genomeBuildSource = choices[5]
-            gi.genomeBuildName = choices[6]
-            gi.species = choices[7]
-            gi.speciesTaxonomyUrl = choices[8]
-            gi.assemblyDetails = choices[9]
-            gi.privateAccessList = [v.strip() for v in choices[10].replace(os.linesep, ' ').replace(',', ' ').split(' ') if v.find('@')>0]
-            gi.isPrivate = (choices[11] != 'All')
-            gi.isExperimental = (choices[12] != 'All')
-            gi.ucscClade = choices[13]
-            gi.ucscGenome = choices[14]
-            gi.ucscAssembly = choices[15]
+            privateAccessList = [v.strip() for v in
+                                 choices[10].replace(os.linesep, ' ').replace(',', ' ').split(' ')
+                                 if v.find('@') > 0]
+            isPrivate = (choices[11] != 'All')
+            isExperimental = (choices[12] != 'All')
 
+            storeGenomeProperties(gi, name, username, choices[5], choices[6], choices[7], choices[8],
+                                  choices[9], privateAccessList, isPrivate, isExperimental,
+                                  choices[13], choices[14], choices[15])
+
+            chrs = GenomeImporter.extractChromosomesFromGenome(abbrv)
             galaxyFile=open(galaxyFn, "w")
-            galaxyFile.write( 'Genome abbreviation: ' + abbrv + os.linesep)
-            galaxyFile.write( 'Genome full name: ' + name + os.linesep)
-            galaxyFile.write( 'Track name: ' + ':'.join(GenomeInfo.getSequenceTrackName(abbrv)) + os.linesep)
-            galaxyFile.write( 'Temp chromosome names: ' + ' || '.join(chrs) + os.linesep)
-            #GenomeImporter.saveTempInfo(abbrv, name, chrs)
-            #print 'Chromosomes: '+chrs
-            gi.store()
+            galaxyFile.write('Genome abbreviation: ' + abbrv + os.linesep)
+            galaxyFile.write('Genome full name: ' + name + os.linesep)
+            galaxyFile.write('Track name: ' + ':'.join(GenomeInfo.getSequenceTrackName(abbrv)) + os.linesep)
+            galaxyFile.write('Temp chromosome names: ' + ' || '.join(chrs) + os.linesep)
 
 
     @staticmethod

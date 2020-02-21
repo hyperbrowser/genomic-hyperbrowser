@@ -290,9 +290,8 @@ class InstallGenomeTool(GeneralGuiTool):
         
         print 'Executing...'
         
-        tempinfofile=ExternalTrackManager.extractFnFromGalaxyTN(choices[0].split(":"))
-        abbrv=GenomeImporter.getGenomeAbbrv(tempinfofile)
-        gi = GenomeInfo(abbrv)
+        tempinfofile = ExternalTrackManager.extractFnFromGalaxyTN(choices[0].split(":"))
+        abbrv = GenomeImporter.getGenomeAbbrv(tempinfofile)
 
         for folder in cls.TRACK_FOLDERS:
             removeGenomeData(abbrv, folder, removeFromShelve=False)
@@ -311,7 +310,8 @@ class InstallGenomeTool(GeneralGuiTool):
         stdChrDict = cls._getRenamedChrDictWithSelection(choices, stdChrs=True)
         stdChrs = [x for x in stdChrDict if stdChrDict[x]]
         print 'Standard chromosomes chosen: ' + ", ".join(stdChrs)
-        
+
+        gi = GenomeInfo(abbrv)
         GenomeImporter.createGenome(abbrv, gi.fullName, chromNamesDict, stdChrs, username=username)
         
         gi.installedBy = username
