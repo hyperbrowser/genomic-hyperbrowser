@@ -1,19 +1,11 @@
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
-from quick.util.GenomeInfo import GenomeInfo
-from config.Config import NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_DATA_PATH, NMER_CHAIN_DATA_PATH
-from quick.util.CommonFunctions import ensurePathExists
-from gold.util.CommonFunctions import createDirPath
-import shutil, os
+import os
 from collections import OrderedDict
+
+from quick.genome.GenomeCommonFunctions import GENOME_PATHS, removeGenomeData
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class RemoveGenomeTool(GeneralGuiTool):
-    ALL_PATHS = OrderedDict([('collectedTracks', NONSTANDARD_DATA_PATH),
-                             ('standardizedTracks', ORIG_DATA_PATH),
-                             ('parsingErrorTracks', PARSING_ERROR_DATA_PATH),
-                             ('nmerChains', NMER_CHAIN_DATA_PATH),
-                             ('preProcessedTracks (noOverlaps)', createDirPath('', '', allowOverlaps=False)),
-                             ('preProcessedTracks (withOverlaps)', createDirPath('', '', allowOverlaps=True))])
 
     @staticmethod
     def getToolName():
@@ -30,7 +22,7 @@ class RemoveGenomeTool(GeneralGuiTool):
     
     @classmethod
     def getOptionsBoxPaths(cls, prevChoices):
-        return OrderedDict([(key, True) for key in cls.ALL_PATHS.keys()])
+        return OrderedDict([(key, True) for key in GENOME_PATHS.keys()])
     
     #@staticmethod    
     #def getOptionsBox3(prevChoices):
@@ -55,19 +47,11 @@ class RemoveGenomeTool(GeneralGuiTool):
             
         print 'Executing... starting to remove ' + choices[0] + os.linesep
 
-        paths = [cls.ALL_PATHS[key] for key,val in choices.paths.iteritems() if val]
+        trackFolders = [trackFolder for trackFolder, checked in choices.paths.iteritems() if checked]
+        genome = choices.genome
 
-        for p in paths:
-            genome = choices.genome
-            origPath = os.sep.join([ p, genome ])
-            trashPath = os.sep.join([ p, ".trash", genome ])
-
-            if os.path.exists(origPath):
-                print 'Moving ' + genome + ' to .trash in folder: ' + p + os.linesep
-                if os.path.exists(trashPath):
-                    shutil.rmtree(trashPath)
-                ensurePathExists(trashPath)
-                shutil.move(origPath, trashPath)
+        for folder in trackFolders:
+            removeGenomeData(genome, folder, removeFromShelve=True)
 
 
     @staticmethod

@@ -8,6 +8,8 @@ from config.Config import NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_D
     NMER_CHAIN_DATA_PATH
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.GenomeImporter import GenomeImporter
+from quick.genome.GenomeCommonFunctions import STANDARDIZED_TRACKS, PARSING_ERROR_TRACKS, \
+    NMER_CHAINS, TRACKS_NO_OVERLAPS, TRACKS_WITH_OVERLAPS, removeGenomeData
 from quick.util.CommonFunctions import createDirPath, ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -17,15 +19,7 @@ class InstallGenomeTool(GeneralGuiTool):
     
     NON_UNIQUE_CHROMOSOME_NAME_TEXT="NON_UNIQUE_NAME_NUMBER"
 
-    TRACK_PATHS = OrderedDict([#('collectedTracks', NONSTANDARD_DATA_PATH),
-                             ('standardizedTracks', ORIG_DATA_PATH),
-                             ('parsingErrorTracks', PARSING_ERROR_DATA_PATH),
-                             ('nmerChains', NMER_CHAIN_DATA_PATH),
-                             # ('preProcessedTracks (noOverlaps)',
-                             #  createDirPath('', '', allowOverlaps=False)),
-                             # ('preProcessedTracks (withOverlaps)',
-                             #  createDirPath('', '', allowOverlaps=True))
-                             ])
+    TRACK_FOLDERS = [STANDARDIZED_TRACKS, PARSING_ERROR_TRACKS, NMER_CHAINS, TRACKS_NO_OVERLAPS, TRACKS_WITH_OVERLAPS]
     
     @staticmethod
     def getToolName():
@@ -231,8 +225,8 @@ class InstallGenomeTool(GeneralGuiTool):
             return ''
 
         chosenGenome = InstallGenomeTool.getChosenGenome(choices)
-        # if chosenGenome.isInstalled():
-        #     return 'Genome ' + chosenGenome.genome + ' is already installed. Please remove it before trying to install it again.'
+        if chosenGenome.isInstalled():
+            return 'Genome ' + chosenGenome.genome + ' is already installed. Please remove it before trying to install it again.'
 
         numOrigChrs = len(InstallGenomeTool._getTempChromosomeNames(choices[0]).split(os.linesep))
         
@@ -300,15 +294,8 @@ class InstallGenomeTool(GeneralGuiTool):
         abbrv=GenomeImporter.getGenomeAbbrv(tempinfofile)
         gi = GenomeInfo(abbrv)
 
-        for name, path in cls.TRACK_PATHS.iteritems():
-            genomePath = os.path.join(path, gi.genome)
-            if os.path.exists(genomePath):
-                trashPath = os.path.join(path, ".trash", gi.genome)
-                if os.path.exists(trashPath):
-                    shutil.rmtree(trashPath)
-
-                ensurePathExists(trashPath)
-                shutil.move(genomePath, trashPath)
+        for folder in cls.TRACK_FOLDERS:
+            removeGenomeData(abbrv, folder, removeFromShelve=False)
 
         #chrNamesInFasta=gi.sourceChrNames
         chrNamesInFasta = cls._getTempChromosomeNames(choices[0]).split(os.linesep)
