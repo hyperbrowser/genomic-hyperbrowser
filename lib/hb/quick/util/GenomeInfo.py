@@ -210,7 +210,6 @@ class GenomeInfo(object):
     def getExtendedChrList(cls, genome):
         "Returns a list of all chromosomes of the genome build file set."
         if genome in cls._genomeExtChrLists:
-            print 'genome in ext list: ' + str(cls._genomeExtChrLists[genome])
             return cls._genomeExtChrLists[genome]
 
         if genome.lower() in ['testgenome']:
@@ -221,7 +220,6 @@ class GenomeInfo(object):
             fullChrList = sorted([fn.replace('.fa','') for fn in os.listdir(seqFilesPath) if '.fa' in fn])
 
             cls._genomeExtChrLists[genome] = fullChrList
-            print 'full chr list: ' + str(cls._genomeExtChrLists[genome])
             return fullChrList
 
     @classmethod
