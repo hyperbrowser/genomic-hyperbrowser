@@ -133,6 +133,8 @@ def getGalaxyFilesDir(galaxyFn):
             if os.path.basename(correctGalaxyFn).startswith('dataset_') and correctGalaxyFn.endswith('_files'):
                 return os.path.join(correctGalaxyFn, batchId)
 
+        raise Exception('Could not find Galaxy run directory')
+
 
 def getGalaxyFilesFilename(galaxyFn, id):
     """
