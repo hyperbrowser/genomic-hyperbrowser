@@ -1,16 +1,12 @@
 import os
-import shutil
 from collections import OrderedDict
 from copy import copy
 from datetime import datetime
 
-from config.Config import NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_DATA_PATH, \
-    NMER_CHAIN_DATA_PATH
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.extra.GenomeImporter import GenomeImporter
 from quick.genome.GenomeCommonFunctions import STANDARDIZED_TRACKS, PARSING_ERROR_TRACKS, \
     NMER_CHAINS, TRACKS_NO_OVERLAPS, TRACKS_WITH_OVERLAPS, removeGenomeData
-from quick.util.CommonFunctions import createDirPath, ensurePathExists
 from quick.util.GenomeInfo import GenomeInfo
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
@@ -20,6 +16,13 @@ class InstallGenomeTool(GeneralGuiTool):
     NON_UNIQUE_CHROMOSOME_NAME_TEXT="NON_UNIQUE_NAME_NUMBER"
 
     TRACK_FOLDERS = [STANDARDIZED_TRACKS, PARSING_ERROR_TRACKS, NMER_CHAINS, TRACKS_NO_OVERLAPS, TRACKS_WITH_OVERLAPS]
+
+    NO = 'No'
+    YES = 'Yes'
+    ALL = 'All'
+    FROM_CHROMOSOME_LIST = 'From chromosome list'
+    FROM_SELECTION = 'From selection'
+    ALL_PREV_SELECTED = 'All previously selected'
     
     @staticmethod
     def getToolName():
@@ -29,10 +32,10 @@ class InstallGenomeTool(GeneralGuiTool):
     def getInputBoxNames():
         "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
         return [('Select genome from history', 'selectGenome'), #1
-                ('Display editable chromosome names?', 'displayChrNames'), #2
+                ('Edit chromosome names?', 'editChrNames'), #2
                 ('Chromosome names found in fasta file(s)', 'chrNamesFound'), #3
                 ('Edit all chromosome names using regular expression?', 'editChrNamesWithRegExp'), #4
-                ('Regular expression used to filter chromosome names', 'regExp'), #5
+                ('Regular expression used to edit chromosome names', 'regExp'), #5
                 ('Chromosome name prefix', 'chrNamePrefix'), #6
                 ('Chromosome name delimeter', 'chrNameDelimiter'), #7
                 ('Chromosome name suffix', 'chrNameSuffix'),#8
@@ -44,78 +47,81 @@ class InstallGenomeTool(GeneralGuiTool):
                 ('Select standard chromosomes (delete the ones to not use)', 'standardChrsList')#14
                  ]
 
-    @staticmethod    
+    @staticmethod
     def getOptionsBoxSelectGenome():
         "Returns a list of options to be displayed in the first options box"
         return '__history__', 'hbgenome'
 
     
-    @staticmethod    
-    def getOptionsBoxDisplayChrNames(prevChoices):
-        return ['Hide', 'Show']
+    @classmethod
+    def getOptionsBoxEditChrNames(cls, prevChoices):
+        return [cls.NO, cls.YES]
     
-    @staticmethod    
-    def getOptionsBoxChrNamesFound(prevChoices):
+    @classmethod
+    def getOptionsBoxChrNamesFound(cls, prevChoices):
         '''Returns a list of options to be displayed in the second options box, which will be displayed after a selection is made in the first box.
         prevChoices is a list of selections made by the web-user in the previous input boxes (that is, list containing only one element for this case)
         '''
-        if prevChoices.selectGenome is not None and prevChoices.displayChrNames == 'Show':
+        if prevChoices.selectGenome is not None and prevChoices.editChrNames == cls.YES:
             tempChrs = InstallGenomeTool._getTempChromosomeNames(prevChoices.selectGenome)
             return tempChrs, len(tempChrs.split(os.linesep))
         return None
     
-    @staticmethod    
-    def getOptionsBoxEditChrNamesWithRegExp(prevChoices):
-        return ['Keep as they are', 'Edit using regular expression']
+    @classmethod
+    def getOptionsBoxEditChrNamesWithRegExp(cls, prevChoices):
+        if prevChoices.selectGenome is not None:
+            return [cls.NO, cls.YES]
         
-    @staticmethod    
-    def getOptionsBoxRegExp(prevChoices):
-        return '.*' if prevChoices.editChrNamesWithRegExp == 'Edit using regular expression' else None
+    @classmethod
+    def getOptionsBoxRegExp(cls, prevChoices):
+        return '.*' if prevChoices.editChrNamesWithRegExp == cls.YES else None
     
-    @staticmethod    
-    def getOptionsBoxChrNamePrefix(prevChoices):
-        return '' if prevChoices.editChrNamesWithRegExp == 'Edit using regular expression' else None
+    @classmethod
+    def getOptionsBoxChrNamePrefix(cls, prevChoices):
+        return '' if prevChoices.editChrNamesWithRegExp == cls.YES else None
     
-    @staticmethod    
-    def getOptionsBoxChrNameDelimiter(prevChoices):
-        return '_' if prevChoices.editChrNamesWithRegExp == 'Edit using regular expression' else None
+    @classmethod
+    def getOptionsBoxChrNameDelimiter(cls, prevChoices):
+        return '_' if prevChoices.editChrNamesWithRegExp == cls.YES else None
     
-    @staticmethod    
-    def getOptionsBoxChrNameSuffix(prevChoices):
-        return '' if prevChoices.editChrNamesWithRegExp == 'Edit using regular expression' else None
+    @classmethod
+    def getOptionsBoxChrNameSuffix(cls, prevChoices):
+        return '' if prevChoices.editChrNamesWithRegExp == cls.YES else None
     
-    @staticmethod    
-    def getOptionsBoxChrSelectionType(prevChoices):
-        return ['All', 'From selection', 'From chromosome list']
+    @classmethod
+    def getOptionsBoxChrSelectionType(cls, prevChoices):
+        if prevChoices.selectGenome is not None:
+            return [cls.ALL, cls.FROM_SELECTION, cls.FROM_CHROMOSOME_LIST]
 
-    @staticmethod    
-    def getOptionsBoxAllChrs(prevChoices):
-        if prevChoices.chrSelectionType == 'From selection':
+    @classmethod
+    def getOptionsBoxAllChrs(cls, prevChoices):
+        if prevChoices.chrSelectionType == cls.FROM_SELECTION:
             return InstallGenomeTool._getRenamedChrDict(prevChoices)
-            
-    @staticmethod    
-    def getOptionsBoxChrList(prevChoices):
-        if prevChoices.chrSelectionType == 'From chromosome list':
+
+    @classmethod
+    def getOptionsBoxChrList(cls, prevChoices):
+        if prevChoices.chrSelectionType == cls.FROM_CHROMOSOME_LIST:
             chrDict = InstallGenomeTool._getRenamedChrDict(prevChoices)
             return os.linesep.join(chrDict.keys()), len(chrDict), False
     
-    @staticmethod
-    def getOptionsBoxStandardChrs(prevChoices):
-        return ['All previously selected', 'From selection', 'From chromosome list']
+    @classmethod
+    def getOptionsBoxStandardChrs(cls, prevChoices):
+        if prevChoices.selectGenome is not None:
+            return [cls.ALL_PREV_SELECTED, cls.FROM_SELECTION, cls.FROM_CHROMOSOME_LIST]
     
-    @staticmethod    
-    def getOptionsBoxStandardChrsSelection(prevChoices):
-        if prevChoices.standardChrs == 'From selection':
+    @classmethod
+    def getOptionsBoxStandardChrsSelection(cls, prevChoices):
+        if prevChoices.standardChrs == cls.FROM_SELECTION:
             return InstallGenomeTool._getRenamedChrDictWithSelection(prevChoices, resetSelected=True, deleteUnselected=True)
             
-    @staticmethod    
-    def getOptionsBoxStandardChrsList(prevChoices):
-        if prevChoices.standardChrs == 'From chromosome list':
+    @classmethod
+    def getOptionsBoxStandardChrsList(cls, prevChoices):
+        if prevChoices.standardChrs == cls.FROM_CHROMOSOME_LIST:
             chrDict = InstallGenomeTool._getRenamedChrDictWithSelection(prevChoices, resetSelected=True, deleteUnselected=True)
             return os.linesep.join(chrDict.keys()), len(chrDict), False
 
-    @staticmethod
-    def _getRenamedChrDictWithSelection(choices, resetSelected=False, deleteUnselected=False,
+    @classmethod
+    def _getRenamedChrDictWithSelection(cls, choices, resetSelected=False, deleteUnselected=False,
             stdChrs=False):
         if stdChrs:
             chrDict = copy(
@@ -133,10 +139,10 @@ class InstallGenomeTool(GeneralGuiTool):
             chrFromSelectionIndex = 9
             chrFromListIndex = 10
 
-        if choices[typeOfSelectionIndex] == 'From selection':
+        if choices[typeOfSelectionIndex] == cls.FROM_SELECTION:
             retDict = copy(choices[chrFromSelectionIndex])
 
-        elif choices[typeOfSelectionIndex] == 'From chromosome list':
+        elif choices[typeOfSelectionIndex] == cls.FROM_CHROMOSOME_LIST:
             selectedChrs = set(
                 [x.strip() for x in choices[chrFromListIndex].strip().split(os.linesep)])
             for key in chrDict:
@@ -157,18 +163,18 @@ class InstallGenomeTool(GeneralGuiTool):
 
         return retDict
 
-    @staticmethod
-    def _getRenamedChrDict(prevChoices):
+    @classmethod
+    def _getRenamedChrDict(cls, prevChoices):
         chrDict = OrderedDict()
         chrList = []
 
-        if prevChoices.selectGenome and prevChoices.displayChrNames == 'Hide':
+        if prevChoices.selectGenome and prevChoices.editChrNames == cls.NO:
             chrText = InstallGenomeTool._getTempChromosomeNames(prevChoices.selectGenome)
         else:
             chrText = prevChoices.chrNamesFound
 
         if chrText:
-            if prevChoices.editChrNamesWithRegExp == 'Keep as they are':
+            if prevChoices.editChrNamesWithRegExp == cls.NO:
                 chrList = [x.strip() for x in chrText.split(os.linesep)]
             else:
                 prefix = prevChoices.chrNamePrefix
@@ -233,15 +239,15 @@ class InstallGenomeTool(GeneralGuiTool):
     #    return ['testChoice1','..']
 
     @classmethod
-    def getChosenGenome(self, prevChoices):
+    def getChosenGenome(cls, prevChoices):
         uploadedGenomeHist = ExternalTrackManager.extractFnFromGalaxyTN(prevChoices[0].split(":"))
         genomeName = GenomeImporter.getGenomeAbbrv(uploadedGenomeHist)
         gi = GenomeInfo(genomeName)
 
         return gi
     
-    @staticmethod
-    def validateAndReturnErrors(choices):
+    @classmethod
+    def validateAndReturnErrors(cls, choices):
         if choices.selectGenome is None:
             return ''
 
@@ -251,13 +257,13 @@ class InstallGenomeTool(GeneralGuiTool):
 
         numOrigChrs = len(InstallGenomeTool._getTempChromosomeNames(choices.selectGenome).split(os.linesep))
         
-        if choices.displayChrNames == 'Show':
+        if choices.editChrNames == cls.YES:
             numRenamedChrs = len(choices.chrNamesFound.split(os.linesep))
             if numRenamedChrs != numOrigChrs:
                 return  'The number of renamed chromosomes is not equal to the original count of '\
                         'chromosomes: %i != %i' % (numRenamedChrs, numOrigChrs)
         
-        if choices.editChrNamesWithRegExp == 'Edit using regular expression':
+        if choices.editChrNamesWithRegExp == cls.YES:
             try:
                 import re
                 pattern = re.compile(choices.regExp.strip())
@@ -267,7 +273,7 @@ class InstallGenomeTool(GeneralGuiTool):
         chrDict = InstallGenomeTool._getRenamedChrDict(choices)
 
         for typeOfSelectionIndex in [8, 11]:
-            if choices[typeOfSelectionIndex] == 'From chromosome list':
+            if choices[typeOfSelectionIndex] == cls.FROM_CHROMOSOME_LIST:
                 for selectedChr in choices[typeOfSelectionIndex+2].strip().split(os.linesep):
                     selectedChr = selectedChr.strip()
                     if selectedChr not in chrDict:
@@ -371,10 +377,3 @@ class InstallGenomeTool(GeneralGuiTool):
                          'The unchecked will be treated as "extended" and not usually included in tests '\
                          'in the HyperBrowser.'])
         return str(core)
-    #@staticmethod
-    #def getToolIllustration():
-    #    return None
-    #
-    #@staticmethod
-    #def isDebugMode():
-    #    return True
