@@ -1,3 +1,4 @@
+import ast
 import os
 from collections import OrderedDict
 from copy import copy
@@ -13,7 +14,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 class InstallGenomeTool(GeneralGuiTool):
     
-    NON_UNIQUE_CHROMOSOME_NAME_TEXT="NON_UNIQUE_NAME_NUMBER"
+    NON_UNIQUE_CHROMOSOME_NAME_TEXT= "NON_UNIQUE_NAME_NUMBER"
 
     TRACK_FOLDERS = [STANDARDIZED_TRACKS, PARSING_ERROR_TRACKS, NMER_CHAINS, TRACKS_NO_OVERLAPS, TRACKS_WITH_OVERLAPS]
 
@@ -32,6 +33,7 @@ class InstallGenomeTool(GeneralGuiTool):
     def getInputBoxNames():
         "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
         return [('Select genome from history', 'selectGenome'), #1
+                ('', 'tempChrNames'),
                 ('Edit chromosome names?', 'editChrNames'), #2
                 ('Chromosome names found in fasta file(s)', 'chrNamesFound'), #3
                 ('Edit all chromosome names using regular expression?', 'editChrNamesWithRegExp'), #4
@@ -40,6 +42,7 @@ class InstallGenomeTool(GeneralGuiTool):
                 ('Chromosome name delimeter', 'chrNameDelimiter'), #7
                 ('Chromosome name suffix', 'chrNameSuffix'),#8
                 ('Use which chromosomes?', 'chrSelectionType'),#9
+                ('', 'renamedChrs'),
                 ('Select chromosomes', 'allChrs'), #10
                 ('Select chromosomes (delete the ones to not use)', 'chrList'),#11
                 ('Use which chromosomes as standard chromosomes (i.e. should always be displayed)?', 'standardChrs'),#12
@@ -52,19 +55,25 @@ class InstallGenomeTool(GeneralGuiTool):
         "Returns a list of options to be displayed in the first options box"
         return '__history__', 'hbgenome'
 
+    @classmethod
+    def getOptionsBoxTempChrNames(cls, prevChoices):
+        if prevChoices.selectGenome is not None:
+            tempInfoFile = ExternalTrackManager.extractFnFromGalaxyTN(prevChoices.selectGenome)
+            tempChrNames = GenomeImporter.getChromosomeNames(tempInfoFile)
+
+            return '__hidden__', tempChrNames
     
     @classmethod
     def getOptionsBoxEditChrNames(cls, prevChoices):
-        return [cls.NO, cls.YES]
+        if prevChoices.selectGenome is not None:
+            return [cls.NO, cls.YES]
     
     @classmethod
     def getOptionsBoxChrNamesFound(cls, prevChoices):
-        '''Returns a list of options to be displayed in the second options box, which will be displayed after a selection is made in the first box.
-        prevChoices is a list of selections made by the web-user in the previous input boxes (that is, list containing only one element for this case)
-        '''
         if prevChoices.selectGenome is not None and prevChoices.editChrNames == cls.YES:
-            tempChrs = InstallGenomeTool._getTempChromosomeNames(prevChoices.selectGenome)
-            return tempChrs, len(tempChrs.split(os.linesep))
+            tempChrsList = cls._getTempChromosomeNamesList(prevChoices)
+            tempChrs = os.linesep.join(tempChrsList)
+            return tempChrs, len(tempChrsList)
         return None
     
     @classmethod
@@ -87,6 +96,13 @@ class InstallGenomeTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxChrNameSuffix(cls, prevChoices):
         return '' if prevChoices.editChrNamesWithRegExp == cls.YES else None
+
+    @classmethod
+    def getOptionsBoxRenamedChrs(cls, prevChoices):
+        if prevChoices.selectGenome is not None:
+            renamedChrs = cls._getRenamedChrList(prevChoices)
+
+            return '__hidden__', renamedChrs
     
     @classmethod
     def getOptionsBoxChrSelectionType(cls, prevChoices):
@@ -96,13 +112,15 @@ class InstallGenomeTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxAllChrs(cls, prevChoices):
         if prevChoices.chrSelectionType == cls.FROM_SELECTION:
-            return InstallGenomeTool._getRenamedChrDict(prevChoices)
+            chrList = cls._getRenamedChrListFromCache(prevChoices)
+
+            return {chrName: True for chrName in chrList}
 
     @classmethod
     def getOptionsBoxChrList(cls, prevChoices):
         if prevChoices.chrSelectionType == cls.FROM_CHROMOSOME_LIST:
-            chrDict = InstallGenomeTool._getRenamedChrDict(prevChoices)
-            return os.linesep.join(chrDict.keys()), len(chrDict), False
+            chrList = cls._getRenamedChrListFromCache(prevChoices)
+            return os.linesep.join(chrList), len(chrList), False
     
     @classmethod
     def getOptionsBoxStandardChrs(cls, prevChoices):
@@ -112,12 +130,12 @@ class InstallGenomeTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxStandardChrsSelection(cls, prevChoices):
         if prevChoices.standardChrs == cls.FROM_SELECTION:
-            return InstallGenomeTool._getRenamedChrDictWithSelection(prevChoices, resetSelected=True, deleteUnselected=True)
+            return cls._getRenamedChrDictWithSelection(prevChoices, resetSelected=True, deleteUnselected=True)
             
     @classmethod
     def getOptionsBoxStandardChrsList(cls, prevChoices):
         if prevChoices.standardChrs == cls.FROM_CHROMOSOME_LIST:
-            chrDict = InstallGenomeTool._getRenamedChrDictWithSelection(prevChoices, resetSelected=True, deleteUnselected=True)
+            chrDict = cls._getRenamedChrDictWithSelection(prevChoices, resetSelected=True, deleteUnselected=True)
             return os.linesep.join(chrDict.keys()), len(chrDict), False
 
     @classmethod
@@ -125,15 +143,13 @@ class InstallGenomeTool(GeneralGuiTool):
             stdChrs=False):
         if stdChrs:
             chrDict = copy(
-                InstallGenomeTool._getRenamedChrDictWithSelection(choices, stdChrs=False))
+                cls._getRenamedChrDictWithSelection(choices, stdChrs=False))
 
             typeOfSelectionIndex = 11
             chrFromSelectionIndex = 12
             chrFromListIndex = 13
         else:
-            chrDict = copy(InstallGenomeTool._getRenamedChrDict(choices))
-            for key in chrDict:
-                chrDict[key] = True
+            chrDict = {chrName: True for chrName in cls._getRenamedChrListFromCache(choices)}
 
             typeOfSelectionIndex = 8
             chrFromSelectionIndex = 9
@@ -164,18 +180,17 @@ class InstallGenomeTool(GeneralGuiTool):
         return retDict
 
     @classmethod
-    def _getRenamedChrDict(cls, prevChoices):
-        chrDict = OrderedDict()
-        chrList = []
+    def _getRenamedChrList(cls, prevChoices):
+        chrResultList = []
 
-        if prevChoices.selectGenome and prevChoices.editChrNames == cls.NO:
-            chrText = InstallGenomeTool._getTempChromosomeNames(prevChoices.selectGenome)
+        if prevChoices.editChrNames == cls.NO:
+            chrNamesList = cls._getTempChromosomeNamesList(prevChoices)
         else:
-            chrText = prevChoices.chrNamesFound
+            chrNamesList = [ch.strip() for ch in prevChoices.chrNamesFound.split(os.linesep)]
 
-        if chrText:
+        if chrNamesList:
             if prevChoices.editChrNamesWithRegExp == cls.NO:
-                chrList = [x.strip() for x in chrText.split(os.linesep)]
+                chrResultList = copy(chrNamesList)
             else:
                 prefix = prevChoices.chrNamePrefix
                 delimeter = prevChoices.chrNameDelimiter
@@ -184,13 +199,11 @@ class InstallGenomeTool(GeneralGuiTool):
                 try:
                     pattern = re.compile(prevChoices.regExp.strip())
                 except:
-                    return OrderedDict()
+                    return []
 
-                for line in chrText.split(os.linesep):
-                    line = line.strip()
-
+                for ch in chrNamesList:
                     if prevChoices.regExp.strip() != '.*':
-                        match = pattern.search(line)
+                        match = pattern.search(ch)
                         if match is not None:
                             groupdict = match.groupdict()
                             if len(groupdict) > 0:
@@ -204,39 +217,35 @@ class InstallGenomeTool(GeneralGuiTool):
                                 else:
                                     renamedChr = delimeter.join(groups)
 
-                            chrList.append(prefix + renamedChr + suffix)
-                            continue
-
-                    chrList.append(prefix + line + suffix)
+                            chrResultList.append(prefix + renamedChr + suffix)
+                    else:
+                        chrResultList.append(prefix + ch + suffix)
 
             countDict = {}
-            for chrName in chrList:
-                if chrName in chrDict:
-                    countDict[chrName] = countDict[chrName] + 1 if chrName in countDict else 1
-                    chrDict["%s_%s_%d" % (
-                    chrName, InstallGenomeTool.NON_UNIQUE_CHROMOSOME_NAME_TEXT,
-                    countDict[chrName])] = False
-                else:
-                    chrDict[chrName] = False
-        return chrDict
+            # for chrName in chrResultList:
+            #     if chrName in chrDict:
+            #         countDict[chrName] = countDict[chrName] + 1 if chrName in countDict else 1
+            #         chrDict["%s_%s_%d" % (chrName, cls.NON_UNIQUE_CHROMOSOME_NAME_TEXT,
+            #         countDict[chrName])] = False
+            #     else:
+            #         chrDict[chrName] = False
+        return chrResultList
 
-    @staticmethod
-    def _getTempChromosomeNames(galaxyTn):
-        if isinstance(galaxyTn, basestring):
-            galaxyTn = galaxyTn.split(":")
-        tempinfofile=ExternalTrackManager.extractFnFromGalaxyTN(galaxyTn)
-        #abbrv=GenomeImporter.getGenomeAbbrv(tempinfofile)
-        #return os.linesep.join(GenomeInfo(abbrv).sourceChrNames)
-        return os.linesep.join(GenomeImporter.getChromosomeNames(tempinfofile))
-    
+    @classmethod
+    def _getRenamedChrListFromCache(cls, prevChoices):
+        return prevChoices.renamedChrs
+
+    @classmethod
+    def _getTempChromosomeNamesList(cls, prevChoices):
+        chrNames = prevChoices.tempChrNames
+        if isinstance(chrNames, unicode):
+            chrNames = ast.literal_eval(chrNames)
+
+        return chrNames
     
     @staticmethod
     def getResetBoxes():
-        return [1, 9]
-    
-    #@staticmethod
-    #def getDemoSelections():
-    #    return ['testChoice1','..']
+        return ['selectGenome']
 
     @classmethod
     def getChosenGenome(cls, prevChoices):
@@ -251,11 +260,11 @@ class InstallGenomeTool(GeneralGuiTool):
         if choices.selectGenome is None:
             return ''
 
-        chosenGenome = InstallGenomeTool.getChosenGenome(choices)
+        chosenGenome = cls.getChosenGenome(choices)
         if chosenGenome.isInstalled():
             return 'Genome ' + chosenGenome.genome + ' is already installed. Please remove it before trying to install it again.'
 
-        numOrigChrs = len(InstallGenomeTool._getTempChromosomeNames(choices.selectGenome).split(os.linesep))
+        numOrigChrs = len(cls._getTempChromosomeNamesList(choices))
         
         if choices.editChrNames == cls.YES:
             numRenamedChrs = len(choices.chrNamesFound.split(os.linesep))
@@ -270,13 +279,13 @@ class InstallGenomeTool(GeneralGuiTool):
             except Exception, e:
                 return 'Error in regular expression: ', e
         
-        chrDict = InstallGenomeTool._getRenamedChrDict(choices)
+        chrList = cls._getRenamedChrListFromCache(choices)
 
         for typeOfSelectionIndex in [8, 11]:
             if choices[typeOfSelectionIndex] == cls.FROM_CHROMOSOME_LIST:
                 for selectedChr in choices[typeOfSelectionIndex+2].strip().split(os.linesep):
                     selectedChr = selectedChr.strip()
-                    if selectedChr not in chrDict:
+                    if selectedChr not in chrList:
                         return 'Chromosome "%s" is not a valid chromosome name. '\
                                'It is not allowed to edit the names in the chromosome selection list. '\
                                'This error may also arise from renaming the chromosome name '\
@@ -284,14 +293,14 @@ class InstallGenomeTool(GeneralGuiTool):
                                'chromosome selection list by selecting "All" and then "From chromosome list" '\
                                'in the appropriate selection box.' % selectedChr
                         
-        selChrDict = InstallGenomeTool._getRenamedChrDictWithSelection(choices)
+        selChrDict = cls._getRenamedChrDictWithSelection(choices)
         
-        selectedChromNames =  [chrom.split('_' + InstallGenomeTool.NON_UNIQUE_CHROMOSOME_NAME_TEXT)[0] for chrom, selected in selChrDict.iteritems() if selected]
-        if len(set(selectedChromNames)) != len(selectedChromNames):
-            return '%d of the selected chromosome names are not unique. Please rename them.' \
-                % (len(selectedChromNames) - len(set(selectedChromNames)))
+        # selectedChromNames =  [chrom.split('_' + cls.NON_UNIQUE_CHROMOSOME_NAME_TEXT)[0] for chrom, selected in selChrDict.iteritems() if selected]
+        # if len(set(selectedChromNames)) != len(selectedChromNames):
+        #     return '%d of the selected chromosome names are not unique. Please rename them.' \
+        #         % (len(selectedChromNames) - len(set(selectedChromNames)))
         
-        stdChrDict = InstallGenomeTool._getRenamedChrDictWithSelection(choices, stdChrs=True)
+        stdChrDict = cls._getRenamedChrDictWithSelection(choices, stdChrs=True)
         
         numStdChr = len([x for x in stdChrDict if stdChrDict[x]])
         if numStdChr == 0:
@@ -299,7 +308,7 @@ class InstallGenomeTool(GeneralGuiTool):
         
         valid_chars =''.join([chr(i) for i in range(33, 127) if i not in [46, 47, 92]])
         
-        allUsedChrs = [chrom[0] for chrom in chrDict.iteritems() if chrom[-1]]
+        allUsedChrs = [chrom for chrom in chrList if chrom[-1]]
         for curChr in allUsedChrs:
             illegalchars = ''.join(c for c in curChr if c not in valid_chars)
             if len(illegalchars)>0:
@@ -324,7 +333,7 @@ class InstallGenomeTool(GeneralGuiTool):
             removeGenomeData(abbrv, folder, removeFromShelve=False)
 
         #chrNamesInFasta=gi.sourceChrNames
-        chrNamesInFasta = cls._getTempChromosomeNames(choices[0]).split(os.linesep)
+        chrNamesInFasta = cls._getTempChromosomeNamesList(choices)
         
         chromNamesDict={}
         chrDict = cls._getRenamedChrDictWithSelection(choices)
