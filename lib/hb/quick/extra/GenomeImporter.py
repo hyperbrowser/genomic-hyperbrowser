@@ -147,7 +147,7 @@ class GenomeImporter:
 
 
     @classmethod
-    def createGenome(cls, genome, fullName, chromNamesDict, standardChromosomes, username=''):
+    def createGenome(cls, genome, chromNamesDict, standardChromosomes):
         basePath = cls.getBasePathSequence(genome)
         trackName=GenomeInfo.getSequenceTrackName(genome)
         print "Splitting genome file into chromosomes."

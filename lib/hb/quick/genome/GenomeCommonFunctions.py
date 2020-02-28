@@ -1,6 +1,7 @@
 import os
 import shutil
 from collections import OrderedDict
+from datetime import datetime
 
 from config.Config import NONSTANDARD_DATA_PATH, ORIG_DATA_PATH, PARSING_ERROR_DATA_PATH, \
     NMER_CHAIN_DATA_PATH
@@ -76,3 +77,12 @@ def downloadGenomeGffFileFromUrls(gi, urls):
             GenomeImporter.downloadGffFile(gi.genome, url)
         except InvalidFormatError:
             return
+
+
+def installGenome(abbrv, renamedChrsDict, selectedStandardChrs, username):
+    gi = GenomeInfo(abbrv)
+    GenomeImporter.createGenome(abbrv, renamedChrsDict, selectedStandardChrs)
+
+    gi.installedBy = username
+    gi.timeOfInstallation = datetime.now()
+    gi.store()
