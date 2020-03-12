@@ -9,7 +9,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 class UniversalConverterTool(GeneralGuiTool):
     @staticmethod
     def getToolName():
-        return "Convert between GTrack/BED/WIG/bedGraph/GFF/FASTA files"
+        return "Convert between GTrack/BED/WIG/bedGraph/GFF/FASTA/BigBed files"
 
     @staticmethod
     def getInputBoxNames():
@@ -31,7 +31,7 @@ class UniversalConverterTool(GeneralGuiTool):
     def getOptionsBoxHistory(prevChoices):
         return '__history__', 'gtrack', 'bed', 'point.bed', 'category.bed', \
                               'valued.bed', 'wig', 'targetcontrol.bedgraph', \
-                              'bedgraph', 'gff', 'gff3', 'fasta'
+                              'bedgraph', 'gff', 'gff3', 'fasta', 'bigbed'
         
     @staticmethod
     def getOptionsBoxConversion(prevChoices):
@@ -133,6 +133,9 @@ class UniversalConverterTool(GeneralGuiTool):
                                             'http://www.sequenceontology.org/gff3.shtml')), emphasize=True)
         core.descriptionLine('FASTA', str(HtmlCore().link('FASTA specification', \
                                             'http://www.ncbi.nlm.nih.gov/BLAST/blastcgihelp.shtml')), emphasize=True)
+        core.descriptionLine('BigBed', str(HtmlCore().link('BigBed specification', \
+                                                             'https://genome.ucsc.edu/goldenPath/help/bigBed.html')),
+                             emphasize=True)
         core.paragraph('The input data type is defined by the format field of the history element of the data. '
                        'The available conversions for the selected format are automatically '
                        'shown in the conversion selection box')

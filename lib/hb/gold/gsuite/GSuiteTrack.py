@@ -200,7 +200,7 @@ class GSuiteTrack(object):
                 fileFormat = PREPROCESSED
             else:
                 raise
-
+        
         self._fileFormat = fileFormat
 
     @property
@@ -232,7 +232,7 @@ class GSuiteTrack(object):
     @attributes.setter
     def attributes(self, attributes):
         self._attributes = OrderedDict()
-
+        
         for key, val in attributes.iteritems():
             if val is not None:
                 if val == '':
