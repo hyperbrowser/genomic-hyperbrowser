@@ -12,7 +12,7 @@ log = logging.getLogger( __name__ )
 
 
 class TrackFindModule(object):
-    URL = 'http://trackfind-dev.gtrack.no/api/v1'
+    URL = 'http://trackfind.elixir.no/api/v1'
 
     STANDARD_CATEGORIES = 'experiments,studies,samples,tracks'
 
