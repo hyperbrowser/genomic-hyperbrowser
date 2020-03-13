@@ -110,7 +110,9 @@ class ProtoController( BaseUIController ):
         if isinstance(mako, list):
             mako = mako[0]
 
-        timeout = 30
+        # timeout increased from 30s to 60s for the TrackFind client
+        #TODO remove this in CR
+        timeout = 60
         retry = 3
         while retry > 0:
             retry -= 1
