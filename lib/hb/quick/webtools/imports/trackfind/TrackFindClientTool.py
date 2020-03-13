@@ -758,7 +758,7 @@ class TrackFindClientTool(GeneralGuiTool):
 
         core = HtmlCore()
         core.paragraph(
-            'This tool is a client for the ' + trackFindLink + 'service. After selecting a '
+            'This tool is a client for the ' + trackFindLink + ' service. After selecting a '
             'repository of genomic tracks, it is possible to select one or several attributes. '
             'The hierarchy of the attributes follows the hierarchy of the data according to the '
             'FAIRtracks standard. It is possible to select one or several values for each '
