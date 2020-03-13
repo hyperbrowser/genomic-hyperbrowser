@@ -93,7 +93,7 @@ class TrackFindClientTool(GeneralGuiTool):
             attrBoxes.append(('Select value:', 'valueCheckbox%s' % i))
         attrBoxes.append(('', 'gsuite'))
         attrBoxes.append(('', 'gsuiteHash'))
-        attrBoxes.append(('Select type of data', 'dataTypes'))
+        attrBoxes.append(('Select type of condensed data', 'dataTypes'))
         attrBoxes.append(('Select tracks', 'selectTracks'))
         attrBoxes.append(('Select tracks manually', 'selectTracksManually'))
         attrBoxes.append(('', 'selectRandomTracks'))
@@ -751,18 +751,27 @@ class TrackFindClientTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: ''
         """
 
-        core = HtmlCore()
-        core.paragraph('This tool is a client for the <a href="https://trackfind.elixir.no/">TrackFind</a> service. '
-                       'After selecting a repository of genomic tracks, it is possible to select one or several attributes. '
-                       'The hierarchy of the attributes follows the hierarchy of the data according to the FairTracks standard. '
-                       'It is possible to select one or several values for each attribute.')
+        trackFindLink = str(HtmlCore().link('TrackFind', 'https://trackfind.elixir.no',
+                                            popup=True))
+        fairTracksLink = str(HtmlCore().link('FAIRtracks', 'https://fairtracks.github.io',
+                                             popup=True))
 
-        core.paragraph('After at least one value is selected, the tool shows a table with tracks that match the selected criteria. '
-                       'As more attributes and values are selected, the list of tracks is getting more filtered. '
-                       'When the list of tracks is suitable, the tracks can be exported by clicking on the "Execute" button. '
-                       'The tracks will then be exported as GSuite. ')
+        core = HtmlCore()
+        core.paragraph(
+            'This tool is a client for the ' + trackFindLink + 'service. After selecting a '
+            'repository of genomic tracks, it is possible to select one or several attributes. '
+            'The hierarchy of the attributes follows the hierarchy of the data according to the '
+            'FAIRtracks standard. It is possible to select one or several values for each '
+            'attribute.')
+        core.paragraph(
+            'After at least one value is selected, the tool shows a table with tracks that match '
+            'the selected criteria. As more attributes and values are selected, the list of '
+            'tracks will be increasingly more filtered. When the list of tracks is suitable, the '
+            'tracks can be exported by clicking on the "Execute" button. The tracks will then be '
+            'exported as GSuite file. ')
         core.divider()
-        core.paragraph('More information about the FairTracks standard can be found here: <a href="https://fairtracks.github.io/">FairTracks</a>')
+        core.paragraph('More information about the FAIRtracks standard can be found here: '
+                       + fairTracksLink)
 
         return str(core)
 
