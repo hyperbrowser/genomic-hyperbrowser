@@ -278,6 +278,9 @@ class TrackFindClientTool(GeneralGuiTool):
         if not prevChoices.gsuite:
             return
 
+        if not cls.isSelectionComplete(prevChoices):
+            return
+
         dataTypes = defaultdict(int)
         gsuite = cls.getGSuite(prevChoices)
 
@@ -297,6 +300,10 @@ class TrackFindClientTool(GeneralGuiTool):
     @classmethod
     def getOptionsBoxSelectTracks(cls, prevChoices):
         if not prevChoices.gsuite:
+            return
+
+        chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+        if not chosenDataTypes:
             return
 
         return [cls.ALL_TRACKS, cls.RANDOM_10_TRACKS, cls.RANDOM_50_TRACKS, cls.MANUAL_TRACK_SELECT]
@@ -434,8 +441,11 @@ class TrackFindClientTool(GeneralGuiTool):
         if not prevChoices.gsuite:
             return
 
-        return [cls.NO, cls.YES]
+        chosenDataTypes = cls.getChosenDataTypes(prevChoices)
+        if not chosenDataTypes:
+            return
 
+        return [cls.NO, cls.YES]
 
     @classmethod
     def getSubattributes(cls, prevChoices, level, index=None):
@@ -592,6 +602,23 @@ class TrackFindClientTool(GeneralGuiTool):
 
         return val
 
+    @classmethod
+    def isSelectionComplete(cls, choices):
+        lastLevel = 0
+        for level in range(cls.MAX_NUM_OF_LEVELS):
+            path = cls.getSubattributePath(choices, level, inQueryForm=False)
+            if not path:
+                lastLevel = level
+                break
+
+        if hasattr(choices, 'subAttributeList%s_%s' % (lastLevel, 0))\
+                and getattr(choices, 'subAttributeList%s_%s' % (lastLevel, 0)):
+            if getattr(choices, 'subAttributeList%s_%s' % (lastLevel, 0)) != cls.SELECT_CHOICE:
+                return False
+        else:
+            return False
+
+        return True
 
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
@@ -646,8 +673,6 @@ class TrackFindClientTool(GeneralGuiTool):
         chosenDataTypes = cls.getChosenDataTypes(choices)
         if not chosenDataTypes:
             return ''
-
-
 
     # @classmethod
     # def getSubToolClasses(cls):

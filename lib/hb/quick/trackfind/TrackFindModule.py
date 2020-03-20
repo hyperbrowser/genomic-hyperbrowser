@@ -103,8 +103,8 @@ class TrackFindModule(object):
 
         url = self.URL + '/search/' + repo + '/' + hub + '?query=' + query
 
-        if not includeExtraAttributes:
-            url += '&categories=' + urllib.quote(self.STANDARD_CATEGORIES)
+        # if not includeExtraAttributes:
+        #     url += '&categories=' + urllib.quote(self.STANDARD_CATEGORIES)
 
         response = requests.get(url, headers=headers)
 
