@@ -1,15 +1,16 @@
-from gold.origdata.GenomeElement import GenomeElement
-from quick.util.GenomeInfo import GenomeInfo
-from gold.util.CommonFunctions import getFileSuffix
-from gold.util.CommonConstants import BINARY_MISSING_VAL, RESERVED_PREFIXES
-from gold.util.CustomExceptions import NotSupportedError, InvalidFormatError, InvalidFormatWarning, Warning
-import os.path
 import os
-import sys
-from copy import copy
-from collections import OrderedDict
-from gold.application.LogSetup import logException
+import os.path
 from cStringIO import StringIO
+from copy import copy
+
+from gold.application.LogSetup import logException
+from gold.origdata.GenomeElement import GenomeElement
+from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonFunctions import getFileSuffix
+from gold.util.CustomExceptions import NotSupportedError, InvalidFormatError, InvalidFormatWarning, \
+    Warning
+from quick.util.GenomeInfo import GenomeInfo
+
 
 class BoundingRegionTuple:
     def __init__(self, region, elCount):
@@ -171,6 +172,9 @@ class GenomeElementSource(object):
 
     def _handleBlankLine(self):
         pass
+
+    def getHeaders(self):
+        return None
 
     def _readHeaders(self, file):
         self.headers = [file.readline() for i in xrange(self._numHeaderLines)]
@@ -348,19 +352,26 @@ def getAllGenomeElementSourceClasses(forPreProcessor):
     from gold.origdata.HBFunctionGenomeElementSource import HBFunctionGenomeElementSource
     from gold.origdata.BedGraphGenomeElementSource import BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource
     from gold.origdata.MicroarrayGenomeElementSource import MicroarrayGenomeElementSource
+    from gold.origdata.BigBedGenomeElementSource import BigBedGenomeElementSource
+    from gold.origdata.VcfGenomeElementSource import VcfGenomeElementSource
 
     allGESourceClasses = [PointBedGenomeElementSource, BedCategoryGenomeElementSource, BedValuedGenomeElementSource, \
                           BedGenomeElementSource, GffCategoryGenomeElementSource, GffGenomeElementSource, \
                           FastaGenomeElementSource, HBFunctionGenomeElementSource, \
-                          BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource, MicroarrayGenomeElementSource]
+                          BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource, MicroarrayGenomeElementSource,
+                          BigBedGenomeElementSource, VcfGenomeElementSource]
 
     if forPreProcessor:
         from gold.origdata.WigGenomeElementSource import HbWigGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import HbGzipGtrackGenomeElementSource, HbGtrackGenomeElementSource
-        allGESourceClasses += [HbWigGenomeElementSource, HbGzipGtrackGenomeElementSource, HbGtrackGenomeElementSource]
+        from gold.origdata.BigWigGenomeElementSource import BigWigGenomeElementSourceForPreproc
+        allGESourceClasses += [HbWigGenomeElementSource, HbGzipGtrackGenomeElementSource, HbGtrackGenomeElementSource,
+                               BigWigGenomeElementSourceForPreproc]
     else:
         from gold.origdata.WigGenomeElementSource import WigGenomeElementSource
         from gold.origdata.GtrackGenomeElementSource import GzipGtrackGenomeElementSource, GtrackGenomeElementSource
-        allGESourceClasses += [WigGenomeElementSource, GzipGtrackGenomeElementSource, GtrackGenomeElementSource]
+        from gold.origdata.BigWigGenomeElementSource import BigWigGenomeElementSource
+        allGESourceClasses += [WigGenomeElementSource, GzipGtrackGenomeElementSource, GtrackGenomeElementSource,
+                               BigWigGenomeElementSource]
 
     return allGESourceClasses

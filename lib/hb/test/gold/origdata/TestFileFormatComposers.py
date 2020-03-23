@@ -1,9 +1,12 @@
 import unittest
 from tempfile import NamedTemporaryFile
 
+from gold.origdata.BigBedComposer import BigBedComposer
+from gold.origdata.BigWigComposer import BigWigComposer
 from gold.origdata.GtrackComposer import StdGtrackComposer, ExtendedGtrackComposer
 from gold.origdata.BedComposer import BedComposer, PointBedComposer, CategoryBedComposer, ValuedBedComposer
 from gold.origdata.BedGraphComposer import BedGraphComposer
+from gold.origdata.VcfComposer import VcfComposer
 from gold.origdata.WigComposer import WigComposer
 from gold.origdata.GffComposer import GffComposer, CategoryGffComposer
 from gold.origdata.FastaComposer import FastaComposer
@@ -17,6 +20,7 @@ from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
 from test.util.Asserts import TestCaseWithImprovedAsserts
 
 PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
+
 
 class TestFileFormatComposers(TestWithGeSourceData, TestCaseWithImprovedAsserts):
     GENOME = 'TestGenome'
@@ -95,6 +99,28 @@ class TestFileFormatComposers(TestWithGeSourceData, TestCaseWithImprovedAsserts)
 
     def testFastaFromTrackComposer(self):
         self._commonTestComposer(withTrackGESource=True, composerCls=FastaComposer, suffix='fasta')
+
+    def testBigWigComposer(self):
+        self._commonTestComposer(withTrackGESource=False, composerCls=BigWigComposer,
+                                 suffix='bigwig')
+
+    def testBigWigFromTrackComposer(self):
+        self._commonTestComposer(withTrackGESource=True, composerCls=BigWigComposer,
+                                 suffix='bigwig')
+
+    def testBigBedComposer(self):
+        self._commonTestComposer(withTrackGESource=False, composerCls=BigBedComposer,
+                                 suffix='bigbed')
+
+    def testBigBedFromTrackComposer(self):
+        self._commonTestComposer(withTrackGESource=True, composerCls=BigBedComposer,
+                                 suffix='bigbed')
+
+    def testVcfComposer(self):
+        self._commonTestComposer(withTrackGESource=False, composerCls=VcfComposer, suffix='vcf')
+
+    def testVcfFromTrackComposer(self):
+        self._commonTestComposer(withTrackGESource=True, composerCls=VcfComposer, suffix='vcf')
 
     def _commonTestComposer(self, withTrackGESource, composerCls, suffix):
         geSourceTest = self._commonSetup()

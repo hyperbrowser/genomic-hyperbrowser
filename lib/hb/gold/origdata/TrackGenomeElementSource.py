@@ -1,15 +1,16 @@
+from collections import OrderedDict
 from copy import copy
 
+from gold.description.TrackInfo import TrackInfo
 from gold.origdata.GenomeElement import GenomeElement
 from gold.origdata.GenomeElementSource import BoundingRegionTuple, GenomeElementSource
-from gold.track.GenomeRegion import GenomeRegion
+from gold.origdata.HeaderShelve import HeaderShelve
+from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackSource import TrackSource
 from quick.util.GenomeInfo import GenomeInfo
-from gold.description.TrackInfo import TrackInfo
-from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
-from collections import OrderedDict
+
 
 class TrackGenomeElementSource(GenomeElementSource):
     FILE_FORMAT_NAME = 'Track'
@@ -46,6 +47,8 @@ class TrackGenomeElementSource(GenomeElementSource):
         self._fixedLength = None
         self._fixedGapSize = None
         self._reprIsDense = None
+        self._headers = None
+        self._initHeaders()
     
     def _calcFixedValues(self):
         if all(x is not None for x in [self._fixedLength, self._fixedGapSize]):
@@ -119,6 +122,11 @@ class TrackGenomeElementSource(GenomeElementSource):
         for region,tv in ((region, self._getTrackView(track, region)) for region in self._boundingRegions):
             for te in tv:
                 yield GenomeElement.createGeFromTrackEl(te, tv.trackFormat, globalCoords=self._globalCoords)
+
+    def _initHeaders(self):
+        headerShelve = HeaderShelve(self._genome, self._trackName, self._allowOverlaps)
+        if headerShelve.fileExists():
+            self._headers = headerShelve.getHeaders()
             
     def next(self):
         return self._generator.next()
@@ -239,6 +247,9 @@ class TrackGenomeElementSource(GenomeElementSource):
     def hasUndirectedEdges(self):
         self._findTrackInfoBasedMetaData()
         return self._undirectedEdges
+
+    def getHeaders(self):
+        return self._headers
 
 class FullTrackGenomeElementSource(TrackGenomeElementSource):
     def __init__(self, genome, trackName, allowOverlaps=False, *args, **kwArgs):

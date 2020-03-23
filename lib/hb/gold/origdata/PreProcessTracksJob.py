@@ -3,12 +3,12 @@
 import os
 import sys
 import traceback
-#import pyximport; pyximport.install()
 
 from gold.description.TrackInfo import TrackInfo
 from gold.origdata.ChrMemmapFolderMerger import ChrMemmapFolderMerger
 from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, RegionBasedGESourceManager
 from gold.origdata.GenomeElementSource import GenomeElementSource
+from gold.origdata.HeaderShelve import HeaderShelve
 from gold.origdata.PreProcessGeSourceJob import PreProcessGeSourceJob
 from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.origdata.PreProcessUtils import PreProcessUtils
@@ -79,6 +79,10 @@ class PreProcessTracksJob(object):
 
                             self._status = 'Trying to remove chromosome folders'
                             PreProcessUtils.removeChrMemmapFolders(self._genome, trackName, allowOverlaps)
+
+                        # Create header shelve
+                        headerShelve = HeaderShelve(self._genome, trackName, allowOverlaps)
+                        headerShelve.storeHeaders(collector.getHeaders())
 
                         self._status = 'Trying to check whether 3D data is correct'
                         PreProcessUtils.checkIfEdgeIdsExist(self._genome, trackName, allowOverlaps)

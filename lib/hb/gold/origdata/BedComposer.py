@@ -6,6 +6,7 @@ from gold.util.CustomExceptions import ShouldNotOccurError
 
 ColumnInfo = namedtuple('ColumnInfo', ['colIdx', 'defaultVal', 'checkExtra'])
 
+
 class BedComposer(FileFormatComposer):
     FILE_SUFFIXES = ['bed']
     FILE_FORMAT_NAME = 'BED'
@@ -51,13 +52,6 @@ class BedComposer(FileFormatComposer):
     # Compose methods
 
     def _compose(self, out):
-        trackName = self._geSource.getTrackName()
-        if trackName is not None:
-            name = ':'.join(self._geSource.getTrackName()).replace(' ','_')
-            trackLine =  'track' + ' name=' + name
-            trackLine += ''.join(" %s=%s" % (key, val) for key, val in self._extraTrackLineAttributes.iteritems())
-            print >>out, trackLine
-
         numCols = self._findNumCols()
         bedColumnsList = list(self._bedColumnsDict.iteritems())
 

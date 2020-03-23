@@ -1,6 +1,7 @@
 from gold.track.GenomeRegion import GenomeRegion
 from gold.util.CommonConstants import BINARY_MISSING_VAL
 from gold.util.CustomExceptions import NotSupportedError
+import numpy as np
 
 class GenomeElement(GenomeRegion):
     @staticmethod
@@ -82,22 +83,38 @@ class GenomeElement(GenomeRegion):
             object.__setattr__(self, item, value)
 
     def __str__(self):
-        #return self.toStr()
-
         #self.start+1 because we want to show 1-indexed, end inclusive output
-        return (str(self.chr) + ':' if not self.chr is None else '')\
-            + (str(self.start+1) if not self.start is None else '')\
-            + ('-' + str(self.end) if not self.end is None else '')\
-            + ((' (Pos)' if self.strand else ' (Neg)') if not self.strand in [None, BINARY_MISSING_VAL] else '')\
-            + ((' [' + str(self.val) + ']') if self.val is not None else '')
+        if isinstance(self.strand, np.ndarray):
+            return (str(self.chr) + ':' if self.chr is not None else '') \
+                   + (str(self.start + 1) if not self.start is None else '') \
+                   + ('-' + str(self.end) if not self.end is None else '') \
+                   + (' ' + (str(self.strand.astype(int))) if self.strand is not None else '') \
+                   + ((' [' + str(self.val) + ']') if self.val is not None else '')
+        else:
+            return (str(self.chr) + ':' if not self.chr is None else '') \
+                   + (str(self.start + 1) if not self.start is None else '') \
+                   + ('-' + str(self.end) if not self.end is None else '') \
+                   + ((' (Pos)' if self.strand else ' (Neg)') if not self.strand in [None,
+                                                                                     BINARY_MISSING_VAL] else '') \
+                   + ((' [' + str(self.val) + ']') if self.val is not None else '')
 
     def __repr__(self):
         return str(self)
 
     def toStr(self):
-        #self.start+1 because we want to show 1-indexed, end inclusive output
-        return (str(self.genome) + ':' if not self.genome is None else '')\
-            + (str(self.chr) + ':' if not self.chr is None else '')\
+        if isinstance(self.strand, np.ndarray):
+            return (str(self.chr) + ':' if self.chr is not None else '') \
+                   + (str(self.start + 1) if not self.start is None else '') \
+                   + ('-' + str(self.end) if not self.end is None else '') \
+                   + (' ' + (str(self.strand.astype(int))) if self.strand is not None else '') \
+                   + ((' [' + str(self.val) + ']') if self.val is not None else '') \
+                   + ((' id="%s"' % self.id) if self.id is not None else '') \
+                   + ((' edges="%s"' % str(self.edges)) if self.edges is not None else '') \
+                   + ((' weights="%s"' % str(self.weights)) if self.weights is not None else '') \
+                   + ((' extra="%s"' % str(self.extra)) if self.extra != {} else '')
+        else:
+            return (str(self.genome) + ':' if not self.genome is None else '') \
+                   + (str(self.chr) + ':' if not self.chr is None else '')\
             + (str(self.start+1) if not self.start is None else '')\
             + ('-' + str(self.end) if not self.end is None else '')\
             + ((' (Pos)' if self.strand else ' (Neg)') if not self.strand in [None, BINARY_MISSING_VAL] else '')\
