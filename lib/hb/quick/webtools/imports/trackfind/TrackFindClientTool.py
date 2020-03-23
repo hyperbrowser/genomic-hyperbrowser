@@ -672,7 +672,7 @@ class TrackFindClientTool(GeneralGuiTool):
         """
         chosenDataTypes = cls.getChosenDataTypes(choices)
         if not chosenDataTypes:
-            return ''
+            return 'Please complete attributes and values selection'
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -761,6 +761,7 @@ class TrackFindClientTool(GeneralGuiTool):
         """
 
         boxes = []
+        boxes.append('selectRepository')
         boxes.append('gsuiteHash')
         for i in xrange(cls.MAX_NUM_OF_LEVELS):
             boxes.append('textSearch%s' % i)
