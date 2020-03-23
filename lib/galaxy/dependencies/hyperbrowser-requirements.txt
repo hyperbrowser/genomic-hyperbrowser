@@ -23,6 +23,9 @@ progressbar>=2.3
 python_dateutil>=1.5
 asteval==0.9.8
 python-Levenshtein==0.12.0
+bx-python>=0.8.2
+pyBigWig>=0.3.13
+plastid>=0.4.8
 
 #Might be needed
 #pycairo>=1.8.10
