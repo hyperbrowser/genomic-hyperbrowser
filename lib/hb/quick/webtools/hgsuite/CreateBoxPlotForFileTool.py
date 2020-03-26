@@ -109,13 +109,23 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
 
         dataAll = OrderedDict()
 
-        categories = list(set(gSuite.getAttributeValueList(colNameAttributes)))
+        if colNameAttributes != cls.TITLE:
+            categories = list(set(gSuite.getAttributeValueList(colNameAttributes)))
+        else:
+            categories = []
+
         for i, iTrack in enumerate(gSuite.allTracks()):
 
-            attr = iTrack.getAttribute(colNameAttributes)
+            if colNameAttributes == cls.TITLE:
+                attr = iTrack.title
+                categories.append(attr)
+            else:
+                attr = iTrack.getAttribute(colNameAttributes)
+
             if not attr in dataAll.keys():
                 dataAll[attr] = []
             val = iTrack.getAttribute(selCol)
+
             try:
                 if val == 'nan' or val == None:
                     dataAll[attr].append(0)
@@ -123,6 +133,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
                     dataAll[attr].append(float(val))
             except:
                 pass
+
 
         return dataAll, categories
 
@@ -138,9 +149,6 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             for line in f:
                 l = line.strip('\n').split('\t')
                 if i == 0:
-                    # inxColName = l.index(k.encode('utf-8'))
-                    # allData[inxColName] = {}
-                    #categories.append(k.encode('utf-8'))
                     cna = l.index(colNameAttributes)
                     k = l.index(colName)
 
@@ -204,12 +212,14 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             for k, it in selCol.iteritems():
                 if it != False:
                     sc = k
-                    responseValue = choices.responseValue
+
+                    responseValue = choices.responseValue.encode('utf-8')
                     if suffixForFile == 'tabular':
                         dataAll, categories = cls.openFileWithCategories(selFile, sc, responseValue)
 
                     if suffixForFile == 'gsuite':
                         dataAll, categories = cls.openGSuiteFileWithCategories(selFile, sc, responseValue)
+
 
                     #outputFile = open(cls.makeHistElement(galaxyExt='customhtml', title=sc), 'w')
                     res += str(cls.printResultsForBoxPlot(sc, categories, choices, dataAll, galaxyFn, resValue))
@@ -230,8 +240,10 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
     def printResultsForBoxPlot(cls, selCol, categories, choices, dataAll, galaxyFn, resValue):
         dataForBoxPlot = []
         prettyResults = {}
-        i = 0
-        for data in dataAll.itervalues():
+
+        categoriesOrder = []
+
+        for k, data in dataAll.iteritems():
 
             if resValue == 'no':
                 data = [d for d in data if d > 0]
@@ -241,13 +253,14 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
             s = 0
             if len(data) > 0:
                 s = float(sum(data)) / float(len(data))
-            prettyResults[categories[i]] = countedData + [s, float(sum(data)), float(len(data))]
-            i += 1
+            prettyResults[k] = countedData + [s, float(sum(data)), float(len(data))]
+            categoriesOrder.append(k)
         vg = visualizationGraphs()
-        categoriesSorted, dataForBoxPlotSorted = (list(t) for t in
-                                                  zip(*sorted(zip(categories, dataForBoxPlot))))
+
+        categoriesOrder, dataForBoxPlotSorted = (list(t) for t in
+                                                  zip(*sorted(zip(categoriesOrder, dataForBoxPlot))))
         plot = vg.drawBoxPlotChart(dataForBoxPlotSorted,
-                                   categories=categoriesSorted,
+                                   categories=categoriesOrder,
                                    seriesName='values',
                                    xAxisRotation=90,
                                    titleText=selCol)
