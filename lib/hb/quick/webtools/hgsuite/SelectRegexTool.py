@@ -148,7 +148,10 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
                     eachLine = '\t'.join([str(elem) for elem in line])
                     result = re.match(pattern, eachLine)
                     if result:
+                        line = line.split('\t')
+                        line[2] = int(line[2]) + 1
                         matchedLines.append(line)
+                        
 
             uniqueList = [list(x) for x in set(tuple(x) for x in matchedLines)]
 
