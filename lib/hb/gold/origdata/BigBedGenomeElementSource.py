@@ -5,8 +5,8 @@ import numpy as np
 import pyBigWig
 from plastid.readers.autosql import AutoSqlDeclaration
 
-from gold.origdata import GenomeElementSource
-from gold.origdata import GenomeElement
+from gold.origdata.GenomeElementSource import GenomeElementSource
+from gold.origdata.GenomeElement import GenomeElement
 from gold.util.CommonConstants import BINARY_MISSING_VAL
 from gold.util.CustomExceptions import InvalidFormatError
 

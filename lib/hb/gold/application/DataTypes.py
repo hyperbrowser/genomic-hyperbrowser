@@ -27,7 +27,7 @@ def getSupportedFileSuffixes():
 
 # Defined to stop searching for GTrackGenomeElementSource subtypes online.
 def getUnsupportedFileSuffixes():
-    return ['bam', 'bai', 'tab', 'tbi', 'bigwig', 'bw', 'bigbed', 'bb', 'fastq', 'fq', \
+    return ['bam', 'bai', 'tab', 'tbi', 'fastq', 'fq', \
             'csfasta', 'csqual', 'doc', 'docx', 'xls', 'xlsx', 'gp', 'gappedPeak', 'peaks', \
             'bedcluster', 'bedlogr', 'bedrnaelement', 'bedrrbs', 'cel', 'matrix', \
             'pdf', 'peptidemapping', 'shortfrags', 'spikeins', 'pair', 'txt', \

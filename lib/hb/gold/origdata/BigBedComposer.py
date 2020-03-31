@@ -2,7 +2,7 @@ import subprocess
 import tempfile
 from collections import OrderedDict
 
-from gold.origdata import BedComposer
+from gold.origdata.BedComposer import BedComposer
 from BedComposer import ColumnInfo
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CustomExceptions import InvalidFormatError
