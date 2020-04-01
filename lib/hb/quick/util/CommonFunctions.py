@@ -428,33 +428,38 @@ def ifDictConvertToList(d):
 
 def smartRecursiveAssertList(x, y, assertEqualFunc, assertAlmostEqualFunc):
     import numpy
-    # print x,y
 
     if isListType(x):
         if isinstance(x, numpy.ndarray):
             try:
-                assertEqualFunc(x.shape, y.shape)
+                if not assertEqualFunc(x.shape, y.shape):
+                    return False
             except Exception, e:
                 raise AssertionError(str(e) + ' on shape of lists: ' + str(x) + ' and ' + str(y))
 
             try:
-                assertEqualFunc(x.dtype, y.dtype)
+                if not assertEqualFunc(x.dtype, y.dtype):
+                    return False
             except Exception, e:
-                raise AssertionError(str(e) + ' on datatypes of lists: ' + str(x) + ' and ' + str(y))
+                raise AssertionError(
+                    str(e) + ' on datatypes of lists: ' + str(x) + ' and ' + str(y))
         else:
             try:
-                assertEqualFunc(len(x), len(y))
+                if not assertEqualFunc(len(x), len(y)):
+                    return False
             except Exception, e:
                 raise AssertionError(str(e) + ' on length of lists: ' + str(x) + ' and ' + str(y))
 
-        for el1, el2 in zip(*[ifDictConvertToList(_) for _ in [x, y]]):
-            smartRecursiveAssertList(el1, el2, assertEqualFunc, assertAlmostEqualFunc)
+        for el1, el2 in zip(*[ifDictConvertToList(x) for x in [x, y]]):
+            if not smartRecursiveAssertList(el1, el2, assertEqualFunc, assertAlmostEqualFunc):
+                return False
+        return True
 
     else:
         try:
-            assertAlmostEqualFunc(x, y)
-        except (TypeError, FloatingPointError):
-            assertEqualFunc(x, y)
+            return assertAlmostEqualFunc(x, y)
+        except TypeError:
+            return assertEqualFunc(x, y)
 
 
 def bothIsNan(a, b):

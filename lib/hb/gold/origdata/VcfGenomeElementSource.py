@@ -25,7 +25,7 @@ class VcfGenomeElementSource(GenomeElementSource):
         self._headersDict = OrderedDict()
         self._colNames = 0
         self._refMaxLength = 0
-        # using 1 as length because new line character gets added in TestGES
+        # using 1 as length because new line character gets added in TestGenomeElementSource
         if os.stat(self._fn).st_size > 1:
             self._initFileInfo()
 

@@ -30,7 +30,8 @@ class BigBedGenomeElementSource(GenomeElementSource):
 
     def __init__(self, *args, **kwArgs):
         GenomeElementSource.__init__(self, *args, **kwArgs)
-        if os.stat(self._fn).st_size != 0:
+        # using 1 as length because new line character gets added in TestGenomeElementSource
+        if os.stat(self._fn).st_size > 1:
             self._bigBedFile = pyBigWig.open(self._fn)
             self._chrIter = iter(sorted(self._bigBedFile.chroms().items()))
 
@@ -43,7 +44,8 @@ class BigBedGenomeElementSource(GenomeElementSource):
             self._getStrandFromStringVec = np.vectorize(self._getStrandFromString)
 
     def __iter__(self):
-        if os.stat(self._fn).st_size != 0:
+        # using 1 as length because new line character gets added in TestGenomeElementSource
+        if os.stat(self._fn).st_size > 1:
             self._bigBedFile = pyBigWig.open(self._fn)
             self._chrIter = iter(sorted(self._bigBedFile.chroms().items()))
         else:

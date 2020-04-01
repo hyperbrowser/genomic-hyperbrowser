@@ -33,7 +33,8 @@ class BigWigGenomeElementSource(GenomeElementSource):
     def __init__(self, *args, **kwArgs):
         GenomeElementSource.__init__(self, *args, **kwArgs)
         self._file = open(self._fn, 'r')
-        if os.stat(self._fn).st_size != 0:
+        # using 1 as length because new line character gets added in TestGenomeElementSource
+        if os.stat(self._fn).st_size > 1:
             self._bxpythonFile = BigWigFile(file=self._file)
             self._bw = pyBigWig.open(self._fn)
 
@@ -74,7 +75,8 @@ class BigWigGenomeElementSource(GenomeElementSource):
         geIter._headers = iter([])
         geIter._boundingRegionTuples = []
         self._file = open(self._fn, 'r')
-        if os.stat(self._fn).st_size != 0:
+        # using 1 as length because new line character gets added in TestGenomeElementSource
+        if os.stat(self._fn).st_size > 1:
             self._bxpythonFile = BigWigFile(file=self._file)
             self._bw = pyBigWig.open(self._fn)
 
