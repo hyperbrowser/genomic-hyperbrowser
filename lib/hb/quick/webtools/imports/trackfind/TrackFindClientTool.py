@@ -8,7 +8,6 @@ from ast import literal_eval
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteUtils as GSuiteUtils
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.trackfind.TrackFindModule import TrackFindModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -59,7 +58,7 @@ class TrackFindClientTool(GeneralGuiTool):
                           ('* Phenotype', PHENOTYPE_PATH),
                           ('* Geometric track type', GEOMETRIC_TRACK_TYPE_PATH)])
 
-    TRACK_TABLE_LIMIT = 200
+    TRACK_TABLE_LIMIT = 50
 
     @classmethod
     def getToolName(cls):
