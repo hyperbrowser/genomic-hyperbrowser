@@ -8,6 +8,7 @@ from ast import literal_eval
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteUtils as GSuiteUtils
 from gold.gsuite.GSuite import GSuite
+from gold.gsuite.GSuiteTrack import GSuiteTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.trackfind.TrackFindModule import TrackFindModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -45,6 +46,9 @@ class TrackFindClientTool(GeneralGuiTool):
     LONG_LABEL_ATTR = 'label_long'
     PHENOTYPE_ATTR = '->'.join(PHENOTYPE_PATH)
     GEOMETRIC_TRACK_TYPE_ATTR = '->'.join(GEOMETRIC_TRACK_TYPE_PATH[1:])
+    
+    TABLE_ATTRIBUTES = [CELL_TISSUE_ATTR, GENOME_ASSEMBLY_ATTR, TARGET_ATTR, FILE_FORMAT_ATTR,
+                        TYPE_OF_DATA_ATTR, LONG_LABEL_ATTR, PHENOTYPE_ATTR, GEOMETRIC_TRACK_TYPE_ATTR]
 
     YES = 'Yes'
     NO = 'No'
@@ -259,8 +263,17 @@ class TrackFindClientTool(GeneralGuiTool):
 
         tfm = TrackFindModule()
         gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
+        newGSuite = GSuite()
+        for track in gsuite.allTracks():
+            filteredAttrs = {}
+            for attrName in cls.TABLE_ATTRIBUTES:
+                filteredAttrs[attrName] = track.getAttribute(attrName)
+            newTrack = GSuiteTrack(uri=track.uri, title=track.title, fileFormat=track.fileFormat,
+                                      trackType=track.trackType, genome=track.genome,
+                                     attributes=filteredAttrs)
+            newGSuite.addTrack(newTrack)
 
-        return '__hidden__', gsuite
+        return '__hidden__', newGSuite
 
     @classmethod
     def getOptionsBoxGsuiteHash(cls, prevChoices):
