@@ -1,6 +1,7 @@
 from collections import namedtuple
 from cStringIO import StringIO
 from config.Config import OUTPUT_PRECISION
+from gold.origdata.GENumpyArrayConverter import GENumpyArrayConverter
 from gold.util.CustomExceptions import InvalidFormatError, AbstractClassError, NotIteratedYetError
 from quick.util.CommonFunctions import isNan, ensurePathExists
 from gold.util.CommonConstants import BINARY_MISSING_VAL
@@ -38,9 +39,12 @@ def getComposerClsFromFileSuffix(fileSuffix):
 class FileFormatComposer(object):
     FILE_SUFFIXES = ['']
     FILE_FORMAT_NAME = ''
+    _supportsSliceSources = False
 
     def __init__(self, geSource):
         try:
+            if geSource.isSliceSource() and not self._supportsSliceSources:
+                geSource = GENumpyArrayConverter(geSource)
             if not geSource.hasBoundingRegionTuples():
                 self._geSource = GEDependentAttributesHolder(geSource)
             else:
@@ -108,7 +112,10 @@ def getAllComposers():
     from gold.origdata.GffComposer import GffComposer, CategoryGffComposer
     from gold.origdata.WigComposer import WigComposer
     from gold.origdata.FastaComposer import FastaComposer
+    from gold.origdata.BigBedComposer import BigBedComposer
+    from gold.origdata.BigWigComposer import BigWigComposer
+    from gold.origdata.VcfComposer import VcfComposer
 
     return [BedComposer, PointBedComposer, CategoryBedComposer, ValuedBedComposer, BedGraphComposer, \
             BedGraphTargetControlComposer, GffComposer, CategoryGffComposer, WigComposer, FastaComposer, \
-            StdGtrackComposer, ExtendedGtrackComposer]
+            StdGtrackComposer, ExtendedGtrackComposer, BigWigComposer, BigBedComposer, VcfComposer]

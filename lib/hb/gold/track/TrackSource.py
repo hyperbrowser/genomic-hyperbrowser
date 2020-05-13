@@ -1,5 +1,5 @@
 import os
-#from numpy import memmap
+from gold.origdata.HeaderShelve import isHeaderShelveFilename
 from gold.util.CommonFunctions import createDirPath
 from gold.track.CommonMemmapFunctions import parseMemmapFileFn
 from gold.track.SmartMemmap import SmartMemmap
@@ -39,11 +39,12 @@ class TrackSource:
                     self._fileDict[fullFn] = brShelve
                 trackData.boundingRegionShelve = self._fileDict[fullFn]
                 continue
-            
-            prefix, elementDim, dtypeDim, dtype = parseMemmapFileFn(fn)
-            
-            assert prefix not in trackData
-            trackData[prefix] = self._getFile(chr, dir, fullFn, elementDim, dtype, dtypeDim)
+
+            if not isHeaderShelveFilename(fn):
+                prefix, elementDim, dtypeDim, dtype = parseMemmapFileFn(fn)
+
+                assert prefix not in trackData
+                trackData[prefix] = self._getFile(chr, dir, fullFn, elementDim, dtype, dtypeDim)
         
         return trackData
     
