@@ -3,6 +3,7 @@ from gold.origdata.GenomeElement import GenomeElement
 from gold.util.CustomExceptions import InvalidFormatError
 import numpy
 
+
 class BedGenomeElementSource(GenomeElementSource):
     _VERSION = '1.2'
     FILE_SUFFIXES = ['bed']
@@ -13,7 +14,6 @@ class BedGenomeElementSource(GenomeElementSource):
     MAX_NUM_COLS = 12
 
     BED_EXTRA_COLUMNS = ['thickstart', 'thickend', 'itemrgb', 'blockcount', 'blocksizes', 'blockstarts']
-
 
     def __new__(cls, *args, **kwArgs):
         return object.__new__(cls)

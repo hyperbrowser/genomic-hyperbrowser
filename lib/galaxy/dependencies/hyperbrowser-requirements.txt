@@ -26,6 +26,7 @@ python-Levenshtein==0.12.0
 bx-python>=0.8.2
 pyBigWig>=0.3.13
 plastid>=0.4.8
+#ucsc-bedtobigbed - comment out when we can use conda for HB dependencies
 
 #Might be needed
 #pycairo>=1.8.10

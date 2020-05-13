@@ -99,8 +99,6 @@ def iterateOverBRTuplesWithContainedGEs(geSource, onlyYieldTwoGEs=False, returnI
                 geList = []
                 geElCount = 0
             
-            geList.append(ge.getCopy())
-            
             if onlyYieldTwoGEs and i == 1:
                 break
 

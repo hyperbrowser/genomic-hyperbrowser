@@ -2020,6 +2020,7 @@ class TestGenomeElementSource(TestCaseWithImprovedAsserts):
                  1,
                  'float64',
                  1)
+
         self.cases['bigbed_empty_no_print'] = \
             Case(BigBedGenomeElementSource,
                  'TestGenome',
