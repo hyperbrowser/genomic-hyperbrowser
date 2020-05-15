@@ -8,7 +8,6 @@ from ast import literal_eval
 import gold.gsuite.GSuiteComposer as GSuiteComposer
 import quick.gsuite.GSuiteUtils as GSuiteUtils
 from gold.gsuite.GSuite import GSuite
-from gold.gsuite.GSuiteTrack import GSuiteTrack
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.trackfind.TrackFindModule import TrackFindModule
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
@@ -37,18 +36,25 @@ class TrackFindClientTool(GeneralGuiTool):
     TYPE_OF_DATA_PATH = ['tracks', 'type_of_condensed_data']
     PHENOTYPE_PATH = ['samples', 'phenotype', 'term_label']
     GEOMETRIC_TRACK_TYPE_PATH = ['tracks', 'geometric_track_type']
+    LONG_LABEL_PATH = ['tracks', 'label_long']
 
     CELL_TISSUE_ATTR = '->'.join(CELL_TISSUE_PATH)
     GENOME_ASSEMBLY_ATTR = '->'.join(GENOME_ASSEMBLY_PATH[1:])
     TARGET_ATTR = '->'.join(TARGET_PATH)
     FILE_FORMAT_ATTR = '->'.join(FILE_FORMAT_PATH[1:])
     TYPE_OF_DATA_ATTR = '->'.join(TYPE_OF_DATA_PATH[1:])
-    LONG_LABEL_ATTR = 'label_long'
+    LONG_LABEL_ATTR = '->'.join(LONG_LABEL_PATH[1:])
     PHENOTYPE_ATTR = '->'.join(PHENOTYPE_PATH)
     GEOMETRIC_TRACK_TYPE_ATTR = '->'.join(GEOMETRIC_TRACK_TYPE_PATH[1:])
     
-    TABLE_ATTRIBUTES = [CELL_TISSUE_ATTR, GENOME_ASSEMBLY_ATTR, TARGET_ATTR, FILE_FORMAT_ATTR,
-                        TYPE_OF_DATA_ATTR, LONG_LABEL_ATTR, PHENOTYPE_ATTR, GEOMETRIC_TRACK_TYPE_ATTR]
+    TABLE_ATTRIBUTES = [CELL_TISSUE_PATH, GENOME_ASSEMBLY_PATH, TARGET_PATH, FILE_FORMAT_PATH,
+                        TYPE_OF_DATA_PATH, LONG_LABEL_PATH, PHENOTYPE_PATH, GEOMETRIC_TRACK_TYPE_PATH]
+
+    FILE_URL_PATH = ['tracks', 'file_url']
+    LABEL_SHORT_PATH = ['tracks', 'label_short']
+    ASSEMBLY_NAME_PATH = ['tracks', 'assembly_name']
+
+    GSUITE_REQUIRED_ATTRS = [FILE_URL_PATH, LABEL_SHORT_PATH, ASSEMBLY_NAME_PATH]
 
     YES = 'Yes'
     NO = 'No'
@@ -262,18 +268,9 @@ class TrackFindClientTool(GeneralGuiTool):
             return
 
         tfm = TrackFindModule()
-        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions)
-        newGSuite = GSuite()
-        for track in gsuite.allTracks():
-            filteredAttrs = {}
-            for attrName in cls.TABLE_ATTRIBUTES:
-                filteredAttrs[attrName] = track.getAttribute(attrName)
-            newTrack = GSuiteTrack(uri=track.uri, title=track.title, fileFormat=track.fileFormat,
-                                      trackType=track.trackType, genome=track.genome,
-                                     attributes=filteredAttrs)
-            newGSuite.addTrack(newTrack)
+        gsuite = tfm.getGSuite(prevChoices.selectRepository, chosenOptions, attrFilter=cls.TABLE_ATTRIBUTES +cls.GSUITE_REQUIRED_ATTRS )
 
-        return '__hidden__', newGSuite
+        return '__hidden__', gsuite
 
     @classmethod
     def getOptionsBoxGsuiteHash(cls, prevChoices):
@@ -515,9 +512,9 @@ class TrackFindClientTool(GeneralGuiTool):
         return values
 
     @classmethod
-    def convertAttributesToQueryForm(cls, prevSubattributes):
-        convertedSubattrs = [prevSubattributes[0] + '.content']
-        for subattr in prevSubattributes[1:]:
+    def convertAttributesToQueryForm(cls, subattrList):
+        convertedSubattrs = [subattrList[0] + '.content']
+        for subattr in subattrList[1:]:
             convertedSubattrs.append("'{}'".format(subattr))
 
         return convertedSubattrs

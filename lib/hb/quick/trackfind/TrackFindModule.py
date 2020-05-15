@@ -10,7 +10,6 @@ import logging
 log = logging.getLogger( __name__ )
 
 
-
 class TrackFindModule(object):
     URL = 'http://trackfind.elixir.no/api/v1'
 
@@ -85,12 +84,12 @@ class TrackFindModule(object):
 
         return response.json()
 
-    def getGSuite(self, repoAndHub, attrValueMap, includeExtraAttributes=False):
+    def getGSuite(self, repoAndHub, attrValueMap, includeExtraAttributes=False, attrFilter=None):
         repo, hub = self.getRepoAndHub(repoAndHub)
         headers = {'Accept': 'text/plain'}
 
         self.logRequest('gsuite', 0)
-        response = self.getSearchResults(repo, hub, attrValueMap, headers, includeExtraAttributes)
+        response = self.getSearchResults(repo, hub, attrValueMap, headers, includeExtraAttributes, attrFilter)
 
         #log.debug('before gsuite parsing ' + str(datetime.datetime.now()))
         gsuite = GSuiteParser.parseFromString(response.text)
@@ -98,10 +97,14 @@ class TrackFindModule(object):
 
         return gsuite
 
-    def getSearchResults(self, repo, hub, attrValueMap, headers, includeExtraAttributes=False):
+    def getSearchResults(self, repo, hub, attrValueMap, headers, includeExtraAttributes=False, attrFilter=None):
         query = self.createQuery(attrValueMap)
 
         url = self.URL + '/search/' + repo + '/' + hub + '?query=' + query
+
+        if attrFilter:
+            attrs = self.convertFilterAttributesToQueryForm(attrFilter)
+            url += '&attributes=' + attrs
 
         if not includeExtraAttributes:
             url += '&categories=' + urllib.quote(self.STANDARD_CATEGORIES)
@@ -111,6 +114,19 @@ class TrackFindModule(object):
         self.logRequest(url, response.elapsed.total_seconds())
 
         return response
+
+    @classmethod
+    def convertFilterAttributesToQueryForm(cls, attrFilter):
+        convertedAttrs = []
+        for attrList in attrFilter:
+            convertedAttr = [attrList[0] + '.content']
+            for attr in attrList[1:]:
+                convertedAttr.append("'{}'".format(attr))
+            convertedAttrs.append('->'.join(convertedAttr))
+
+        return ','.join(convertedAttrs)
+
+
 
     def createQuery(self, attrValueMap):
         queryList = []
