@@ -31,6 +31,10 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 import quick.gsuite.GuiBasedTsFactory as factory
 
+ALL_VS_ALL = 'All versus all'
+
+CASE_VS_CONTROL = 'Case versus control value'
+
 
 class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin,
                                         QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
@@ -82,8 +86,11 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return [('Use a GSuite of randomized query track', 'isQueryGSuite'),
                 ('Select reference track', 'queryTrack'),
                 ('Select a GSuite of case-control tracks', 'gsuite'),
-                ('Select category column', cls.CAT_LBL_KEY)] + \
-                cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
+                ('Select category column', cls.CAT_LBL_KEY),
+                ('Tool mode', 'toolMode'),
+                ('Select control value', 'controlVal'),
+                ('Select case value', 'caseVal')] + \
+                cls.getInputBoxNamesForQueryTrackVsCatGSuite()[1:] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                 cls.getInputBoxNamesForUserBinSelection() \
                # + \
@@ -238,12 +245,28 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             return gsuite.attributes
 
-    # @staticmethod
-    # def getOptionsBoxCategoryVal(prevChoices):
-    #     if prevChoices.gsuite and prevChoices.categoryName:
-    #         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-    #         gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-    #         return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
+    @staticmethod
+    def getOptionsBoxToolMode(prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName:
+            return [CASE_VS_CONTROL, ALL_VS_ALL]
+
+    @staticmethod
+    def getOptionsBoxControlVal(prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == CASE_VS_CONTROL:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            vals = set(gsuite.getAttributeValueList(prevChoices.categoryName))
+            return list(vals)
+
+    @staticmethod
+    def getOptionsBoxCaseVal(prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == CASE_VS_CONTROL:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            vals = set(gsuite.getAttributeValueList(prevChoices.categoryName))
+            if prevChoices.controlVal:
+                vals.remove(prevChoices.controlVal)
+            return list(vals)
     #
     # @staticmethod
     # def getOptionsBoxSimilarityFunc(prevChoices):
@@ -350,26 +373,40 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
         else:
             queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
-            combinationGsuites = cls._splitGSuite(choices.gsuite, choices.categoryName)
+            if choices.toolMode == ALL_VS_ALL:
+                combinationGsuites = cls._splitGSuite(choices.gsuite, choices.categoryName)
+            else:
+                combinationGsuites = cls._createGSuiteControlCase(choices.gsuite, choices.categoryName, choices.controlVal, choices.caseVal)
 
-            print combinationGsuites.keys()
+            resultsDict = {}
 
             for combination,gsuite in combinationGsuites.iteritems():
                 refTS = factory.getFlatTracksTSFromGsuiteObject(choices.genome, gsuite)
                 catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
 
                 categoryVal = combination.split("_")[0]
-                print categoryVal
                 results, resultsMC, resultsWilcoxonTtest = cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal)
 
-                print results
-                print resultsMC
-                print resultsWilcoxonTtest
+                resultsDict[combination] = (results, resultsMC, resultsWilcoxonTtest)
 
-                cls._printResultsHtml(choices, results, resultsMC, resultsWilcoxonTtest, galaxyFn, categoryVal)
+            cls._printResultsHtml(choices, resultsDict, galaxyFn)
 
     @classmethod
-    def _splitGSuite(self, gsuiteInput, categoryName):
+    def _createGSuiteControlCase(cls, gsuiteInput, categoryName, controlVal, caseVal):
+        gsuite = getGSuiteFromGalaxyTN(gsuiteInput)
+        filteredGSuite = GSuite()
+        for track in gsuite.allTracks():
+            category = track.getAttribute(categoryName)
+            if category and category in [controlVal, caseVal]:
+                filteredGSuite.addTrack(track)
+
+        combinationGsuites = {}
+        combinationGsuites["_".join([controlVal, caseVal])] = filteredGSuite
+
+        return combinationGsuites
+
+    @classmethod
+    def _splitGSuite(cls, gsuiteInput, categoryName):
         gsuite = getGSuiteFromGalaxyTN(gsuiteInput)
         categoriesTracksDict = defaultdict(list)
         for track in gsuite.allTracks():
@@ -475,54 +512,75 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return resultsMC
 
     @classmethod
-    def _printResultsHtml(cls, choices, results, resultsMC, wilcoxonOrTtestResults, galaxyFn, categoryVal=None):
-        if not categoryVal:
-            categoryVal = choices.categoryVal
-        core = HtmlCore()
+    def _printResultsHeader(cls, choices, core):
         core.divBegin()
-        core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
-        choices.summaryFunc, choices.similarityFunc))
+        core.paragraph(
+            'The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
+                choices.summaryFunc, choices.similarityFunc))
 
-        if wilcoxonOrTtestResults:
-            resTableDict = OrderedDict()
-            for key, val in results.iteritems():
-                resTableDict[key] = [val.getResult()]
-                resTableDict[key].append("NA")
-            resTableDict[choices.randType] = [wilcoxonOrTtestResults['statistic'], wilcoxonOrTtestResults['p.value']]
-
-            columnNames = ["Group", "Score", "P-value"]
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
-            # core.tableFromDictionary(resTableDict, columnNames=columnNames)
-
-        else:
-            resTableDict = OrderedDict()
-            for key, val in results.iteritems():
-                resTableDict[key] = [val.getResult()]
-                resTableDict[key].append("NA")
-                resTableDict[key].append("NA")
-                resTableDict[key].append("NA")
-            testStatLbl = 'TSMC_' + DiffOfSummarizedRanksPerTsCatV2Stat.__name__ if \
-                choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL else \
-                'TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__
-            resTableDict[choices.catSummaryFunc] = [
-                resultsMC[categoryVal].getResult()[testStatLbl],
-                resultsMC[categoryVal].getResult()[McEvaluators.PVAL_KEY],
-                resultsMC[categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
-                resultsMC[categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
-                ]
-            rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC, categoryVal)
-            columnNames = ["Group", "Similarity score", "P-value", "Mean score for null distribution",
-                             "Std. deviation of score for null distribution"]
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
-            # core.tableFromDictionary(resTableDict, columnNames=columnNames)
-            print resTableDict
-
-            core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
-                "null distribution table") + ".")
-
+    @classmethod
+    def _printResultsFooter(cls, core):
         core.divEnd()
         core.end()
         print str(core)
+
+    @classmethod
+    def _printResultsHtml(cls, choices, resultsDict, galaxyFn):
+        core = HtmlCore()
+        cls._printResultsHeader(choices, core)
+
+        resTableDict = OrderedDict()
+        index = 1
+        for combination, allResults in resultsDict.iteritems():
+            results, resultsMC, resultsWilcoxonTtest = allResults
+            categoryVal, secondVal = combination.split("_")
+            if resultsWilcoxonTtest:
+                resTableRow = []
+                resTableRow.append(categoryVal)
+                resTableRow.append(secondVal)
+                resTableRow.append(results[categoryVal].getResult())
+                resTableRow.append(results[secondVal].getResult())
+
+                resTableRow.append(resultsWilcoxonTtest['statistic'])
+                resTableRow.append(resultsWilcoxonTtest['p.value'])
+
+            else:
+                resTableRow = []
+                resTableRow.append(categoryVal)
+                resTableRow.append(secondVal)
+                resTableRow.append(results[categoryVal].getResult())
+                resTableRow.append(results[secondVal].getResult())
+                testStatLbl = 'TSMC_' + DiffOfSummarizedRanksPerTsCatV2Stat.__name__ if \
+                    choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL else \
+                    'TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__
+                resTableRow.append(resultsMC[categoryVal].getResult()[testStatLbl])
+                resTableRow.append(resultsMC[categoryVal].getResult()[McEvaluators.PVAL_KEY])
+                resTableRow.append(resultsMC[categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY])
+                resTableRow.append(resultsMC[categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY])
+
+            resTableDict[index] = resTableRow
+            index += 1
+
+                # core.tableFromDictionary(resTableDict, columnNames=columnNames)
+                #print resTableDict
+
+                # rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC,
+                #                                                 categoryVal)
+                # core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
+                #     "null distribution table") + ".")
+
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+            columnNames = ["", "Group-1 (G1)", "Group-2 (G2)", "G1 Similarity score",
+                           "G2 Similarity score", "Score", "P-value"]
+        else:
+            columnNames = ["", "Group-1 (G1)", "Group-2 (G2)", "G1 Similarity score",
+                           "G2 Similarity score", "Groups Comparison Statistic", "P-value",
+                           "Mean score for null distribution",
+                           "Std. deviation of score for null distribution"]
+
+        addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict,
+                                                  columnNames)
+        cls._printResultsFooter(core)
 
     @classmethod
     def _getNullDistributionFile(cls, choices, galaxyFn, resultsMC, categoryVal=None):
