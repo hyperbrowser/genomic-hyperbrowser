@@ -19,6 +19,8 @@ class GroupGSuiteTracks(GeneralGuiTool):
     BASE_FILTER = 'Base filtering only'
     CASE_FILTER = 'Create a single group of tracks (case)'
     CASE_CONTROL_FILTER = 'Create two separate groups of tracks (case/control)'
+    YES = 'Yes'
+    NO = 'No'
 
     @classmethod
     def getToolName(cls):
@@ -41,6 +43,7 @@ class GroupGSuiteTracks(GeneralGuiTool):
                 ('Select values to be used', 'baseSelectValue%s' % i),
                 ('', 'baseFilteredGSuiteTitles%s' % i)])
 
+        attrBoxes.append(('Show base track table', 'showBaseTrackTable'))
         attrBoxes.append(('Tracks which have passed filters in this section', 'baseTrackTable'))
 
         for i in xrange(cls.MAX_NUM_OF_FILTERS):
@@ -49,6 +52,7 @@ class GroupGSuiteTracks(GeneralGuiTool):
                 ('Select values to be used', 'caseSelectValue%s' % i),
                 ('', 'caseFilteredGSuiteTitles%s' % i)])
 
+        attrBoxes.append(('Show case track table', 'showCaseTrackTable'))
         attrBoxes.append(('Tracks which have passed filters in this section', 'caseTrackTable'))
 
         for i in xrange(cls.MAX_NUM_OF_FILTERS):
@@ -57,6 +61,7 @@ class GroupGSuiteTracks(GeneralGuiTool):
                 ('Select values to be used', 'controlSelectValue%s' % i),
                 ('', 'controlFilteredGSuiteTitles%s' % i)])
 
+        attrBoxes.append(('Show control track table', 'showControlTrackTable'))
         attrBoxes.append(('Tracks which have passed filters in this section', 'controlTrackTable'))
 
         attrBoxes.extend([
@@ -64,9 +69,11 @@ class GroupGSuiteTracks(GeneralGuiTool):
             ('Enter name of grouping (title of new metadata column)', 'groupName'),
             ('Enter value for of case group', 'caseGroupName'),
             ('Enter value for control group', 'controlGroupName'),
+            ('Show tracks which have not passed base filters', 'showBaseFilteredOutTracks'),
             ('Tracks which have not passed base filters', 'baseFilteredOutTracks'),
             ('For tracks which have not passed base filters', 'baseNotSelectedTracks'),
-            ('Tracks which have not passed base filters', 'caseControlFilteredOutTracks'),
+            ('Show tracks which have not passed case/control filters', 'showCaseControlFilteredOutTracks'),
+            ('Tracks which have not passed case/control filters', 'caseControlFilteredOutTracks'),
             ('For tracks that have passed base filters (if any) but have not pass case or control filters', 'caseControlNotSelectedTracks'),
             ])
 
@@ -113,8 +120,66 @@ class GroupGSuiteTracks(GeneralGuiTool):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
+    def _getOptionsBoxShowTrackTable(cls, prevChoices):
+
+        return [cls.NO, cls.YES]
+
+    @classmethod
+    def getOptionsBoxShowBaseTrackTable(cls, prevChoices):
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'baseFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return cls._getOptionsBoxShowTrackTable(prevChoices)
+
+    @classmethod
+    def getOptionsBoxShowCaseTrackTable(cls, prevChoices):
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'caseFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return cls._getOptionsBoxShowTrackTable(prevChoices)
+
+    @classmethod
+    def getOptionsBoxShowControlTrackTable(cls, prevChoices):
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'controlFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return cls._getOptionsBoxShowTrackTable(prevChoices)
+
+    @classmethod
+    def getOptionsBoxShowBaseFilteredOutTracks(cls, prevChoices):
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'baseFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return cls._getOptionsBoxShowTrackTable(prevChoices)
+
+    @classmethod
+    def getOptionsBoxShowCaseControlFilteredOutTracks(cls, prevChoices):
+        if not prevChoices.gsuite or prevChoices.gsuite == cls.SELECT_CHOICE:
+            return
+        
+        if prevChoices.filterChoice == cls.BASE_FILTER:
+            return
+
+        if not (getattr(prevChoices,'caseFilteredGSuiteTitles0') or getattr(prevChoices, 'controlFilteredGSuiteTitles0')):
+            return
+
+        return cls._getOptionsBoxShowTrackTable(prevChoices)
+
+
+    @classmethod
     def getOptionsBoxBaseFilteredOutTracks(cls, prevChoices):
         if not prevChoices.gsuite or prevChoices.gsuite == cls.SELECT_CHOICE:
+            return
+
+        if prevChoices.showBaseFilteredOutTracks == cls.NO:
             return
 
         filteredTitles = cls._getValueOfLastInputBox(prevChoices, 'baseFilteredGSuiteTitles')
@@ -137,6 +202,9 @@ class GroupGSuiteTracks(GeneralGuiTool):
             return
 
         if prevChoices.filterChoice == cls.BASE_FILTER:
+            return
+
+        if prevChoices.showCaseControlFilteredOutTracks == cls.NO:
             return
 
         gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
@@ -234,6 +302,8 @@ class GroupGSuiteTracks(GeneralGuiTool):
                 lastTitles = gsuite.allTrackTitles()
         else:
             lastTitles = getattr(prevChoices, (filteredTitlesBoxName + '%s') % (level - 1))
+            if isinstance(lastTitles, unicode):
+                lastTitles = ast.literal_eval(lastTitles)
 
         currentTrackTitles = []
 
@@ -247,18 +317,26 @@ class GroupGSuiteTracks(GeneralGuiTool):
 
     @classmethod
     def _getTrackTableFromFilteredTitles(cls, prevChoices, filteredTitlesBoxName):
+        filteredTitles = cls._getFilteredTitles(prevChoices, filteredTitlesBoxName)
+
+        if not filteredTitles:
+            return
+
+        gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+
+        return cls._getTrackTable(gsuite, filteredTitles, filteredTitlesBoxName)
+
+    @classmethod
+    def _getFilteredTitles(cls, prevChoices, filteredTitlesBoxName):
         if not prevChoices.gsuite or prevChoices.gsuite == cls.SELECT_CHOICE:
             return
-        gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
 
         filteredTitles = cls._getValueOfLastInputBox(prevChoices, filteredTitlesBoxName)
         if isinstance(filteredTitles, unicode):
             filteredTitles = ast.literal_eval(filteredTitles)
 
-        if not filteredTitles:
-            return
+        return filteredTitles
 
-        return cls._getTrackTable(gsuite, filteredTitles, filteredTitlesBoxName)
 
     @classmethod
     def _getTrackTable(cls, gsuite, trackTitles, tableId):
@@ -376,14 +454,23 @@ class GroupGSuiteTracks(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxBaseTrackTable(cls, prevChoices):
+        if prevChoices.showBaseTrackTable == cls.NO:
+            return
+
         return cls._getTrackTableFromFilteredTitles(prevChoices, 'baseFilteredGSuiteTitles')
 
     @classmethod
     def getOptionsBoxCaseTrackTable(cls, prevChoices):
+        if prevChoices.showCaseTrackTable == cls.NO:
+            return
+
         return cls._getTrackTableFromFilteredTitles(prevChoices, 'caseFilteredGSuiteTitles')
 
     @classmethod
     def getOptionsBoxControlTrackTable(cls, prevChoices):
+        if prevChoices.showControlTrackTable == cls.NO:
+            return
+
         return cls._getTrackTableFromFilteredTitles(prevChoices, 'controlFilteredGSuiteTitles')
 
     @classmethod
@@ -419,21 +506,51 @@ class GroupGSuiteTracks(GeneralGuiTool):
 
     @classmethod
     def getOptionsBoxGroupName(cls, prevChoices):
-        if prevChoices.filterChoice in [cls.CASE_FILTER, cls.CASE_CONTROL_FILTER]:
-            if prevChoices.gsuite and prevChoices.gsuite != cls.SELECT_CHOICE:
-                return 'new group'
+        if prevChoices.filterChoice not in [cls.CASE_FILTER, cls.CASE_CONTROL_FILTER]:
+
+            return
+
+        if not prevChoices.gsuite or prevChoices.gsuite == cls.SELECT_CHOICE:
+            return
+
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'caseFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return 'new group'
+
+
 
     @classmethod
     def getOptionsBoxCaseGroupName(cls, prevChoices):
-        if prevChoices.filterChoice in [cls.CASE_FILTER, cls.CASE_CONTROL_FILTER]:
-            if prevChoices.gsuite and prevChoices.gsuite != cls.SELECT_CHOICE:
-                return 'case'
+        if prevChoices.filterChoice not in [cls.CASE_FILTER, cls.CASE_CONTROL_FILTER]:
+            return
+
+        if not prevChoices.gsuite or prevChoices.gsuite == cls.SELECT_CHOICE:
+            return
+
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'caseFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return 'case'
 
     @classmethod
     def getOptionsBoxControlGroupName(cls, prevChoices):
-        if prevChoices.filterChoice == cls.CASE_CONTROL_FILTER:
-            if prevChoices.gsuite and prevChoices.gsuite != cls.SELECT_CHOICE:
-                return 'control'
+        if prevChoices.filterChoice != cls.CASE_CONTROL_FILTER:
+            return
+
+        if not prevChoices.gsuite or prevChoices.gsuite == cls.SELECT_CHOICE:
+            return
+
+        filteredTitles = cls._getFilteredTitles(prevChoices, 'controlFilteredGSuiteTitles')
+
+        if not filteredTitles:
+            return
+
+        return 'control'
 
 
     @classmethod
@@ -502,22 +619,22 @@ class GroupGSuiteTracks(GeneralGuiTool):
             groups.append(BoxGroup(label='Case', first='caseFilter0', last='caseFilter' + str(cls.MAX_NUM_OF_FILTERS - 1)))
             groups.append(BoxGroup(label='Control', first='controlFilter0', last='controlFilter' + str(cls.MAX_NUM_OF_FILTERS-1)))
 
-        if hasattr(choices, 'baseFilteredGSuiteTitles0') and getattr(choices, 'baseFilteredGSuiteTitles0'):
+        if hasattr(choices, 'baseFilteredGSuiteTitles0') and getattr(choices, 'baseFilteredGSuiteTitles0') and choices.showBaseTrackTable == cls.YES:
             groups.append(BoxGroup(
                 label='Table of tracks which have passed all base filters',
                 first='baseTrackTable', last='baseTrackTable'))
 
-        if hasattr(choices, 'caseFilteredGSuiteTitles0') and getattr(choices, 'caseFilteredGSuiteTitles0'):
+        if hasattr(choices, 'caseFilteredGSuiteTitles0') and getattr(choices, 'caseFilteredGSuiteTitles0') and choices.showCaseTrackTable == cls.YES:
             groups.append(BoxGroup(
                 label='Table of tracks which have passed all case filters',
                 first='caseTrackTable', last='caseTrackTable'))
 
-        if hasattr(choices, 'controlFilteredGSuiteTitles0') and getattr(choices, 'controlFilteredGSuiteTitles0'):
+        if hasattr(choices, 'controlFilteredGSuiteTitles0') and getattr(choices, 'controlFilteredGSuiteTitles0') and choices.showControlTrackTable == cls.YES:
             groups.append(BoxGroup(
                 label='Table of tracks which have passed all control filters',
                 first='controlTrackTable', last='controlTrackTable'))
 
-        if choices.filterChoice in [cls.CASE_FILTER, cls.CASE_CONTROL_FILTER]:
+        if choices.filterChoice in [cls.CASE_FILTER, cls.CASE_CONTROL_FILTER] and hasattr(choices, 'caseFilteredGSuiteTitles0') and getattr(choices, 'caseFilteredGSuiteTitles0'):
             groups.append(BoxGroup(label='A new metadata column will be created to denote the new group(s) of tracks, with the following characteristics:',
                                    first='groupName', last='controlGroupName'))
 
@@ -559,7 +676,7 @@ class GroupGSuiteTracks(GeneralGuiTool):
                 track = gsuite.getTrackFromTitle(title)
                 newGSuite.addTrack(track)
 
-        else :
+        else:
             caseFilteredTitles = cls._getValueOfLastInputBox(choices, 'caseFilteredGSuiteTitles')
             if isinstance(caseFilteredTitles, unicode):
                 caseFilteredTitles = ast.literal_eval(caseFilteredTitles)
@@ -610,7 +727,48 @@ class GroupGSuiteTracks(GeneralGuiTool):
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+
+        if not choices.gsuite or choices.gsuite == cls.SELECT_CHOICE:
+            return 'Please select a GSuite'
+
+        if choices.filterChoice == cls.BASE_FILTER:
+            if getattr(choices, 'baseFilter0') == cls.NO_FILTER:
+                return 'Please select at least one filter for the base filtering.'
+        else:
+            if getattr(choices, 'caseFilter0') == cls.NO_FILTER:
+                return 'Please select at least one filter for the case filtering.'
+            if choices.filterChoice == cls.CASE_CONTROL_FILTER:
+                if getattr(choices, 'controlFilter0') == cls.NO_FILTER:
+                    return 'Please select at least one filter for the control filtering.'
+
+        inputBoxNames = [('baseFilter', 'baseSelectValue'), ('caseFilter', 'caseSelectValue'), ('controlFilter', 'controlSelectValue')]
+
+        for filterInput, valueInput in inputBoxNames:
+            lastIndex = None
+            for i in xrange(cls.MAX_NUM_OF_FILTERS):
+                if not hasattr(choices, (filterInput + '%s') % i) or not getattr(
+                        choices, (filterInput + '%s') % i):
+                    break
+                filterValue = getattr(choices, (filterInput + '%s') % i)
+                if filterValue and filterValue != cls.NO_FILTER:
+                    lastIndex = i
+
+            if lastIndex is not None:
+                vals = cls._getSelectedValues(choices, lastIndex, valueInput)
+
+                if not vals:
+                    return 'Please finish the values selection'
+
+        if choices.filterChoice == cls.CASE_CONTROL_FILTER:
+            caseFilteredTitles = cls._getValueOfLastInputBox(choices, 'caseFilteredGSuiteTitles')
+            controlFilteredTitles = cls._getValueOfLastInputBox(choices, 'controlFilteredGSuiteTitles')
+
+            if not caseFilteredTitles or not controlFilteredTitles:
+                return
+
+            intersectTitles = set(caseFilteredTitles).intersection(set(controlFilteredTitles))
+            if intersectTitles:
+                return 'These tracks were found in both case and control groups: ' + ', '.join(intersectTitles) + '. Please make sure each track is only present in one of the groups.'
 
 
     # @classmethod
@@ -668,17 +826,17 @@ class GroupGSuiteTracks(GeneralGuiTool):
     #     """
     #     return None
     #
-    # @classmethod
-    # def isPublic(cls):
-    #     """
-    #     Specifies whether the tool is accessible to all users. If False, the
-    #     tool is only accessible to a restricted set of users as well as admin
-    #     users, as defined in the galaxy.ini file.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return False
-    #
+    @classmethod
+    def isPublic(cls):
+        """
+        Specifies whether the tool is accessible to all users. If False, the
+        tool is only accessible to a restricted set of users as well as admin
+        users, as defined in the galaxy.ini file.
+
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
+
     # @classmethod
     # def isRedirectTool(cls):
     #     """
