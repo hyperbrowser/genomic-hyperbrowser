@@ -6,8 +6,9 @@ from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from proto.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import BoxGroup
-from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.webtools.GeneralGuiTool import GeneralGuiTool
+
 
 class GroupGSuiteTracks(GeneralGuiTool):
     KEEP_IN_GSUITE = "Keep in GSuite as disabled"

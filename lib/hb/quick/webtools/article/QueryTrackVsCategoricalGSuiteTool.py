@@ -1,6 +1,8 @@
 import itertools
 from collections import OrderedDict, defaultdict
 
+import quick.gsuite.GuiBasedTsFactory as factory
+from config.Config import STATIC_DIR
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -16,24 +18,20 @@ from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
     MultitrackSummarizedInteractionWithOtherTracksV2Stat
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
-    SummarizedInteractionPerTsCatV2StatUnsplittable
-from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
 from quick.statistic.TtestUnpairedTestStat import TtestUnpairedTestStat
+from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
 from quick.util import McEvaluators
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
-from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
+from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import \
+    QueryTrackVsCategoricalGSuiteMixin
 from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
-import quick.gsuite.GuiBasedTsFactory as factory
 
-ALL_VS_ALL = 'All versus all'
 
-CASE_VS_CONTROL = 'Case versus control value'
 
 
 class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin,
@@ -51,6 +49,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
                                  GSuiteConstants.MULTIPLE]
+    ALL_VS_ALL = 'All versus all'
+
+    CASE_VS_CONTROL = 'Case versus control value'
 
     @classmethod
     def getToolName(cls):
@@ -83,7 +84,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Use a GSuite of randomized query track', 'isQueryGSuite'),
+        return [
+                #('Use a GSuite of randomized query track', 'isQueryGSuite'),
+                ('Add GSuite to history', 'exampleGSuite'),
                 ('Select reference track', 'queryTrack'),
                 ('Select a GSuite of case-control tracks', 'gsuite'),
                 ('Select category column', cls.CAT_LBL_KEY),
@@ -100,8 +103,20 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     def getOptionsBoxIsQueryGSuite():
         return False
 
-    @staticmethod
-    def getOptionsBoxQueryTrack(prevChoices):
+    @classmethod
+    def getOptionsBoxExampleGSuite(cls):
+        from quick.util.CommonFunctions import getLoadToGalaxyHistoryURL
+
+        LOAD_GSUITE_EXAMPLE_URL = getLoadToGalaxyHistoryURL(
+            STATIC_DIR + '/data/gsuite/chakri-example.gsuite', 'hg19', 'gsuite',
+            histElementName='Roadmap Epigenomics tracks')
+
+        gsuiteLink = str(HtmlCore().link('Add example GSuite to your history', LOAD_GSUITE_EXAMPLE_URL))
+
+        return '__rawstr__', gsuiteLink
+
+    @classmethod
+    def getOptionsBoxQueryTrack(cls, prevChoices):
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -191,8 +206,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return GeneralGuiTool.getHistorySelectionElement('gsuite') if prevChoices.isQueryGSuite \
-            else GeneralGuiTool.getHistorySelectionElement()
+        # return GeneralGuiTool.getHistorySelectionElement('gsuite') if prevChoices.isQueryGSuite \
+        #     else GeneralGuiTool.getHistorySelectionElement()
+        return GeneralGuiTool.getHistorySelectionElement()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -245,22 +261,22 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             return gsuite.attributes
 
-    @staticmethod
-    def getOptionsBoxToolMode(prevChoices):
+    @classmethod
+    def getOptionsBoxToolMode(cls, prevChoices):
         if prevChoices.gsuite and prevChoices.categoryName:
-            return [CASE_VS_CONTROL, ALL_VS_ALL]
+            return [cls.CASE_VS_CONTROL, cls.ALL_VS_ALL]
 
-    @staticmethod
-    def getOptionsBoxControlVal(prevChoices):
-        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == CASE_VS_CONTROL:
+    @classmethod
+    def getOptionsBoxControlVal(cls, prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == cls.CASE_VS_CONTROL:
             from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             vals = set(gsuite.getAttributeValueList(prevChoices.categoryName))
             return list(vals)
 
-    @staticmethod
-    def getOptionsBoxCaseVal(prevChoices):
-        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == CASE_VS_CONTROL:
+    @classmethod
+    def getOptionsBoxCaseVal(cls, prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == cls.CASE_VS_CONTROL:
             from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             vals = set(gsuite.getAttributeValueList(prevChoices.categoryName))
@@ -358,38 +374,35 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Mandatory unless isRedirectTool() returns True.
         """
-        # DebugUtil.insertBreakPoint(5678)
-
-        # cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
 
-        if choices.isQueryGSuite:
-            queryTS = factory.getFlatTracksTS(choices.genome, choices.queryTrack)
-            refTS = factory.getFlatTracksTS(choices.genome, choices.gsuite)
-            catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
-            assert choices.categoryVal in catTS
-            cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+        # if choices.isQueryGSuite:
+        #     queryTS = factory.getFlatTracksTS(choices.genome, choices.queryTrack)
+        #     refTS = factory.getFlatTracksTS(choices.genome, choices.gsuite)
+        #     catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
+        #     assert choices.categoryVal in catTS
+        #     cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+        # else:
+        queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
+        if choices.toolMode == cls.ALL_VS_ALL:
+            combinationGsuites = cls._splitGSuite(choices.gsuite, choices.categoryName)
         else:
-            queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
-            if choices.toolMode == ALL_VS_ALL:
-                combinationGsuites = cls._splitGSuite(choices.gsuite, choices.categoryName)
-            else:
-                combinationGsuites = cls._createGSuiteControlCase(choices.gsuite, choices.categoryName, choices.controlVal, choices.caseVal)
+            combinationGsuites = cls._createGSuiteControlCase(choices.gsuite, choices.categoryName, choices.controlVal, choices.caseVal)
 
-            resultsDict = {}
+        resultsDict = {}
 
-            for combination,gsuite in combinationGsuites.iteritems():
-                refTS = factory.getFlatTracksTSFromGsuiteObject(choices.genome, gsuite)
-                catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
+        for combination,gsuite in combinationGsuites.iteritems():
+            refTS = factory.getFlatTracksTSFromGsuiteObject(choices.genome, gsuite)
+            catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
 
-                categoryVal = combination.split("_")[0]
-                results, resultsMC, resultsWilcoxonTtest = cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal)
+            categoryVal = combination.split("_")[0]
+            results, resultsMC, resultsWilcoxonTtest = cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal)
 
-                resultsDict[combination] = (results, resultsMC, resultsWilcoxonTtest)
+            resultsDict[combination] = (results, resultsMC, resultsWilcoxonTtest)
 
-            cls._printResultsHtml(choices, resultsDict, galaxyFn)
+        cls._printResultsHtml(choices, resultsDict, galaxyFn)
 
     @classmethod
     def _createGSuiteControlCase(cls, gsuiteInput, categoryName, controlVal, caseVal):
