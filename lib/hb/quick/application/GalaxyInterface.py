@@ -15,7 +15,7 @@ from config.Config import DebugConfig, DEFAULT_GENOME, STATIC_REL_PATH,\
 from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from gold.application.LogSetup import logging, HB_LOGGER, usageAndErrorLogging, \
     runtimeLogging, logException, detailedJobRunHandler, logMessage, logLackOfSupport
-from gold.application.StatRunner import AnalysisDefJob, AssemblyGapJob #, CountBothTracksJob
+from quick.deprecated.StatRunner import AnalysisDefJob, AssemblyGapJob #, CountBothTracksJob
 from gold.description.AnalysisDefHandler import AnalysisDefHandler
 from gold.description.TrackInfo import TrackInfo
 from gold.extra.nmers.NmerManager import NmerManager
@@ -1668,7 +1668,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #    return q.getOptionLabelsAsText(), q.getOptionsAsText()
 
     @staticmethod
-    @takes(str, dict)
+    @takes(basestring, dict)
     def setConfigChoices(analysisDef, optionsDict):
         intensityTrigger = '_intensityTN'
         if intensityTrigger in optionsDict:
@@ -1707,7 +1707,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #    return analysisDef
 
     @staticmethod
-    @takes(str, str, list, list)
+    @takes(basestring, basestring, list, list)
     @returns(str)
     def getTextFromAnalysisDef(analysisDef, genome, trackName1, trackName2):
         realPreProc = False

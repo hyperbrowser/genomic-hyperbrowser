@@ -4,19 +4,23 @@ from cStringIO import StringIO
 
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack
-from gold.gsuite.GSuiteConstants import ALLOWED_CHARS, HEADER_VAR_DICT, FILE_TYPE_HEADER, \
+from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, FILE_TYPE_HEADER, \
                                         TEXT, BINARY, PRIMARY, PREPROCESSED, \
-                                        URI_COL_SPEC, ALL_STD_COL_SPECS, \
-                                        OPTIONAL_STD_COL_NAMES, ALL_STD_COL_NAMES, \
-                                        URI_COL, TITLE_COL, FILE_FORMAT_COL, TRACK_TYPE_COL, \
+                                        ALL_STD_COL_SPECS, OPTIONAL_STD_COL_NAMES, \
+                                        ALL_STD_COL_NAMES, URI_COL, \
                                         GENOME_HEADER, MULTIPLE
+from gold.util.CommonConstants import ALLOWED_CHARS
 from gold.util.CustomExceptions import InvalidFormatError
+
 
 #
 # Namedtuples
 #
+from quick.util.CommonFunctions import urlDecodePhrase, \
+    formatPhraseWithCorrectChrUsage
 
 GSuiteContents = namedtuple('GSuiteContents', ['genome', 'colNames', 'headerVars', 'tracks'])
+
 
 #
 # Header lines, e.g.: "##track type: segments"
@@ -34,27 +38,30 @@ def _parseHeaderLine(line):
     val = val.strip()
 
     if key == GENOME_HEADER:
-        val = unquote(val)
-    else:
-        val = val.lower()
-
-    if key not in HEADER_VAR_DICT:
+        val = urlDecodePhrase(val)
+    elif key not in HEADER_VAR_DICT:
         if key.endswith(' '):
             raise InvalidFormatError('Header variable "%s" must not end with space.' % key)
 
-        raise InvalidFormatError('Header variable "%s" is not part of the GSuite format.' % key)
+        # raise InvalidFormatError('Header variable "%s" is not part of the GSuite format.' % key)
+        if urlDecodePhrase(key) != key:
+            raise InvalidFormatError('Custom header variable names in GSuite do not support URL '
+                                     'escaping. Offending header variable: "{}"'.format(key))
+    else:
+        val = val.lower()
 
-    if val not in HEADER_VAR_DICT[key].allowed:
-        raise InvalidFormatError('Value "%s" is not allowed for header "%s". Allowed values: %s' \
-                                 % (val, key, ', '.join(HEADER_VAR_DICT[key].allowed)))
+        if val not in HEADER_VAR_DICT[key].allowed:
+            raise InvalidFormatError('Value "%s" is not allowed for header "%s". Allowed values: %s' %
+                                     (val, key, ', '.join(HEADER_VAR_DICT[key].allowed)))
 
-    if key == FILE_TYPE_HEADER:
-        if val == TEXT:
-            val = PRIMARY
-        elif val == BINARY:
-            val = PREPROCESSED
+        if key == FILE_TYPE_HEADER:
+            if val == TEXT:
+                val = PRIMARY
+            elif val == BINARY:
+                val = PREPROCESSED
 
     return key, val
+
 
 def _updateHeaderVars(headerVars, key, val):
     if key in headerVars:
@@ -64,21 +71,29 @@ def _updateHeaderVars(headerVars, key, val):
     return headerVars
 
 
+def _setCustomHeaders(gSuite, headerVars):
+    for key, val in headerVars.iteritems():
+        if key not in HEADER_VAR_DICT:
+            gSuite.setCustomHeader(key, val)
+
+
 def _compareHeaders(headerName, textHeader, trackSummaryHeader):
     if textHeader != trackSummaryHeader:
-        raise InvalidFormatError \
-            ('The global value for GSuite header variable "%s" (%s) '
-              % (headerName, textHeader) + 'is not compatible with the combined '
-             'value of the corresponding track-specific variables: %s' % trackSummaryHeader)
+        raise InvalidFormatError(
+            'The global value for GSuite header variable "%s" (%s) '
+            % (headerName, textHeader) + 'is not compatible with the combined '
+            'value of the corresponding track-specific variables: %s' % trackSummaryHeader
+        )
 
 
 def _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite):
     for header in HEADER_VAR_DICT:
         if header in headerVars:
-            _compareHeaders(header, headerVars[header], getattr(gSuite, HEADER_VAR_DICT[header].memberName))
+            _compareHeaders(header, headerVars[header],
+                            getattr(gSuite, HEADER_VAR_DICT[header].memberName))
 
 
-#def _updateUnsetHeaderVarsWithDefaultVals(headerVars):
+# def _updateUnsetHeaderVarsWithDefaultVals(headerVars):
 #    for key in HEADER_VAR_DICT:
 #        if not key in headerVars:
 #            headerVars[key] = HEADER_VAR_DICT[key].default
@@ -93,24 +108,25 @@ def _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite):
 def _parseColumnSpecLine(line):
     colNames = line[3:].lower().split('\t')
 
-    #if any(' ' in colName for colName in colNames):
-    #    raise InvalidFormatError('Error in column specification line: %s ' % repr(line) +\
+    # if any(' ' in colName for colName in colNames):
+    #    raise InvalidFormatError('Error in column specification line: %s ' % repr(line) +
     #                             'Please separate columns by tab, not space.')
 
-    colNames = [(unquote(col) if unquote(col) not in ALL_STD_COL_NAMES else col)
+    colNames = [(col if col not in ALL_STD_COL_NAMES else col)
                 for col in colNames]
 
     for colName in colNames:
         if colNames.count(colName) > 1:
-            raise InvalidFormatError('Column "%s" appears multiple times in the ' % colName +\
+            raise InvalidFormatError('Column "%s" appears multiple times in the ' % colName +
                                      'column specification line.')
 
     if colNames[0] == '':
-        raise InvalidFormatError('Column specification line requires at least one' \
+        raise InvalidFormatError('Column specification line requires at least one'
                                  'column (the "uri" column), but none is specified.')
 
     if colNames[0] != URI_COL:
-        raise InvalidFormatError('The first column must be "%s", not "%s".' % (URI_COL, colNames[0]))
+        raise InvalidFormatError('The first column must be "%s", not "%s".' %
+                                 (URI_COL, colNames[0]))
 
     if any(colName.strip() == '' for colName in colNames):
         raise InvalidFormatError('Empty column names are not allowed.')
@@ -122,20 +138,26 @@ def _parseColumnSpecLine(line):
             nextOptStdColIdx = OPTIONAL_STD_COL_NAMES.index(colName)
 
             if nonStdColsFound:
-                raise InvalidFormatError('Non-standard columns "%s" ' % ', '.join(nonStdColsFound) +\
-                                         'encountered before standard column "%s".' % colName)
+                raise InvalidFormatError('Non-standard columns "%s" ' % ', '.join(nonStdColsFound)
+                                         + 'encountered before standard column "%s".' % colName)
             elif nextOptStdColIdx <= curOptStdColIdx:
-                raise InvalidFormatError('Standard columns are not in the correct order: ' \
-                                         '%s.' % ', '.join('"%s"' % col for col in OPTIONAL_STD_COL_NAMES))
+                raise InvalidFormatError('Standard columns are not in the correct order: '
+                                         '%s.' % ', '.join('"%s"' % col for col in
+                                                           OPTIONAL_STD_COL_NAMES))
 
             curOptStdColIdx = nextOptStdColIdx
         else:
+            if urlDecodePhrase(colName) != colName:
+                raise InvalidFormatError('Column names in GSuite do not support URL escaping. '
+                                         'Offending column name: "{}"'.format(colName))
             nonStdColsFound.append(colName)
 
     return colNames
 
+
 def _getDefaultColNames():
     return [URI_COL]
+
 
 #
 # Genome specification line, e.g.: "####genome=hg18"
@@ -151,13 +173,14 @@ def _parseGenomeLine(line):
         raise InvalidFormatError('Genome line not understood: ' + repr(genomeLine))
 
     key, genome = [_.strip() for _ in splitLine]
-    genome = unquote(genome)
+    genome = urlDecodePhrase(genome)
     key = key.lower()
 
     if key != 'genome':
-        raise InvalidFormatError('Key in genome line is not "genome": '+ key)
+        raise InvalidFormatError('Key in genome line is not "genome": ' + key)
 
     return genome
+
 
 #
 # Track line, e.g.: "http://server/file.bed\tMy track title\tcMyb"
@@ -169,13 +192,15 @@ def _popValueFromColValsAndNamesIfPresent(colVals, colNames, colName):
         colNames.remove(colName)
         return retVal
 
+
 def _parseTrackLine(trackLine, colNames, headerVars):
     colVals = trackLine.split('\t')
 
     if len(colVals) != len(colNames):
-        raise InvalidFormatError('The number of columns in track line: %s ' % (repr(trackLine)) +\
-                                 'is not equal to the number of columns in the ' \
-                                 'column specification line (%s != %s)' % (len(colVals), len(colNames)))
+        raise InvalidFormatError('The number of columns in track line: %s ' % (repr(trackLine)) +
+                                 'is not equal to the number of columns in the '
+                                 'column specification line (%s != %s)' %
+                                 (len(colVals), len(colNames)))
 
     from copy import copy
     remainingColNames = copy(colNames)
@@ -204,6 +229,7 @@ def _parseTrackLine(trackLine, colNames, headerVars):
 
     return track
 
+
 #
 # Helper functions
 #
@@ -213,7 +239,7 @@ def _setLevelAndCheckOrder(oldLevel, newLevel):
         if oldLevel == 5:
             raise InvalidFormatError('Header line after data line is not allowed.')
         else:
-            raise InvalidFormatError('Header type "%s" after type "%s" is not allowed.' % \
+            raise InvalidFormatError('Header type "%s" after type "%s" is not allowed.' %
                                      ('#' * newLevel, '#' * oldLevel))
 
     if newLevel == oldLevel == 4:
@@ -224,21 +250,22 @@ def _setLevelAndCheckOrder(oldLevel, newLevel):
 
     return newLevel
 
+
 def _checkCharUsageOfPhrase(phrase):
     for char in phrase:
-        if not char in ALLOWED_CHARS:
-            raise InvalidFormatError("Error: Character %s is not allowed in GSuite file. " % repr(char) +\
-                                     "Offending phrase: %s" % repr(phrase))
+        if char not in ALLOWED_CHARS:
+            raise InvalidFormatError("Error: Character %s is not allowed in GSuite file. " %
+                                     repr(char) + "Offending phrase: %s" % repr(phrase))
+
 
 #
 # GSuiteParser
 #
 
-def parseLines(gSuiteLines):
-    '''
+def parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders=True):
+    """
     :return GSuite:
-    '''
-    genome = None
+    """
     colNames = None
     headerVars = {}
 
@@ -252,7 +279,7 @@ def parseLines(gSuiteLines):
 
         _checkCharUsageOfPhrase(line)
 
-        if line.startswith('####'): #Deprecated, but kept for backwards compatibility
+        if line.startswith('####'):  # Deprecated, but kept for backwards compatibility
             level = _setLevelAndCheckOrder(level, 4)
             headerVars[GENOME_HEADER] = _parseGenomeLine(line)
         elif line.startswith('###'):
@@ -268,37 +295,44 @@ def parseLines(gSuiteLines):
             level = _setLevelAndCheckOrder(level, 5)
             trackLines.append(line)
 
-    #headerVars = _updateUnsetHeaderVarsWithDefaultVals(headerVars)
+    # headerVars = _updateUnsetHeaderVarsWithDefaultVals(headerVars)
     if not colNames:
         colNames = _getDefaultColNames()
 
     for trackLine in trackLines:
         gSuite.addTrack(_parseTrackLine(trackLine, colNames, headerVars),
                         allowDuplicateTitles=False)
-    
-    _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
+
+    _setCustomHeaders(gSuite, headerVars)
+
+    if not allowTrackSummaryToOverrideHeaders:
+        _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
 
     return gSuite
 
-def parseFromString(gSuiteStr):
-    '''
-    :return GSuite:
-    '''
-    return parseLines(gSuiteStr.split('\n'))
 
-def parse(gSuiteFileName):
-    '''
+def parseFromString(gSuiteStr, allowTrackSummaryToOverrideHeaders=True):
+    """
     :return GSuite:
-    '''
+    """
+    return parseLines(gSuiteStr.split('\n'), allowTrackSummaryToOverrideHeaders)
+
+
+def parse(gSuiteFileName, allowTrackSummaryToOverrideHeaders=True):
+    """
+    :return GSuite:
+    """
     with open(gSuiteFileName) as gSuiteFileHandle:
-        gSuite = parseLines(gSuiteFileHandle)
+        gSuite = parseLines(gSuiteFileHandle, allowTrackSummaryToOverrideHeaders)
 
     return gSuite
 
-def validateLines(gSuiteLines, outFile=None, printHelpText=True):
-    '''
+
+def validateLines(gSuiteLines, outFile=None, printHelpText=True,
+                  allowTrackSummaryToOverrideHeaders=False):
+    """
     :return bool: True if GSuite file is valid, else False
-    '''
+    """
     out = outFile if outFile is not None else StringIO()
 
     if printHelpText:
@@ -306,7 +340,7 @@ def validateLines(gSuiteLines, outFile=None, printHelpText=True):
         print >>out, '-----------------'
 
     try:
-        parseLines(gSuiteLines)
+        parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders)
         valid = True
         print >>out, 'GSuite file is valid'
 
@@ -324,21 +358,29 @@ def validateLines(gSuiteLines, outFile=None, printHelpText=True):
 
     return valid
 
-def validateFromString(gSuiteStr, outFile=None, printHelpText=True):
-    '''
+
+def validateFromString(gSuiteStr, outFile=None, printHelpText=True,
+                       allowTrackSummaryToOverrideHeaders=False):
+    """
     :return bool: True if GSuite file is valid, else False
-    '''
-    valid = validateLines(gSuiteStr.split('\n'), outFile,
-                          printHelpText=printHelpText)
+    """
+    valid = validateLines(
+        gSuiteStr.split('\n'), outFile,
+        printHelpText=printHelpText,
+        allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders)
 
     return valid
 
-def validate(gSuiteFileName, outFile=None, printHelpText=True):
-    '''
+
+def validate(gSuiteFileName, outFile=None, printHelpText=True,
+             allowTrackSummaryToOverrideHeaders=False):
+    """
     :return bool: True if GSuite file is valid, else False
-    '''
+    """
     with open(gSuiteFileName) as gSuiteFileHandle:
-        valid = validateLines(gSuiteFileHandle, outFile,
-                              printHelpText=printHelpText)
+        valid = validateLines(
+            gSuiteFileHandle, outFile,
+            printHelpText=printHelpText,
+            allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders)
 
     return valid

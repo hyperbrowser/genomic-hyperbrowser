@@ -1,3 +1,5 @@
+//<%include file="/proto/common.js" />
+
 function checkForException(data) {
     if (data.exception != undefined) {
         if (data.exception) {

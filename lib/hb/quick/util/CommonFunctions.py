@@ -14,7 +14,7 @@ from collections import Iterable, OrderedDict
 from config.Config import PROCESSED_DATA_PATH, DEFAULT_GENOME, \
     ORIG_DATA_PATH, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
     PARSING_ERROR_DATA_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonConstants import BINARY_MISSING_VAL, ALLOWED_CHARS
 from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
@@ -49,19 +49,19 @@ def createMemoPath(region, statId, configHash, track1Hash, track2Hash):
                         [str(configHash), chr] ).replace('-','_') #replace('-','_') because hashes can be minus, and minus sign makes problems with file handling
 
 
-@takes(basestring, list_of(basestring),(basestring,type(None)))
+@takes(basestring, list_of(basestring), (basestring, type(None)))
 def createOrigPath(genome, trackName, fn=None):
     #print 'genome:',genome
     #print 'trackName:',trackName
     return os.sep.join([ORIG_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
 
-@takes(str,(list,tuple),(str,type(None)))
+@takes(basestring, (list, tuple), (basestring, type(None)))
 def createCollectedPath(genome, trackName, fn=None):
     return os.sep.join([NONSTANDARD_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
 
-@takes(str,(list,tuple),(str,type(None)))
+@takes(basestring, (list, tuple), (basestring, type(None)))
 def createParsingErrorPath(genome, trackName, fn=None):
     return os.sep.join([PARSING_ERROR_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
@@ -75,7 +75,7 @@ def getFileSuffix(fn):
     return os.path.splitext(fn)[1].replace('.','')
 
 
-@takes(str)
+@takes(basestring)
 def stripFileSuffix(fn):
     suffix = getFileSuffix(fn)
     return fn[:-len(suffix)-1]
@@ -729,6 +729,38 @@ def cleanUpTrackType(trackTypeStr):
         trackTypeStr = trackTypeStr.replace(old, new).strip()
 
     return trackTypeStr
+
+
+def formatPhraseWithCorrectChrUsage(phrase, useUrlEncoding=True, notAllowedChars=''):
+    corrected = ''
+    for char in phrase:
+        if char not in ALLOWED_CHARS or char in notAllowedChars:
+            if useUrlEncoding:
+                if isinstance(phrase, unicode):
+                    char = char.encode('utf-8')
+                for byte in char:
+                    if not isinstance(byte, int):
+                        byte = ord(byte)
+                    corrected += '%' + '{:0>2X}'.format(byte)
+        else:
+            corrected += char
+    return corrected
+
+
+def urlDecodePhrase(phrase, unquotePlus=False):
+    if unquotePlus:
+        decoded = urllib.unquote_plus(phrase)
+    else:
+        decoded = urllib.unquote(phrase)
+
+    try:
+        try:
+            decoded.decode('ascii')
+            return decoded
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return decoded.decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return decoded
 
 def dump_args_and_more(func):
     '''This decorator dumps out the arguments passed to a function before calling it,

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import unittest
 import tempfile
 import os
@@ -919,12 +921,12 @@ class TestGenomeElementSource(TestCaseWithImprovedAsserts):
                 ['####genome=TestGenome; seqid=chrM; start=10; end=13',
                  '\t'.join(['a','b%3D=near,%2Cbinding;c=far,%2Cnon-binding','%3C']),
                  '\t'.join(['b=','a=near,%2Cbinding','%3C']),
-                 '\t'.join(['c','a=far,%2Cnon-binding','%09'])],
+                 '\t'.join(['c','a=far,%2Cnon-binding','%c3%b8'])],
                 '.gtrack',
                 ['t15','gtrack'],
                 [GenomeElement('TestGenome', 'chrM', id='a', edges=['b=','c'], weights=[['near',',binding'],['far',',non-binding']], extra=OrderedDict([('test','<')])),
                  GenomeElement('TestGenome', 'chrM', id='b=', edges=['a'], weights=[['near',',binding']], extra=OrderedDict([('test','<')])),
-                 GenomeElement('TestGenome', 'chrM', id='c', edges=['a'], weights=[['far',',non-binding']], extra=OrderedDict([('test','\t')]))],
+                 GenomeElement('TestGenome', 'chrM', id='c', edges=['a'], weights=[['far',',non-binding']], extra=OrderedDict([('test',u'ø')]))],
                 [BoundingRegionTuple(region=GenomeRegion('TestGenome', 'chrM', start=10, end=13), elCount=3)],
                 GtrackGenomeElementSource,
                 ['id', 'edges', 'weights', 'test'],

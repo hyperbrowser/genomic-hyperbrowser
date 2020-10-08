@@ -14,6 +14,7 @@ from gold.track.GenomeRegion import GenomeRegion
 from gold.util.CustomExceptions import InvalidFormatError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.ExternalTrackManager import ExternalTrackManager
+from quick.util.CommonFunctions import formatPhraseWithCorrectChrUsage
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from third_party.asteval_raise_errors import Interpreter
 
@@ -500,7 +501,7 @@ class TabularToGtrackTool(GeneralGuiTool):
                         if col == '':
                             cols[j] = '.'
                         else:
-                            cols[j] = GtrackGenomeElementSource.convertPhraseToAllowed(col)
+                            cols[j] = formatPhraseWithCorrectChrUsage(col, notAllowedChars='#\t')
 
                     if cropCrossingSegments:
                         from quick.util.GenomeInfo import GenomeInfo
@@ -582,7 +583,9 @@ class TabularToGtrackTool(GeneralGuiTool):
 
                                     edges += idDict[id] if choices.idGeneration == 'Counting' else id
                                     if 'link_weight' in headerIdxs:
-                                        edges += '=' + GtrackGenomeElementSource.convertPhraseToAllowed(cols[headerIdxs['link_weight']])
+                                        edges += '=' + formatPhraseWithCorrectChrUsage(
+                                                           cols[headerIdxs['link_weight']],
+                                                           notAllowedChars='#\t')
                                     regIdx += 1
 
                                     curCols[headerIdxs['edges']] = edges

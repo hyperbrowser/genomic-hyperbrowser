@@ -1,5 +1,5 @@
 def getSupportedFileSuffixesForBinning():
-    return ['gtrack', 'bed', 'point.bed', 'category.bed', 'valued.bed', 'wig', \
+    return ['gtrack', 'gtrack.gz', 'bed', 'point.bed', 'category.bed', 'valued.bed', 'wig', \
             'targetcontrol.bedgraph', 'bedgraph', 'gff', 'gff3', 'category.gff', \
             'narrowpeak', 'broadpeak']
 

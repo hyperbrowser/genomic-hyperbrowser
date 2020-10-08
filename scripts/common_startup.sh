@@ -173,13 +173,13 @@ else:
 EOF`
     case $method in
         req)
-            pip install --no-index --find-links ${GALAXY_WHEELS_INDEX_URL}/pip --upgrade "pip==${GXPIP_VERSION}"
+            pip install --no-index --find-links ${GALAXY_WHEELS_INDEX_URL}/pip/ --upgrade "pip==${GXPIP_VERSION}"
             ;;
         wheel)
-            pip install --upgrade "https://wheels.galaxyproject.org/packages/pip-${GXPIP_VERSION}-py2.py3-none-any.whl"
+            pip install --upgrade "https://wheels.galaxyproject.org/pip/pip-${GXPIP_VERSION}-py2.py3-none-any.whl"
             ;;
         sdist)
-            pip install --upgrade "https://wheels.galaxyproject.org/packages/pip-${GXPIP_VERSION}.tar.gz"
+            pip install --upgrade "https://wheels.galaxyproject.org/pip/pip-${GXPIP_VERSION}.tar.gz"
             ;;
     esac
 

@@ -53,7 +53,7 @@ class AnalysisManager:
         return None, False
 
     @staticmethod
-    @takes(str, str, list, list)
+    @takes(basestring, basestring, list, list)
     def getValidAnalysesInCategory(category, genome, trackName1, trackName2):#, formatConverter1=None, formatConverter2=None):
         #print 'AnalysisManager: ',trackName1
         validAnalyses = []

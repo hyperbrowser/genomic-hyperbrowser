@@ -5,13 +5,13 @@ from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuiteConstants import TITLE_COL
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from gold.track.trackstructure.random.ExcludedSegmentsStorage import ExcludedSegmentsStorage
 from gold.track.trackstructure.random.ShuffleElementsBetweenTracksAndBinsTvProvider import \
     ShuffleElementsBetweenTracksAndBinsTvProvider
 from gold.track.trackstructure.random.TrackDataStorageRandAlgorithm import \
-    ShuffleElementsBetweenTracksAndBinsRandAlgorithm
+    CollisionDetectionTracksAndBinsRandAlgorithm
 from gold.util.CommonClasses import OrderedDefaultDict
-from proto.RSetup import r, robjects
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
@@ -24,11 +24,13 @@ from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.restricted.visualization.visualizationGraphs import visualizationGraphs
 
 
-class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
+class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
+                                    RandAlgorithmMixin, DebugMixin):
 
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
@@ -82,11 +84,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                 ('Select second GSuite', 'secondGSuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                 [('Select category for second GSuite', 'secondGSuiteCat'),
-                 ('Select analysis', 'analysis'),
-                ('Select excluded regions track', 'excludedRegions'),
-                 ('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+                 ('Select analysis', 'analysis')] + \
+                cls.getInputBoxNamesForRandAlgSelection() + \
+                [('Select MCFDR sampling depth', 'mcfdrDepth')] + \
                 cls.getInputBoxNamesForUserBinSelection() + \
-               cls.getInputBoxNamesForDebug()
+                cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -249,13 +251,12 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         return ['Forbes', 'Forbes with a p-val']
 
     @classmethod
-    def getOptionsBoxExcludedRegions(cls, prevChoices):
-        if prevChoices.analysis in ['Forbes with a p-val']:
-            return GeneralGuiTool.getHistorySelectionElement()
+    def _showRandAlgorithmChoices(cls, prevChoices):
+        return prevChoices.analysis in ['Forbes with a p-val']
 
     @classmethod
     def getOptionsBoxMcfdrDepth(cls, prevChoices):
-        if prevChoices.analysis in ['Forbes with a p-val']:
+        if prevChoices.randType and prevChoices.randType != cls.SELECT_CHOICE_STR:
             return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
 
     # @classmethod
@@ -322,17 +323,12 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         secondGSuiteCat = secondGSuiteCat.encode("utf-8")
 
         genome = choices.genome
-        regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
-        analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome=genome)
+        analysisBins = UserBinMixin.getUserBinSource(choices)
 
         import quick.gsuite.GuiBasedTsFactory as factory
 
         firstTs = factory.getFlatTracksTS(genome, choices.firstGSuite)
         secondTs = factory.getFlatTracksTS(genome, choices.secondGSuite)
-
-        excludedTs = None
-        if choices.excludedRegions:
-            excludedTs = factory.getSingleTrackTS(genome, choices.excludedRegions)
 
         core = HtmlCore()
         # core.begin()
@@ -357,7 +353,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             cls.drawHist(core, data)
 
         else:
-            ts = cls._prepareRandomizedTs(firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat, excludedTs)
+            ts = cls._prepareRandomizedTs(choices, firstTs, secondTs, analysisBins,  firstGSuiteCat, secondGSuiteCat)
             analysisSpec = cls._prepareAnalysisWithHypothesisTests(choices)
             if DebugConfig.USE_PROFILING:
                 from gold.util.Profiler import Profiler
@@ -372,13 +368,12 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
             else:
                 result = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
 
-
             transformedResultsDict = OrderedDefaultDict(list)
             data = []
             data1 = []
             for cat, res in result.iteritems():
-                forbes = res.result['TSMC_' + PairedTSStat.__name__]
-                pVal = res.result[McEvaluators.PVAL_KEY]
+                forbes = res.getResult()['TSMC_' + PairedTSStat.__name__]
+                pVal = res.getResult()[McEvaluators.PVAL_KEY]
                 transformedResultsDict[cat].append(forbes)
                 transformedResultsDict[cat].append(pVal)
                 data.append(forbes)
@@ -402,6 +397,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
     @classmethod
     def drawHist(cls, core, data, breaks = False):
+        from proto.RSetup import r, robjects
 
         if breaks == False:
             rCode = 'ourHist <- function(vec) {hist(vec, plot=FALSE)}'
@@ -447,10 +443,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                     ts[cat1] = realTs
         return ts
 
-
     @classmethod
-    def _prepareRandomizedTs(cls, firstTs, secondTs, binSource,  firstGSuiteCat, secondGSuiteCat,
-                             excludedTs=None, allowOverlaps=False):
+    def _prepareRandomizedTs(cls, choices, firstTs, secondTs, binSource,  firstGSuiteCat, secondGSuiteCat):
         ts = TrackStructureV2()
         for sts1 in firstTs.getLeafNodes():
             #assert 'category' in sts1.metadata, "The GSuites must contain a category column/attribute named 'category'"
@@ -468,22 +462,15 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
                     randTs = TrackStructureV2()
                     randTs["query"] = sts1
                     #TODO: handle randomization of sub-trackstructures better
-                    excludedSegments = ExcludedSegmentsStorage(excludedTS=excludedTs, binSource=binSource)
-                    randAlg = ShuffleElementsBetweenTracksAndBinsRandAlgorithm(allowOverlaps,
-                                                                               excludedSegmentsStorage=excludedSegments)
-                    randTvProvider = ShuffleElementsBetweenTracksAndBinsTvProvider(randAlgorithm=randAlg,
-                                                                                   origTs=sts2,
-                                                                                   binSource=binSource)
-                    randTs["reference"] = sts2._getRandomizedVersion(randTvProvider, 0)
-                    # randTs["reference"] = sts2.getRandomizedVersion(ShuffleElementsBetweenTracksAndBinsTvProvider, binSource=binSource, excludedTs=excludedTs, allowOverlaps=False, randIndex=0)
+                    randTvProvider = cls.createTrackViewProvider(choices, sts2, binSource,
+                                                                 choices.genome)
+                    randTs["reference"] = getRandomizedVersionOfTs(sts2, randTvProvider)
                     hypothesisTS = TrackStructureV2()
                     hypothesisTS["real"] = realTs
                     hypothesisTS["rand"] = randTs
                     ts[cat1] = hypothesisTS
 
         return ts
-
-
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
@@ -497,7 +484,25 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+        errorString = cls._checkGSuiteFile(choices.firstGSuite)
+        if errorString:
+            return errorString
+
+        errorString = cls._checkGSuiteFile(choices.secondGSuite)
+        if errorString:
+            return errorString
+
+        errorString = cls._validateGenome(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
 
     # @classmethod
     # def getSubToolClasses(cls):
@@ -675,7 +680,6 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin, D
         analysisSpec.addParameter('pairedTsRawStatistic', ObservedVsExpectedStat.__name__)
         analysisSpec.addParameter('tail', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
-        analysisSpec.addParameter('tvProviderClass', ShuffleElementsBetweenTracksAndBinsTvProvider)
         analysisSpec.addParameter('runLocalAnalysis', 'No')
         return analysisSpec
 

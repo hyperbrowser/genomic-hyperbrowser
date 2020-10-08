@@ -1,6 +1,8 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.track.TsBasedRandomTrackViewProvider import TsBasedRandomTrackViewProvider
+from gold.track.trackstructure.TsRandAlgorithmRegistry import getTvProviderClsFromName
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 
 from quick.application.SignatureDevianceLogging import takes, classType
 from quick.util.CommonFunctions import getClassName
@@ -10,8 +12,6 @@ from collections import OrderedDict
 from gold.track.TrackStructure import TrackStructure
 from quick.util.debug import DebugUtil
 from __builtin__ import str
-
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
 class GenericMCSamplesV2Stat(MagicStatFactory):
@@ -46,13 +46,7 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
         self._numMcSamples = int(numMcSamples)
         self._tvProviderClass = tvProviderClass
         if isinstance(self._tvProviderClass, basestring):
-            #TODO should within tracks also be supported?
-            #TODO: nameToClassDict should probably be moved to a more generic place, from where it can be imported to wherever needed..
-            nameToClassDict = {repr(subclass): subclass for subclass in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Between tracks'].values() + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT['Within tracks'].values()}
-            self._tvProviderClass = nameToClassDict[self._tvProviderClass]
-
-
-
+            self._tvProviderClass = getTvProviderClsFromName(self._tvProviderClass)
 
         #TODO: Boris double check that code below is not needed in new version..
         # assert (randTrackStructureClassDict is None) ^ (assumptions is None) # xor, corresponding to two alternative specs of the same
@@ -72,11 +66,12 @@ class GenericMCSamplesV2StatUnsplittable(StatisticV2):
     def _createRandomizedStat(self, i):
         # Refactor the first argument after a better track input handling is in place..
         if 'reference' in self._trackStructure:
-            randomizedTrackStructure = self._trackStructure
-            randomizedTrackStructure['reference'] = randomizedTrackStructure['reference'].getRandomizedVersion(self._tvProviderClass, False,i)  # TODO: Handle AllowOverlaps
+            randTs = self._trackStructure
+            randTs['reference'] = getRandomizedVersionOfTs(randTs['reference'],
+                                                           self._tvProviderClass, i)
         else:
-            randomizedTrackStructure = self._trackStructure.getRandomizedVersion(self._tvProviderClass, False,i)
-        return self._rawStatistic(self._region, randomizedTrackStructure, **self._kwArgs)
+            randTs = getRandomizedVersionOfTs(self._trackStructure, self._tvProviderClass, i)
+        return self._rawStatistic(self._region, randTs, **self._kwArgs)
         # return createRandomizedTrackStructureStat(self._trackStructure, self._randTrackStructureClassDict, self._rawStatistic, self._region, self._kwArgs, i)
 
     def _compute(self):

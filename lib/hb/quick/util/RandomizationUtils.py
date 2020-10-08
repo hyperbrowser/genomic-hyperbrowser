@@ -39,7 +39,7 @@ def createRandomizedStat(tracks, randomizationStrategies, rawStatistic, region, 
         randStrat = (globals()[randStratStr] if type(randStratStr) is str else randStratStr) if randStratStr not in [None, ''] else None
         
         if randStrat:
-            randomizedTracks.append(randStrat(track, region, i, **kwArgs))
+            randomizedTracks.append(randStrat(track, i, **kwArgs))
         else:
             randomizedTracks.append(track)
         
