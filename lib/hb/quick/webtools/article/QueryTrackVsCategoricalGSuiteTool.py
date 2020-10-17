@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 
 import quick.gsuite.GuiBasedTsFactory as factory
 from config.Config import STATIC_DIR
-from gold.application.HBAPI import doAnalysis
+from gold.application.HBAPI import doAnalysisWithProfiling
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
@@ -447,7 +447,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         ts = cls.prepareTrackStructure(queryTS, catTS)
         operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
         analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         # cls._endProgressOutput()
         cls._endDebugOutput()
         cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
@@ -478,19 +478,19 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         resultsWilcoxonTtest = None
         resultsMC = None
         # cls._startProgressOutput()
-        results = cls._getResults(queryTS, catTS, analysisBins, choices, categoryVal)
+        results = cls._getResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
         if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
-            resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, queryTS, categoryVal).getResult()
+            resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal).getResult()
         else:
-            resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices, categoryVal)
+            resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
         # cls._endProgressOutput()
         cls._endDebugOutput()
         return results, resultsMC, resultsWilcoxonTtest
 
 
     @classmethod
-    def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, queryTS, categoryVal=None):
+    def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal=None):
         if not categoryVal:
             categoryVal = choices.categoryVal
         ts = cls.prepareTrackStructure(queryTS, catTS)
@@ -505,25 +505,25 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('alternative', choices.tail)
         analysisSpec.addParameter('primaryCatVal', categoryVal)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
 
     @classmethod
-    def _getResults(cls, queryTS, catTS, analysisBins, choices, categoryVal=None):
+    def _getResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
         ts = cls.prepareTrackStructure(queryTS, catTS)
         analysisSpec = cls.prepareAnalysis(choices, categoryVal)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
 
     @classmethod
-    def _getMCResults(cls, queryTS, catTS, analysisBins, choices, categoryVal=None):
+    def _getMCResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
         if not categoryVal:
             categoryVal = choices.categoryVal
         tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
                                            categoryVal)
         operationCount = cls._calculateNrOfOperationsForProgresOutput(tsMC.values()[0]['real'], analysisBins, choices)
         analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount, categoryVal)
-        globalResult = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
+        globalResult = doAnalysisWithProfiling(analysisSpecMC, analysisBins, tsMC, galaxyFn).getGlobalResult()
         resultsMC = globalResult['Result']
         return resultsMC
 
