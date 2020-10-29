@@ -74,17 +74,21 @@ def doAnalysisWithProfiling(analysisSpec, analysisBins, trackStructure, galaxyFn
     job = StatJob(analysisBins, trackStructure, validStatClass)
 
     from config.DebugConfig import DebugConfig
-    assert DebugConfig.USE_PROFILING
-    from gold.util.Profiler import Profiler
-    profiler = Profiler()
-    resDict = {}
-    profiler.run('resDict[0] = job.run(printProgress=False)', globals(), locals())
-    res = resDict[0]
-    profiler.printStats()
-    if DebugConfig.USE_CALLGRAPH and galaxyFn:
-        profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+    if DebugConfig.USE_PROFILING:
+        from gold.util.Profiler import Profiler
+        profiler = Profiler()
+        resDict = {}
+        profiler.run('resDict[0] = job.run(printProgress=False)', globals(), locals())
+        res = resDict[0]
+        profiler.printStats()
+        if DebugConfig.USE_CALLGRAPH and galaxyFn:
+            profiler.printLinkToCallGraph(['profile_AnalysisDefJob'], galaxyFn)
+    else:
+        res = job.run(printProgress=False)  # printProgress should be optional?
 
     return res
+
+
 # @sdl.takes(Track, GenomeRegion)
 # @sdl.returns(TrackView)
 def getTrackData(track, region):
