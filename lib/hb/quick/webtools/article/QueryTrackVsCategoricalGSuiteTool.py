@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 
 import quick.gsuite.GuiBasedTsFactory as factory
 from config.Config import STATIC_DIR
-from gold.application.HBAPI import doAnalysis
+from gold.application.HBAPI import doAnalysisWithProfiling
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
@@ -95,9 +95,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 ('Select case value', 'caseVal')] + \
                 cls.getInputBoxNamesForQueryTrackVsCatGSuite()[1:] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
-                cls.getInputBoxNamesForUserBinSelection() \
-               # + \
-               #  cls.getInputBoxNamesForDebug()
+                cls.getInputBoxNamesForUserBinSelection() + \
+                cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsQueryGSuite():
@@ -375,6 +374,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         Mandatory unless isRedirectTool() returns True.
         """
 
+        cls._setDebugModeIfSelected(choices)
+
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
 
@@ -393,6 +394,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         resultsDict = {}
 
+        cls._printPageHeader()
         for combination,gsuite in combinationGsuites.iteritems():
             refTS = factory.getFlatTracksTSFromGsuiteObject(choices.genome, gsuite)
             catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
@@ -441,18 +443,19 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     @classmethod
     def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        cls._startProgressOutput()
+        # cls._startProgressOutput()
         ts = cls.prepareTrackStructure(queryTS, catTS)
         operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
         analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        cls._endProgressOutput()
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
+        # cls._endProgressOutput()
+        cls._endDebugOutput()
         cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
 
     @classmethod
     def _printMultiQueryScenarioResult(cls, results, catNames, choices, galaxyFn):
         core = HtmlCore()
-        core.divBegin()
+        # core.divBegin()
         resTableDict = OrderedDict()
         if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             for key, val in results.iteritems():
@@ -466,28 +469,28 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             columnNames = ["Query track"] + catNames
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
             # core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
-        core.divEnd()
-        core.end()
+        # core.divEnd()
+        # core.end()
         print str(core)
 
     @classmethod
     def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal=None):
         resultsWilcoxonTtest = None
         resultsMC = None
-        cls._startProgressOutput()
-        results = cls._getResults(queryTS, catTS, analysisBins, choices, categoryVal)
+        # cls._startProgressOutput()
+        results = cls._getResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
         if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
-            resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, queryTS, categoryVal).getResult()
+            resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal).getResult()
         else:
-            resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices, categoryVal)
-        cls._endProgressOutput()
-
+            resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
+        # cls._endProgressOutput()
+        cls._endDebugOutput()
         return results, resultsMC, resultsWilcoxonTtest
 
 
     @classmethod
-    def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, queryTS, categoryVal=None):
+    def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal=None):
         if not categoryVal:
             categoryVal = choices.categoryVal
         ts = cls.prepareTrackStructure(queryTS, catTS)
@@ -502,40 +505,60 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('alternative', choices.tail)
         analysisSpec.addParameter('primaryCatVal', categoryVal)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
 
     @classmethod
-    def _getResults(cls, queryTS, catTS, analysisBins, choices, categoryVal=None):
+    def _getResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
         ts = cls.prepareTrackStructure(queryTS, catTS)
         analysisSpec = cls.prepareAnalysis(choices, categoryVal)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
 
     @classmethod
-    def _getMCResults(cls, queryTS, catTS, analysisBins, choices, categoryVal=None):
+    def _getMCResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
         if not categoryVal:
             categoryVal = choices.categoryVal
         tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
                                            categoryVal)
         operationCount = cls._calculateNrOfOperationsForProgresOutput(tsMC.values()[0]['real'], analysisBins, choices)
         analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount, categoryVal)
-        globalResult = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()
+        globalResult = doAnalysisWithProfiling(analysisSpecMC, analysisBins, tsMC, galaxyFn).getGlobalResult()
         resultsMC = globalResult['Result']
         return resultsMC
 
+
+    @classmethod
+    def _printPageHeader(cls):
+        core = HtmlCore()
+        core.begin(reloadTime=5)
+
+        core.styleInfoBegin(style='text-align:right')
+        core.toggle('Toggle debug', styleClass='debug')
+        core.styleInfoEnd()
+
+        core.styleInfoBegin(styleClass='debug')
+        print str(core)
+
+    @classmethod
+    def _endDebugOutput(cls):
+        core = HtmlCore()
+        core.styleInfoEnd()
+        print str(core)
+
+    @classmethod
+    def _printPageFooter(cls, core):
+        # core.divEnd()
+        core.hideToggle(styleClass='debug')
+        core.end(stopReload=True)
+        print str(core)
+
     @classmethod
     def _printResultsHeader(cls, choices, core):
-        core.divBegin()
+        # core.divBegin()
         core.paragraph(
             'The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
                 choices.summaryFunc, choices.similarityFunc))
-
-    @classmethod
-    def _printResultsFooter(cls, core):
-        core.divEnd()
-        core.end()
-        print str(core)
 
     @classmethod
     def _printResultsHtml(cls, choices, resultsDict, galaxyFn):
@@ -593,7 +616,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict,
                                                   columnNames)
-        cls._printResultsFooter(core)
+        cls._printPageFooter(core)
 
     @classmethod
     def _getNullDistributionFile(cls, choices, galaxyFn, resultsMC, categoryVal=None):
@@ -830,16 +853,16 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     #     """
     #     return None
     #
-    # @classmethod
-    # def isDebugMode(cls):
-    #     """
-    #     Specifies whether the debug mode is turned on. Debug mode is
-    #     currently mostly used within the Genomic HyperBrowser and will make
-    #     little difference in a plain Galaxy ProTo installation.
-    #
-    #     Optional method. Default return value if method is not defined: False
-    #     """
-    #     return True
+    @classmethod
+    def isDebugMode(cls):
+        """
+        Specifies whether the debug mode is turned on. Debug mode is
+        currently mostly used within the Genomic HyperBrowser and will make
+        little difference in a plain Galaxy ProTo installation.
+    
+        Optional method. Default return value if method is not defined: False
+        """
+        return True
 
     @classmethod
     def getOutputFormat(cls, choices):

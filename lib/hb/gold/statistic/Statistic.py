@@ -35,12 +35,13 @@ class Statistic(object):
 
             message = self.__class__.__name__ + '(' + self._traceId + ').' + methodName \
                   + ( (' (' + str(self._region) +')') if DebugConfig.TRACE_PRINT_REGIONS else '') \
-                  + ( ( ' (' + str(self._track.trackName) \
-                  + (',' + str(self._track2.trackName) if hasattr(self,'_track2') else '') \
-                  + ')' ) if DebugConfig.TRACE_PRINT_TRACK_NAMES else '')
+                  + ( ( ' (' + self._getTracksAsStr() + ')' ) if DebugConfig.TRACE_PRINT_TRACK_NAMES else '')
 
             logMessage(message)
             print message, '<br>'
+
+    def _getTracksAsStr(self):
+        return str(self._track.trackName) + (',' + str(self._track2.trackName) if hasattr(self,'_track2') else '')
 
     def __init__(self, region, track, track2=None, *args, **kwArgs):
         from config.Config import IS_EXPERIMENTAL_INSTALLATION

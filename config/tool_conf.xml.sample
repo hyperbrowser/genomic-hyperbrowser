@@ -43,6 +43,7 @@
       <tool file="proto/hyperbrowser/gsuite/EditGsuiteMetadataTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/UnionOfGSuiteTracksTool.xml" />
       <tool file="proto/hyperbrowser/gsuite/MultiTrackIntersectTool.xml" />
+      <tool file="proto/hyperbrowser/article/GroupGSuiteTracks.xml" />
     <label text="Modify datasets referred to in a GSuite" id="gsuite_dataset_modify"/>
       <tool file="proto/hyperbrowser/gsuite/GSuiteManipulateTextFiles.xml" />
     <label text="Export GSuite datasets" id="gsuite_export_tools"/>
