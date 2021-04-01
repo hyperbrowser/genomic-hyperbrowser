@@ -134,8 +134,8 @@ if [ $SET_VENV -eq 1 ]; then
                 echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py
             done
 
-            echo "#!/usr/bin/env bash\n. `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which R` \$@" >$GALAXY_VIRTUAL_ENV/bin/R
-            echo "#!/usr/bin/env bash\n. `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which Rscript` \$@" >$GALAXY_VIRTUAL_ENV/bin/Rscript
+            printf "#!/usr/bin/env bash\n. `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which R` \$@" >$GALAXY_VIRTUAL_ENV/bin/R
+            printf "#!/usr/bin/env bash\n. `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which Rscript` \$@" >$GALAXY_VIRTUAL_ENV/bin/Rscript
             chmod a+x $GALAXY_VIRTUAL_ENV/bin/R $GALAXY_VIRTUAL_ENV/bin/Rscript
 
             mkdir $GALAXY_VIRTUAL_ENV/R
