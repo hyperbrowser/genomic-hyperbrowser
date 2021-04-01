@@ -117,6 +117,9 @@ if [ $SET_VENV -eq 1 ]; then
     # should run this instance in.
     if [ -d "$GALAXY_VIRTUAL_ENV" ];
     then
+        printf "Activating virtualenv at $GALAXY_VIRTUAL_ENV\n"
+        . "$GALAXY_VIRTUAL_ENV/bin/activate"
+
         # R setup for Galaxy ProTo.
         # Thanks to Dr. Paul Harrison for the setup
         # (http://www.logarithmic.net/pfh/blog/01415014891)
@@ -138,9 +141,6 @@ if [ $SET_VENV -eq 1 ]; then
             mkdir $GALAXY_VIRTUAL_ENV/R
             mkdir $GALAXY_VIRTUAL_ENV/R/library
         fi
-
-        printf "Activating virtualenv at $GALAXY_VIRTUAL_ENV\n"
-        . "$GALAXY_VIRTUAL_ENV/bin/activate"
 
         # Because it's a virtualenv, we assume $PYTHONPATH is unnecessary for
         # anything in the venv to work correctly, and having it set can cause
