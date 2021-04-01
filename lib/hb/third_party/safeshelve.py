@@ -1,6 +1,9 @@
-import shelve, os, fcntl, new
+import shelve, os, fcntl
 import __builtin__
+import bsddb3
+
 from fcntl import LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB
+
 
 class SafeShelf(shelve.Shelf):
     def close(self):
@@ -37,6 +40,7 @@ class SafeShelf(shelve.Shelf):
     #    print key
     #    shelve.Shelf.__setitem__(self, key, val)
 
+
 def open(filename, flag='c', protocol=None, writeback=False, block=True):
     #print 'opening shelf with flag %s and fn: %s' % (flag,filename)
     """Open the shelve file, creating a lockfile at '.filename.lck'.  If 
@@ -58,7 +62,8 @@ def open(filename, flag='c', protocol=None, writeback=False, block=True):
     fcntl.flock(lckfile.fileno(), lockflags)
 
     # Open the shelf
-    shelf = shelve.open(filename, flag, protocol, writeback)
-    
+    # shelf = shelve.open(filename, flag, protocol, writeback)
+    shelf = shelve.Shelf(bsddb3.hashopen(filename, flag), protocol, writeback)
+
     # And return a SafeShelf version of it
     return SafeShelf.convertFromShelf(shelf, lckfile)

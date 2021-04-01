@@ -66,11 +66,11 @@ class GeneralGuiToolMixin(object):
     #
     # @classmethod
     # def getTests(cls):
-    #     import shelve
+    #     import third_party.safeshelve as safeshelve
     #     SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve' % cls.toolId
     #     if os.path.isfile(SHELVE_FN):
     #
-    #         testDict = shelve.open(SHELVE_FN)
+    #         testDict = safeshelve.open(SHELVE_FN)
     #         resDict = dict()
     #         for k, v in testDict.items():
     #             resDict[k] = cls.convertHttpParamsStr(v)

@@ -16,10 +16,14 @@ BrInfoHolder = namedtuple('BrInfoHolder', ['brStarts', 'brInfos'])
 
 BR_SHELVE_FILE_NAME = 'boundingRegions.shelve'
 
+
 def isBoundingRegionFileName(fn):
     return fn == BR_SHELVE_FILE_NAME
-    
+
+
 class BoundingRegionShelve(object):
+    PROTOCOL = 1
+
     def __init__(self, genome, trackName, allowOverlaps):
         assert allowOverlaps in [False, True]
         
@@ -112,7 +116,7 @@ class BoundingRegionShelve(object):
             brInfoDict = tempContents[chr]
             tempContents[chr] = BrInfoHolder(tuple(brInfoDict.keys()), tuple(brInfoDict.values()))
         
-        brShelve = safeshelve.open(self._fn)
+        brShelve = safeshelve.open(self._fn, 'c', protocol=self.PROTOCOL)
         brShelve.update(tempContents)
         brShelve.close()
         
@@ -129,7 +133,7 @@ class BoundingRegionShelve(object):
         #        self._contents.update(safeshelve.open(self._fn, 'r'))
         if not chr in self._updatedChrs:
             if self.fileExists():
-                brListForChr = safeshelve.open(self._fn, 'r').get(chr)
+                brListForChr = safeshelve.open(self._fn, 'r', protocol=self.PROTOCOL).get(chr)
                 if brListForChr is not None:
                     self._contents[chr] = brListForChr
             self._updatedChrs.add(chr)

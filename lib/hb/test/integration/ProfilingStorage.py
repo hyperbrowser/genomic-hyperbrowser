@@ -5,7 +5,6 @@ import sys
 import re
 from copy import copy
 
-#import shelve as safeshelve
 import third_party.safeshelve as safeshelve
 
 from gold.util.Profiler import Profiler

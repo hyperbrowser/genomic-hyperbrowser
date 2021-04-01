@@ -15,11 +15,12 @@ from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackView import AutonomousTrackElement
 from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
-from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
+#from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
+from test.util.Asserts import TestCaseWithImprovedAsserts
+from third_party.asteval_raise_errors import Interpreter
 
-PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
 
-class TestTrackPreProcessor(ProfiledIntegrationTest, TestWithGeSourceData):
+class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
     GENOME = 'TestGenome'
 
     def _preProcess(self, trackName, noOverlapsFileCount=None, withOverlapsFileCount=None, \
@@ -30,9 +31,12 @@ class TestTrackPreProcessor(ProfiledIntegrationTest, TestWithGeSourceData):
         self._removeDir(noOverlapsPath, trackName)
         self._removeDir(withOverlapsPath, trackName)
 
-        self._runWithProfiling('PreProcessAllTracksJob(' + repr(self.GENOME) + ',' +
-                               repr(trackName) + ', username="Test").process()',
-                               {'PreProcessAllTracksJob', PreProcessAllTracksJob})
+        # aeval = Interpreter()
+        # aeval.symtable.update({'PreProcessAllTracksJob': PreProcessAllTracksJob})
+        # cmd = "PreProcessAllTracksJob(" + repr(self.GENOME) + "," + \
+        #       repr(trackName) + ", username='Test', passOnExceptions=True).process()"
+        # aeval(cmd)
+        PreProcessAllTracksJob(self.GENOME, trackName, username='Test', passOnExceptions=True).process()
 
         if noOverlapsFileCount is not None:
             self.assertEquals(noOverlapsFileCount, len([x for x in os.listdir(noOverlapsPath) if not x.startswith('.')]))
@@ -46,7 +50,7 @@ class TestTrackPreProcessor(ProfiledIntegrationTest, TestWithGeSourceData):
         if withOverlapsChrElCount is not None:
             self.assertChrElCounts(trackName, withOverlapsChrElCount, True, customBins)
 
-        self._storeProfile()
+        # self._storeProfile()
 
     def assertChrElCounts(self, trackName, chrElCountDict, allowOverlaps, customBins):
         for chr in chrElCountDict.keys():

@@ -45,6 +45,6 @@ class ProcTrackOptions:
         if ProcTrackOptions._hasPreprocessedFiles(genome, trackName):
             return True
         
-        return  False
+        return False
         #       len([fn for fn in ProcTrackOptions._getDirContents(genome, trackName) \
         #            if GenomeInfo.isValidChr(genome, fn) ]) > 0

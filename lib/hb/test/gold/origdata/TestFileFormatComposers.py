@@ -16,7 +16,6 @@ from quick.application.UserBinSource import GlobalBinSource
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
 from test.util.Asserts import TestCaseWithImprovedAsserts
 
-PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
 
 class TestFileFormatComposers(TestWithGeSourceData, TestCaseWithImprovedAsserts):
     GENOME = 'TestGenome'
@@ -28,7 +27,7 @@ class TestFileFormatComposers(TestWithGeSourceData, TestCaseWithImprovedAsserts)
     def _preProcess(self, trackName):
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=False), trackName)
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=True), trackName)
-        PreProcessAllTracksJob(self.GENOME, trackName, username="Test").process()
+        PreProcessAllTracksJob(self.GENOME, trackName, username="Test", passOnExceptions=True).process()
 
     def testGtrackComposer(self):
         self._commonTestGtrackComposer(withTrackGESource=False)

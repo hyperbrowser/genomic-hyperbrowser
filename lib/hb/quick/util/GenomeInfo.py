@@ -4,15 +4,18 @@ from collections import defaultdict, OrderedDict
 
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonFunctions import strWithStdFormatting
+from gold.util.CommonFunctions import strWithStdFormatting, ensurePathExists
 from gold.util.CustomExceptions import ArgumentValueError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from third_party.roman import fromRoman
 
-SHELVE_FN = DATA_FILES_PATH + os.sep + 'GenomeInfo.shelve'
 
 #class GenomeTools
 class GenomeInfo(object):
+    OLD_SHELVE_FN = DATA_FILES_PATH + os.sep + 'GenomeInfo.shelve'
+    SHELVE_FN = os.sep.join([DATA_FILES_PATH, 'GenomeInfo', 'GenomeInfo.shelve'])
+    PROTOCOL = 1
+
     _chrLengths = {}
     _genomeChrLists = {}
     _genomeExtChrLists = {}
@@ -22,23 +25,46 @@ class GenomeInfo(object):
     _chrMap = {'MT': 'chrM', 'chrMT': 'chrM', '23': 'chrX', 'chr23': 'chrX'}
     _chrMatches = defaultdict(dict)
 
-    def __new__(cls, genome=None):
+    @classmethod
+    def _openOldShelve(cls, mode):
+        return safeshelve.open(cls.OLD_SHELVE_FN, mode, protocol=0)
+
+    @classmethod
+    def _openShelve(cls, mode):
+        if mode in ['c', 'w']:
+            ensurePathExists(cls.SHELVE_FN)
+        return safeshelve.open(cls.SHELVE_FN, mode, protocol=cls.PROTOCOL)
+
+    @classmethod
+    def _queryShelveWithKey(cls, genome, mode, old=False):
+        if old:
+            genomeInfoShelve = cls._openOldShelve(mode=mode)
+            stored = genomeInfoShelve.get(genome)
+        else:
+            genomeInfoShelve = cls._openShelve(mode=mode)
+            stored = genomeInfoShelve.get(genome)
+        genomeInfoShelve.close()
+        return stored
+
+    def __new__(cls, genome=None, **kwargs):
         if genome is None:
             return object.__new__(cls)
 
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
-        stored = genomeInfoShelve.get(genome)
-        genomeInfoShelve.close()
+        stored = cls._queryShelveWithKey(genome, 'c', old=False)
         if stored is not None:
             return stored
         else:
-            return object.__new__(cls)
+            stored = cls._queryShelveWithKey(genome, 'c', old=True)
+            if stored is not None:
+                return stored
+            else:
+                return object.__new__(cls)
 
     @classmethod
     def getGenomeInfoDictForGenomeList(cls, genomeList):
         genomeInfoDict = OrderedDict()
 
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
+        genomeInfoShelve = cls._openShelve('c')
         for genome in genomeList:
             stored = genomeInfoShelve.get(genome)
             if stored:
@@ -125,13 +151,13 @@ class GenomeInfo(object):
                 logMessage(''.join(traceback.format_stack()))
 
     def removeEntryFromShelve(self):
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
+        genomeInfoShelve = self._openShelve('c')
         if self.genome in genomeInfoShelve:
             del genomeInfoShelve[self.genome]
         genomeInfoShelve.close()
 
     def store(self):
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
+        genomeInfoShelve = self._openShelve('c')
         genomeInfoShelve[ self.genome ] = self
         genomeInfoShelve.close()
 

@@ -5,6 +5,8 @@ import sys
 import traceback
 #import pyximport; pyximport.install()
 
+from future.utils import raise_from
+
 from gold.description.TrackInfo import TrackInfo
 from gold.origdata.ChrMemmapFolderMerger import ChrMemmapFolderMerger
 from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, RegionBasedGESourceManager
@@ -14,7 +16,8 @@ from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.origdata.PreProcessUtils import PreProcessUtils
 from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import createOrigPath, createDirPath, prettyPrintTrackName
-from gold.util.CustomExceptions import NotSupportedError, AbstractClassError, Warning, ShouldNotOccurError
+from gold.util.CustomExceptions import (NotSupportedError, AbstractClassError, Warning,
+                                        PreprocessError, PreprocessWarning)
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.extra.RenameTrack import renameTrack
@@ -26,15 +29,20 @@ from quick.util.GenomeInfo import GenomeInfo
 class PreProcessTracksJob(object):
     VERSION = '1.0'
 
-    PASS_ON_EXCEPTIONS = False
-
-    def __init__(self, genome, username='', mode='Real', raiseIfAnyWarnings=False):
+    def __init__(self, genome, username='', mode='Real', raiseIfAnyWarnings=False, passOnExceptions=False, verbose=False):
         self._genome = genome
         self._username = username
         self._mode = mode
         self._status = ''
         self._raiseIfAnyWarnings = raiseIfAnyWarnings
         self._warningTrackNames = []
+        self._passOnExceptions = passOnExceptions
+        self._verbose = verbose
+
+    def __setattr__(self, key, value):
+        if hasattr(self, '_verbose') and self._verbose and key == '_status':
+            print value
+        object.__setattr__(self, key, value)
 
     def process(self):
         assert self._genome is not None, 'Error: genome must be specified when preprocessing tracks.'
@@ -98,14 +106,14 @@ class PreProcessTracksJob(object):
 
             except NotSupportedError, e:
                 collector.removeEntry()
-                if self.PASS_ON_EXCEPTIONS:
-                    raise
+                if self._passOnExceptions:
+                    raise_from(PreprocessWarning(self._addContextToExceptionMsg(e, trackName)), e)
                 else:
                     self._printExceptionMsg(e, trackName, Error=False)
             except Exception, e:
                 collector.removeEntry()
-                if self.PASS_ON_EXCEPTIONS:
-                    raise
+                if self._passOnExceptions:
+                    raise_from(PreprocessError(self._addContextToExceptionMsg(e, trackName)), e)
                 else:
                     self._printExceptionMsg(e, trackName, Error=True)
 
@@ -192,14 +200,19 @@ class PreProcessTracksJob(object):
         elif self._mode == 'Real':
             print "Processing track: '%s' with allowOverlaps: %s" % (':'.join(trackName), allowOverlaps)
 
+    def _addContextToExceptionMsg(self, e, trackName):
+        return 'Could not pre-process track (trackName="{}", status="{}"): {}'\
+            .format(':'.join(trackName), self._status, e)
+
     def _printExceptionMsg(self, e, trackName, Error=False):
-        print (os.linesep + '--- BEGIN ERROR ---' + os.linesep *2 if Error else 'Warning! ') + \
-            "Could not pre-process track '%s'." % ':'.join(trackName)
-        print "Status: %s" % self._status
-        #print e.__class__.__name__ + ':', e
+        print os.linesep + '--- BEGIN ERROR ---' + os.linesep *2 if Error else 'Warning! ',
+        print 'Could not pre-process track "{}".'.format(':'.join(trackName))
+        print 'Status: {}'.format(self._status)
+        # print e.__class__.__name__ + ':', e
         if Error:
             traceback.print_exc(file=sys.stdout)
             print os.linesep + '--- END ERROR ---' + os.linesep
+
 
 class PreProcessAllTracksJob(PreProcessTracksJob):
     def __init__(self, genome, trackNameFilter=[], username='', mergeChrFolders=True, **kwArgs):
@@ -207,6 +220,8 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
         if trackNameFilter == ['']:
             trackNameFilter = []
         self._trackNameFilter = trackNameFilter
+        # TODO: A general refactor of job types and related parameters is probably due
+        # TODO: E.g.: self._mergeChrFolders and other similar members should go into base class instead of the children.
         self._mergeChrFolders = mergeChrFolders
 
     def _allTrackNames(self):
@@ -249,11 +264,9 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
 
 
 class PreProcessExternalTrackJob(PreProcessTracksJob):
-    PASS_ON_EXCEPTIONS = True
-
     def __init__(self, genome, fullFn, extTrackName, fileSuffix,
-                 printProgress=True, mergeChrFolders=True, **kwArgs):
-        PreProcessTracksJob.__init__(self, genome, **kwArgs)
+                 printProgress=True, mergeChrFolders=True, passOnExceptions=True, **kwArgs):
+        PreProcessTracksJob.__init__(self, genome, passOnExceptions=passOnExceptions, **kwArgs)
         self._fullFn = fullFn
         self._extTrackName = extTrackName
         self._fileSuffix = fileSuffix
@@ -275,11 +288,9 @@ class PreProcessExternalTrackJob(PreProcessTracksJob):
 
 
 class PreProcessCustomTrackJob(PreProcessTracksJob):
-    PASS_ON_EXCEPTIONS = True
-
-    def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='', \
-                 preProcess=True, finalize=True, mergeChrFolders=True, **callBackArgs):
-        PreProcessTracksJob.__init__(self, genome, username=username)
+    def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='',
+                 preProcess=True, finalize=True, mergeChrFolders=True, passOnExceptions=True, **callBackArgs):
+        PreProcessTracksJob.__init__(self, genome, username=username, passOnExceptions=passOnExceptions)
         self._trackName = trackName
         assert len(regionList) > 0
         self._regionList = regionList
