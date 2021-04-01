@@ -29,6 +29,7 @@ kiwisolver==1.1.0
 more-itertools==5.0.0
 zipp==0.6.0
 marisa_trie>=0.7.2
+configparser<5
 importlib_metadata==1.7.0
 pytest>=4.6.4,<4.7
 backports.functools_lru_cache==1.6.3
