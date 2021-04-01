@@ -155,16 +155,16 @@ class TrackGlobalSearchTool(GeneralGuiTool):
         #return ['All data types ['+str(countAll)+' files found]'] + \
         return [dataType + ' ['+str(count)+' files found]' for dataType,count in datatypes.iteritems()]
 
-    @classmethod
-    def getOptionsBoxDataInfo(cls,prevChoices):
-        if not prevChoices.dataType:
-            return
-        string = '<div style="border:1px dashed black; border-radius: 10px;'+\
-        ' background-color: #E5E4E2; margin-left: 20px;'+\
-        ' margin-right: 20px; padding-bottom: 8px; padding-left: 8px;'+\
-        ' padding-right: 8px; padding-top: 8px;">'+\
-        'To be edited by Sveinung'
-        return '__rawstr__', string
+    # @classmethod
+    # def getOptionsBoxDataInfo(cls,prevChoices):
+    #     if not prevChoices.dataType:
+    #         return
+    #     string = '<div style="border:1px dashed black; border-radius: 10px;'+\
+    #     ' background-color: #E5E4E2; margin-left: 20px;'+\
+    #     ' margin-right: 20px; padding-bottom: 8px; padding-left: 8px;'+\
+    #     ' padding-right: 8px; padding-top: 8px;">'+\
+    #     'To be edited by Sveinung'
+    #     return '__rawstr__', string
 
 
     
