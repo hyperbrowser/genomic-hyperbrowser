@@ -13,6 +13,11 @@ from gold.util.CustomExceptions import ShouldNotOccurError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import StaticImage
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 FieldInfo = namedtuple('FieldInfo', ['fullName', 'guiElementType'])
 
 
@@ -281,6 +286,7 @@ class TrackInfo(object):
         self.timeOfLastUpdate = datetime.datetime.now()
 
     @staticmethod
+    @lru_cache()
     def constructIdFromPath(genome, origPath, geSourceVersion, preProcVersion):
         if os.path.isdir(origPath):
             fileList = sorted([fn for fn in os.listdir(origPath) if os.path.isfile(origPath+os.sep+fn) and fn[0]!='.'])
