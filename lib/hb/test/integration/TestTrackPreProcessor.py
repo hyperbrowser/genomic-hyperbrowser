@@ -15,7 +15,6 @@ from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackView import AutonomousTrackElement
 from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
-#from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
 from test.util.Asserts import TestCaseWithImprovedAsserts
 from third_party.asteval_raise_errors import Interpreter
 

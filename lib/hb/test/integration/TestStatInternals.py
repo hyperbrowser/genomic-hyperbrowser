@@ -3,7 +3,6 @@ import ast
 import sys
 import unittest
 from test.integration.GalaxyIntegrationTest import GalaxyIntegrationTest
-from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
 
 class TestStatInternals(GalaxyIntegrationTest):
     def testTrackFormatMerging(self):
