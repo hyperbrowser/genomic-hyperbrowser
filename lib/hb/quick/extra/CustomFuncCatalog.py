@@ -5,6 +5,7 @@ import math
 import os.path
 import re
 import shutil
+import traceback
 
 import numpy
 
@@ -523,17 +524,18 @@ def createChromosomeFile(genome, chromNames, referToCollected=False):
     chrList = chromNames.replace(' ','').split(',')
     if referToCollected:
         from gold.util.CommonFunctions import createCollectedPath
-        basePath = createCollectedPath(genome, GenomeInfo.getPropertyTrackName(genome, 'chrs'))
+        basePath = createCollectedPath(genome, GenomeInfo.getChrTrackName(genome))
     else:
-        basePath = gcf.createOrigPath(genome, GenomeInfo.getPropertyTrackName(genome, 'chrs'))
+        basePath = gcf.createOrigPath(genome, GenomeInfo.getChrTrackName(genome))
 
+    # Why is this file a category.bed file?
     outFn = basePath + os.sep + 'chromosomes.category.bed'
     qcf.ensurePathExists(outFn)
     print 'Creating: ' + outFn
 
     outFile = open(outFn, 'w')
     for chr in chrList:
-        outFile.write('\t'.join([chr, '0', str(GenomeInfo.getChrLen(genome,chr)), chr]) + os.linesep)
+        outFile.write('\t'.join([chr, '0', str(GenomeInfo.getChrLen(genome, chr)), chr]) + os.linesep)
     outFile.close()
 
 def createSplittedChrArms(genome, binSize, outFn):
@@ -546,7 +548,7 @@ def createSplittedChrArms(genome, binSize, outFn):
     for bin in chrArmBins:
         outFile.write('\t'.join([bin.chr, str(bin.start), str(bin.end)]) + os.linesep)
     outFile.close()
-    
+
 def createAssemblyGapsFile(genome, assemblyChars='ACGTacgt'):
     """genome assemblyChars='ACGTacgt'"""
     basePath = gcf.createOrigPath(genome, GenomeInfo.getPropertyTrackName(genome, 'gaps'),'')
@@ -752,7 +754,7 @@ def copyStandardTrack(genome, oldTn, newTn):
     assert not os.path.exists(newPath), 'ERROR: Target path already exists: ' + newPath
     qcf.ensurePathExists(newPath)
     shutil.copytree(oldPath, newPath)
-    
+
 def findArticleCountOfAllSubtypes(genome, trackName, outFn):
     'genome trackName outFn'
     trackName = trackName.split(':')
@@ -872,6 +874,56 @@ def mergeTrackInfoShelves(otherTrackInfoShelveFn):
     for key in mergeKeys:
         ti = otherShelve[key]
         ti.store()
+
+def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False'):
+    "genomeList username genomeListIsFn=True verbose=False"
+    from quick.application.GalaxyInterface import GalaxyInterface
+    from gold.util.CustomExceptions import PreprocessError
+    from quick.extra.StandardizeTrackFiles import PlainMover
+
+    genomeListIsFn = ast.literal_eval(genomeListIsFn)
+    verbose = ast.literal_eval(verbose)
+
+    track_cats = ['Sequence:DNA', 'Genome build properties', 'Genes and gene subsets', 'Sample data']
+
+    if genomeListIsFn:
+        genomes = [_.strip() for _ in open(genomeList)]
+    else:
+        genomes = genomeList.split(',')
+
+    for genome in genomes:
+        genome = genome.strip()
+        print genome
+
+        if GenomeInfo(genome).installed and GenomeInfo._queryShelveWithKey(genome, 'r', old=False) is not None:
+            # Trigger installation double-check
+            gi = GenomeInfo(genome)
+            gi.installed = False
+            gi.store()
+            if gi.isInstalled():
+                print '\n**Genome "{}" was alread installed in the new shelve. Skipping!**\n'.format(genome)
+                continue
+
+        for track_cat in track_cats:
+            try:
+                GalaxyInterface.startPreProcessing(genome, track_cat.split(':'), username,
+                                                   passOnExceptions=True, verbose=verbose)
+            except PreprocessError, e:
+                traceback.print_exc()
+                print
+
+                match = re.search(r'trackName="([^"]+)"', str(e))
+                if match:
+                    trackName = match.group(1).split(':')
+                    PlainMover.parseFiles(genome, trackName, 'std_to_error')
+                    print '\n\n**Moved track "{}" to "parsingErrorTracks" file structure**\n'.format(':'.join(trackName))
+
+        genome_info = GenomeInfo(genome)
+        installed = genome_info.flagAsInstalled(username)
+        if installed:
+            print '\n**Genome "{}" was reinstalled successfully!**\n'.format(genome)
+        else:
+            print '\n**Genome "{}" was not reinstalled!**\n'.format(genome)
                 
 def _usage():
     print 'syntax: '

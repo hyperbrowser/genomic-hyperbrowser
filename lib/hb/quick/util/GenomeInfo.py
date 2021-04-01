@@ -1,6 +1,7 @@
 import copy
 import os
 from collections import defaultdict, OrderedDict
+from datetime import datetime
 
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH, IS_EXPERIMENTAL_INSTALLATION
@@ -71,14 +72,14 @@ class GenomeInfo(object):
                 obj = stored
             else:
                 obj = object.__new__(cls)
-            obj.__init__(genome, calcAndStoreChrInfo=False)
+            obj.__init__(genome)
 
             genomeInfoDict[genome] = obj
 
         genomeInfoShelve.close()
         return genomeInfoDict
 
-    def __init__(self, genome=None, calcAndStoreChrInfo=True):
+    def __init__(self, genome=None):
         if genome is None:
             return
 
@@ -113,42 +114,9 @@ class GenomeInfo(object):
         #    self.sourceChrNames = []
         #    self.store()
 
-        if calcAndStoreChrInfo:
-            self._calcAndStoreChrInfo()
-
-    def _calcAndStoreChrInfo(self):
-        try:
-            dirty = False
-
-            if not hasattr(self, 'numChrs') or self.numChrs == 0:
-                self.numChrs = len(GenomeInfo.getChrList(self.genome))
-                dirty = True
-
-            if not hasattr(self, 'numExtChrs') or self.numExtChrs == 0:
-                self.numExtChrs = len(GenomeInfo.getExtendedChrList(self.genome)) - self.numChrs
-                dirty = True
-
-            if not hasattr(self, 'numBps') or self.numBps == 0:
-                self.numBps = self.getGenomeLen(self.genome, standardChrs=False)
-                dirty = True
-
-            if not hasattr(self, 'numBpsWithExt') or self.numBpsWithExt == 0:
-                if self.numExtChrs > 0:
-                    self.numBpsWithExt = self.getGenomeLen(self.genome, standardChrs=True)
-                else:
-                    self.numBpsWithExt = None
-                dirty = True
-
-            if dirty:
-                self.store()
-
-        except Exception, e:
-            if IS_EXPERIMENTAL_INSTALLATION:
-                from gold.application.LogSetup import logException, logMessage
-                logMessage('Exception for genome: %s' % self.genome)
-                logException(e)
-                import traceback
-                logMessage(''.join(traceback.format_stack()))
+        #
+        # if calcAndStoreChrInfo:
+        #     self._calcAndStoreChrInfo()
 
     def removeEntryFromShelve(self):
         genomeInfoShelve = self._openShelve('c')
@@ -214,17 +182,54 @@ class GenomeInfo(object):
                 else:
                     return chr
 
-    def isInstalled(self):
-        # Caching added to improve reaction time when displaying genome selection box
-        if not self.installed:
-            from quick.application.ProcTrackOptions import ProcTrackOptions
+    def _requiredTracksAreValid(self):
+        from quick.application.ProcTrackOptions import ProcTrackOptions
 
-            self.installed = self.timeOfInstallation is not None and \
-                ProcTrackOptions.isValidTrack(self.genome, GenomeInfo.getChrTrackName(self.genome), fullAccess=True) and \
-                ProcTrackOptions.isValidTrack(self.genome, GenomeInfo.getAssemblyGapsTrackName(self.genome), fullAccess=True)
+        requiredTrackNames = [self.getSequenceTrackName(self.genome),
+                              self.getChrTrackName(self.genome),
+                              self.getAssemblyGapsTrackName(self.genome)]
+        return all(ProcTrackOptions.isValidTrack(self.genome, tn, fullAccess=True) for tn in requiredTrackNames)
 
-            if self.installed:
+    def _genomeRequirementsAreMet(self):
+        return self.getChrRegsFn(self.genome) is not None and self._requiredTracksAreValid()
+
+    def _calcChrInfo(self):
+        try:
+            self.numChrs = len(GenomeInfo.getChrList(self.genome))
+            self.numExtChrs = len(GenomeInfo.getExtendedChrList(self.genome)) - self.numChrs
+            self.numBps = self.getGenomeLen(self.genome, standardChrs=False)
+            if self.numExtChrs > 0:
+                self.numBpsWithExt = self.getGenomeLen(self.genome, standardChrs=True)
+            else:
+                self.numBpsWithExt = None
+
+        except Exception, e:
+            if IS_EXPERIMENTAL_INSTALLATION:
+                from gold.application.LogSetup import logException, logMessage
+                logMessage('Exception for genome: %s' % self.genome)
+                logException(e)
+                import traceback
+                logMessage(''.join(traceback.format_stack()))
+
+    def flagAsInstalled(self, username, timeOfInstallation=datetime.now()):
+        if self._genomeRequirementsAreMet():
+            self._calcChrInfo()
+            self.installedBy = username
+            self.timeOfInstallation = timeOfInstallation
+            self.installed = True
+            self.store()
+        else:
+            if self.installed:  # Incorrectly flagged as installed: fix installation flag
+                self.installed = False
                 self.store()
+        return self.installed
+
+    def isInstalled(self):
+        # Installation flag is used to improve reaction time when displaying genome selection box
+        if not self.installed:
+            if self.timeOfInstallation is not None and self._genomeRequirementsAreMet():  # Installed flag seems wrong
+                self.flagAsInstalled(username=self.installedBy,
+                                     timeOfInstallation=self.timeOfInstallation)  # Fix installed flag
 
         return self.installed
 
@@ -250,11 +255,11 @@ class GenomeInfo(object):
 
     @classmethod
     def getChrList(cls, genome):
-        '''
+        """
         Returns a list of all standard chromosomes of the genome build, e.g.
         chromosomes that are usually used in analyses. (For human, this includes
         chr1-chr22, chrX, and chrY, but not chrM).
-        '''
+        """
         if genome in cls._genomeChrLists:
             return cls._genomeChrLists[genome]
 
@@ -264,15 +269,8 @@ class GenomeInfo(object):
             chrListFn = cls.getChrRegsFn(genome)
             if chrListFn is None:
                 return []
-            assert chrListFn is not None and os.path.exists(chrListFn), 'did not find file with chr-names: '+str(chrListFn)
-            chrList = [line.split()[3].strip() for line in open(chrListFn,'U')]
-        #if genome.lower() in ['ncbi36','hg18']:
-        #    chrList = ["chr"+str(i) for i in range(1,23)] + ["chrX" , "chrY"]
-        #elif genome.lower() in ['testgenome']:
-        #    chrList = ['chr21', 'chrM']
-        #else:
-        #    chrList = [fn.replace('.fa','') for fn in os.listdir( os.sep.join([ORIG_DATA_PATH,genome,'sequence']) ) if fn.endswith('.fa')]
-            #raise NotSupportedError()
+            chrList = [line.split()[3].strip() for line in open(chrListFn, 'U')]
+
         cls._genomeChrLists[genome] = chrList
         return chrList
 
@@ -296,6 +294,7 @@ class GenomeInfo(object):
         #
         #return chr in cls.getExtendedChrList(genome) or \
         #    (chr.lower() in [x.lower() for x in cls.getExtendedChrList(genome)] and not chr in cls.getChrList(genome)) #allow case mismatch as long as it is an ignored chromosome anyway
+
     @staticmethod
     def getNumElementsInFastaFile(fn):
         f = open(fn)
@@ -391,8 +390,8 @@ class GenomeInfo(object):
 #            else:
 #                prefixTN = ['Mapping And Sequencing Tracks']
             return prefixTN + ['K-mers']
-        elif propertyName == 'protein':
-            return prefixTN + ['Proteins']
+        # elif propertyName == 'protein':
+        #     return prefixTN + ['Proteins']
         elif propertyName == 'literature':
             return ['Genes and gene subsets','Gene subsets','Literature-derived']
         elif propertyName == 'sequence':
@@ -419,10 +418,6 @@ class GenomeInfo(object):
     @staticmethod
     def getEnsemblTrackName(genome):
         return GenomeInfo.getPropertyTrackName(genome, 'ensembl')
-
-    @staticmethod
-    def getProteinTrackName(genome):
-        return GenomeInfo.getPropertyTrackName(genome, 'protein')
 
     @staticmethod
     def getNmerTrackName(genome):
@@ -527,15 +522,15 @@ class GenomeInfo(object):
         else:
             return None
 
-    @staticmethod
-    def getProteinRegsFn(genome):
-        from gold.util.CommonFunctions import getOrigFn
-        return getOrigFn(genome, GenomeInfo.getProteinTrackName(genome), '.category.bed')
-
-    @classmethod
-    def getProteinRegs(cls, genome, categoryFilterList = None, cluster = True):
-        fn = cls.getProteinRegsFn(genome)
-        return cls.getGeneRegs(genome, fn, categoryFilterList, cluster)
+    # @staticmethod
+    # def getProteinRegsFn(genome):
+    #     from gold.util.CommonFunctions import getOrigFn
+    #     return getOrigFn(genome, GenomeInfo.getProteinTrackName(genome), '.category.bed')
+    #
+    # @classmethod
+    # def getProteinRegs(cls, genome, categoryFilterList = None, cluster = True):
+    #     fn = cls.getProteinRegsFn(genome)
+    #     return cls.getGeneRegs(genome, fn, categoryFilterList, cluster)
 
     @classmethod
     def getContainingChrArms(cls, region):

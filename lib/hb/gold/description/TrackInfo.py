@@ -169,6 +169,8 @@ class TrackInfo(object):
         ti.__dict__.update(attrDict)
         return ti
 
+    # TODO: fullAccess is a misleading parameter name. fullAccess really means 'ignore access checks'.
+    # TODO: Also, why is a private track not valid? Validity and authorization should be separate.
     def isValid(self, fullAccess=True):
         return (fullAccess or not self.private) and \
                 self.timeOfPreProcessing is not None
