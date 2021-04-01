@@ -34,7 +34,7 @@ class TrackGlobalSearchTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         #return ['Search Type:','Search:','Sub-Category:','Select Source:','URL:', '']
-        return [#('Search Type:','searchType'),\
+        return [# ('Search Type:','searchType'),\
                 ('', 'basicQuestionId'),\
                 ('Select track category','search'),\
                 ('Select track sub-category','subCategory'),\
@@ -43,12 +43,12 @@ class TrackGlobalSearchTool(GeneralGuiTool):
                 ('Transfer URL','testURL'),\
                 ('Select File Type:','filetype'),\
                 ('<h3>Select type of data</h3>', 'dataType'),\
-                ('','dataInfo'),\
+                # ('','dataInfo'),\
                 ('<b>Limit selection of tracks?</b>','outputType'),\
                 ('Download and preprocess? (temporary)', 'downloadAndPreprocess'),\
                 ('Select genome (temporary):', 'genome'),\
-                #('<b>Redirect URL</b>', 'url'),\
-                #('<h3>Manually Select Among Matching Tracks</h3>','showResults'),\
+                # ('<b>Redirect URL</b>', 'url'),\
+                # ('<h3>Manually Select Among Matching Tracks</h3>','showResults'),\
                 ('<h3>Matching Tracks</h3>','results'),\
                 ('<h3>Results</h3>','resultsTable'),\
                 ('','historyElementsInfo')]
