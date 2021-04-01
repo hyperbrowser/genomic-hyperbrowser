@@ -339,7 +339,7 @@ class Tool( object, Dictifiable ):
             self.parse( tool_source, guid=guid )
         except Exception, e:
             global_tool_errors.add_error(config_file, "Tool Loading", e)
-            raise e
+            raise
         self.external_runJob_script = app.config.drmaa_external_runjob_script
         self.history_manager = histories.HistoryManager( app )
 
