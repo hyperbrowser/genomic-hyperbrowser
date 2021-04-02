@@ -1,6 +1,6 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.util.GenomeInfo import GenomeInfo
-from quick.webtools.util.CommonFunctionsForTools import validateURLs, validateURL, validateUcscValues
+from quick.webtools.util.CommonFunctionsForTools import validateURLs, validateURL
 import os
 import urllib
 #This is a template prototyping GUI that comes together with a corresponding web page.
@@ -178,10 +178,6 @@ class GenomeInfoTool(GeneralGuiTool):
         
         if len([v.strip()  for v in choices[8].replace(os.linesep, ' ').replace(',', ' ').split(' ') if not v =='' and v.find('@')<0])>0:
             return 'There is an invalid format inside the E-mail address field'
-
-        ucscError = validateUcscValues([choices[x] for x in [11,12,13]])
-        if ucscError:
-            return ucscError
         
     @staticmethod
     def isHistoryTool():

@@ -724,14 +724,13 @@ class GalaxyInterfaceTools:
 
 class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     ALL_SUBTYPES_TEXT = '-- All subtypes --'
-    UCSC_TRACK_TUPLE = ('UCSC tracks', 'ucsc', False)
     APPEND_ASSEMBLY_GAPS = True
     ALLOW_OVERLAPPING_USER_BINS = False
     #APPEND_COUNTS = True
 
     @staticmethod
     @runtimeLogging
-    def getMainTrackNames(genome, preTracks=[], postTracks=[], username='', addUcscCategory=True):
+    def getMainTrackNames(genome, preTracks=[], postTracks=[], username=''):
         #return ['HPV_200kb, allTss']
         #return ProcTrackOptions().getMainTypes(extraTracks)
         fullAccess = GalaxyInterface.userHasFullAccess(username)
@@ -741,13 +740,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         for track in tracks:
             opts.append((GalaxyInterface._getTrackNameText(genome, [track]), track, False))
 
-        if IS_EXPERIMENTAL_INSTALLATION:
-            from quick.origdata.UcscHandler import UcscHandler
-            ucscHandler = UcscHandler()
-            if addUcscCategory and ucscHandler.isGenomeAvailable(genome):
-                opts.append(GalaxyInterface.UCSC_TRACK_TUPLE)
-            if fullAccess:
-                opts.append(('StoreBioInfo','StoreBioInfo',False))
         #return [('external','external',False)]+preTracks + opts + postTracks
         return preTracks + opts + postTracks
 
@@ -758,34 +750,15 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         assert (not deep)
         fullAccess = GalaxyInterface.userHasFullAccess(username)
 
-        if len(parentTrack) > 0 and GalaxyInterface.isUcscTrackName(parentTrack):
-            from quick.origdata.UcscHandler import UcscHandler
-            ucscHandler = UcscHandler(state)
-            opts, state = ucscHandler.getSubTrackNames(genome, parentTrack)
-            #opts = []
-            #for track in tracks:
-            #    opts.append((track, track, False))
-        elif len(parentTrack) > 0 and GalaxyInterface.isStoreBioTrackName(parentTrack):
-            import zmq
-            context = zmq.Context()
-            socket = context.socket(zmq.REQ)
-            socket.connect("tcp://localhost:5559")
+        tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
+        if includeAllSubtracksChoice:
+            if len(tracks) > 0 and ProcTrackOptions.isValidTrack(genome, parentTrack, fullAccess):
+                tracks += [GalaxyInterface.ALL_SUBTYPES_TEXT]
 
-            from config.Config import STOREBIOINFO_USER, STOREBIOINFO_PASSWD
-            params = ['username:='+STOREBIOINFO_USER, 'password:='+STOREBIOINFO_PASSWD, 'operation:=getSubTrackName', \
-                      'params:='+repr(parentTrack), 'class:=dataStorageServicePub']
-            socket.send('##'.join(params))
-            message = socket.recv()
-            opts = ast.literal_eval(message)
-        else:
-            tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
-            if includeAllSubtracksChoice:
-                if len(tracks) > 0 and ProcTrackOptions.isValidTrack(genome, parentTrack, fullAccess):
-                    tracks += [GalaxyInterface.ALL_SUBTYPES_TEXT]
+        opts = []
+        for track in tracks:
+            opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track]), track, False))
 
-            opts = []
-            for track in tracks:
-                opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track]), track, False))
         return opts, state
 
     @staticmethod
@@ -1170,14 +1143,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         return tn is not None and tn[0:len(nmerTn)] == nmerTn and type(tn[-1]) is str and len(tn[-1])>0
 
     @staticmethod
-    def isUcscTrackName(tn):
-        return tn is not None and len(tn)>0 and tn[0] == GalaxyInterface.UCSC_TRACK_TUPLE[1]
-
-    @staticmethod
-    def isStoreBioTrackName(tn):
-        return tn is not None and len(tn)>0 and tn[0] == 'StoreBioInfo'
-
-    @staticmethod
     def _cleanUpAnalysisDef(trackName1, trackName2, analysisDef):
         if len(analysisDef) > 0:
             analysisDef = unquote(analysisDef.replace('X','%'))
@@ -1225,46 +1190,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                     else:
                         trackNames[i] = ExternalTrackManager.constructRedirectTrackName \
                             ([NmerManager.GE_SOURCE.__name__], 'ModelsForExternalTracks', 'chr21', 'k-mer')
-            elif GalaxyInterface.isUcscTrackName(tn):
-                from quick.origdata.UcscHandler import UcscHandler
-                ucscHandler = UcscHandler(states[i])
-                if realPreProc:
-                    ti = TrackInfo(genome, trackNames[i])
-                    if ti.timeOfPreProcessing is None or (datetime.now() - ti.timeOfPreProcessing).days > 0:
-                        ucscHandler.downloadTrack(genome, trackNames[i])
-                        job = PreProcessAllTracksJob(genome, trackNames[i], raiseIfAnyWarnings=raiseIfAnyWarnings)
-                        job.process()
-                else:
-                    from gold.origdata.GenomeElementSource import getGenomeElementSourceClass
-                    geSourceCls = getGenomeElementSourceClass('', suffix=trackNames[i][-1])
-                    trackNames[i] = ExternalTrackManager.constructRedirectTrackName \
-                        ([geSourceCls.__name__], 'ModelsForExternalTracks', 'chr21', ucscHandler.getPrettyTrackNameStr())
-
-            elif GalaxyInterface.isStoreBioTrackName(tn):
-                #fixme: should be refactored with more content in StoreBioHelper functions..
-                from quick.extra.StoreBioHelper import getSBFnAndHBTrackAndFn, downloadFirstFtpFile
-
-                fn, hbTrackName, hbFileName = getSBFnAndHBTrackAndFn(tn)
-                if realPreProc:
-                    ti = TrackInfo(genome, trackNames[i])
-                    if ti.timeOfPreProcessing is None or (datetime.now() - ti.timeOfPreProcessing).days > 0:
-                        from quick.extra.StoreBioHelper import getUrlToSBFile
-                        url, hbFileName, hbTrackName = getUrlToSBFile(tn)#, STOREBIOINFO_USER, STOREBIOINFO_PASSWD
-                        fn = createOrigPath(genome, tn, hbFileName)
-                        ensurePathExists(fn)
-                        downloadFirstFtpFile(fn, url)#open(fn,'w').write(urllib2.urlopen(url).read())
-                        job = PreProcessAllTracksJob(genome, trackNames[i], raiseIfAnyWarnings=raiseIfAnyWarnings)
-                        job.process()
-
-                else:
-                    from gold.util.CommonFunctions import getFileSuffix
-                    from quick.extra.StoreBioHelper import getPreviewFile
-                    tempFile = getPreviewFile(tn)
-                    if  tempFile:
-                        suffix = getFileSuffix(hbFileName)
-                        geSource = ExternalTrackManager.getGESource(tempFile.name, suffix)
-                        trackNames[i] = ExternalTrackManager.constructRedirectTrackName \
-                            ([getClassName(geSource)], 'ModelsForExternalTracks', 'chr21', tn[-1])
 
         return trackNames
 
@@ -1308,12 +1233,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             nmer, tn = NmerTools.getNmerAndCleanedNmerTrackName(genome, tn)
             if not NmerTools.isNmerString(nmer):
                 return NmerTools.getNotNmerErrorString(nmer)
-
-        elif GalaxyInterface.isUcscTrackName(tn) or GalaxyInterface.isStoreBioTrackName(tn):
-            try:
-                GalaxyInterface._cleanUpTracks([tn], genome, realPreProc=False)
-            except Exception, e:
-                return e
 
         elif not len(tn) == 0 and not ProcTrackOptions.isValidTrack(genome, tn, True):
             return 'The track is not valid. Perhaps it is not correctly preprocessed?'

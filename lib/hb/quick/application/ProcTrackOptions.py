@@ -20,7 +20,7 @@ class ProcTrackOptions:
                     or GenomeInfo.isValidChr(genome, fn))]
 
         #fixme, just temporarily:, these dirs should start with _
-        subtypes= [x for x in subtypes if not x in ['external','ucsc'] ]
+        subtypes= [x for x in subtypes if not x in ['external'] ]
 
         if not fullAccess and not ProcTrackOptions._isLiteratureTrack(genome, trackName):
             subtypes = [x for x in subtypes if not TrackInfo(genome, trackName+[x]).private]

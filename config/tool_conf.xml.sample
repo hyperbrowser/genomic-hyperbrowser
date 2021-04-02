@@ -180,17 +180,6 @@
     <tool file="proto/hyperbrowser/manipulate/UniversalConverterTool.xml" />
   </section>
 
-  <!--<section name="Export and import tracks" id="export_import_tracks">-->
-    <!--<tool file="proto/hyperbrowser/restricted/DownloadHistoryItems.xml" />-->
-
-    <!--<label text="StoreBioInfo" id="storebioinfo" />-->
-
-    <!--<tool file="proto/hyperbrowser/restricted/ListStorebioProjects.xml" />-->
-    <!--<tool file="proto/hyperbrowser/restricted/UploadDataToStorebio.xml" />-->
-    <!--<tool file="proto/hyperbrowser/export/AddMetadataToDataset.xml" />-->
-    <!--<tool file="proto/hyperbrowser/restricted/AddFilesToStorebioinfoDataset.xml" />-->
-  <!--</section>-->
-
   <section name="GTrack tools" id="gtrack_tools">
     <tool file="hyperbrowser/gtrack_spec.xml" />
     <tool file="proto/hyperbrowser/gtrack/TabularToGtrackTool.xml" />
