@@ -8,7 +8,7 @@ from proto.hyper_gui import _disabled
 class TrackWrapper:
     has_subtrack = False
 
-    def __init__(self, name, api, preTracks, galaxy, datasets, genome='', ucscTracks=True):
+    def __init__(self, name, api, preTracks, galaxy, datasets, genome=''):
         params = galaxy.params
         self.api = api
         self.galaxy = galaxy
@@ -43,7 +43,6 @@ class TrackWrapper:
             self._checkHistoryFile()
 
         self.tracks = []
-        self.ucscTracks = ucscTracks
         self.genome = genome
         self.numLevels = len(self.asList())
         self.valid = True

@@ -251,7 +251,6 @@
     <tool file="proto/hyperbrowser/track/RenameTrackTool.xml" />
     <tool file="proto/hyperbrowser/util/TouchStandardizedTrack.xml" />
     <tool file="proto/hyperbrowser/util/StandardizeTrackFilesTool.xml" />
-    <tool file="proto/hyperbrowser/InstallUcscTool.xml" />
     <tool file="proto/hyperbrowser/track/IntegrateCategoricalTrackFromHistory.xml" />
   </section>
 

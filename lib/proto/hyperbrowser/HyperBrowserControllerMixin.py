@@ -55,14 +55,14 @@ class HyperBrowserControllerMixin(object):
     def _getAllGenomes(self):
         return [('----- Select -----', '', False)] + GalaxyInterface.getAllGenomes(self.galaxy.getUserName())
         
-    def getTrackElement(self, id, label, history=False, ucsc=False, tracks=None):
+    def getTrackElement(self, id, label, history=False, tracks=None):
         datasets = []
         if history:
             try:
                 datasets = self.galaxy.getHistory(GalaxyInterface.getSupportedGalaxyFileFormats())
             except Exception, e:
                 print e
-        element = TrackWrapper(id, GalaxyInterface, [], self.galaxy, datasets, self.getGenome(), ucscTracks=ucsc)
+        element = TrackWrapper(id, GalaxyInterface, [], self.galaxy, datasets, self.getGenome())
         if tracks is not None:
             element.tracks = tracks
         else:
