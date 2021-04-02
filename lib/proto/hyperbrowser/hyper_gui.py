@@ -171,7 +171,7 @@ class TrackWrapper:
         return tracks
 
     def mainTracks(self):
-        tracks = self.api.getMainTrackNames(self.genome, self.preTracks, self.extraTracks, self.galaxy.getUserName(), self.ucscTracks)
+        tracks = self.api.getMainTrackNames(self.genome, self.preTracks, self.extraTracks, self.galaxy.getUserName())
         return tracks
 
 
