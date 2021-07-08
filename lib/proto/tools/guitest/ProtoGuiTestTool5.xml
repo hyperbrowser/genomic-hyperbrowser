@@ -1,0 +1,4 @@
+<tool id="proto_proto_gui_test_tool5" name="Redirect tool:" version="1.0.0"
+  tool_type="proto_generic" proto_tool_module="proto.tools.guitest.ProtoGuiTestTool5" proto_tool_class="ProtoGuiTestTool5">
+  <description>Test tool #5 for Galaxy ProTo GUI</description>
+</tool>

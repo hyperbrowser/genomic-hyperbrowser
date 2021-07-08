@@ -58,7 +58,7 @@ class ToolTemplate(GeneralGuiTool):
     #     (or index) of the first and last options boxes (inclusive).
     #
     #     Example:
-    #        from quick.webtool.GeneralGuiTool import BoxGroup
+    #        from proto.tools.GeneralGuiTool import BoxGroup
     #        return [BoxGroup(label='A group of choices', first='firstKey',
     #                         last='secondKey')]
     #
@@ -78,7 +78,10 @@ class ToolTemplate(GeneralGuiTool):
 
         The input box is defined according to the following syntax:
 
-        Selection box:          ['choice1','choice2']
+        Check box:              False | True
+        - Returns: bool
+
+        Selection box:          ['choice1', 'choice2']
         - Returns: string
 
         Text area:              'textbox' | ('textbox',1) | ('textbox',1,False)
@@ -204,7 +207,7 @@ class ToolTemplate(GeneralGuiTool):
     #     This is defined by a list of HistElement objects, as in the
     #     following example:
     #
-    #        from proto.GeneralGuiTool import HistElement
+    #        from proto.tools.GeneralGuiTool import HistElement
     #        return [HistElement(cls.HISTORY_TITLE, 'bed', hidden=False)]
     #
     #     It is good practice to use class constants for longer strings.
@@ -398,10 +401,10 @@ class ToolTemplate(GeneralGuiTool):
     #
     # @classmethod
     # def getOutputName(cls, choices=None):
-    #     return cls.getToolSelectionName()
     #     """
     #     The title (name) of the main output history element.
     #
     #     Optional method. Default return value if method is not defined:
     #     the name of the tool.
     #     """
+    #     return cls.getToolSelectionName()

@@ -1,8 +1,8 @@
 #note cannot import HB.GalaxyInterface here due to rpy threading issue
 
 
-from proto.hyper_gui import *
-from proto.hyper_gui import _disabled
+from proto.gui import *
+from proto.gui import _disabled
 
 
 class TrackWrapper:

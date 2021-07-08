@@ -162,43 +162,43 @@ class GalaxyWrapper:
     def getUserIP(self):
         return self.trans.environ['REMOTE_ADDR']
         
-    def getSessionKey(self):
-        session = self.trans.get_galaxy_session()
-#        key = session.session_key if session.is_valid and session.user_id else None
-        key = session.session_key if session.is_valid else None
-        return key
-    
-    def hasSessionParam(self, param):
-        user = self.trans.get_user()
-        if user and user.preferences.has_key('hb_' + param):
-#            hbdict = from_json_string(user.preferences['hyperbrowser'])
-#            if hbdict.has_key(param):
-            return True
-        return False
-
-    def getSessionParam(self, param):
-        prefs = self.trans.get_user().preferences
-        value = from_json_string(prefs['hb_'+param])
-        return value
-
-    def setSessionParam(self, param, value):
-        if self.trans.get_user():
-            prefs = self.trans.get_user().preferences
-            #hbdict = dict()
-            #hbdict[param] = value
-            prefs['hb_'+param] = to_json_string(value)
-            self.trans.sa_session.flush()
-
+#     def getSessionKey(self):
+#         session = self.trans.get_galaxy_session()
+# #        key = session.session_key if session.is_valid and session.user_id else None
+#         key = session.session_key if session.is_valid else None
+#         return key
+#
+#     def hasSessionParam(self, param):
+#         user = self.trans.get_user()
+#         if user and user.preferences.has_key('hb_' + param):
+#             return True
+#         return False
+#
+#     def getSessionParam(self, param):
+#         prefs = self.trans.get_user().preferences
+#         value = from_json_string(prefs['hb_'+param])
+#         return value
+#
+#     def setSessionParam(self, param, value):
+#         if self.trans.get_user():
+#             prefs = self.trans.get_user().preferences
+#             #hbdict = dict()
+#             #hbdict[param] = value
+#             prefs['hb_'+param] = to_json_string(value)
+#             self.trans.sa_session.flush()
 
 
 def selected(opt, sel):
     return ' selected="selected" ' if opt == sel else ''
 
+
 def checked(opt, sel):
     return ' checked="checked" ' if opt == sel else ''
 
+
 def disabled(opt, sel):
     return ' disabled="disabled" ' if opt == sel else ''
+
 
 def _disabled(opt, sel):
     return ' disabled="disabled" ' if opt != sel else ''

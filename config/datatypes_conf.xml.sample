@@ -440,6 +440,9 @@
     <!-- Strand-specific Coordinate Count Datatype used by the Center for Eukaryotic Gene Regulation labs at Penn State -->
     <datatype extension="scidx" type="galaxy.datatypes.interval:ScIdx" display_in_upload="true" />
 
+    <!-- Galaxy ProTo datatypes -->
+    <datatype extension="customhtml" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
+
     <!-- HyperBrowser datatypes -->
     <datatype extension="microarray" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
     <datatype extension="point.bed" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
@@ -452,7 +455,6 @@
     <datatype extension="gappedpeak" type="galaxy.datatypes.interval:Bed" display_in_upload="true" subclass="true"/>
     <datatype extension="hbfunction" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
     <datatype extension="hbgenome" type="galaxy.datatypes.data:Text" display_in_upload="false" subclass="true"/>
-    <datatype extension="customhtml" type="galaxy.datatypes.images:Html" display_in_upload="false" subclass="true"/>
     <datatype extension="gsuite.zip" type="galaxy.datatypes.binary:CompressedArchive" display_in_upload="true" mimetype="application/octet-stream" subclass="true"/>
     <datatype extension="gsuite.tar" type="galaxy.datatypes.binary:CompressedArchive" display_in_upload="true" mimetype="application/octet-stream" subclass="true"/>
     <datatype extension="gsuite" type="galaxy.datatypes.tabular:Tabular" display_in_upload="true" subclass="true"/>

@@ -90,7 +90,7 @@ boxes,&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;BoxGroup&nbsp;namedtuples&nbsp;
 (or&nbsp;index)&nbsp;of&nbsp;the&nbsp;first&nbsp;and&nbsp;last&nbsp;options&nbsp;boxes&nbsp;(inclusive).<br>
 &nbsp;<br>
 Example:<br>
-&nbsp;&nbsp;&nbsp;from&nbsp;quick.webtool.<a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">GeneralGuiTool</a>&nbsp;import&nbsp;BoxGroup<br>
+&nbsp;&nbsp;&nbsp;from&nbsp;proto.tools.<a href="proto.tools.GeneralGuiTool.html#GeneralGuiTool">GeneralGuiTool</a>&nbsp;import&nbsp;BoxGroup<br>
 &nbsp;&nbsp;&nbsp;return&nbsp;[BoxGroup(label='A&nbsp;group&nbsp;of&nbsp;choices',&nbsp;first='firstKey',<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last='secondKey')]<br>
 &nbsp;<br>
@@ -130,7 +130,10 @@ Mandatory&nbsp;for&nbsp;the&nbsp;first&nbsp;key&nbsp;defined&nbsp;in&nbsp;<a hre
 &nbsp;<br>
 The&nbsp;input&nbsp;box&nbsp;is&nbsp;defined&nbsp;according&nbsp;to&nbsp;the&nbsp;following&nbsp;syntax:<br>
 &nbsp;<br>
-Selection&nbsp;box:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;['choice1','choice2']<br>
+Check&nbsp;box:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;False&nbsp;|&nbsp;True<br>
+-&nbsp;Returns:&nbsp;bool<br>
+&nbsp;<br>
+Selection&nbsp;box:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;['choice1',&nbsp;'choice2']<br>
 -&nbsp;Returns:&nbsp;string<br>
 &nbsp;<br>
 Text&nbsp;area:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'textbox'&nbsp;|&nbsp;('textbox',1)&nbsp;|&nbsp;('textbox',1,False)<br>
