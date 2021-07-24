@@ -746,7 +746,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @staticmethod
     @runtimeLogging
     #@takes(str, list)
-    def getSubTrackNames(genome, parentTrack, deep=True, username='', state=None, includeAllSubtracksChoice=True):
+    def getSubTrackNames(genome, parentTrack, deep=True, username='', includeAllSubtracksChoice=True):
         assert (not deep)
         fullAccess = GalaxyInterface.userHasFullAccess(username)
 
@@ -759,7 +759,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         for track in tracks:
             opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track]), track, False))
 
-        return opts, state
+        return opts
 
     @staticmethod
     def _getTrackNameText(genome, trackName):
@@ -795,10 +795,10 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @runtimeLogging
     #mainCategory in ['Descriptive statistics', 'Hypothesis testing']
     #returns a list of 4-tuples, consisting of (shortName, fullSpec, False, textualDescription)
-    def getStatOptions(genome, trackName1, trackName2, mainCategory, state1=None, state2=None):
+    def getStatOptions(genome, trackName1, trackName2, mainCategory):
         try:
             realPreProc = False
-            trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, realPreProc, [state1,state2])
+            trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, realPreProc)
 
             #GalaxyInterface.cleanUpTrackNames(trackName1, trackName2)
             if not GalaxyInterface.areTrackNamesValid(genome, trackName1, trackName2):
@@ -918,8 +918,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @classmethod
     @usageAndErrorLogging
     #@takes(list,list,str,str,str,str,str,list,str)
-    def run(cls, trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, trackNameIntensity=None, username='', \
-            state1=None, state2=None, demoID=None, printHtmlBeginEnd=True, **kwArgs):
+    def run(cls, trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None,
+            trackNameIntensity=None, username='', demoID=None, printHtmlBeginEnd=True, **kwArgs):
         try:
             #startTime = time.time()
             if printHtmlBeginEnd:
@@ -928,7 +928,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 print GalaxyInterface._getDemoResultsIntro(demoID)
             print GalaxyInterface.getHtmlForToggles()
 
-            return cls._runCommon([trackName1, trackName2], analysisDef, regSpec, binSpec, genome, galaxyFn, trackNameIntensity, username, [state1, state2], **kwArgs)
+            return cls._runCommon([trackName1, trackName2], analysisDef, regSpec, binSpec, genome,
+                                  galaxyFn, trackNameIntensity, username, **kwArgs)
         except Exception, e:
             core = HtmlCore()
             core.styleInfoEnd()
@@ -950,8 +951,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 print GalaxyInterface.getHtmlEndForRuns()
 
     @staticmethod
-    def _runCommon(trackNames, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, trackNameIntensity=None, username='', \
-                   states=None, printResults=True, printProgress=True, printHtmlWarningMsgs=True, applyBoundaryFilter=False,
+    def _runCommon(trackNames, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, trackNameIntensity=None, username='',
+                   printResults=True, printProgress=True, printHtmlWarningMsgs=True, applyBoundaryFilter=False,
                    printRunDescription=True, fromMainTool=True, **kwArgs):
         assert len(trackNames) > 0
         if len(trackNames) == 1:
@@ -968,7 +969,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             trackNames[0], trackNames[1], analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackNames[0], trackNames[1], analysisDef)
 
         try:
-            trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True, states, raiseIfAnyWarnings=printHtmlWarningMsgs)
+            trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True, raiseIfAnyWarnings=printHtmlWarningMsgs)
         except Warning, e:
             core = HtmlCore()
             core.styleInfoEnd()
@@ -1153,11 +1154,9 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         return trackName1, trackName2, analysisDef
 
     @staticmethod
-    def _cleanUpTracks(trackNames, genome, realPreProc, states=None, raiseIfAnyWarnings=False):
-        if states==None:
-            states = [None]*len(trackNames)
-
-        for i,tn in enumerate(trackNames):
+    def _cleanUpTracks(trackNames, genome, realPreProc, raiseIfAnyWarnings=False):
+        trackNames = list(trackNames)
+        for i, tn in enumerate(trackNames):
             GalaxyInterface.cleanUpTrackName(tn)
             #logMessage('statOpt: '+str(tn))
 
@@ -1755,8 +1754,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         return quote(AnalysisManager.getValidAnalysisDefFromTitle(unquote(analysisTitle), genome, trackName1, trackName2), '')
 
     @staticmethod
-    def getAnalysisList(genome, category, trackName1, trackName2, state1=None, state2=None):
-        return GalaxyInterface.getStatOptions(genome, trackName1, trackName2, category, state1, state2)
+    def getAnalysisList(genome, category, trackName1, trackName2):
+        return GalaxyInterface.getStatOptions(genome, trackName1, trackName2, category)
 
     @staticmethod
     def getTrackInfoRecord(genome, trackName):

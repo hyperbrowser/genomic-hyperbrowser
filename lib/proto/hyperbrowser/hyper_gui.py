@@ -15,10 +15,6 @@ class TrackWrapper:
         self.datasets = datasets
         self.nameMain = name
         self.nameFile = self.nameMain + 'file'
-        self.nameState = self.nameMain + '_state'
-        self.state = params.get(self.nameState)
-        if self.state != None:
-            self.state = unquote(self.state)
 
         if params.has_key(name) and (not params.has_key(self.nameLevel(0))):
             parts = params[name].split(':')
@@ -56,9 +52,6 @@ class TrackWrapper:
 
     def optionsFromHistory(self, sel=None, exts=None):
         return self.galaxy.optionsFromHistory(exts, sel=sel, datasets=self.datasets)
-
-    def getState(self, q = True):
-        return quote(self.state) if self.state and q else self.state if self.state else ''
 
     def fetchTracks(self):
         for i in range(0, self.numLevels + 1):
@@ -156,7 +149,8 @@ class TrackWrapper:
                     break
             if len(trk) > 0 and val not in ['', '-']:
                 try:
-                    tracks, self.state = self.api.getSubTrackNames(self.genome, trk, False, self.galaxy.getUserName(), self.state)
+                    tracks = self.api.getSubTrackNames(self.genome, trk, False,
+                                                       self.galaxy.getUserName())
                 except OSError, e:
                     self.setValueLevel(i, None)
                     self.has_subtrack = False

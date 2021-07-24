@@ -81,8 +81,6 @@ import proto.hyperbrowser.hyper_gui as gui
 
         <input type="hidden" name="${track.nameMain}" id="${track.nameMain}" value="${track.asString()}">
 
-        <input type="hidden" name="${track.nameState}" id="${track.nameState}" value="${track.getState()}">
-
     %if i == 0:
         ${self.help(track.nameMain, 'What is a genomic track?')}
     %else:
