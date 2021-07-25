@@ -247,7 +247,7 @@
     <tool file="proto/hyperbrowser/cleanup/RemoveGenomeTool.xml" />
     <tool file="hyperbrowser/metadata.xml" />
     <tool file="hyperbrowser/integrate_track.xml" />
-    <tool file="hyperbrowser/preprocess.xml" />
+    <tool file="proto/hyperbrowser/track/PreprocessTracksTool.xml" />
     <tool file="proto/hyperbrowser/track/RenameTrackTool.xml" />
     <tool file="proto/hyperbrowser/util/TouchStandardizedTrack.xml" />
     <tool file="proto/hyperbrowser/util/StandardizeTrackFilesTool.xml" />

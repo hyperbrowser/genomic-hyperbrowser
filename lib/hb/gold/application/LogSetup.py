@@ -187,8 +187,9 @@ def logExceptionOnce(e, level = logging.DEBUG, message='', id=None):
         #logging.getLogger(HB_LOGGER).log(level, message)
         logException(e, level, message)
 
-def setupDebugModeAndLogging(mode=DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE):
-    debugHandler = logging.StreamHandler(sys.stdout)
+
+def setupDebugModeAndLogging(mode=DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE, debugFileName=None):
+    debugHandler = logging.FileHandler(debugFileName) if debugFileName else logging.StreamHandler(sys.stdout)
     debugHandler.setLevel(logging.DEBUG)
     debugHandler.setFormatter(defaultFormatter)
     logging.getLogger(HB_LOGGER).addHandler(debugHandler)

@@ -49,6 +49,7 @@ class DebugConfigMeta(type):
                          'PASS_ON_BATCH_EXCEPTIONS',
                          'PASS_ON_FIGURE_EXCEPTIONS',
                          'PASS_ON_NONERESULT_EXCEPTIONS',
+                         'PASS_ON_PREPROCESS_EXCEPTIONS',
                          'USE_SLOW_DEFENSIVE_ASSERTS',
                          'USE_PROFILING',
                          'USE_CALLGRAPH',
@@ -64,12 +65,17 @@ class DebugConfig(object):
 
     @classmethod
     def _init(cls):
+        cls._setDefaultMode()
+
+    @classmethod
+    def _setDefaultMode(cls):
         cls.VERBOSE = False
         cls.PASS_ON_VALIDSTAT_EXCEPTIONS = False
         cls.PASS_ON_COMPUTE_EXCEPTIONS = False
         cls.PASS_ON_BATCH_EXCEPTIONS = False
         cls.PASS_ON_FIGURE_EXCEPTIONS = False
         cls.PASS_ON_NONERESULT_EXCEPTIONS = False
+        cls.PASS_ON_PREPROCESS_EXCEPTIONS = False
         cls.USE_SLOW_DEFENSIVE_ASSERTS = False
         cls.USE_PROFILING = False
         cls.USE_CALLGRAPH = False
@@ -79,16 +85,22 @@ class DebugConfig(object):
                           '_combineResults': False,
                           '_createChildren': False,
                           '__init__': False,
-                          '_afterComputeCleanup' : False,
-                          '_setNotMemoizable' : False,
-                          '_updateInMemoDict' : False}
+                          '_afterComputeCleanup': False,
+                          '_setNotMemoizable': False}
         cls.TRACE_PRINT_REGIONS = False
         cls.TRACE_PRINT_TRACK_NAMES = False
 
     @classmethod
     def changeMode(cls, debugMode):
         cls._init()
+        cls._updateMode(debugMode)
 
+    @classmethod
+    def resetMode(cls):
+        cls._init()
+
+    @classmethod
+    def _updateMode(cls, debugMode):
         if debugMode != DebugModes.NO_DEBUG:
             cls.USE_SLOW_DEFENSIVE_ASSERTS = True
 
@@ -110,6 +122,7 @@ class DebugConfig(object):
             cls.PASS_ON_COMPUTE_EXCEPTIONS = True
             cls.PASS_ON_BATCH_EXCEPTIONS = True
             cls.PASS_ON_FIGURE_EXCEPTIONS = True
+            cls.PASS_ON_PREPROCESS_EXCEPTIONS = True
 
         if debugMode in [DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
                          DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
@@ -138,6 +151,5 @@ class DebugConfig(object):
                          DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
                          DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]:
             cls.TRACE_STAT['_setNotMemoizable'] = True
-            cls.TRACE_STAT['_updateInMemoDict'] = True
             cls.TRACE_PRINT_REGIONS = True
             cls.TRACE_PRINT_TRACK_NAMES = True

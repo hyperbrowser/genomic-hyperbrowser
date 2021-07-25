@@ -6,36 +6,48 @@ import sys
 from collections import OrderedDict
 from copy import deepcopy
 
+import numpy
+
+from config.Config import DebugConfig
+from gold.track.Track import Track
+from gold.track.TrackFormat import TrackFormatReq
+from gold.track.TrackSource import TrackSource
 from gold.util.CommonFunctions import createDirPath
 from gold.origdata.GenomeElementSource import BoundingRegionTuple
 from gold.track.GenomeRegion import GenomeRegion
+from gold.util.CustomExceptions import PreprocessError
+from quick.origdata.CustomTrackGenomeElementSource import CustomTrackGenomeElementSource
 from quick.util.GenomeInfo import GenomeInfo
-from gold.track.Track import Track
-from gold.track.TrackFormat import TrackFormatReq
-from gold.track.TrackView import AutonomousTrackElement
-from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
+from gold.track.TrackView import AutonomousTrackElement, TrackView
+from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob, PreProcessCustomTrackJob
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
-from test.util.Asserts import TestCaseWithImprovedAsserts
-from third_party.asteval_raise_errors import Interpreter
+from test.integration.GalaxyIntegrationTest import GalaxyIntegrationTest
 
 
-class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
+class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
     GENOME = 'TestGenome'
 
-    def _preProcess(self, trackName, noOverlapsFileCount=None, withOverlapsFileCount=None, \
-                    noOverlapsChrElCount=None, withOverlapsChrElCount=None, customBins={}):
-        trackName = self.TRACK_NAME_PREFIX + trackName
-        noOverlapsPath = createDirPath(trackName, self.GENOME, allowOverlaps=False)
-        withOverlapsPath = createDirPath(trackName, self.GENOME, allowOverlaps=True)
-        self._removeDir(noOverlapsPath, trackName)
-        self._removeDir(withOverlapsPath, trackName)
+    def setUp(self):
+        super(TestTrackPreProcessor, self).setUp()
+        self._prevPassOnPreprocessExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
+
+    def tearDown(self):
+        super(TestTrackPreProcessor, self).tearDown()
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = self._prevPassOnPreprocessExceptions
+
+    def _preProcess(self, subTrackName, noOverlapsFileCount=None, withOverlapsFileCount=None,
+                    noOverlapsChrElCount=None, withOverlapsChrElCount=None):
+        trackName = self.TRACK_NAME_PREFIX + subTrackName
+
+        self._removePreprocessedTrackData(trackName)
 
         # aeval = Interpreter()
         # aeval.symtable.update({'PreProcessAllTracksJob': PreProcessAllTracksJob})
         # cmd = "PreProcessAllTracksJob(" + repr(self.GENOME) + "," + \
-        #       repr(trackName) + ", username='Test', passOnExceptions=True).process()"
+        #       repr(trackName) + ", username='Test').process()"
         # aeval(cmd)
-        PreProcessAllTracksJob(self.GENOME, trackName, username='Test', passOnExceptions=True).process()
+        PreProcessAllTracksJob(self.GENOME, trackName, username='Test').process()
 
         if noOverlapsFileCount is not None:
             self.assertEquals(noOverlapsFileCount, len([x for x in os.listdir(noOverlapsPath) if not x.startswith('.')]))
@@ -68,21 +80,21 @@ class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
     def _getBoundingRegionTupleList(self, case, sortedAssertElList):
         boundingRegions = [br for br in sorted(case.boundingRegionsAssertList) if br.region.chr is not None]
         if len(boundingRegions) > 0:
-            return [BoundingRegionTuple(GenomeRegion(self.GENOME, chr=br.region.chr, \
-                                                     start=br.region.start if br.region.start is not None else 0, \
+            return [BoundingRegionTuple(GenomeRegion(self.GENOME, chr=br.region.chr,
+                                                     start=br.region.start if br.region.start is not None else 0,
                                                      end=br.region.end if br.region.end is not None else \
                                                          GenomeInfo.getChrLen(self.GENOME, br.region.chr)), br.elCount)
                     for br in boundingRegions]
         else:
             totChrList = [ge.chr for ge in sortedAssertElList]
             chrBrList = OrderedDict( [ (i, totChrList.count(i)) for i in sorted(set(totChrList)) ] )
-            return [BoundingRegionTuple(GenomeRegion(self.GENOME, chr=chr, start=0, \
+            return [BoundingRegionTuple(GenomeRegion(self.GENOME, chr=chr, start=0,
                                                      end=GenomeInfo.getChrLen(self.GENOME, chr)), elCount) \
                     for chr, elCount in chrBrList.iteritems()]
 
     def _getCaseTrackView(self, case, br, allowOverlaps):
-        return self._getTrackView(self.TRACK_NAME_PREFIX + case.trackName, \
-                                  GenomeRegion(genome=self.GENOME, chr=br.chr, start=br.start, end=br.end), \
+        return self._getTrackView(self.TRACK_NAME_PREFIX + case.trackName,
+                                  GenomeRegion(genome=self.GENOME, chr=br.chr, start=br.start, end=br.end),
                                   allowOverlaps=allowOverlaps)
 
     def _assertGenomeAndTrackElementEqual(self, ge, te, teChr, teOffset):
@@ -142,6 +154,7 @@ class TestTrackPreProcessor(TestCaseWithImprovedAsserts, TestWithGeSourceData):
         for i,ge in enumerate(allAssertEls):
             self._assertGenomeAndTrackElementEqual(ge, allTrackEls[i], trackElChrs[i], trackElOffsets[i])
 
+
 class TestGESourceTestsPreprocessing(TestTrackPreProcessor):
     TRACK_NAME_PREFIX = ['TestGenomeElementSource']
 
@@ -182,91 +195,91 @@ class TestGESourceTracksPreprocessing(TestTrackPreProcessor):
     TRACK_NAME_PREFIX = ['GESourceTracks']
 
     def testPreProcessBed(self):
-        self._preProcess(['BedGenomeElementSource'], \
-        noOverlapsFileCount=14, \
-        withOverlapsFileCount=14, \
-        noOverlapsChrElCount={'chr21':242, 'chrM':11}, \
-        withOverlapsChrElCount={'chr21':828, 'chrM':11})
+        self._preProcess(['BedGenomeElementSource'],
+                         noOverlapsFileCount=14,
+                         withOverlapsFileCount=14,
+                         noOverlapsChrElCount={'chr21': 242, 'chrM': 11},
+                         withOverlapsChrElCount={'chr21': 828, 'chrM': 11})
 
     def testPreProcessBedPoint(self):
-        self._preProcess(['PointBedGenomeElementSource'], \
-        noOverlapsFileCount=7, \
-        withOverlapsFileCount=7, \
-        noOverlapsChrElCount={'chr21':139, 'chrM':8}, \
-        withOverlapsChrElCount={'chr21':139, 'chrM':8})
+        self._preProcess(['PointBedGenomeElementSource'],
+                         noOverlapsFileCount=7,
+                         withOverlapsFileCount=7,
+                         noOverlapsChrElCount={'chr21': 139, 'chrM': 8},
+                         withOverlapsChrElCount={'chr21': 139, 'chrM': 8})
 
     def testPreProcessBedCategory(self):
-        self._preProcess(['BedCategoryGenomeElementSource'], \
-        noOverlapsFileCount=6, \
-        withOverlapsFileCount=6, \
-        noOverlapsChrElCount={'chr21':38, 'chrM':0}, \
-        withOverlapsChrElCount={'chr21':87, 'chrM':0})
+        self._preProcess(['BedCategoryGenomeElementSource'],
+                         noOverlapsFileCount=6,
+                         withOverlapsFileCount=6,
+                         noOverlapsChrElCount={'chr21': 38, 'chrM': 0},
+                         withOverlapsChrElCount={'chr21': 87, 'chrM': 0})
 
     def testPreProcessBedValued(self):
-        self._preProcess(['BedValuedGenomeElementSource'], \
-        noOverlapsFileCount=8, \
-        withOverlapsFileCount=8, \
-        noOverlapsChrElCount={'chr21':38, 'chrM':0}, \
-        withOverlapsChrElCount={'chr21':87, 'chrM':0})
+        self._preProcess(['BedValuedGenomeElementSource'],
+                         noOverlapsFileCount=8,
+                         withOverlapsFileCount=8,
+                         noOverlapsChrElCount={'chr21': 38, 'chrM': 0},
+                         withOverlapsChrElCount={'chr21': 87, 'chrM': 0})
 
     def testPreProcessFasta(self):
-        self._preProcess(['FastaGenomeElementSource'], \
-        noOverlapsFileCount=2, \
-        withOverlapsFileCount=None, \
-        noOverlapsChrElCount={'chr21':9804, 'chrM':0}, \
-        withOverlapsChrElCount=None, \
-        customBins={'chr21':GenomeRegion(self.GENOME, 'chr21', 0, 9804)})
+        self._preProcess(['FastaGenomeElementSource'],
+                         noOverlapsFileCount=2,
+                         withOverlapsFileCount=None,
+                         noOverlapsChrElCount={'chr21': 9804, 'chrM': 0},
+                         withOverlapsChrElCount=None)
 
     def testPreProcessGff(self):
-        self._preProcess(['GffGenomeElementSource'], \
-        noOverlapsFileCount=12, \
-        withOverlapsFileCount=12, \
-        noOverlapsChrElCount={'chr21':3076, 'chrM':0}, \
-        withOverlapsChrElCount={'chr21':5260, 'chrM':0})
+        self._preProcess(['GffGenomeElementSource'],
+                         noOverlapsFileCount=12,
+                         withOverlapsFileCount=12,
+                         noOverlapsChrElCount={'chr21': 3076, 'chrM': 0},
+                         withOverlapsChrElCount={'chr21': 5260, 'chrM': 0})
 
     def testPreProcessMicroarray(self):
-        self._preProcess(['MicroarrayGenomeElementSource'], \
-        noOverlapsFileCount=7, \
-        withOverlapsFileCount=7, \
-        noOverlapsChrElCount={'chr21':2, 'chrM':0}, \
-        withOverlapsChrElCount={'chr21':2, 'chrM':0})
+        self._preProcess(['MicroarrayGenomeElementSource'],
+                         noOverlapsFileCount=7,
+                         withOverlapsFileCount=7,
+                         noOverlapsChrElCount={'chr21': 2, 'chrM': 0},
+                         withOverlapsChrElCount={'chr21': 2, 'chrM': 0})
 
     def testPreProcessBedGraph(self):
-        self._preProcess(['BedGraphGenomeElementSource'], \
-        noOverlapsFileCount=6, \
-        withOverlapsFileCount=6, \
-        noOverlapsChrElCount={'chr21':10000, 'chrM':0}, \
-        withOverlapsChrElCount={'chr21':10000, 'chrM':0})
+        self._preProcess(['BedGraphGenomeElementSource'],
+                         noOverlapsFileCount=6,
+                         withOverlapsFileCount=6,
+                         noOverlapsChrElCount={'chr21': 10000, 'chrM': 0},
+                         withOverlapsChrElCount={'chr21': 10000, 'chrM': 0})
 
     def testPreProcessBedGraphTargetControl(self):
-        self._preProcess(['BedGraphTargetControlGenomeElementSource'], \
-        noOverlapsFileCount=6, \
-        withOverlapsFileCount=6, \
-        noOverlapsChrElCount={'chr21':2, 'chrM':1}, \
-        withOverlapsChrElCount={'chr21':2, 'chrM':1})
+        self._preProcess(['BedGraphTargetControlGenomeElementSource'],
+                         noOverlapsFileCount=6,
+                         withOverlapsFileCount=6,
+                         noOverlapsChrElCount={'chr21': 2, 'chrM': 1},
+                         withOverlapsChrElCount={'chr21': 2, 'chrM': 1})
 
     def testPreProcessHBFunction(self):
-        self._preProcess(['HBFunctionGenomeElementSource'], \
-        noOverlapsFileCount=2, \
-        withOverlapsFileCount=None, \
-        noOverlapsChrElCount=None, \
-        withOverlapsChrElCount=None)
+        self._preProcess(['HBFunctionGenomeElementSource'],
+                         noOverlapsFileCount=2,
+                         withOverlapsFileCount=None,
+                         noOverlapsChrElCount=None,
+                         withOverlapsChrElCount=None)
 
     def testPreProcessPoisitionIter(self):
-        self._preProcess(['PositionIterGESource'], \
-        noOverlapsFileCount=4, \
-        withOverlapsFileCount=None, \
-        noOverlapsChrElCount={'chr21':139, 'chrM':8}, \
-        withOverlapsChrElCount=None)
+        self._preProcess(['PositionIterGESource'],
+                         noOverlapsFileCount=4,
+                         withOverlapsFileCount=None,
+                         noOverlapsChrElCount={'chr21': 139, 'chrM': 8},
+                         withOverlapsChrElCount=None)
 
     def runTest(self):
         pass
-        #self.testPreProcessMicroarray()
+        # self.testPreProcessMicroarray()
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        TestTrackPreProcessor.VERBOSE = ast.literal_eval(sys.argv[1])
+        TestTrackPreProcessor.debugMode = sys.argv[1]
         sys.argv = sys.argv[:-1]
-    #TestTrackPreProcessor().run()
-    #TestTrackPreProcessor().debug()
+    # TestTrackPreProcessor().run()
+    # TestTrackPreProcessor().debug()
     unittest.main()

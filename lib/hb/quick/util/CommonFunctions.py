@@ -764,3 +764,16 @@ def urlDecodePhrase(phrase, unquotePlus=False):
             return decoded.decode('utf-8')
     except (UnicodeDecodeError, UnicodeEncodeError):
         return decoded
+
+
+# From: https://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
+from contextlib import contextmanager
+
+@contextmanager
+def stdout_redirector(stream):
+    old_stdout = sys.stdout
+    sys.stdout = stream
+    try:
+        yield
+    finally:
+        sys.stdout = old_stdout

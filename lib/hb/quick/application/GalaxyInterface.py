@@ -461,14 +461,13 @@ class GalaxyInterfaceTools:
         outF.close()
 
     @staticmethod
-    def startPreProcessing(genome, trackNameFilter=[], username='', mergeChrFolders=True, passOnExceptions=False, verbose=False):
+    def startPreProcessing(genome, trackNameFilter=[], username='', mergeChrFolders=True):
         if isinstance(trackNameFilter, basestring):
             trackNameFilter = trackNameFilter.split(':')
         print '<PRE>'
         print 'Genome: %s' % genome
         print 'Base track for preprocessing: %s' % trackNameFilter
-        PreProcessAllTracksJob(genome, trackNameFilter, username=username, mergeChrFolders=mergeChrFolders,
-                               passOnExceptions=passOnExceptions, verbose=verbose).process()
+        PreProcessAllTracksJob(genome, trackNameFilter, username=username, mergeChrFolders=mergeChrFolders).process()
         print '</PRE>'
 
     @staticmethod

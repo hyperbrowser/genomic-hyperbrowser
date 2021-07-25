@@ -7,6 +7,8 @@ import traceback
 
 from future.utils import raise_from
 
+from config.Config import DebugConfig
+
 from gold.description.TrackInfo import TrackInfo
 from gold.origdata.ChrMemmapFolderMerger import ChrMemmapFolderMerger
 from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, RegionBasedGESourceManager
@@ -29,18 +31,16 @@ from quick.util.GenomeInfo import GenomeInfo
 class PreProcessTracksJob(object):
     VERSION = '1.0'
 
-    def __init__(self, genome, username='', mode='Real', raiseIfAnyWarnings=False, passOnExceptions=False, verbose=False):
+    def __init__(self, genome, username='', mode='Real', raiseIfAnyWarnings=False):
         self._genome = genome
         self._username = username
         self._mode = mode
         self._status = ''
         self._raiseIfAnyWarnings = raiseIfAnyWarnings
         self._warningTrackNames = []
-        self._passOnExceptions = passOnExceptions
-        self._verbose = verbose
 
     def __setattr__(self, key, value):
-        if hasattr(self, '_verbose') and self._verbose and key == '_status':
+        if DebugConfig.VERBOSE and key == '_status':
             print value
         object.__setattr__(self, key, value)
 
@@ -106,13 +106,13 @@ class PreProcessTracksJob(object):
 
             except NotSupportedError, e:
                 collector.removeEntry()
-                if self._passOnExceptions:
+                if DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS:
                     raise_from(PreprocessWarning(self._addContextToExceptionMsg(e, trackName)), e)
                 else:
                     self._printExceptionMsg(e, trackName, Error=False)
             except Exception, e:
                 collector.removeEntry()
-                if self._passOnExceptions:
+                if DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS:
                     raise_from(PreprocessError(self._addContextToExceptionMsg(e, trackName)), e)
                 else:
                     self._printExceptionMsg(e, trackName, Error=True)
@@ -128,10 +128,13 @@ class PreProcessTracksJob(object):
         raise AbstractClassError
 
     def _allGESourceManagers(self, trackName, allowOverlaps):
+        trackNameStr = ':'.join(trackName)
+        self._status = "Trying to create GESourceManager " \
+                       "(trackName: {}, allowOverlaps: {})".format(trackNameStr, allowOverlaps)
         collector = PreProcMetaDataCollector(self._genome, trackName)
         if allowOverlaps == False and collector.overlapRuleHasBeenFinalized(True):
             for i in range(1):
-                self._status = 'Trying to prepare preprocessing for track "%s"' % ':'.join(trackName) + \
+                self._status = 'Trying to prepare preprocessing for track "%s"' % trackNameStr + \
                                 (' (allowOverlaps: %s)' % allowOverlaps)
                 yield self._getGESourceManagerFromTrack(trackName)
         else:
@@ -141,7 +144,7 @@ class PreProcessTracksJob(object):
                     if tf.isDense() or geSource.hasNoOverlappingElements():
                         return
 
-                self._status = 'Trying to prepare preprocessing for track "%s"' % ':'.join(trackName) + \
+                self._status = 'Trying to prepare preprocessing for track "%s"' % trackNameStr + \
                                 (' (filename: "%s")' % geSource.getFileName() if geSource.hasOrigFile() else '') + \
                                 (' (allowOverlaps: %s)' % allowOverlaps)
                 if PreProcessUtils.shouldPreProcessGESource(trackName, geSource, allowOverlaps):
@@ -265,8 +268,8 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
 
 class PreProcessExternalTrackJob(PreProcessTracksJob):
     def __init__(self, genome, fullFn, extTrackName, fileSuffix,
-                 printProgress=True, mergeChrFolders=True, passOnExceptions=True, **kwArgs):
-        PreProcessTracksJob.__init__(self, genome, passOnExceptions=passOnExceptions, **kwArgs)
+                 printProgress=True, mergeChrFolders=True, **kwArgs):
+        PreProcessTracksJob.__init__(self, genome, **kwArgs)
         self._fullFn = fullFn
         self._extTrackName = extTrackName
         self._fileSuffix = fileSuffix
@@ -288,9 +291,9 @@ class PreProcessExternalTrackJob(PreProcessTracksJob):
 
 
 class PreProcessCustomTrackJob(PreProcessTracksJob):
-    def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='',
-                 preProcess=True, finalize=True, mergeChrFolders=True, passOnExceptions=True, **callBackArgs):
-        PreProcessTracksJob.__init__(self, genome, username=username, passOnExceptions=passOnExceptions)
+    def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='', mode='Real',
+                 preProcess=True, finalize=True, mergeChrFolders=True, **callBackArgs):
+        PreProcessTracksJob.__init__(self, genome, username=username, mode=mode)
         self._trackName = trackName
         assert len(regionList) > 0
         self._regionList = regionList

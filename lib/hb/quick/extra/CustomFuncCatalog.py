@@ -880,9 +880,15 @@ def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False
     from quick.application.GalaxyInterface import GalaxyInterface
     from gold.util.CustomExceptions import PreprocessError
     from quick.extra.StandardizeTrackFiles import PlainMover
+    from config.Config import DebugConfig
 
     genomeListIsFn = ast.literal_eval(genomeListIsFn)
     verbose = ast.literal_eval(verbose)
+
+    prevPassOnPreprocessExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+    prevVerbose = DebugConfig.VERBOSE
+    DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
+    DebugConfig.VERBOSE = verbose
 
     track_cats = ['Sequence:DNA', 'Genome build properties', 'Genes and gene subsets', 'Sample data']
 
@@ -906,8 +912,7 @@ def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False
 
         for track_cat in track_cats:
             try:
-                GalaxyInterface.startPreProcessing(genome, track_cat.split(':'), username,
-                                                   passOnExceptions=True, verbose=verbose)
+                GalaxyInterface.startPreProcessing(genome, track_cat.split(':'), username)
             except PreprocessError, e:
                 traceback.print_exc()
                 print
@@ -924,7 +929,11 @@ def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False
             print '\n**Genome "{}" was reinstalled successfully!**\n'.format(genome)
         else:
             print '\n**Genome "{}" was not reinstalled!**\n'.format(genome)
-                
+
+    DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = prevPassOnPreprocessExceptions
+    DebugConfig.VERBOSE = prevVerbose
+
+
 def _usage():
     print 'syntax: '
     print 'to use: [name] [args]'
