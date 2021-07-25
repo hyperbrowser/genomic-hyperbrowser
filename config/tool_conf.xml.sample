@@ -257,7 +257,6 @@
   <section name="Development tools" id="debug_tools">
     <tool file="proto/hyperbrowser/restricted/DebugAnalysisTool.xml" />
     <tool file="proto/hyperbrowser/restricted/DebugAnalysisListTool.xml" />
-    <tool file="proto/hyperbrowser/restricted/DebugBatchLine.xml" />
     <tool file="proto/hyperbrowser/util/ShowTailOfLogFile.xml" />
     <tool file="proto/hyperbrowser/restricted/GetDiskPathForHistoryElement.xml" />
     <tool file="proto/hyperbrowser/restricted/ListSubtrackNames.xml" />
@@ -270,8 +269,6 @@
   </section>
 
   <!--<section name="Assorted tools" id="assorted_tools">-->
-    <!--&lt;!&ndash; <tool file="hyperbrowser/batchrun-titan.xml" /> &ndash;&gt;-->
-    <!--&lt;!&ndash;<tool file="hyperbrowser/batchrun.xml" />&ndash;&gt;-->
     <!--&lt;!&ndash; <tool file="hyperbrowser/filterMarkedSegments.xml" /> &ndash;&gt;-->
     <!--&lt;!&ndash; <tool file="hyperbrowser/createCustomTrack.xml" /> &ndash;&gt;-->
     <!--<tool file="hyperbrowser/staale_prog.xml"/>-->
