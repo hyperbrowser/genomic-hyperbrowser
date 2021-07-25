@@ -80,16 +80,33 @@ def stripFileSuffix(fn):
     return fn[:-len(suffix)-1]
 
 
+def getOrigPathForFileTree(genome, trackName, fileTree):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+
+    if fileTree == 'standardized':
+        return createOrigPath(genome, trackName)
+    elif fileTree == 'collected':
+        return createCollectedPath(genome, trackName)
+    else:
+        return createParsingErrorPath(genome, trackName)
+
+
+def getRootPathForFileTree(fileTree):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+
+    if fileTree == 'standardized':
+        return ORIG_DATA_PATH
+    elif fileTree == 'collected':
+        return NONSTANDARD_DATA_PATH
+    else:
+        return PARSING_ERROR_DATA_PATH
+
+
 def getOrigFns(genome, trackName, suffix, fileTree='standardized'):
     assert fileTree in ['standardized', 'collected', 'parsing error']
     from gold.application.LogSetup import logMessage, logging
 
-    if fileTree == 'standardized':
-        path = createOrigPath(genome, trackName)
-    elif fileTree == 'collected':
-        path = createCollectedPath(genome, trackName)
-    else:
-        path = createParsingErrorPath(genome, trackName)
+    path = getOrigPathForFileTree(genome, trackName, fileTree)
 
     if not os.path.exists(path):
         if IS_EXPERIMENTAL_INSTALLATION:
@@ -121,9 +138,10 @@ def parseDirPath(path):
     return el[2], tuple(el[3:-1]), el[-1]
 
 
-def extractTrackNameFromOrigPath(path):
+def extractTrackNameFromOrigPath(path, fileTree='standardized'):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
     excludeEl = None if os.path.isdir(path) else -1
-    path = path[len(ORIG_DATA_PATH):]
+    path = path[len(getRootPathForFileTree(fileTree)):]
     path = path.replace('//','/')
     if path[0]=='/':
         path = path[1:]

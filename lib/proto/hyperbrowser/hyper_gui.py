@@ -8,11 +8,14 @@ from proto.hyper_gui import _disabled
 class TrackWrapper:
     has_subtrack = False
 
-    def __init__(self, name, api, preTracks, galaxy, datasets, genome=''):
+    def __init__(self, name, api, preTracks, galaxy, datasets, genome='', fileTree='preprocessed'):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
+
         params = galaxy.params
         self.api = api
         self.galaxy = galaxy
         self.datasets = datasets
+        self.fileTree = fileTree
         self.nameMain = name
         self.nameFile = self.nameMain + 'file'
 
@@ -25,18 +28,21 @@ class TrackWrapper:
                 for i in range(len(parts)):
                     self.setValueLevel(i, parts[i])
         
+        self.main = self.valueLevel(0)
         self.preTracks = []
         self.extraTracks = []
-        if len(datasets) > 0:
-            self.extraTracks.append(('-- From history (bed, wig, ...) --', 'galaxy', False))
-        self.extraTracks += preTracks
+        self.file = None
 
-        self.main = self.valueLevel(0)
-        self.file = params.get(self.nameFile)
-        if not self.file and len(self.datasets) > 0:
-            self.file = self.galaxy.makeHistoryOption(self.datasets[0])[1]
-        else:
-            self._checkHistoryFile()
+        if self.fileTree == "preprocessed":
+            if len(datasets) > 0:
+                self.extraTracks.append(('-- From history (bed, wig, ...) --', 'galaxy', False))
+            self.extraTracks += preTracks
+
+            self.file = params.get(self.nameFile)
+            if not self.file and len(self.datasets) > 0:
+                self.file = self.galaxy.makeHistoryOption(self.datasets[0])[1]
+            else:
+                self._checkHistoryFile()
 
         self.tracks = []
         self.genome = genome
@@ -57,7 +63,7 @@ class TrackWrapper:
         for i in range(0, self.numLevels + 1):
             self.getTracksForLevel(i)
         self.numLevels = len(self.tracks)
-   
+
     def hasSubtrack(self):
         ldef = len(self.definition())
         if len(self.tracks) > ldef:
@@ -93,7 +99,8 @@ class TrackWrapper:
 
     def selected(self):
         if (len(self.definition()) >= 1 and not self.hasSubtrack()) or self.valueLevel(0) == '':
-            self.valid = self.api.trackValid(self.genome, self.definition())
+            self.valid = self.api.trackValid(self.genome,
+                                             self.definition()) if self.fileTree == 'preprocessed' else True
             if self.valid == True:
                 return True
         print self.valid
@@ -118,8 +125,6 @@ class TrackWrapper:
         else:
             arr = self.asList()
         return arr
-
-
 
     def getTracksForLevel(self, level):
         if not self.genome:
@@ -150,7 +155,8 @@ class TrackWrapper:
             if len(trk) > 0 and val not in ['', '-']:
                 try:
                     tracks = self.api.getSubTrackNames(self.genome, trk, False,
-                                                       self.galaxy.getUserName())
+                                                       self.galaxy.getUserName(),
+                                                       self.fileTree)
                 except OSError, e:
                     self.setValueLevel(i, None)
                     self.has_subtrack = False
@@ -165,7 +171,8 @@ class TrackWrapper:
         return tracks
 
     def mainTracks(self):
-        tracks = self.api.getMainTrackNames(self.genome, self.preTracks, self.extraTracks, self.galaxy.getUserName())
+        tracks = self.api.getMainTrackNames(self.genome, self.preTracks, self.extraTracks,
+                                            self.galaxy.getUserName(), self.fileTree)
         return tracks
 
 

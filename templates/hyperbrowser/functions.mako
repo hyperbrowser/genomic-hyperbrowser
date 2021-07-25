@@ -73,15 +73,17 @@ import proto.hyperbrowser.hyper_gui as gui
             sti_display = 'display:none'
 
         %>
-        <img class="${sti_class}" src="${h.url_for('/static/style/info_small.png')}" alt="Track information" title="Track information" onclick="getInfo(document.forms[0], this, '${track.nameMain}')"/>
-        <div id="info_${track.nameMain}" class="infomessagesmall" style="${sti_display}"> ${hyper.getTrackInfo(genome, track.definition())} </div>
-        <input type="hidden" name="show_info_${track.nameMain}" id="show_info_${track.nameMain}" value="${sti_val}">
+        %if track.fileTree == "preprocessed":
+            <img class="${sti_class}" src="${h.url_for('/static/style/info_small.png')}" alt="Track information" title="Track information" onclick="getInfo(document.forms[0], this, '${track.nameMain}')"/>
+            <div id="info_${track.nameMain}" class="infomessagesmall" style="${sti_display}"> ${hyper.getTrackInfo(genome, track.definition())} </div>
+            <input type="hidden" name="show_info_${track.nameMain}" id="show_info_${track.nameMain}" value="${sti_val}">
+        %endif
 
     %endif
 
         <input type="hidden" name="${track.nameMain}" id="${track.nameMain}" value="${track.asString()}">
 
-    %if i == 0:
+    %if track.fileTree == "preprocessed" and i == 0:
         ${self.help(track.nameMain, 'What is a genomic track?')}
     %else:
         <br>&nbsp;<br>

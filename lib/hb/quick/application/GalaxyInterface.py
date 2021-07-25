@@ -730,15 +730,20 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     @runtimeLogging
-    def getMainTrackNames(genome, preTracks=[], postTracks=[], username=''):
+    def getMainTrackNames(genome, preTracks=[], postTracks=[], username='', fileTree='preprocessed'):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
+
         #return ['HPV_200kb, allTss']
         #return ProcTrackOptions().getMainTypes(extraTracks)
-        fullAccess = GalaxyInterface.userHasFullAccess(username)
-        tracks = ProcTrackOptions.getSubtypes(genome, [], fullAccess)
+        if fileTree == 'preprocessed':
+            fullAccess = GalaxyInterface.userHasFullAccess(username)
+            tracks = ProcTrackOptions.getSubtypes(genome, [], fullAccess)
+        else:
+            tracks = getOrigSubTracks(genome, [], fileTree)
 
         opts = []
         for track in tracks:
-            opts.append((GalaxyInterface._getTrackNameText(genome, [track]), track, False))
+            opts.append((GalaxyInterface._getTrackNameText(genome, [track], fileTree), track, False))
 
         #return [('external','external',False)]+preTracks + opts + postTracks
         return preTracks + opts + postTracks
@@ -746,30 +751,41 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @staticmethod
     @runtimeLogging
     #@takes(str, list)
-    def getSubTrackNames(genome, parentTrack, deep=True, username='', includeAllSubtracksChoice=True):
+    def getSubTrackNames(genome, parentTrack, deep=True, username='',
+                         fileTree='preprocessed', includeAllSubtracksChoice=True):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
         assert (not deep)
-        fullAccess = GalaxyInterface.userHasFullAccess(username)
 
-        tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
-        if includeAllSubtracksChoice:
-            if len(tracks) > 0 and ProcTrackOptions.isValidTrack(genome, parentTrack, fullAccess):
+        if fileTree == 'preprocessed':
+            fullAccess = GalaxyInterface.userHasFullAccess(username)
+            tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
+        else:
+            tracks = getOrigSubTracks(genome, parentTrack, fileTree)
+
+        if fileTree == 'preprocessed' and includeAllSubtracksChoice:
+            if len(tracks) > 1 and ProcTrackOptions.isValidTrack(genome, parentTrack, fullAccess):
                 tracks += [GalaxyInterface.ALL_SUBTYPES_TEXT]
 
         opts = []
         for track in tracks:
-            opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track]), track, False))
+            opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track], fileTree), track, False))
 
         return opts
 
     @staticmethod
-    def _getTrackNameText(genome, trackName):
-        ti = TrackInfo(genome, trackName)
-        subTrackCount = ti.subTrackCount
-        if subTrackCount in [0,None] or \
-            (subTrackCount == 1 and ti.isValid()):
-            return trackName[-1]
+    def _getTrackNameText(genome, trackName, fileTree='preprocessed'):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
+
+        if fileTree == 'preprocessed':
+            ti = TrackInfo(genome, trackName)   
+            subTrackCount = ti.subTrackCount
+            if subTrackCount in [0,None] or \
+                (subTrackCount == 1 and ti.isValid()):
+                return trackName[-1]
+            else:
+                return '%s [%s]' % (trackName[-1], strWithStdFormatting(subTrackCount))
         else:
-            return '%s [%s]' % (trackName[-1], strWithStdFormatting(subTrackCount))
+            return trackName[-1]
 
     @staticmethod
     def userHasFullAccess(username):

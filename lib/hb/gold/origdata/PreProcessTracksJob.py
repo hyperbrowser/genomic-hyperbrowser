@@ -225,8 +225,8 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
         self._mergeChrFolders = mergeChrFolders
 
     def _allTrackNames(self):
-        avoidLiterature = len(self._trackNameFilter) == 0 or (self._trackNameFilter != GenomeInfo.getLiteratureTrackName(self._genome))
-        trackSource = OrigTrackNameSource(self._genome, self._trackNameFilter, avoidLiterature)
+        # avoidLiterature = len(self._trackNameFilter) == 0 or (self._trackNameFilter != GenomeInfo.getLiteratureTrackName(self._genome))
+        trackSource = OrigTrackNameSource(self._genome, self._trackNameFilter)
         return reorderTrackNameListFromTopDownToBottomUp(trackSource)
 
     def _allGESources(self, trackName):
