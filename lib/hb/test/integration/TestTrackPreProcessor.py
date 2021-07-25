@@ -49,28 +49,101 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
         # aeval(cmd)
         PreProcessAllTracksJob(self.GENOME, trackName, username='Test').process()
 
-        if noOverlapsFileCount is not None:
-            self.assertEquals(noOverlapsFileCount, len([x for x in os.listdir(noOverlapsPath) if not x.startswith('.')]))
-
-        if withOverlapsFileCount is not None:
-            self.assertEquals(withOverlapsFileCount, len([x for x in os.listdir(withOverlapsPath) if not x.startswith('.')]))
-
-        if noOverlapsChrElCount is not None:
-            self.assertChrElCounts(trackName, noOverlapsChrElCount, False, customBins)
-
-        if withOverlapsChrElCount is not None:
-            self.assertChrElCounts(trackName, withOverlapsChrElCount, True, customBins)
+        self._assertCounts(trackName, noOverlapsFileCount, withOverlapsFileCount, noOverlapsChrElCount,
+                           withOverlapsChrElCount)
 
         # self._storeProfile()
 
-    def assertChrElCounts(self, trackName, chrElCountDict, allowOverlaps, customBins):
-        for chr in chrElCountDict.keys():
-            if chr in customBins:
-                region = customBins[chr]
-            else:
-                region = GenomeRegion(self.GENOME, chr, 0, GenomeInfo.getChrLen(self.GENOME, chr))
-            tv = self._getTrackView(trackName, region, allowOverlaps)
-            self.assertEquals(chrElCountDict[chr], len([x for x in tv]))
+    def _preProcessCustomTracks(self, subTrackName, regionList, getGeSourceCallBackFunc,
+                                noOverlapsFileCount=None, withOverlapsFileCount=None,
+                                noOverlapsChrElCount=None, withOverlapsChrElCount=None,
+                                **callBackArgs):
+        trackName = self.TRACK_NAME_PREFIX + subTrackName
+
+        for mergeChrFolders in [False, True]:
+            self._removePreprocessedTrackData(trackName)
+            print 'mergeChrFolders: {}'.format(mergeChrFolders)
+            PreProcessCustomTrackJob(self.GENOME, trackName, regionList, getGeSourceCallBackFunc, username='Test',
+                                     preProcess=True, finalize=False, mergeChrFolders=mergeChrFolders,
+                                     **callBackArgs).process()
+            PreProcessCustomTrackJob(self.GENOME, trackName, regionList, getGeSourceCallBackFunc, username='Test',
+                                     preProcess=False, finalize=True, mergeChrFolders=mergeChrFolders,
+                                     **callBackArgs).process()
+
+            if not mergeChrFolders:
+                if noOverlapsFileCount:
+                    noOverlapsFileCount = (noOverlapsFileCount - 1) * len(regionList)
+                if withOverlapsFileCount:
+                    withOverlapsFileCount = (withOverlapsFileCount - 1) * len(regionList)
+
+            self._assertCounts(trackName, noOverlapsFileCount, withOverlapsFileCount,
+                               noOverlapsChrElCount, withOverlapsChrElCount)
+
+    def _assertCounts(self, trackName, noOverlapsFileCount, withOverlapsFileCount,
+                      noOverlapsChrElCount, withOverlapsChrElCount):
+        noOverlapsPath, withOverlapsPath = self._getDirPaths(trackName)
+        if noOverlapsFileCount is not None:
+            self.assertEquals(noOverlapsFileCount, self._countFiles(noOverlapsPath))
+        if withOverlapsFileCount is not None:
+            self.assertEquals(withOverlapsFileCount, self._countFiles(withOverlapsPath))
+        if noOverlapsChrElCount is not None:
+            self.assertChrElCounts(trackName, noOverlapsChrElCount, False)
+        if withOverlapsChrElCount is not None:
+            self.assertChrElCounts(trackName, withOverlapsChrElCount, True)
+
+    @staticmethod
+    def _countFiles(dir):
+        numFiles = 0
+        for path, dirs, files in os.walk(dir):
+            numFiles += len([_ for _ in files if not _.startswith('.')])
+        return numFiles
+
+    def _getDirPaths(self, trackName):
+        noOverlapsPath = createDirPath(trackName, self.GENOME, allowOverlaps=False)
+        withOverlapsPath = createDirPath(trackName, self.GENOME, allowOverlaps=True)
+        return noOverlapsPath, withOverlapsPath
+
+    def assertChrElCounts(self, trackName, chrElCountDict, allowOverlaps):
+        allChrs = chrElCountDict.keys()
+        for chr in allChrs:
+            self.assertEquals(chrElCountDict[chr], self._getNumTrackElements(trackName, chr, allowOverlaps))
+        self.assertEquals(sum(chrElCountDict.values()),
+                          self._getTotalNumTrackElementsFromMemmap(trackName, allChrs, allowOverlaps))
+
+    def _getNumTrackElements(self, trackName, chr, allowOverlaps):
+        trackSource = TrackSource()
+        trackData = trackSource.getTrackData(trackName, self.GENOME, chr, allowOverlaps)
+        brShelve = trackData.boundingRegionShelve
+        if brShelve:
+            chrBoundingRegions = brShelve.getAllBoundingRegionsForChr(chr)
+            numTrackElements = sum(self._getTrackView(trackName, br, allowOverlaps).getNumElements()
+                                   for br in chrBoundingRegions)
+            assert numTrackElements == brShelve.getTotalElementCountForChr(chr)
+        else:  # chr-specific folders have not been merged
+            numTrackElements = self._getNumTrackElementsFromMemmap(trackName, chr, allowOverlaps)
+
+        return numTrackElements
+
+    def _getTotalNumTrackElementsFromMemmap(self, trackName, allChrs, allowOverlaps):
+        totalNumTrackElements = 0
+        for chr in allChrs + [None]:  # Count both chr-specific directories and merged files
+            try:
+                totalNumTrackElements += self._getNumTrackElementsFromMemmap(trackName, chr, allowOverlaps)
+            except OSError:  # Trying to access chr-specific dir that does not exist
+                continue
+
+        return totalNumTrackElements
+
+    def _getNumTrackElementsFromMemmap(self, trackName, chr, allowOverlaps):
+        trackSource = TrackSource()
+        trackData = trackSource.getTrackData(trackName, self.GENOME, chr, allowOverlaps, forceChrFolders=True)
+        allArrayLenghts = [memmap.getShape()[0] for name, memmap in trackData.iteritems()
+                           if name not in ['leftIndex', 'rightIndex']]
+        if len(allArrayLenghts) > 0:
+            assert all(arrayLen == allArrayLenghts[0] for arrayLen in allArrayLenghts)
+            return allArrayLenghts[0]
+        else:
+            return 0
 
     def _getTrackView(self, trackName, region, allowOverlaps):
         track = Track(trackName)
@@ -176,6 +249,12 @@ class TestGESourceTestsPreprocessing(TestTrackPreProcessor):
 
         self._removeAllTrackData(self.TRACK_NAME_PREFIX)
 
+    def _preProcessUnpackException(self, trackName):
+        try:
+            self._preProcess(trackName)
+        except PreprocessError as e:
+            raise e.__context__
+
     def testAllExceptions(self):
         testGESource = self._commonSetup()
 
@@ -187,9 +266,46 @@ class TestGESourceTestsPreprocessing(TestTrackPreProcessor):
                 continue
 
             self._writeTestFile(case)
-            self.assertRaises(case.exceptionClass, self._preProcess, case.trackName)
+            self.assertRaises(case.exceptionClass, self._preProcessUnpackException, case.trackName)
 
         self._removeAllTrackData(self.TRACK_NAME_PREFIX)
+
+
+class TestCustomTrackPreprocessing(TestTrackPreProcessor):
+    TRACK_NAME_PREFIX = ['CustomTracks']
+
+    def testPreprocessCustomTrack(self):
+        class SlicedCustomTrackGenomeElementSource(CustomTrackGenomeElementSource):
+            _isSliceSource = True
+
+            def getValDataType(self):
+                return 'int32'
+
+        class RangeTrackViewSource(object):
+            def __init__(self, region):
+                self._region = region
+
+            def __iter__(self):
+                for region in [self._region]:
+                    valArray = numpy.arange(len(region), dtype='int32')
+                    yield TrackView(self._region, valList=valArray, allowOverlaps=False)
+
+        def _getGeSourceCallBackFunction(genome, trackName, region, func):
+            rangeTvSource = RangeTrackViewSource(region)
+            return SlicedCustomTrackGenomeElementSource(rangeTvSource, genome, trackName, region.chr, func)
+
+        def inverseRange(trackView):
+            return len(trackView) - trackView.valsAsNumpyArray()
+
+        regionList = [GenomeRegion(self.GENOME, 'chr21', 0, 10000),
+                      GenomeRegion(self.GENOME, 'chrM', 0, 16571)]
+        self._preProcessCustomTracks(
+            ['CustomFunctionSlice'], regionList,
+            getGeSourceCallBackFunc=_getGeSourceCallBackFunction, noOverlapsFileCount=2, withOverlapsFileCount=None,
+            noOverlapsChrElCount={'chr21': 10000, 'chrM': 16571}, withOverlapsChrElCount=None,
+            func=inverseRange
+        )
+
 
 class TestGESourceTracksPreprocessing(TestTrackPreProcessor):
     TRACK_NAME_PREFIX = ['GESourceTracks']

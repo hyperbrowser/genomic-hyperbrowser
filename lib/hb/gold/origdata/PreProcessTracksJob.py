@@ -8,11 +8,13 @@ import traceback
 from future.utils import raise_from
 
 from config.Config import DebugConfig
-
 from gold.description.TrackInfo import TrackInfo
 from gold.origdata.ChrMemmapFolderMerger import ChrMemmapFolderMerger
-from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, RegionBasedGESourceManager
-from gold.origdata.GenomeElementSource import GenomeElementSource
+from gold.origdata.GEBoundingRegionElementCounter import GEBoundingRegionElementCounter
+from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, \
+    SkipExtraPassDenseGESourceManager
+from gold.origdata.GESourceWrapper import BrTuplesGESourceWrapper
+from gold.origdata.GenomeElementSource import GenomeElementSource, BoundingRegionTuple
 from gold.origdata.PreProcessGeSourceJob import PreProcessGeSourceJob
 from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.origdata.PreProcessUtils import PreProcessUtils
@@ -157,8 +159,7 @@ class PreProcessTracksJob(object):
         return GESourceManager(geSource)
 
     def _getGESourceManagerFromTrack(self, trackName):
-        origBrTuples = PreProcMetaDataCollector(self._genome, trackName).\
-                        getBoundingRegionTuples(allowOverlaps=True)
+        origBrTuples = PreProcMetaDataCollector(self._genome, trackName).getBoundingRegionTuples(allowOverlaps=True)
         return OverlapClusteringGESourceManager(self._genome, trackName, origBrTuples)
 
     def _shouldPreProcess(self):
@@ -309,19 +310,25 @@ class PreProcessCustomTrackJob(PreProcessTracksJob):
     def _allGESources(self, trackName):
         regionList = self._regionList if self._preProcess else [self._regionList[0]]
         for region in regionList:
-            yield self._getGeSourceCallBackFunc(self._genome, self._trackName, region, **self._callBackArgs)
+            self._status = "Trying to create custom track geSource for region: {}".format(region)
+            geSource = self._getGeSourceCallBackFunc(self._genome, self._trackName, region, **self._callBackArgs)
+            tf = TrackFormat.createInstanceFromGeSource(geSource)
+            if tf.reprIsDense():
+                brList = [BoundingRegionTuple(region, len(region))]
+                yield BrTuplesGESourceWrapper(geSource, brList)
+            else:
+                brList = [BoundingRegionTuple(region, 0)]
+                yield GEBoundingRegionElementCounter(geSource, brList)
 
     def _getGESourceManagerFromGESource(self, geSource):
         tf = TrackFormat.createInstanceFromGeSource(geSource)
         if tf.reprIsDense():
             if tf.getValTypeName() in ['Number', 'Number (integer)', 'Case-control']:
-                return RegionBasedGESourceManager(geSource, self._regionList, \
-                                                  calcStatsInExtraPass=False, countElsInBoundingRegions=False)
+                return SkipExtraPassDenseGESourceManager(geSource)
             else:
                 raise NotSupportedError
         else:
-            return RegionBasedGESourceManager(geSource, self._regionList, \
-                                              calcStatsInExtraPass=True, countElsInBoundingRegions=True)
+            return GESourceManager(geSource)
 
     def _getGESourceManagerFromTrack(self, trackName):
         raise NotSupportedError

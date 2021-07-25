@@ -1,16 +1,18 @@
 import os
 #from numpy import memmap
+from collections import OrderedDict
+
 from gold.util.CommonFunctions import createDirPath
 from gold.track.CommonMemmapFunctions import parseMemmapFileFn
 from gold.track.SmartMemmap import SmartMemmap
 from gold.track.BoundingRegionShelve import BoundingRegionShelve, isBoundingRegionFileName
 
-class TrackData(dict):
+class TrackData(OrderedDict):
     def __init__(self, other=None):
         if other is not None:
-            dict.__init__(self, other)
+            OrderedDict.__init__(self, other)
         else:
-            dict.__init__(self)
+            OrderedDict.__init__(self)
         
         self.boundingRegionShelve = None
 
