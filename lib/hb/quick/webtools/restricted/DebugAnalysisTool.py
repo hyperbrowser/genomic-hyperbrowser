@@ -7,15 +7,14 @@ from config.Config import DATA_FILES_PATH
 from gold.application.StatRunner import StatJob
 from gold.statistic.AllStatistics import STAT_CLASS_DICT
 from gold.statistic.MagicStatFactory import MagicStatFactory
+from proto.HtmlCore import HtmlCore
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.application.UserBinSource import UserBinSource
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.DebugMixin import DebugMixin
 
 
-#This is a template prototyping GUI that comes together with a corresponding web page.
-#
-
-class DebugAnalysisTool(GeneralGuiTool):
+class DebugAnalysisTool(GeneralGuiTool, DebugMixin):
     _extraParams = []
     SHELVE_FN = DATA_FILES_PATH + sep + 'DebugTool.shelve'
     STD_PREFIX_TN = ['Sample data', 'Track types']
@@ -28,7 +27,33 @@ class DebugAnalysisTool(GeneralGuiTool):
     @staticmethod
     def getInputBoxNames():
         "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
-        return [('Select Statistic to debug','Statistic'),('Select genome','Genome'),('Show Track1 simplified','YesNoT1'),('Track1','Track1'),('Show Track2 simplified','YesNoT2'),('Track2','Track2'),('Extra parameter','S7'),('Value for parameter','S8'),('Extra parameter','S9'),('Value for parameter','S10'),('Extra parameter','S11'),('Value for parameter','S12'),('Extra parameter','S13'),('Value for parameter','S14'),('Extra parameter','S15'),('Value for parameter','S16'),('Extra parameter','S17'),('Value for parameter','S18'),('Extra parameter','S19'),('Value for parameter','S20'),('Extra parameter','S21'),('Value for parameter','S22'),('Extra parameter','S23'),('Value for parameter','S24'),('Extra parameter','S25'),('Value for parameter','S26')]# + UserBinSelector.getUserBinInputBoxNames()
+        return [('Select Statistic to debug', 'Statistic'),
+                ('Select genome', 'Genome'),
+                ('Show Track1 simplified', 'YesNoT1'),
+                ('Track1', 'Track1'),
+                ('Show Track2 simplified', 'YesNoT2'),
+                ('Track2', 'Track2'),
+                ('Extra parameter', 'S7'),
+                ('Value for parameter', 'S8'),
+                ('Extra parameter', 'S9'),
+                ('Value for parameter', 'S10'),
+                ('Extra parameter', 'S11'),
+                ('Value for parameter', 'S12'),
+                ('Extra parameter', 'S13'),
+                ('Value for parameter', 'S14'),
+                ('Extra parameter', 'S15'),
+                ('Value for parameter', 'S16'),
+                ('Extra parameter', 'S17'),
+                ('Value for parameter', 'S18'),
+                ('Extra parameter', 'S19'),
+                ('Value for parameter', 'S20'),
+                ('Extra parameter', 'S21'),
+                ('Value for parameter', 'S22'),
+                ('Extra parameter', 'S23'),
+                ('Value for parameter', 'S24'),
+                ('Extra parameter', 'S25'),
+                ('Value for parameter', 'S26')] + \
+               DebugMixin.getInputBoxNamesForDebug()  # + UserBinSelector.getUserBinInputBoxNames()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -37,7 +62,7 @@ class DebugAnalysisTool(GeneralGuiTool):
     @classmethod
     def updateCacheDict(cls, stat):
         DebugInfoShelve = safeshelve.open(cls.SHELVE_FN, 'c')
-        if stat in DebugInfoShelve and type(DebugInfoShelve[stat]).__name__=='dict':
+        if str(stat) in DebugInfoShelve and type(DebugInfoShelve[str(stat)]).__name__=='dict':
             cls._cacheDict = DebugInfoShelve[stat]
         DebugInfoShelve.close()
 
@@ -70,7 +95,7 @@ class DebugAnalysisTool(GeneralGuiTool):
                 trackList.insert(0, cls._cacheDict.get('track1'))
             return [cls.NO_TRACK_SHORTNAME] + trackList
         else:
-            return '__track__','history'
+            return '__track__', 'preprocessed_history'
 
     @classmethod
     def getOptionsBoxYesNoT2(cls, prevChoices):
@@ -89,7 +114,7 @@ class DebugAnalysisTool(GeneralGuiTool):
                 trackList.insert(0, cls._cacheDict.get('track2'))
             return [cls.NO_TRACK_SHORTNAME] + trackList
         else:
-            return '__track__','history'
+            return '__track__', 'preprocessed_history'
         #return ['']
 
 
@@ -211,9 +236,14 @@ class DebugAnalysisTool(GeneralGuiTool):
     #@staticmethod
     #def getDemoSelections():
     #    return ['testChoice1','..']
-        
+
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
+        # from gold.application.LogSetup import setupDebugModeAndLogging
+        # setupDebugModeAndLogging()
+        cls._setDebugModeIfSelected(choices)
+
+        print str(HtmlCore().styleInfoBegin(styleClass='debug'))
 
         shelveDict = {'track1':choices[3] if choices[3]!=cls.NO_TRACK_SHORTNAME else None}
         shelveDict['track2'] = choices[5] if choices[5]!=cls.NO_TRACK_SHORTNAME else None
@@ -229,10 +259,6 @@ class DebugAnalysisTool(GeneralGuiTool):
 
 
         try:
-
-            from gold.application.LogSetup import setupDebugModeAndLogging
-            setupDebugModeAndLogging()
-
             print 'Getting Unsplittable statClass'
             statClassName = choices[0]
             #statClass = STAT_CLASS_DICT[statClassName]
@@ -329,6 +355,9 @@ class DebugAnalysisTool(GeneralGuiTool):
             magicStatClass = STAT_CLASS_DICT[statClassName]
             #res = StatJob([region,region2],track1,track2,magicStatClass,**kwArgs).run()
             res = StatJob(ubSource,track1,track2,magicStatClass,**kwArgs).run()
+
+            print str(HtmlCore().styleInfoEnd())
+
             from quick.application.GalaxyInterface import GalaxyInterface
             GalaxyInterface._viewResults([res],galaxyFn)
 
@@ -380,9 +409,9 @@ class DebugAnalysisTool(GeneralGuiTool):
     #def getToolIllustration():
     #    return None
     #
-    #@staticmethod
-    #def isDebugMode():
-    #    return True
+    @staticmethod
+    def isDebugMode():
+       return True
     #
     #@staticmethod
     #def getOutputFormat():
