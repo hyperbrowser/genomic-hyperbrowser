@@ -53,6 +53,8 @@ class AnalysisDefHandler(AnalysisSpec):
     TAIL_CHOICE_RIGHT = 'more'
     TAIL_CHOICE_BOTH = 'different'
     ASSUMP_LABEL_KEY = 'assumptions'
+    RANDOM_SEED_KEY = 'randomSeed'
+    RANDOM_SEED_CHOICE_RANDOM = 'Random'
     ILLUSTRATION_FN_KEY = 'illustrationFn'
     TF1_KEY = 'tf1'
     TF2_KEY = 'tf2'

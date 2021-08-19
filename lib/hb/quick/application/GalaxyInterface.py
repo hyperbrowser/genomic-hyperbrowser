@@ -1706,12 +1706,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         else:
             urlForTrackAutoSelection = None
 
-        if showRandomSeed:
-            from gold.util.RandomUtil import getManualSeed
-            manualSeed = getManualSeed()
-        else:
-            manualSeed = None
-
         try:
             #if GalaxyInterface.userHasFullAccess(username):
             revEngBatchLine = GalaxyInterface._revEngBatchLine(trackName1, trackName2, trackNameIntensity, \

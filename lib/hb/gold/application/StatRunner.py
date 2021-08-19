@@ -258,19 +258,14 @@ class AnalysisDefJob(StatJob):
             genome = userBinSource.genome
             
         self._galaxyFn = galaxyFn
-            
         self._analysis = Analysis(analysisDef, genome, trackName1, trackName2)
-        self._setRandomSeedIfNeeded()
-            
-        track, track2 = self._analysis.getTracks()
-        StatJob.__init__(self, userBinSource, track, track2,
-                         self._analysis.getStat(), *args, **kwArgs)
 
-    def _setRandomSeedIfNeeded(self):
-        from gold.util.RandomUtil import getRandomSeed
-        randSeedChoice = self._analysis.getChoice('randomSeed')
-        if randSeedChoice == 'Random':
-            self._analysis.changeChoices('randomSeed', [(str(getRandomSeed()),)*2])
+        track, track2 = self._analysis.getTracks()
+        statistic = self._analysis.getStat()
+        self._analysis.initRandomUtilAndUpdateSeedIfNeeded()
+
+        StatJob.__init__(self, userBinSource, track, track2,
+                         statistic, *args, **kwArgs)
     
     def run(self, printProgress=PRINT_PROGRESS):
         '''
@@ -292,7 +287,7 @@ class AnalysisDefJob(StatJob):
             res = StatJob.run(self, printProgress=printProgress)
         
         res.setAnalysis(self._analysis)
-        res.setAnalysisText(str(self._analysis))
+        res.setAnalysisDef(self._analysis.getDef())
         
         ResultsMemoizer.flushStoredResults()
         

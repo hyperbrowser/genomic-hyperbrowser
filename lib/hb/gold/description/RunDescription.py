@@ -182,10 +182,7 @@ class RunDescription(object):
             #print 'CAME HERE'
             statClassName = stat.__name__
             #fixme: Add space, but this is not checked in batchrunner...
-            params = ','.join(['='.join([choicePair[0], str(manualSeed)]) \
-                                 if (manualSeed is not None and choicePair[0] == 'randomSeed' and choicePair[1] == 'Random')
-                                    else '='.join(choicePair) \
-                                for choicePair in analysis.getChoices(filterByActivation=True).items() \
+            params = ','.join(['='.join(choicePair) for choicePair in analysis.getAllChoices(filterByActivation=True).items() \
                                  if choicePair[0] not in ['H0','H1_more','H1_less','H1_different','H1_ha1','H1_ha2','H1_ha3','H1_ha4','H1_ha5'] ])
             statText = statClassName + '(' + params + ')'
             #return BATCH_COL_SEPARATOR.join([regSpec, binSpec, \

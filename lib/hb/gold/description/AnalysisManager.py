@@ -31,7 +31,7 @@ class AnalysisManager:
     @staticmethod
     def combineMainAndSubCategories(mainCategory, subCategory):
         return mainCategory + ':' + subCategory
-    
+
     @staticmethod
     def _tryAnalysisDefForValidity(analysisDef, genome, trackName1, trackName2, tryReversed=True):
         if DebugConfig.VERBOSE:
@@ -40,9 +40,9 @@ class AnalysisManager:
             for tnA, tnB, reversed in [(trackName1, trackName2, False)] + ([(trackName2, trackName1, True)] if tryReversed else []):
                 #print "TEMP1: ", (analysisDef, genome, tnA, tnB)
                 analysis = Analysis(analysisDef, genome, tnA, tnB, reversed)
-                
+
         #analysis.setTracks(trackName1, trackName2)
-        #analysis.setConverters(formatConverter1, formatConverter2)                
+        #analysis.setConverters(formatConverter1, formatConverter2)
                 if analysis.isValid():
                    return analysis, reversed
         except Exception, e:
@@ -66,7 +66,7 @@ class AnalysisManager:
             if analysis is not None:
                 validAnalyses.append(analysis)
         return validAnalyses
-        
+
     @staticmethod
     def getAllAnalyses():
         analyses = AnalysisManager.getAnalysisDict()

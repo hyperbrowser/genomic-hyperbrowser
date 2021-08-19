@@ -226,17 +226,13 @@ class RandomizationManagerStatUnsplittable(Statistic):
         
         if track2 is None:
             self._track2 = None #to allow track2 to be passed on as None to rawStatistics without error. For use by single-track MC-tests..
-            
-        from gold.util.RandomUtil import getManualSeed, setManualSeed
-        if randomSeed is not None and randomSeed != 'Random' and getManualSeed() is None:
-            setManualSeed(int(randomSeed))
-        
+
         if 'mcSetupScheme' in kwArgs:
             kwArgs = copy(kwArgs) #to not edit original dict..
             if kwArgs['mcSetupScheme'] != 'custom':
                 assert not 'maxSamples' in kwArgs #check that specific values are not redundantly set
             #
-        Statistic.__init__(self, region, track, track2, rawStatistic=rawStatistic, randTrackClass=randTrackClass, assumptions=assumptions, tails=tails, numResamplings=numResamplings, randomSeed=randomSeed, **kwArgs)
+        Statistic.__init__(self, region, track, track2, rawStatistic=rawStatistic, randTrackClass=randTrackClass, assumptions=assumptions, tails=tails, numResamplings=numResamplings, **kwArgs)
         #if type(rawStatistic) is str:
         #    from gold.statistic.AllStatistics import STAT_CLASS_DICT
         #    rawStatistic = STAT_CLASS_DICT[rawStatistic]

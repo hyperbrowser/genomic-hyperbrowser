@@ -6,7 +6,7 @@ from gold.track.Track import Track
 from config.Config import DebugConfig
 from gold.util.CustomExceptions import IncompatibleTracksError, ShouldNotOccurError, \
                                        IncompatibleAssumptionsError, IdenticalTrackNamesError
-from gold.util.RandomUtil import initSeed
+from gold.application.StatRunner import StatJob
 from gold.application.StatRunner import StatJob
 from gold.description.TrackInfo import TrackInfo
 from quick.application.UserBinSource import MinimalBinSource
@@ -67,6 +67,17 @@ class Analysis(AnalysisDefHandler):
     #def resetValidStat(self):
     #    if hasattr(self, '_validStatClass'):
     #        del self._validStatClass
+
+    def initRandomUtilAndUpdateSeedIfNeeded(self):
+        from gold.util.RandomUtil import autoSeed, getSeed, setManualSeed
+        randSeedChoice = self.getChoice(self.RANDOM_SEED_KEY)
+        if randSeedChoice == self.RANDOM_SEED_CHOICE_RANDOM:
+            autoSeed()
+            self.changeChoices(self.RANDOM_SEED_KEY, [(str(getSeed()),) * 2])
+        elif randSeedChoice is not None:
+            setManualSeed(int(randSeedChoice))
+        else:
+            autoSeed()
     
     def getAllStats(self):
         return self._statClassList
@@ -222,6 +233,7 @@ class Analysis(AnalysisDefHandler):
 #                        print statClass.__name__ + ': OK'
                 return validStatClass
             finally:
+                # initSeed()  # In order not to mess up integration tests
                 self.resetTracks()
         
         return None
