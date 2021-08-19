@@ -7,7 +7,7 @@ from gold.util.CustomExceptions import InvalidFormatError
 
 class GffGenomeElementSource(GenomeElementSource):
     _VERSION = '1.2'
-    FILE_SUFFIXES = ['gff', 'gff3']
+    FILE_SUFFIXES = ['gff', 'gff3', 'gtf']
     FILE_FORMAT_NAME = 'GFF'
     _numHeaderLines = 0
 
