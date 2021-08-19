@@ -566,29 +566,41 @@ class GenomeInfo(object):
             if lowerChrList == lowerChr:
                 return chr
 
+        chrCandidates = set()
+
+        # Loop through possible transformations of chrStr:
+        #     original, lowercase, roman->arabic numbers (lowercase and original)
         for curChrStr, curChrList in [(chrStr, [(chr,chr) for chr in chrList]), \
                                        (lowerChrStr, lowerChrList), \
                                         (cls._convertRomanNumbersInStr(chrStr), lowerChrList), \
                                          (chrStr, [(chr, cls._convertRomanNumbersInStr(chr)) for chr in chrList])]:
 
-            chrCandidates = [chr for chr, changedChr in curChrList if curChrStr in changedChr]
+            # Find all sequence names that contain the current chrStr transformation
+            curChrCandidates = set(chr for chr, changedChr in curChrList if curChrStr in changedChr)
 
-            if len(chrCandidates) == 1:
-                return chrCandidates[0]
+            # Remove all candidates that have extra digits characters (other than what is matched by curChrStr)
+            # This removes e.g. chr21 if curChrStr is 2
+            curChrCandidates = set(cand for cand in curChrCandidates if not any(x.isdigit() for x in cand.replace(curChrStr,'')))
+            chrCandidates.update(curChrCandidates)
 
-            elif len(chrCandidates) > 1:
-                chrCandidates = [cand for cand in chrCandidates if not any(x.isdigit() for x in cand.replace(curChrStr,''))]
+        # If only one candidate, pick it
+        if len(chrCandidates) == 1:
+            return chrCandidates.pop()
 
-                if len(chrCandidates) == 1:
-                    return chrCandidates[0]
+        elif len(chrCandidates) > 1:
+            import numpy as np
+            chrCandidatesList = list(chrCandidates)
+            min_i = np.array([len(x) for x in chrCandidatesList]).argmin()
 
-                elif len(chrCandidates) > 1:
-                    import numpy as np
-                    min_i = np.array([len(x) for x in chrCandidates]).argmin()
-                    if all(chrCandidates[min_i] in chr for chr in chrCandidates):
-                        return chrCandidates[min_i]
-                    else:
-                        return chrStr
+            # If the shortest candidate is a substring of all the others, pick it
+            if all(chrCandidatesList[min_i] in chr for chr in chrCandidates):
+                return chrCandidatesList[min_i]
+            else:
+                # We assume that the shortest candidate is still the best match, to favor 'chr2' from e.g.
+                # '2-micron'. Kept as a separate rule in order to more easily update it later.
+                return chrCandidatesList[min_i]
+                # return chrStr
+
         return chrStr
 
     @classmethod
