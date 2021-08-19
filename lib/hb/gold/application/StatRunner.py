@@ -116,24 +116,24 @@ class StatJob(object):
                 jobHandler.run(jobWrapper)
         
         startLocal = time.time()
-        
+
         while True:
             stats = self._doLocalAnalysis(results, stats=[])
             #stats[0] is used to call class method
             if self._kwArgs.get('minimal') == True:
                 break
-            
-            numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats)>0 else 0            
+
+            numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats)>0 else 0
             self._progress.addFullLocalAnalysisIteration(numNotDetermined)
             if len(stats) == 0 or numNotDetermined == 0:
                 break
             #print 'Continuing McFdr'
 
-            
+
         localAnalysisTime = time.time() - startLocal
-        if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']): 
+        if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']):
             print "local analysis took %f seconds" % localAnalysisTime
-            
+
         #startGlobal = time.time()
         #import pdb
         #pdb.set_trace()
@@ -141,14 +141,14 @@ class StatJob(object):
         self._progress.printMessage('\nPerforming global analysis...')
         while True:
             stat = self._doGlobalAnalysis(results, stats)
-            if stat is None:                
+            if stat is None:
                 break
             nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)
             self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
 
             if nonDetermined == 0:
                 break
-            
+
         self._progress.globalAnalysisEnded()
         #print "<br>global analysis took %f seconds" % (time.time() - startGlobal)
         self._endProgress()
@@ -286,10 +286,9 @@ class AnalysisDefJob(StatJob):
         else:
             res = StatJob.run(self, printProgress=printProgress)
         
-        res.setAnalysis(self._analysis)
-        res.setAnalysisDef(self._analysis.getDef())
-        
-        ResultsMemoizer.flushStoredResults()
+        res.updateFromAnalysis(self._analysis)
+
+        # ResultsMemoizer.flushStoredResults()
         
         if DebugConfig.USE_PROFILING:
             profiler.printStats()
