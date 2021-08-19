@@ -1,6 +1,5 @@
 #Untested, to be rewritten
 #import stats
-from gold.util.RandomUtil import random
 import numpy
 from numpy import array
 from gold.track.TrackView import TrackView
@@ -47,6 +46,8 @@ class RandomizedTrack(Track):
         return self._getTrackView(region)
 
     def _getTrackView(self, region):
+        from gold.util.RandomUtil import random  # To initialize random generators if not done previously
+
         #if self._cachedTV is None:
         rawData = RawDataStat(region, self._origTrack, self._trackFormatReq)
         origTV = rawData.getResult()
