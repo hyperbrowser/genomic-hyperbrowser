@@ -35,10 +35,9 @@ class SafeShelf(shelve.Shelf):
         if isinstance(key, unicode):
             key = str(key)
         shelve.Shelf.__setitem__(self, key, val)
-        
-    #def __setitem__(self, key, val):
-    #    print key
-    #    shelve.Shelf.__setitem__(self, key, val)
+
+    def sync(self):
+        shelve.Shelf.sync(self)
 
 
 def open(filename, flag='c', protocol=None, writeback=False, block=True):
