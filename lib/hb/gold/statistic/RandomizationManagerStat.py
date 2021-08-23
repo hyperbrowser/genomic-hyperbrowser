@@ -1,4 +1,3 @@
-from quick.statistic.McFdr import McFdr
 from numpy import isnan,array, median
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
@@ -112,8 +111,8 @@ class RandomizationManagerStatUnsplittable(Statistic):
                 allMs[i] = None
                 allNumSamples[i] = None
                 isInValid[i] = True
-        
-        
+
+        from quick.statistic.McFdr import McFdr
         fdrVals = McFdr.adjustPvalues(pvals, verbose=False)
         
         determinedByM = [M_THRESHOLD is not None and m>=M_THRESHOLD for m in allMs]
@@ -123,7 +122,6 @@ class RandomizationManagerStatUnsplittable(Statistic):
         statIndividuallyDetermined = list(any(x) for x in zip(determinedByM,determinedByMaxSamples,isInValid, isNanValued)) #determined by anything except FDR, as the latter is not necessarily handled on a per test level..
         statDeterminedByAnyMeans = list(any(x) for x in zip(statIndividuallyDetermined, determinedByFdr)) #determined individually or by FDR
         assert len(stats) == len(pvals) == len(fdrVals) == len(allMs) == len(determinedByM) == len(determinedByFdr) == len(statIndividuallyDetermined)
-        
 
         for i in range(len(statIndividuallyDetermined)):
             determined = statIndividuallyDetermined[i] or (individualFdr and determinedByFdr[i])
@@ -267,8 +265,8 @@ class RandomizationManagerStatUnsplittable(Statistic):
         CompBinManager.ALLOW_COMP_BIN_SPLITTING = False
         self._randResults = []
         self._observation = None
-        #to load r libraries for McFdr:
-        McFdr._initMcFdr()
+        # #to load r libraries for McFdr:
+        # McFdr._initMcFdr()
         
     def _createRandomizedStat(self, i):
         "Creates a randChild where certain tracks are randomized"

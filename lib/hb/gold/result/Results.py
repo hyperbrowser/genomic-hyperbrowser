@@ -287,7 +287,7 @@ class Results(dict):
         #regFdrVals = r('p.adjust')(r.unlist(regPVals), self.FDR_KEY)
         regPVals = [ self[reg].get(pValKey) for reg in regKeys]
         from quick.statistic.McFdr import McFdr
-        McFdr._initMcFdr() #to load r libraries..
+        # McFdr._initMcFdr() #to load r libraries..
         regFdrVals = McFdr.adjustPvalues(regPVals, verbose=False)
         
         #if len(regPVals) == 1:

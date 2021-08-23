@@ -17,9 +17,9 @@ class RandomizedTrackStatUnsplittable(Statistic):
         self._randTrackClass = self.getRandTrackClass(randTrackClass)
                     
         CompBinManager.ALLOW_COMP_BIN_SPLITTING = False
-        #self._randResults = []
-        #to load r libraries for McFdr:
-        #McFdr._initMcFdr()
+        # self._randResults = []
+        # # to load r libraries for McFdr:
+        # McFdr._initMcFdr()
 
     @staticmethod
     def getRandTrackClass(randTrackClassDef):

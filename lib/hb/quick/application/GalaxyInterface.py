@@ -1290,7 +1290,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #NB! genome is obsolete as parameter, and to be removed
     def runBatchLines(batchLines, galaxyFn=None, genome=None, username='', printResults=True, printProgress=True):
         try:
-            from proto.RSetup import r
+            # from proto.RSetup import r
             #r('options(warn=2)')
 
             if printResults:
