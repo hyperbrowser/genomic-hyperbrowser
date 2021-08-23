@@ -33,11 +33,12 @@ class Statistic(object):
                 self._traceId = str(Statistic.objAddresses[self.__class__.__name__])
                 Statistic.objAddresses[self.__class__.__name__] += 1
 
-            message = self.__class__.__name__ + '(' + self._traceId + ').' + methodName \
-                  + ( (' (' + str(self._region) +')') if DebugConfig.TRACE_PRINT_REGIONS else '') \
-                  + ( ( ' (' + str(self._track.trackName) \
-                  + (',' + str(self._track2.trackName) if hasattr(self,'_track2') else '') \
-                  + ')' ) if DebugConfig.TRACE_PRINT_TRACK_NAMES else '')
+            message = self.__class__.__name__ + '(' + self._traceId + ').' + methodName + \
+                ((' (' + str(self._region) + ')') if DebugConfig.TRACE_PRINT_REGIONS else '') + \
+                ((' (' + str(self._track.trackName) +
+                  (',' + str(self._track2.trackName) if hasattr(self, '_track2') and self._track2 is not None else '') +
+                  ')') if DebugConfig.TRACE_PRINT_TRACK_NAMES else ''
+                 )
 
             logMessage(message)
             print message, '<br>'

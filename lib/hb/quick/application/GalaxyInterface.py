@@ -941,6 +941,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             return cls._runCommon([trackName1, trackName2], analysisDef, regSpec, binSpec, genome,
                                   galaxyFn, trackNameIntensity, username, **kwArgs)
         except Exception, e:
+            sys.stdout.flush()
             core = HtmlCore()
             core.styleInfoEnd()
             core.styleInfoBegin(styleClass='errormessagelarge')
@@ -1464,7 +1465,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             profiler = Profiler()
             profiler.run('webTool.execute(choices, galaxyFn=batchLineSpecificFile.getDiskPath(), username=username)', globals(), locals())
             profiler.printStats()
-            profiler.printLinkToCallGraph(['profile_runBatchLines'], galaxyFn)
+            profiler.printLinkToCallGraph(['profile_runBatchLines'], batchLineSpecificFile.getDiskPath())
         else:
             webTool.execute(choices, galaxyFn=batchLineSpecificFile.getDiskPath(), username=username)
 
@@ -1486,10 +1487,12 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
         if DebugConfig.USE_PROFILING:
             from gold.util.Profiler import Profiler
+            resDict = {}
             profiler = Profiler()
-            res = profiler.run("aeval('GalaxyInterface.' + line)")
+            profiler.run("resDict[0] = aeval('GalaxyInterface.' + line)", globals(), locals())
+            res = resDict[0]
             profiler.printStats()
-            profiler.printLinkToCallGraph(['profile_runBatchLines'], galaxyFn)
+            profiler.printLinkToCallGraph(['profile_runBatchLines'], batchLineSpecificFile.getDiskPath())
         else:
             #logMessage(line)
             #logMessage(repr(globals()))

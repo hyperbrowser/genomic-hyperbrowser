@@ -25,7 +25,15 @@ class PreProcessUtils(object):
         
         if not geSource.hasOrigFile():
             return False if validFilesExist or geSource.isExternal() else True
-        
+
+        from gold.origdata.PreProcessTracksJob import PreProcessTracksJob
+        if DebugConfig.VERBOSE:
+            print os.linesep.join(["GenomeElementSource id: {}, ".format(cls.constructId(geSource)) +
+                                   "TrackInfo.id: {}".format(storedInfo.id),
+                                   "GenomeElementSource version: {}, ".format(geSource.getVersion()) +
+                                   "TrackInfo.geSourceVersion: {}".format(storedInfo.geSourceVersion),
+                                   "PreProcessTracksJob version: {}, ".format(PreProcessTracksJob.VERSION) +
+                                   "TrackInfo.preProcVersion: {}".format(storedInfo.preProcVersion),])
         storedAsAccordingToGeSource = \
             (PreProcessUtils.constructId(geSource) == storedInfo.id and \
              geSource.getVersion() == storedInfo.preProcVersion)

@@ -68,6 +68,10 @@ class MagicStatFactory(object):
         uniqueKey = subCls.constructUniqueKey(subCls, region, *args, **keywords)
         if MagicStatFactory._memoDict.has_key(uniqueKey) and USE_MEMORY_MEMOIZATION:
             #print '-',[[x.__class__, str(x._region), x._track.trackName, x._track2.trackName if hasattr(x,'_track2') else ''] for x in [protoStat, MagicStatFactory._memoDict[protoStat]]]
+            if DebugConfig.VERBOSE:
+                logMessage('Reusing existing statistic "{}" with unique key: "{}", region: "{}", arguments: "{}", keywords: "{}"'.format(
+                    subCls.__name__, uniqueKey, region, args, keywords
+                ))
             return MagicStatFactory._memoDict[uniqueKey]
         else:
             #print "Not there: %s - %s (%s)" % (region, uniqueKey, ', '.join([str(x) for x in (subCls, region, args, keywords)]))

@@ -1,6 +1,8 @@
 import copy
 import numpy
 from collections import OrderedDict
+
+from config.DebugConfig import DebugConfig
 from gold.application.LogSetup import logMessage
 from gold.track.SmartMemmap import SmartMemmap
 from gold.util.CommonConstants import RESERVED_PREFIXES
@@ -333,8 +335,11 @@ class TrackFormatReq(TrackFormat):
     # Compatibility with other TrackFormat, not TrackFormatReq. Does not need to handle allowsOverlap and borderHandling
     def isCompatibleWith(self, sourceFormat, exceptionList=[]):
         assert( not isinstance(sourceFormat, TrackFormatReq) )
-        pairedAttrs = [ [getattr(obj, attr) for obj in [self,sourceFormat]] \
-            for attr in self._getAttributes(includeReqExtensions=False) if attr[1:] not in exceptionList ]
+        attrList = [attr for attr in self._getAttributes(includeReqExtensions=False) if attr[1:] not in exceptionList]
+        pairedAttrs = [ [getattr(obj, attr) for obj in [self,sourceFormat]] for attr in attrList]
+        if DebugConfig.VERBOSE:
+            logMessage("Checking track format compatibility. Paired attributes: " +
+                       ', '.join("{}: {}".format(x, y) for x, y in zip(attrList, pairedAttrs)))
         res = (not False in [s is None or s==sf for s,sf in pairedAttrs])
         return res
 

@@ -6,8 +6,6 @@ import traceback
 from copy import copy
 from logging import FileHandler
 from logging.handlers import RotatingFileHandler
-#from quick.util.CommonFunctions import ensurePathExists
-#from gold.util.CommonFunctions import getClassName
 from urllib import unquote
 from third_party.decorator import decorator
 from config.Config import LOG_PATH, IS_EXPERIMENTAL_INSTALLATION, GALAXY_BASE_DIR, \
@@ -30,7 +28,6 @@ LACK_OF_SUPPORT_LOG_FN = LOG_PATH + os.sep + 'lackOfSupport.log'
 PARALLEL_LOG_FN = LOG_PATH + os.sep + 'parallel.log'
 if not os.path.exists(LOG_PATH):
     os.makedirs(LOG_PATH)
-#ensurePathExists(LOG_PATH + os.sep)
 
 defaultFormatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
@@ -44,7 +41,7 @@ logging.getLogger(HB_LOGGER).addHandler(detailedHandler)
 detailedJobRunHandler = RotatingFileHandler(DETAILED_JOBRUN_ROTATING_LOG_FN, maxBytes=10**6, backupCount=5, delay=True)
 detailedJobRunHandler.setLevel(logging.DEBUG)
 detailedJobRunHandler.setFormatter(defaultFormatter)
-#logging.getLogger(HB_LOGGER).addHandler(detailedJobRunHandler)
+# logging.getLogger(HB_LOGGER).addHandler(detailedJobRunHandler)
 
 warningsHandler = FileHandler(WARNINGS_LOG_FN)
 warningsHandler.setLevel(logging.WARNING)
@@ -75,13 +72,6 @@ parallelHandler.setLevel(5)
 parallelHandler.setFormatter(defaultFormatter)
 logging.getLogger(PARALLEL_LOGGER).addHandler(parallelHandler)
 
-#from quick.util.DatabaseLogger import MySQLDatabaseLogHandler
-#
-#databaseHandler = MySQLDatabaseLogHandler("mysql://hb_testing:hb_testing@localhost:3306/hb_testing?unix_socket=/var/lib/mysql/mysql.sock")
-#databaseHandler.setLevel(logging.DEBUG)
-#databaseHandler.setFormatter(defaultFormatter)
-#logging.getLogger(HB_LOGGER).addHandler(databaseHandler)
-
 
 @decorator
 def usageAndErrorLogging(func, *args, **kwArgs):
@@ -92,8 +82,8 @@ def usageAndErrorLogging(func, *args, **kwArgs):
             args = list(args)
             args[2] = unquote(args[2])
         modifiedKwArgs = copy(kwArgs)
-        #if 'analysisDef' in modifiedKwArgs:
-            #modifiedKwArgs['analysisDef'] = unquote( modifiedKwArgs['analysisDef'] )
+        # if 'analysisDef' in modifiedKwArgs:
+        #     modifiedKwArgs['analysisDef'] = unquote( modifiedKwArgs['analysisDef'] )
 
         kwArgsStr = unquote(str(copy(kwArgs)))
         if len(kwArgsStr) > MAX_ARG_LEN:
@@ -118,21 +108,22 @@ def usageAndErrorLogging(func, *args, **kwArgs):
         logging.getLogger(HB_LOGGER).debug(traceback.format_exc())
         raise
 
+
 @decorator
 def runtimeLogging(func, *args, **kwArgs):
     if not IS_EXPERIMENTAL_INSTALLATION:
         return func(*args, **kwArgs)
 
     try:
-        #if len(args) >= 3 and isinstance(args[2], basestring):
+        # if len(args) >= 3 and isinstance(args[2], basestring):
         #    args = list(args)
         #    args[2] = unquote(args[2])
         modifiedKwArgs = copy(kwArgs)
-        #if 'analysisDef' in modifiedKwArgs:
+        # if 'analysisDef' in modifiedKwArgs:
         #    modifiedKwArgs['analysisDef'] = unquote( modifiedKwArgs['analysisDef'] )
         starttime = time.time()
-        #logging.getLogger(USAGE_LOGGER).info('Running ' + func.__name__ + '() in module ' + func.__module__ +\
-                                             #', with arguments: ' + str(args) + ', ' + str(modifiedKwArgs) )
+        # logging.getLogger(USAGE_LOGGER).info('Running ' + func.__name__ + '() in module ' + func.__module__ +\
+        #                                      ', with arguments: ' + str(args) + ', ' + str(modifiedKwArgs) )
         ret = func(*args, **kwArgs)
         runtime = time.time() - starttime
         logging.getLogger(RUNTIME_LOGGER).log(5, 'Runtime for ' + func.__name__ + ', with arguments: ' + str(args) + ', ' + str(modifiedKwArgs) \
@@ -140,52 +131,69 @@ def runtimeLogging(func, *args, **kwArgs):
         return ret
     except Exception,e:
         logging.getLogger(RUNTIME_LOGGER).error('Exception in ' + func.__name__ + '() in module ' + func.__module__  + \
-                                           ' - ' + e.__class__.__name__ + ': ' + str(e))
+                                                ' - ' + e.__class__.__name__ + ': ' + str(e))
         logging.getLogger(RUNTIME_LOGGER).debug(traceback.format_exc())
         raise
 
-def exceptionLogging(exceptClass = Exception, level=logging.DEBUG, message='', raiseFurther=False):
+
+def exceptionLogging(exceptClass=Exception, level=logging.ERROR, message='', printTraceback=True, raiseFurther=False):
     def _exceptionLogging(func, *args, **kwArgs):
         try:
             return func(*args, **kwArgs)
-        except exceptClass,e:
-            logging.getLogger(HB_LOGGER).log(level, 'Exception in ' + func.__name__ + '() in module ' + func.__module__  + \
-                                               ' - ' + e.__class__.__name__ + ': ' + str(e) +'. ' + message)
-            logging.getLogger(HB_LOGGER).debug(traceback.format_exc())
+        except exceptClass as e:
+            messagePrefix = 'Exception in ' + func.__name__ + '() in module ' + func.__module__
+            if DebugConfig.VERBOSE:
+                logException(e, level=level, message=message,
+                             messagePrefix=messagePrefix, printTraceback=printTraceback)
+            else:
+                logExceptionOnce(e, level=level, message=message,
+                                 messagePrefix=messagePrefix, printTraceback=printTraceback)
             if raiseFurther:
                 raise
     return decorator(_exceptionLogging)
 
-def logException(e, level = logging.ERROR, message = ''):
-    logging.getLogger(HB_LOGGER).log(level, 'Exception' + \
-                                   ' - ' + e.__class__.__name__ + ': ' + str(e) +'. ' + message)
-    logging.getLogger(HB_LOGGER).debug(traceback.format_exc())
+
+def logException(e, level=logging.ERROR, message='', messagePrefix='Exception', printTraceback=True):
+    logging.getLogger(HB_LOGGER).log(level, _buildExceptionMessage(e, message, messagePrefix))
+    if printTraceback:
+        logging.getLogger(HB_LOGGER).debug(traceback.format_exc())
+
+
+def _buildExceptionMessage(e, message, messagePrefix):
+    return messagePrefix + \
+           ' - ' + e.__class__.__name__ + ': ' + str(e) + '. ' + message
+
 
 def logMessage(message, level = logging.DEBUG, logger=HB_LOGGER):
-    #from traceback import extract_stack
-    #logging.getLogger(logger).log(level, str(extract_stack()))
+    # from traceback import extract_stack
+    # logging.getLogger(logger).log(level, str(extract_stack()))
     logging.getLogger(logger).log(level, message)
+
 
 def logLackOfSupport(message, level = logging.DEBUG, logger=LACK_OF_SUPPORT_LOGGER):
     logging.getLogger(logger).log(level, message)
 
+
 LOG_ONCE_CACHE = set([])
-def logMessageOnce(message, id=None, level = logging.DEBUG, logger=HB_LOGGER):
+
+
+def logMessageOnce(message, id=None, level=logging.DEBUG, logger=HB_LOGGER):
     if id is None:
         id = message
-    if not id in LOG_ONCE_CACHE:
+    if id not in LOG_ONCE_CACHE:
         LOG_ONCE_CACHE.add(id)
-        #logging.getLogger(HB_LOGGER).log(level, message)
+        # logging.getLogger(HB_LOGGER).log(level, message)
         logMessage(message, level, logger)
 
-def logExceptionOnce(e, level = logging.DEBUG, message='', id=None):
+
+def logExceptionOnce(e, id=None, level=logging.DEBUG, message='', messagePrefix='Exception', printTraceback=True):
     if id is None:
-        id = message
-    assert id!='' #should not have empty id as this is used to avoid future logging of same id..
-    if not id in LOG_ONCE_CACHE:
+        id = _buildExceptionMessage(e, message, messagePrefix)
+    assert id != ''  # should not have empty id as this is used to avoid future logging of same id..
+    if id not in LOG_ONCE_CACHE:
         LOG_ONCE_CACHE.add(id)
-        #logging.getLogger(HB_LOGGER).log(level, message)
-        logException(e, level, message)
+        # logging.getLogger(HB_LOGGER).log(level, message)
+        logException(e, level=level, message=message, messagePrefix=messagePrefix, printTraceback=printTraceback)
 
 
 def setupDebugModeAndLogging(mode=DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE, debugFileName=None):

@@ -83,7 +83,13 @@ class Analysis(AnalysisDefHandler):
         return self._statClassList
     
     def isValid(self):
-        return len(self._analysisParts) > 0 and self.getStat() is not None
+        anyTextParts = len(self._analysisParts) > 0
+        if not anyTextParts:
+            if DebugConfig.VERBOSE:
+                logMessage('Analysisdef "{}" does not have any text available for listing. '.format(self.getDef()) +
+                           'Skipping...')
+        else:
+            return self.getStat(flushMemoized=False) is not None
     
     #def getStat(self):
     #    #assert( len(self._statClassList) >= 1 )
@@ -139,19 +145,15 @@ class Analysis(AnalysisDefHandler):
         assert( hasattr(self, '_track2') )
         dummyGESource = MinimalBinSource(self._genome)
 
-        if len(self._statClassList)==0:
-            #logging.getLogger(HB_LOGGER).warning('Stat class list is empty, for analysisDef: ' + self._analysisLine)
-            if self._reversed:
-                logMessage('Stat class list is empty, for analysisDef: ' + self._analysisLine, level = logging.WARNING)
+        if len(self._statClassList) == 0:
+            # if self._reversed:
+            logMessage('Stat class list is empty, for analysisDef: ' + self._analysisLine, level = logging.WARNING)
             if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                 raise ShouldNotOccurError('Stat class list is empty. Analysisdef: '+self._analysisLine)
         
         for statClass in self._statClassList:
             if DebugConfig.VERBOSE:
-                logMessage(statClass.__name__ + ': Trying (' + self.getDefAfterChoices() + ')')
-#                print statClass.__name__ + ': Trying (' + self.getDefAfterChoices() + ')'
-
-            #for reversed, trackA, trackB in [(False, self._track, self._track2), (True, self._track2, self._track) ]:
+                logMessage('Checking validity of stat class "{}" for analysisDef "{}".'.format(statClass.__name__, self.getDefAfterChoices()))
 
             trackA, trackB = self._track, self._track2
             if trackA is None:
@@ -191,18 +193,18 @@ class Analysis(AnalysisDefHandler):
             except IncompatibleTracksError, e:
                 if DebugConfig.VERBOSE:
                     logException(e, level=logging.DEBUG,
-                                 message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
+                                 messagePrefix='Warning: error in _determineStatClass for stat: %s' % statClass.__name__)
                 if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                     raise
             except (AssertionError, IncompatibleAssumptionsError, IdenticalTrackNamesError), e:
                 if DebugConfig.VERBOSE:
                     logException(e, level=logging.DEBUG,
-                                 message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
+                                 messagePrefix='Warning: error in _determineStatClass for stat: %s' % statClass.__name__)
                 if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                     raise
             except OSError, e:
                 if DebugConfig.VERBOSE:
-                    logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
+                    logException(e, messagePrefix='Error in _determineStatClass, with statClass %s' % statClass.__name__)
                 if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                     raise
                 elif not 'withOverlaps' in str(e):
@@ -213,9 +215,9 @@ class Analysis(AnalysisDefHandler):
                 if getClassName(e) == 'AttributeError' and \
                         any(x in str(e) for x in ["has no attribute '_track2'", "'NoneType' object has no attribute"]):
                     if DebugConfig.VERBOSE:
-                        logException(e, level=logging.DEBUG, message='(Warning: error in _determineStatClass for stat: %s)' % statClass.__name__)
+                        logException(e, level=logging.DEBUG, messagePrefix='Warning: error in _determineStatClass for stat: %s' % statClass.__name__)
                 else:
-                    logException(e, message='(Error in _determineStatClass, with statClass %s)' % statClass.__name__)
+                    logException(e, messagePrefix='Error in _determineStatClass, with statClass %s' % statClass.__name__)
                 if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
                     raise
 
