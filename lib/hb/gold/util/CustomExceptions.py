@@ -92,3 +92,12 @@ class PreprocessError(ContextException):
 
 class PreprocessWarning(ContextException):
     pass
+
+class SyncConflictError(Exception):
+    pass
+
+class NotDictLikeError(Exception):
+    pass
+
+class NotSyncedError(Exception):
+    pass
