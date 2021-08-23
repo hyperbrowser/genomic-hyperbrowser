@@ -1,9 +1,11 @@
 import re
 from gold.util.CustomExceptions import ShouldNotOccurError
 
+
 class AnalysisOption(object):
+    IF_CLAUSE = '<[^<>]*>'
+
     def __init__(self, optionLine):
-        #self._label = AnalysisOption._splitOptionElement(DEFAULT_OPTION_LABEL)
         self._label = None
         self._choice = 0
         self._choiceList = []
@@ -23,8 +25,12 @@ class AnalysisOption(object):
                 self._label = AnalysisOption._splitOptionElement(part[1])
             if part[2] != '':
                 self._choiceList.append(AnalysisOption._splitOptionElement(part[2]))
+        if '<' in self._label[1]:
+            self._checks = re.findall(self.IF_CLAUSE, self._label[1])
+        else:
+            self._checks = []
 
-        assert self._label != None
+        assert self._label is not None
         assert len(self._choiceList) > 0, 'Empty list of choices for label: ' + str(self._label)
 
     def isHidden(self):
@@ -35,12 +41,12 @@ class AnalysisOption(object):
 
     def getLabelText(self):
         labelText = self._label[1][1:] if self.isHidden() else self._label[1]
-        #Remove if-clause
-        labelText = re.sub('\<[^<>]*\>','',labelText)
+        # Remove if-clause
+        labelText = re.sub(self.IF_CLAUSE,'',labelText)
         return labelText
 
     def getAllChoiceTexts(self):
-        #return [text if not text.startswith('_') else text[1:] for key,text in self._choiceList]
+        # return [text if not text.startswith('_') else text[1:] for key,text in self._choiceList]
         return [text for key,text in self._choiceList]
 
     def getAllChoiceKeys(self):
@@ -91,17 +97,16 @@ class AnalysisOption(object):
         if ':' in el:
             return el.split(':')
         else:
-            return [el,el]
+            return [el, el]
 
     def isActivated(self, defHandler):
         'Checks whether all if-clauses (within <>) are satisfied (if any). Currently only considers label text.'
-        checks = re.findall('\<[^<>]*\>', self._label[1])
-        for check in checks:
-            assert check[0]=='<'
-            check = check[1:-1] #remove <>
+        for check in self._checks:
+            assert check[0] == '<' and check[-1] == '>'
+            check = check[1:-1]  # remove <>
             var,value = check.split('--')
             if defHandler.getChoice(var) != value:
-                #print 'non-matching value in function isActivated: ', defHandler.getChoice(var), value
+                # print 'non-matching value in function isActivated: ', defHandler.getChoice(var), value
                 return False
         return True
 

@@ -1,5 +1,8 @@
 import re
+from copy import copy
+
 from gold.description.AnalysisOption import AnalysisOption
+from gold.util.CommonClasses import OrderedDefaultDict
 from gold.util.CustomExceptions import ShouldNotOccurError
 from gold.application.LogSetup import logging, logException, logMessage
 
@@ -22,28 +25,64 @@ class AnalysisSpec(object):
     #Takes a MagicStatFactory, as this will resolve into either an unsplittable or a splittable statistic according to what's suited
     #Note: maybe MagicStatFactory should have a synonomous class name that would appear less intrusive in a setting like this?
     #@takes(AnalysisSpec, MagicStatFactory)
-    def __init__(self, statistic):
-        self._statClassList = [statistic]
+    def __init__(self, statistic=None):
+        self._statClassList = [statistic] if statistic else []
         self._analysisParts = []
-        
+        self._analysisOptionsDict = OrderedDefaultDict(list)
+
+    def integrateParsedAnalysis(self, other):
+        assert isinstance(other, AnalysisSpec)
+        self._statClassList = copy(other._statClassList)
+        self._analysisParts = copy(other._analysisParts)
+        self._analysisOptionsDict = copy(other._analysisOptionsDict)
+
     #@takes(str, str)
     def addParameter(self, paramName, paramValue):
-        self._analysisParts.append(AnalysisOption('[%s=%s]' % (paramName, paramValue) ))
+        self._appendAnalysisOption('[%s=%s]' % (paramName, paramValue))
+
+    def _appendAnalysisOption(self, optionLine):
+        analysisOption = AnalysisOption(optionLine)
+        self._analysisParts.append(analysisOption)
+        self._analysisOptionsDict[analysisOption.getLabelKey()].append(analysisOption)
+
+    def _removeAnalysisOption(self, optionLabelKey):
+        for option in self._allAnalysisOptions([optionLabelKey], raiseIfEmpty=True):
+            self._analysisParts.remove(option)
+        self._analysisOptionsDict.remove(optionLabelKey)
+
+    def _allAnalysisOptions(self, labelKeys=None, onlyWithLabelText=False, onlyActivated=False, raiseIfEmpty=False):
+        empty = True
+
+        if labelKeys is None:
+            labelKeys = self._analysisOptionsDict.keys()
+
+        for key in labelKeys:
+            options = self._analysisOptionsDict.get(key)
+            if options is not None:
+                if onlyWithLabelText:
+                    options = [opt for opt in options if opt.getLabelText() != '']
+                if onlyActivated:
+                    options = [opt for opt in options if opt.isActivated(self)]
+                if options:
+                    empty = False
+                    for opt in options:
+                        yield opt
+
+        if empty and raiseIfEmpty:
+            raise ShouldNotOccurError
 
     def getDefAfterChoices(self, filterByActivation=False):
         defAfterChoices = ''
         for part in self._analysisParts:
             if isinstance(part, AnalysisOption):
-                if (not filterByActivation or part.isActivated(self)):
-                    defAfterChoices += part.getDefAfterChoice()
+                if filterByActivation and not part.isActivated(self):
+                    continue
+                defAfterChoices += part.getDefAfterChoice()
             else:
                 defAfterChoices += str(part)
         defAfterChoices += ' -> ' + ','.join([x.__name__ for x in self._statClassList])
         return defAfterChoices
-        
-        #return ''.join( [( part.getDefAfterChoice() if isinstance(part, AnalysisOption) else str(part) ) \
-        #                 for part in self._analysisParts] ) \
-        #                 + ' -> ' + ','.join([x.__name__ for x in self._statClassList])
+
         
 class AnalysisDefHandler(AnalysisSpec):
     H0_KEY = 'H0'
@@ -59,17 +98,15 @@ class AnalysisDefHandler(AnalysisSpec):
     TF1_KEY = 'tf1'
     TF2_KEY = 'tf2'
     
-    def __init__(self, analysisLine, reversed=False):
-        self._reversed = reversed
-        self._analysisLine = analysisLine
-        self._parseDef(analysisLine)
+    def __init__(self, analysisLine=None, reversed=False):
+        super(AnalysisDefHandler, self).__init__()
+        self.reversed = reversed
+        if analysisLine:
+            self._parseDef(analysisLine)
 
-    def _parseDef(self, id):
-        self._analysisParts = []
-        self._statClassList = []
-
-#                           ([^-[]* #pure text - not '['
-        #print 'NOWAG id:', id
+    def _parseDef(self, analysisLine):
+        # Older version of first pattern, given no checks
+        #                    ([^-[]* #pure text - not '['
         parts = re.findall('''
                             # Match pure text (part[0]):
                            ( (?: [^-[]* (?:-(?!>))? )* #1. pure text - not '[' or '-',
@@ -83,24 +120,25 @@ class AnalysisDefHandler(AnalysisSpec):
                            |( \s? \-> \s? .* )
                            # Match any additional whitespace (part[3])
                            |(\s*)
-                           ''', id, flags=re.VERBOSE)
+                           ''', analysisLine, flags=re.VERBOSE)
         
         from gold.statistic.AllStatistics import STAT_CLASS_DICT
         for part in parts:
             if part[0] != '':
                 self._analysisParts.append(part[0])
             if part[1] != '':
-                self._analysisParts.append(AnalysisOption(part[1]))
+                self._appendAnalysisOption(part[1])
             if part[2] != '':
                 statNames = part[2].replace('->','').replace(' ','').split(',')
-                #self._statClassList = statNames                
                 self._statClassList = [STAT_CLASS_DICT[statName] for statName in statNames \
                                        if STAT_CLASS_DICT.get(statName) is not None]
                 if len(self._statClassList)==0:
                     if len(statNames)==0:
-                        logMessage('No statistic found when parsing analysisDef: ' + self._analysisLine)
+                        logMessage('No statistic found when parsing analysisDef: ' + analysisLine)
                     else:
-                        logMessage('Specified statistics not found in STAT_CLASS_DICT. Statistics:%s, and keys in STAT_CLASS_DICT: %s' % (str(statNames), str(STAT_CLASS_DICT)) )
+                        logMessage('Specified statistics not found in STAT_CLASS_DICT. '
+                                   'Statistics: %s, and keys in STAT_CLASS_DICT: %s' %
+                                   (str(statNames), str(STAT_CLASS_DICT)))
             if part[3] != '':
                 self._analysisParts.append(part[3])
 
@@ -119,95 +157,80 @@ class AnalysisDefHandler(AnalysisSpec):
                 if optionLabelKeyOrText in [part.getLabelKey(), part.getLabelText()]:
                     part.setDefaultChoice()
                     return
-        raise ShouldNotOccurError        
+        raise ShouldNotOccurError
 
     def reduceChoices(self, optionLabelKey, choiceKeyList):
-        for part in self._analysisParts:
-            if isinstance(part, AnalysisOption):                 
-                if part.getLabelKey() == optionLabelKey:
-                    if len(choiceKeyList) == 0:
-                        self._analysisParts.remove(part)
-                    else:
-                        part.reduceChoices(choiceKeyList)
-                    #self.resetValidStat()
-                    return
-        raise ShouldNotOccurError
-        
+        for option in self._allAnalysisOptions([optionLabelKey]):
+            if len(choiceKeyList) == 0:
+                self._removeAnalysisOption(optionLabelKey)
+            else:
+                option.reduceChoices(choiceKeyList)
+            #self.resetValidStat()
+            return
+
     def changeChoices(self, optionLabelKey, choiceList):
-        for part in self._analysisParts:
-            if isinstance(part, AnalysisOption):                 
-                if part.getLabelKey() == optionLabelKey:
-                    if len(choiceList) == 0:
-                        self._analysisParts.remove(part)
-                    else:
-                        part.changeChoices(choiceList)
-                    return
-        raise ShouldNotOccurError
+        for option in self._allAnalysisOptions([optionLabelKey], raiseIfEmpty=True):
+            if len(choiceList) == 0:
+                self._removeAnalysisOption(optionLabelKey)
+            else:
+                option.changeChoices(choiceList)
+            return
 
     def getChoice(self, optionLabelKey):
-        for part in self._analysisParts:
-            if isinstance(part, AnalysisOption):
-                if part.getLabelKey() == optionLabelKey:
-                    return part.getChoice()
+        for option in self._allAnalysisOptions([optionLabelKey]):
+            return option.getChoice()
         return None
 
     def getChoiceText(self, optionLabelKey):
-        for part in self._analysisParts:
-            if isinstance(part, AnalysisOption):
-                if part.getLabelKey() == optionLabelKey:
-                    return part.getChoiceText()
+        for option in self._allAnalysisOptions([optionLabelKey]):
+            return option.getChoiceText()
         return None
     
     def getOptionLabelsAsText(self):
-        return [part.getLabelText() for part in self._analysisParts if isinstance(part, AnalysisOption)\
-                 and part.getLabelText()!='']
+        return [opt.getLabelText() for opt in self._allAnalysisOptions(onlyWithLabelText=True)]
     
     def getOptionsAsText(self):
-        return dict([(part.getLabelText(), part.getAllChoiceTexts()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption) and part.getLabelText()!=''])
+        return dict((opt.getLabelText(), opt.getAllChoiceTexts())
+                    for opt in self._allAnalysisOptions(onlyWithLabelText=True))
 
     def getFilteredOptionLabelsAsText(self, labelKeys):
-        return [part.getLabelText() for part in self._analysisParts if isinstance(part, AnalysisOption)\
-                 and part.getLabelText()!='' and part.getLabelKey() in labelKeys]
+        return [opt.getLabelText() for opt in self._allAnalysisOptions(labelKeys, onlyWithLabelText=True)]
 
     def getFilteredOptionsAsText(self, labelKeys):
-        return dict([(part.getLabelText(), part.getAllChoiceTexts()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption) and part.getLabelText()!='' and part.getLabelKey() in labelKeys]) 
+        return dict((opt.getLabelText(), opt.getAllChoiceTexts())
+                    for opt in self._allAnalysisOptions(labelKeys, onlyWithLabelText=True))
 
     def getOptionsAsKeys(self):
-        return dict([(part.getLabelKey(), part.getAllChoiceKeys()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption) and part.getLabelText()!=''])
+        return dict((opt.getLabelKey(), opt.getAllChoiceKeys())
+                    for opt in self._allAnalysisOptions(onlyWithLabelText=True))
         
     def getFirstOptionKeyAndValues(self):
         '''
             Return the first parameter. Temporary usage for API calls of doAnalysis.
         '''
-        for part in self._analysisParts:
-            if isinstance(part, AnalysisOption) and part.getLabelText()!='':
-                return part.getLabelKey(), part.getAllChoiceKeys()
+        for opt in self._allAnalysisOptions(onlyWithLabelText=True):
+            return opt.getLabelKey(), opt.getAllChoiceKeys()
         return None, None
     
     def getAllOptionsAsKeys(self):
-        return dict([(part.getLabelKey(), part.getAllChoiceKeys()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption)])
+        return dict((opt.getLabelKey(), opt.getAllChoiceKeys()) for opt in self._allAnalysisOptions())
     
-    def getChoices(self, filterByActivation=False):
-        return dict([(part.getLabelKey(), part.getChoice()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption) and (not filterByActivation or part.isActivated(self))])
+    def getAllChoices(self, filterByActivation=False):
+        return dict((opt.getLabelKey(), opt.getChoice())
+                    for opt in self._allAnalysisOptions(onlyActivated=filterByActivation))
 
     def getChoicesAsText(self):
-        return dict([(part.getLabelText(), part.getChoiceText()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption) and part.getLabelText() != ''])
+        return dict((opt.getLabelText(), opt.getChoiceText())
+                    for opt in self._allAnalysisOptions(onlyWithLabelText=True))
 
     def getFilteredChoicesAsText(self, labelKeys):
-        return dict([(part.getLabelText(), part.getChoiceText()) for part in self._analysisParts \
-            if isinstance(part, AnalysisOption) and part.getLabelText() != '' and part.getLabelKey() in labelKeys])
-        
+        return dict((opt.getLabelText(), opt.getChoiceText())
+                    for opt in self._allAnalysisOptions(labelKeys, onlyWithLabelText=True))
 
     def getDef(self):
-        return ''.join( [( part.getDef() if isinstance(part, AnalysisOption) else str(part) ) \
-                         for part in self._analysisParts] ) \
-                         + ' -> ' + ','.join([x.__name__ for x in self._statClassList])
+        return ''.join((part.getDef() if isinstance(part, AnalysisOption) else str(part))
+                       for part in self._analysisParts) \
+               + ' -> ' + ','.join([x.__name__ for x in self._statClassList])
 
     @staticmethod
     def splitAnalysisText(text):
@@ -215,8 +238,8 @@ class AnalysisDefHandler(AnalysisSpec):
         splitPos = text.find(':')
         return text[:splitPos], text[splitPos+1:]
  
-    #The following methods help interprete data in configs, and thus contains some definitions of semantics
-    #def getH0(self):
+    # The following methods help interprete data in configs, and thus contains some definitions of semantics
+    # def getH0(self):
     #    #print 'My keys: ', self.getOptionsAsKeys()
     #    #if 'H0' in self.getOptionsAsKeys():
     #    #    return self.getChoice('H0')
@@ -226,27 +249,27 @@ class AnalysisDefHandler(AnalysisSpec):
     #    else:
     #        #print 'My keys: ', self.getOptionsAsKeys()
     #        return None
-
     #
-    #def getH1(self):
+    #
+    # def getH1(self):
     #    #optionKeys = self.getOptionsAsKeys()
     #    #if 'H1' in optionKeys and 'tail' in optionKeys:
     #    choices = self.getChoices()
     #    if 'H1' in choices and 'tail' in choices:
     #        try:
-    #            #tailChoice = self.getChoice('tail')                
+    #            #tailChoice = self.getChoice('tail')
     #            tailChoice = choices['tail']
     #            self.setChoice('H1', tailChoice)
     #            return self.getChoiceText('H1')
-    #        
+    #
     #        except (ShouldNotOccurError), e:
-    #            logException(e, logging.WARNING,'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)' % self.getChoice('tail') )                
+    #            logException(e, logging.WARNING,'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)' % self.getChoice('tail') )
     #        except Exception, e:
-    #            logException(e, logging.WARNING,'Could not find H1')                
+    #            logException(e, logging.WARNING,'Could not find H1')
     #    return 'No H1 found..'
     #
-    #    
-    #def getNullModel(self):
+    #
+    # def getNullModel(self):
     #    if 'assumptions' in self.getOptionsAsKeys():
     #        return self.getChoiceText('assumptions')
     #    else:
@@ -265,7 +288,7 @@ class AnalysisDefHandler(AnalysisSpec):
         return self.getFilteredChoicesAsText(self._getFormatConverterKeys())
     
     def _getInterfaceChoiceKeys(self):
-        return [ x for x in self.getChoices().keys() if not x in self._getFormatConverterKeys() ]
+        return [x for x in self.getAllChoices().keys() if not x in self._getFormatConverterKeys()]
     
     def getInterfaceOptionLabelsAsText(self):
         return self.getFilteredOptionLabelsAsText(self._getInterfaceChoiceKeys())
@@ -278,13 +301,13 @@ class AnalysisDefHandler(AnalysisSpec):
     
     def getH0(self):
         H0 = self.getChoice(self.H0_KEY)
-#        if H0 is None:
-#            logMessage('Could not find H0 in analysisDef: ' + self._analysisLine)
+        # if H0 is None:
+        #     logMessage('Could not find H0 in analysisDef: ' + self._analysisLine)
         return H0
          
     def getH1(self):
-        #H1 = self.getChoiceText(self.H1_KEY)
-        #return H1
+        # H1 = self.getChoiceText(self.H1_KEY)
+        # return H1
         tailChoice = self.getChoice(self.TAIL_KEY)
         if tailChoice is None:
             return None
@@ -292,8 +315,10 @@ class AnalysisDefHandler(AnalysisSpec):
         selectedH1Key = self.H1_KEY + '_' + tailChoice
         H1 = self.getChoice(selectedH1Key)
         if H1 is None:
-            logMessage('Could not find H1, probably mismatch between tail-choice and corresponding H1-option in analysisDef '+\
-                       '(tail choice: %s, options: %s)' % (self.getChoice('tail'), self.getAllOptionsAsKeys() ) )            
+            logMessage(
+                'Could not find H1, probably mismatch between tail-choice and corresponding H1-option in analysisDef '
+                '(tail choice: %s, options: %s)' % (self.getChoice('tail'), self.getAllOptionsAsKeys())
+            )
     
         return H1
 
@@ -305,16 +330,19 @@ class AnalysisDefHandler(AnalysisSpec):
                 tailChoice = self.getChoice(self.TAIL_KEY)                
                 self.setChoice(self.H1_KEY, tailChoice)
             
-            except (ShouldNotOccurError), e:
-                logException(e, logging.WARNING,'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)' % self.getChoice(self.TAIL_KEY) )                
-            except Exception, e:
+            except (ShouldNotOccurError) as e:
+                logException(e, logging.WARNING,
+                             'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)'
+                             % self.getChoice(self.TAIL_KEY))
+            except Exception as e:
                 logException(e, logging.WARNING,'Could not find H1')
     
     def getNullModel(self):
         nullModel = self.getChoiceText(self.ASSUMP_LABEL_KEY)
-        if self._reversed:
+        if self.reversed:
             if re.search('[^ ,.]T[12][^ ,.]',nullModel):
-                logMessage('found instance of T1/T2 in null-model that may not refer to tracks as assumed in getNullModel')
+                logMessage('Found instance of T1/T2 in null-model that may not refer to '
+                           'tracks as assumed in getNullModel')
             assert not 'tempT2' in nullModel
             
             nullModel = nullModel.replace('T1','tempT2')

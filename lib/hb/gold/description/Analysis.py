@@ -16,6 +16,7 @@ from gold.description.AnalysisOption import AnalysisOption
 from gold.application.LogSetup import logging, HB_LOGGER, logException, logMessage
 import gold.application.StatRunner as StatRunnerModule
 
+
 def noProgress(func):
     def decoratedFunc(*args):
         prevCfgPrintProgress = StatRunnerModule.PRINT_PROGRESS
@@ -25,14 +26,31 @@ def noProgress(func):
         return res
     return decoratedFunc
 
+
 class Analysis(AnalysisDefHandler):
     def __init__(self, analysisLine, genome, trackName1, trackName2, reversed=False):
         #print 'IN ANALYSIS: ',analysisLine
         AnalysisDefHandler.__init__(self, analysisLine, reversed)
         self._genome = genome
         self._setTracks(trackName1, trackName2)
-        self._useConvertersFromId()
         self._validStatClass = None
+        if analysisLine:
+            self._initFromDef()
+
+    def _initFromDef(self):
+        self._useConvertersFromId()
+
+    @classmethod
+    def createFromParsedAnalysis(cls, analysis, genome, trackName1, trackName2, reversed):
+        assert isinstance(analysis, AnalysisDefHandler)
+        obj = Analysis(None, genome, trackName1, trackName2, reversed)
+        obj.integrateParsedAnalysis(analysis)
+        return obj
+
+    def integrateParsedAnalysis(self, other):
+        assert isinstance(other, AnalysisDefHandler)
+        super(Analysis, self).integrateParsedAnalysis(other)
+        self._initFromDef()
 
     def getTracks(self):
         return self._track, self._track2
@@ -82,7 +100,7 @@ class Analysis(AnalysisDefHandler):
     def getAllStats(self):
         return self._statClassList
     
-    def isValid(self):
+    def isValidForListing(self):
         anyTextParts = len(self._analysisParts) > 0
         if not anyTextParts:
             if DebugConfig.VERBOSE:
@@ -257,12 +275,12 @@ class Analysis(AnalysisDefHandler):
                         for fc in track.formatConverters ]
         
         text = '[' + ':'.join(labelPair) + '=' + '/'.join( [':'.join(x) for x in choicePairs] ) + ']'
-        self._analysisParts.append(AnalysisOption( text ))
+        self._appendAnalysisOption(text)
         
     def __str__(self):
         rawText = ''.join( [str(x) for x in self._analysisParts if not (isinstance(x, AnalysisOption) and x.isHidden())] ) 
             #+ (' (converting segments to points)')
-        if self._reversed:
+        if self.reversed:
         #    rawText = rawText.replace('track1','trackTemp').replace('track2','track1').replace('trackTemp','track2')\
         #        + ' (using reversed track order)'
             rawText += ' (using reversed track order)'

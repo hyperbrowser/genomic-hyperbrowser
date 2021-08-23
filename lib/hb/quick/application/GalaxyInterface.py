@@ -836,7 +836,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                     #print 'analysisDef: ', analysis.getDef(), '<br>'
                     # fullDesc = GalaxyInterface.getTextFromAnalysisDef(analysis.getDef(), genome, trackName1, trackName2)
                     analysisCat, fullDesc = str(analysis).split(':')
-                    subCatAnalyses.append([analysisCat, quote(('_' if analysis._reversed else '') + analysis.getDef(), ''), False, fullDesc])
+                    subCatAnalyses.append([analysisCat, quote(('_' if analysis.reversed else '') + analysis.getDef(), ''), False, fullDesc])
                 if len(subCatAnalyses)>0:
                     opts.append( [subCategory, '', True, ''])
                     opts += sorted(subCatAnalyses, key=smartStrLower)
