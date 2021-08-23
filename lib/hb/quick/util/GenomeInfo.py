@@ -468,16 +468,16 @@ class GenomeInfo(object):
 
     @classmethod
     def getChrArmRegs(cls, genome, categoryFilterList = None):
-        from quick.application.UserBinSource import UserBinSource
+        from quick.application.UserBinSource import UnfilteredUserBinSource
 
         fn = cls.getChrArmRegsFn(genome)
 
         if categoryFilterList is not None:
-            return UserBinSource('file', fn, genome, categoryFilterList)
+            return UnfilteredUserBinSource('file', fn, genome, categoryFilterList)
         else:
             if genome not in cls._chrArmRegs:
                 if fn is not None and os.path.exists(fn):
-                        cls._chrArmRegs[genome] = UserBinSource('file', fn, genome)
+                    cls._chrArmRegs[genome] = UnfilteredUserBinSource('file', fn, genome)
                 else:
                     cls._chrArmRegs[genome] = None
             return cls._chrArmRegs[genome]

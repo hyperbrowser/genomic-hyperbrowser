@@ -4,7 +4,7 @@ from gold.track.GenomeRegion import GenomeRegion
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CommonFunctions import isIter
 
-class CompBinManager:
+class CompBinManager(object):
     #ALLOW_COMP_BIN_SPLITTING = True
     ALLOW_COMP_BIN_SPLITTING = CFG_ALLOW_COMP_BIN_SPLITTING
     
@@ -55,13 +55,17 @@ class CompBinManager:
             isCompBin = CompBinManager.isCompBin(region)
             return isCompBin
         else:
-            isChr = not hasattr(region, '__iter__') and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end] \
-                                                            for r in GenomeInfo.getChrRegs(region.genome))
-            isChrArm = not hasattr(region, '__iter__') and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end] \
-                                                            for r in GenomeInfo.getChrArmRegs(region.genome))
-            
-            return (isChr or isChrArm)
-        
+            isChr = not hasattr(region, '__iter__') \
+                    and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end]
+                            for r in GenomeInfo.getChrRegs(region.genome, stripValues=False))
+            if isChr:
+                return True
+            else:
+                isChrArm = not hasattr(region, '__iter__') \
+                           and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end]
+                                   for r in GenomeInfo.getChrArmRegs(region.genome))
+                return isChrArm
+
     @staticmethod
     def isCompBin(region):
         if isIter(region):
