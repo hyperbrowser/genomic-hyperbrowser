@@ -6,31 +6,31 @@ class BinomialTools:
     MAX_SUCCESSES_FOR_BINOMIAL_RUNTIME = 100
     
     @classmethod
-    def _computeBinomialTail(cls, x, size, prob, tail):
+    def _computeBinomialPval(cls, x, size, prob, tail):
         from proto.RSetup import r
         x, size, prob = int(x), int(size), float(prob)
         if prob*size >= cls.MIN_SUCCESSES_FOR_NORM_APPROXIMATION <= (1-prob)*size:
             mean = size * prob
             sd = (size*prob*(1-prob))**0.5
             lessPval = r.pnorm(x,mean,sd)
-            if tail=='less':
+            if tail == 'less':
                 pval = lessPval                
-            elif tail=='more':
+            elif tail == 'more':
                 pval = 1 - lessPval
-            elif tail=='different':
+            elif tail == 'different':
                 pval = min(1, 2*min( lessPval, 1-lessPval))
             else:
                 from gold.application.LogSetup import logMessage, logging
-                logMessage('Unsupported tail (%s) encountered in _computeBinomialTail.'%tail, level=logging.WARN)
+                logMessage('Unsupported tail (%s) encountered in _computeBinomialTail.' % tail, level=logging.WARN)
         elif x > cls.MAX_SUCCESSES_FOR_BINOMIAL_RUNTIME:
             return None
             #raise NotImplementedError()
         else:
-            if tail=='less':
+            if tail == 'less':
                 pval = r.pbinom(x,size,prob)
-            elif tail=='more':
+            elif tail == 'more':
                 pval = 1 - r.pbinom(x-1,size,prob)
-            elif tail=='different':
+            elif tail == 'different':
                 pval = min(1,2*min( r.pbinom(x,size,prob), 1 - r.pbinom(x-1,size,prob)))
         return pval
 

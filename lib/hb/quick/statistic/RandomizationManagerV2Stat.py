@@ -23,7 +23,7 @@ class RandomizationManagerV2Stat(MagicStatFactory):
 class RandomizationManagerV2StatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
 
-    def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, **kwArgs):
+    def _init(self, evaluatorFunc, mcSamplerClass, tails, rawStatistic, **kwArgs):
         if type(evaluatorFunc) is str:
             evaluatorFunc = globals()[evaluatorFunc]
         self._evaluatorFunc = evaluatorFunc
@@ -32,14 +32,14 @@ class RandomizationManagerV2StatUnsplittable(Statistic):
             mcSamplerClass = globals()[mcSamplerClass]
         self._mcSamplerClass = mcSamplerClass
         
-        self._tail = tail
+        self._tails = tails
         self._rawStatistic = self.getRawStatisticClass(rawStatistic) #just to extract name
 
     def _compute(self):
         #if not self._children[0].isMcDetermined():
             #return "Undetermined"
         #else:
-        return self._evaluatorFunc( self._children[0].getResult(), self._tail, self.getRawStatisticMainClassName() )
+        return self._evaluatorFunc(self._children[0].getResult(), self._tails, self.getRawStatisticMainClassName())
     
     def _createChildren(self):
         self._addChild(self._mcSamplerClass(self._region, self._track, self._track2 if hasattr(self, '_track2') else None, **self._kwArgs) )

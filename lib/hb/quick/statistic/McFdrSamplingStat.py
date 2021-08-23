@@ -63,6 +63,6 @@ class McFdrSamplingStatUnsplittable(SequentialMcSamplingStatUnsplittable):
             del self._result
         
         numSamples = len(self._mcSamples)
-        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tail)
+        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tails)
         #print 'TEMP1: ', [0 if determined else 1, numNonExtreme, self._mThreshold, self._adjPValue, self._adjPValueThreshold]
         return [0 if determined else 1, numNonExtreme, self._mThreshold, self._adjPValue, self._adjPValueThreshold]
