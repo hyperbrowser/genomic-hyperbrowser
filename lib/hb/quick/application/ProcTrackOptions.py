@@ -19,11 +19,8 @@ class ProcTrackOptions:
                     if not (fn[0] in ['.','_'] or os.path.isfile(dirPath + os.sep + fn) \
                     or GenomeInfo.isValidChr(genome, fn))]
 
-        #fixme, just temporarily:, these dirs should start with _
-        subtypes= [x for x in subtypes if not x in ['external'] ]
-
         if not fullAccess and not ProcTrackOptions._isLiteratureTrack(genome, trackName):
-            subtypes = [x for x in subtypes if not TrackInfo(genome, trackName+[x]).private]
+            subtypes = [x for x in subtypes if x not in ['external'] and not TrackInfo(genome, trackName+[x]).private]
 
         return sorted(subtypes, key=smartStrLower)
 

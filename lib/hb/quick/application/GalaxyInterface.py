@@ -1240,7 +1240,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     def trackValid(genome, tn):
         GalaxyInterface.cleanUpTrackName(tn)
 
-        if ExternalTrackManager.isHistoryTrack(tn):
+        if ExternalTrackManager.isHistoryTrack(tn) and not ExternalTrackManager.isExternalTrack(tn):
             try:
                 ExternalTrackManager.getGESourceFromGalaxyOrVirtualTN(tn, genome).parseFirstDataLine()
             except Exception, e:
