@@ -919,10 +919,10 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 #        adj._endProgress()
 
     @classmethod
-    def runManual(cls, trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn=None, trackNameIntensity=None, username='', \
+    def runManual(cls, trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn=None, trackNameIntensity=None, username='',
                   printResults=True, printProgress=True, printHtmlWarningMsgs=True, applyBoundaryFilter=False, printRunDescription=True, **kwArgs):
-        return cls._runCommon(trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn, trackNameIntensity, username, printResults=printResults, \
-                              printProgress=printProgress, printHtmlWarningMsgs=printHtmlWarningMsgs, applyBoundaryFilter=applyBoundaryFilter, \
+        return cls._runCommon(trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn, trackNameIntensity, username, printResults=printResults,
+                              printProgress=printProgress, printHtmlWarningMsgs=printHtmlWarningMsgs, applyBoundaryFilter=applyBoundaryFilter,
                               printRunDescription=printRunDescription, fromMainTool=False, **kwArgs)
 
     @classmethod
@@ -1693,13 +1693,10 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     @runtimeLogging
-    def getRunDescription(trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, \
+    def getRunDescription(trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME,
                           username='', trackNameIntensity=None, galaxyFn=None, showRandomSeed=False):
-        #logMessage('getRunDescription: ' + regSpec + ' ' + binSpec + ' ' + analysisDef)
-        #assert username != None
 
-        #Clean up and if necessary switch tracknames:
-        #trackName1, trackName2, analysisDef, dummy = GalaxyInterface._handleSpecs(trackName1, trackName2, analysisDef, genome)
+        #TODO: showRandomSeed??
 
         trackNames = [trackName1, trackName2, trackNameIntensity]
         cleanedTrackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc=False)

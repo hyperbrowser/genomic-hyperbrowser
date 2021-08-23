@@ -20,6 +20,7 @@ class RandomizationManagerV2Stat(MagicStatFactory):
         (note that if fdrTreshold is set to zero, McFdr amounts to basic sequential MC.
         '''
 
+
 class RandomizationManagerV2StatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
 

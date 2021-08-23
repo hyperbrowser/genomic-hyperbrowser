@@ -53,7 +53,7 @@ class MagicStatFactory(object):
                 else:
                     #Use only if splittableClass also accepts splitting of userbins
                     if not issubclass(splittableClass, OnlyGloballySplittable):
-                        return splittableClass                    
+                        return splittableClass
             #except (KeyError, SplittableStatNotAvailableError), e:
             except KeyError, e:
                 if DebugConfig.VERBOSE:
@@ -62,7 +62,6 @@ class MagicStatFactory(object):
         return MagicStatFactory._getClass(origCls.__name__, 'Unsplittable')
         
     def __new__(origCls, region, *args, **keywords):
-
         subCls = MagicStatFactory._getSubCls(origCls, region)
 #         uniqueKey = Statistic.constructUniqueKey(subCls, region, *args, **keywords)
         uniqueKey = subCls.constructUniqueKey(subCls, region, *args, **keywords)

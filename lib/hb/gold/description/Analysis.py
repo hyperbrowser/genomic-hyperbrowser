@@ -201,7 +201,6 @@ class Analysis(AnalysisDefHandler):
                 elif not 'withOverlaps' in str(e):
                     raise
 
-
             except Exception, e:
                 if getClassName(e) == 'AttributeError' and \
                         any(x in str(e) for x in ["has no attribute '_track2'", "'NoneType' object has no attribute"]):

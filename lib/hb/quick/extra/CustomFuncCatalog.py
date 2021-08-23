@@ -51,6 +51,7 @@ def getCategorySetForSubTracks(genome, baseTrackName, shelveFn):
     shelf.update(mapping)
     shelf.close()
 
+
 def _createPos2NameShelf(pos2NameShelfFn, nameList):
     if pos2NameShelfFn is not None:
         pos2NameShelf = safeshelve.open(pos2NameShelfFn)
@@ -63,6 +64,7 @@ def _createPos2NameShelf(pos2NameShelfFn, nameList):
             pos2NameShelf[repr(i+1)] = name.lower()
         
         pos2NameShelf.close()
+
 
 def _createPos2ElCountShelf(pos2ElCountShelfFn, nameList):
     if pos2ElCountShelfFn is not None:
@@ -77,7 +79,8 @@ def _createPos2ElCountShelf(pos2ElCountShelfFn, nameList):
             pos2ElCountShelf[repr(i+1)] = elCount
         
         pos2ElCountShelf.close()
-    
+
+
 def parseMatrixTextFileToShelf(txtFn, outShelfFn, rowPos2NameShelfFn=None, colPos2NameShelfFn=None, \
                                rowPos2ElCountShelfFn=None, colPos2ElCountShelfFn=None, keyType='names', countType='count'):
     "txtFn outShelfFn rowPos2NameShelfFn=None colPos2NameShelfFn=None rowPos2ElCountShelfFn=None colPos2ElCountShelfFn=None, keyType=names countType=count"
@@ -132,7 +135,8 @@ def parseMatrixTextFileToShelf(txtFn, outShelfFn, rowPos2NameShelfFn=None, colPo
     
     _createPos2ElCountShelf(rowPos2ElCountShelfFn, rowNames)
     _createPos2ElCountShelf(colPos2ElCountShelfFn, colNames)
-        
+
+
 def parseMatrixTextFileTo1dShelf(txtFn, outShelfFn, rowOrCol='row', ignoreFirstColName='False'):
     "txtFn outShelfFn rowOrCol='row' ignoreFirstColName='False'"
 
@@ -179,7 +183,8 @@ def parseMatrixTextFileTo1dShelf(txtFn, outShelfFn, rowOrCol='row', ignoreFirstC
     shelf = safeshelve.open(outShelfFn)
     shelf.update(map)
     shelf.close()
-            
+
+
 def makeLowercaseName2NameShelfFromTnSubTypes(genome, trackName, shelfFn):
     'genome trackName shelfFn'
     trackName = re.split('/|:',trackName)
@@ -202,7 +207,8 @@ def makeLowercaseName2NameShelfFromTnSubTypes(genome, trackName, shelfFn):
     #    if os.path.isdir(os.sep.join([basePath, fn])) and not any([fn.startswith(x) for x in ['_','.'] + GenomeInfo.getExtendedChrList(genome)]):
     #        shelf[fn.lower()] = fn
     shelf.close()
-        
+
+
 def makeShelfKeysLowercase(shelfFn, newShelfFn):
     'shelfFn newShelfFn'
     origShelf = safeshelve.open(shelfFn, 'r')
@@ -217,6 +223,7 @@ def makeShelfKeysLowercase(shelfFn, newShelfFn):
             newShelf[key.lower()] = origShelf[key]
     newShelf.close()
     origShelf.close()
+
 
 def _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2TfbsCountShelfFn, rankedGeneListShelfFn):
     'disease2geneShelfFn geneAndTf2TfbsCountShelfFn geneListShelfFn'
@@ -242,6 +249,7 @@ def _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2Tfb
     disease2geneShelf.close()
     geneAndTf2TfbsCountShelf.close()
     rankedGeneListShelf.close()
+
 
 def createShelvesBehindRankedGeneLists(galaxyId, mapId, countType):
     'galaxyId mapId countType'
@@ -270,7 +278,8 @@ def createShelvesBehindRankedGeneLists(galaxyId, mapId, countType):
     parseMatrixTextFileToShelf(resultTableTxtFn, geneAndTf2TfbsCountShelfFn, countType=countType)
     #geneAndTf2tfbsCount = safeshelve.open(geneAndTf2TfbsCountShelfFn,'r')
     _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2TfbsCountShelfFn, rankedGeneListShelfFn) 
-    
+
+
 def printHistOfIntegerShelfValues(shelfFn):
     'shelfFn'
     shelf = safeshelve.open(shelfFn,'r')
@@ -287,7 +296,8 @@ def printHistOfIntegerShelfValues(shelfFn):
     print 'Comma-separated keys and values:'
     print ','.join([str(x) for x in hist.keys()])
     print ','.join([str(x) for x in hist.values()])
-    
+
+
 def mergeShelvesTransitively(inShelf1Fn, inShelf2Fn, outShelfFn, includeSecondShelf='True'):
     """inShelf1Fn inShelf2Fn outShelfFn
     The values of the first shelf can be a list.
@@ -326,7 +336,8 @@ def mergeShelvesTransitively(inShelf1Fn, inShelf2Fn, outShelfFn, includeSecondSh
     inShelf1.close()
     inShelf2.close()
     outShelf.close()
-    
+
+
 def reverseMappingHavingListValues(inShelfFn, outShelfFn):
     """inShelfFn, outShelfFn
     reverse a mapping that (in input) goes from a key to a list of values, that is key->val1,val2...valN
@@ -348,11 +359,12 @@ def reverseMappingHavingListValues(inShelfFn, outShelfFn):
     shelf.update(revMap)
     shelf.close()
     inShelf.close()
-    
+
 def getLengthOfValueListDistribution(shelfFn):
     shelf = safeshelve.open(shelfFn,'r')
     distribution = [len(valList) for valList in shelf.values()]
     print ','.join([str(x) for x in distribution])
+
 
 def createSubtypeDirsFromFileList(inDir, outBaseDir, suffix='.bed'):
     """inDir outBaseDir suffix='.bed'"""
@@ -363,6 +375,7 @@ def createSubtypeDirsFromFileList(inDir, outBaseDir, suffix='.bed'):
         outFn = os.path.sep.join([outDir, f])
         qcf.ensurePathExists(outFn)
         shutil.copy(os.path.sep.join([inDir, f]), outFn)
+
 
 #def subtypesAsCategories(genome, trackName, keepVal=False):
 #    """genome trackName keepVal=False"""
@@ -389,6 +402,7 @@ def createSubtypeDirsFromFileList(inDir, outBaseDir, suffix='.bed'):
 #            else:
 #                raise InvalidFormatError('Line does not have enough columns: %s' %line)
 #    outF.close()
+
 
 def mergeSubtypeTracksToNewCategoryTrack(genome, trackName, newTrackName=None):
     """genome trackName newTrackName"""
@@ -429,6 +443,7 @@ def mergeSubtypeTracksToNewCategoryTrack(genome, trackName, newTrackName=None):
                     outF.write('\t'.join([cols[x] for x in [0,1,2,3]] + ['0'] + [cols[5]]) + os.linesep)
     outF.close()
 
+
 def showCodeSize():
     fileCount = 0
     lineCount = 0
@@ -445,7 +460,8 @@ def showCodeSize():
     print '#files: ',fileCount
     print '#lines: ',lineCount
     print '#code lines: ',codeLineCount
-    
+
+
 def _countAnalyses(analyses, includeExperimental):
     analyses = [a for a in analyses if len(a._analysisParts) > 0]
     if not includeExperimental:
@@ -457,6 +473,7 @@ def _countAnalyses(analyses, includeExperimental):
     print 'Number of analyses distinguishing assumptions' + \
           (' (including experimental analyses)' if includeExperimental else '') + \
           ': ', sum( (len(a.getOptionsAsKeys()[a.ASSUMP_LABEL_KEY]) if a.ASSUMP_LABEL_KEY in a.getOptionsAsKeys() else 1) for a in analyses)
+
 
 def countAnalyses():
     "Counts analyses"
@@ -479,12 +496,14 @@ def countAnalyses():
         _countAnalyses(analyses, True)
         _countAnalyses(analyses, False)
 
+
 def allBatchTrackNames(genome='hg18'):
     """[genome]"""
 #instead use OrigTrackFnSource
     for tn in OrigTrackNameSource(genome,[]):
         print ':'.join(tn).replace(' ','_')
-        
+
+
 def createMappingFromColsOfTabSpacedFile(inFn, outShelfFn, fromCol, toCol):
     'inFn outShelfFn fromCol toCol'
     map = {}
@@ -501,8 +520,8 @@ def createMappingFromColsOfTabSpacedFile(inFn, outShelfFn, fromCol, toCol):
     shelf = safeshelve.open(outShelfFn)
     shelf.update(map)
     shelf.close()
-        
-        
+
+
 def fixTrackInfo(trackName, genome='hg18'):
     """trackName [genome]"""
     "fix timeOfPreProcessing of TrackInfo for a given trackName, in order for it to become a valid selection.."
@@ -511,6 +530,7 @@ def fixTrackInfo(trackName, genome='hg18'):
     ti.timeOfPreProcessing = 'manualOverride'
     ti.store()
 
+
 def makeInitFromParamList(paramStr):
     """paramStr"""
     paramList = paramStr.replace(' ','').split(',')
@@ -518,6 +538,7 @@ def makeInitFromParamList(paramStr):
     for param in paramList:
         param = param.replace('*','')
         print '        self._' + param + ' = ' + param
+
 
 def createChromosomeFile(genome, chromNames, referToCollected=False):
     """genome chromNames"""
@@ -540,6 +561,7 @@ def createChromosomeFile(genome, chromNames, referToCollected=False):
         outFile.write('\t'.join([chr, '0', str(GenomeInfo.getChrLen(genome, chr)), chr]) + os.linesep)
     outFile.close()
 
+
 def createSplittedChrArms(genome, binSize, outFn):
     """genome binsize outFn.bed"""
     outFile = open(outFn, 'w')
@@ -550,6 +572,7 @@ def createSplittedChrArms(genome, binSize, outFn):
     for bin in chrArmBins:
         outFile.write('\t'.join([bin.chr, str(bin.start), str(bin.end)]) + os.linesep)
     outFile.close()
+
 
 def createAssemblyGapsFile(genome, assemblyChars='ACGTacgt'):
     """genome assemblyChars='ACGTacgt'"""
@@ -630,6 +653,7 @@ def CreateChromosomeArmsFiles(genome):
     #outFileArms.close()
     #inFile.close()
 
+
 def gwPlotting(inFn, outFn):
     """inFn.bed outFn.pdf"""
     outDir = os.path.split(outFn)[0]
@@ -648,6 +672,7 @@ def gwPlotting(inFn, outFn):
     r('plot.genome(segments=loadedBedData, unit="bp", dir.print="%s")' % outDir)
     shutil.move(outDir+ os.sep + '.pdf', outFn)
 
+
 def copyAndFilterSubtypes(genome, trackName, newTrackName, filterFn):
     """genome trackName newTrackName filterFn"""
     trackName, newTrackName  = [re.split('/|:',tn) for tn in [trackName, newTrackName]]
@@ -664,6 +689,7 @@ def copyAndFilterSubtypes(genome, trackName, newTrackName, filterFn):
         if subType.replace('_',' ') in filterSet:
             print 'copying %s' % subType
             shutil.copytree(origPath + subType, newPath + subType, symlinks=True)
+
 
 def createMappingsFromMeshAsciiFile(asciiFn, mapHeadingToIdFn, mapIdToHeadingFn):
     """asciiFn mapHeadingToIdFn mapIdToHeadingFn"""
@@ -688,6 +714,7 @@ def createMappingsFromMeshAsciiFile(asciiFn, mapHeadingToIdFn, mapIdToHeadingFn)
 
     mapHeadingToIdFile.close()
     mapIdToHeadingFile.close()
+
 
 def createMeshHierarchyMappings(hierarchyIdFile, mapIdToHeadingFn, mapParentToChildrenFn, mapChildToParentsFn):
     """hierarchyIdFile mapIdToHeadingFn mapParentToChildrenFn mapChildToParentsFn"""
@@ -723,6 +750,7 @@ def createMeshHierarchyMappings(hierarchyIdFile, mapIdToHeadingFn, mapParentToCh
     mapParentToChildrenFile.close()
     mapChildToParentsFile.close()
 
+
 def createAllNodesAndLeaves(mapFn, fullMapFn):
     """mapFn fullMapFn"""
     mapFile = safeshelve.open(mapFn, 'r')
@@ -744,6 +772,7 @@ def createAllNodesAndLeaves(mapFn, fullMapFn):
     mapFile.close()
     fullMapFile.close()
 
+
 def copyStandardTrack(genome, oldTn, newTn):
     """genome oldTn newTn"""
     oldTn = re.split('/|:', oldTn)
@@ -756,6 +785,7 @@ def copyStandardTrack(genome, oldTn, newTn):
     assert not os.path.exists(newPath), 'ERROR: Target path already exists: ' + newPath
     qcf.ensurePathExists(newPath)
     shutil.copytree(oldPath, newPath)
+
 
 def findArticleCountOfAllSubtypes(genome, trackName, outFn):
     'genome trackName outFn'
@@ -786,6 +816,7 @@ def findArticleCountOfAllSubtypes(genome, trackName, outFn):
     outFile.write('\t'.join(subnames) + os.linesep)
     outFile.write('\t'.join(articleCounts) + os.linesep)
     outFile.close()
+
 
 def compareRegulomeWithDirectPubmedTfData(pValThresholdReg, pValThresholdTf, useRowCount):
     "pValThresholdReg pValThresholdTf useRowCount"
@@ -858,6 +889,7 @@ def compareRegulomeWithDirectPubmedTfData(pValThresholdReg, pValThresholdTf, use
     print '#Hits in TF & Pubgene only: %d' % (~regTable&tfTable).sum()
     print '#Hits in none: %d' % (~regTable&~tfTable).sum()
 
+
 def RemoveDirectoriesWithOneEmptyFileRecursively(baseDir):
     'baseDir'
     for path, dirs, files in os.walk(baseDir):
@@ -866,6 +898,7 @@ def RemoveDirectoriesWithOneEmptyFileRecursively(baseDir):
             if os.path.getsize(os.sep.join([path, files[0]])) == 0:
                 print 'Removing directory %s' % path
                 shutil.rmtree(path)
+
 
 def mergeTrackInfoShelves(otherTrackInfoShelveFn):
     mainShelve = safeshelve.open(TrackInfo.SHELVE_FN, 'r')
@@ -876,6 +909,7 @@ def mergeTrackInfoShelves(otherTrackInfoShelveFn):
     for key in mergeKeys:
         ti = otherShelve[key]
         ti.store()
+
 
 def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False'):
     "genomeList username genomeListIsFn=True verbose=False"
@@ -984,6 +1018,7 @@ def _usage():
     print 'available commands: '
     print ', '.join(funcList.keys())
     sys.exit(0)                
+
 
 if __name__ == "__main__":
     from gold.application.HyperBrowserCLI import *

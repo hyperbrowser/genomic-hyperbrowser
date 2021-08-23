@@ -173,8 +173,7 @@ class BoundingRegionShelve(object):
                                                  % (region, prettyPrintTrackName(self._trackName)))
         
         return BoundingRegionInfo(region.start, region.end, 0, 0, 0, 0)
-        
-        
+
     def getTotalElementCountForChr(self, chr):
         self._updateContentsIfNecessary(chr)
         

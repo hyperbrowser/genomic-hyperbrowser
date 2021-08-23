@@ -411,9 +411,15 @@ class RandomizationManagerStatUnsplittable(Statistic):
         #if pval == 0:
             #pval = 1.0 / self._numResamplings
         
-        resDict = OrderedDict([(self.PVAL_KEY, pval), ('TSMC_'+self.getRawStatisticMainClassName(), self._observation), ('MeanOfNullDistr', meanOfNullDistr), \
-                              ('MedianOfNullDistr', medianOfNullDistr), ('SdNullDistr', sdOfNullDistr), ('DiffFromMean', diffObsMean), (self.NUM_SAMPLES_KEY, self._numResamplings), \
-                                ('NumSamplesNotNan', numberOfNonNanRandResults), (self.M_KEY,numMoreExtreme) ])
+        resDict = OrderedDict([(self.PVAL_KEY, pval),
+                               ('TSMC_' + self.getRawStatisticMainClassName(), self._observation),
+                               ('MeanOfNullDistr', meanOfNullDistr),
+                               ('MedianOfNullDistr', medianOfNullDistr),
+                               ('SdNullDistr', sdOfNullDistr),
+                               ('DiffFromMean', diffObsMean),
+                               (self.NUM_SAMPLES_KEY, self._numResamplings),
+                               ('NumSamplesNotNan', numberOfNonNanRandResults),
+                               (self.M_KEY, numMoreExtreme)])
         
         #if self._pointCount1.getResult() is not None:
         #if self._track._trackFormatReq is not None and not self._track._trackFormatReq.isDense() and not self._track._trackFormatReq.allowOverlaps():
