@@ -19,6 +19,8 @@ from collections import OrderedDict
 from copy import copy
 #from quick.application.parallel.JobWrapper import RandomizationManagerStatJobWrapper
 #from quick.application.parallel.JobHandler import JobHandler
+from quick.util.CommonFunctions import anyIsNan
+
 
 class RandomizationManagerStat(MagicStatFactory):
     pass        
@@ -323,7 +325,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         #if VERBOSE:
         #    print [randChild.getResult() for randChild in self._children]
         #try:
-        if self._kwArgs.get('minimal') != True and (self._realChild.getResult() is None or isnan(self._realChild.getResult())):
+        if self._kwArgs.get('minimal') != True and (self._realChild.getResult() is None or anyIsNan(self._realChild.getResult())):
             return None
         
         #TODO: change this to a "is this a parallel run?" check
@@ -343,7 +345,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         if self._observation is None:
             self._observation = self._realChild.getResult()
             
-        if self._kwArgs.get('minimal') == True and (self._observation is None or isnan(self._observation)):
+        if self._kwArgs.get('minimal') == True and (self._observation is None or anyIsNan(self._observation)):
             return None
         
         

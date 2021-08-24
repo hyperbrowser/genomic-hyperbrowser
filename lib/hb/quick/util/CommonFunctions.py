@@ -486,6 +486,13 @@ def bothIsNan(a, b):
     return False
 
 
+def anyIsNan(a):
+    if isIter(a):
+        return any(isNan(a))
+    else:
+        return isNan(a)
+
+
 def smartAssertEquals(a, b):
     if not bothIsNan(a, b):
         assert a == b
