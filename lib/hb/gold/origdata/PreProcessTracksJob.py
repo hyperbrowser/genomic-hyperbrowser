@@ -31,7 +31,7 @@ from quick.util.GenomeInfo import GenomeInfo
 
 
 class PreProcessTracksJob(object):
-    VERSION = '1.0'
+    VERSION = '1.5'
 
     def __init__(self, genome, username='', mode='Real', raiseIfAnyWarnings=False):
         self._genome = genome

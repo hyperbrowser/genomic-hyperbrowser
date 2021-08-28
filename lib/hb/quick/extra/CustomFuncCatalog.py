@@ -16,8 +16,10 @@ from config.Config import HB_SOURCE_CODE_BASE_DIR, NONSTANDARD_DATA_PATH, STATIC
 from gold.description.AnalysisManager import AnalysisManager
 from gold.description.TrackInfo import TrackInfo
 from gold.track.GenomeRegion import GenomeRegion
-from gold.track.Track import PlainTrack
+from gold.track.Track import PlainTrack, Track
+from gold.track.TrackFormat import TrackFormat
 from quick.application.AutoBinner import AutoBinner
+from quick.application.ProcTrackNameSource import ProcTrackNameSource
 from quick.origdata.OrigTrackFnSource import OrigTrackNameSource
 from quick.util.GenomeInfo import GenomeInfo
 
@@ -932,6 +934,48 @@ def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False
 
     DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = prevPassOnPreprocessExceptions
     DebugConfig.VERBOSE = prevVerbose
+
+
+def updateTrackInfoToVersion15(genome, trackName):
+    "genome trackName"
+    if isinstance(trackName, str):
+        trackName = qcf.convertTNstrToTNListFormat(trackName)
+
+    ti = TrackInfo(genome, trackName)
+    ti.preProcOverlapRules = []
+    trackFormatList = []
+    for allowOverlaps in [True, False]:
+        from gold.origdata.PreProcessUtils import PreProcessUtils
+        if PreProcessUtils.preProcFilesExist(genome, trackName, allowOverlaps):
+            ti.preProcOverlapRules.append(allowOverlaps)
+            if PreProcessUtils.mergedPreProcFilesExist(genome, trackName, allowOverlaps):
+                mergedPrefixInfoDict = PreProcessUtils.getMergedPrefixInfoDict(genome, trackName, allowOverlaps)
+                ti.mergedPrefixInfoDictPerOverlapRule[allowOverlaps] = mergedPrefixInfoDict
+                trackFormatList.append(TrackFormat.createInstanceFromPrefixInfoDict(mergedPrefixInfoDict))
+    if trackFormatList:
+        ti.trackFormatHash = hash(tuple(trackFormatList))
+    if not ti.geSourceVersion:
+        ti.geSourceVersion = ti.preProcVersion
+    ti.preProcVersion = '1.5'
+    ti.id = ti.constructIdFromPath(genome, qcf.createOrigPath(genome, trackName), ti.geSourceVersion, ti.preProcVersion)
+    print ti.id, ti.preProcOverlapRules, ti.mergedPrefixInfoDictPerOverlapRule, ti.trackFormatHash, ti.geSourceVersion, ti.preProcVersion
+    ti.store()
+    print Track(trackName).getUniqueKey(genome)
+
+
+def updateAllTrackInfoToVersion15():
+    from quick.application.GalaxyInterface import GalaxyInterface
+    from gold.origdata.PreProcessUtils import PreProcessUtils
+
+    for genomeTuple in GalaxyInterface.getAllGenomes():
+        genome = genomeTuple[1]
+        print genome
+        for trackName in ProcTrackNameSource(genome, fullAccess=True,
+                                             includeParentTrack=False):
+            if trackName != ['Genes and gene subsets','Genes','CCDS']:
+                continue
+            print trackName
+            updateAllTrackInfoToVersion15(genome, trackName)
 
 
 def _usage():

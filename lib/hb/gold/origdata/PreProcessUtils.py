@@ -3,10 +3,12 @@ import sys
 import shutil
 import numpy
 from config.Config import PROCESSED_DATA_PATH
-from gold.description.TrackInfo import TrackInfo
+from config.DebugConfig import DebugConfig
+from gold.description.TrackInfo import TrackInfo, PrefixInfo
 from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.origdata.GenomeElement import GenomeElement
 from gold.track.BoundingRegionShelve import BoundingRegionShelve
+from gold.track.CommonMemmapFunctions import parseMemmapFileFn
 from gold.track.TrackFormat import TrackFormat
 from gold.track.TrackSource import TrackSource
 from gold.util.CommonConstants import RESERVED_PREFIXES
@@ -15,12 +17,12 @@ from gold.util.CustomExceptions import InvalidFormatError, ShouldNotOccurError
 from quick.util.GenomeInfo import GenomeInfo
 
 class PreProcessUtils(object):
-    @staticmethod
-    def shouldPreProcessGESource(trackName, geSource, allowOverlaps):
+    @classmethod
+    def shouldPreProcessGESource(cls, trackName, geSource, allowOverlaps):
         genome = geSource.getGenome()
         storedInfo = TrackInfo(genome, trackName)
         
-        validFilesExist = PreProcessUtils.preProcFilesExist(genome, trackName, allowOverlaps) and \
+        validFilesExist = cls.preProcFilesExist(genome, trackName, allowOverlaps) and \
             storedInfo.isValid()
         
         if not geSource.hasOrigFile():
@@ -35,44 +37,49 @@ class PreProcessUtils(object):
                                    "PreProcessTracksJob version: {}, ".format(PreProcessTracksJob.VERSION) +
                                    "TrackInfo.preProcVersion: {}".format(storedInfo.preProcVersion),])
         storedAsAccordingToGeSource = \
-            (PreProcessUtils.constructId(geSource) == storedInfo.id and \
-             geSource.getVersion() == storedInfo.preProcVersion)
+            (cls.constructId(geSource) == storedInfo.id and
+             geSource.getVersion() == storedInfo.geSourceVersion and
+             PreProcessTracksJob.VERSION == storedInfo.preProcVersion)
         
         #from gold.application.LogSetup import logMessage
         #logMessage(geSource.getGenome())
         #logMessage(':'.join(trackName))
-        #logMessage('%s %s %s %s %s' % (PreProcessUtils.preProcFilesExist(genome, trackName, allowOverlaps), \
+        #logMessage('%s %s %s %s %s' % (cls.preProcFilesExist(genome, trackName, allowOverlaps), \
         #                               storedInfo.isValid(), \
         #                               geSource.hasOrigFile(), \
-        #                               PreProcessUtils.constructId(geSource) == storedInfo.id, \
+        #                               cls.constructId(geSource) == storedInfo.id, \
         #                               geSource.getVersion() == storedInfo.preProcVersion))
         
         return not (validFilesExist and storedAsAccordingToGeSource)
     
-    @staticmethod
-    def preProcFilesExist(genome, trackName, allowOverlaps):
+    @classmethod
+    def preProcFilesExist(cls, genome, trackName, allowOverlaps):
         collector = PreProcMetaDataCollector(genome, trackName)
         preProcFilesExist = collector.preProcFilesExist(allowOverlaps)
         if preProcFilesExist is None:
-            dirPath = createDirPath(trackName, genome, allowOverlaps=allowOverlaps)
-            if BoundingRegionShelve(genome, trackName, allowOverlaps).fileExists():
+            merged = cls.mergedPreProcFilesExist(genome, trackName, allowOverlaps)
+            if merged:
                 preProcFilesExist = True
-                #    any( fn.split('.')[0] in ['start', 'end', 'val', 'edges'] \
-                #         for fn in os.listdir(dirPath) if os.path.isfile(os.path.join(dirPath, fn)) )
             else:
-                if os.path.exists(dirPath):
-                    preProcFilesExist = PreProcessUtils._hasOldTypeChromSubDirs(dirPath, genome)
-                else:
-                    preProcFilesExist = False
-            collector.updatePreProcFilesExistFlag(allowOverlaps, preProcFilesExist)
+                preProcFilesExist = cls.oldTypePreProcFilesExist(genome, trackName, allowOverlaps)
+            collector.updatePreProcFilesExistFlag(allowOverlaps, preProcFilesExist, merged)
         return preProcFilesExist
-    
+
     @staticmethod
-    def _hasOldTypeChromSubDirs(dirPath, genome):
+    def mergedPreProcFilesExist(genome, trackName, allowOverlaps):
+        return BoundingRegionShelve(genome, trackName, allowOverlaps).fileExists()
+
+    @classmethod
+    def oldTypePreProcFilesExist(cls, genome, trackName, allowOverlaps):
+        dirPath = createDirPath(trackName, genome, allowOverlaps=allowOverlaps)
+        return os.path.exists(dirPath) and cls._hasOldTypeChromSubDirs(dirPath, genome)
+
+    @classmethod
+    def _hasOldTypeChromSubDirs(cls, dirPath, genome):
         for subDir in os.listdir(dirPath):
             fullSubDirPath = os.path.join(dirPath, subDir)
             if os.path.isdir(fullSubDirPath) and \
-                PreProcessUtils._isOldTypeChromDirectory(fullSubDirPath, genome):
+                cls._isOldTypeChromDirectory(fullSubDirPath, genome):
                     return True
         return False
     
@@ -94,10 +101,10 @@ class PreProcessUtils(object):
         else:
             return geSource.getId()
         
-    @staticmethod
-    def removeOutdatedPreProcessedFiles(genome, trackName, allowOverlaps, mode):
+    @classmethod
+    def removeOutdatedPreProcessedFiles(cls, genome, trackName, allowOverlaps, mode):
         collector = PreProcMetaDataCollector(genome, trackName)
-        if PreProcessUtils.preProcFilesExist(genome, trackName, allowOverlaps) and not \
+        if cls.preProcFilesExist(genome, trackName, allowOverlaps) and not \
             collector.hasRemovedPreProcFiles(allowOverlaps):
                 dirPath = createDirPath(trackName, genome, allowOverlaps=allowOverlaps)
                 
@@ -109,7 +116,7 @@ class PreProcessUtils(object):
                         if os.path.isfile(fullFn):
                             os.unlink(fullFn)
                         if os.path.isdir(fullFn):
-                            if PreProcessUtils._isOldTypeChromDirectory(fullFn, genome):
+                            if cls._isOldTypeChromDirectory(fullFn, genome):
                                 shutil.rmtree(fullFn)
                 else:
                     print 'Would now have removed outdated preprocessed data if real run: ', dirPath
@@ -167,8 +174,8 @@ class PreProcessUtils(object):
         if len(unmatchedIds) > 0:
             raise InvalidFormatError("Error: the following ids specified in the 'edges' column do not exist in the dataset: " + ', '.join(sorted(unmatchedIds)))
     
-    @staticmethod
-    def checkUndirectedEdges(genome, trackName, allowOverlaps):
+    @classmethod
+    def checkUndirectedEdges(cls, genome, trackName, allowOverlaps):
         collector = PreProcMetaDataCollector(genome, trackName)
         if not (collector.getTrackFormat().isLinked() and collector.hasUndirectedEdges()):
             return
@@ -186,7 +193,7 @@ class PreProcessUtils(object):
             for i, id in enumerate(ids):
                 edgesAttr = edges[i][edges[i] != '']
                 weightsAttr = weights[i][edges[i] != ''] if weights is not None else None
-                PreProcessUtils._adjustComplementaryEdgeWeightDict(complementEdgeWeightDict, id, edgesAttr, weightsAttr)
+                cls._adjustComplementaryEdgeWeightDict(complementEdgeWeightDict, id, edgesAttr, weightsAttr)
         
         if len(complementEdgeWeightDict) != 0:
                 unmatchedPairs = []
@@ -229,3 +236,12 @@ class PreProcessUtils(object):
             else:
                 complementEdgeWeightDict[edgeId] = {id: weight}
 
+    @classmethod
+    def getMergedPrefixInfoDict(cls, genome, trackName, allowOverlaps):
+        assert cls.mergedPreProcFilesExist(genome, trackName, allowOverlaps)
+        trackData = TrackSource().getTrackData(trackName, genome, None, allowOverlaps)
+        prefixInfoDict = {}
+        for prefix, smartMemmap in trackData.items():
+            if prefix not in ['leftIndex', 'rightIndex']:
+                prefixInfoDict[prefix] = PrefixInfo(*parseMemmapFileFn(smartMemmap.getFilename()))
+        return prefixInfoDict

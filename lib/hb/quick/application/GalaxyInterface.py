@@ -1524,20 +1524,19 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def getTrackExtractionOptions(genome, trackName):
-        from quick.application.UserBinSource import MinimalBinSource
         from gold.origdata.FileFormatComposer import findMatchingFileFormatComposers, getComposerClsFromFileSuffix
 
         trackNames = [trackName]
         GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc=False)
         trackName = trackNames[0]
 
-        tf = PlainTrack(trackName).getTrackView(MinimalBinSource(genome)[0]).trackFormat
-
         extractionOptions = []
-        matchingComposers = findMatchingFileFormatComposers(tf)
-        for composerInfo in matchingComposers:
-            allOverlapRules = tf.getAllOverlapRules()
-            for allowOverlaps in allOverlapRules:
+        ti = TrackInfo(genome, trackName)
+        allOverlapRules = ti.preProcOverlapRules
+        for allowOverlaps in allOverlapRules:
+            tf = TrackFormat.createInstanceFromPrefixInfoDict(ti.mergedPrefixInfoDictPerOverlapRule[allowOverlaps])
+            matchingComposers = findMatchingFileFormatComposers(tf)
+            for composerInfo in matchingComposers:
                 extractionOptions.append( \
                     (composerInfo.trackFormatName.capitalize() + \
                         ' ' + TrackExtractor.getFileFormatText(composerInfo.fileFormatName) + \
@@ -1546,7 +1545,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                                  if len(allOverlapRules) > 1 else ''), \
                      composerInfo.fileSuffix) )
 
-        ti = TrackInfo(genome, trackName)
         if ti.fileType != '':
             try:
                 extractionOptions.append(
@@ -1557,13 +1555,13 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 logException(e)
 
                 #Temporary fix for old tracks with wrong fileType. Should be removed when all tracks have been preprocessed.
-                if not ti.fileType in GalaxyInterface.getSupportedGalaxyFileFormats() and ti.fileType is not None:
-                    from gold.util.CommonFunctions import getFileSuffix
-                    oldFileType = ti.fileType
-                    ti.fileType = getFileSuffix(oldFileType)
-                    ti.store()
-                    logMessage("Changed file type of track '%s' from '%s' to '%s'" %
-                               (':'.join(trackName), oldFileType, ti.fileType))
+                # if not ti.fileType in GalaxyInterface.getSupportedGalaxyFileFormats() and ti.fileType is not None:
+                #     from gold.util.CommonFunctions import getFileSuffix
+                #     oldFileType = ti.fileType
+                #     ti.fileType = getFileSuffix(oldFileType)
+                #     ti.store()
+                #     logMessage("Changed file type of track '%s' from '%s' to '%s'" %
+                #                (':'.join(trackName), oldFileType, ti.fileType))
 
         return extractionOptions
 

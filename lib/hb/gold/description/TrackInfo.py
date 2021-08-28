@@ -19,7 +19,7 @@ except ImportError:
     from backports.functools_lru_cache import lru_cache
 
 FieldInfo = namedtuple('FieldInfo', ['fullName', 'guiElementType'])
-
+PrefixInfo = namedtuple('PrefixInfo', ['prefix', 'elementDim', 'dtypeDim', 'dtype'])
 
 # def constructKey(genome, trackName):
 #     key = ':'.join([genome] + trackName)
@@ -40,33 +40,39 @@ class TrackInfo(object):
 
     PROTOCOL = 1
 
-    FIELD_INFO_DICT = { \
-        'description': FieldInfo('Description', 'textbox'), \
-        'displayConvConf': FieldInfo('Display conventions and configuration', 'textbox'), \
-        'methods': FieldInfo('Methods', 'textbox'), \
-        'credits': FieldInfo('Credits', 'textbox'), \
-        'reference': FieldInfo('References', 'textbox'), \
-        'restrictions': FieldInfo('Data release policy', 'textbox'), \
-        'version': FieldInfo('Version', 'textbox'), \
-        'quality': FieldInfo('Quality', 'textbox'), \
-        'hbContact': FieldInfo('HyperBrowser contact', 'textbox'), \
-        'cellTypeSpecific': FieldInfo('Cell type specific', 'checkbox'), \
-        'cellType': FieldInfo('Cell type', 'textbox'), \
-        'private': FieldInfo('Private (our group only)', 'checkbox'), \
-        'fileType': FieldInfo('File type', 'text'), \
-        'trackFormatName': FieldInfo('Original track type', 'text'), \
-        'markType': FieldInfo('Value type', 'text'), \
-        'weightType': FieldInfo('Edge weight type', 'text'), \
-        'undirectedEdges': FieldInfo('Undirected edges', 'text'), \
-        'origElCount': FieldInfo('Original element count', 'text'), \
-        'clusteredElCount': FieldInfo('Element count after merging', 'text'), \
-        'numValCategories': FieldInfo('Original number of value categories', 'text'), \
-        'numClusteredValCategories': FieldInfo('Number of value categories after clustering', 'text'), \
-        'numEdgeWeightCategories': FieldInfo('Number of edge categories', 'text'), \
-        'subTrackCount': FieldInfo('Total number of tracks (with subtracks)', 'text'), \
-        'timeOfPreProcessing': FieldInfo('Time of preprocessing', 'text'), \
-        'timeOfLastUpdate': FieldInfo('Time of last update', 'text'), \
-        'lastUpdatedBy': FieldInfo('Last update by', 'text')}
+    FIELD_INFO_DICT = {
+        'description': FieldInfo('Description', 'textbox'),
+        'displayConvConf': FieldInfo('Display conventions and configuration', 'textbox'),
+        'methods': FieldInfo('Methods', 'textbox'),
+        'credits': FieldInfo('Credits', 'textbox'),
+        'reference': FieldInfo('References', 'textbox'),
+        'restrictions': FieldInfo('Data release policy', 'textbox'),
+        'version': FieldInfo('Version', 'textbox'),
+        'quality': FieldInfo('Quality', 'textbox'),
+        'hbContact': FieldInfo('HyperBrowser contact', 'textbox'),
+        'cellTypeSpecific': FieldInfo('Cell type specific', 'checkbox'),
+        'cellType': FieldInfo('Cell type', 'textbox'),
+        'private': FieldInfo('Private (our group only)', 'checkbox'),
+        'fileType': FieldInfo('File type', 'text'),
+        'trackFormatName': FieldInfo('Original track type', 'text'),
+        'markType': FieldInfo('Value type', 'text'),
+        'weightType': FieldInfo('Edge weight type', 'text'),
+        'undirectedEdges': FieldInfo('Undirected edges', 'text'),
+        'origElCount': FieldInfo('Original element count', 'text'),
+        'clusteredElCount': FieldInfo('Element count after merging', 'text'),
+        'numValCategories': FieldInfo('Original number of value categories', 'text'),
+        'numClusteredValCategories': FieldInfo('Number of value categories after clustering', 'text'),
+        'numEdgeWeightCategories': FieldInfo('Number of edge categories', 'text'),
+        'subTrackCount': FieldInfo('Total number of tracks (with subtracks)', 'text'),
+        'timeOfPreProcessing': FieldInfo('Time of preprocessing', 'text'),
+        'timeOfLastUpdate': FieldInfo('Time of last update', 'text'),
+        'lastUpdatedBy': FieldInfo('Last update by', 'text'),
+        'geSourceVersion': FieldInfo('Version of GenomeElementSource used', 'text'),
+        'preProcVersion': FieldInfo('Version of track preprocessor used', 'text'),
+        'mergedPrefixInfoDictPerOverlapRule': FieldInfo('For all overlap rules, a PrefixInfo record describing the '
+                                                        'data types for all arrays of the track.', 'text'),
+        'trackFormatHash': FieldInfo('A unique hash of the full track format of the track, calculated from '
+                                     '"mergedPrefixInfoDictPerOverlapRule"', 'text')}
 
     @classmethod
     def _openOldShelve(cls, mode):
@@ -146,7 +152,11 @@ class TrackInfo(object):
         self.numClusteredValCategories = None
         self.numEdgeWeightCategories = None
         self.timeOfPreProcessing = None
+        self.geSourceVersion = ''
         self.preProcVersion = ''
+        self.preProcOverlapRules = []
+        self.mergedPrefixInfoDictPerOverlapRule = {}
+        self.trackFormatHash = ''
 
         self.__dict__.update(existingAttrs)
 
@@ -266,12 +276,12 @@ class TrackInfo(object):
     def getUIRepr(self):
         uiRepr = []
         isDense = self._isDenseTrack()
-        for field in ['description', 'displayConvConf', 'methods', 'credits', 'reference', 'restrictions', \
-                      'version', 'quality', 'hbContact', 'cellTypeSpecific', 'cellType', \
-                      'private', 'fileType', 'trackFormatName', 'markType', 'weightType', 'undirectedEdges', \
-                      'origElCount', 'clusteredElCount', 'numValCategories', 'numClusteredValCategories', \
-                      'numEdgeWeightCategories', 'subTrackCount', 'timeOfPreProcessing', 'timeOfLastUpdate', \
-                      'lastUpdatedBy']:
+        for field in ['description', 'displayConvConf', 'methods', 'credits', 'reference', 'restrictions',
+                      'version', 'quality', 'hbContact', 'cellTypeSpecific', 'cellType',
+                      'private', 'fileType', 'trackFormatName', 'markType', 'weightType', 'undirectedEdges',
+                      'origElCount', 'clusteredElCount', 'numValCategories', 'numClusteredValCategories',
+                      'numEdgeWeightCategories', 'subTrackCount', 'timeOfPreProcessing', 'timeOfLastUpdate',
+                      'lastUpdatedBy', 'geSourceVersion', 'preProcVersion']:
             fieldInfo = self._getFieldInfoDict(field, isDense)
             uiRepr.append((fieldInfo.fullName, field, getattr(self, field), fieldInfo.guiElementType))
         return tuple(uiRepr)
@@ -280,7 +290,6 @@ class TrackInfo(object):
         attrs =  [attr for attr in dir(self) \
                   if not callable(getattr(self, attr)) and not attr.startswith("__")]
         return repr( dict([(attr, getattr(self, attr)) for attr in attrs]) )
-
 
     def setAttrs(self, attrDict, username):
         self.__dict__.update(attrDict)

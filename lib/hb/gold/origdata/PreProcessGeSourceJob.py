@@ -3,8 +3,6 @@ from gold.origdata.OutputManager import OutputManager
 from gold.origdata.PreProcessUtils import PreProcessUtils
 
 class PreProcessGeSourceJob(object):
-    VERSION = '0.95'
-        
     def __init__(self, trackName, geSourceManager, allowOverlaps, mode='Real'):
         self._trackName = trackName
         self._allowOverlaps = allowOverlaps
@@ -17,16 +15,17 @@ class PreProcessGeSourceJob(object):
         genome = geSource.genome
         
         collector = PreProcMetaDataCollector(genome, self._trackName)
-        
-        collector.updateMetaDataForFinalization(geSource.getFileSuffix(), geSource.getPrefixList(), \
-                                                geSource.getValDataType(), geSource.getValDim(), \
-                                                geSource.getEdgeWeightDataType(), geSource.getEdgeWeightDim(), \
-                                                geSource.hasUndirectedEdges(),
-                                                geSource.getVersion(), PreProcessUtils.constructId(geSource), \
-                                                self._geSourceManager.getNumElements(), \
-                                                self._geSourceManager.getBoundingRegionTuples(), \
-                                                self._geSourceManager.getValCategories(), \
-                                                self._geSourceManager.getEdgeWeightCategories(), \
+
+        from gold.origdata.PreProcessTracksJob import PreProcessTracksJob
+        collector.updateMetaDataForFinalization(geSource.getFileSuffix(), geSource.getPrefixList(),
+                                                geSource.getValDataType(), geSource.getValDim(),
+                                                geSource.getEdgeWeightDataType(), geSource.getEdgeWeightDim(),
+                                                geSource.hasUndirectedEdges(), geSource.getVersion(),
+                                                PreProcessTracksJob.VERSION, PreProcessUtils.constructId(geSource),
+                                                self._geSourceManager.getNumElements(),
+                                                self._geSourceManager.getBoundingRegionTuples(),
+                                                self._geSourceManager.getValCategories(),
+                                                self._geSourceManager.getEdgeWeightCategories(),
                                                 self._allowOverlaps)
 
         if self._geSourceManager.getNumElements() > 0:
