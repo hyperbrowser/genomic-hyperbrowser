@@ -72,7 +72,7 @@ class ResultsViewerCollection(object):
             dump(pickleList, pickleStaticFile.getFile())
             # dump(self._resultsList, pickleStaticFile.getFile())
         except Exception, e:
-            logException(e, message='Not able to pickle results object')
+            logException(e, messagePrefix='Not able to pickle results object')
         except:
             logMessage('Exception object not subclassing Exception encountered',level=logging.ERROR)
 

@@ -178,35 +178,8 @@ class Analysis(AnalysisDefHandler):
                 continue
 
             try:
-                # The hackiest of all hacks!
-                # TODO: reimplement together with TrackStructure
-                job = StatJob(dummyGESource, trackA, trackB, statClass, minimal=True,
-                              **self.getChoices(filterByActivation=True))
-                stat = job._getSingleResult(dummyGESource[0])[-1]
-                tracks = stat._tracks if hasattr(stat, '_tracks') else [trackA, trackB]
-                trackUniqueKeys = [Track(tr.trackName).getUniqueKey(self._genome) for tr in tracks
-                                   if tr is not None]
-
                 StatJob(dummyGESource, trackA, trackB, statClass, minimal=True,
-                        **self.getChoices(filterByActivation=True)).run(False)
-                #In order not to mess up integration tests
-                initSeed()
-
-                for trackIndex, restTrackIndexes in allElementsVersusRest(xrange(len(tracks))):
-                    track = tracks[trackIndex]
-                    if track is not None and track.formatConverters is None:
-                        uniqueKeyForRestTracks = \
-                            set(trackUniqueKeys[i] for i in restTrackIndexes)
-
-                        # If several tracks are the same, memory memoization will only result
-                        # in one RawDataStat being created, for one Track object. This is a
-                        # wanted optimization. In other cases, something is probably wrong if
-                        # a track has not been touched. However, this rule may be revisited
-                        # when track structure functionality is implemented.
-                        if trackUniqueKeys[trackIndex] not in uniqueKeyForRestTracks:
-                            raise IncompatibleTracksError(
-                                'Track ' + prettyPrintTrackName(track.trackName) +
-                                ' was created, but not touched by statistic')
+                        **self.getAllChoices(filterByActivation=True)).run(False)
 
             except IncompatibleTracksError, e:
                 if DebugConfig.VERBOSE:
@@ -240,17 +213,9 @@ class Analysis(AnalysisDefHandler):
                     raise
 
             else:
-                #self._reversed = reversed
-                #self._conversionsUsed = len(trackA.conversionsUsed) > 0 or \
-                #    ((trackB is not None) and len(trackB.conversionsUsed) > 0)
-                ##self._validStatClass = functools.partial(statClass, **self.getChoices())
-                #functools.update_wrapper(self._validStatClass, statClass)
-                validStatClass = wrapClass(statClass, keywords=self.getChoices(filterByActivation=True) ) #fixme: Perhaps return validStatClass, self.getChoices() instead?
-                #self.setConverters( self._track.formatConverters, self._track2.formatConverters if self._track2 is not None else None)
-                #self._updateOptions()
+                validStatClass = wrapClass(statClass, keywords=self.getAllChoices(filterByActivation=True)) #fixme: Perhaps return validStatClass, self.getChoices() instead?
                 if DebugConfig.VERBOSE:
                     logMessage(statClass.__name__ + ': OK')
-#                        print statClass.__name__ + ': OK'
                 return validStatClass
             finally:
                 # initSeed()  # In order not to mess up integration tests

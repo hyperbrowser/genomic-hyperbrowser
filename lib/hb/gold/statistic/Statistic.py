@@ -1,8 +1,8 @@
 from gold.util.CommonFunctions import smartSum, getClassName, isIter, resultsWithoutNone
 from gold.util.CompBinManager import CompBinManager
-from gold.util.CustomExceptions import ShouldNotOccurError, CentromerError, TooLargeBinError, \
-                                       TooSmallBinError, AbstractClassError, NoneResultError, \
-                                       OutsideBoundingRegionError
+from gold.util.CustomExceptions import ShouldNotOccurError, CentromerError,  TooLargeBinError, \
+    TooSmallBinError, AbstractClassError, NoneResultError, \
+    OutsideBoundingRegionError, IncompatibleTracksError
 from config.Config import DebugConfig
 from gold.track.Track import Track
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
@@ -11,7 +11,7 @@ from gold.track.GenomeRegion import GenomeRegion
 from quick.application.UserBinSource import PairedGenomeRegion
 from copy import copy
 from collections import OrderedDict
-from quick.util.CommonFunctions import convertTNstrToTNListFormat
+from quick.util.CommonFunctions import convertTNstrToTNListFormat, allElementsVersusRest, prettyPrintTrackName
 import numpy
 from math import ceil
 from test.gold.track.common.SampleTrack import SampleTrack
@@ -72,6 +72,12 @@ class Statistic(object):
         #self._result = None
         #self._children = None
 
+    def getAllTracks(self):
+        tracks = [self._track]
+        if hasattr(self, '_track2') and self._track2 is not None:
+            tracks.append(self._track2)
+        return tracks
+
     def _init(self, **kwArgs):
         pass
 
@@ -128,6 +134,9 @@ class Statistic(object):
 
         while not self.hasResult():
             self.computeStep()
+
+        if self.isMinimalRun():
+            self._validateAllTracksRead()
 
     def computeStep(self):
         self._trace('computeStep')
@@ -258,6 +267,10 @@ class Statistic(object):
     def _combineResults(self):
         raise ShouldNotOccurError()
 
+    def isMinimalRun(self):
+        return self._kwArgs.get('minimal') == True and \
+               (CompBinManager.isMinimalBin(self._region) or CompBinManager.isGlobalMinimalBin(self._region))
+
     def __cmp__(self, other):
         return cmp(self.getUniqueKey, other.getUniqueKey)
 
@@ -310,6 +323,29 @@ class Statistic(object):
             for reg in region:
                 return reg.genome
 
+    def _validateAllTracksRead(self):
+        if not self.hasResult():
+            raise ShouldNotOccurError("At this stage, statistic should either have result, "
+                                      "or exception should have been raised")
+
+        tracks = self.getAllTracks()
+        trackUniqueKeys = [Track(tr.trackName).getUniqueKey(self.getGenome()) for tr in tracks]
+
+        for trackIndex, restTrackIndexes in allElementsVersusRest(xrange(len(trackUniqueKeys))):
+            track = tracks[trackIndex]
+            if track is not None and not track.hasBeenFlaggedAsRead():
+                uniqueKeyForRestTracks = \
+                    set(trackUniqueKeys[i] for i in restTrackIndexes)
+
+                # If several tracks are the same, memory memoization will only result
+                # in one RawDataStat being created, for one Track object. This is a
+                # wanted optimization. In other cases, something is probably wrong if
+                # a track has not been touched. However, this rule may be revisited
+                # when track structure functionality is implemented.
+                if trackUniqueKeys[trackIndex] not in uniqueKeyForRestTracks:
+                    raise IncompatibleTracksError(
+                        'Track ' + prettyPrintTrackName(track.trackName) +
+                        ' was created, but not touched by statistic')
 
     @classmethod
     def validateAndPossiblyResetLocalResults(cls, stats):
