@@ -35,6 +35,3 @@ class RawDataStatUnsplittable(Statistic):
         if self.hasResult():
             #print 'clean up for reg: ',self._region ,'with trackname: ',self._track.trackName
             del self._result
-    
-    def _updateInMemoDict(self, statKwUpdateDict):
-        pass

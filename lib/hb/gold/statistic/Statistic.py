@@ -215,18 +215,6 @@ class Statistic(object):
     def _setNotMemoizable(self):
         self.IS_MEMOIZABLE = False
 
-    def updateInMemoDict(self, statKwUpdateDict):
-        if self.hasChildren():
-            for child in self._children:
-                child.updateInMemoDict(statKwUpdateDict)
-
-        self._trace('_updateInMemoDict')
-        self._updateInMemoDict(statKwUpdateDict)
-
-    def _updateInMemoDict(self, statKwUpdateDict):
-        from gold.statistic.MagicStatFactory import MagicStatFactory
-        MagicStatFactory.updateMemoDict(self, statKwUpdateDict)
-
     def createChildren(self):
         if self.hasResult() or self.hasChildren():
             return

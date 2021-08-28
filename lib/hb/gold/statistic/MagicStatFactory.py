@@ -81,16 +81,6 @@ class MagicStatFactory(object):
             return newStat
 
     @staticmethod
-    def updateMemoDict(stat, statKwUpdateDict):
-        oldUniqueKey = stat.getUniqueKey()
-        stat._kwArgs.update(statKwUpdateDict)
-        newUniqueKey = stat.getUniqueKey()
-
-        del MagicStatFactory._memoDict[oldUniqueKey]
-        MagicStatFactory._memoDict[newUniqueKey] = stat
-
-
-    @staticmethod
     def _createNew(origCls, subCls, region, *args, **keywords):
         #return MagicStatFactory._transferMembers(origCls, subCls(region, *args, **keywords))
         return subCls(region, *args, **keywords)
