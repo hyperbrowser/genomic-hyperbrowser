@@ -40,13 +40,13 @@ def createDirPath(trackName, genome, chr=None, allowOverlaps=False, basePath=PRO
         list(trackName) + ([chr] if chr is not None else []) )
 
 
-def createMemoPath(region, statId, configHash, track1Hash, track2Hash):
-    chr = region.chr
+def createMemoPath(region, statId, configHash, track1Hash, track2Hash=None):
     genome = region.genome
-    return os.sep.join( [MEMOIZED_DATA_PATH, str(len(region)), statId, genome, str(track1Hash)] + \
-                        ([str(track2Hash)] if track2Hash is not None else []) + \
-                        [str(configHash), chr] ).replace('-','_') #replace('-','_') because hashes can be minus, and minus sign makes problems with file handling
-
+    # Note: minus is replaced with underscore because hashes can be negative, and minus signs
+    # might create problems with file handling
+    return os.sep.join([MEMOIZED_DATA_PATH, str(len(region)), statId, genome, str(track1Hash)] + \
+                       ([str(track2Hash)] if track2Hash is not None else []) + \
+                       [str(configHash)]).replace('-', '_')
 
 @takes(str,(list,tuple),(str,type(None)))
 def createOrigPath(genome, trackName, fn=None):

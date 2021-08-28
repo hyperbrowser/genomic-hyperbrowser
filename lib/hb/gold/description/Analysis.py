@@ -121,7 +121,7 @@ class Analysis(AnalysisDefHandler):
     def getGenome(self):
         return self._genome
                
-    def getStat(self):
+    def getStat(self, flushMemoized=True):
         if self._validStatClass is None:
             options = self.getAllOptionsAsKeys()
             if self.ASSUMP_LABEL_KEY in options:
@@ -129,17 +129,17 @@ class Analysis(AnalysisDefHandler):
                 allAssumptions = options[self.ASSUMP_LABEL_KEY]
                 for assumption in allAssumptions:
                     self.setChoice(self.ASSUMP_LABEL_KEY, assumption)
-                    if self._determineStatClass() is not None:
+                    if self._determineStatClass(flushMemoized=False) is not None:
                         validAssumptions.append(assumption)
                 if len(validAssumptions) == 0:
                     return None
                 
                 if len(validAssumptions) not in [0, len(allAssumptions)]:
-                    self._logAssumptionReduction( set(allAssumptions) - set(validAssumptions) )
+                    self._logAssumptionReduction(set(allAssumptions) - set(validAssumptions))
                 self.reduceChoices(self.ASSUMP_LABEL_KEY, validAssumptions)
                 self.setDefaultChoice(self.ASSUMP_LABEL_KEY)
-            
-            self._validStatClass = self._determineStatClass()
+
+            self._validStatClass = self._determineStatClass(flushMemoized=flushMemoized)
             if self._validStatClass is not None:
                 self._appendConverterOptions(self._track, self.TF1_KEY)
                 self._appendConverterOptions(self._track2, self.TF2_KEY)
@@ -153,12 +153,12 @@ class Analysis(AnalysisDefHandler):
         for assumption in removedAssumptions:
             logMessage('Assumption "' + str(assumption) + '" was removed from analysisDef: ' + self.getDef())
             self.setChoice(self.ASSUMP_LABEL_KEY, assumption)
-            self._determineStatClass()    
+            self._determineStatClass(flushMemoized=False)
             
         #VERBOSE = prev
         
     #@noProgress
-    def _determineStatClass(self):
+    def _determineStatClass(self, flushMemoized=True):
         assert( hasattr(self, '_track') )
         assert( hasattr(self, '_track2') )
         dummyGESource = MinimalBinSource(self._genome)
@@ -167,7 +167,7 @@ class Analysis(AnalysisDefHandler):
             # if self._reversed:
             logMessage('Stat class list is empty, for analysisDef: ' + self._analysisLine, level = logging.WARNING)
             if DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS:
-                raise ShouldNotOccurError('Stat class list is empty. Analysisdef: '+self._analysisLine)
+                raise ShouldNotOccurError('Stat class list is empty. Analysisdef: ' + self._analysisLine)
         
         for statClass in self._statClassList:
             if DebugConfig.VERBOSE:
@@ -179,7 +179,7 @@ class Analysis(AnalysisDefHandler):
 
             try:
                 StatJob(dummyGESource, trackA, trackB, statClass, minimal=True,
-                        **self.getAllChoices(filterByActivation=True)).run(False)
+                        **self.getAllChoices(filterByActivation=True)).run(False, flushMemoized=flushMemoized)
 
             except IncompatibleTracksError, e:
                 if DebugConfig.VERBOSE:

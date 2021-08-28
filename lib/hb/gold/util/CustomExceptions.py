@@ -76,6 +76,9 @@ class OutsideBoundingRegionError(Exception):
 class BoundingRegionsNotAvailableError(Exception):
     pass
 
+class MissingInfoError(Exception):
+    pass
+
 class ContextException(Exception):
     def __str__(self):
         import traceback

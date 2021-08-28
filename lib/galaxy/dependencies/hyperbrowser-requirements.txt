@@ -34,6 +34,7 @@ importlib_metadata==1.7.0
 pytest>=4.6.4,<4.7
 backports.functools_lru_cache==1.6.3
 future==0.18.2
+tblib>=1.7.0
 
 #Might be needed
 #pycairo>=1.8.10

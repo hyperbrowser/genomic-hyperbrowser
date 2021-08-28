@@ -9,6 +9,7 @@ from config.Config import DebugConfig, MEMOIZED_DATA_PATH
 from gold.application.LogSetup import logMessage, logException
 from gold.description.TrackInfo import TrackInfo
 from gold.util.SafeFile import SafePickleFile
+from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from quick.application.SignatureDevianceLogging import takes,returns
 
 
@@ -112,6 +113,9 @@ class AnalysisManager(object):
             #logMessage('%s' % (time() - t))
             if analysis is not None:
                 validAnalyses.append(analysis)
+
+        ResultsMemoizer.flushStoredResults()
+
         return validAnalyses
 
     @classmethod
@@ -159,7 +163,8 @@ class AnalysisManager(object):
                     validReversedAnalyses.append(analysis)
                 else:
                     validAnalyses.append(analysis)
-                    
+        ResultsMemoizer.flushStoredResults()
+
         if len(validAnalyses) == 1:
             return validAnalyses[0].getDef()
         elif len(validReversedAnalyses) == 1:

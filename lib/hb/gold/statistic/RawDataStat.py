@@ -13,6 +13,7 @@ class RawDataStat(MagicStatFactory):
 
 class RawDataStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
+    IS_MINIMAL_MEMOIZABLE = False
 
     def __init__(self, region, track, **kwArgs):
         if isIter(region):

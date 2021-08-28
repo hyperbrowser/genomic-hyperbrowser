@@ -1,8 +1,10 @@
+import sys
+
 from gold.util.CommonFunctions import smartSum, getClassName, isIter, resultsWithoutNone
 from gold.util.CompBinManager import CompBinManager
 from gold.util.CustomExceptions import ShouldNotOccurError, CentromerError,  TooLargeBinError, \
     TooSmallBinError, AbstractClassError, NoneResultError, \
-    OutsideBoundingRegionError, IncompatibleTracksError
+    OutsideBoundingRegionError, IncompatibleTracksError, MissingInfoError
 from config.Config import DebugConfig
 from gold.track.Track import Track
 from gold.statistic.ResultsMemoizer import ResultsMemoizer
@@ -21,6 +23,7 @@ from _collections import defaultdict
 class Statistic(object):
     VERSION = '1.0'
     IS_MEMOIZABLE = True
+    IS_MINIMAL_MEMOIZABLE = True
 
     def _trace(self, methodName):
         if DebugConfig.TRACE_STAT[methodName]:
@@ -64,6 +67,7 @@ class Statistic(object):
             self._track2 = track2
         self._kwArgs = kwArgs
         self._init(**kwArgs)
+        self._resultLoadedFromDisk = False
 
         self._trace('__init__')
         #self._loadMemoized()
@@ -98,51 +102,41 @@ class Statistic(object):
         assert type(vars(StatDescrModule)[statClassName]) is str
         return vars(StatDescrModule)[statClassName]
 
-    @exceptionLogging(level=logging.WARNING)
-    def _loadMemoized(self):
-        self.resultLoadedFromDisk = False
-        try:
-            ResultsMemoizer.loadResult(self)
-        except IOError, e:
-            logMessageOnce('No memoization due to IOError (probably because some other process are writing same data): ' + str(e))
-            #raise #NB! Remove, only for debugging..
-            #logging.getLogger(HB_LOGGER).debug('No memoization due to IOError (probably because some other process are writing same data): ' + str(e))
-        except AssertionError, e:
-            logMessageOnce('No memoization due to assertionError (probably missing formatConverter): ' + str(e))
-            #raise #NB! Remove this, only for debugging..
-            #logging.getLogger(HB_LOGGER).debug('No memoization due to assertionError (probably missing formatConverter): ' + str(e))
-
-    #def _loadMemoized(self):
-    #    self.resultLoadedFromDisk = False
-    #    try:
-    #        ResultsMemoizer.loadResult(self)
-    #    except AssertionError, e:
-    #        logging.getLogger(HB_LOGGER).debug('No memoization due to assertionError (probably missing formatConverter): ' + str(e))
-    #
-    #    except Exception, e:
-    #        logging.getLogger(HB_LOGGER).warning('Exception when loading memo - ' + getClassName(e) + ': ' + str(e))
-    #        #logging.getLogger(HB_LOGGER).warning('TRACE: ' + traceback.format_exc())
-    #        logging.getLogger(HB_LOGGER).debug(traceback.format_exc())
-
     def setMemoizedResult(self, result):
         self._result = result
-        self.resultLoadedFromDisk = True
+        self.flagResultLoadedFromDisk()
 
     def compute(self):
         self._trace('compute')
-        self.createChildren()
 
-        while not self.hasResult():
-            self.computeStep()
+        minimalRun = self.isMinimalRun()
 
-        if self.isMinimalRun():
-            self._validateAllTracksRead()
+        if minimalRun and not self.hasResult():
+            error = self._loadMinimalMemoizedResult()
+            if error:
+                self._handleMinimalMemoizedError(error)
+
+        if not self.hasResult():
+            try:
+                self.createChildren()
+
+                while not self.hasResult():
+                    self.computeStep()
+
+                if minimalRun:
+                    self._validateAllTracksRead()
+                    self._storeMinimalMemoizedResult()
+            except Exception:
+                if minimalRun:
+                    self._storeMinimalMemoizedError()
+                raise
 
     def computeStep(self):
         self._trace('computeStep')
 
         if not self.hasResult():
-            self._loadMemoized()
+            self._loadMemoizedResult()
+
         if self.hasResult():
             return
         for child in self._children:
@@ -160,38 +154,11 @@ class Statistic(object):
             if DebugConfig.VERBOSE:
                 logMessage('Result of statistic %s in region %s: %s' % (getClassName(self), self._region, res))
 
-        #try:
-        #    self._trace('_compute')
-        #    #The method _compute may either return the result, or set the result variable directly:
-        #    res = self._compute()
-        #
-        #except (TooLargeBinError, TooSmallBinError, CentromerError),e:
-        #    logException(e)
-        #    raise
-        #except (ZeroDivisionError, FloatingPointError, TypeError, ValueError),e:
-        #    #print 'Error: ', e.__class__.__name__, e
-        #    res = None
-        #    if DebugConfig.VERBOSE or e.__class__ in [TypeError, ValueError]:
-        #        logException(e, message='kwArgs: ' + str(self._kwArgs))
-        #    if DebugConfig.PASS_ON_COMPUTE_EXCEPTIONS:
-        #        raise
-
         if not self.hasResult():
             #Only set _result if this was not set directly by the previous call to _compute
             self._result = res
 
-        self._storeResult()
-
-    def _storeResult(self):
-        try:
-            ResultsMemoizer.storeResult(self)
-        except IOError, e:
-            #logging.getLogger(HB_LOGGER).debug('No memoization due to IOError (probably because some other process are reading/writing same data): ' + str(e))
-            logExceptionOnce(e, message='No memoization due to IOError (probably because some other process are reading/writing same data) ')
-            #raise
-        except Exception,e :
-            logExceptionOnce(e, logging.WARNING, 'Error when trying to store memoized result.')
-
+        self._storeMemoizedResult()
 
     def afterComputeCleanup(self):
         if self.hasChildren():
@@ -223,6 +190,7 @@ class Statistic(object):
 
         self._trace('_createChildren')
         self._createChildren()
+
         for child in self._children:
             child.createChildren()
 
@@ -259,6 +227,59 @@ class Statistic(object):
         return self._kwArgs.get('minimal') == True and \
                (CompBinManager.isMinimalBin(self._region) or CompBinManager.isGlobalMinimalBin(self._region))
 
+    @exceptionLogging(level=logging.WARNING, printTraceback=True)
+    @exceptionLogging(exceptClass=IOError, message="(probably because some other process is writing same data)",
+                      level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=MissingInfoError, level=logging.WARNING, printTraceback=False)
+    def _storeMinimalMemoizedError(self):
+        ResultsMemoizer.storeMinimalError(self, sys.exc_info())
+
+    @exceptionLogging(level=logging.WARNING, printTraceback=True)
+    @exceptionLogging(exceptClass=IOError, message="(probably because some other process is writing same data)",
+                      level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=MissingInfoError, level=logging.WARNING, printTraceback=False)
+    def _storeMinimalMemoizedResult(self):
+        ResultsMemoizer.storeMinimalResult(self)
+
+    @exceptionLogging(level=logging.WARNING, printTraceback=True)
+    @exceptionLogging(exceptClass=IOError, message="(probably because some other process is writing same data)",
+                      level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=MissingInfoError, level=logging.WARNING, printTraceback=False)
+    def _loadMinimalMemoizedResult(self):
+        self.resetResultLoadedFromDiskFlag()
+        return ResultsMemoizer.loadMinimalResult(self)
+
+    def _handleMinimalMemoizedError(self, error):
+        with StatisticExceptionHandling(**self._kwArgs):
+            self.flagResultLoadedFromDisk()
+            raise error.exc_type, error.exc_value, error.traceback
+
+    @exceptionLogging(level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=IOError, message="(probably because some other process is writing same data)",
+                      level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=AssertionError, message="(probably missing formatConverter)",
+                      level=logging.WARNING, printTraceback=False)
+    def _storeMemoizedResult(self):
+        ResultsMemoizer.storeResult(self)
+
+    @exceptionLogging(level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=IOError, message="(probably because some other process is writing same data)",
+                      level=logging.WARNING, printTraceback=False)
+    @exceptionLogging(exceptClass=AssertionError, message="(probably missing formatConverter)",
+                      level=logging.WARNING, printTraceback=False)
+    def _loadMemoizedResult(self):
+        self.resetResultLoadedFromDiskFlag()
+        ResultsMemoizer.loadResult(self)
+
+    def resultLoadedFromDisk(self):
+        return self._resultLoadedFromDisk
+
+    def flagResultLoadedFromDisk(self):
+        self._resultLoadedFromDisk = True
+
+    def resetResultLoadedFromDiskFlag(self):
+        self._resultLoadedFromDisk = False
+
     def __cmp__(self, other):
         return cmp(self.getUniqueKey, other.getUniqueKey)
 
@@ -272,13 +293,40 @@ class Statistic(object):
         return Statistic.constructUniqueKey(self.__class__, self._region, self._track, \
                                             self._track2 if hasattr(self,'_track2') else None, **self._kwArgs)
 
-    def getConfigKey(self):
-        return Statistic._constructConfigKey(self._kwArgs)
+    def getConfigKey(self, ignoreUsername=False):
+        if ignoreUsername and 'username' in self._kwArgs:
+            kwArgs = copy(self._kwArgs)
+            del kwArgs['username']
+        else:
+            kwArgs = self._kwArgs
+        return Statistic._constructConfigKey(kwArgs)
 
-    @staticmethod
-    def _constructConfigKey(configDict):
-        return hash( tuple( [configDict[key] for key in sorted(configDict.keys()) if key != 'uniqueId'] ) )
+    @classmethod
+    def _constructConfigKey(cls, configDict):
+        if DebugConfig.VERBOSE:
+            logMessage("Constructing config key with configDict: {}".format(configDict))
+        return hash(tuple([(key, cls._fixKeyHash(configDict[key])) for key in sorted(configDict.keys()) if key != 'uniqueId']))
 
+    # # Fully recursive solution, but slower. Not needed for current param contents
+    # @classmethod
+    # def _fixKeyHash(cls, param):
+    #     if hasattr(param, '__iter__'):
+    #         return tuple(cls._fixKeyHash(_) for _ in param)
+    #     else:
+    #         from inspect import isclass
+    #         if param is None or isclass(param):
+    #             return str(param)
+    #         return param
+
+    @classmethod
+    def _fixKeyHash(cls, param):
+        from inspect import isclass
+        if hasattr(param, '__iter__'):
+            return tuple(str(_) if _ is None or isclass(_) else _ for _ in param)
+        else:
+            if param is None or isclass(param):
+                return str(param)
+            return param
 
     # NOTE:
     # Keep in mind that the key has to be unique across interpreters and machines
@@ -294,6 +342,7 @@ class Statistic(object):
         reg = id(region) if isIter(region) else region
 
         genome = Statistic._getGenome(region)
+        # TODO: Add stat class modification time or hash?
         return (hash(str(cls)),
                 Statistic._constructConfigKey(kwArgs),
                 hash(reg),
@@ -342,7 +391,7 @@ class Statistic(object):
 
     @classmethod
     def validateAndPossiblyResetGlobalResult(cls, stat):
-        return [0,0,0,0,0]
+        return [0, 0, 0, 0, 0]
 
     @staticmethod
     def getRawStatisticClass(rawStatistic):
@@ -365,6 +414,7 @@ class Statistic(object):
             return None
         else:
             return withOverlaps == 'yes'
+
 
 class StatisticSplittable(Statistic):
     #IS_MEMOIZABLE = False
@@ -416,7 +466,8 @@ class StatisticSplittable(Statistic):
                 if DebugConfig.VERBOSE:
                     logMessage('Result of statistic %s in region %s: %s' % (getClassName(self._curChild), self._curChild._region, nextRes))
 
-            except NoneResultError, e:
+            # except NoneResultError, e:
+            except (CentromerError, NoneResultError), e:
                 nextRes = None
                 if DebugConfig.VERBOSE:
                     logException(e, level=logging.DEBUG)
@@ -436,15 +487,16 @@ class StatisticSplittable(Statistic):
             #if self._binIndex == len(self._bins):
             self._trace('_combineResults')
 
+            ret = None
             with StatisticExceptionHandling(**self._kwArgs):
-                ret = None
                 ret = self._combineResults()
-
-            if DebugConfig.VERBOSE:  # @UndefinedVariable
-                logMessage('Global result of statistic %s: %s' % (getClassName(self), ret))
 
             if not self.hasResult():
                 self._result = ret
+
+            if DebugConfig.VERBOSE:
+                logMessage('Global result of statistic %s: %s' % (getClassName(self), self._result))
+
             del self._bins
 
     def afterComputeCleanup(self):
@@ -482,7 +534,6 @@ class StatisticExceptionHandling(object):
 class StatisticSumResSplittable(StatisticSplittable):
     def _combineResults(self):
         self._result = smartSum(self._childResults)
-#        print self._childResults, self._result
 
 class StatisticAvgResSplittable(StatisticSplittable):
     def _combineResults(self):

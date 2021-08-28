@@ -79,7 +79,7 @@ class StatisticV2(Statistic):
             res = {} if res is None else {self.GENERAL_RESDICTKEY : res}
             #res = {self.GENERAL_RESDICTKEY : res}
 
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
         return res, stat
 
     
