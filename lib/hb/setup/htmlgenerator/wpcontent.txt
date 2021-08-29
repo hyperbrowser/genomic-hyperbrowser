@@ -68,7 +68,7 @@ The suite of tracks (a GSuite instance) is a collection of related genomic featu
 				- (recommended for advanced users only) import trait-associated SNP data from a public data source (e.g. with the help of tool __as_tool__) or upload your own data (e.g. by using the __uf_tool__ tool); individually uploaded files representing specific traits can be combined into a single GSuite instance with the tool __ch_tool__ (alternatively, an uploaded zip/tar archive containing such files can serve as input of the __efa_tool__ tool);
 			- Analyze the tracks of the suite by utilizing one of the following tools:
 				- the __cc_tool__ tool provides a selection of multiple methods for calculating a pair-wise overlap table for all the tracks of the suite;
-				- the __pp_obt_tool__ tool calculates overall overlap statistics (e.g. a table showing how many SNPs are shared among 1, 2, …, n tracks of the suite).
+				- the __pp_obt_tool__ tool calculates overall overlap statistics (e.g. a table showing how many SNPs are shared among 1, 2, ..., n tracks of the suite).
 	- How do the supplied traits cluster based on the location of their lead SNPs?
 		- Analysis details
 			An analysis exploring the clustering tendencies of selected traits. Any number of traits (each represented by a corresponding set of variants) can be included in a single analysis run. One of multiple measures, each of which assesses the distribution of individual traits’ associated variants along the genome, can be used as a basis for the clustering.
@@ -239,7 +239,7 @@ The suite of tracks (a GSuite instance) is a collection of related genomic featu
 				- (recommended for advanced users only) import TF-associated binding-site data from a public data source (e.g. with the help of tool __as_tool__) or upload your own data (e.g. by using the __uf_tool__ tool); individually uploaded files representing specific TFs can be combined into a single GSuite instance with the tool __ch_tool__ (alternatively, an uploaded zip/tar archive containing such files can serve as input of the __efa_tool__ tool);
 			- Analyze the tracks of the suite by utilizing one of the following tools:
 				- the __cc_tool__ tool provides a selection of multiple methods for calculating a pair-wise overlap table for all the tracks of the suite;
-				- the __pp_obt_tool__ tool calculates overall overlap statistics (e.g. a table showing how many binding sites are shared among 1, 2, …, n TF tracks of the suite).
+				- the __pp_obt_tool__ tool calculates overall overlap statistics (e.g. a table showing how many binding sites are shared among 1, 2, ..., n TF tracks of the suite).
 	- Which of the supplied transcription factors is represented by the most (or the least) unique binding site set?
 		- Analysis details
 			An analysis calculating the relative ranking of each submitted transcription factor (TF) based on its average enrichment ratio against the other supplied TFs. Any number of TFs (each represented by a corresponding set of binding sites) can be included in a single analysis run.
