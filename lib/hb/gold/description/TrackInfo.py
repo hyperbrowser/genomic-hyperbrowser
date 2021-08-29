@@ -74,6 +74,8 @@ class TrackInfo(object):
         'trackFormatHash': FieldInfo('A unique hash of the full track format of the track, calculated from '
                                      '"mergedPrefixInfoDictPerOverlapRule"', 'text')}
 
+    _memoDict = {}
+
     @classmethod
     def _openOldShelve(cls, mode):
         shelveFileName = cls.OLD_SHELVE_FN + cls.SHELVE_FN_SUFFIX
@@ -93,14 +95,19 @@ class TrackInfo(object):
 
     @classmethod
     def _queryShelveWithKey(cls, genome, trackName, mode, old=False):
-        if old:
-            trackInfoShelve = cls._openOldShelve(mode=mode)
-            stored = trackInfoShelve.get(constructKey(genome=genome, trackName=trackName))
+        fullKey = constructKey(genome=genome, trackName=trackName)
+        if fullKey in cls._memoDict:
+            return cls._memoDict[fullKey]
         else:
-            trackInfoShelve = cls._openShelve(genome, mode=mode)
-            stored = trackInfoShelve.get(constructKey(trackName=trackName))
-        trackInfoShelve.close()
-        return stored
+            if old:
+                trackInfoShelve = cls._openOldShelve(mode=mode)
+                stored = trackInfoShelve.get(fullKey)
+            else:
+                trackInfoShelve = cls._openShelve(genome, mode=mode)
+                stored = trackInfoShelve.get(constructKey(trackName=trackName))
+            trackInfoShelve.close()
+            cls._memoDict[fullKey] = stored
+            return stored
 
     def __new__(cls, genome, trackName):
         stored = cls._queryShelveWithKey(genome, trackName, 'c', old=False)
