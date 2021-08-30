@@ -997,19 +997,22 @@ def updateTrackInfoToVersion15(genome, trackName):
     print Track(trackName).getUniqueKey(genome)
 
 
+def updateGenomeTrackInfoToVersion15(genome):
+    "genome"
+    print genome
+    for trackName in ProcTrackNameSource(genome, fullAccess=True,
+                                         includeParentTrack=False):
+        print trackName
+        updateTrackInfoToVersion15(genome, trackName)
+
+
 def updateAllTrackInfoToVersion15():
     from quick.application.GalaxyInterface import GalaxyInterface
     from gold.origdata.PreProcessUtils import PreProcessUtils
 
     for genomeTuple in GalaxyInterface.getAllGenomes():
         genome = genomeTuple[1]
-        print genome
-        for trackName in ProcTrackNameSource(genome, fullAccess=True,
-                                             includeParentTrack=False):
-            if trackName != ['Genes and gene subsets','Genes','CCDS']:
-                continue
-            print trackName
-            updateAllTrackInfoToVersion15(genome, trackName)
+        updateGenomeTrackInfoToVersion15(genome)
 
 
 def _usage():
