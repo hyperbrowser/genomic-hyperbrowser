@@ -991,7 +991,9 @@ def updateTrackInfoToVersion15(genome, trackName):
     if not ti.geSourceVersion:
         ti.geSourceVersion = ti.preProcVersion
     ti.preProcVersion = '1.5'
-    ti.id = ti.constructIdFromPath(genome, qcf.createOrigPath(genome, trackName), ti.geSourceVersion, ti.preProcVersion)
+    origPath = qcf.createOrigPath(genome, trackName)
+    if os.path.exists(origPath):
+        ti.id = ti.constructIdFromPath(genome, qcf.createOrigPath(genome, trackName), ti.geSourceVersion, ti.preProcVersion)
     print ti.id, ti.preProcOverlapRules, ti.mergedPrefixInfoDictPerOverlapRule, ti.trackFormatHash, ti.geSourceVersion, ti.preProcVersion
     ti.store()
     print Track(trackName).getUniqueKey(genome)
