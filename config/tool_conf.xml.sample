@@ -180,17 +180,6 @@
     <tool file="proto/hyperbrowser/manipulate/UniversalConverterTool.xml" />
   </section>
 
-  <!--<section name="Export and import tracks" id="export_import_tracks">-->
-    <!--<tool file="proto/hyperbrowser/restricted/DownloadHistoryItems.xml" />-->
-
-    <!--<label text="StoreBioInfo" id="storebioinfo" />-->
-
-    <!--<tool file="proto/hyperbrowser/restricted/ListStorebioProjects.xml" />-->
-    <!--<tool file="proto/hyperbrowser/restricted/UploadDataToStorebio.xml" />-->
-    <!--<tool file="proto/hyperbrowser/export/AddMetadataToDataset.xml" />-->
-    <!--<tool file="proto/hyperbrowser/restricted/AddFilesToStorebioinfoDataset.xml" />-->
-  <!--</section>-->
-
   <section name="GTrack tools" id="gtrack_tools">
     <tool file="hyperbrowser/gtrack_spec.xml" />
     <tool file="proto/hyperbrowser/gtrack/TabularToGtrackTool.xml" />
@@ -258,18 +247,16 @@
     <tool file="proto/hyperbrowser/cleanup/RemoveGenomeTool.xml" />
     <tool file="hyperbrowser/metadata.xml" />
     <tool file="hyperbrowser/integrate_track.xml" />
-    <tool file="hyperbrowser/preprocess.xml" />
+    <tool file="proto/hyperbrowser/track/PreprocessTracksTool.xml" />
     <tool file="proto/hyperbrowser/track/RenameTrackTool.xml" />
     <tool file="proto/hyperbrowser/util/TouchStandardizedTrack.xml" />
     <tool file="proto/hyperbrowser/util/StandardizeTrackFilesTool.xml" />
-    <tool file="proto/hyperbrowser/InstallUcscTool.xml" />
     <tool file="proto/hyperbrowser/track/IntegrateCategoricalTrackFromHistory.xml" />
   </section>
 
   <section name="Development tools" id="debug_tools">
     <tool file="proto/hyperbrowser/restricted/DebugAnalysisTool.xml" />
     <tool file="proto/hyperbrowser/restricted/DebugAnalysisListTool.xml" />
-    <tool file="proto/hyperbrowser/restricted/DebugBatchLine.xml" />
     <tool file="proto/hyperbrowser/util/ShowTailOfLogFile.xml" />
     <tool file="proto/hyperbrowser/restricted/GetDiskPathForHistoryElement.xml" />
     <tool file="proto/hyperbrowser/restricted/ListSubtrackNames.xml" />
@@ -282,8 +269,6 @@
   </section>
 
   <!--<section name="Assorted tools" id="assorted_tools">-->
-    <!--&lt;!&ndash; <tool file="hyperbrowser/batchrun-titan.xml" /> &ndash;&gt;-->
-    <!--&lt;!&ndash;<tool file="hyperbrowser/batchrun.xml" />&ndash;&gt;-->
     <!--&lt;!&ndash; <tool file="hyperbrowser/filterMarkedSegments.xml" /> &ndash;&gt;-->
     <!--&lt;!&ndash; <tool file="hyperbrowser/createCustomTrack.xml" /> &ndash;&gt;-->
     <!--<tool file="hyperbrowser/staale_prog.xml"/>-->
@@ -332,8 +317,6 @@
     <!--<tool file="proto/hyperbrowser/tfbs/AntoniosTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/restricted/NullModelRandomizer.xml" />-->
     <!--<tool file="proto/hyperbrowser/restricted/PrintInternalTrackURITool.xml" />-->
-    <!--<tool file="proto/hyperbrowser/restricted/WizardTestTool1.xml" />-->
-    <!--<tool file="proto/hyperbrowser/restricted/WizardTestTool2.xml" />-->
     <!--<tool file="proto/hyperbrowser/restricted/BorisesTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/restricted/DianasTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/article/IvarsTool.xml" />-->

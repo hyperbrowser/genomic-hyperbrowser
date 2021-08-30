@@ -5,16 +5,23 @@ import sys
 import traceback
 #import pyximport; pyximport.install()
 
+from future.utils import raise_from
+
+from config.Config import DebugConfig
 from gold.description.TrackInfo import TrackInfo
 from gold.origdata.ChrMemmapFolderMerger import ChrMemmapFolderMerger
-from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, RegionBasedGESourceManager
-from gold.origdata.GenomeElementSource import GenomeElementSource
+from gold.origdata.GEBoundingRegionElementCounter import GEBoundingRegionElementCounter
+from gold.origdata.GESourceManager import GESourceManager, OverlapClusteringGESourceManager, \
+    SkipExtraPassDenseGESourceManager
+from gold.origdata.GESourceWrapper import BrTuplesGESourceWrapper
+from gold.origdata.GenomeElementSource import GenomeElementSource, BoundingRegionTuple
 from gold.origdata.PreProcessGeSourceJob import PreProcessGeSourceJob
 from gold.origdata.PreProcMetaDataCollector import PreProcMetaDataCollector
 from gold.origdata.PreProcessUtils import PreProcessUtils
 from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import createOrigPath, createDirPath, prettyPrintTrackName
-from gold.util.CustomExceptions import NotSupportedError, AbstractClassError, Warning, ShouldNotOccurError
+from gold.util.CustomExceptions import (NotSupportedError, AbstractClassError, Warning,
+                                        PreprocessError, PreprocessWarning)
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.extra.RenameTrack import renameTrack
@@ -24,9 +31,7 @@ from quick.util.GenomeInfo import GenomeInfo
 
 
 class PreProcessTracksJob(object):
-    VERSION = '1.0'
-
-    PASS_ON_EXCEPTIONS = False
+    VERSION = '1.5'
 
     def __init__(self, genome, username='', mode='Real', raiseIfAnyWarnings=False):
         self._genome = genome
@@ -35,6 +40,11 @@ class PreProcessTracksJob(object):
         self._status = ''
         self._raiseIfAnyWarnings = raiseIfAnyWarnings
         self._warningTrackNames = []
+
+    def __setattr__(self, key, value):
+        if DebugConfig.VERBOSE and key == '_status':
+            print value
+        object.__setattr__(self, key, value)
 
     def process(self):
         assert self._genome is not None, 'Error: genome must be specified when preprocessing tracks.'
@@ -98,14 +108,14 @@ class PreProcessTracksJob(object):
 
             except NotSupportedError, e:
                 collector.removeEntry()
-                if self.PASS_ON_EXCEPTIONS:
-                    raise
+                if DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS:
+                    raise_from(PreprocessWarning(self._addContextToExceptionMsg(e, trackName)), e)
                 else:
                     self._printExceptionMsg(e, trackName, Error=False)
             except Exception, e:
                 collector.removeEntry()
-                if self.PASS_ON_EXCEPTIONS:
-                    raise
+                if DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS:
+                    raise_from(PreprocessError(self._addContextToExceptionMsg(e, trackName)), e)
                 else:
                     self._printExceptionMsg(e, trackName, Error=True)
 
@@ -120,10 +130,13 @@ class PreProcessTracksJob(object):
         raise AbstractClassError
 
     def _allGESourceManagers(self, trackName, allowOverlaps):
+        trackNameStr = ':'.join(trackName)
+        self._status = "Trying to create GESourceManager " \
+                       "(trackName: {}, allowOverlaps: {})".format(trackNameStr, allowOverlaps)
         collector = PreProcMetaDataCollector(self._genome, trackName)
         if allowOverlaps == False and collector.overlapRuleHasBeenFinalized(True):
             for i in range(1):
-                self._status = 'Trying to prepare preprocessing for track "%s"' % ':'.join(trackName) + \
+                self._status = 'Trying to prepare preprocessing for track "%s"' % trackNameStr + \
                                 (' (allowOverlaps: %s)' % allowOverlaps)
                 yield self._getGESourceManagerFromTrack(trackName)
         else:
@@ -133,7 +146,7 @@ class PreProcessTracksJob(object):
                     if tf.isDense() or geSource.hasNoOverlappingElements():
                         return
 
-                self._status = 'Trying to prepare preprocessing for track "%s"' % ':'.join(trackName) + \
+                self._status = 'Trying to prepare preprocessing for track "%s"' % trackNameStr + \
                                 (' (filename: "%s")' % geSource.getFileName() if geSource.hasOrigFile() else '') + \
                                 (' (allowOverlaps: %s)' % allowOverlaps)
                 if PreProcessUtils.shouldPreProcessGESource(trackName, geSource, allowOverlaps):
@@ -146,8 +159,7 @@ class PreProcessTracksJob(object):
         return GESourceManager(geSource)
 
     def _getGESourceManagerFromTrack(self, trackName):
-        origBrTuples = PreProcMetaDataCollector(self._genome, trackName).\
-                        getBoundingRegionTuples(allowOverlaps=True)
+        origBrTuples = PreProcMetaDataCollector(self._genome, trackName).getBoundingRegionTuples(allowOverlaps=True)
         return OverlapClusteringGESourceManager(self._genome, trackName, origBrTuples)
 
     def _shouldPreProcess(self):
@@ -192,14 +204,19 @@ class PreProcessTracksJob(object):
         elif self._mode == 'Real':
             print "Processing track: '%s' with allowOverlaps: %s" % (':'.join(trackName), allowOverlaps)
 
+    def _addContextToExceptionMsg(self, e, trackName):
+        return 'Could not pre-process track (trackName="{}", status="{}"): {}'\
+            .format(':'.join(trackName), self._status, e)
+
     def _printExceptionMsg(self, e, trackName, Error=False):
-        print (os.linesep + '--- BEGIN ERROR ---' + os.linesep *2 if Error else 'Warning! ') + \
-            "Could not pre-process track '%s'." % ':'.join(trackName)
-        print "Status: %s" % self._status
-        #print e.__class__.__name__ + ':', e
+        print os.linesep + '--- BEGIN ERROR ---' + os.linesep *2 if Error else 'Warning! ',
+        print 'Could not pre-process track "{}".'.format(':'.join(trackName))
+        print 'Status: {}'.format(self._status)
+        # print e.__class__.__name__ + ':', e
         if Error:
             traceback.print_exc(file=sys.stdout)
             print os.linesep + '--- END ERROR ---' + os.linesep
+
 
 class PreProcessAllTracksJob(PreProcessTracksJob):
     def __init__(self, genome, trackNameFilter=[], username='', mergeChrFolders=True, **kwArgs):
@@ -207,11 +224,13 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
         if trackNameFilter == ['']:
             trackNameFilter = []
         self._trackNameFilter = trackNameFilter
+        # TODO: A general refactor of job types and related parameters is probably due
+        # TODO: E.g.: self._mergeChrFolders and other similar members should go into base class instead of the children.
         self._mergeChrFolders = mergeChrFolders
 
     def _allTrackNames(self):
-        avoidLiterature = len(self._trackNameFilter) == 0 or (self._trackNameFilter != GenomeInfo.getLiteratureTrackName(self._genome))
-        trackSource = OrigTrackNameSource(self._genome, self._trackNameFilter, avoidLiterature)
+        # avoidLiterature = len(self._trackNameFilter) == 0 or (self._trackNameFilter != GenomeInfo.getLiteratureTrackName(self._genome))
+        trackSource = OrigTrackNameSource(self._genome, self._trackNameFilter)
         return reorderTrackNameListFromTopDownToBottomUp(trackSource)
 
     def _allGESources(self, trackName):
@@ -249,8 +268,6 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
 
 
 class PreProcessExternalTrackJob(PreProcessTracksJob):
-    PASS_ON_EXCEPTIONS = True
-
     def __init__(self, genome, fullFn, extTrackName, fileSuffix,
                  printProgress=True, mergeChrFolders=True, **kwArgs):
         PreProcessTracksJob.__init__(self, genome, **kwArgs)
@@ -275,11 +292,9 @@ class PreProcessExternalTrackJob(PreProcessTracksJob):
 
 
 class PreProcessCustomTrackJob(PreProcessTracksJob):
-    PASS_ON_EXCEPTIONS = True
-
-    def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='', \
+    def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='', mode='Real',
                  preProcess=True, finalize=True, mergeChrFolders=True, **callBackArgs):
-        PreProcessTracksJob.__init__(self, genome, username=username)
+        PreProcessTracksJob.__init__(self, genome, username=username, mode=mode)
         self._trackName = trackName
         assert len(regionList) > 0
         self._regionList = regionList
@@ -295,19 +310,25 @@ class PreProcessCustomTrackJob(PreProcessTracksJob):
     def _allGESources(self, trackName):
         regionList = self._regionList if self._preProcess else [self._regionList[0]]
         for region in regionList:
-            yield self._getGeSourceCallBackFunc(self._genome, self._trackName, region, **self._callBackArgs)
+            self._status = "Trying to create custom track geSource for region: {}".format(region)
+            geSource = self._getGeSourceCallBackFunc(self._genome, self._trackName, region, **self._callBackArgs)
+            tf = TrackFormat.createInstanceFromGeSource(geSource)
+            if tf.reprIsDense():
+                brList = [BoundingRegionTuple(region, len(region))]
+                yield BrTuplesGESourceWrapper(geSource, brList)
+            else:
+                brList = [BoundingRegionTuple(region, 0)]
+                yield GEBoundingRegionElementCounter(geSource, brList)
 
     def _getGESourceManagerFromGESource(self, geSource):
         tf = TrackFormat.createInstanceFromGeSource(geSource)
         if tf.reprIsDense():
             if tf.getValTypeName() in ['Number', 'Number (integer)', 'Case-control']:
-                return RegionBasedGESourceManager(geSource, self._regionList, \
-                                                  calcStatsInExtraPass=False, countElsInBoundingRegions=False)
+                return SkipExtraPassDenseGESourceManager(geSource)
             else:
                 raise NotSupportedError
         else:
-            return RegionBasedGESourceManager(geSource, self._regionList, \
-                                              calcStatsInExtraPass=True, countElsInBoundingRegions=True)
+            return GESourceManager(geSource)
 
     def _getGESourceManagerFromTrack(self, trackName):
         raise NotSupportedError

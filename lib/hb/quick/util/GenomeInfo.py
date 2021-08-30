@@ -1,18 +1,22 @@
 import copy
 import os
 from collections import defaultdict, OrderedDict
+from datetime import datetime
 
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonFunctions import strWithStdFormatting
+from gold.util.CommonFunctions import strWithStdFormatting, ensurePathExists
 from gold.util.CustomExceptions import ArgumentValueError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from third_party.roman import fromRoman
 
-SHELVE_FN = DATA_FILES_PATH + os.sep + 'GenomeInfo.shelve'
 
 #class GenomeTools
 class GenomeInfo(object):
+    OLD_SHELVE_FN = DATA_FILES_PATH + os.sep + 'GenomeInfo.shelve'
+    SHELVE_FN = os.sep.join([DATA_FILES_PATH, 'GenomeInfo', 'GenomeInfo.shelve'])
+    PROTOCOL = 1
+
     _chrLengths = {}
     _genomeChrLists = {}
     _genomeExtChrLists = {}
@@ -22,37 +26,60 @@ class GenomeInfo(object):
     _chrMap = {'MT': 'chrM', 'chrMT': 'chrM', '23': 'chrX', 'chr23': 'chrX'}
     _chrMatches = defaultdict(dict)
 
-    def __new__(cls, genome=None):
+    @classmethod
+    def _openOldShelve(cls, mode):
+        return safeshelve.open(cls.OLD_SHELVE_FN, mode, protocol=0)
+
+    @classmethod
+    def _openShelve(cls, mode):
+        if mode in ['c', 'w']:
+            ensurePathExists(cls.SHELVE_FN)
+        return safeshelve.open(cls.SHELVE_FN, mode, protocol=cls.PROTOCOL)
+
+    @classmethod
+    def _queryShelveWithKey(cls, genome, mode, old=False):
+        if old:
+            genomeInfoShelve = cls._openOldShelve(mode=mode)
+            stored = genomeInfoShelve.get(genome)
+        else:
+            genomeInfoShelve = cls._openShelve(mode=mode)
+            stored = genomeInfoShelve.get(genome)
+        genomeInfoShelve.close()
+        return stored
+
+    def __new__(cls, genome=None, **kwargs):
         if genome is None:
             return object.__new__(cls)
 
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
-        stored = genomeInfoShelve.get(genome)
-        genomeInfoShelve.close()
+        stored = cls._queryShelveWithKey(genome, 'c', old=False)
         if stored is not None:
             return stored
         else:
-            return object.__new__(cls)
+            stored = cls._queryShelveWithKey(genome, 'c', old=True)
+            if stored is not None:
+                return stored
+            else:
+                return object.__new__(cls)
 
     @classmethod
     def getGenomeInfoDictForGenomeList(cls, genomeList):
         genomeInfoDict = OrderedDict()
 
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
+        genomeInfoShelve = cls._openShelve('c')
         for genome in genomeList:
             stored = genomeInfoShelve.get(genome)
             if stored:
                 obj = stored
             else:
                 obj = object.__new__(cls)
-            obj.__init__(genome, calcAndStoreChrInfo=False)
+            obj.__init__(genome)
 
             genomeInfoDict[genome] = obj
 
         genomeInfoShelve.close()
         return genomeInfoDict
 
-    def __init__(self, genome=None, calcAndStoreChrInfo=True):
+    def __init__(self, genome=None):
         if genome is None:
             return
 
@@ -87,51 +114,18 @@ class GenomeInfo(object):
         #    self.sourceChrNames = []
         #    self.store()
 
-        if calcAndStoreChrInfo:
-            self._calcAndStoreChrInfo()
-
-    def _calcAndStoreChrInfo(self):
-        try:
-            dirty = False
-
-            if not hasattr(self, 'numChrs') or self.numChrs == 0:
-                self.numChrs = len(GenomeInfo.getChrList(self.genome))
-                dirty = True
-
-            if not hasattr(self, 'numExtChrs') or self.numExtChrs == 0:
-                self.numExtChrs = len(GenomeInfo.getExtendedChrList(self.genome)) - self.numChrs
-                dirty = True
-
-            if not hasattr(self, 'numBps') or self.numBps == 0:
-                self.numBps = self.getGenomeLen(self.genome, standardChrs=False)
-                dirty = True
-
-            if not hasattr(self, 'numBpsWithExt') or self.numBpsWithExt == 0:
-                if self.numExtChrs > 0:
-                    self.numBpsWithExt = self.getGenomeLen(self.genome, standardChrs=True)
-                else:
-                    self.numBpsWithExt = None
-                dirty = True
-
-            if dirty:
-                self.store()
-
-        except Exception, e:
-            if IS_EXPERIMENTAL_INSTALLATION:
-                from gold.application.LogSetup import logException, logMessage
-                logMessage('Exception for genome: %s' % self.genome)
-                logException(e)
-                import traceback
-                logMessage(''.join(traceback.format_stack()))
+        #
+        # if calcAndStoreChrInfo:
+        #     self._calcAndStoreChrInfo()
 
     def removeEntryFromShelve(self):
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
+        genomeInfoShelve = self._openShelve('c')
         if self.genome in genomeInfoShelve:
             del genomeInfoShelve[self.genome]
         genomeInfoShelve.close()
 
     def store(self):
-        genomeInfoShelve = safeshelve.open(SHELVE_FN)
+        genomeInfoShelve = self._openShelve('c')
         genomeInfoShelve[ self.genome ] = self
         genomeInfoShelve.close()
 
@@ -188,17 +182,54 @@ class GenomeInfo(object):
                 else:
                     return chr
 
-    def isInstalled(self):
-        # Caching added to improve reaction time when displaying genome selection box
-        if not self.installed:
-            from quick.application.ProcTrackOptions import ProcTrackOptions
+    def _requiredTracksAreValid(self):
+        from quick.application.ProcTrackOptions import ProcTrackOptions
 
-            self.installed = self.timeOfInstallation is not None and \
-                ProcTrackOptions.isValidTrack(self.genome, GenomeInfo.getChrTrackName(self.genome), fullAccess=True) and \
-                ProcTrackOptions.isValidTrack(self.genome, GenomeInfo.getAssemblyGapsTrackName(self.genome), fullAccess=True)
+        requiredTrackNames = [self.getSequenceTrackName(self.genome),
+                              self.getChrTrackName(self.genome),
+                              self.getAssemblyGapsTrackName(self.genome)]
+        return all(ProcTrackOptions.isValidTrack(self.genome, tn, fullAccess=True) for tn in requiredTrackNames)
 
-            if self.installed:
+    def _genomeRequirementsAreMet(self):
+        return self.getChrRegsFn(self.genome) is not None and self._requiredTracksAreValid()
+
+    def _calcChrInfo(self):
+        try:
+            self.numChrs = len(GenomeInfo.getChrList(self.genome))
+            self.numExtChrs = len(GenomeInfo.getExtendedChrList(self.genome)) - self.numChrs
+            self.numBps = self.getGenomeLen(self.genome, standardChrs=False)
+            if self.numExtChrs > 0:
+                self.numBpsWithExt = self.getGenomeLen(self.genome, standardChrs=True)
+            else:
+                self.numBpsWithExt = None
+
+        except Exception, e:
+            if IS_EXPERIMENTAL_INSTALLATION:
+                from gold.application.LogSetup import logException, logMessage
+                logMessage('Exception for genome: %s' % self.genome)
+                logException(e)
+                import traceback
+                logMessage(''.join(traceback.format_stack()))
+
+    def flagAsInstalled(self, username, timeOfInstallation=datetime.now()):
+        if self._genomeRequirementsAreMet():
+            self._calcChrInfo()
+            self.installedBy = username
+            self.timeOfInstallation = timeOfInstallation
+            self.installed = True
+            self.store()
+        else:
+            if self.installed:  # Incorrectly flagged as installed: fix installation flag
+                self.installed = False
                 self.store()
+        return self.installed
+
+    def isInstalled(self):
+        # Installation flag is used to improve reaction time when displaying genome selection box
+        if not self.installed:
+            if self.timeOfInstallation is not None and self._genomeRequirementsAreMet():  # Installed flag seems wrong
+                self.flagAsInstalled(username=self.installedBy,
+                                     timeOfInstallation=self.timeOfInstallation)  # Fix installed flag
 
         return self.installed
 
@@ -224,11 +255,11 @@ class GenomeInfo(object):
 
     @classmethod
     def getChrList(cls, genome):
-        '''
+        """
         Returns a list of all standard chromosomes of the genome build, e.g.
         chromosomes that are usually used in analyses. (For human, this includes
         chr1-chr22, chrX, and chrY, but not chrM).
-        '''
+        """
         if genome in cls._genomeChrLists:
             return cls._genomeChrLists[genome]
 
@@ -238,15 +269,8 @@ class GenomeInfo(object):
             chrListFn = cls.getChrRegsFn(genome)
             if chrListFn is None:
                 return []
-            assert chrListFn is not None and os.path.exists(chrListFn), 'did not find file with chr-names: '+str(chrListFn)
-            chrList = [line.split()[3].strip() for line in open(chrListFn,'U')]
-        #if genome.lower() in ['ncbi36','hg18']:
-        #    chrList = ["chr"+str(i) for i in range(1,23)] + ["chrX" , "chrY"]
-        #elif genome.lower() in ['testgenome']:
-        #    chrList = ['chr21', 'chrM']
-        #else:
-        #    chrList = [fn.replace('.fa','') for fn in os.listdir( os.sep.join([ORIG_DATA_PATH,genome,'sequence']) ) if fn.endswith('.fa')]
-            #raise NotSupportedError()
+            chrList = [line.split()[3].strip() for line in open(chrListFn, 'U')]
+
         cls._genomeChrLists[genome] = chrList
         return chrList
 
@@ -270,6 +294,7 @@ class GenomeInfo(object):
         #
         #return chr in cls.getExtendedChrList(genome) or \
         #    (chr.lower() in [x.lower() for x in cls.getExtendedChrList(genome)] and not chr in cls.getChrList(genome)) #allow case mismatch as long as it is an ignored chromosome anyway
+
     @staticmethod
     def getNumElementsInFastaFile(fn):
         f = open(fn)
@@ -365,8 +390,8 @@ class GenomeInfo(object):
 #            else:
 #                prefixTN = ['Mapping And Sequencing Tracks']
             return prefixTN + ['K-mers']
-        elif propertyName == 'protein':
-            return prefixTN + ['Proteins']
+        # elif propertyName == 'protein':
+        #     return prefixTN + ['Proteins']
         elif propertyName == 'literature':
             return ['Genes and gene subsets','Gene subsets','Literature-derived']
         elif propertyName == 'sequence':
@@ -393,10 +418,6 @@ class GenomeInfo(object):
     @staticmethod
     def getEnsemblTrackName(genome):
         return GenomeInfo.getPropertyTrackName(genome, 'ensembl')
-
-    @staticmethod
-    def getProteinTrackName(genome):
-        return GenomeInfo.getPropertyTrackName(genome, 'protein')
 
     @staticmethod
     def getNmerTrackName(genome):
@@ -447,16 +468,16 @@ class GenomeInfo(object):
 
     @classmethod
     def getChrArmRegs(cls, genome, categoryFilterList = None):
-        from quick.application.UserBinSource import UserBinSource
+        from quick.application.UserBinSource import UnfilteredUserBinSource
 
         fn = cls.getChrArmRegsFn(genome)
 
         if categoryFilterList is not None:
-            return UserBinSource('file', fn, genome, categoryFilterList)
+            return UnfilteredUserBinSource('file', fn, genome, categoryFilterList)
         else:
             if genome not in cls._chrArmRegs:
                 if fn is not None and os.path.exists(fn):
-                        cls._chrArmRegs[genome] = UserBinSource('file', fn, genome)
+                    cls._chrArmRegs[genome] = UnfilteredUserBinSource('file', fn, genome)
                 else:
                     cls._chrArmRegs[genome] = None
             return cls._chrArmRegs[genome]
@@ -501,15 +522,15 @@ class GenomeInfo(object):
         else:
             return None
 
-    @staticmethod
-    def getProteinRegsFn(genome):
-        from gold.util.CommonFunctions import getOrigFn
-        return getOrigFn(genome, GenomeInfo.getProteinTrackName(genome), '.category.bed')
-
-    @classmethod
-    def getProteinRegs(cls, genome, categoryFilterList = None, cluster = True):
-        fn = cls.getProteinRegsFn(genome)
-        return cls.getGeneRegs(genome, fn, categoryFilterList, cluster)
+    # @staticmethod
+    # def getProteinRegsFn(genome):
+    #     from gold.util.CommonFunctions import getOrigFn
+    #     return getOrigFn(genome, GenomeInfo.getProteinTrackName(genome), '.category.bed')
+    #
+    # @classmethod
+    # def getProteinRegs(cls, genome, categoryFilterList = None, cluster = True):
+    #     fn = cls.getProteinRegsFn(genome)
+    #     return cls.getGeneRegs(genome, fn, categoryFilterList, cluster)
 
     @classmethod
     def getContainingChrArms(cls, region):
@@ -545,29 +566,41 @@ class GenomeInfo(object):
             if lowerChrList == lowerChr:
                 return chr
 
+        chrCandidates = set()
+
+        # Loop through possible transformations of chrStr:
+        #     original, lowercase, roman->arabic numbers (lowercase and original)
         for curChrStr, curChrList in [(chrStr, [(chr,chr) for chr in chrList]), \
                                        (lowerChrStr, lowerChrList), \
                                         (cls._convertRomanNumbersInStr(chrStr), lowerChrList), \
                                          (chrStr, [(chr, cls._convertRomanNumbersInStr(chr)) for chr in chrList])]:
 
-            chrCandidates = [chr for chr, changedChr in curChrList if curChrStr in changedChr]
+            # Find all sequence names that contain the current chrStr transformation
+            curChrCandidates = set(chr for chr, changedChr in curChrList if curChrStr in changedChr)
 
-            if len(chrCandidates) == 1:
-                return chrCandidates[0]
+            # Remove all candidates that have extra digits characters (other than what is matched by curChrStr)
+            # This removes e.g. chr21 if curChrStr is 2
+            curChrCandidates = set(cand for cand in curChrCandidates if not any(x.isdigit() for x in cand.replace(curChrStr,'')))
+            chrCandidates.update(curChrCandidates)
 
-            elif len(chrCandidates) > 1:
-                chrCandidates = [cand for cand in chrCandidates if not any(x.isdigit() for x in cand.replace(curChrStr,''))]
+        # If only one candidate, pick it
+        if len(chrCandidates) == 1:
+            return chrCandidates.pop()
 
-                if len(chrCandidates) == 1:
-                    return chrCandidates[0]
+        elif len(chrCandidates) > 1:
+            import numpy as np
+            chrCandidatesList = list(chrCandidates)
+            min_i = np.array([len(x) for x in chrCandidatesList]).argmin()
 
-                elif len(chrCandidates) > 1:
-                    import numpy as np
-                    min_i = np.array([len(x) for x in chrCandidates]).argmin()
-                    if all(chrCandidates[min_i] in chr for chr in chrCandidates):
-                        return chrCandidates[min_i]
-                    else:
-                        return chrStr
+            # If the shortest candidate is a substring of all the others, pick it
+            if all(chrCandidatesList[min_i] in chr for chr in chrCandidates):
+                return chrCandidatesList[min_i]
+            else:
+                # We assume that the shortest candidate is still the best match, to favor 'chr2' from e.g.
+                # '2-micron'. Kept as a separate rule in order to more easily update it later.
+                return chrCandidatesList[min_i]
+                # return chrStr
+
         return chrStr
 
     @classmethod

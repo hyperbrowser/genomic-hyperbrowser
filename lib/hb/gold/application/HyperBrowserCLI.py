@@ -78,9 +78,10 @@ def plainRun(analysisDef, genome, track1Fn, track2Fn):
     tn1 = ExternalTrackManager.constructGalaxyTnFromSuitedFn(track1Fn)
     assert all(idPart >1000 for idPart in ExternalTrackManager.extractIdFromGalaxyFn(track2Fn))
     tn2 = ExternalTrackManager.constructGalaxyTnFromSuitedFn(track2Fn)
+    trackNames = [tn1, tn2]
 
     from quick.application.GalaxyInterface import GalaxyInterface
-    userBinSource = GalaxyInterface._getUserBinSource('chrs', '*', genome, tn1, tn2)
+    userBinSource = GalaxyInterface._getUserBinSource('chrs', '*', genome, trackNames)
 
     from gold.application.StatRunner import AnalysisDefJob
     job = AnalysisDefJob(analysisDef, tn1, tn2, userBinSource)

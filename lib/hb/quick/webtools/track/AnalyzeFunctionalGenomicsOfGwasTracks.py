@@ -141,7 +141,7 @@ hg19|track|@bins|@TNs|@TNunion|DiffRelCoverageStat(globalSource=chrs,tf1=Trivial
     import hashlib
     hashName = hashlib.sha1(batchText).hexdigest()
     sf = PickleStaticFile(['files','Caches','Tool7',hashName])
-    #shelf = shelve.open(sf.getDiskPath(True))
+    #shelf = safeshelve.open(sf.getDiskPath(True))
     #if batchText in shelf:    
     if RETRIEVE_FROM_CACHE and sf.fileExists():
         print ',',
@@ -158,7 +158,7 @@ hg19|track|@bins|@TNs|@TNunion|DiffRelCoverageStat(globalSource=chrs,tf1=Trivial
     #global TEMP_NUM_BATCH_RUNS_SO_FAR
     #print 'Running batchLines (%s): %s<br>Getting result: %s<br>' % (TEMP_NUM_BATCH_RUNS_SO_FAR, batchLines, res)
     #TEMP_NUM_BATCH_RUNS_SO_FAR += 1
-        #shelf = shelve.open(sf.getDiskPath(True))
+        #shelf = safeshelve.open(sf.getDiskPath(True))
         #shelf[batchText] = res
         #shelf.close()
         res.batchText = batchText

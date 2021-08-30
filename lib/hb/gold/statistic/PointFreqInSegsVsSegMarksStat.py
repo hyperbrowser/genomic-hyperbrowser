@@ -21,7 +21,8 @@ class PointFreqInSegsVsSegMarksStatUnsplittable(Statistic):
     def __init__(self, region, track, track2, markType='number', **kwArgs):
         self._markType = markType
         #r('sink(file("/dev/null", open="wt"), type="message")')
-        silenceRWarnings()
+        if kwArgs.get('minimal') != True:
+            silenceRWarnings()
         
         Statistic.__init__(self, region, track, track2, markType=markType, **kwArgs)
         

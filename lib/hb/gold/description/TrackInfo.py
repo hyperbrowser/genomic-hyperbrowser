@@ -8,61 +8,117 @@ from collections import namedtuple
 import third_party.safeshelve as safeshelve
 from config.Config import DATA_FILES_PATH
 from gold.track.TrackFormat import TrackFormatReq
-from gold.util.CommonFunctions import strWithStdFormatting
+from gold.util.CommonFunctions import strWithStdFormatting, ensurePathExists
 from gold.util.CustomExceptions import ShouldNotOccurError
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import StaticImage
 
-FieldInfo = namedtuple('FieldInfo', ['fullName', 'guiElementType'])
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
 
-def constructKey(genome, trackName):
-    key = ':'.join([genome] + trackName)
+FieldInfo = namedtuple('FieldInfo', ['fullName', 'guiElementType'])
+PrefixInfo = namedtuple('PrefixInfo', ['prefix', 'elementDim', 'dtypeDim', 'dtype'])
+
+# def constructKey(genome, trackName):
+#     key = ':'.join([genome] + trackName)
+def constructKey(genome=None, trackName=None):
+    assert trackName is not None
+    keyList = [genome] + trackName if genome else trackName
+    key = ':'.join(keyList)
     if isinstance(key, unicode):
         key = str(key)
-    assert type(key) == str, 'Non-str key: ' + key + ' of type: ' + str(type(key)) + '. Specific types: ' + str([type(x) for x in [genome] + trackName])
+    assert type(key) == str, 'Non-str key: ' + key + ' of type: ' + str(type(key)) + '. Specific types: ' + str([type(x) for x in keyList])
     return key
 
+
 class TrackInfo(object):
-    SHELVE_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve'
+    OLD_SHELVE_FN = DATA_FILES_PATH + os.sep + 'TrackInfo'
+    SHELVE_FN = os.sep.join([DATA_FILES_PATH] + ['TrackInfo']*2)
+    SHELVE_FN_SUFFIX = ".shelve"
 
-    PROTOCOL = 0
+    PROTOCOL = 1
 
-    FIELD_INFO_DICT = { \
-        'description': FieldInfo('Description', 'textbox'), \
-        'displayConvConf': FieldInfo('Display conventions and configuration', 'textbox'), \
-        'methods': FieldInfo('Methods', 'textbox'), \
-        'credits': FieldInfo('Credits', 'textbox'), \
-        'reference': FieldInfo('References', 'textbox'), \
-        'restrictions': FieldInfo('Data release policy', 'textbox'), \
-        'version': FieldInfo('Version', 'textbox'), \
-        'quality': FieldInfo('Quality', 'textbox'), \
-        'hbContact': FieldInfo('HyperBrowser contact', 'textbox'), \
-        'cellTypeSpecific': FieldInfo('Cell type specific', 'checkbox'), \
-        'cellType': FieldInfo('Cell type', 'textbox'), \
-        'private': FieldInfo('Private (our group only)', 'checkbox'), \
-        'fileType': FieldInfo('File type', 'text'), \
-        'trackFormatName': FieldInfo('Original track type', 'text'), \
-        'markType': FieldInfo('Value type', 'text'), \
-        'weightType': FieldInfo('Edge weight type', 'text'), \
-        'undirectedEdges': FieldInfo('Undirected edges', 'text'), \
-        'origElCount': FieldInfo('Original element count', 'text'), \
-        'clusteredElCount': FieldInfo('Element count after merging', 'text'), \
-        'numValCategories': FieldInfo('Original number of value categories', 'text'), \
-        'numClusteredValCategories': FieldInfo('Number of value categories after clustering', 'text'), \
-        'numEdgeWeightCategories': FieldInfo('Number of edge categories', 'text'), \
-        'subTrackCount': FieldInfo('Total number of tracks (with subtracks)', 'text'), \
-        'timeOfPreProcessing': FieldInfo('Time of preprocessing', 'text'), \
-        'timeOfLastUpdate': FieldInfo('Time of last update', 'text'), \
-        'lastUpdatedBy': FieldInfo('Last update by', 'text')}
+    FIELD_INFO_DICT = {
+        'description': FieldInfo('Description', 'textbox'),
+        'displayConvConf': FieldInfo('Display conventions and configuration', 'textbox'),
+        'methods': FieldInfo('Methods', 'textbox'),
+        'credits': FieldInfo('Credits', 'textbox'),
+        'reference': FieldInfo('References', 'textbox'),
+        'restrictions': FieldInfo('Data release policy', 'textbox'),
+        'version': FieldInfo('Version', 'textbox'),
+        'quality': FieldInfo('Quality', 'textbox'),
+        'hbContact': FieldInfo('HyperBrowser contact', 'textbox'),
+        'cellTypeSpecific': FieldInfo('Cell type specific', 'checkbox'),
+        'cellType': FieldInfo('Cell type', 'textbox'),
+        'private': FieldInfo('Private (our group only)', 'checkbox'),
+        'fileType': FieldInfo('File type', 'text'),
+        'trackFormatName': FieldInfo('Original track type', 'text'),
+        'markType': FieldInfo('Value type', 'text'),
+        'weightType': FieldInfo('Edge weight type', 'text'),
+        'undirectedEdges': FieldInfo('Undirected edges', 'text'),
+        'origElCount': FieldInfo('Original element count', 'text'),
+        'clusteredElCount': FieldInfo('Element count after merging', 'text'),
+        'numValCategories': FieldInfo('Original number of value categories', 'text'),
+        'numClusteredValCategories': FieldInfo('Number of value categories after clustering', 'text'),
+        'numEdgeWeightCategories': FieldInfo('Number of edge categories', 'text'),
+        'subTrackCount': FieldInfo('Total number of tracks (with subtracks)', 'text'),
+        'timeOfPreProcessing': FieldInfo('Time of preprocessing', 'text'),
+        'timeOfLastUpdate': FieldInfo('Time of last update', 'text'),
+        'lastUpdatedBy': FieldInfo('Last update by', 'text'),
+        'geSourceVersion': FieldInfo('Version of GenomeElementSource used', 'text'),
+        'preProcVersion': FieldInfo('Version of track preprocessor used', 'text'),
+        'mergedPrefixInfoDictPerOverlapRule': FieldInfo('For all overlap rules, a PrefixInfo record describing the '
+                                                        'data types for all arrays of the track.', 'text'),
+        'trackFormatHash': FieldInfo('A unique hash of the full track format of the track, calculated from '
+                                     '"mergedPrefixInfoDictPerOverlapRule"', 'text')}
+
+    _memoDict = {}
+
+    @classmethod
+    def _openOldShelve(cls, mode):
+        shelveFileName = cls.OLD_SHELVE_FN + cls.SHELVE_FN_SUFFIX
+        return safeshelve.open(shelveFileName, mode, protocol=0)
+
+    @classmethod
+    def _openShelve(cls, genome, mode):
+        shelveFileName = cls._constructShelveFileName(genome)
+        if mode in ['c', 'w']:
+            ensurePathExists(shelveFileName)
+        return safeshelve.open(shelveFileName, mode, protocol=cls.PROTOCOL)
+
+    @classmethod
+    def _constructShelveFileName(cls, genome):
+        shelveFileName = cls.SHELVE_FN + '_' + genome + cls.SHELVE_FN_SUFFIX
+        return shelveFileName
+
+    @classmethod
+    def _queryShelveWithKey(cls, genome, trackName, mode, old=False):
+        fullKey = constructKey(genome=genome, trackName=trackName)
+        if fullKey in cls._memoDict:
+            return cls._memoDict[fullKey]
+        else:
+            if old:
+                trackInfoShelve = cls._openOldShelve(mode=mode)
+                stored = trackInfoShelve.get(fullKey)
+            else:
+                trackInfoShelve = cls._openShelve(genome, mode=mode)
+                stored = trackInfoShelve.get(constructKey(trackName=trackName))
+            trackInfoShelve.close()
+            cls._memoDict[fullKey] = stored
+            return stored
 
     def __new__(cls, genome, trackName):
-        trackInfoShelve = safeshelve.open(cls.SHELVE_FN, 'c', protocol=cls.PROTOCOL)
-        stored = trackInfoShelve.get( constructKey(genome, trackName) )
-        trackInfoShelve.close()
+        stored = cls._queryShelveWithKey(genome, trackName, 'c', old=False)
         if stored is not None:
             return stored
         else:
-            return object.__new__(cls)
+            stored = cls._queryShelveWithKey(genome, trackName, 'c', old=True)
+            if stored is not None:
+                return stored
+            else:
+                return object.__new__(cls)
 
     def __init__(self, genome, trackName):
         existingAttrs = copy.copy(self.__dict__)
@@ -103,7 +159,11 @@ class TrackInfo(object):
         self.numClusteredValCategories = None
         self.numEdgeWeightCategories = None
         self.timeOfPreProcessing = None
+        self.geSourceVersion = ''
         self.preProcVersion = ''
+        self.preProcOverlapRules = []
+        self.mergedPrefixInfoDictPerOverlapRule = {}
+        self.trackFormatHash = ''
 
         self.__dict__.update(existingAttrs)
 
@@ -126,6 +186,8 @@ class TrackInfo(object):
         ti.__dict__.update(attrDict)
         return ti
 
+    # TODO: fullAccess is a misleading parameter name. fullAccess really means 'ignore access checks'.
+    # TODO: Also, why is a private track not valid? Validity and authorization should be separate.
     def isValid(self, fullAccess=True):
         return (fullAccess or not self.private) and \
                 self.timeOfPreProcessing is not None
@@ -135,13 +197,13 @@ class TrackInfo(object):
         self.store()
 
     def store(self):
-        trackInfoShelve = safeshelve.open(self.SHELVE_FN, protocol=self.PROTOCOL)
-        trackInfoShelve[ constructKey(self.genome, self.trackName) ] = self
+        trackInfoShelve = self._openShelve(self.genome, 'c')
+        trackInfoShelve[constructKey(trackName=self.trackName)] = self
         trackInfoShelve.close()
 
     def removeEntryFromShelve(self):
-        trackInfoShelve = safeshelve.open(self.SHELVE_FN, protocol=self.PROTOCOL)
-        key = constructKey(self.genome, self.trackName)
+        trackInfoShelve = self._openShelve(self.genome, 'c')
+        key = constructKey(trackName=self.trackName)
         if key in trackInfoShelve:
             del trackInfoShelve[key]
         trackInfoShelve.close()
@@ -221,12 +283,12 @@ class TrackInfo(object):
     def getUIRepr(self):
         uiRepr = []
         isDense = self._isDenseTrack()
-        for field in ['description', 'displayConvConf', 'methods', 'credits', 'reference', 'restrictions', \
-                      'version', 'quality', 'hbContact', 'cellTypeSpecific', 'cellType', \
-                      'private', 'fileType', 'trackFormatName', 'markType', 'weightType', 'undirectedEdges', \
-                      'origElCount', 'clusteredElCount', 'numValCategories', 'numClusteredValCategories', \
-                      'numEdgeWeightCategories', 'subTrackCount', 'timeOfPreProcessing', 'timeOfLastUpdate', \
-                      'lastUpdatedBy']:
+        for field in ['description', 'displayConvConf', 'methods', 'credits', 'reference', 'restrictions',
+                      'version', 'quality', 'hbContact', 'cellTypeSpecific', 'cellType',
+                      'private', 'fileType', 'trackFormatName', 'markType', 'weightType', 'undirectedEdges',
+                      'origElCount', 'clusteredElCount', 'numValCategories', 'numClusteredValCategories',
+                      'numEdgeWeightCategories', 'subTrackCount', 'timeOfPreProcessing', 'timeOfLastUpdate',
+                      'lastUpdatedBy', 'geSourceVersion', 'preProcVersion']:
             fieldInfo = self._getFieldInfoDict(field, isDense)
             uiRepr.append((fieldInfo.fullName, field, getattr(self, field), fieldInfo.guiElementType))
         return tuple(uiRepr)
@@ -236,13 +298,13 @@ class TrackInfo(object):
                   if not callable(getattr(self, attr)) and not attr.startswith("__")]
         return repr( dict([(attr, getattr(self, attr)) for attr in attrs]) )
 
-
     def setAttrs(self, attrDict, username):
         self.__dict__.update(attrDict)
         self.lastUpdatedBy = username
         self.timeOfLastUpdate = datetime.datetime.now()
 
     @staticmethod
+    @lru_cache()
     def constructIdFromPath(genome, origPath, geSourceVersion, preProcVersion):
         if os.path.isdir(origPath):
             fileList = sorted([fn for fn in os.listdir(origPath) if os.path.isfile(origPath+os.sep+fn) and fn[0]!='.'])
@@ -261,8 +323,8 @@ class TrackInfo(object):
 
     @classmethod
     def getFilteredEntriesFromShelve(cls, genome, trackNameFilter):
-        filterKey = constructKey(genome, trackNameFilter)
-        trackInfoShelve = safeshelve.open(cls.SHELVE_FN, 'r', protocol=cls.PROTOCOL)
+        filterKey = constructKey(trackName=trackNameFilter)
+        trackInfoShelve = cls._openShelve(genome, 'r')
         filteredKeys = [x for x in trackInfoShelve.keys() if x.startswith(filterKey)]
         trackInfoShelve.close()
         return filteredKeys
@@ -270,79 +332,79 @@ class TrackInfo(object):
     @classmethod
     def removeFilteredEntriesFromShelve(cls, genome, trackNameFilter):
         filteredKeys = TrackInfo.getFilteredEntriesFromShelve(genome, trackNameFilter)
-        trackInfoShelve = safeshelve.open(cls.SHELVE_FN, 'w', protocol=cls.PROTOCOL)
+        trackInfoShelve = cls._openShelve(genome, 'r')
         for key in filteredKeys:
             del trackInfoShelve[key]
         trackInfoShelve.close()
 
-    @classmethod
-    def updateShelveItemsAndCopyToNewFile(cls, updateHg18=False, removeDanglingItems=False):
-        from quick.util.CommonFunctions import getUniqueFileName
-        from config.Config import LOG_PATH
-        from quick.application.ProcTrackOptions import ProcTrackOptions
-
-        SHELVE_COPY_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.copy'
-        SHELVE_NEW_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.new'
-        SHELVE_ERRORS_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.errors'
-        SHELVE_KEYS_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.new.keys'
-
-        shelveNewFn = getUniqueFileName(SHELVE_NEW_FN)
-        shelveErrorsFn = getUniqueFileName(SHELVE_ERRORS_FN)
-
-        shelveCopyFn = SHELVE_COPY_FN
-        shelveKeysFn = SHELVE_KEYS_FN
-
-        logFn = os.path.join(LOG_PATH, 'TrackInfoCleanup.log')
-        with open(logFn, 'w+') as logFile:
-            import shutil
-
-            trackInfoShelveNew = safeshelve.open(shelveNewFn, 'c', protocol=cls.PROTOCOL)
-            trackInfoShelveErrors = safeshelve.open(shelveErrorsFn, 'c', protocol=cls.PROTOCOL)
-
-            if not os.path.exists(shelveKeysFn):
-                with open(shelveKeysFn, 'w') as keysFile:
-                    assert not os.path.exists(shelveCopyFn)
-
-                    shutil.copyfile(cls.SHELVE_FN, shelveCopyFn)
-                    trackInfoShelve = safeshelve.open(shelveCopyFn, 'r', protocol=cls.PROTOCOL)
-
-                    for key in trackInfoShelve.keys():
-                        keysFile.write(key + os.linesep)
-
-                    trackInfoShelve.close()
-
-            with open(shelveKeysFn) as keysFile:
-                keys = [line[:-1] for line in keysFile]
-
-            for i,key in enumerate(keys):
-                trackInfoShelve = safeshelve.open(shelveCopyFn, 'r', protocol=cls.PROTOCOL)
-
-                try:
-                    ti = trackInfoShelve[key]
-
-                    if removeDanglingItems:
-                        if not ti.isValid():
-                            raise Exception('Track not valid')
-
-                        #if not any( os.path.exists(createDirPath(ti.trackName, ti.genome, allowOverlaps=allowOverlaps))
-                                    #for allowOverlaps in [False, True] ):
-                        if not ti.genome in ['ModelsForExternalTracks']:
-                            if not ProcTrackOptions._hasPreprocessedFiles(ti.genome, ti.trackName):
-                                raise Exception('Preprocessed data does not exist')
-
-                    if updateHg18 and (ti.genome == 'NCBI36' or 'NCBI36' in key):
-                        ti.genome = 'hg18'
-                        key = key.replace('NCBI36', 'hg18')
-
-                    trackInfoShelveNew[key] = ti
-
-                except Exception, e:
-                    logFile.write('%s: %s' % (e, key) + os.linesep)
-                    trackInfoShelveErrors[key] = ti
-
-                if i%10000 == 0:
-                    print '.',
-
-            trackInfoShelve.close()
-            trackInfoShelveNew.close()
-            trackInfoShelveErrors.close()
+    # @classmethod
+    # def updateShelveItemsAndCopyToNewFile(cls, updateHg18=False, removeDanglingItems=False):
+    #     from quick.util.CommonFunctions import getUniqueFileName
+    #     from config.Config import LOG_PATH
+    #     from quick.application.ProcTrackOptions import ProcTrackOptions
+    #
+    #     SHELVE_COPY_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.copy'
+    #     SHELVE_NEW_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.new'
+    #     SHELVE_ERRORS_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.errors'
+    #     SHELVE_KEYS_FN = DATA_FILES_PATH + os.sep + 'TrackInfo.shelve.new.keys'
+    #
+    #     shelveNewFn = getUniqueFileName(SHELVE_NEW_FN)
+    #     shelveErrorsFn = getUniqueFileName(SHELVE_ERRORS_FN)
+    #
+    #     shelveCopyFn = SHELVE_COPY_FN
+    #     shelveKeysFn = SHELVE_KEYS_FN
+    #
+    #     logFn = os.path.join(LOG_PATH, 'TrackInfoCleanup.log')
+    #     with open(logFn, 'w+') as logFile:
+    #         import shutil
+    #
+    #         trackInfoShelveNew = safeshelve.open(shelveNewFn, 'c', protocol=cls.PROTOCOL)
+    #         trackInfoShelveErrors = safeshelve.open(shelveErrorsFn, 'c', protocol=cls.PROTOCOL)
+    #
+    #         if not os.path.exists(shelveKeysFn):
+    #             with open(shelveKeysFn, 'w') as keysFile:
+    #                 assert not os.path.exists(shelveCopyFn)
+    #
+    #                 shutil.copyfile(cls.SHELVE_FN, shelveCopyFn)
+    #                 trackInfoShelve = safeshelve.open(shelveCopyFn, 'r', protocol=cls.PROTOCOL)
+    #
+    #                 for key in trackInfoShelve.keys():
+    #                     keysFile.write(key + os.linesep)
+    #
+    #                 trackInfoShelve.close()
+    #
+    #         with open(shelveKeysFn) as keysFile:
+    #             keys = [line[:-1] for line in keysFile]
+    #
+    #         for i,key in enumerate(keys):
+    #             trackInfoShelve = safeshelve.open(shelveCopyFn, 'r', protocol=cls.PROTOCOL)
+    #
+    #             try:
+    #                 ti = trackInfoShelve[key]
+    #
+    #                 if removeDanglingItems:
+    #                     if not ti.isValid():
+    #                         raise Exception('Track not valid')
+    #
+    #                     #if not any( os.path.exists(createDirPath(ti.trackName, ti.genome, allowOverlaps=allowOverlaps))
+    #                                 #for allowOverlaps in [False, True] ):
+    #                     if not ti.genome in ['ModelsForExternalTracks']:
+    #                         if not ProcTrackOptions._hasPreprocessedFiles(ti.genome, ti.trackName):
+    #                             raise Exception('Preprocessed data does not exist')
+    #
+    #                 if updateHg18 and (ti.genome == 'NCBI36' or 'NCBI36' in key):
+    #                     ti.genome = 'hg18'
+    #                     key = key.replace('NCBI36', 'hg18')
+    #
+    #                 trackInfoShelveNew[key] = ti
+    #
+    #             except Exception, e:
+    #                 logFile.write('%s: %s' % (e, key) + os.linesep)
+    #                 trackInfoShelveErrors[key] = ti
+    #
+    #             if i%10000 == 0:
+    #                 print '.',
+    #
+    #         trackInfoShelve.close()
+    #         trackInfoShelveNew.close()
+    #         trackInfoShelveErrors.close()

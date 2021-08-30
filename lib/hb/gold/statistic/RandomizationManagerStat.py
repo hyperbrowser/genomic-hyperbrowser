@@ -1,4 +1,3 @@
-from quick.statistic.McFdr import McFdr
 from numpy import isnan,array, median
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
@@ -20,6 +19,8 @@ from collections import OrderedDict
 from copy import copy
 #from quick.application.parallel.JobWrapper import RandomizationManagerStatJobWrapper
 #from quick.application.parallel.JobHandler import JobHandler
+from quick.util.CommonFunctions import anyIsNan
+
 
 class RandomizationManagerStat(MagicStatFactory):
     pass        
@@ -112,8 +113,8 @@ class RandomizationManagerStatUnsplittable(Statistic):
                 allMs[i] = None
                 allNumSamples[i] = None
                 isInValid[i] = True
-        
-        
+
+        from quick.statistic.McFdr import McFdr
         fdrVals = McFdr.adjustPvalues(pvals, verbose=False)
         
         determinedByM = [M_THRESHOLD is not None and m>=M_THRESHOLD for m in allMs]
@@ -123,7 +124,6 @@ class RandomizationManagerStatUnsplittable(Statistic):
         statIndividuallyDetermined = list(any(x) for x in zip(determinedByM,determinedByMaxSamples,isInValid, isNanValued)) #determined by anything except FDR, as the latter is not necessarily handled on a per test level..
         statDeterminedByAnyMeans = list(any(x) for x in zip(statIndividuallyDetermined, determinedByFdr)) #determined individually or by FDR
         assert len(stats) == len(pvals) == len(fdrVals) == len(allMs) == len(determinedByM) == len(determinedByFdr) == len(statIndividuallyDetermined)
-        
 
         for i in range(len(statIndividuallyDetermined)):
             determined = statIndividuallyDetermined[i] or (individualFdr and determinedByFdr[i])
@@ -226,17 +226,13 @@ class RandomizationManagerStatUnsplittable(Statistic):
         
         if track2 is None:
             self._track2 = None #to allow track2 to be passed on as None to rawStatistics without error. For use by single-track MC-tests..
-            
-        from gold.util.RandomUtil import getManualSeed, setManualSeed
-        if randomSeed is not None and randomSeed != 'Random' and getManualSeed() is None:
-            setManualSeed(int(randomSeed))
-        
+
         if 'mcSetupScheme' in kwArgs:
             kwArgs = copy(kwArgs) #to not edit original dict..
             if kwArgs['mcSetupScheme'] != 'custom':
                 assert not 'maxSamples' in kwArgs #check that specific values are not redundantly set
             #
-        Statistic.__init__(self, region, track, track2, rawStatistic=rawStatistic, randTrackClass=randTrackClass, assumptions=assumptions, tails=tails, numResamplings=numResamplings, randomSeed=randomSeed, **kwArgs)
+        Statistic.__init__(self, region, track, track2, rawStatistic=rawStatistic, randTrackClass=randTrackClass, assumptions=assumptions, tails=tails, numResamplings=numResamplings, **kwArgs)
         #if type(rawStatistic) is str:
         #    from gold.statistic.AllStatistics import STAT_CLASS_DICT
         #    rawStatistic = STAT_CLASS_DICT[rawStatistic]
@@ -271,8 +267,8 @@ class RandomizationManagerStatUnsplittable(Statistic):
         CompBinManager.ALLOW_COMP_BIN_SPLITTING = False
         self._randResults = []
         self._observation = None
-        #to load r libraries for McFdr:
-        McFdr._initMcFdr()
+        # #to load r libraries for McFdr:
+        # McFdr._initMcFdr()
         
     def _createRandomizedStat(self, i):
         "Creates a randChild where certain tracks are randomized"
@@ -329,7 +325,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         #if VERBOSE:
         #    print [randChild.getResult() for randChild in self._children]
         #try:
-        if self._kwArgs.get('minimal') != True and (self._realChild.getResult() is None or isnan(self._realChild.getResult())):
+        if self._kwArgs.get('minimal') != True and (self._realChild.getResult() is None or anyIsNan(self._realChild.getResult())):
             return None
         
         #TODO: change this to a "is this a parallel run?" check
@@ -349,7 +345,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         if self._observation is None:
             self._observation = self._realChild.getResult()
             
-        if self._kwArgs.get('minimal') == True and (self._observation is None or isnan(self._observation)):
+        if self._kwArgs.get('minimal') == True and (self._observation is None or anyIsNan(self._observation)):
             return None
         
         
@@ -415,9 +411,15 @@ class RandomizationManagerStatUnsplittable(Statistic):
         #if pval == 0:
             #pval = 1.0 / self._numResamplings
         
-        resDict = OrderedDict([(self.PVAL_KEY, pval), ('TSMC_'+self.getRawStatisticMainClassName(), self._observation), ('MeanOfNullDistr', meanOfNullDistr), \
-                              ('MedianOfNullDistr', medianOfNullDistr), ('SdNullDistr', sdOfNullDistr), ('DiffFromMean', diffObsMean), (self.NUM_SAMPLES_KEY, self._numResamplings), \
-                                ('NumSamplesNotNan', numberOfNonNanRandResults), (self.M_KEY,numMoreExtreme) ])
+        resDict = OrderedDict([(self.PVAL_KEY, pval),
+                               ('TSMC_' + self.getRawStatisticMainClassName(), self._observation),
+                               ('MeanOfNullDistr', meanOfNullDistr),
+                               ('MedianOfNullDistr', medianOfNullDistr),
+                               ('SdNullDistr', sdOfNullDistr),
+                               ('DiffFromMean', diffObsMean),
+                               (self.NUM_SAMPLES_KEY, self._numResamplings),
+                               ('NumSamplesNotNan', numberOfNonNanRandResults),
+                               (self.M_KEY, numMoreExtreme)])
         
         #if self._pointCount1.getResult() is not None:
         #if self._track._trackFormatReq is not None and not self._track._trackFormatReq.isDense() and not self._track._trackFormatReq.allowOverlaps():

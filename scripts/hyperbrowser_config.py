@@ -1,11 +1,12 @@
 import sys, os
 from getopt import GetoptError, getopt
-import shelve
 
 galaxy_dir = os.path.sep.join(os.path.realpath(__file__).split(os.path.sep)[:-2])
 new_path = [os.path.join(galaxy_dir, "lib")]
 new_path.extend(sys.path[1:])  # remove scripts/ from the path
 sys.path = new_path
+
+import third_party.safeshelve as safeshelve
 
 SHELVE_FN = galaxy_dir + '/database/hb_config.shelve'
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
 
     if store:
         import config.Config as Config
-        shelveFile = shelve.open(SHELVE_FN)
+        shelveFile = safeshelve.open(SHELVE_FN)
         for attr in dir(Config):
             try:
                 shelveFile[attr] = getattr(Config, attr)
@@ -80,7 +81,7 @@ if __name__ == '__main__':
 
     if configConstant:
         if os.path.exists(SHELVE_FN):
-            shelveFile = shelve.open(SHELVE_FN, 'r')
+            shelveFile = safeshelve.open(SHELVE_FN, 'r')
             print shelveFile[configConstant]
         else:
             import config.Config as Config

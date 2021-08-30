@@ -5,6 +5,7 @@ import math
 import os.path
 import re
 import shutil
+import traceback
 
 import numpy
 
@@ -15,8 +16,10 @@ from config.Config import HB_SOURCE_CODE_BASE_DIR, NONSTANDARD_DATA_PATH, STATIC
 from gold.description.AnalysisManager import AnalysisManager
 from gold.description.TrackInfo import TrackInfo
 from gold.track.GenomeRegion import GenomeRegion
-from gold.track.Track import PlainTrack
+from gold.track.Track import PlainTrack, Track
+from gold.track.TrackFormat import TrackFormat
 from quick.application.AutoBinner import AutoBinner
+from quick.application.ProcTrackNameSource import ProcTrackNameSource
 from quick.origdata.OrigTrackFnSource import OrigTrackNameSource
 from quick.util.GenomeInfo import GenomeInfo
 
@@ -48,6 +51,7 @@ def getCategorySetForSubTracks(genome, baseTrackName, shelveFn):
     shelf.update(mapping)
     shelf.close()
 
+
 def _createPos2NameShelf(pos2NameShelfFn, nameList):
     if pos2NameShelfFn is not None:
         pos2NameShelf = safeshelve.open(pos2NameShelfFn)
@@ -60,6 +64,7 @@ def _createPos2NameShelf(pos2NameShelfFn, nameList):
             pos2NameShelf[repr(i+1)] = name.lower()
         
         pos2NameShelf.close()
+
 
 def _createPos2ElCountShelf(pos2ElCountShelfFn, nameList):
     if pos2ElCountShelfFn is not None:
@@ -74,7 +79,8 @@ def _createPos2ElCountShelf(pos2ElCountShelfFn, nameList):
             pos2ElCountShelf[repr(i+1)] = elCount
         
         pos2ElCountShelf.close()
-    
+
+
 def parseMatrixTextFileToShelf(txtFn, outShelfFn, rowPos2NameShelfFn=None, colPos2NameShelfFn=None, \
                                rowPos2ElCountShelfFn=None, colPos2ElCountShelfFn=None, keyType='names', countType='count'):
     "txtFn outShelfFn rowPos2NameShelfFn=None colPos2NameShelfFn=None rowPos2ElCountShelfFn=None colPos2ElCountShelfFn=None, keyType=names countType=count"
@@ -129,7 +135,8 @@ def parseMatrixTextFileToShelf(txtFn, outShelfFn, rowPos2NameShelfFn=None, colPo
     
     _createPos2ElCountShelf(rowPos2ElCountShelfFn, rowNames)
     _createPos2ElCountShelf(colPos2ElCountShelfFn, colNames)
-        
+
+
 def parseMatrixTextFileTo1dShelf(txtFn, outShelfFn, rowOrCol='row', ignoreFirstColName='False'):
     "txtFn outShelfFn rowOrCol='row' ignoreFirstColName='False'"
 
@@ -176,7 +183,8 @@ def parseMatrixTextFileTo1dShelf(txtFn, outShelfFn, rowOrCol='row', ignoreFirstC
     shelf = safeshelve.open(outShelfFn)
     shelf.update(map)
     shelf.close()
-            
+
+
 def makeLowercaseName2NameShelfFromTnSubTypes(genome, trackName, shelfFn):
     'genome trackName shelfFn'
     trackName = re.split('/|:',trackName)
@@ -199,7 +207,8 @@ def makeLowercaseName2NameShelfFromTnSubTypes(genome, trackName, shelfFn):
     #    if os.path.isdir(os.sep.join([basePath, fn])) and not any([fn.startswith(x) for x in ['_','.'] + GenomeInfo.getExtendedChrList(genome)]):
     #        shelf[fn.lower()] = fn
     shelf.close()
-        
+
+
 def makeShelfKeysLowercase(shelfFn, newShelfFn):
     'shelfFn newShelfFn'
     origShelf = safeshelve.open(shelfFn, 'r')
@@ -214,6 +223,7 @@ def makeShelfKeysLowercase(shelfFn, newShelfFn):
             newShelf[key.lower()] = origShelf[key]
     newShelf.close()
     origShelf.close()
+
 
 def _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2TfbsCountShelfFn, rankedGeneListShelfFn):
     'disease2geneShelfFn geneAndTf2TfbsCountShelfFn geneListShelfFn'
@@ -239,6 +249,7 @@ def _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2Tfb
     disease2geneShelf.close()
     geneAndTf2TfbsCountShelf.close()
     rankedGeneListShelf.close()
+
 
 def createShelvesBehindRankedGeneLists(galaxyId, mapId, countType):
     'galaxyId mapId countType'
@@ -267,7 +278,8 @@ def createShelvesBehindRankedGeneLists(galaxyId, mapId, countType):
     parseMatrixTextFileToShelf(resultTableTxtFn, geneAndTf2TfbsCountShelfFn, countType=countType)
     #geneAndTf2tfbsCount = safeshelve.open(geneAndTf2TfbsCountShelfFn,'r')
     _createTfAndDisease2RankedGeneListMapping(disease2geneShelfFn, geneAndTf2TfbsCountShelfFn, rankedGeneListShelfFn) 
-    
+
+
 def printHistOfIntegerShelfValues(shelfFn):
     'shelfFn'
     shelf = safeshelve.open(shelfFn,'r')
@@ -284,7 +296,8 @@ def printHistOfIntegerShelfValues(shelfFn):
     print 'Comma-separated keys and values:'
     print ','.join([str(x) for x in hist.keys()])
     print ','.join([str(x) for x in hist.values()])
-    
+
+
 def mergeShelvesTransitively(inShelf1Fn, inShelf2Fn, outShelfFn, includeSecondShelf='True'):
     """inShelf1Fn inShelf2Fn outShelfFn
     The values of the first shelf can be a list.
@@ -323,7 +336,8 @@ def mergeShelvesTransitively(inShelf1Fn, inShelf2Fn, outShelfFn, includeSecondSh
     inShelf1.close()
     inShelf2.close()
     outShelf.close()
-    
+
+
 def reverseMappingHavingListValues(inShelfFn, outShelfFn):
     """inShelfFn, outShelfFn
     reverse a mapping that (in input) goes from a key to a list of values, that is key->val1,val2...valN
@@ -345,11 +359,12 @@ def reverseMappingHavingListValues(inShelfFn, outShelfFn):
     shelf.update(revMap)
     shelf.close()
     inShelf.close()
-    
+
 def getLengthOfValueListDistribution(shelfFn):
     shelf = safeshelve.open(shelfFn,'r')
     distribution = [len(valList) for valList in shelf.values()]
     print ','.join([str(x) for x in distribution])
+
 
 def createSubtypeDirsFromFileList(inDir, outBaseDir, suffix='.bed'):
     """inDir outBaseDir suffix='.bed'"""
@@ -360,6 +375,7 @@ def createSubtypeDirsFromFileList(inDir, outBaseDir, suffix='.bed'):
         outFn = os.path.sep.join([outDir, f])
         qcf.ensurePathExists(outFn)
         shutil.copy(os.path.sep.join([inDir, f]), outFn)
+
 
 #def subtypesAsCategories(genome, trackName, keepVal=False):
 #    """genome trackName keepVal=False"""
@@ -386,6 +402,7 @@ def createSubtypeDirsFromFileList(inDir, outBaseDir, suffix='.bed'):
 #            else:
 #                raise InvalidFormatError('Line does not have enough columns: %s' %line)
 #    outF.close()
+
 
 def mergeSubtypeTracksToNewCategoryTrack(genome, trackName, newTrackName=None):
     """genome trackName newTrackName"""
@@ -426,6 +443,7 @@ def mergeSubtypeTracksToNewCategoryTrack(genome, trackName, newTrackName=None):
                     outF.write('\t'.join([cols[x] for x in [0,1,2,3]] + ['0'] + [cols[5]]) + os.linesep)
     outF.close()
 
+
 def showCodeSize():
     fileCount = 0
     lineCount = 0
@@ -442,7 +460,8 @@ def showCodeSize():
     print '#files: ',fileCount
     print '#lines: ',lineCount
     print '#code lines: ',codeLineCount
-    
+
+
 def _countAnalyses(analyses, includeExperimental):
     analyses = [a for a in analyses if len(a._analysisParts) > 0]
     if not includeExperimental:
@@ -454,6 +473,7 @@ def _countAnalyses(analyses, includeExperimental):
     print 'Number of analyses distinguishing assumptions' + \
           (' (including experimental analyses)' if includeExperimental else '') + \
           ': ', sum( (len(a.getOptionsAsKeys()[a.ASSUMP_LABEL_KEY]) if a.ASSUMP_LABEL_KEY in a.getOptionsAsKeys() else 1) for a in analyses)
+
 
 def countAnalyses():
     "Counts analyses"
@@ -476,12 +496,14 @@ def countAnalyses():
         _countAnalyses(analyses, True)
         _countAnalyses(analyses, False)
 
+
 def allBatchTrackNames(genome='hg18'):
     """[genome]"""
 #instead use OrigTrackFnSource
     for tn in OrigTrackNameSource(genome,[]):
         print ':'.join(tn).replace(' ','_')
-        
+
+
 def createMappingFromColsOfTabSpacedFile(inFn, outShelfFn, fromCol, toCol):
     'inFn outShelfFn fromCol toCol'
     map = {}
@@ -498,8 +520,8 @@ def createMappingFromColsOfTabSpacedFile(inFn, outShelfFn, fromCol, toCol):
     shelf = safeshelve.open(outShelfFn)
     shelf.update(map)
     shelf.close()
-        
-        
+
+
 def fixTrackInfo(trackName, genome='hg18'):
     """trackName [genome]"""
     "fix timeOfPreProcessing of TrackInfo for a given trackName, in order for it to become a valid selection.."
@@ -507,6 +529,7 @@ def fixTrackInfo(trackName, genome='hg18'):
     ti = TrackInfo(genome, trackName)
     ti.timeOfPreProcessing = 'manualOverride'
     ti.store()
+
 
 def makeInitFromParamList(paramStr):
     """paramStr"""
@@ -516,6 +539,7 @@ def makeInitFromParamList(paramStr):
         param = param.replace('*','')
         print '        self._' + param + ' = ' + param
 
+
 def createChromosomeFile(genome, chromNames, referToCollected=False):
     """genome chromNames"""
     # python quick/extra/CustomFuncCatalog.py CreateChromosomeFile mm9 'chr1, chr2, ...'"
@@ -523,18 +547,20 @@ def createChromosomeFile(genome, chromNames, referToCollected=False):
     chrList = chromNames.replace(' ','').split(',')
     if referToCollected:
         from gold.util.CommonFunctions import createCollectedPath
-        basePath = createCollectedPath(genome, GenomeInfo.getPropertyTrackName(genome, 'chrs'))
+        basePath = createCollectedPath(genome, GenomeInfo.getChrTrackName(genome))
     else:
-        basePath = gcf.createOrigPath(genome, GenomeInfo.getPropertyTrackName(genome, 'chrs'))
+        basePath = gcf.createOrigPath(genome, GenomeInfo.getChrTrackName(genome))
 
+    # Why is this file a category.bed file?
     outFn = basePath + os.sep + 'chromosomes.category.bed'
     qcf.ensurePathExists(outFn)
     print 'Creating: ' + outFn
 
     outFile = open(outFn, 'w')
     for chr in chrList:
-        outFile.write('\t'.join([chr, '0', str(GenomeInfo.getChrLen(genome,chr)), chr]) + os.linesep)
+        outFile.write('\t'.join([chr, '0', str(GenomeInfo.getChrLen(genome, chr)), chr]) + os.linesep)
     outFile.close()
+
 
 def createSplittedChrArms(genome, binSize, outFn):
     """genome binsize outFn.bed"""
@@ -546,7 +572,8 @@ def createSplittedChrArms(genome, binSize, outFn):
     for bin in chrArmBins:
         outFile.write('\t'.join([bin.chr, str(bin.start), str(bin.end)]) + os.linesep)
     outFile.close()
-    
+
+
 def createAssemblyGapsFile(genome, assemblyChars='ACGTacgt'):
     """genome assemblyChars='ACGTacgt'"""
     basePath = gcf.createOrigPath(genome, GenomeInfo.getPropertyTrackName(genome, 'gaps'),'')
@@ -626,6 +653,7 @@ def CreateChromosomeArmsFiles(genome):
     #outFileArms.close()
     #inFile.close()
 
+
 def gwPlotting(inFn, outFn):
     """inFn.bed outFn.pdf"""
     outDir = os.path.split(outFn)[0]
@@ -644,6 +672,7 @@ def gwPlotting(inFn, outFn):
     r('plot.genome(segments=loadedBedData, unit="bp", dir.print="%s")' % outDir)
     shutil.move(outDir+ os.sep + '.pdf', outFn)
 
+
 def copyAndFilterSubtypes(genome, trackName, newTrackName, filterFn):
     """genome trackName newTrackName filterFn"""
     trackName, newTrackName  = [re.split('/|:',tn) for tn in [trackName, newTrackName]]
@@ -660,6 +689,7 @@ def copyAndFilterSubtypes(genome, trackName, newTrackName, filterFn):
         if subType.replace('_',' ') in filterSet:
             print 'copying %s' % subType
             shutil.copytree(origPath + subType, newPath + subType, symlinks=True)
+
 
 def createMappingsFromMeshAsciiFile(asciiFn, mapHeadingToIdFn, mapIdToHeadingFn):
     """asciiFn mapHeadingToIdFn mapIdToHeadingFn"""
@@ -684,6 +714,7 @@ def createMappingsFromMeshAsciiFile(asciiFn, mapHeadingToIdFn, mapIdToHeadingFn)
 
     mapHeadingToIdFile.close()
     mapIdToHeadingFile.close()
+
 
 def createMeshHierarchyMappings(hierarchyIdFile, mapIdToHeadingFn, mapParentToChildrenFn, mapChildToParentsFn):
     """hierarchyIdFile mapIdToHeadingFn mapParentToChildrenFn mapChildToParentsFn"""
@@ -719,6 +750,7 @@ def createMeshHierarchyMappings(hierarchyIdFile, mapIdToHeadingFn, mapParentToCh
     mapParentToChildrenFile.close()
     mapChildToParentsFile.close()
 
+
 def createAllNodesAndLeaves(mapFn, fullMapFn):
     """mapFn fullMapFn"""
     mapFile = safeshelve.open(mapFn, 'r')
@@ -740,6 +772,7 @@ def createAllNodesAndLeaves(mapFn, fullMapFn):
     mapFile.close()
     fullMapFile.close()
 
+
 def copyStandardTrack(genome, oldTn, newTn):
     """genome oldTn newTn"""
     oldTn = re.split('/|:', oldTn)
@@ -752,7 +785,8 @@ def copyStandardTrack(genome, oldTn, newTn):
     assert not os.path.exists(newPath), 'ERROR: Target path already exists: ' + newPath
     qcf.ensurePathExists(newPath)
     shutil.copytree(oldPath, newPath)
-    
+
+
 def findArticleCountOfAllSubtypes(genome, trackName, outFn):
     'genome trackName outFn'
     trackName = trackName.split(':')
@@ -782,6 +816,7 @@ def findArticleCountOfAllSubtypes(genome, trackName, outFn):
     outFile.write('\t'.join(subnames) + os.linesep)
     outFile.write('\t'.join(articleCounts) + os.linesep)
     outFile.close()
+
 
 def compareRegulomeWithDirectPubmedTfData(pValThresholdReg, pValThresholdTf, useRowCount):
     "pValThresholdReg pValThresholdTf useRowCount"
@@ -854,6 +889,7 @@ def compareRegulomeWithDirectPubmedTfData(pValThresholdReg, pValThresholdTf, use
     print '#Hits in TF & Pubgene only: %d' % (~regTable&tfTable).sum()
     print '#Hits in none: %d' % (~regTable&~tfTable).sum()
 
+
 def RemoveDirectoriesWithOneEmptyFileRecursively(baseDir):
     'baseDir'
     for path, dirs, files in os.walk(baseDir):
@@ -862,6 +898,7 @@ def RemoveDirectoriesWithOneEmptyFileRecursively(baseDir):
             if os.path.getsize(os.sep.join([path, files[0]])) == 0:
                 print 'Removing directory %s' % path
                 shutil.rmtree(path)
+
 
 def mergeTrackInfoShelves(otherTrackInfoShelveFn):
     mainShelve = safeshelve.open(TrackInfo.SHELVE_FN, 'r')
@@ -872,13 +909,116 @@ def mergeTrackInfoShelves(otherTrackInfoShelveFn):
     for key in mergeKeys:
         ti = otherShelve[key]
         ti.store()
-                
+
+
+def reinstallGenomes(genomeList, username, genomeListIsFn='True', verbose='False'):
+    "genomeList username genomeListIsFn=True verbose=False"
+    from quick.application.GalaxyInterface import GalaxyInterface
+    from gold.util.CustomExceptions import PreprocessError
+    from quick.extra.StandardizeTrackFiles import PlainMover
+    from config.Config import DebugConfig
+
+    genomeListIsFn = ast.literal_eval(genomeListIsFn)
+    verbose = ast.literal_eval(verbose)
+
+    prevPassOnPreprocessExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+    prevVerbose = DebugConfig.VERBOSE
+    DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
+    DebugConfig.VERBOSE = verbose
+
+    track_cats = ['Sequence:DNA', 'Genome build properties', 'Genes and gene subsets', 'Sample data']
+
+    if genomeListIsFn:
+        genomes = [_.strip() for _ in open(genomeList)]
+    else:
+        genomes = genomeList.split(',')
+
+    for genome in genomes:
+        genome = genome.strip()
+        print genome
+
+        if GenomeInfo(genome).installed and GenomeInfo._queryShelveWithKey(genome, 'r', old=False) is not None:
+            # Trigger installation double-check
+            gi = GenomeInfo(genome)
+            gi.installed = False
+            gi.store()
+            if gi.isInstalled():
+                print '\n**Genome "{}" was alread installed in the new shelve. Skipping!**\n'.format(genome)
+                continue
+
+        for track_cat in track_cats:
+            try:
+                GalaxyInterface.startPreProcessing(genome, track_cat.split(':'), username)
+            except PreprocessError, e:
+                traceback.print_exc()
+                print
+
+                match = re.search(r'trackName="([^"]+)"', str(e))
+                if match:
+                    trackName = match.group(1).split(':')
+                    PlainMover.parseFiles(genome, trackName, 'std_to_error')
+                    print '\n\n**Moved track "{}" to "parsingErrorTracks" file structure**\n'.format(':'.join(trackName))
+
+        genome_info = GenomeInfo(genome)
+        installed = genome_info.flagAsInstalled(username)
+        if installed:
+            print '\n**Genome "{}" was reinstalled successfully!**\n'.format(genome)
+        else:
+            print '\n**Genome "{}" was not reinstalled!**\n'.format(genome)
+
+    DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = prevPassOnPreprocessExceptions
+    DebugConfig.VERBOSE = prevVerbose
+
+
+def updateTrackInfoToVersion15(genome, trackName):
+    "genome trackName"
+    if isinstance(trackName, str):
+        trackName = qcf.convertTNstrToTNListFormat(trackName)
+
+    ti = TrackInfo(genome, trackName)
+    ti.preProcOverlapRules = []
+    trackFormatList = []
+    for allowOverlaps in [True, False]:
+        from gold.origdata.PreProcessUtils import PreProcessUtils
+        if PreProcessUtils.preProcFilesExist(genome, trackName, allowOverlaps):
+            ti.preProcOverlapRules.append(allowOverlaps)
+            if PreProcessUtils.mergedPreProcFilesExist(genome, trackName, allowOverlaps):
+                mergedPrefixInfoDict = PreProcessUtils.getMergedPrefixInfoDict(genome, trackName, allowOverlaps)
+                ti.mergedPrefixInfoDictPerOverlapRule[allowOverlaps] = mergedPrefixInfoDict
+                trackFormatList.append(TrackFormat.createInstanceFromPrefixInfoDict(mergedPrefixInfoDict))
+    if trackFormatList:
+        ti.trackFormatHash = hash(tuple(trackFormatList))
+    if not ti.geSourceVersion:
+        ti.geSourceVersion = ti.preProcVersion
+    ti.preProcVersion = '1.5'
+    ti.id = ti.constructIdFromPath(genome, qcf.createOrigPath(genome, trackName), ti.geSourceVersion, ti.preProcVersion)
+    print ti.id, ti.preProcOverlapRules, ti.mergedPrefixInfoDictPerOverlapRule, ti.trackFormatHash, ti.geSourceVersion, ti.preProcVersion
+    ti.store()
+    print Track(trackName).getUniqueKey(genome)
+
+
+def updateAllTrackInfoToVersion15():
+    from quick.application.GalaxyInterface import GalaxyInterface
+    from gold.origdata.PreProcessUtils import PreProcessUtils
+
+    for genomeTuple in GalaxyInterface.getAllGenomes():
+        genome = genomeTuple[1]
+        print genome
+        for trackName in ProcTrackNameSource(genome, fullAccess=True,
+                                             includeParentTrack=False):
+            if trackName != ['Genes and gene subsets','Genes','CCDS']:
+                continue
+            print trackName
+            updateAllTrackInfoToVersion15(genome, trackName)
+
+
 def _usage():
     print 'syntax: '
     print 'to use: [name] [args]'
     print 'available commands: '
     print ', '.join(funcList.keys())
     sys.exit(0)                
+
 
 if __name__ == "__main__":
     from gold.application.HyperBrowserCLI import *

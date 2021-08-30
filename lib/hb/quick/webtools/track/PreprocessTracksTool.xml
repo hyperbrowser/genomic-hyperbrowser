@@ -1,0 +1,4 @@
+<tool id="hb_preprocess_tracks_tool" name="Preprocess tracks" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.track.PreprocessTracksTool" proto_tool_class="PreprocessTracksTool">
+  <description></description>
+</tool>

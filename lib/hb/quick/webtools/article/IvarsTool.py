@@ -868,8 +868,8 @@ class MatchTFsWithPWMs(GeneralGuiTool, UserBinMixin, GenomeMixin):
         web-user in each options box.
         '''
 
-        import shelve
-        mapper = shelve.open("/hyperbrowser/data/tfbs/tfNames2pwmIds.shelf")
+        import third_party.safeshelve as safeshelve
+        mapper = safeshelve.open("/hyperbrowser/data/tfbs/tfNames2pwmIds.shelf")
         mapper["CTCF"] = ["REN_20"]
         print "Test"
 

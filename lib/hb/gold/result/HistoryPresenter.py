@@ -19,7 +19,7 @@ class HistoryPresenter(Presenter):
         if not os.path.exists(fn):
             return HtmlCore().textWithHelp('N/A', 'A %s file is not available for this type of data.' % self._getSuffix())
         
-        genome = self._results.getGenome() #getAnalysis().getGenome() if self._results.getAnalysis() is not None else 'hg18'
+        genome = self._results.getGenome()
         galaxyDataType = self._getSuffix()
         return HtmlCore().link('Load', getLoadToGalaxyHistoryURL(fn, genome, galaxyDataType)) 
             

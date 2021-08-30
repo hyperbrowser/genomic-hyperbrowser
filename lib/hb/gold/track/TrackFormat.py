@@ -1,6 +1,8 @@
 import copy
 import numpy
 from collections import OrderedDict
+
+from config.DebugConfig import DebugConfig
 from gold.application.LogSetup import logMessage
 from gold.track.SmartMemmap import SmartMemmap
 from gold.util.CommonConstants import RESERVED_PREFIXES
@@ -76,6 +78,7 @@ def inferValType(valList, shapeOffset=0):
 def inferWeightType(weightList):
     return inferValType(weightList, shapeOffset=1)
 
+
 # Module classes
 
 class TrackFormat(object):
@@ -147,7 +150,28 @@ class TrackFormat(object):
         lists.append(OrderedDict([(prefix,[]) for prefix in prefixList if prefix not in RESERVED_PREFIXES]) \
                      if any(prefix in RESERVED_PREFIXES for prefix in prefixList) else None)
 
-        return TrackFormat( *lists )
+        return TrackFormat(*lists)
+
+    @staticmethod
+    def createInstanceFromPrefixInfoDict(prefixInfoDict):
+        kwArgs = {}
+
+        for info in prefixInfoDict.values():
+            if info.prefix in RESERVED_PREFIXES:
+                shape = [0]
+                if info.elementDim is not None:
+                    assert isinstance(info.elementDim, int)
+                    shape += [info.elementDim]
+                assert isinstance(info.dtypeDim, int)
+                if info.dtypeDim > 1:
+                    shape += [info.dtypeDim]
+                kwArgs[info.prefix + 'List'] = numpy.array([], dtype=info.dtype).reshape(shape)
+            else:
+                if 'extraLists' not in kwArgs:
+                    kwArgs['extraLists'] = OrderedDict()
+                kwArgs['extraLists'][info.prefix] = []
+
+        return TrackFormat(**kwArgs)
 
     def __init__(self, startList=None, endList=None, valList=None, strandList=None, idList=None, edgesList=None, weightsList=None, extraLists=None):
         self._dense = (startList is None) #not trackData.has_key('start')
@@ -159,7 +183,7 @@ class TrackFormat(object):
         self._hasStrand = (strandList is not None) #trackData.has_key('strand')
         self._hasId = (idList is not None) #trackData.has_key('strand')
         self._weights = inferWeightType(weightsList) #trackData.has_key('strand')
-        self._extra = extraLists.keys() if extraLists is not None else False
+        self._extra = sorted(extraLists.keys()) if extraLists is not None else False
 
     def isDense(self):
         return self._dense
@@ -225,8 +249,8 @@ class TrackFormat(object):
             return []
 
     def getAllOverlapRules(self):
-        # return [False] + ([True] if not self.isDense() else [])
-        return [False, True]
+        return [False] + ([True] if not self.isDense() else [])
+        # return [False, True]
 
     def getFormatName(self):
         for formatName, format in TrackFormat.FORMAT_DICT.iteritems():
@@ -257,7 +281,8 @@ class TrackFormat(object):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash( tuple( [self.__dict__[key] for key in sorted(self.__dict__.keys())] ) )
+        return hash(tuple(tuple(val) if isinstance(val, list) else val for val in
+                          (self.__dict__[key] for key in sorted(self.__dict__.keys()))))
 
 class TrackFormatReq(TrackFormat):
     '''
@@ -333,8 +358,11 @@ class TrackFormatReq(TrackFormat):
     # Compatibility with other TrackFormat, not TrackFormatReq. Does not need to handle allowsOverlap and borderHandling
     def isCompatibleWith(self, sourceFormat, exceptionList=[]):
         assert( not isinstance(sourceFormat, TrackFormatReq) )
-        pairedAttrs = [ [getattr(obj, attr) for obj in [self,sourceFormat]] \
-            for attr in self._getAttributes(includeReqExtensions=False) if attr[1:] not in exceptionList ]
+        attrList = [attr for attr in self._getAttributes(includeReqExtensions=False) if attr[1:] not in exceptionList]
+        pairedAttrs = [ [getattr(obj, attr) for obj in [self,sourceFormat]] for attr in attrList]
+        if DebugConfig.VERBOSE:
+            logMessage("Checking track format compatibility. Paired attributes: " +
+                       ', '.join("{}: {}".format(x, y) for x, y in zip(attrList, pairedAttrs)))
         res = (not False in [s is None or s==sf for s,sf in pairedAttrs])
         return res
 

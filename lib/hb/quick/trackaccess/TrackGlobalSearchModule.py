@@ -29,7 +29,6 @@ from proto.hyperbrowser.HtmlCore import HtmlCore
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GSuiteTrack, HttpGSuiteTrack, HttpsGSuiteTrack, FtpGSuiteTrack, RsyncGSuiteTrack
 from gold.application.DataTypes import getSupportedFileSuffixesForGSuite
-from gold.util.RandomUtil import random
 import quick.gsuite.GSuiteUtils as GSuiteUtils
 #import gold.gsuite.GSuiteComposer as GSuiteComposer
 #import gold.gsuite.GSuiteParser as GSuiteParser
@@ -473,6 +472,8 @@ class TrackGlobalSearchModule(object):
     #    return rGSuite
 
     def getGsuiteFromRandomRows(self,count = 10):
+        from gold.util.RandomUtil import random
+
         random.seed(9001)
         rItem = self.VOCABULARY[random.randint(0,len(self.VOCABULARY)-1)]
         rRows = self.getRandomRows(rItem,count)
@@ -572,6 +573,8 @@ class TrackGlobalSearchModule(object):
         return
 
     def getRandomRows(self, item, count = 10, fileTypes = []):
+        from gold.util.RandomUtil import random
+
         #rows = self.getRows(item)
         #rows = []
         #for item in items:

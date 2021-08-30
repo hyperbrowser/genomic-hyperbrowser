@@ -120,7 +120,7 @@ if hyper.isAccessibleGenome(genome, username):
         _analCats = hyper.getAnalysisCategories(genome, tracks[0].definition(), tracks[1].definition())
         if _analCats and len(_analCats) > 0:
             for cat in _analCats:
-                analList = hyper.getAnalysisList(genome, cat[1], tracks[0].definition(), tracks[1].definition(), tracks[0].getState(False), tracks[1].getState(False))
+                analList = hyper.getAnalysisList(genome, cat[1], tracks[0].definition(), tracks[1].definition())
                 #print analList
                 # discard empty categories
                 if analList and len(analList) > 0:

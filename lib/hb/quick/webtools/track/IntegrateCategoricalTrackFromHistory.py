@@ -35,14 +35,14 @@ class IntegrateCategoricalTrackFromHistory(GeneralGuiTool):
         getOptionsBoxK, where K is either a number in the range of 1 to the
         number of boxes (case 1), or the specified key (case 2).
         '''
-        return ['Select genome', \
-                'Select dataset', \
-                'Where to put the track', \
-                'Specify track name', \
-                'Set column number for category value', \
-                'Number of header lines', \
-                'File suffix', \
-                'Category file suffix', \
+        return ['Select genome',
+                'Select dataset',
+                'Existing standardized tracks',
+                'Specify new track name (colon-separated path) [autoupdated from track selection above]',
+                'Column number for category value',
+                'Number of header lines',
+                'File suffix',
+                'Category file suffix',
                 'Make track private'] #Alternatively: [ ('box1','key1'), ('box2','key2') ]
 
     #@staticmethod
@@ -118,7 +118,7 @@ class IntegrateCategoricalTrackFromHistory(GeneralGuiTool):
         prevChoices[0] for the result of input box 1, or by key, e.g.
         prevChoices.key (case 2).
         '''
-        return '__track__'
+        return '__track__', 'standardized'
 
 
     @staticmethod
