@@ -9,6 +9,7 @@ sys.path = new_path
 def extractTestGenomeAndPreProcess(galaxy_dir):
     hbPath = os.path.join(galaxy_dir, 'lib', 'hb')
     from config.Config import ORIG_DATA_PATH
+    from config.DebugConfig import DebugConfig
     from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
     from setup.InstallFunctions import executeShellCmd
     from gold.util.CommonFunctions import createDirPath
@@ -23,9 +24,12 @@ def extractTestGenomeAndPreProcess(galaxy_dir):
     print 'OK: Extracted TestGenome files.'
 
     try:
-        PreProcessAllTracksJob('TestGenome', passOnExceptions=True).process()
-        PreProcessAllTracksJob('TestGenome', GenomeInfo.getChrTrackName('TestGenome'), passOnExceptions=True).process()
+        prevPassOnPreprocessExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
+        PreProcessAllTracksJob('TestGenome').process()
+        PreProcessAllTracksJob('TestGenome', GenomeInfo.getChrTrackName('TestGenome')).process()
         print 'OK: Finished preprocessing TestGenome.'
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = prevPassOnPreprocessExceptions
     except Exception, e:
         print 'FAILED: Error when preprocessing TestGenome. Error:'
         print '        ' + str(e).strip()

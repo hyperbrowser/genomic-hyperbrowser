@@ -33,7 +33,7 @@ class GalaxyIntegrationTest(TestCaseWithImprovedAsserts):
     def setUp(self):
         if self.debugMode:
             if self.debugMode == 'True':
-                self.debugMode == 'VERBOSE'
+                self.debugMode == DebugConfig.DebugModes.UNCHANGED_LOGIC_VERBOSE
             DebugConfig.changeMode(self.debugMode)
         else:
             DebugConfig.resetMode()
