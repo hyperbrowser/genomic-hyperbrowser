@@ -190,7 +190,7 @@ class CreateGSuiteFileFromHistoryElementsTool(GeneralGuiTool):
         selected = [extractNameFromDatasetInfo(val)
                     for val in choices.history.values() if val is not None]
         description = selected[0] + \
-                      ' + %s more' % (len(selected)-1) if len(selected) > 1 else ''
+                      (' + %s more' % (len(selected) - 1) if len(selected) > 1 else '')
 
         return getGSuiteHistoryOutputName('primary', description)
 
