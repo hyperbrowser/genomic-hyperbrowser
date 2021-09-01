@@ -13,7 +13,7 @@ class GSuiteAllTracksVisitor(object):
             try:
                 outGSuite.addTrack(self._gSuiteTrackVisitor.visit(track, *args, **kwArgs))
             except Exception as e:
-                track.comment = 'An error occurred for the following track: ' + str(e)
+                track.comment = 'An error occurred for the following track: ' + str(e).partition('\n')[0]
                 errorGSuite.addTrack(track)
             if progressViewer:
                 progressViewer.update()

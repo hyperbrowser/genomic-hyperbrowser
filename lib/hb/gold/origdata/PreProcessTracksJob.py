@@ -267,7 +267,15 @@ class PreProcessAllTracksJob(PreProcessTracksJob):
         return self._mergeChrFolders
 
 
-class PreProcessExternalTrackJob(PreProcessTracksJob):
+class PassOnPreprocExceptionsMixin(object):
+    def process(self):
+        prevPassOnPreprocExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
+        super(PassOnPreprocExceptionsMixin, self).process()
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = prevPassOnPreprocExceptions
+
+
+class PreProcessExternalTrackJob(PassOnPreprocExceptionsMixin, PreProcessTracksJob):
     def __init__(self, genome, fullFn, extTrackName, fileSuffix,
                  printProgress=True, mergeChrFolders=True, **kwArgs):
         PreProcessTracksJob.__init__(self, genome, **kwArgs)
@@ -291,7 +299,7 @@ class PreProcessExternalTrackJob(PreProcessTracksJob):
         return self._mergeChrFolders
 
 
-class PreProcessCustomTrackJob(PreProcessTracksJob):
+class PreProcessCustomTrackJob(PassOnPreprocExceptionsMixin, PreProcessTracksJob):
     def __init__(self, genome, trackName, regionList, getGeSourceCallBackFunc, username='', mode='Real',
                  preProcess=True, finalize=True, mergeChrFolders=True, **callBackArgs):
         PreProcessTracksJob.__init__(self, genome, username=username, mode=mode)

@@ -45,7 +45,7 @@ def getGSuiteHistoryOutputName(type, description='', datasetInfo=None):
     if datasetInfo:
         datasetName = extractNameFromDatasetInfo(datasetInfo)
 
-        match = re.search('\A([0-9]+ - )?GSuite \((.+?)\)(?!.\))', datasetName)
+        match = re.search('\A([0-9]+ - )?GSuite \((.*)\)', datasetName)
         if match:
             lastDesc = match.group(2)
         else:
