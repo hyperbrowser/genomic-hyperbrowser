@@ -19,16 +19,16 @@ def validateURL(url):
 
         
 def processIndicesString(rowIndicesStr):
-    '''
-    Get list of indices from a string input 
+    """
+    Get list of 0-indexed indices from a string input (1-indexed, end inclusive)
     e.g.
-    1-10, 13, 19 -> [1,2,3,4,5,6,7,8,9,13,19]
-    '''
+    1-10, 13, 19 -> [0,1,2,3,4,5,6,7,8,9,12,18]
+    """
     selectedIndices = []
     for indexPart in rowIndicesStr.split(','):
         if '-' in indexPart:
             startIndex, endIndex = [int(x.strip()) for x in indexPart.split('-')]
-            selectedIndices += list(xrange(startIndex, endIndex))
+            selectedIndices += range(startIndex - 1, endIndex)
         else:
-            selectedIndices.append(int(indexPart.strip())) #assuming single value
+            selectedIndices.append(int(indexPart.strip()) - 1)  # assuming single value
     return selectedIndices
