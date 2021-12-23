@@ -11,20 +11,15 @@ class RandomizedTrackStat(MagicStatFactory):
 class RandomizedTrackStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
         
-    def __init__(self, region, track, track2=None, randTrackClass=None, randomSeed=None, **kwArgs):
-        #print 'HEI'
-        from gold.util.RandomUtil import getManualSeed, setManualSeed
-        if randomSeed is not None and randomSeed != 'Random' and getManualSeed() is None:
-            setManualSeed(int(randomSeed))
-        
-        Statistic.__init__(self, region, track, randTrackClass=randTrackClass, randomSeed=randomSeed, **kwArgs)
+    def __init__(self, region, track, track2=None, randTrackClass=None, **kwArgs):
+        Statistic.__init__(self, region, track, randTrackClass=randTrackClass, **kwArgs)
                 
         self._randTrackClass = self.getRandTrackClass(randTrackClass)
                     
         CompBinManager.ALLOW_COMP_BIN_SPLITTING = False
-        #self._randResults = []
-        #to load r libraries for McFdr:
-        #McFdr._initMcFdr()
+        # self._randResults = []
+        # # to load r libraries for McFdr:
+        # McFdr._initMcFdr()
 
     @staticmethod
     def getRandTrackClass(randTrackClassDef):

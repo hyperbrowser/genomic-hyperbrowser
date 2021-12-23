@@ -1,0 +1,4 @@
+<tool id="hb_group_test_benchmark_two_tool" name="Group difference test - Benchmark two" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.misc.GroupTestBenchmarkTwoTool" proto_tool_class="GroupTestBenchmarkTwoTool">
+  <description></description>
+</tool>

@@ -1,7 +1,7 @@
 import numpy as np
 
 from HyperBrowserControllerMixin import HyperBrowserControllerMixin
-from gold.application.StatRunner import AnalysisDefJob
+from quick.deprecated.StatRunner import AnalysisDefJob
 from gold.description.TrackInfo import TrackInfo
 from proto.BaseToolController import BaseToolController
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile

@@ -3,6 +3,13 @@ from collections import OrderedDict
 from gold.gsuite.GSuite import GSuite
 
 
+def selectRowsFromGSuiteByAttrValues(gSuite, attrName, attrVals):
+    trackList = list(gSuite.allTracks())
+    reducedTrackList = [track for track in trackList if track.getAttribute(attrName) in attrVals]
+    reducedGSuite = GSuite(trackList=reducedTrackList)
+    return reducedGSuite
+
+
 def selectRowsFromGSuiteByIndex(gSuite, idxList):
     trackList = list(gSuite.allTracks())
     reducedTrackList = [trackList[i] for i in idxList]
@@ -58,9 +65,3 @@ def concatenateGSuitesAddingCategories(gSuiteList, categoryColumnTitle, category
         concatenatedGSuite.addTracks(tracksToAdd)
 
     return concatenatedGSuite
-
-def selectRowsFromGSuiteByAttrValues(gSuite, attrName, attrVals):
-    trackList = list(gSuite.allTracks())
-    reducedTrackList = [track for track in trackList if track.getAttribute(attrName) in attrVals]
-    reducedGSuite = GSuite(trackList=reducedTrackList)
-    return reducedGSuite

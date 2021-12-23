@@ -1,6 +1,5 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.util.McEvaluators import computeNumMoreExtreme
-from quick.statistic.McFdr import McFdr
 from gold.util.CommonFunctions import isIter
 import numpy
 from quick.statistic.SequentialMcSamplingStat import SequentialMcSamplingStatUnsplittable
@@ -35,8 +34,9 @@ class McFdrSamplingStatUnsplittable(SequentialMcSamplingStatUnsplittable):
         
     @classmethod
     def validateAndPossiblyResetLocalResults(cls, localSamplingObjects):
-        #to load r libraries for McFdr:
-        McFdr._initMcFdr()
+        from quick.statistic.McFdr import McFdr
+        # #to load r libraries for McFdr:
+        # McFdr._initMcFdr()
 
         numNonDetermined = 0
         pvals = [x._getPval() for x in localSamplingObjects]
@@ -63,6 +63,6 @@ class McFdrSamplingStatUnsplittable(SequentialMcSamplingStatUnsplittable):
             del self._result
         
         numSamples = len(self._mcSamples)
-        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tail)
+        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tails)
         #print 'TEMP1: ', [0 if determined else 1, numNonExtreme, self._mThreshold, self._adjPValue, self._adjPValueThreshold]
         return [0 if determined else 1, numNonExtreme, self._mThreshold, self._adjPValue, self._adjPValueThreshold]

@@ -1,0 +1,4 @@
+<tool id="hb_group_test_benchmark_three_tool" name="Group difference test - Benchmark three" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.misc.GroupTestBenchmarkThreeTool" proto_tool_class="GroupTestBenchmarkThreeTool">
+  <description></description>
+</tool>

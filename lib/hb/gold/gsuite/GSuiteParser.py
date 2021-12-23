@@ -262,7 +262,7 @@ def _checkCharUsageOfPhrase(phrase):
 # GSuiteParser
 #
 
-def parseLines(gSuiteLines):
+def parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders=True):
     """
     :return GSuite:
     """
@@ -305,29 +305,31 @@ def parseLines(gSuiteLines):
 
     _setCustomHeaders(gSuite, headerVars)
 
-    _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
+    if not allowTrackSummaryToOverrideHeaders:
+        _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
 
     return gSuite
 
 
-def parseFromString(gSuiteStr):
+def parseFromString(gSuiteStr, allowTrackSummaryToOverrideHeaders=True):
     """
     :return GSuite:
     """
-    return parseLines(gSuiteStr.split('\n'))
+    return parseLines(gSuiteStr.split('\n'), allowTrackSummaryToOverrideHeaders)
 
 
-def parse(gSuiteFileName):
+def parse(gSuiteFileName, allowTrackSummaryToOverrideHeaders=True):
     """
     :return GSuite:
     """
     with open(gSuiteFileName) as gSuiteFileHandle:
-        gSuite = parseLines(gSuiteFileHandle)
+        gSuite = parseLines(gSuiteFileHandle, allowTrackSummaryToOverrideHeaders)
 
     return gSuite
 
 
-def validateLines(gSuiteLines, outFile=None, printHelpText=True):
+def validateLines(gSuiteLines, outFile=None, printHelpText=True,
+                  allowTrackSummaryToOverrideHeaders=False):
     """
     :return bool: True if GSuite file is valid, else False
     """
@@ -338,7 +340,7 @@ def validateLines(gSuiteLines, outFile=None, printHelpText=True):
         print >>out, '-----------------'
 
     try:
-        parseLines(gSuiteLines)
+        parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders)
         valid = True
         print >>out, 'GSuite file is valid'
 
@@ -357,22 +359,28 @@ def validateLines(gSuiteLines, outFile=None, printHelpText=True):
     return valid
 
 
-def validateFromString(gSuiteStr, outFile=None, printHelpText=True):
+def validateFromString(gSuiteStr, outFile=None, printHelpText=True,
+                       allowTrackSummaryToOverrideHeaders=False):
     """
     :return bool: True if GSuite file is valid, else False
     """
-    valid = validateLines(gSuiteStr.split('\n'), outFile,
-                          printHelpText=printHelpText)
+    valid = validateLines(
+        gSuiteStr.split('\n'), outFile,
+        printHelpText=printHelpText,
+        allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders)
 
     return valid
 
 
-def validate(gSuiteFileName, outFile=None, printHelpText=True):
+def validate(gSuiteFileName, outFile=None, printHelpText=True,
+             allowTrackSummaryToOverrideHeaders=False):
     """
     :return bool: True if GSuite file is valid, else False
     """
     with open(gSuiteFileName) as gSuiteFileHandle:
-        valid = validateLines(gSuiteFileHandle, outFile,
-                              printHelpText=printHelpText)
+        valid = validateLines(
+            gSuiteFileHandle, outFile,
+            printHelpText=printHelpText,
+            allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders)
 
     return valid

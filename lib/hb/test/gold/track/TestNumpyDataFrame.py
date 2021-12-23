@@ -208,7 +208,11 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
 
         from numpy import random
         random.seed(0)
-        self.assertNotEquals(random.shuffle(npDataFrame), npDataFrame)
+        from copy import deepcopy
+        randomNpDataFrame = deepcopy(npDataFrame)
+        random.shuffle(randomNpDataFrame)
+        self.assertEquals(len(randomNpDataFrame), len(npDataFrame))
+        self.assertFalse(all((randomNpDataFrame == npDataFrame).all().values()))
 
     def testCopy(self):
         from copy import copy, deepcopy
@@ -261,6 +265,7 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
         self.assertListsOrDicts(npDataFrame.asArrayDict(),
                                 OrderedDict([('a', np.array([0, 1, 3])),
                                              ('b', np.array(['a', 'b', 'd']))]))
+        self.assertListsOrDicts(npDataFrame.getArrayNoMask('a'), np.array([0, 1, 2, 3, 4]))
         self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([0, 1, 3]))
         self.assertEquals(len(npDataFrame), 5)
 
@@ -269,6 +274,7 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
         self.assertListsOrDicts(slicedDataFrame.asArrayDict(),
                                 OrderedDict([('a', np.array([1, 3])),
                                              ('b', np.array(['b', 'd']))]))
+        self.assertListsOrDicts(slicedDataFrame.getArrayNoMask('a'), np.array([1, 2, 3]))
         self.assertListsOrDicts(slicedDataFrame.getArray('a'), np.array([1, 3]))
         self.assertEquals(len(slicedDataFrame), 3)
 
@@ -276,8 +282,19 @@ class TestNumpyDataFrame(TestCaseWithImprovedAsserts):
 
         self.assertListsOrDicts(npDataFrame.asArrayDict(),
                                 OrderedDict([('a', np.array([3])), ('b', np.array(['d']))]))
+        self.assertListsOrDicts(npDataFrame.getArrayNoMask('a'), np.array([0, 1, 2, 3, 4]))
         self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([3]))
         self.assertEquals(len(npDataFrame), 5)
+
+    def testMaskSorting(self):
+        npDataFrame = NumpyDataFrame(dict(a=range(5), b='e d c b a'.split(' ')))
+        npDataFrame.mask = [False, False, True, False, True]
+        npDataFrame.sort(['b'])
+
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([3, 1, 0]))
+
+        npDataFrame.mask = [False, False, False, False, False]
+        self.assertListsOrDicts(npDataFrame.getArray('a'), np.array([4, 3, 2, 1, 0]))
 
 
 if __name__ == "__main__":

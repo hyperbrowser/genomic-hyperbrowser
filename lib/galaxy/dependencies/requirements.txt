@@ -61,3 +61,8 @@ Whoosh==2.4.1+gx1
 
 # Flexible BAM index naming
 pysam==0.8.4+gx1
+
+# HyperBrowser addition, to fix dependency issue with marisa-trie
+# pytest>=4.6.4,<4.7
+# more-itertools==5.0.0
+# zipp==0.6

@@ -1,0 +1,4 @@
+<tool id="hb_group_g_suite_tracks" name="Group GSuite tracks based on metadata" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.article.GroupGSuiteTracks" proto_tool_class="GroupGSuiteTracks">
+  <description></description>
+</tool>

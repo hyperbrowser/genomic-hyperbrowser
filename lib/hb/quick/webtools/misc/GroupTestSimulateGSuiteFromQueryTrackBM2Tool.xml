@@ -1,0 +1,4 @@
+<tool id="hb_group_test_simulate_g_suite_from_query_track_bm2_tool" name="Simulate two level GSuite from a base track (Benchmark 2)" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.misc.GroupTestSimulateGSuiteFromQueryTrackBM2Tool" proto_tool_class="GroupTestSimulateGSuiteFromQueryTrackBM2Tool">
+  <description></description>
+</tool>

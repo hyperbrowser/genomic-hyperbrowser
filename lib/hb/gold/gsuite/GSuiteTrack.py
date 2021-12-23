@@ -248,13 +248,13 @@ class GSuiteTrack(object):
                                              'attribute).'.format(key))
                 self.setAttribute(key, val)
 
-    @takes('GSuiteTrack', str, str)
+    @takes('GSuiteTrack', basestring, basestring)
     def setAttribute(self, attrName, attrVal):
         attrName = attrName.lower()
         self._attributes[attrName] = attrVal
 
-    @takes('GSuiteTrack', str)
-    @returns(str)
+    @takes('GSuiteTrack', basestring)
+    @returns(basestring)
     def getAttribute(self, attrName):
         if attrName in self._attributes:
             return self._attributes[attrName]
@@ -357,7 +357,7 @@ class SuffixDependentGSuiteTrack(GSuiteTrack):
         if oldFileFormat != UNKNOWN and oldFileFormat != self.fileFormat:
             raise InvalidFormatError(
                 'File format specified as parameter ("%s") does not ' % oldFileFormat +
-                'fit with track type as specified by the suffix '
+                'fit with file format as specified by the suffix '
                 '"%s": "%s"' % (self.suffix, self.fileFormat)
             )
 

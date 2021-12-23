@@ -1,4 +1,3 @@
 <tool id="hb_query_track_vs_categorical_g_suite_tool" name="Track coinciding with a group of GSuite tracks" version="1.0.0"
   tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.article.QueryTrackVsCategoricalGSuiteTool" proto_tool_class="QueryTrackVsCategoricalGSuiteTool">
-  <description>Group test tool</description>
 </tool>

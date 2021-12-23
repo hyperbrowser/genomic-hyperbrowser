@@ -7,18 +7,25 @@ from subprocess import call
 from gold.util.CommonFunctions import createOrigPath, createDirPath
 from quick.util.CommonFunctions import ensurePathExists
 
+
 class TestWithGeSourceData(unittest.TestCase):
     def _removeDir(self, procDir, trackName):
         #print procDir, trackName
         self.assertTrue(procDir.endswith(os.sep + trackName[-1]))
         if os.path.exists(procDir):
+            from config.DebugConfig import DebugConfig
+            if DebugConfig.VERBOSE:
+                print "Removing directory: " + procDir
             call('rm -R ' + procDir, shell=True)
             
     def _removeAllTrackData(self, trackName):
+        self._removePreprocessedTrackData(trackName)
+        self._removeDir(createOrigPath(self.GENOME, trackName), trackName)
+
+    def _removePreprocessedTrackData(self, trackName):
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=False), trackName)
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=True), trackName)
-        self._removeDir(createOrigPath(self.GENOME, trackName), trackName)
-        
+
     def _commonSetup(self):
         from test.gold.origdata.TestGenomeElementSource import TestGenomeElementSource
         testGESource = TestGenomeElementSource()

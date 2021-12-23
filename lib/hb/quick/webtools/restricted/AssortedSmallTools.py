@@ -53,7 +53,7 @@ class AssortedSmallTools(GeneralGuiTool):
         '''
         from quick.statistic.McFdr import McFdr
         
-        McFdr._initMcFdr()
+        # McFdr._initMcFdr()
         qvalsSet = [McFdr.adjustPvalues([float(x) for x in pvals.replace('c(','').replace(')','').split(',') ]) for pvals in choices[0].split('\n') if pvals!='']
         for i,qvals in enumerate(qvalsSet):
             print 'qvals%i = c(' % (i+1) + ','.join(str(x) for x in qvals) + ')' 

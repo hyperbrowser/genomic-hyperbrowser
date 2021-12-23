@@ -6,7 +6,6 @@
 /hb/quick/webtools/mixin/BasicModeAnalysisInfoMixin
 /hb/quick/webtools/mixin/MultiTrackMixin
 /hb/quick/webtools/mixin/GSuiteResultsTableMixin
-/hb/quick/webtools/wizard/WizardFlowConfig
 /hb/quick/webtools/restricted/DianasTool3
 /hb/quick/webtools/restricted/EncodeDatabase
 /hb/quick/webtools/restricted/visualization/visualizationGraphs

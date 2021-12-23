@@ -50,7 +50,7 @@ class EconValueCorrelationStatSplittable(StatisticSplittable):
     #@repackageException(Exception, ShouldNotOccurError)
     def _combineResults(self):
         if len(self._childResults)>0:
-            logMessage(repr(self._childResults))
+            # logMessage(repr(self._childResults))
             x,y = zip(*self._childResults)
             return self._pearsonr(x,y)
         else:

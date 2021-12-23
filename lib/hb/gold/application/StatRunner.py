@@ -41,6 +41,7 @@ class StatJob(object):
         self._numUserBins = None
 
     def _initProgress(self, printProgress):
+        # TODO: Try to uncomment this to find out why it has been removed
         raise NotImplementedError
 
         # if hasattr(self._statClass, 'keywords'):
@@ -84,7 +85,7 @@ class StatJob(object):
         #                     numSamplesPerIteration=nspi)
         # self._progress.addCount(0)
         
-    def run(self, reset=True, printProgress=PRINT_PROGRESS):
+    def run(self, reset=True, printProgress=PRINT_PROGRESS, flushMemoized=True):
         if reset:
             MagicStatFactory.resetMemoDict()
             
@@ -112,44 +113,48 @@ class StatJob(object):
                 jobHandler.run(jobWrapper)
         
         startLocal = time.time()
-        
-        while True:
-            stats = []
-            if hasattr(self._statClass, 'keywords'):
-                runLocal = self._statClass.keywords.get('runLocalAnalysis') if 'runLocalAnalysis' in self._statClass.keywords else None
-                if runLocal == "No":
+
+        try:
+            while True:
+                stats = []
+                if hasattr(self._statClass, 'keywords'):
+                    runLocal = self._statClass.keywords.get('runLocalAnalysis') if 'runLocalAnalysis' in self._statClass.keywords else None
+                    if runLocal == "No":
+                        break
+                stats = self._doLocalAnalysis(results, stats=[])
+                #stats[0] is used to call class method
+                if self._kwArgs.get('minimal') == True:
                     break
-            stats = self._doLocalAnalysis(results, stats=[])
-            #stats[0] is used to call class method
-            if self._kwArgs.get('minimal') == True:
-                break
-            
-            numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats)>0 else 0            
-            # self._progress.addFullLocalAnalysisIteration(numNotDetermined)
-            if len(stats) == 0 or numNotDetermined == 0:
-                break
-            #print 'Continuing McFdr'
 
-            
-        localAnalysisTime = time.time() - startLocal
-        if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']): 
-            print "local analysis took %f seconds" % localAnalysisTime
-            
-        #startGlobal = time.time()
-        #import pdb
-        #pdb.set_trace()
-        # self._progress.globalAnalysisStarted()
-        # self._progress.printMessage('\nPerforming global analysis...')
-        while True:
-            stat = self._doGlobalAnalysis(results, stats=None)
-            if stat is None:                
-                break
-            nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)
-            # self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
+                numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats)>0 else 0
+                # self._progress.addFullLocalAnalysisIteration(numNotDetermined)
+                if len(stats) == 0 or numNotDetermined == 0:
+                    break
+                #print 'Continuing McFdr'
 
-            if nonDetermined == 0:
-                break
-            
+
+            localAnalysisTime = time.time() - startLocal
+            if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']):
+                print "local analysis took %f seconds" % localAnalysisTime
+
+            #startGlobal = time.time()
+            #import pdb
+            #pdb.set_trace()
+            # self._progress.globalAnalysisStarted()
+            # self._progress.printMessage('\nPerforming global analysis...')
+            while True:
+                stat = self._doGlobalAnalysis(results, stats=None)
+                if stat is None:
+                    break
+                nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)
+                # self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
+
+                if nonDetermined == 0:
+                    break
+        finally:
+            if flushMemoized:
+                ResultsMemoizer.flushStoredResults()
+
         # self._progress.globalAnalysisEnded()
         #print "<br>global analysis took %f seconds" % (time.time() - startGlobal)
         self._endProgress()
@@ -161,7 +166,8 @@ class StatJob(object):
             results[region] = res
             if not self._avoidUbStatMemoization():
                 stats.append(stat)
-            #Currently, just to ensure that rawdata is not memoized for all userbins..:
+            # Currently, just to ensure that rawdata is not memoized for all userbins..
+            # TODO: Could this be moved to inside Statistic?
             stat.afterComputeCleanup()
             
             # self._progress.addCount()
@@ -179,7 +185,8 @@ class StatJob(object):
             
         
     def _getSingleResult(self, region):
-        #print 'Kw Here: ', self._kwArgs, 'args here: ', self._args
+        # print 'Kw Here: ', self._kwArgs, 'args here: ', self._args
+        # print self._statClass
         stat = self._statClass(region, self._trackStructure, *self._args, **self._kwArgs)
         try:
             res = stat.getResult()
@@ -195,7 +202,7 @@ class StatJob(object):
             res = {} if res is None else {self.GENERAL_RESDICTKEY : res}
             #res = {self.GENERAL_RESDICTKEY : res}
 
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
         return res, stat
     
     def getNumUserBins(self):
@@ -234,7 +241,7 @@ class AssemblyGapJob(StatJob):
 
     def run(self, printProgress=PRINT_PROGRESS):
         res = StatJob.run(self, printProgress=printProgress)
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
         return res
     
 #class CountBothTracksJob(StatJob):
@@ -261,19 +268,14 @@ class AnalysisDefJob(StatJob):
             genome = userBinSource.genome
             
         self._galaxyFn = galaxyFn
-            
         self._analysis = Analysis(analysisDef, genome, trackName1, trackName2)
-        self._setRandomSeedIfNeeded()
-            
-        track, track2 = self._analysis.getTracks()
-        StatJob.__init__(self, userBinSource, track, track2,
-                         self._analysis.getStat(), *args, **kwArgs)
 
-    def _setRandomSeedIfNeeded(self):
-        from gold.util.RandomUtil import getRandomSeed
-        randSeedChoice = self._analysis.getChoice('randomSeed')
-        if randSeedChoice == 'Random':
-            self._analysis.changeChoices('randomSeed', [(str(getRandomSeed()),)*2])
+        track, track2 = self._analysis.getTracks()
+        statistic = self._analysis.getStat()
+        self._analysis.initRandomUtilAndUpdateSeedIfNeeded()
+
+        StatJob.__init__(self, userBinSource, track, track2,
+                         statistic, *args, **kwArgs)
     
     def run(self, printProgress=PRINT_PROGRESS):
         '''
@@ -294,10 +296,9 @@ class AnalysisDefJob(StatJob):
         else:
             res = StatJob.run(self, printProgress=printProgress)
         
-        res.setAnalysis(self._analysis)
-        res.setAnalysisText(str(self._analysis))
-        
-        ResultsMemoizer.flushStoredResults()
+        res.updateFromAnalysis(self._analysis)
+
+        # ResultsMemoizer.flushStoredResults()
         
         if DebugConfig.USE_PROFILING:
             profiler.printStats()

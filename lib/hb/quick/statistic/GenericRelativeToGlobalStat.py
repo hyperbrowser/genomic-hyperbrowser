@@ -32,7 +32,7 @@ class GenericRelativeToGlobalStatUnsplittable(Statistic):
         elif globalSourceStr == 'ensembl':
             return GenomeInfo.getStdGeneRegs(genome)
         elif globalSourceStr == 'userbins':
-            from gold.application.StatRunner import StatJob
+            from quick.deprecated.StatRunner import StatJob
             assert StatJob.USER_BIN_SOURCE is not None
             return StatJob.USER_BIN_SOURCE
             #return kwArgs['userBins']

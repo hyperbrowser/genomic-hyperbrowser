@@ -264,11 +264,24 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         maxSimScore, maxSSt1, maxSSt2 = similarityScoreTableData.getMaxElement()
 
         baseDir = GalaxyRunSpecificFile([], galaxyFn=galaxyFn).getDiskPath()
-        heatmapPresenter = HeatmapFromTableDataPresenter(resultsObj, baseDir=baseDir,
-                                            header='Overlapping base-pairs between the tracks of the two suites',
-                                            printDimensions=False)
-        tablePresenter = MatrixGlobalValueFromTableDataPresenter(resultsObj, baseDir=baseDir,
-                                            header='Table of overlapping base-pairs between the tracks of the two suites')
+        overlapHeatmapPresenter = HeatmapFromTableDataPresenter(
+            resultsObj, baseDir=baseDir,
+            header='Overlapping base-pairs between the tracks of the two suites',
+            printDimensions=False
+        )
+        similarityHeatmapPresenter = HeatmapFromTableDataPresenter(
+            resultsObj, baseDir=baseDir,
+            header='Similarity score between the tracks of the two suites',
+            printDimensions=False
+        )
+        overlapTablePresenter = MatrixGlobalValueFromTableDataPresenter(
+            resultsObj, baseDir=baseDir,
+            header='Table of overlapping base-pairs between the tracks of the two suites'
+        )
+        similarityTablePresenter = MatrixGlobalValueFromTableDataPresenter(
+            resultsObj, baseDir=baseDir,
+            header='Table of similarity scores between the tracks of the two suites'
+        )
 
         core = HtmlCore()
         core.begin()
@@ -286,7 +299,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         or raw tabular form:''')
         core.divEnd()
         core.divBegin(divId='raw-table-result', divClass='result-div-right')
-        core.line(tablePresenter.getReference(RAW_OVERLAP_TABLE_RESULT_KEY))
+        core.line(overlapTablePresenter.getReference(RAW_OVERLAP_TABLE_RESULT_KEY))
         core.divEnd()#rawoverlap table
         core.divEnd()
         core.divEnd()
@@ -298,7 +311,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
             core.line('''Follow the links to view the heatmap in the desired format:''')
             core.divEnd()
             core.divBegin(divId='raw-table-result', divClass='result-div-right')
-            core.line(heatmapPresenter.getReference(RAW_OVERLAP_TABLE_RESULT_KEY))
+            core.line(overlapHeatmapPresenter.getReference(RAW_OVERLAP_TABLE_RESULT_KEY))
             core.divEnd()
             core.divEnd()
         except:
@@ -319,7 +332,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
         core.line("""Follow the links to view the results in an HTML table or raw tabular form:""")
         core.divEnd()
         core.divBegin(divId='raw-table-result', divClass='result-div-right')
-        core.line(tablePresenter.getReference(SIMILARITY_SCORE_TABLE_RESULT_KEY))
+        core.line(similarityTablePresenter.getReference(SIMILARITY_SCORE_TABLE_RESULT_KEY))
         core.divEnd()
         core.divEnd()
         core.divEnd()#simscore table
@@ -331,7 +344,7 @@ class CoincidingTracksFromTwoGSuitesTool(GeneralGuiTool, UserBinMixin, GenomeMix
             core.line('''Follow the links to view the heatmap in the desired format:''')
             core.divEnd()
             core.divBegin(divId='raw-table-result', divClass='result-div-right')
-            core.line(heatmapPresenter.getReference(SIMILARITY_SCORE_TABLE_RESULT_KEY))
+            core.line(similarityHeatmapPresenter.getReference(SIMILARITY_SCORE_TABLE_RESULT_KEY))
             core.divEnd()
             core.divEnd()
         except:

@@ -41,27 +41,27 @@ def createDirPath(trackName, genome, chr=None, allowOverlaps=False, basePath=PRO
         list(trackName) + ([chr] if chr is not None else []) )
 
 
-def createMemoPath(region, statId, configHash, track1Hash, track2Hash):
-    chr = region.chr
+def createMemoPath(region, statId, configHash, track1Hash, track2Hash=None):
     genome = region.genome
-    return os.sep.join( [MEMOIZED_DATA_PATH, str(len(region)), statId, genome, str(track1Hash)] + \
-                        ([str(track2Hash)] if track2Hash is not None else []) + \
-                        [str(configHash), chr] ).replace('-','_') #replace('-','_') because hashes can be minus, and minus sign makes problems with file handling
+    # Note: minus is replaced with underscore because hashes can be negative, and minus signs
+    # might create problems with file handling
+    return os.sep.join([MEMOIZED_DATA_PATH, str(len(region)), statId, genome, str(track1Hash)] + \
+                       ([str(track2Hash)] if track2Hash is not None else []) + \
+                       [str(configHash)]).replace('-', '_')
 
-
-@takes(basestring, list_of(basestring),(basestring,type(None)))
+@takes(basestring, list_of(basestring), (basestring, type(None)))
 def createOrigPath(genome, trackName, fn=None):
     #print 'genome:',genome
     #print 'trackName:',trackName
     return os.sep.join([ORIG_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
 
-@takes(str,(list,tuple),(str,type(None)))
+@takes(basestring, (list, tuple), (basestring, type(None)))
 def createCollectedPath(genome, trackName, fn=None):
     return os.sep.join([NONSTANDARD_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
 
-@takes(str,(list,tuple),(str,type(None)))
+@takes(basestring, (list, tuple), (basestring, type(None)))
 def createParsingErrorPath(genome, trackName, fn=None):
     return os.sep.join([PARSING_ERROR_DATA_PATH, genome] + trackName + ([fn] if fn is not None else []))
 
@@ -75,22 +75,39 @@ def getFileSuffix(fn):
     return os.path.splitext(fn)[1].replace('.','')
 
 
-@takes(str)
+@takes(basestring)
 def stripFileSuffix(fn):
     suffix = getFileSuffix(fn)
     return fn[:-len(suffix)-1]
+
+
+def getOrigPathForFileTree(genome, trackName, fileTree):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+
+    if fileTree == 'standardized':
+        return createOrigPath(genome, trackName)
+    elif fileTree == 'collected':
+        return createCollectedPath(genome, trackName)
+    else:
+        return createParsingErrorPath(genome, trackName)
+
+
+def getRootPathForFileTree(fileTree):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+
+    if fileTree == 'standardized':
+        return ORIG_DATA_PATH
+    elif fileTree == 'collected':
+        return NONSTANDARD_DATA_PATH
+    else:
+        return PARSING_ERROR_DATA_PATH
 
 
 def getOrigFns(genome, trackName, suffix, fileTree='standardized'):
     assert fileTree in ['standardized', 'collected', 'parsing error']
     from gold.application.LogSetup import logMessage, logging
 
-    if fileTree == 'standardized':
-        path = createOrigPath(genome, trackName)
-    elif fileTree == 'collected':
-        path = createCollectedPath(genome, trackName)
-    else:
-        path = createParsingErrorPath(genome, trackName)
+    path = getOrigPathForFileTree(genome, trackName, fileTree)
 
     if not os.path.exists(path):
         if IS_EXPERIMENTAL_INSTALLATION:
@@ -122,9 +139,10 @@ def parseDirPath(path):
     return el[2], tuple(el[3:-1]), el[-1]
 
 
-def extractTrackNameFromOrigPath(path):
+def extractTrackNameFromOrigPath(path, fileTree='standardized'):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
     excludeEl = None if os.path.isdir(path) else -1
-    path = path[len(ORIG_DATA_PATH):]
+    path = path[len(getRootPathForFileTree(fileTree)):]
     path = path.replace('//','/')
     if path[0]=='/':
         path = path[1:]
@@ -483,6 +501,13 @@ def bothIsNan(a, b):
     return False
 
 
+def anyIsNan(a):
+    if isIter(a):
+        return any(isNan(a))
+    else:
+        return isNan(a)
+
+
 def smartAssertEquals(a, b):
     if not bothIsNan(a, b):
         assert a == b
@@ -730,28 +755,6 @@ def cleanUpTrackType(trackTypeStr):
 
     return trackTypeStr
 
-def dump_args_and_more(func):
-    '''This decorator dumps out the arguments passed to a function before calling it,
-    as well as return value or any exception'''
-    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
-    fname = func.func_name
-
-    def echo_func(*args,**kwargs):
-        print fname, ":", ', '.join(
-            '%s=%r' % entry
-            for entry in zip(argnames,args) + kwargs.items())
-        try:
-            result = func(*args, **kwargs)
-            print "-> ", result
-            return result
-        except:
-            print '-> raised exception:'
-            import traceback
-            traceback.print_exc()
-            raise
-
-
-    return echo_func
 
 def formatPhraseWithCorrectChrUsage(phrase, useUrlEncoding=True, notAllowedChars=''):
     corrected = ''
@@ -783,3 +786,39 @@ def urlDecodePhrase(phrase, unquotePlus=False):
             return decoded.decode('utf-8')
     except (UnicodeDecodeError, UnicodeEncodeError):
         return decoded
+
+def dump_args_and_more(func):
+    '''This decorator dumps out the arguments passed to a function before calling it,
+    as well as return value or any exception'''
+    argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+    fname = func.func_name
+
+    def echo_func(*args,**kwargs):
+        print fname, ":", ', '.join(
+            '%s=%r' % entry
+            for entry in zip(argnames,args) + kwargs.items())
+        try:
+            result = func(*args, **kwargs)
+            print "-> ", result
+            return result
+        except:
+            print '-> raised exception:'
+            import traceback
+            traceback.print_exc()
+            raise
+
+
+    return echo_func
+
+
+# From: https://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
+from contextlib import contextmanager
+
+@contextmanager
+def stdout_redirector(stream):
+    old_stdout = sys.stdout
+    sys.stdout = stream
+    try:
+        yield
+    finally:
+        sys.stdout = old_stdout

@@ -214,13 +214,13 @@ class TrackGenomeElementSource(GenomeElementSource):
             if PreProcMetaDataCollector.hasKey(self._genome, self._trackName):
                 collector = PreProcMetaDataCollector(self._genome, self._trackName)
                 self._fileSuffix = collector.getFileSuffix()
-                self._preProcVersion = collector.getPreProcVersion()
+                self._geSourceVersion = collector.getGeSourceVersion()
                 self._id = collector.getId()
                 self._undirectedEdges = True if collector.hasUndirectedEdges() else False
             else:
                 ti = TrackInfo(self._genome, self._trackName)
                 self._fileSuffix = ti.fileType
-                self._preProcVersion = ti.preProcVersion
+                self._geSourceVersion = ti.geSourceVersion
                 self._id = ti.id
                 self._undirectedEdges = True if ti.undirectedEdges else False
     
@@ -230,7 +230,7 @@ class TrackGenomeElementSource(GenomeElementSource):
         
     def getVersion(self):
         self._findTrackInfoBasedMetaData()
-        return self._preProcVersion
+        return self._geSourceVersion
         
     def getId(self):
         self._findTrackInfoBasedMetaData()

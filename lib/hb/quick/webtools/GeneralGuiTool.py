@@ -21,7 +21,7 @@ class GeneralGuiToolMixin(object):
 
     #TODO: boris 20141001: move this function
     @staticmethod
-    @takes(str) #TODO: Determine how to handle *args - is this correct (does it check every argument sent in - is this the intended way to specify?
+    @takes(basestring) #TODO: Determine how to handle *args - is this correct (does it check every argument sent in - is this the intended way to specify?
     @returns(tuple)
     def getHistorySelectionElement(*args):
         '''
@@ -66,11 +66,11 @@ class GeneralGuiToolMixin(object):
     #
     # @classmethod
     # def getTests(cls):
-    #     import shelve
+    #     import third_party.safeshelve as safeshelve
     #     SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve' % cls.toolId
     #     if os.path.isfile(SHELVE_FN):
     #
-    #         testDict = shelve.open(SHELVE_FN)
+    #         testDict = safeshelve.open(SHELVE_FN)
     #         resDict = dict()
     #         for k, v in testDict.items():
     #             resDict[k] = cls.convertHttpParamsStr(v)
@@ -190,7 +190,8 @@ class GeneralGuiToolMixin(object):
 
         galaxyFn = ExternalTrackManager.extractFnFromGalaxyTN(galaxyTN)
         outFile = StringIO()
-        ok = GSuiteParser.validate(galaxyFn, outFile=outFile, printHelpText=False)
+        ok = GSuiteParser.validate(galaxyFn, outFile=outFile, printHelpText=False,
+                                   allowTrackSummaryToOverrideHeaders=True)
         if not ok:
             return outFile.getvalue()
 

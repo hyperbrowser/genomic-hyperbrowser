@@ -67,7 +67,7 @@ class RawOverlapStatUnsplittable(Statistic):
         t2CodedEnds= t2e * 8 +2
 
         allSortedCodedEvents = numpy.concatenate( (t1CodedStarts,t1CodedEnds,t2CodedStarts,t2CodedEnds) )
-        allSortedCodedEvents.sort()
+        allSortedCodedEvents.sort(kind='mergesort')
 
         allEventCodes = (allSortedCodedEvents % 8) -4
 
@@ -83,14 +83,21 @@ class RawOverlapStatUnsplittable(Statistic):
 
     @classmethod
     def _computeRawOverlap(cls, t1s, t1e, t2s, t2e, binSize):
-        allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus = cls._findAllStartAndEndEvents(t1s, t1e, t2s, t2e)
+        # allSortedDecodedEvents, allEventLengths, cumulativeCoverStatus = cls._findAllStartAndEndEvents(t1s, t1e, t2s, t2e)
+        #
+        # tn,fp,fn,tp = [long((allEventLengths[ cumulativeCoverStatus[:-1] == status ]).sum()) for status in range(4)]
+        #
+        # if len(allSortedDecodedEvents)>0:
+        #     tn += allSortedDecodedEvents[0] + (binSize - allSortedDecodedEvents[-1])
+        # else:
+        #     tn+=binSize
 
-        tn,fp,fn,tp = [long((allEventLengths[ cumulativeCoverStatus[:-1] == status ]).sum()) for status in range(4)]
-
-        if len(allSortedDecodedEvents)>0:
-            tn += allSortedDecodedEvents[0] + (binSize - allSortedDecodedEvents[-1])
-        else:
-            tn+=binSize
+        starts = numpy.sort(numpy.concatenate((t1s, t2s)), kind="mergesort")
+        ends = numpy.sort(numpy.concatenate((t1e, t2e)), kind="mergesort")
+        tp = long(numpy.sum(numpy.maximum(ends[:-1] - starts[1:], 0)))
+        fp = long(numpy.sum(t1e - t1s)) - tp
+        fn = long(numpy.sum(t2e - t2s)) - tp
+        tn = binSize - tp - fp - fn
 
         return tn,fp,fn,tp
 

@@ -44,7 +44,13 @@ class StatisticV2(Statistic):
         if not self._trackStructure.getQueryTrackList():
             raise ShouldNotOccurError('The query track list in the track structure must not be empty')
         return self._trackStructure.getQueryTrackList()[0]
-    
+
+    def getAllTracks(self):
+        return self._trackStructure.getQueryTrackList() + self._trackStructure.getReferenceTrackList()
+
+    def _getTracksAsStr(self):
+        return str(hash(self._trackStructure))
+
     def getUniqueKey(self):
         return StatisticV2.constructUniqueKey(self.__class__, self._region, self._trackStructure, **self._kwArgs)
     

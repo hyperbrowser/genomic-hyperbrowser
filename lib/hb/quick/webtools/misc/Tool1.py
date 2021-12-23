@@ -3,6 +3,7 @@ import os
 from config.Config import DATA_FILES_PATH
 from gold.application.LogSetup import setupDebugModeAndLogging
 from gold.util.CommonFunctions import mean, prettyPrintTrackName
+from gold.util.CustomExceptions import ShouldNotOccurError
 from quick.webtools.misc.Tool3 import CreateGCFunction
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.webtools.GeneralGuiTool import MultiGeneralGuiTool, GeneralGuiTool
@@ -158,7 +159,7 @@ class CreateBpLevelTrackTool(GeneralGuiTool):
             valDataType = 'int32'
             useFloatValues = 'False'
         else:
-            raise
+            raise ShouldNotOccurError()
 
         if choices[3] == 'Floating point':
             valDataType = 'float64'
@@ -1012,7 +1013,7 @@ class ComputeFdrValues(GeneralGuiTool):
             #print 'False discovery rate values:'
             adjPvals = r("p.adjust")(pvals, method='BH')
         else:
-            raise
+            raise ShouldNotOccurError()
 
         outF = open(galaxyFn, 'w')
         for adjP in adjPvals:
@@ -1599,10 +1600,11 @@ class AdhocReceptorRepertoirTool(GeneralGuiTool):
     def execute(choices, galaxyFn, username):
         ModelText = choices[2]
         clonoFunc = AdhocReceptorRepertoirTool.CURVE_FIT_DICT[choices[3]]
+
         #Set random seed if needed
         randomSeed = choices[4]
-        from gold.util.RandomUtil import getManualSeed, setManualSeed
-        if randomSeed and randomSeed != 'Random' and getManualSeed() is None:
+        from gold.util.RandomUtil import setManualSeed
+        if randomSeed:
             setManualSeed(int(randomSeed))
 
         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

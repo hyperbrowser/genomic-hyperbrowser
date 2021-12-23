@@ -3,19 +3,23 @@ import numpy as np
 from gold.track.NumpyDataFrame import NumpyDataFrame
 from gold.track.TrackView import TrackView
 from gold.track.trackstructure.random.ArrayInfoStorage import ArrayInfoStorage
-from gold.track.trackstructure.random.Constants import LENGTH_KEY, ORIG_TRACK_BIN_INDEX_KEY, ORIG_TRACK_EL_INDEX_IN_BIN, \
-    NEW_TRACK_BIN_INDEX_KEY, START_KEY, END_KEY
+from gold.track.trackstructure.random.Constants import (LENGTH_KEY, ORIG_TRACK_BIN_INDEX_KEY,
+                                                        ORIG_TRACK_EL_INDEX_IN_BIN,
+                                                        NEW_TRACK_BIN_INDEX_KEY, START_KEY,
+                                                        END_KEY)
 
 
 class RandomizedTrackDataStorage(object):
-
-    def __init__(self, trackBinIndexer, readFromDiskTrackColNames, generatedTrackColNames, needsMask):
+    def __init__(self, trackBinIndexer, readFromDiskTrackColNames,
+                 generatedTrackColNames, needsMask):
         self._trackBinIndexer = trackBinIndexer
         self._readFromDiskTrackColNames = readFromDiskTrackColNames
         self._generatedTrackColNames = generatedTrackColNames
         self._needsMask = needsMask
 
         assert len(self._readFromDiskTrackColNames) > 0
+
+        self.allowOverlaps = None
 
         self._arrayInfoStorage = ArrayInfoStorage()
         self._dataFrame = self._initDataFrame()
@@ -24,10 +28,12 @@ class RandomizedTrackDataStorage(object):
         dataFrame = NumpyDataFrame()
 
         listOfColNameToTrackBinArrayDicts = self._initializeRandAlgArrays()
-        arrayLengths = self._addConcatenatedTrackBinArraysToDataFrame(dataFrame, listOfColNameToTrackBinArrayDicts)
+        arrayLengths = self._addConcatenatedTrackBinArraysToDataFrame(
+            dataFrame, listOfColNameToTrackBinArrayDicts
+        )
         self._addMandatoryArraysToDataFrame(dataFrame, arrayLengths)
         if self._needsMask:
-            #TODO: is len(dataFrame) safe? Can a member array be multidimensional?
+            # TODO: is len(dataFrame) safe? Can a member array be multidimensional?
             dataFrame.mask = np.zeros(len(dataFrame), dtype=bool)
 
         return dataFrame
@@ -38,6 +44,11 @@ class RandomizedTrackDataStorage(object):
         for trackBinIndex in self._trackBinIndexer.allTrackBinIndexes():
             trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
             trackView = trackBinPair.getTrackView()
+
+            if self.allowOverlaps is None:
+                self.allowOverlaps = trackView.allowOverlaps
+            else:
+                assert self.allowOverlaps == trackView.allowOverlaps
 
             self._arrayInfoStorage.updateInfoForTrackView(trackBinPair, trackView)
 
@@ -122,22 +133,22 @@ class RandomizedTrackDataStorage(object):
     #     return self._dataFrame
 
     def _getDataFrameView(self, trackBinIndex):
-        indices = self._dataFrame.getArray(NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
-
         sortOrder = [START_KEY] if self._dataFrame.hasArray(START_KEY) else [] + \
             [END_KEY] if self._dataFrame.hasArray(END_KEY) else []
         if sortOrder:
             self._dataFrame.sort(sortOrder)
         # if no start or end key is present, we assume that the data is in sorted order already
 
+        indices = self._dataFrame.getArrayNoMask(NEW_TRACK_BIN_INDEX_KEY) == trackBinIndex
         return self._dataFrame[indices]
 
-    def getTrackView(self, trackBinIndex, allowOverlaps):
+    def getTrackView(self, trackBinIndex):
         trackBinPair = self._trackBinIndexer.getTrackBinPairForTrackBinIndex(trackBinIndex)
         trackStorageView = self._getDataFrameView(trackBinIndex)
         starts = trackStorageView.getArray(START_KEY)
         lengths = trackStorageView.getArray(LENGTH_KEY)
         ends = starts + lengths
-        return TrackView(trackBinPair.bin, starts, ends, None, None, None, None, None, borderHandling='crop', allowOverlaps=allowOverlaps)
+        return TrackView(trackBinPair.bin, starts, ends, None, None, None, None, None, 
+                         borderHandling='crop', allowOverlaps=self.allowOverlaps)
 
 

@@ -187,3 +187,16 @@ def drawLegend(position, names, colors):
 def rDevOff():
     from proto.RSetup import r
     r('dev.off()')
+
+def drawQQPlot(xData, yData, xLim, yLim, mainTitle, xTitle, yTitle):
+    from proto.RSetup import robjects
+    qqplot = robjects.r.qqplot
+    qqline = robjects.r.qqline
+    qunif = robjects.r.qunif
+
+    qqplot(xData, yData, xlab=xTitle, ylab=yTitle,
+           main=mainTitle, xlim=xLim, ylim=yLim)
+    qqline(xData, distribution=qunif,
+           prob=[0.1, 0.6], col=2)
+
+

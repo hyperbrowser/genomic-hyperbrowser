@@ -9,12 +9,16 @@ from urllib import unquote
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
 from random import randint, random
 
+
 class SegsSampledByDistanceToReferenceTrack(SegsSampledByIntensityTrack):
     WORKS_WITH_MINIMAL = False
 
-    def _checkTrackFormat(self, origTV):
-        if origTV.trackFormat.isDense():
+    def supportsTrackFormat(cls, origTrackFormat):
+        if origTrackFormat.trackFormat.isDense():
             raise IncompatibleTracksError()
+
+    def supportsOverlapMode(cls, allowOverlaps):
+        assert not allowOverlaps
 
     def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
         referenceTV = PlainTrack(self._trackNameIntensity).getTrackView(region) #self._trackNameIntensity based on naming convenience wrt. inheritance
@@ -113,7 +117,8 @@ class SegsSampledByDistanceToReferenceTrack(SegsSampledByIntensityTrack):
 
             assert len(sampledPositions) == numElements
             sampledElementLengths = elementLengths
-            numpy.random.shuffle(sampledElementLengths)
+            permutIndexes = numpy.random.permutation(len(sampledElementLengths))
+            sampledElementLengths = sampledElementLengths[permutIndexes]
             sampledPositions = numpy.array(sampledPositions)
             sampledPositions.sort()
             sampledStarts = (sampledPositions - (sampledElementLengths/2)).astype('int')

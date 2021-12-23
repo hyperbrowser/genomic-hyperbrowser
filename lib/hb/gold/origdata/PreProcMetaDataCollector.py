@@ -5,7 +5,10 @@ from collections import defaultdict, OrderedDict
 from gold.track.TrackFormat import TrackFormat
 from gold.description.TrackInfo import constructKey, TrackInfo
 
+
 class PreProcMetaDataCollector(object):
+    NO_PRE_PROC, PRE_PROC_MERGED, PRE_PROC_OLD_TYPE = range(3)
+
     _preProcMetaDataStorage = {}
 
     def __new__(cls, genome, trackName):
@@ -27,6 +30,7 @@ class PreProcMetaDataCollector(object):
         self._preProcChrs = defaultdict(OrderedDict)
         self._preProcDirty = False
         self._preProcFilesExist = {}
+        self._mergedPreProcFiles = {}
         self._removedPreProcFiles = {}
         self._overlapRulesFinalized = set()
         
@@ -37,6 +41,7 @@ class PreProcMetaDataCollector(object):
         self._weightDataType = None
         self._weightDim = None
         self._undirectedEdges = None
+        self._geSourceVersion = ''
         self._preProcVersion = ''
         self._id = None
         
@@ -62,11 +67,12 @@ class PreProcMetaDataCollector(object):
     def hasKey(cls, genome, trackName):
         return constructKey(genome, trackName) in cls._preProcMetaDataStorage
         
-    def updateMetaDataForFinalization(self, fileSuffix, prefixList, valDataType, valDim, weightDataType, weightDim, undirectedEdges, \
+    def updateMetaDataForFinalization(self, fileSuffix, prefixList, valDataType, valDim, weightDataType, weightDim, undirectedEdges, geSourceVersion,
                                       preProcVersion, id, numElements, boundingRegionTuples, valCategories, edgeWeightCategories, allowOverlaps):
         
         self._checkAndUpdateAttribute('_fileSuffix', fileSuffix, mayBeEmptyString=True, isGeSourceAttr=False)
         self._checkAndUpdateAttribute('_prefixList', set(prefixList), mayBeEmptyString=False, isGeSourceAttr=False, extraErrorMsg='Different formats?')
+        self._checkAndUpdateAttribute('_geSourceVersion', geSourceVersion, mayBeEmptyString=True, isGeSourceAttr=True, extraErrorMsg='strange..')
         self._checkAndUpdateAttribute('_preProcVersion', preProcVersion, mayBeEmptyString=True, isGeSourceAttr=True, extraErrorMsg='strange..')
         self._checkAndUpdateAttribute('_id', id, mayBeEmptyString=True, isGeSourceAttr=True, extraErrorMsg='Have the original files been modified during the run?')
 
@@ -94,8 +100,10 @@ class PreProcMetaDataCollector(object):
         if dirty:
             self._preProcDirty = True
                     
-    def updatePreProcFilesExistFlag(self, allowOverlaps, val):
-        self._preProcFilesExist[allowOverlaps] = val
+    def updatePreProcFilesExistFlag(self, allowOverlaps, preProcFilesExist, merged):
+        assert not (merged and not preProcFilesExist)
+        self._preProcFilesExist[allowOverlaps] = \
+            self.PRE_PROC_MERGED if merged else self.PRE_PROC_OLD_TYPE if preProcFilesExist else self.NO_PRE_PROC
 
     def updateRemovedPreProcFilesFlag(self, allowOverlaps, val):
         self._removedPreProcFiles[allowOverlaps] = val
@@ -117,9 +125,15 @@ class PreProcMetaDataCollector(object):
         
     def preProcFilesExist(self, allowOverlaps):
         return self._preProcFilesExist.get(allowOverlaps)
+
+    def mergedPreProcFilesExist(self, allowOverlaps):
+        return self._preProcFilesExist.get(allowOverlaps) == self.PRE_PROC_MERGED
         
     def hasRemovedPreProcFiles(self, allowOverlaps):
         return self._removedPreProcFiles.get(allowOverlaps)
+
+    def allFinalizedOverlapRules(self):
+        return self._overlapRulesFinalized
         
     def overlapRuleHasBeenFinalized(self, allowOverlaps):
         return allowOverlaps in self._overlapRulesFinalized
@@ -145,6 +159,12 @@ class PreProcMetaDataCollector(object):
     
     def getEgdeWeightDim(self):
         return self._weightDim
+
+    def getEdgeWeightCategories(self, allowOverlaps):
+        return self._edgeWeightCategories[allowOverlaps]
+
+    def getValCategories(self, allowOverlaps):
+        return self._valCategories[allowOverlaps]
         
     def getFileSuffix(self):
         return self._fileSuffix
@@ -152,9 +172,12 @@ class PreProcMetaDataCollector(object):
     def hasUndirectedEdges(self):
         return self._undirectedEdges
         
+    def getGeSourceVersion(self):
+        return self._geSourceVersion
+        
     def getPreProcVersion(self):
         return self._preProcVersion
-        
+
     def getId(self):
         return self._id
                 
@@ -166,25 +189,40 @@ class PreProcMetaDataCollector(object):
         ti.trackFormatName = trackFormat.getFormatName()
         ti.markType = trackFormat.getValTypeName()
         ti.weightType = trackFormat.getWeightTypeName()
-        ti.undirectedEdges = self._undirectedEdges
-        ti.preProcVersion = self._preProcVersion
+        ti.undirectedEdges = self.hasUndirectedEdges()
+        ti.geSourceVersion = self.getGeSourceVersion()
+        ti.preProcVersion = self.getPreProcVersion()
 
-        ti.origElCount = self._numElements[True]
-        ti.clusteredElCount = self._numElements[False]
+        ti.prefixList = self.getPrefixList()
+        ti.valDataType = self.getValDataType()
+        ti.valDim = self.getValDim()
+        ti.edgeWeightDataType = self.getEgdeWeightDataType()
+        ti.edgeWeightDim = self.getEgdeWeightDim()
+
+        ti.origElCount = self.getNumElements(allowOverlaps=True)
+        ti.clusteredElCount = self.getNumElements(allowOverlaps=False)
         
         if trackFormat.isDense() and trackFormat.isInterval():
-            ti.origElCount -= len(self._boundingRegionTuples[True])
-            ti.clusteredElCount -= len(self._boundingRegionTuples[False])
+            ti.origElCount -= len(self.getBoundingRegionTuples(True))
+            ti.clusteredElCount -= len(self.getBoundingRegionTuples(False))
 
         if True in self._valCategories:
-            ti.numValCategories = len(self._valCategories[True])
+            ti.numValCategories = len(self.getValCategories(True))
         
         if False in self._valCategories:
-            ti.numClusteredValCategories = len(self._valCategories[False])
+            ti.numClusteredValCategories = len(self.getValCategories(False))
 
         if True in self._edgeWeightCategories:
-            ti.numEdgeWeightCategories = len(self._edgeWeightCategories[True])
-        
+            ti.numEdgeWeightCategories = len(self.getEdgeWeightCategories(True))
+
+        for allowOverlaps in self.allFinalizedOverlapRules():
+            ti.preProcOverlapRules.append(allowOverlaps)
+            if self.mergedPreProcFilesExist(allowOverlaps):
+                ti.mergedPrefixInfoDictPerOverlapRule[allowOverlaps] = self._getMergedPrefixInfoDict(allowOverlaps)
+
+        if ti.mergedPrefixInfoDictPerOverlapRule:
+            ti.trackFormatHash = self._calcTrackFormatHash(ti.mergedPrefixInfoDictPerOverlapRule)
+
         ti.id = self._id
         ti.timeOfPreProcessing = datetime.datetime.now()
     
@@ -199,6 +237,19 @@ class PreProcMetaDataCollector(object):
             print
         
         self.removeEntry()
+
+    def _getMergedPrefixInfoDict(self, allowOverlaps):
+        from gold.origdata.PreProcessUtils import PreProcessUtils
+        return PreProcessUtils.getMergedPrefixInfoDict(self._genome, self._trackName, allowOverlaps)
+
+    @staticmethod
+    def _calcTrackFormatHash(mergedPrefixInfoDictPerOverlapRule):
+        trackFormatList = []
+        for allowOverlaps in mergedPrefixInfoDictPerOverlapRule.keys():
+            mergedPrefixInfoDict = mergedPrefixInfoDictPerOverlapRule[allowOverlaps]
+            trackFormatList.append(TrackFormat.createInstanceFromPrefixInfoDict(mergedPrefixInfoDict))
+        trackFormatHash = hash(tuple(trackFormatList))
+        return trackFormatHash
 
     def removeEntry(self):
         del self._preProcMetaDataStorage[constructKey(self._genome, self._trackName)]

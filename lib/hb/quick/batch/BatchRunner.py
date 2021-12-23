@@ -2,7 +2,8 @@ import sys
 import os
 import time
 
-from gold.application.StatRunner import AnalysisDefJob, AssemblyGapJob
+from quick.deprecated.StatRunner import AnalysisDefJob, AssemblyGapJob
+from gold.description.RunDescription import RunDescription
 from gold.origdata.GenomeElementSource import GenomeElementSource
 from gold.result.Results import Results
 from gold.track.Track import Track
@@ -21,20 +22,18 @@ from gold.application.LogSetup import logMessage, logException
 from gold.description.Analysis import Analysis
 from quick.util.CommonFunctions import convertTNstrToTNListFormat
 
+
 class BatchContents(object):
     def __init__(self):
         self.errorResult = None
         self.regSpec = None
         self.binSpec = None
         self.userBinSource = None
-        self.trackName1 = None
-        self.cleanedTrackName1 = None
-        self.trackName2 = None
-        self.cleanedTrackName2 = None
-        self.trackNameIntensity = None
-        self.cleanedTrackNameIntensity = None
+        self.trackNames = None
+        self.cleanedTrackNames = None
         self.statClassName = None
         self.paramDict = None
+
 
 class BatchRunner(object):
     @staticmethod
@@ -43,26 +42,25 @@ class BatchRunner(object):
 
     @staticmethod
     def runManyLines(batchLines, genome, fullAccess, useBatchId=True, galaxyFn=None, printProgress=True):
-        #fixme: useBatchId is currently ignored! Do something with it if this was a meaningful name from a standard batch run....
+        # TODO: useBatchId is currently ignored! Do something with it if this was a meaningful name from a
+        #  standard batch run....
 
         resList = []
         for line in batchLines:
-            resList.append(BatchRunner.runJob(line, genome, fullAccess, galaxyFn=galaxyFn, printProgress=printProgress) ) 
+            resList.append(BatchRunner.runJob(line, genome, fullAccess, galaxyFn=galaxyFn, printProgress=printProgress))
         return resList
     
     @staticmethod
     def parseBatchLine(batchLine, genome, fullAccess):
-        if batchLine[0] == '#' or batchLine.strip()=='':
+        if batchLine[0] == '#' or batchLine.strip() == '':
             return
             
         from urllib import unquote
         
-        #Split and check number of columns
+        # Split and check number of columns
         cols = [x for x in batchLine.strip().split(BATCH_COL_SEPARATOR)]
         if len(cols) != 6:
-            results = Results(['N/A'],['N/A'],'N/A')
-            #results.addResultComponent( 'Invalid',InvalidRunResultComponent('Error in batch specification. 6 columns are required, while '\
-            #                            + str(len(cols)) + ' are given.'))
+            results = Results(['N/A'], ['N/A'], 'N/A')
             results.addError(InvalidRunSpecException('Error in batch specification. 6 columns are required, while '\
                                         + str(len(cols)) + ' are given: ' + batchLine))
             return results, None, None, None, None 
@@ -71,19 +69,24 @@ class BatchRunner(object):
         
         bc.regSpec = cols[1]
         bc.binSpec = unquote(cols[2])
+
         from quick.application.ExternalTrackManager import ExternalTrackManager
         if ExternalTrackManager.isGalaxyTrack(bc.binSpec.split(':')):
             bc.binSpec = ExternalTrackManager.extractFnFromGalaxyTN(bc.binSpec.split(':'))
-        
-        try:
-            from quick.application.GalaxyInterface import GalaxyInterface
-            bc.trackName1 = [unquote(x) for x in cols[3].split(':')]
-            bc.trackName2 = [unquote(x) for x in cols[4].split(':')]
-            bc.cleanedTrackName1, bc.cleanedTrackName2 = GalaxyInterface._cleanUpTracks([bc.trackName1, bc.trackName2], genome, realPreProc=True)
 
-            bc.cleanedTrackName1 = BatchRunner._inferTrackName(bc.cleanedTrackName1, genome, fullAccess)
-            bc.cleanedTrackName2 = BatchRunner._inferTrackName(bc.cleanedTrackName2, genome, fullAccess)
-            
+        bc.statClassName, bc.paramDict = BatchRunner._parseClassAndParams(cols[5])
+
+        bc.trackNames = [[unquote(x) for x in cols[i].split(':')] for i in [3, 4]]
+        if 'trackNameIntensity' in bc.paramDict:
+            bc.trackNames.append(convertTNstrToTNListFormat(bc.paramDict['trackNameIntensity'], doUnquoting=True))
+
+        from quick.application.GalaxyInterface import GalaxyInterface
+
+        partlyCleanedTrackNames = GalaxyInterface._cleanUpTracks(bc.trackNames, genome, realPreProc=True)
+
+        try:
+            bc.cleanedTrackNames = BatchRunner._inferTrackNames(partlyCleanedTrackNames, genome, fullAccess)
+
         except (InvalidRunSpecException,IdenticalTrackNamesError), e:
             if DebugConfig.PASS_ON_BATCH_EXCEPTIONS:
                 raise
@@ -91,24 +94,10 @@ class BatchRunner(object):
             bc.errorResult.addError(e)
             return bc
 
-        bc.errorResult, bc.userBinSource = BatchRunner._constructBins(bc.regSpec, bc.binSpec, genome, bc.cleanedTrackName1, bc.cleanedTrackName2)
+        bc.errorResult, bc.userBinSource = BatchRunner._constructBins(bc.regSpec, bc.binSpec,
+                                                                      genome, bc.cleanedTrackNames)
         if bc.errorResult is not None:
             return bc
-        
-        bc.statClassName, bc.paramDict = BatchRunner._parseClassAndParams(cols[5])
-        
-        bc.trackNameIntensity = []
-        if 'trackNameIntensity' in bc.paramDict:
-            #fullRunParams['trackNameIntensity'] = paramDict['trackNameIntensity'].replace('_',' ').split(':')
-            from quick.application.GalaxyInterface import GalaxyInterface
-            import re
-            #trackNameIntensity = re.split(':|\|', paramDict['trackNameIntensity'])
-            bc.trackNameIntensity = convertTNstrToTNListFormat(bc.paramDict['trackNameIntensity'], doUnquoting=True)
-            #print "HERE: ",trackNameIntensity
-            bc.cleanedTrackNameIntensity = GalaxyInterface._cleanUpTracks([bc.trackNameIntensity], genome, realPreProc=True)[0]
-            bc.cleanedTrackNameIntensity = BatchRunner._inferTrackName(bc.cleanedTrackNameIntensity, genome, fullAccess)
-            
-            del bc.paramDict['trackNameIntensity']
     
         return bc
     
@@ -132,28 +121,32 @@ class BatchRunner(object):
             fullRunParams = {}
             
             if USE_PARALLEL:
+                # TODO: Requirements for parallel runs should not be added in places like these. Parallelization
+                #  should be a feature of the job runner somehow
+
                 #if galaxyFn == None: #then this is a test
                 uniqueId = time.time()
                 #else:
                     #uniqueId = extractIdFromGalaxyFn(galaxyFn)[1]
                     
                 fullRunParams["uniqueId"] = uniqueId
-            
-            if bc.cleanedTrackNameIntensity is not None:
-                fullRunParams['trackNameIntensity'] = '|'.join(tuple(bc.cleanedTrackNameIntensity))
-            
+
+            from quick.application.GalaxyInterface import GalaxyInterface
+
             analysisDefParams = [ '[' + key + '=' + value + ']' for key,value in bc.paramDict.items()]
             analysisDef = ''.join(analysisDefParams) + '->' + bc.statClassName
 
-            from quick.application.GalaxyInterface import GalaxyInterface
-            
-            GalaxyInterface._tempAnalysisDefHacks(analysisDef)
-            
+            # TODO: Keeping the ugly accesses to private methods in GalaxyInterface for now. To be refactored.
+            trackNames, analysisDef = GalaxyInterface._cleanUpAnalysisDef(bc.cleanedTrackNames, analysisDef)
+
             if printProgress:
-                print 'Corresponding batch command line:<br>' + \
-                    GalaxyInterface._revEngBatchLine(bc.trackName1, bc.trackName2, bc.trackNameIntensity, analysisDef, bc.regSpec, bc.binSpec, genome) + '<br><br>'
-            
-            results = AnalysisDefJob(analysisDef, bc.cleanedTrackName1, bc.cleanedTrackName2, bc.userBinSource, galaxyFn=galaxyFn, **fullRunParams).run(printProgress)
+                revEngBatchLine = RunDescription.getRevEngBatchLine(
+                    analysisDef, bc.trackNames, bc.cleanedTrackNames, bc.regSpec, bc.binSpec, genome
+                )
+
+                print 'Corresponding batch command line:<br>{}<br><br>'.format(revEngBatchLine)
+
+            results = AnalysisDefJob(analysisDef, bc.cleanedTrackNames[0], bc.cleanedTrackNames[1], bc.userBinSource, galaxyFn=galaxyFn, **fullRunParams).run(printProgress)
             presCollectionType = results.getPresCollectionType()
 
             if len(results.getResDictKeys()) > 0 and GalaxyInterface.APPEND_ASSEMBLY_GAPS and presCollectionType=='standard':
@@ -165,7 +158,7 @@ class BatchRunner(object):
 
         except Exception, e:
             #print 'NOWAG BExc'
-            results = Results(bc.cleanedTrackName1, bc.cleanedTrackName2, bc.statClassName)
+            results = Results(bc.cleanedTrackNames[0], bc.cleanedTrackNames[1], bc.statClassName)
             results.addError(e)
             logException(e,message='Error in batch run')
             if DebugConfig.PASS_ON_BATCH_EXCEPTIONS:
@@ -176,17 +169,14 @@ class BatchRunner(object):
                 
 
     @staticmethod
-    def _constructBins(regSpec, binSpec, genome, trackName1, trackName2):
-        #Construct and check bins
+    def _constructBins(regSpec, binSpec, genome, trackNames):
+        # Construct and check bins
         try:
-            #userBinSource= UserBinSource(regSpec, binSpec)
             from quick.application.GalaxyInterface import GalaxyInterface
-#            from config.Config import DEFAULT_GENOME
-            userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackName1, trackName2)
+            userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackNames)
             return [None, userBinSource]
         except Exception, e:
-            #results = Results(trackName1, trackName2, statClassName)
-            results = Results([],[],'')
+            results = Results([], [], '')
             results.addError(InvalidRunSpecException('Error in specification of analysis region or binsize: ' + str(e)))
             logMessage('Error in specification of analysis region (' + regSpec +') or binsize: (' + binSpec + ')')
             if DebugConfig.PASS_ON_BATCH_EXCEPTIONS:
@@ -207,16 +197,20 @@ class BatchRunner(object):
             return spec, {}
 
     @staticmethod
+    def _inferTrackNames(trackNames, genome, fullAccess):
+        return [BatchRunner._inferTrackName(trackName, genome, fullAccess) for trackName in trackNames]
+
+    @staticmethod
     def _inferTrackName(trackName, genome, fullAccess):
-        #genome = DEFAULT_GENOME
         if len(trackName) == 0 or \
-            len(trackName) == 1 and trackName[0].lower() in ['blank','none','dummy','_',' ','']:
-                return None
+                len(trackName) == 1 and trackName[0].lower() in ['blank', 'none', 'dummy', '_', ' ', '']:
+            return None
+
+        # trackName = rawTN.replace('_',' ').split(':')
+        # trackName = rawTN.split(':')
         #
-        #trackName = rawTN.replace('_',' ').split(':')
-        #trackName = rawTN.split(':')
-        
-        #trackName = convertTNstrToTNListFormat(rawTN)
+        # trackName = convertTNstrToTNListFormat(rawTN)
+
         if ProcTrackOptions.isValidTrack(genome, trackName, fullAccess):
             return trackName
         else:
@@ -224,17 +218,17 @@ class BatchRunner(object):
                                           ':'.join(trackName) + '\' does not match any tracknames. ' +\
                                           'This may be because of limited user permissions.')
 
-            #print 'No exact match for track name (%s). Searching for submatch in genome %s. ' % (rawTN, genome)
-            #candidates = [candidate for candidate in ProcTrackNameSource(genome, fullAccess, avoidLiterature=True)\
+            # print 'No exact match for track name (%s). Searching for submatch in genome %s. ' % (rawTN, genome)
+            # candidates = [candidate for candidate in ProcTrackNameSource(genome, fullAccess, avoidLiterature=True)\
             #    #if rawTN.lower() in (':'.join(candidate)).replace(' ','_').lower()]
             #    if rawTN.lower() in (':'.join(candidate)).lower()]
-            #if len(candidates) == 0:
+            # if len(candidates) == 0:
             #    raise InvalidRunSpecException('Error in trackname specification. \''\
             #                                  + rawTN + '\' does not match any tracknames. This may be because of limited user permissions.')
-            #elif len(candidates) > 1:
+            # elif len(candidates) > 1:
             #    raise InvalidRunSpecException('Error in trackname specification. \''\
             #                                  + rawTN + '\' matches more than one trackname: \n- ' + '\n- '.join([':'.join(x) for x in candidates]))
-            #else:
+            # else:
             #    return candidates[0]
 
     

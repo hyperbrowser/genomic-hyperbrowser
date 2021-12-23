@@ -18,7 +18,6 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import GlobalBinSource
 from quick.extra.ProgressViewer import ProgressViewer
-from quick.extra.tcell.TCellReceptorSequenceModel import TCellReceptorSequenceModel
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.MultitrackSummarizedInteractionV2Stat import MultitrackSummarizedInteractionV2StatUnsplittable
 from quick.statistic.QueryToReferenceCollectionWrapperStat import QueryToReferenceCollectionWrapperStat
@@ -1926,8 +1925,8 @@ class FastaSequencesAnalysisTool(GeneralGuiTool):
 
         #Set random seed if needed
         randomSeed = choices.randSeed
-        from gold.util.RandomUtil import getManualSeed, setManualSeed, random
-        if randomSeed and randomSeed != 'Random' and getManualSeed() is None:
+        from gold.util.RandomUtil import setManualSeed, random
+        if randomSeed:
             setManualSeed(int(randomSeed))
 
         #Read in the sequences
@@ -2159,6 +2158,7 @@ class FastaSequencesAnalysisTool(GeneralGuiTool):
 
     @classmethod
     def createSequenceDict(cls, lines, label=None):
+        from quick.extra.tcell.TCellReceptorSequenceModel import TCellReceptorSequenceModel
         seqToTCellReceptorSeqObjDict = OrderedDict()
         header = ''
         for line in lines:

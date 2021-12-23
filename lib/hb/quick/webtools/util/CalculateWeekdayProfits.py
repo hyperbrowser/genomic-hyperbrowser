@@ -1,5 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import shelve
+import third_party.safeshelve as safeshelve
 import os
 import re
 import glob
@@ -66,8 +66,7 @@ class CalculateWeekdayProfits(GeneralGuiTool):
         from quick.application.ProcTrackOptions import ProcTrackOptions
         
         from quick.application.GalaxyInterface import GalaxyInterface
-        import gold.application.StatRunner
-        
+
         analysisDef = 'dummy -> PercentageChangeStat'
         genome = choices[0]
         binSpec = '*'

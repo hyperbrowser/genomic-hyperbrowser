@@ -1,31 +1,41 @@
-from collections import OrderedDict
+import itertools
+from collections import OrderedDict, defaultdict
 
-from gold.application.HBAPI import doAnalysis
+import quick.gsuite.GuiBasedTsFactory as factory
+from config.Config import STATIC_DIR
+from gold.application.HBAPI import doAnalysisWithProfiling
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
+from gold.gsuite.GSuite import GSuite
 from gold.track.TrackStructure import TrackStructureV2
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.MultitrackSummarizedInteractionWithOtherTracksV2Stat import \
     MultitrackSummarizedInteractionWithOtherTracksV2Stat
-from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat, \
-    SummarizedInteractionPerTsCatV2StatUnsplittable
+from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
+from quick.statistic.TtestUnpairedTestStat import TtestUnpairedTestStat
 from quick.statistic.WilcoxonUnpairedTestRV2Stat import WilcoxonUnpairedTestRV2Stat
 from quick.util import McEvaluators
-from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import \
+    QueryTrackVsCategoricalGSuiteMixin
+from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
-import quick.gsuite.GuiBasedTsFactory as factory
 
 
-class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
+
+
+class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin,
+                                        QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
     ALLOW_UNKNOWN_GENOME = False
     ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
@@ -39,6 +49,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
                                  GSuiteConstants.MULTIPLE]
+    ALL_VS_ALL = 'All versus all'
+
+    CASE_VS_CONTROL = 'Case versus control value'
 
     @classmethod
     def getToolName(cls):
@@ -71,28 +84,38 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Use a GSuite of randomized query track', 'isQueryGSuite'),
-                ('Select query from history', 'queryTrack'),
-                ('Select reference GSuite', 'gsuite'),
-                ('Select category column', 'categoryName'),
-                ('Select primary group category value', 'categoryVal'),
-                ('Select track to track similarity/distance measure', 'similarityFunc'),
-                ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                ('Type of randomization', 'randType'),
-                ('Select summary function groups', 'catSummaryFunc'),
-                ('Select MCFDR sampling depth', 'mcfdrDepth'),
-                ('Select alternative for the wilcoxon test', 'wilcoxonTail'),
-                ('Randomization algorithm', 'randAlg')] + \
-               cls.getInputBoxNamesForGenomeSelection() + \
-               cls.getInputBoxNamesForUserBinSelection() + \
-               cls.getInputBoxNamesForDebug()
+        return [
+                #('Use a GSuite of randomized query track', 'isQueryGSuite'),
+                ('Add GSuite to history', 'exampleGSuite'),
+                ('Select reference track', 'queryTrack'),
+                ('Select a GSuite of case-control tracks', 'gsuite'),
+                ('Select category column', cls.CAT_LBL_KEY),
+                ('Tool mode', 'toolMode'),
+                ('Select control value', 'controlVal'),
+                ('Select case value', 'caseVal')] + \
+                cls.getInputBoxNamesForQueryTrackVsCatGSuite()[1:] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                cls.getInputBoxNamesForUserBinSelection() + \
+                cls.getInputBoxNamesForDebug()
 
     @staticmethod
     def getOptionsBoxIsQueryGSuite():
         return False
 
-    @staticmethod
-    def getOptionsBoxQueryTrack(prevChoices):
+    @classmethod
+    def getOptionsBoxExampleGSuite(cls):
+        from quick.util.CommonFunctions import getLoadToGalaxyHistoryURL
+
+        LOAD_GSUITE_EXAMPLE_URL = getLoadToGalaxyHistoryURL(
+            STATIC_DIR + '/data/gsuite/chakri-example.gsuite', 'hg19', 'gsuite',
+            histElementName='Roadmap Epigenomics tracks')
+
+        gsuiteLink = str(HtmlCore().link('Add example GSuite to your history', LOAD_GSUITE_EXAMPLE_URL))
+
+        return '__rawstr__', gsuiteLink
+
+    @classmethod
+    def getOptionsBoxQueryTrack(cls, prevChoices):
         """
         Defines the type and contents of the input box. User selections are
         returned to the tools in the prevChoices and choices attributes to
@@ -182,8 +205,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         extractFileSuffixFromDatasetInfo(), extractFnFromDatasetInfo(), and
         extractNameFromDatasetInfo() from the module CommonFunctions.py.
         """
-        return GeneralGuiTool.getHistorySelectionElement('gsuite') if prevChoices.isQueryGSuite \
-            else GeneralGuiTool.getHistorySelectionElement()
+        # return GeneralGuiTool.getHistorySelectionElement('gsuite') if prevChoices.isQueryGSuite \
+        #     else GeneralGuiTool.getHistorySelectionElement()
+        return GeneralGuiTool.getHistorySelectionElement()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -236,46 +260,62 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             return gsuite.attributes
 
-    @staticmethod
-    def getOptionsBoxCategoryVal(prevChoices):
+    @classmethod
+    def getOptionsBoxToolMode(cls, prevChoices):
         if prevChoices.gsuite and prevChoices.categoryName:
+            return [cls.CASE_VS_CONTROL, cls.ALL_VS_ALL]
+
+    @classmethod
+    def getOptionsBoxControlVal(cls, prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == cls.CASE_VS_CONTROL:
             from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
             gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return list(set(gsuite.getAttributeValueList(prevChoices.categoryName)))
+            vals = set(gsuite.getAttributeValueList(prevChoices.categoryName))
+            return list(vals)
 
-    @staticmethod
-    def getOptionsBoxSimilarityFunc(prevChoices):
-        return GSuiteStatUtils.PAIRWISE_STAT_LABELS
-
-    @staticmethod
-    def getOptionsBoxSummaryFunc(prevChoices):
-        return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
-
-    @staticmethod
-    def getOptionsBoxRandType(prevChoices):
-        return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
-
-    @staticmethod
-    def getOptionsBoxCatSummaryFunc(prevChoices):
-        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
-
-    @staticmethod
-    def getOptionsBoxMcfdrDepth(prevChoices):
-        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
-
-    @staticmethod
-    def getOptionsBoxWilcoxonTail(prevChoices):
-        if prevChoices.randType == "Wilcoxon":
-            return ['two.sided', 'less', 'greater']
-
-    @staticmethod
-    def getOptionsBoxRandAlg(prevChoices):
-        if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
-            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
-                if prevChoices.randType == definedRandType:
-                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
+    @classmethod
+    def getOptionsBoxCaseVal(cls, prevChoices):
+        if prevChoices.gsuite and prevChoices.categoryName and prevChoices.toolMode == cls.CASE_VS_CONTROL:
+            from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
+            gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            vals = set(gsuite.getAttributeValueList(prevChoices.categoryName))
+            if prevChoices.controlVal:
+                vals.remove(prevChoices.controlVal)
+            return list(vals)
+    #
+    # @staticmethod
+    # def getOptionsBoxSimilarityFunc(prevChoices):
+    #     return GSuiteStatUtils.PAIRWISE_STAT_LABELS
+    #
+    # @staticmethod
+    # def getOptionsBoxSummaryFunc(prevChoices):
+    #     return GSuiteStatUtils.SUMMARY_FUNCTIONS_LABELS
+    #
+    # @staticmethod
+    # def getOptionsBoxRandType(prevChoices):
+    #     return ['--- Select ---'] + RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"]
+    #
+    # @staticmethod
+    # def getOptionsBoxCatSummaryFunc(prevChoices):
+    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+    #         return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
+    #
+    # @staticmethod
+    # def getOptionsBoxMcfdrDepth(prevChoices):
+    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+    #         return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
+    #
+    # @staticmethod
+    # def getOptionsBoxWilcoxonTail(prevChoices):
+    #     if prevChoices.randType == "Wilcoxon":
+    #         return ['two.sided', 'less', 'greater']
+    #
+    # @staticmethod
+    # def getOptionsBoxRandAlg(prevChoices):
+    #     if prevChoices.randType not in ['--- Select ---', "Wilcoxon"]:
+    #         for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+    #             if prevChoices.randType == definedRandType:
+    #                 return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
 
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
@@ -333,51 +373,94 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Mandatory unless isRedirectTool() returns True.
         """
-        # DebugUtil.insertBreakPoint(5678)
 
         cls._setDebugModeIfSelected(choices)
 
         analysisBins = GalaxyInterface._getUserBinSource(*UserBinMixin.getRegsAndBinsSpec(choices),
                                                          genome=choices.genome)
 
-        if choices.isQueryGSuite:
-            queryTS = factory.getFlatTracksTS(choices.genome, choices.queryTrack)
+        # if choices.isQueryGSuite:
+        #     queryTS = factory.getFlatTracksTS(choices.genome, choices.queryTrack)
+        #     refTS = factory.getFlatTracksTS(choices.genome, choices.gsuite)
+        #     catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
+        #     assert choices.categoryVal in catTS
+        #     cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+        # else:
+        queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
+        if choices.toolMode == cls.ALL_VS_ALL:
+            combinationGsuites = cls._splitGSuite(choices.gsuite, choices.categoryName)
         else:
-            queryTS = factory.getSingleTrackTS(choices.genome, choices.queryTrack)
-        refTS = factory.getFlatTracksTS(choices.genome, choices.gsuite)
-        catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
-        assert choices.categoryVal in catTS
+            combinationGsuites = cls._createGSuiteControlCase(choices.gsuite, choices.categoryName, choices.controlVal, choices.caseVal)
 
-        if choices.isQueryGSuite:
-            cls._executeMultipleQueryScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
-        else:
-            cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS)
+        resultsDict = {}
+
+        cls._printPageHeader()
+        for combination,gsuite in combinationGsuites.iteritems():
+            refTS = factory.getFlatTracksTSFromGsuiteObject(choices.genome, gsuite)
+            catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
+
+            categoryVal = combination.split("_")[0]
+            results, resultsMC, resultsWilcoxonTtest = cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal)
+
+            resultsDict[combination] = (results, resultsMC, resultsWilcoxonTtest)
+
+        cls._printResultsHtml(choices, resultsDict, galaxyFn)
+
+    @classmethod
+    def _createGSuiteControlCase(cls, gsuiteInput, categoryName, controlVal, caseVal):
+        gsuite = getGSuiteFromGalaxyTN(gsuiteInput)
+        filteredGSuite = GSuite()
+        for track in gsuite.allTracks():
+            category = track.getAttribute(categoryName)
+            if category and category in [controlVal, caseVal]:
+                filteredGSuite.addTrack(track)
+
+        combinationGsuites = {}
+        combinationGsuites["_".join([controlVal, caseVal])] = filteredGSuite
+
+        return combinationGsuites
+
+    @classmethod
+    def _splitGSuite(cls, gsuiteInput, categoryName):
+        gsuite = getGSuiteFromGalaxyTN(gsuiteInput)
+        categoriesTracksDict = defaultdict(list)
+        for track in gsuite.allTracks():
+            category = track.getAttribute(categoryName)
+            if category:
+                categoriesTracksDict[category].append(track)
+
+        allCategoryCombinations = itertools.combinations(categoriesTracksDict.keys(), 2)
+        combinationGsuites = {}
+        for combination in allCategoryCombinations:
+            combGsuite = GSuite()
+            for category in combination:
+                categoryTracks = categoriesTracksDict[category]
+                for track in categoryTracks:
+                    combGsuite.addTrack(track)
+            combinationGsuites["_".join(sorted(combination))] = combGsuite
+
+        return combinationGsuites
 
     @classmethod
     def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        core = HtmlCore()
-        core.begin()
-        core.divBegin(divId="progress-output")
-        print str(core)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices, isMC=False)
+        # cls._startProgressOutput()
         ts = cls.prepareTrackStructure(queryTS, catTS)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
         analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
-        core = HtmlCore()
-        core.divEnd()
-        core.hideToggle(styleId="progress-output")
-        print str(core)
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
+        # cls._endProgressOutput()
+        cls._endDebugOutput()
         cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
 
     @classmethod
     def _printMultiQueryScenarioResult(cls, results, catNames, choices, galaxyFn):
         core = HtmlCore()
-        core.divBegin()
+        # core.divBegin()
         resTableDict = OrderedDict()
-        if choices.randType == "Wilcoxon":
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-            columnNames = ["Query track", "Wilcoxon score", "P-value"]
+            columnNames = ["Query track", choices.randType + " score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
             # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
         else:
@@ -386,122 +469,160 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             columnNames = ["Query track"] + catNames
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
             # core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
-        core.divEnd()
-        core.end()
+        # core.divEnd()
+        # core.end()
         print str(core)
 
     @classmethod
-    def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        wilcoxonResults = None
+    def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal=None):
+        resultsWilcoxonTtest = None
         resultsMC = None
-        core = HtmlCore()
-        core.begin()
-        results = cls._getResults(queryTS, catTS, analysisBins, choices)
-        if choices.randType == "Wilcoxon":
+        # cls._startProgressOutput()
+        results = cls._getResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
             assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
-            wilcoxonResults = cls.getWilcoxonResults(analysisBins, catTS, choices, queryTS).getResult()
+            resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal).getResult()
         else:
-            core.divBegin(divId="progress-output")
-            print str(core)
-            resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices)
-            core = HtmlCore()
-            core.divEnd()
-            core.hideToggle(styleId="progress-output")
-        print str(core)
-        cls._printResultsHtml(choices, results, resultsMC, wilcoxonResults, galaxyFn)
+            resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
+        # cls._endProgressOutput()
+        cls._endDebugOutput()
+        return results, resultsMC, resultsWilcoxonTtest
+
 
     @classmethod
-    def getWilcoxonResults(cls, analysisBins, catTS, choices, queryTS):
+    def getWilcoxonOrTtestResults(cls, analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal=None):
+        if not categoryVal:
+            categoryVal = choices.categoryVal
         ts = cls.prepareTrackStructure(queryTS, catTS)
-        analysisSpec = AnalysisSpec(WilcoxonUnpairedTestRV2Stat)
+        stat = WilcoxonUnpairedTestRV2Stat
+        if choices.randType == "T-test":
+            stat = TtestUnpairedTestStat
+        analysisSpec = AnalysisSpec(stat)
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('segregateNodeKey', 'reference')
-        analysisSpec.addParameter('alternative', choices.wilcoxonTail)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        analysisSpec.addParameter('alternative', choices.tail)
+        analysisSpec.addParameter('primaryCatVal', categoryVal)
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
 
     @classmethod
-    def _getResults(cls, queryTS, catTS, analysisBins, choices):
+    def _getResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
         ts = cls.prepareTrackStructure(queryTS, catTS)
-        analysisSpec = cls.prepareAnalysis(choices)
-        results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()["Result"]
+        analysisSpec = cls.prepareAnalysis(choices, categoryVal)
+        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
 
     @classmethod
-    def _calculateNrOfOperationsForProgresOutput(cls, queryTS, catTS, analysisBins, choices, isMC=True):
-        n = len(queryTS.getLeafNodes())
-        m = len(catTS.getLeafNodes())
-        cat_m = len(catTS[choices.categoryVal].getLeafNodes())
-        k = 1  # len(list(analysisBins)) + 1 #currently local analysis is turned of
-        mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
-            AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
-        analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
-        analysisSpec = AnalysisDefHandler(analysisDefString)
-        analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
-        aDChoicec = analysisDef.getChoices(filterByActivation=True)
-        maxSamples = int(aDChoicec['maxSamples']) if isMC else 0
-        return n * m * k * (maxSamples + 1)
-
-    @classmethod
-    def _getMCResults(cls, queryTS, catTS, analysisBins, choices):
+    def _getMCResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
+        if not categoryVal:
+            categoryVal = choices.categoryVal
         tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
-                                           choices.categoryVal)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(queryTS, catTS, analysisBins, choices)
-        analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount)
-        resultsMC = doAnalysis(analysisSpecMC, analysisBins, tsMC).getGlobalResult()['Result']
+                                           categoryVal)
+        operationCount = cls._calculateNrOfOperationsForProgresOutput(tsMC.values()[0]['real'], analysisBins, choices)
+        analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount, categoryVal)
+        globalResult = doAnalysisWithProfiling(analysisSpecMC, analysisBins, tsMC, galaxyFn).getGlobalResult()
+        resultsMC = globalResult['Result']
         return resultsMC
 
+
     @classmethod
-    def _printResultsHtml(cls, choices, results, resultsMC, wilcoxonResults, galaxyFn):
+    def _printPageHeader(cls):
         core = HtmlCore()
-        core.divBegin()
-        core.paragraph('The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
-        choices.summaryFunc, choices.similarityFunc))
+        core.begin(reloadTime=5)
 
-        if wilcoxonResults:
-            resTableDict = OrderedDict()
-            for key, val in results.iteritems():
-                resTableDict[key] = [val.getResult()]
-                resTableDict[key].append("NA")
-            resTableDict['Wilcoxon'] = [wilcoxonResults['statistic'], wilcoxonResults['p.value']]
+        core.styleInfoBegin(style='text-align:right')
+        core.toggle('Toggle debug', styleClass='debug')
+        core.styleInfoEnd()
 
-            columnNames = ["Group", "Score", "P-value"]
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
-            # core.tableFromDictionary(resTableDict, columnNames=columnNames)
-
-        else:
-            resTableDict = OrderedDict()
-            for key, val in results.iteritems():
-                resTableDict[key] = [val.getResult()]
-                resTableDict[key].append("NA")
-                resTableDict[key].append("NA")
-                resTableDict[key].append("NA")
-            resTableDict[choices.catSummaryFunc] = [
-                resultsMC[choices.categoryVal].getResult()['TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__],
-                resultsMC[choices.categoryVal].getResult()[McEvaluators.PVAL_KEY],
-                resultsMC[choices.categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY],
-                resultsMC[choices.categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY]
-                ]
-            rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC)
-            columnNames = ["Group", "Similarity score", "P-value", "Mean score for null distribution",
-                             "Std. deviation of score for null distribution"]
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
-            # core.tableFromDictionary(resTableDict, columnNames=columnNames)
-
-            core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
-                "null distribution table") + ".")
-
-        core.divEnd()
-        core.end()
+        core.styleInfoBegin(styleClass='debug')
         print str(core)
 
     @classmethod
-    def _getNullDistributionFile(cls, choices, galaxyFn, resultsMC):
-        nullRawResults = resultsMC[choices.categoryVal].getResult()[McEvaluators.RAND_RESULTS_KEY]
+    def _endDebugOutput(cls):
+        core = HtmlCore()
+        core.styleInfoEnd()
+        print str(core)
+
+    @classmethod
+    def _printPageFooter(cls, core):
+        # core.divEnd()
+        core.hideToggle(styleClass='debug')
+        core.end(stopReload=True)
+        print str(core)
+
+    @classmethod
+    def _printResultsHeader(cls, choices, core):
+        # core.divBegin()
+        core.paragraph(
+            'The similarity score for each group is measured as the <b>%s</b> of the "<b>%s</b>".' % (
+                choices.summaryFunc, choices.similarityFunc))
+
+    @classmethod
+    def _printResultsHtml(cls, choices, resultsDict, galaxyFn):
+        core = HtmlCore()
+        cls._printResultsHeader(choices, core)
+
+        resTableDict = OrderedDict()
+        index = 1
+        for combination, allResults in resultsDict.iteritems():
+            results, resultsMC, resultsWilcoxonTtest = allResults
+            categoryVal, secondVal = combination.split("_")
+            if resultsWilcoxonTtest:
+                resTableRow = []
+                resTableRow.append(categoryVal)
+                resTableRow.append(secondVal)
+                resTableRow.append(results[categoryVal].getResult())
+                resTableRow.append(results[secondVal].getResult())
+
+                resTableRow.append(resultsWilcoxonTtest['statistic'])
+                resTableRow.append(resultsWilcoxonTtest['p.value'])
+
+            else:
+                resTableRow = []
+                resTableRow.append(categoryVal)
+                resTableRow.append(secondVal)
+                resTableRow.append(results[categoryVal].getResult())
+                resTableRow.append(results[secondVal].getResult())
+                testStatLbl = 'TSMC_' + DiffOfSummarizedRanksPerTsCatV2Stat.__name__ if \
+                    choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL else \
+                    'TSMC_' + SummarizedInteractionPerTsCatV2Stat.__name__
+                resTableRow.append(resultsMC[categoryVal].getResult()[testStatLbl])
+                resTableRow.append(resultsMC[categoryVal].getResult()[McEvaluators.PVAL_KEY])
+                resTableRow.append(resultsMC[categoryVal].getResult()[McEvaluators.MEAN_OF_NULL_DIST_KEY])
+                resTableRow.append(resultsMC[categoryVal].getResult()[McEvaluators.SD_OF_NULL_DIST_KEY])
+
+            resTableDict[index] = resTableRow
+            index += 1
+
+                # core.tableFromDictionary(resTableDict, columnNames=columnNames)
+                #print resTableDict
+
+                # rawNDResultsFile = cls._getNullDistributionFile(choices, galaxyFn, resultsMC,
+                #                                                 categoryVal)
+                # core.paragraph("For detailed view of the null distribution scores view the " + rawNDResultsFile.getLink(
+                #     "null distribution table") + ".")
+
+        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+            columnNames = ["", "Group-1 (G1)", "Group-2 (G2)", "G1 Similarity score",
+                           "G2 Similarity score", "Score", "P-value"]
+        else:
+            columnNames = ["", "Group-1 (G1)", "Group-2 (G2)", "G1 Similarity score",
+                           "G2 Similarity score", "Groups Comparison Statistic", "P-value",
+                           "Mean score for null distribution",
+                           "Std. deviation of score for null distribution"]
+
+        addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict,
+                                                  columnNames)
+        cls._printPageFooter(core)
+
+    @classmethod
+    def _getNullDistributionFile(cls, choices, galaxyFn, resultsMC, categoryVal=None):
+        if not categoryVal:
+            categoryVal = choices.categoryVal
+        nullRawResults = resultsMC[categoryVal].getResult()[McEvaluators.RAND_RESULTS_KEY]
         rawNDResultsFile = GalaxyRunSpecificFile(["NullDist", "table.txt"], galaxyFn)
         with rawNDResultsFile.getFile() as f:
             line = "\t".join([str(_) for _ in nullRawResults]) + "\n"
@@ -509,13 +630,20 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return rawNDResultsFile
 
     @classmethod
-    def prepareAnalysis(cls, choices):
-        analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+    def prepareAnalysis(cls, choices, categoryVal=None):
+        if not categoryVal:
+            categoryVal = choices.categoryVal
+        if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+            analysisSpec = AnalysisSpec(DiffOfSummarizedRanksPerTsCatV2Stat)
+            analysisSpec.addParameter('selectedCategory', categoryVal)
+        else:
+            analysisSpec = AnalysisSpec(SummarizedInteractionPerTsCatV2Stat)
+            analysisSpec.addParameter('summaryFunc',
+                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('summaryFunc',
-                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         return analysisSpec
 
@@ -545,27 +673,33 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         return TrackStructureV2({categoryVal: hypothesisTS})
 
     @classmethod
-    def prepareMCAnalysis(cls, choices, opCount):
+    def prepareMCAnalysis(cls, choices, opCount, categoryVal=None):
+        if not categoryVal:
+            categoryVal = choices.categoryVal
         mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
             AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
         analysisDefString = REPLACE_TEMPLATES['$MCFDRv5$'] + ' -> ' + ' -> MultipleRandomizationManagerStat'
         analysisSpec = AnalysisDefHandler(analysisDefString)
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
-        analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
         analysisSpec.addParameter('segregateNodeKey', 'reference')
 
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tail', choices.tail)
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
-        analysisSpec.addParameter('selectedCategory', choices.categoryVal)
+        analysisSpec.addParameter('selectedCategory', categoryVal)
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('runLocalAnalysis', "No")
-        analysisSpec.addParameter('summaryFunc',
-                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
-        analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+
+        if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
+            analysisSpec.addParameter('rawStatistic', DiffOfSummarizedRanksPerTsCatV2Stat.__name__)
+        else:
+            analysisSpec.addParameter('rawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+            analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+            analysisSpec.addParameter('summaryFunc',
+                                      GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
 
         return analysisSpec
 
@@ -574,8 +708,12 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
         if choices.randType == "Wilcoxon":
             analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+            analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
+        elif choices.randType == "T-test":
+            analysisSpec.addParameter('multitrackRawStatistic', TtestUnpairedTestStat.__name__)
         else:
             analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
 
         analysisSpec.addParameter('pairwiseStatistic',
@@ -721,7 +859,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         Specifies whether the debug mode is turned on. Debug mode is
         currently mostly used within the Genomic HyperBrowser and will make
         little difference in a plain Galaxy ProTo installation.
-
+    
         Optional method. Default return value if method is not defined: False
         """
         return True

@@ -14,10 +14,11 @@ from quick.util import McEvaluators
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
+from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from gold.track.TrackStructure import TrackStructureV2
 
-class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin):
+class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin, SimpleProgressOutputMixin):
 
     GSUITE_FILE_OPTIONS_BOX_KEYS = ['queryGsuite', 'refGsuite']
     ALLOW_UNKNOWN_GENOME = False
@@ -72,7 +73,8 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
                 ('Select primary group category value', 'categoryVal'),
                 ('Select track to track similarity/distance measure', 'similarityFunc'),
                 ('Select summary function for track similarity to rest of suite', 'summaryFunc'),
-                ('Select summary function groups', 'catSummaryFunc')
+                ('Select summary function per group', 'catSummaryFunc'),
+                ('Select the tail alternative', 'tail')
 
                 ] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
@@ -248,6 +250,10 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
     def getOptionsBoxCatSummaryFunc(prevChoices):
         return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
 
+    @staticmethod
+    def getOptionsBoxTail(prevChoices):
+        return ['right-tail', 'left-tail', 'two-tail']
+
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -333,18 +339,13 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
 
     @classmethod
     def _execute(cls, querySTS, queryTS, catTS, analysisBins, choices, galaxyFn):
-        core = HtmlCore()
-        core.begin()
-        core.divBegin(divId="progress-output")
-        print str(core)
+        cls._startProgressOutput()
         ts = cls.prepareTrackStructure(querySTS, queryTS, catTS)
-        analysisSpec = cls.prepareAnalysis(choices)
+        opCount = cls._getOperationCount(ts, analysisBins, choices)
+        analysisSpec = cls.prepareAnalysis(choices, opCount)
         results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result']
         print results
-        core = HtmlCore()
-        core.divEnd()
-        core.hideToggle(styleId="progress-output")
-        print str(core)
+        cls._endProgressOutput()
         cls._printResult(results, catTS.keys(), choices)
 
     @classmethod
@@ -356,7 +357,14 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         return ts
 
     @classmethod
-    def prepareAnalysis(cls, choices):
+    def _getOperationCount(cls, ts, analysisBins, choices):
+        opCount = 0
+        for _ in ts['randQuery']:
+            opCount += cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
+        return opCount
+
+    @classmethod
+    def prepareAnalysis(cls, choices, opCount):
         analysisSpec = AnalysisSpec(QueryTrackVsRefGSuiteWithExternalRandGSuiteStat)
         analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
         analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
@@ -369,6 +377,8 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
+        analysisSpec.addParameter('progressPoints', opCount)
+        analysisSpec.addParameter('selectedCategory', choices.categoryVal)
         return analysisSpec
 
     @classmethod
@@ -377,7 +387,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         core.divBegin()
         observedAndMcSamplesTuple = tuple([results['real'].getResult(), results['rand'].getResult()])
         hypothesisTestingResults = McEvaluators.evaluatePvalueAndNullDistribution(
-            observedAndMcSamplesTuple, 'two-tail',
+            observedAndMcSamplesTuple, str(choices.tail),
             GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[choices.similarityFunc])
         resTableDict = OrderedDict()
         # if choices.randType == "Wilcoxon":

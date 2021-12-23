@@ -6,7 +6,7 @@ import ast
 import glob
 import os
 import re
-import shelve
+import third_party.safeshelve as safeshelve
 import urllib
 import urllib2
 from collections import Counter, defaultdict, OrderedDict
@@ -1169,7 +1169,7 @@ class FilterCategoryonVals(GeneralGuiTool):
 #             resSet = set()
 #             for fn in [k for k, v in prevChoices[0].items() if v]:
 #                 SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
-#                 tmpSet = set([k.split('::',1)[0] for k in shelve.open(SHELVE_FN).keys()])
+#                 tmpSet = set([k.split('::',1)[0] for k in safeshelve.open(SHELVE_FN).keys()])
 #                 resSet.update(tmpSet)
 #
 #             return OrderedDict([(k,False) for k in resSet])
@@ -1184,7 +1184,7 @@ class FilterCategoryonVals(GeneralGuiTool):
 #                 SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
 #                 key = fn+':  '
 #
-#                 tmpSet = set([key+k[:k.rfind('::')] for k in shelve.open(SHELVE_FN).keys() if k.split('::',1)[0] in userList])
+#                 tmpSet = set([key+k[:k.rfind('::')] for k in safeshelve.open(SHELVE_FN).keys() if k.split('::',1)[0] in userList])
 #                 resSet.update(tmpSet)
 #
 #             return OrderedDict([(k,False) for k in resSet])
@@ -1202,7 +1202,7 @@ class FilterCategoryonVals(GeneralGuiTool):
 #             resultDict = dict()
 #             for fn in candidateDict.keys():
 #                 SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%fn
-#                 for k, v in shelve.open(SHELVE_FN).items():
+#                 for k, v in safeshelve.open(SHELVE_FN).items():
 #                     if k.rsplit('::',1)[0] in candidateDict[fn]:
 #                         resultDict[str(count)] = v
 #                         count+=1
@@ -2949,7 +2949,7 @@ class TrackSearch(GeneralGuiTool):
         #    res = dict([(k, v) for k, v in prevChoices[-1].items() if v == True])
 
         if len(prevChoices[0])>2:
-            wordDict = shelve.open('/hyperbrowser/standardizedTracks/cache', flag = 'c')
+            wordDict = safeshelve.open('/hyperbrowser/standardizedTracks/cache', flag = 'c')
             if len(wordDict)<10:
                 tempDict = dict()
                 for root, folder, files in os.walk(hg18root):

@@ -2,7 +2,7 @@ import unittest
 import os
 import sys
 
-from gold.application.StatRunner import AnalysisDefJob
+from quick.deprecated.StatRunner import AnalysisDefJob
 from gold.util.CommonFunctions import createDirPath
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.BoundingRegionShelve import BoundingRegionShelve, BoundingRegionInfo

@@ -1,0 +1,4 @@
+<tool id="hb_random_tracks_generator_tool" name="Generate a GSuite of random tracks" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.gsuite.RandomTracksGeneratorTool" proto_tool_class="RandomTracksGeneratorTool">
+  <description></description>
+</tool>

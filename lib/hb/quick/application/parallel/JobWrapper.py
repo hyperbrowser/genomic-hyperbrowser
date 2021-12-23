@@ -102,7 +102,7 @@ class StatisticJobWrapper(JobWrapper):
         for bin in job._userBinSource:
             stat = job._statClass(bin, job._track, job._track2, **job._kwArgs)
             ResultsMemoizer.loadResult(stat)
-            if hasattr(stat, "resultLoadedFromDisk") and stat.resultLoadedFromDisk:
+            if stat.resultLoadedFromDisk():
                 continue
             
             yield StatisticArgumentPickleWrapper(job._statClass, bin, job._track, job._track2, **job._kwArgs)

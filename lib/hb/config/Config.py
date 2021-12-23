@@ -8,7 +8,7 @@ from proto.config.Config import (config, URL_PREFIX, RESTRICTED_USERS,
 # Version information
 #
 
-HB_VERSION = 'v2.0b5'
+HB_VERSION = 'v2.1.3'
 
 
 #
@@ -17,8 +17,9 @@ HB_VERSION = 'v2.0b5'
 
 IS_EXPERIMENTAL_INSTALLATION = config.getWithDefault('is_experimental_installation', False, 'hyperbrowser')
 USE_MEMORY_MEMOIZATION = config.getWithDefault('use_memory_memoization', True, 'hyperbrowser')
-LOAD_DISK_MEMOIZATION = config.getWithDefault('load_disk_memoization', False, 'hyperbrowser')
-STORE_DISK_MEMOIZATION = config.getWithDefault('store_disk_memoization', False, 'hyperbrowser')
+LOAD_DISK_MEMOIZATION = config.getWithDefault('load_disk_memoization', True, 'hyperbrowser')
+STORE_DISK_MEMOIZATION = config.getWithDefault('store_disk_memoization', True, 'hyperbrowser')
+USE_DISK_MEMOIZATION_FOR_MINIMAL_RUNS = config.getWithDefault('use_disk_memoization_for_minimal_runs', True, 'hyperbrowser')
 PRINT_PROGRESS = config.getWithDefault('print_progress', True, 'hyperbrowser')
 ALLOW_COMP_BIN_SPLITTING = config.getWithDefault('allow_comp_bin_splitting', False, 'hyperbrowser')
 ALLOW_GSUITE_FILE_PROTOCOL = config.getWithDefault('allow_gsuite_file_protocol', False, 'hyperbrowser')
@@ -153,5 +154,3 @@ PROTO_HB_TOOL_DIR = PROTO_TOOL_DIR + '/hyperbrowser'
 #
 
 DEFAULT_GENOME = 'hg18'
-STOREBIOINFO_USER = 'hs'
-STOREBIOINFO_PASSWD = 'ssh123'
