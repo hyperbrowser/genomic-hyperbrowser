@@ -1,16 +1,16 @@
-import shelve
+import third_party.safeshelve as safeshelve
 import copy
 from cPickle import dump, load
 
 def createS():
-    s = shelve.open('slett','c')
+    s = safeshelve.open('slett','c')
     for i in xrange(100000):
         s[str(i)] = i*3    
     print len(s.keys())
     s.close()
 
 def createS2():
-    s = shelve.open('slett','c')
+    s = safeshelve.open('slett','c')
     s2 = {}
     for i in xrange(100000):
         s2[str(i)] = i*3        
@@ -28,13 +28,13 @@ def createSpickle():
     #s.close()
     
 def loadS1():
-    s = shelve.open('slett','r')
+    s = safeshelve.open('slett','r')
     for i in xrange(100000):
         temp = s[str(i)]+1
     s.close()
 
 def loadS2():
-    s = shelve.open('slett','r')
+    s = safeshelve.open('slett','r')
     #s2 = dict(s.items())
     s2 = {}
     s2.update(s)

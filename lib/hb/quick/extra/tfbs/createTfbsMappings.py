@@ -1,4 +1,4 @@
-from third_party.safeshelve import shelve
+import third_party.safeshelve as safeshelve
 import os
 
 from quick.extra.CustomFuncCatalog import reverseMappingHavingListValues
@@ -7,20 +7,20 @@ DATA_PATH = DATA_FILES_PATH + os.sep + 'tfbs'
 #DATA_PATH = os.sep.join([HB_SOURCE_CODE_BASE_DIR, 'data', 'tfbs'])
 #DATA_PATH = os.sep.join([HB_SOURCE_CODE_BASE_DIR, 'data'])
 
-pwm2TFids = shelve.open(DATA_PATH + os.sep + 'pwm2TFids.shelf', 'r')
+pwm2TFids = safeshelve.open(DATA_PATH + os.sep + 'pwm2TFids.shelf', 'r')
 pwm2TFnamesNewFn = DATA_PATH + os.sep + 'pwm2TFnamesNew.shelf'
-pwm2TFnamesNew = shelve.open(pwm2TFnamesNewFn, 'r')
-pwmName2id = shelve.open(DATA_PATH + os.sep + 'pwmName2id.shelf', 'r')
-TfId2Class = shelve.open(DATA_PATH + os.sep + 'TfId2Class.shelf', 'r')
-pwmIdToPretty = shelve.open(DATA_PATH + os.sep + 'pwm2pretties.shelf', 'r')
+pwm2TFnamesNew = safeshelve.open(pwm2TFnamesNewFn, 'r')
+pwmName2id = safeshelve.open(DATA_PATH + os.sep + 'pwmName2id.shelf', 'r')
+TfId2Class = safeshelve.open(DATA_PATH + os.sep + 'TfId2Class.shelf', 'r')
+pwmIdToPretty = safeshelve.open(DATA_PATH + os.sep + 'pwm2pretties.shelf', 'r')
 
 pwmName2TfClassesFn = DATA_PATH + os.sep + 'pwmName2TfClasses.shelf'
 pwmName2TfNamesFn = DATA_PATH + os.sep + 'pwmName2TfNames.shelf'
 pwmName2PrettyNamesFn = DATA_PATH + os.sep + 'pwmName2PrettyNames.shelf'
 
-pwmName2TfClasses = shelve.open(pwmName2TfClassesFn, 'c')
-pwmName2TfNames = shelve.open(pwmName2TfNamesFn, 'c')
-pwmName2PrettyNames = shelve.open(pwmName2PrettyNamesFn, 'c')
+pwmName2TfClasses = safeshelve.open(pwmName2TfClassesFn, 'c')
+pwmName2TfNames = safeshelve.open(pwmName2TfNamesFn, 'c')
+pwmName2PrettyNames = safeshelve.open(pwmName2PrettyNamesFn, 'c')
 
 tfNames2pwmIdsFn = DATA_PATH + os.sep + 'tfNames2pwmIds.shelf'
 tfNames2pwmNamesFn = DATA_PATH + os.sep + 'tfNames2pwmNames.shelf'

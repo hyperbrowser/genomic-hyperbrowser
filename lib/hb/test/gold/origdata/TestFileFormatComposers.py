@@ -1,6 +1,8 @@
+import sys
 import unittest
 from tempfile import NamedTemporaryFile
 
+from config.Config import DebugConfig
 from gold.origdata.GtrackComposer import StdGtrackComposer, ExtendedGtrackComposer
 from gold.origdata.BedComposer import BedComposer, PointBedComposer, CategoryBedComposer, ValuedBedComposer
 from gold.origdata.BedGraphComposer import BedGraphComposer
@@ -14,16 +16,21 @@ from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
 from gold.util.CommonFunctions import createDirPath
 from quick.application.UserBinSource import GlobalBinSource
 from test.gold.origdata.common.TestWithGeSourceData import TestWithGeSourceData
-from test.util.Asserts import TestCaseWithImprovedAsserts
+from test.integration.GalaxyIntegrationTest import GalaxyIntegrationTest
 
-PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
 
-class TestFileFormatComposers(TestWithGeSourceData, TestCaseWithImprovedAsserts):
+class TestFileFormatComposers(GalaxyIntegrationTest, TestWithGeSourceData):
     GENOME = 'TestGenome'
     TRACK_NAME_PREFIX = ['TestGenomeElementSource']
 
     def setUp(self):
-        pass
+        super(TestFileFormatComposers, self).setUp()
+        self._prevPassOnPreprocessExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
+
+    def tearDown(self):
+        super(TestFileFormatComposers, self).tearDown()
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = self._prevPassOnPreprocessExceptions
 
     def _preProcess(self, trackName):
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=False), trackName)
@@ -168,6 +175,10 @@ class TestFileFormatComposers(TestWithGeSourceData, TestCaseWithImprovedAsserts)
     def runTest(self):
         pass
 
+
 if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        TestFileFormatComposers.debugMode = sys.argv[1]
+        sys.argv = sys.argv[:-1]
     #TestFileFormatComposers().debug()
     unittest.main()

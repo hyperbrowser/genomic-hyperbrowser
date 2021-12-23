@@ -1,9 +1,9 @@
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.RandomizedTrack import RandomizedTrack
 from gold.util.CustomExceptions import CentromerError, TooLargeBinError
-from gold.util.RandomUtil import random
 from gold.util.CommonFunctions import getClassName
 from quick.util.GenomeInfo import GenomeInfo
+
 
 
 class RandomGenomeLocationTrack(RandomizedTrack):
@@ -19,7 +19,9 @@ class RandomGenomeLocationTrack(RandomizedTrack):
         return not allowOverlaps
 
     def _getRandTrackView(self, region):
-        # if not hasattr(self, '_minimalRegion'):
+        from gold.util.RandomUtil import random
+
+        #if not hasattr(self, '_minimalRegion'):
         #    from quick.application.UserBinSource import MinimalBinSource
         #    minimalBinList = MinimalBinSource(region.genome)
         #    self._minimalRegion = minimalBinList[0] if minimalBinList is not None else None

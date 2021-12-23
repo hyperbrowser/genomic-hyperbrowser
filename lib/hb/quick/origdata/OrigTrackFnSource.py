@@ -1,8 +1,10 @@
 import os
 from config.Config import ORIG_DATA_PATH
 from gold.util.CommonFunctions import extractTrackNameFromOrigPath
-from gold.util.CommonFunctions import createOrigPath
+from gold.util.CommonFunctions import createOrigPath, createCollectedPath, createParsingErrorPath, \
+    getOrigPathForFileTree
 from quick.util.GenomeInfo import GenomeInfo
+
 
 #class OrigTrackFnSource(object):
 #    def __init__(self, genome):
@@ -16,6 +18,7 @@ from quick.util.GenomeInfo import GenomeInfo
 #            for file in files:
 #                yield root[len(ORIG_DATA_PATH):] + os.sep + file
 
+
 #class OrigTrackDirSource(object):
 #    def __init__(self, genome):
 #        self._genome = genome
@@ -28,29 +31,34 @@ from quick.util.GenomeInfo import GenomeInfo
 #            for dir in dirs:
 #                yield root[len(ORIG_DATA_PATH):] + os.sep + dir
 
+
 class OrigTrackNameSource(object):
-    def __init__(self, genome, trackNameFilter, avoidLiterature=True):
+    def __init__(self, genome, trackNameFilter, fileTree='standardized', alsoYieldDirs=False):
+        assert fileTree in ['standardized', 'collected', 'parsing error']
+
         self._genome = genome
         self._trackNameFilter = trackNameFilter
-        self._avoidLiterature = avoidLiterature
+        self._fileTree = fileTree
+        # self._avoidLiterature = avoidLiterature
+        self._alsoYieldDirs = alsoYieldDirs
 
     def __iter__(self):
         return self.yielder()
 
     def yielder(self):
-        literatureTN = GenomeInfo.getPropertyTrackName(self._genome, 'literature')
-        literatureTNBase = literatureTN[:-1]
+        # literatureTN = GenomeInfo.getPropertyTrackName(self._genome, 'literature')
+        # literatureTNBase = literatureTN[:-1]
 
-        basePath = createOrigPath(self._genome, self._trackNameFilter)
+        basePath = getOrigPathForFileTree(self._genome, self._trackNameFilter, self._fileTree)
         for root, dirs, files in os.walk(basePath,topdown=True):
             dirsToRemove = []
-            if root==basePath:
+            if root == basePath:
                 dirsToRemove.append('Trash')
                 dirsToRemove.append('Trashcan')
 
-            trackName = extractTrackNameFromOrigPath(root)
-            if self._avoidLiterature and trackName == literatureTNBase:
-                    dirsToRemove.append(literatureTN[-1])
+            trackName = extractTrackNameFromOrigPath(root, self._fileTree)
+            # if self._avoidLiterature and trackName == literatureTNBase:
+            #         dirsToRemove.append(literatureTN[-1])
 
             for oneDir in dirs:
                 if oneDir[0] in ['.','_','#']:
@@ -74,4 +82,16 @@ class OrigTrackNameSource(object):
                 continue
 
 #            print trackName
-            yield trackName
+            if self._alsoYieldDirs:
+                yield trackName, dirs
+            else:
+                yield trackName
+
+
+def getOrigSubTracks(genome, trackName, fileTree='standardized'):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+    for origTrackName, dirs in OrigTrackNameSource(genome, trackNameFilter=trackName,
+                                                   fileTree=fileTree, alsoYieldDirs=True):
+        assert origTrackName == trackName
+        return dirs
+    return []

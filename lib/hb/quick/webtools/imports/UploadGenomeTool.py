@@ -4,7 +4,7 @@ import os
 import sys
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CustomExceptions import InvalidFormatError
-from quick.webtools.util.CommonFunctionsForTools import validateURLs, validateURL, validateUcscValues
+from quick.webtools.util.CommonFunctionsForTools import validateURLs, validateURL
 from shutil import copyfile
 from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.util.CommonFunctions import ensurePathExists

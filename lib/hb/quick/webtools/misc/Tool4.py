@@ -24,7 +24,7 @@
 # from collections import OrderedDict
 # #This is a template prototyping GUI that comes together with a corresponding web page.
 # #
-# from third_party.safeshelve import shelve
+# import third_party.safeshelve as safeshelve
 # from config.Config import DATA_FILES_PATH
 # from time import time
 # 
@@ -66,11 +66,11 @@
 #         
 #         nSHELVE_FN = DATA_FILES_PATH + sep + 'tfTracksDict.shelve'
 #         #SHELVE_FN = DATA_FILES_PATH + sep + 'TrackInfo.shelve'
-#         #trackInfoShelve = shelve.open(SHELVE_FN, 'c')
+#         #trackInfoShelve = safeshelve.open(SHELVE_FN, 'c')
 #         #hg19Keys = [k for k in trackInfoShelve.keys() if k.startswith('hg19:Gene regulation')]# and trackInfoShelve[k]['timeOfPreProcessing'] != None]
-#         tfTracksShelve = shelve.open(nSHELVE_FN)
+#         tfTracksShelve = safeshelve.open(nSHELVE_FN)
 #         #tfNames2pwmIdsFn = DATA_FILES_PATH + '/tfbs/tfNames2pwmIds.shelf'
-#         #tfs =  sorted(shelve.open(tfNames2pwmIdsFn).keys())
+#         #tfs =  sorted(safeshelve.open(tfNames2pwmIdsFn).keys())
 #         #count=0
 #         #for t in tfs:
 #             #count+=1
@@ -95,7 +95,7 @@
 #     @staticmethod    
 #     def getOptionsBoxTf(prevChoices):
 #         tfNames2pwmIdsFn = DATA_FILES_PATH + '/tfbs/tfNames2pwmIds.shelf'
-#         return  sorted(shelve.open(tfNames2pwmIdsFn).keys())
+#         return  sorted(safeshelve.open(tfNames2pwmIdsFn).keys())
 #     
 #     #@staticmethod    
 #     #def getOptionsBoxPwm(prevChoices):
@@ -135,7 +135,7 @@
 # 
 #         print 'Hello world'
 #         SHELVE_FN = DATA_FILES_PATH + sep + 'TrackInfo.shelve'
-#         trackInfoShelve = shelve.open(SHELVE_FN, 'c')
+#         trackInfoShelve = safeshelve.open(SHELVE_FN, 'c')
 #         
 #         #cellType = choices.celltype.split('(')[0].strip()
 #         hg19Keys = [k for k in trackInfoShelve.keys() if k.startswith('hg19:Gene regulation')]
@@ -191,7 +191,7 @@
 #         tfNames2pwmIdsFn = DATA_PATH + '/tfNames2pwmIds.shelf'
 #         
 #         
-#         tfToPwmIdsDict = shelve.open(tfNames2pwmIdsFn)
+#         tfToPwmIdsDict = safeshelve.open(tfNames2pwmIdsFn)
 #         multiTfDict = MultiExactlySpecifiedTF()
 #         trackList = [v[0] for v in GalaxyInterface.getSubTrackNames(genome, ['Private','GWAS', cellType], deep=False)[0]]
 #         count, tfNums = 0, len(tfToPwmIdsDict)

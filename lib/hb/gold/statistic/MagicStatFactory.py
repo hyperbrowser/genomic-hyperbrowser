@@ -53,7 +53,7 @@ class MagicStatFactory(object):
                 else:
                     #Use only if splittableClass also accepts splitting of userbins
                     if not issubclass(splittableClass, OnlyGloballySplittable):
-                        return splittableClass                    
+                        return splittableClass
             #except (KeyError, SplittableStatNotAvailableError), e:
             except KeyError, e:
                 if DebugConfig.VERBOSE:
@@ -62,12 +62,15 @@ class MagicStatFactory(object):
         return MagicStatFactory._getClass(origCls.__name__, 'Unsplittable')
         
     def __new__(origCls, region, *args, **keywords):
-
         subCls = MagicStatFactory._getSubCls(origCls, region)
 #         uniqueKey = Statistic.constructUniqueKey(subCls, region, *args, **keywords)
         uniqueKey = subCls.constructUniqueKey(subCls, region, *args, **keywords)
         if MagicStatFactory._memoDict.has_key(uniqueKey) and USE_MEMORY_MEMOIZATION:
             #print '-',[[x.__class__, str(x._region), x._track.trackName, x._track2.trackName if hasattr(x,'_track2') else ''] for x in [protoStat, MagicStatFactory._memoDict[protoStat]]]
+            if DebugConfig.VERBOSE:
+                logMessage('Reusing existing statistic "{}" with unique key: "{}", region: "{}", arguments: "{}", keywords: "{}"'.format(
+                    subCls.__name__, uniqueKey, region, args, keywords
+                ))
             return MagicStatFactory._memoDict[uniqueKey]
         else:
             #print "Not there: %s - %s (%s)" % (region, uniqueKey, ', '.join([str(x) for x in (subCls, region, args, keywords)]))
@@ -75,16 +78,6 @@ class MagicStatFactory(object):
             MagicStatFactory._memoDict[uniqueKey] = newStat
                 
             return newStat
-
-    @staticmethod
-    def updateMemoDict(stat, statKwUpdateDict):
-        oldUniqueKey = stat.getUniqueKey()
-        stat._kwArgs.update(statKwUpdateDict)
-        newUniqueKey = stat.getUniqueKey()
-
-        del MagicStatFactory._memoDict[oldUniqueKey]
-        MagicStatFactory._memoDict[newUniqueKey] = stat
-
 
     @staticmethod
     def _createNew(origCls, subCls, region, *args, **keywords):

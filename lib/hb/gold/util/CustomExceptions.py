@@ -84,3 +84,32 @@ class InvalidStatArgumentError(Exception):
 
 class InvalidOperationError(Exception):
     pass
+
+class MissingInfoError(Exception):
+    pass
+
+class ContextException(Exception):
+    def __str__(self):
+        import traceback
+
+        # From https://chezsoi.org/lucas/blog/displaying-chained-exceptions-stacktraces-in-python-2.html
+        out = Exception.__str__(self)
+        if hasattr(self, '__cause__') and self.__cause__ and hasattr(self.__cause__, '__traceback__') and self.__cause__.__traceback__:
+            out += '\n\nThe above exception was caused by the following exception:\n\n'
+            out += ''.join(traceback.format_tb(self.__cause__.__traceback__) + ['{}: {}'.format(self.__cause__.__class__.__name__, self.__cause__)])
+        return out
+
+class PreprocessError(ContextException):
+    pass
+
+class PreprocessWarning(ContextException):
+    pass
+
+class SyncConflictError(Exception):
+    pass
+
+class NotDictLikeError(Exception):
+    pass
+
+class NotSyncedError(Exception):
+    pass

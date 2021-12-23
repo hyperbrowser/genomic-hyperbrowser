@@ -13,13 +13,13 @@ class ToolController(HyperBrowserControllerMixin, BaseToolController):
         BaseToolController.__init__(self, trans, job)
         self.genomes = GalaxyInterface.getAllGenomes(self.galaxy.getUserName() \
                                                      if hasattr(self, 'galaxy') else '')
-        self.genome = self.params.get('dbkey', self.genomes[0][1])
+        self.genome = self.params.get('dbkey', '')
 
     def action(self):
         self.genomeElement = SelectElement('dbkey', self.genomes, self.genome)
-        self.track = TrackWrapper('track1', GalaxyInterface, [], self.galaxy, [], self.genome)
+        self.track = TrackWrapper('track1', GalaxyInterface, [], self.galaxy, [], self.genome, fileTree='standardized')
         self.track.extraTracks = []
-        self.track.legend = 'Track'
+        self.track.legend = 'Standardized track'
         self.track.fetchTracks()
 
     def execute(self):

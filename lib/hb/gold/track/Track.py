@@ -10,7 +10,7 @@ from quick.application.ExternalTrackManager import ExternalTrackManager
 
 class Track(object):
     IS_MEMOIZABLE = True
-    
+
     def __new__(cls, trackName, trackTitle=None):
         if trackName == [] or trackName is None:
             return None
@@ -29,6 +29,7 @@ class Track(object):
         self.formatConverters = None
         self._trackId = None
         self._randIndex = None
+        self._hasBeenRead = False
 
     def _getRawTrackView(self, region, borderHandling, allowOverlaps):
         trackData = self._trackSource.getTrackData(self.trackName, region.genome, region.chr, allowOverlaps)
@@ -44,6 +45,8 @@ class Track(object):
 
         if self.formatConverters is None:
             self.formatConverters = getFormatConverters(origTrackView.trackFormat, self._trackFormatReq)
+
+        self._hasBeenRead = True
 
         if self.formatConverters == []:
             raise IncompatibleTracksError(prettyPrintTrackName(self.trackName) + ' with format: '\
@@ -64,21 +67,45 @@ class Track(object):
             raise IncompatibleTracksError(str(prevFormatReq ) + \
                                           ' is incompatible with additional ' + str(requestedTrackFormat))
 
+    # TODO: track.formatConverters needs a complete overhaul. It is currently used:
+    # 1) to link tracks with possible choices for track conversion
+    # 2) to store the choice of format converter made by the user
+    # 3) to manage the default choice of format converters [=always the first item in the list]
+    # 4) to hold the currently selected format converter class until needed by getTrackView
     def setFormatConverter(self, converterClassName):
         assert( self.formatConverters is None )
         if converterClassName is not None:
             self.formatConverters = [getFormatConverterByName(converterClassName)]
 
-    def getUniqueKey(self, genome):
-        if not self._trackId:
-            self._trackId = TrackInfo(genome, self.trackName).id
+    def hasBeenFlaggedAsRead(self):
+        return self._hasBeenRead
 
-        return hash((tuple(self.trackName),
-                     self._trackId if self._trackId else '',
-                     getClassName(self.formatConverters[0]) if self.formatConverters else '',
-                     self.formatConverters[0].VERSION if self.formatConverters else '',
-                     self._trackFormatReq.allowOverlaps() if self._trackFormatReq.allowOverlaps() else '',
-                     self._trackFormatReq.borderHandling() if self._trackFormatReq.borderHandling() else ''))
+    def getUniqueKey(self, genome):
+        itemsToBeHashed = [tuple(self.trackName)]
+        itemsToBeHashed.append(self._getTrackId(genome))
+
+        if self._trackFormatReq is not None:
+            if self._trackFormatReq.allowOverlaps() is not None:
+                itemsToBeHashed.append(self._trackFormatReq.allowOverlaps())
+            itemsToBeHashed.append(self._trackFormatReq.borderHandling())
+
+        itemsToBeHashed.append(getClassName(self.formatConverters[0]) if self.formatConverters else '')
+        # TODO: Move away from fixed VERSION, as these in practice are never updated. Also for statistics.
+        itemsToBeHashed.append(self.formatConverters[0].VERSION if self.formatConverters else '')
+
+        from config.DebugConfig import DebugConfig
+        if DebugConfig.VERBOSE:
+            from gold.application.LogSetup import logMessage
+            logMessage('Unique key items for track "{}": '.format(self.trackName) +
+                       ', '.join(str(_) for _ in itemsToBeHashed))
+
+        return hash(tuple(itemsToBeHashed))
+
+    def _getTrackId(self, genome):
+        if not self._trackId:
+            trackInfo = TrackInfo(genome, self.trackName)
+            self._trackId = trackInfo.id
+        return self._trackId if self._trackId else ''
 
     def resetTrackSource(self):
         self._trackSource = TrackSource()

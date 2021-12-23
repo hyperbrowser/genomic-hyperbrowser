@@ -119,10 +119,11 @@ class AddTestTool(GeneralGuiTool):
         paramDict = dict([tuple(v.split(':',1)) for v in choices[0].split('\n')])
         if paramDict.has_key('tool_id'):
             print 'Added test for: ', paramDict['tool_id']
-            import shelve, hashlib
+            import hashlib
+            import third_party.safeshelve as safeshelve
             SHELVE_FN = DATA_FILES_PATH + os.sep + 'tests' + os.sep + '%s.shelve'%paramDict['tool_id']
             print SHELVE_FN
-            d = shelve.open(SHELVE_FN)
+            d = safeshelve.open(SHELVE_FN)
             key += hashlib.sha224(choices[0]).hexdigest()
             argList = []
             for t in choices[0].split('\n'):

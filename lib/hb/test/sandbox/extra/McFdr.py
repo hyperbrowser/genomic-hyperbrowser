@@ -4,8 +4,6 @@ import time
 
 from proto.RSetup import r, rpy1
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
-from quick.statistic.McFdr import McFdr
-
 
 #from gold.util.CommonFunctions import smartSum
 
@@ -205,6 +203,7 @@ class MultipleTestCollection(object):
         #else:
         #    pi0 = 1
         #fdrVals = r.fdr(pvals, pi0)
+        from quick.statistic.McFdr import McFdr
         fdrVals = McFdr.adjustPvalues(pvals, self.ESTIMATE_PI0, False)
         #fdrVals = r('p.adjust')(r.unlist(pvals), adjustMethod)
         if type(fdrVals) in [float,int]:

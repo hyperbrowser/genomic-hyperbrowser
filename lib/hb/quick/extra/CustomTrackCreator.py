@@ -8,14 +8,19 @@ from quick.util.GenomeInfo import GenomeInfo
 from gold.track.Track import PlainTrack
 from gold.track.GenomeRegion import GenomeRegion
 
-class CustomTrackCreator:
+class CustomTrackCreator(object):
     'Creates a custom track based on a supplied function that calculates one value per sliding window'
     
     @classmethod
     def _createTrackCommon(cls, genome, inTrackName, outTrackName, windowSize, func, username, chrList):
         regionList = [GenomeRegion(genome, chr, 0, GenomeInfo.getChrLen(genome, chr) ) for chr in chrList]
-        PreProcessCustomTrackJob(genome, outTrackName, regionList, cls._getGeSourceForRegion, \
-                                 username=username, inTrackName=inTrackName, windowSize=windowSize, func=func).process()
+        for region in regionList:
+            PreProcessCustomTrackJob(genome, outTrackName, [region], cls._getGeSourceForRegion,
+                                     username=username, preProcess=True, finalize=False,
+                                     inTrackName=inTrackName, windowSize=windowSize, func=func).process()
+        PreProcessCustomTrackJob(genome, outTrackName, regionList, cls._getGeSourceForRegion,
+                                 username=username, preProcess=False, finalize=True,
+                                 inTrackName=inTrackName, windowSize=windowSize, func=func).process()
     
     @classmethod
     def createTrackGW(cls, genome, inTrackName, outTrackName, windowSize, func, username):

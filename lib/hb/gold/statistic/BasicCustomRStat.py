@@ -14,16 +14,12 @@ class BasicCustomRStat(MagicStatFactory):
 class BasicCustomRStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
     
-    def _init(self, scriptFn='', randomSeed=None, **kwArgs):
+    def _init(self, scriptFn='', **kwArgs):
         self._trackFormat1 = TrackFormatReq()
         self._trackFormat2 = TrackFormatReq()
         self._codeLines = []
         if scriptFn != '':
             self._parseScriptFile(scriptFn.decode('hex_codec'))
-    
-        from gold.util.RandomUtil import getManualSeed, setManualSeed
-        if randomSeed is not None and randomSeed != 'Random' and getManualSeed() is None:
-            setManualSeed(int(randomSeed))
         
     def _parseScriptFile(self, scriptFn):        
         script = open(scriptFn)

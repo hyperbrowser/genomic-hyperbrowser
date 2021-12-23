@@ -11,9 +11,9 @@ class SequentialMcSamplingStat(MagicStatFactory):
     pass
 
 class SequentialMcSamplingStatUnsplittable(Statistic):
-    def _init(self, rawStatistic, tail, mThreshold, maxSamples, numSamplesPerChunk, **kwArgs):
+    def _init(self, rawStatistic, tails, mThreshold, maxSamples, numSamplesPerChunk, **kwArgs):
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)
-        self._tail = tail
+        self._tails = tails
         self._mThreshold = int(mThreshold)
 
         if kwArgs.get('minimal') == True:
@@ -48,7 +48,7 @@ class SequentialMcSamplingStatUnsplittable(Statistic):
             #print 'TEMP6', (numSamples, self._maxSamples)
             return True
                 
-        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tail)
+        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tails)
         if numNonExtreme >= self._mThreshold:
             #print 'TEMP5', (numNonExtreme, self._mThreshold)
             return True
@@ -58,7 +58,7 @@ class SequentialMcSamplingStatUnsplittable(Statistic):
         return self.isIndividuallyMcDetermined() #no distinction for sequential MC
         
     def _getPval(self):
-        return computePurePseudoPvalue(self._realSample, self._mcSamples, self._tail)
+        return computePurePseudoPvalue(self._realSample, self._mcSamples, self._tails)
     
     @classmethod
     def validateAndPossiblyResetLocalResults(cls, localSamplingObjects):
@@ -75,6 +75,6 @@ class SequentialMcSamplingStatUnsplittable(Statistic):
             del self._result
         
         numSamples = len(self._mcSamples)
-        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tail)
+        numNonExtreme = numSamples - computeNumMoreExtreme(self._realSample, self._mcSamples, self._tails)
         #print 'TEMP1: ', self._region, [0 if determined else 1, numNonExtreme, self._mThreshold]
         return [0 if determined else 1, numNonExtreme, self._mThreshold, 'N/A', 'N/A']

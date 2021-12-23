@@ -28,7 +28,7 @@ class ListSubtrackNames(GeneralGuiTool):
         '''Returns a list of options to be displayed in the second options box, which will be displayed after a selection is made in the first box.
         prevChoices is a list of selections made by the web-user in the previous input boxes (that is, list containing only one element for this case)        
         '''
-        return '__track__', 'ucsc'
+        return '__track__'
     
     @staticmethod    
     def getOptionsBox3(prevChoices): 

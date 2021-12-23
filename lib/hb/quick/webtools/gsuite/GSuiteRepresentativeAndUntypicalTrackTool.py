@@ -273,6 +273,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('reverse', reverse)
             analysisSpec.addParameter('ascending', 'No')
             analysisSpec.addParameter('trackTitles', trackTitles)
+            analysisSpec.addParameter('queryTracksNum', len(ts))
             results = dictifyTSResult(doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()['Result'])
 
             gsPerTrackResultsModel = GSuitePerTrackResultModel(

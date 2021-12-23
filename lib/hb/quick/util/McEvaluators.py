@@ -17,7 +17,7 @@ RAND_RESULTS_KEY = 'randRes'
 from numpy import isnan,array, median
 
 @takes(tuple, basestring, basestring)
-def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
+def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tails, rawStatisticMainClassName):
     observation = observedAndMcSamplesTuple[0]
     mcSamples = observedAndMcSamplesTuple[1]
     if isinstance(observation, TSResult):
@@ -45,8 +45,8 @@ def _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisti
     # For more info on the formula for calculating p-values:
     # "Permutation P-values should never be zero: calculating exact P-values
     #  when permutations are randomly drawn" (http://www.ncbi.nlm.nih.gov/pubmed/21044043)
-    numMoreExtreme = computeNumMoreExtreme(observation, mcSamples, tail)
-    pval = computePurePseudoPvalue(observation, mcSamples, tail)
+    numMoreExtreme = computeNumMoreExtreme(observation, mcSamples, tails)
+    pval = computePurePseudoPvalue(observation, mcSamples, tails)
     return OrderedDict(
         [(PVAL_KEY, pval), ('TSMC_' + rawStatisticMainClassName, observation), (MEAN_OF_NULL_DIST_KEY, meanOfNullDistr), \
          ('MedianOfNullDistr', medianOfNullDistr), (SD_OF_NULL_DIST_KEY, sdOfNullDistr), ('DiffFromMean', diffObsMean),
@@ -55,7 +55,7 @@ def _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisti
          (RAND_RESULTS_KEY, numpyRandResults), (NON_NAN_RAND_RESULTS_KEY, nonNanNumpyRandResults)])
 
 @takes(tuple, basestring, basestring)
-def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
+def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTuple, tails, rawStatisticMainClassName):
     resultsDict = OrderedDict()
     #TODO: What is received is not a list of tuples, it is a tuple of the real result which is a
     # TrackStructure whose result is a list of raw values and list of such track structures.
@@ -84,39 +84,38 @@ def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTuple, tail, rawSt
 
     return resultsDict
 
-def evaluatePurePseudoPvalue(observedAndMcSamplesTuple, tail, rawStatisticMainClassName):
+
+def evaluatePurePseudoPvalue(observedAndMcSamplesTuple, tails, rawStatisticMainClassName):
     observation = observedAndMcSamplesTuple[0]
     mcSamples = observedAndMcSamplesTuple[1]
-    pval = computePurePseudoPvalue(observation, mcSamples, tail)
+    pval = computePurePseudoPvalue(observation, mcSamples, tails)
     return {PVAL_KEY:pval}
 
-def computePurePseudoPvalue(observation, mcSamples, tail):
+
+def computePurePseudoPvalue(observation, mcSamples, tails):
     numResamplings = len(mcSamples)
-    if tail in ['right-tail', 'left-tail']:
+    if tails in ['right-tail', 'left-tail']:
         tailFactor = 1.0
-    elif tail == 'two-tail':
+    elif tails == 'two-tail':
         tailFactor = 2.0
     else:
-        raise ArgumentValueError('Invalid value for tails argument:', tail)
-    numMoreExtreme = computeNumMoreExtreme(observation, mcSamples, tail)
+        raise ArgumentValueError('Invalid value for tails argument:', tails)
+    numMoreExtreme = computeNumMoreExtreme(observation, mcSamples, tails)
     pval = tailFactor * (numMoreExtreme+1) / (numResamplings+1)
     pval = min(1.0, pval)
     return pval
 
     
-def computeNumMoreExtreme(observation, mcSamples, tail):
+def computeNumMoreExtreme(observation, mcSamples, tails):
     numMoreExtremeRight = sum(1 for res in mcSamples \
                      if res >= observation ) 
     numMoreExtremeLeft = sum(1 for res in mcSamples \
                      if res <= observation ) 
-    if tail == 'right-tail':
+    if tails == 'right-tail':
         return numMoreExtremeRight
-    elif tail == 'left-tail':
+    elif tails == 'left-tail':
         return numMoreExtremeLeft
-    elif tail == 'two-tail':
+    elif tails == 'two-tail':
         return min(numMoreExtremeLeft, numMoreExtremeRight)
     
-    raise ArgumentValueError('Invalid value for tails argument:', tail)
-
-    
-    
+    raise ArgumentValueError('Invalid value for tails argument:', tails)
