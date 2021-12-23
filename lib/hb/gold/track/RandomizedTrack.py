@@ -42,8 +42,10 @@ class RandomizedTrack(Track, TrackRandomizer):
         self._trackFormatReq = NeutralTrackFormatReq()
         self._cachedTV = None
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)
+        # TODO: Is the hack in the next line required anymore?
         self.formatConverters = [TrivialFormatConverter]  # To allow construction of uniqueID
         self._trackId = None  # To allow construction of uniqueID
+        self._hasBeenRead = False
 
         self._init(origTrack, randIndex, **kwArgs)
 
@@ -54,12 +56,15 @@ class RandomizedTrack(Track, TrackRandomizer):
         if self._minimal and not self.WORKS_WITH_MINIMAL:
             return self._origTrack.getTrackView(region)
 
+        from gold.util.RandomUtil import random  # To initialize random generators if not done previously
+
         randTV = self._getRandTrackView(region)
 
         assert self._trackFormatReq.isCompatibleWith(randTV.trackFormat), \
             'Incompatible track-format: ' + str(self._trackFormatReq) + \
             ' VS ' + str(randTV.trackFormat)
 
+        self._hasBeenRead = True
         return randTV
 
     @abstractmethod

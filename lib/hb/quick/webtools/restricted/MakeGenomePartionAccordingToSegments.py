@@ -7,14 +7,9 @@ from quick.util.Wrappers import GenomeElementTvWrapper
 from gold.track.Track import PlainTrack
 from gold.track.GenomeRegion import GenomeRegion
 from gold.origdata.BedGenomeElementSource import BedGenomeElementSource #, BedCategoryGenomeElementSource, BedValuedGenomeElementSource
-from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource
-from gold.util.RandomUtil import random
 from quick.util.GenomeInfo import GenomeInfo
-import numpy
 import os
 import time
-#This is a template prototyping GUI that comes together with a corresponding web page.
-#
 
 class MakeGenomePartionAccordingToSegments(GeneralGuiTool):
     @staticmethod
@@ -54,10 +49,8 @@ class MakeGenomePartionAccordingToSegments(GeneralGuiTool):
         '''
         if prevChoices[1] == 'history':
             return ('__history__','bed','valued.bed', 'category.bed' )#'gtrack'
-            
-    
-        
-    @staticmethod    
+
+    @staticmethod
     def getOptionsBox4(prevChoices):
         if prevChoices[1] == 'track':
             return '__track__'
@@ -71,8 +64,7 @@ class MakeGenomePartionAccordingToSegments(GeneralGuiTool):
         extraVals = []
         for property, dType in extraColumns:
             value = getattr(genomeElem, property)
-            
-                    
+
             if property == 'edges':
                 extraVals.append(';'.join(value))
                     
@@ -137,7 +129,8 @@ class MakeGenomePartionAccordingToSegments(GeneralGuiTool):
         
     @classmethod   
     def execute(cls, choices, galaxyFn=None, username=''):
-        
+        from gold.util.RandomUtil import random
+
         outputFile =  open(galaxyFn, 'w')
         genome = choices[0]
         histItem = choices[2]
@@ -153,7 +146,6 @@ class MakeGenomePartionAccordingToSegments(GeneralGuiTool):
             tempFn = createCollectedPath(genome, [], username+'_'.join([str(v) for v in time.localtime()[:6]])+'.'+trackType)
             fnSource = ExternalTrackManager.extractFnFromGalaxyTN(choices[2].split(':'))
             open(tempFn,'w').write(open(fnSource,'r').read())
-            
             
             if trackType in ['valued.bed', 'category.bed', 'bed']:
                 geSource = GenomeElementSorter(BedGenomeElementSource(tempFn, genome=genome)).__iter__()
@@ -174,8 +166,7 @@ class MakeGenomePartionAccordingToSegments(GeneralGuiTool):
                 cls.WriteExpandedElementsToFile(geSource, chrSizeDict, outputFile, headLinesStr, writeHeaderFlag)
                 writeHeaderFlag = False    
         outputFile.close()
-        
-    
+
     @staticmethod
     def validateAndReturnErrors(choices):
         '''

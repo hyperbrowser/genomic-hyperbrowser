@@ -69,7 +69,7 @@ class GSuiteSingleValueAnalysisPerTrackTool(GeneralGuiTool, GenomeMixin, UserBin
                 ] + cls.getInputBoxNamesForGenomeSelection() + [
                    ('Select a measure (descriptive statistic)', 'analysis'),
                    # ('Select parameter', 'paramOne'),
-                   ('', 'explainOutput'),
+                   # ('', 'explainOutput'),
                ] + cls.getInputBoxNamesForUserBinSelection() + \
                cls.getInputBoxNamesForDebug()
 

@@ -6,17 +6,20 @@ from gold.statistic.Statistic import Statistic
 class DiscreteMarksStat(MagicStatFactory):
     pass
 
+
 #class DiscreteMarksStatSplittable(StatisticSumResSplittable):
 #    IS_MEMOIZABLE = False
-            
+
+
 class DiscreteMarksStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
+    RES_DTYPE= 'int32'
 
     def __init__(self, region, track, track2=None, numDiscreteVals=None, marksStat='MarksListStat', printIntervals=False, **kwArgs):
         self._numDiscreteVals = int(numDiscreteVals)
         self._marksStat = marksStat
         assert numDiscreteVals is not None
-        self._printIntervals = printIntervals
+        self._printIntervals = printIntervals in [True, 'True']
         Statistic.__init__(self, region, track, track2, numDiscreteVals=numDiscreteVals, marksStat=marksStat, **kwArgs)
 
     def _compute(self):
@@ -42,7 +45,7 @@ class DiscreteMarksStatUnsplittable(Statistic):
         else:
             step = 1.0 / self._numDiscreteVals
             
-        res = ((vals-minVal)/step).astype('int32')
+        res = ((vals-minVal)/step).astype(self.RES_DTYPE)
         res[ res==self._numDiscreteVals ] = self._numDiscreteVals-1 #because our max is an inclusive max of the allowed interval..
         return res
     

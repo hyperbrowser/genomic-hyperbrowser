@@ -427,7 +427,7 @@ class GSuiteManipulateTextFiles(GeneralGuiTool):
                 outGSuite.addTrack(gSuiteTrack)
 
             except Exception as e:
-                track.comment = 'An error occurred for the following track: ' + str(e)
+                track.comment = 'An error occurred for the following track: ' + str(e).partition('\n')[0]
                 errorGSuite.addTrack(track)
 
             progressViewer.update()

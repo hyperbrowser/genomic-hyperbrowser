@@ -38,7 +38,7 @@ def open(filename, flag='c', block=True, lckfilename=None):
     fcntl.flock(lckfile.fileno(), lockflags)
 
     # Open the shelf
-    #shelf = shelve.open(filename, flag, protocol, writeback)
+    #shelf = safeshelve.open(filename, flag, protocol, writeback)
     if flag == 'r':
         shelf = cPickle.load(__builtin__.open(filename,'r'))
         shelf._filename = None

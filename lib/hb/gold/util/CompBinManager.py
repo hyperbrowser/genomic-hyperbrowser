@@ -4,11 +4,11 @@ from gold.track.GenomeRegion import GenomeRegion
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CommonFunctions import isIter
 
-class CompBinManager:
+
+class CompBinManager(object):
     #ALLOW_COMP_BIN_SPLITTING = True
     ALLOW_COMP_BIN_SPLITTING = CFG_ALLOW_COMP_BIN_SPLITTING
-    
-    
+
     @staticmethod
     def splitUserBin(region):
         'Splits a region into several compBins, based on borders as defined by getCompBinSize'
@@ -55,13 +55,27 @@ class CompBinManager:
             isCompBin = CompBinManager.isCompBin(region)
             return isCompBin
         else:
-            isChr = not hasattr(region, '__iter__') and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end] \
-                                                            for r in GenomeInfo.getChrRegs(region.genome))
-            isChrArm = not hasattr(region, '__iter__') and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end] \
-                                                            for r in GenomeInfo.getChrArmRegs(region.genome))
-            
-            return (isChr or isChrArm)
-        
+            isChr = not hasattr(region, '__iter__') \
+                    and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end]
+                            for r in GenomeInfo.getChrRegs(region.genome, stripValues=False))
+            if isChr:
+                return True
+            else:
+                isChrArm = not hasattr(region, '__iter__') \
+                           and any([region.chr, region.start, region.end] == [r.chr, r.start, r.end]
+                                   for r in GenomeInfo.getChrArmRegs(region.genome))
+                return isChrArm
+
+    @staticmethod
+    def isMinimalBin(region):
+        from quick.application.UserBinSource import MinimalBinSource
+        if not isIter(region) and region == MinimalBinSource(region.genome)[0]:
+            return True
+
+    @classmethod
+    def isGlobalMinimalBin(cls, region):
+        return isIter(region) and len(list(region)) == 1 and cls.isMinimalBin(region[0])
+
     @staticmethod
     def isCompBin(region):
         if isIter(region):

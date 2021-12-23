@@ -15,6 +15,9 @@ pycrypto==2.6.1
 # HyperBrowser addition, to fix version-conflict
 six==1.10.0
 
+# HyperBrowser addition, to fix dependency issue with marisa-trie
+pytest-runner==4.5.1
+
 # pure Python packages
 Paste==2.0.2
 PasteDeploy==1.5.2

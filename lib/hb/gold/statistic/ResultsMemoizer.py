@@ -1,137 +1,284 @@
-from gold.statistic.MemoDataCollection import MemoDataCollection
-from gold.util.CommonFunctions import createMemoPath, getClassName
-from gold.util.CompBinManager import CompBinManager
-from config.Config import LOAD_DISK_MEMOIZATION as CFG_LOAD_DISK_MEMOIZATION, \
-    STORE_DISK_MEMOIZATION as CFG_STORE_DISK_MEMOIZATION
-#from quick.util.CommonFunctions import ensurePathExists
 
-#import third_party.safeshelve as safeshelve
-#import quick.util.SafeCPickleBasedShelve as safeshelve
+from config.DebugConfig import DebugConfig
+from gold.application.LogSetup import logMessage
+from gold.formatconversion.AllFormatConverters import getFormatConverterByName
+from gold.util.CustomExceptions import ShouldNotOccurError, MissingInfoError
+
+from collections import namedtuple
+
+from gold.statistic.MemoDataCollection import MemoDataCollection
+from gold.util.CommonFunctions import createMemoPath, getClassName, ensurePathExists
+from gold.util.CompBinManager import CompBinManager
+from config.Config import (LOAD_DISK_MEMOIZATION as CFG_LOAD_DISK_MEMOIZATION,
+                           STORE_DISK_MEMOIZATION as CFG_STORE_DISK_MEMOIZATION,
+                           USE_DISK_MEMOIZATION_FOR_MINIMAL_RUNS,
+                           MEMOIZED_DATA_PATH)
+
 import os
+
+from quick.util.CommonFunctions import isIter
+
+MinimalMemoResult = namedtuple('MinimalMemoResult', ['result', 'formatConverters', 'error'])
+MinimalMemoResult.__new__.__defaults__ = (None, None, None)
+
+from tblib.decorators import Error
+
 
 class ResultsMemoizer(object):
     LOAD_DISK_MEMOIZATION = CFG_LOAD_DISK_MEMOIZATION
     STORE_DISK_MEMOIZATION = CFG_STORE_DISK_MEMOIZATION
-#    TEMP_ONE_MEMODICT_PER_CHR_TR1 = True
+
+    MINIMAL_MEMO_PATH = os.path.join(*(list(os.path.split(MEMOIZED_DATA_PATH)) + ['minimal']))
 
     memoDataCollection = MemoDataCollection()
-    #readShelves = {}
-    #writeShelves = {}
-    #writeShelves = {}
-    #STATS_WITHOUT_MEMOIZATION = ['RawDataStatUnsplittable', 'CustomRStatUnsplittable', \
+
+    # STATS_WITHOUT_MEMOIZATION = ['RawDataStatUnsplittable', 'CustomRStatUnsplittable', \
     #                             'BasicCustomRStatUnsplittable','ZipperStatUnsplittable', \
     #                             'XYPairStatUnsplittable', 'DataComparisonStatUnsplittable',\
     #                             'ListCollapserStatUnsplittable', 'SingleValExtractorStatUnsplittable']
-
-    # #fixme: Only temporarily. One path with chromosome length and track1 hash
-    # @classmethod
-    # def _createShortMemoPath(cls, stat):
-    #     return os.sep.join([MEMOIZED_DATA_PATH, str(len(stat._region)),  str(stat._track.getUniqueKey(stat._region.genome))])
     
     @classmethod
     def storeResult(cls, stat):
-        if not cls.STORE_DISK_MEMOIZATION or stat.resultLoadedFromDisk or not ResultsMemoizer.isMemoizable(stat):
+        if stat.resultLoadedFromDisk():
             return
 
-        memoPath = cls._createMemoPath(stat)
-        #memoFn = cls._createShelfFn(memoPath)
+        if cls._shouldUseDiskMemoization(stat, store=True):
+            memoPath = cls._createMemoPath(stat)
+            key = cls._createMemoKey(stat)
 
-#        if cls.TEMP_ONE_MEMODICT_PER_CHR_TR1 and not len(stat._region) == COMP_BIN_SIZE: #fixme: Temporary fix. Stores one memodict per Chromosome/track1 pair
-##            print 'storing', os.sep.join([MEMOIZED_DATA_PATH, str(len(stat._region))]), memoPath
-#            cls.memoDataCollection[cls._createShortMemoPath(stat)][memoPath] = stat._result
-#        else:
-        posIndex = str(stat._region.start)
-
-        #if not memoPath in cls.writeShelves:
-            #ensurePathExists(memoFn)
-            #cls.writeShelves[memoPath] = safeshelve.open(memoFn, 'c', block=False)
-            #cls._openShelf(memoPath, memoFn)
-        
-        #cls.writeShelves[memoPath]
-        cls.memoDataCollection[memoPath][posIndex] = stat._result
+            if DebugConfig.VERBOSE:
+                logMessage('Storing result "{}" in "{}"'.format(stat._result, memoPath))
+            cls.memoDataCollection[memoPath][key] = stat._result
 
     @classmethod
     def loadResult(cls, stat):
-        if not cls.LOAD_DISK_MEMOIZATION or not ResultsMemoizer.isMemoizable(stat):
-            return
-        
-        memoPath = cls._createMemoPath(stat)
-        #memoFn = cls._createShelfFn(memoPath)
-        
-        #if cls.TEMP_ONE_MEMODICT_PER_CHR_TR1 and not len(stat._region) == COMP_BIN_SIZE: #fixme: Temporary fix. Stores one memodict per Chromosome/track1 pair
-#            print 'returning',os.sep.join([MEMOIZED_DATA_PATH, str(len(stat._region))]), memoPath
-#            res = cls.memoDataCollection[cls._createShortMemoPath(stat)].get(memoPath)
-#            print res
-#        else:
+        if cls._shouldUseDiskMemoization(stat, store=False):
+            memoPath = cls._createMemoPath(stat)
+            key = cls._createMemoKey(stat)
+
+            memoDict = cls.memoDataCollection[memoPath]
+            if key in memoDict:
+                res = cls.memoDataCollection[memoPath][key]
+                stat.setMemoizedResult(res)
+
+                if DebugConfig.VERBOSE:
+                    logMessage('Loading result "{}" in "{}"'.format(res, memoPath))
+
+                stat.setMemoizedResult(res)
+
+    @classmethod
+    def _createMemoKey(cls, stat):
         posIndex = str(stat._region.start)
-        
-        #if not os.path.exists(memoFn)\
-        #  or memoPath in cls.writeShelves: #No use in trying to read, as we anyway already have a write-lock..
-        #    return None
-        #
-        #if not os.path.exists(memoFn):
-        #    return None
-        #
-        #if not memoPath in cls.readShelves:
-        #    if not os.path.exists(memoFn):
-        #        return
-        #    cls.readShelves[memoPath] = safeshelve.open(memoFn, 'r', block=False)
-        #    #cls._openShelf(memoPath, memoFn)
-        #    
-        res = cls.memoDataCollection[memoPath].get(posIndex)
-        # if res is not None:
-        #if posIndex in cls.readShelves[memoPath]:
-            #print 'using res for posIndex: ', posIndex
-        stat.setMemoizedResult( res )
-        #else:
-            #print 'did not find res for posIndex: ', posIndex
-        
-    #@classmethod
-    #def _openShelf(cls, memoPath, memoFn):
-    #    #os.umask(0002)
-    #    cls.openShelves[memoPath] = safeshelve.open(memoFn, 'c')
-        
-    #@classmethod
-    #def _createShelfFn(cls, memoPath):
-        #return memoPath + os.sep + 'memo.shelf'
+        return '_'.join((stat._region.chr, posIndex))
+
+    @classmethod
+    def storeMinimalError(cls, stat,  exc_info=None):
+        # if stat.resultLoadedFromDisk():
+        #     return
+
+        if cls._shouldUseDiskMemoizationForMinimalRuns(stat):
+            cls._storeMinimalMemoResult(stat, MinimalMemoResult(error=Error(*exc_info)))
+
+    @classmethod
+    def storeMinimalResult(cls, stat):
+        if stat.resultLoadedFromDisk():
+            return
+
+        if cls._shouldUseDiskMemoizationForMinimalRuns(stat):
+            formatConverters = [[getClassName(converter) for converter in track.formatConverters]
+                                if track.formatConverters else track.formatConverters for track in stat.getAllTracks()]
+            cls._storeMinimalMemoResult(stat, MinimalMemoResult(result=stat._result, formatConverters=formatConverters))
+
+    @classmethod
+    def _storeMinimalMemoResult(cls, stat, minimalMemoResult):
+        minimalMemoDict = cls.memoDataCollection[cls.MINIMAL_MEMO_PATH]
+        minimalMemoKey = cls._createMinimalMemoKey(stat)
+        if minimalMemoKey in minimalMemoDict:
+            raise ShouldNotOccurError('Trying to store minimal memo result for "{}"'.format(minimalMemoKey) +
+                                      'when already present in minimal memoized result dict. The existing result '
+                                      'should have been loaded and used, and no result should subsequently be stored.')
+        else:
+            if minimalMemoResult.error:
+                if DebugConfig.VERBOSE:
+                    logMessage('Storing exception "{}" for "{}"'.format(minimalMemoResult.error.exc_value,
+                                                                        minimalMemoKey))
+            else:
+                if DebugConfig.VERBOSE:
+                    logMessage('Storing result "{}" for "{}"'.format(minimalMemoResult.result, minimalMemoKey))
+            minimalMemoDict[minimalMemoKey] = minimalMemoResult
+
+        # cls.memoDataCollection.syncDict(cls.MINIMAL_MEMO_PATH)
+
+    @classmethod
+    def loadMinimalResult(cls, stat):
+        if cls._shouldUseDiskMemoizationForMinimalRuns(stat):
+            minimalMemoDict = cls.memoDataCollection[cls.MINIMAL_MEMO_PATH]
+            minimalMemoKey = cls._createMinimalMemoKey(stat)
+            if DebugConfig.VERBOSE:
+                logMessage('Checking minimal memo dict for key "{}"'.format(minimalMemoKey))
+            if minimalMemoKey in minimalMemoDict:
+                minimalMemoResult = minimalMemoDict[minimalMemoKey]
+                if minimalMemoResult.error is not None:
+                    error = minimalMemoResult.error
+                    if DebugConfig.VERBOSE:
+                        logMessage('Loading exception "{}" from "{}"'.format(error.exc_value, minimalMemoKey))
+                    # stat.setMemoizedResult(None)
+                    stat.flagResultLoadedFromDisk()
+                    return error
+                else:
+                    if DebugConfig.VERBOSE:
+                        logMessage('Loading result "{}" from "{}"'.format(minimalMemoResult.result, minimalMemoKey))
+                    stat.setMemoizedResult(minimalMemoResult.result)
+
+                    for i, track in enumerate(stat.getAllTracks()):
+                        track.formatConverters = [getFormatConverterByName(converterClassName)
+                                                  for converterClassName in minimalMemoResult.formatConverters[i]]
+
+    @classmethod
+    def _shouldUseDiskMemoization(cls, stat, store):
+        assert store in [True, False]
+
+        if CompBinManager.isMinimalBin(stat._region):
+            return False
+
+        return (cls.STORE_DISK_MEMOIZATION if store else cls.LOAD_DISK_MEMOIZATION) and \
+               CompBinManager.isMemoBin(stat._region) and \
+               stat.IS_MEMOIZABLE and \
+               cls._allTracksAreMemoizable(stat)
+
+    @classmethod
+    def _shouldUseDiskMemoizationForMinimalRuns(cls, stat):
+        return USE_DISK_MEMOIZATION_FOR_MINIMAL_RUNS and \
+               stat.IS_MINIMAL_MEMOIZABLE and \
+               cls._noTracksAreRandomized(stat)
+
+    @classmethod
+    def _createMinimalMemoPath(cls, pathItems):
+        return os.path.join(*(list(os.path.split(MEMOIZED_DATA_PATH)) + pathItems))
+
+        if cls._shouldUseDiskMemoizationForMinimalRuns(stat):
+            formatConverters = [[getClassName(converter) for converter in track.formatConverters]
+                                if track.formatConverters else track.formatConverters for track in stat.getAllTracks()]
+            cls._storeMinimalMemoResult(stat, MinimalMemoResult(result=stat._result, formatConverters=formatConverters))
+
+    @classmethod
+    def _storeMinimalMemoResult(cls, stat, minimalMemoResult):
+        minimalMemoDict = cls.memoDataCollection[cls.MINIMAL_MEMO_PATH]
+        minimalMemoKey = cls._createMinimalMemoKey(stat)
+        if minimalMemoKey in minimalMemoDict:
+            raise ShouldNotOccurError('Trying to store minimal memo result for "{}"'.format(minimalMemoKey) +
+                                      'when already present in minimal memoized result dict. The existing result '
+                                      'should have been loaded and used, and no result should subsequently be stored.')
+        else:
+            if minimalMemoResult.error:
+                if DebugConfig.VERBOSE:
+                    logMessage('Storing exception "{}" for "{}"'.format(minimalMemoResult.error.exc_value,
+                                                                        minimalMemoKey))
+            else:
+                if DebugConfig.VERBOSE:
+                    logMessage('Storing result "{}" for "{}"'.format(minimalMemoResult.result, minimalMemoKey))
+            minimalMemoDict[minimalMemoKey] = minimalMemoResult
+
+        # cls.memoDataCollection.syncDict(cls.MINIMAL_MEMO_PATH)
+
+    @classmethod
+    def loadMinimalResult(cls, stat):
+        if cls._shouldUseDiskMemoizationForMinimalRuns(stat):
+            minimalMemoDict = cls.memoDataCollection[cls.MINIMAL_MEMO_PATH]
+            minimalMemoKey = cls._createMinimalMemoKey(stat)
+            if DebugConfig.VERBOSE:
+                logMessage('Checking minimal memo dict for key "{}"'.format(minimalMemoKey))
+            if minimalMemoKey in minimalMemoDict:
+                minimalMemoResult = minimalMemoDict[minimalMemoKey]
+                if minimalMemoResult.error is not None:
+                    error = minimalMemoResult.error
+                    if DebugConfig.VERBOSE:
+                        logMessage('Loading exception "{}" from "{}"'.format(error.exc_value, minimalMemoKey))
+                    # stat.setMemoizedResult(None)
+                    stat.flagResultLoadedFromDisk()
+                    return error
+                else:
+                    if DebugConfig.VERBOSE:
+                        logMessage('Loading result "{}" from "{}"'.format(minimalMemoResult.result, minimalMemoKey))
+                    stat.setMemoizedResult(minimalMemoResult.result)
+
+                    for i, track in enumerate(stat.getAllTracks()):
+                        track.formatConverters = [getFormatConverterByName(converterClassName)
+                                                  for converterClassName in minimalMemoResult.formatConverters[i]]
+
+    @classmethod
+    def _shouldUseDiskMemoization(cls, stat, store):
+        assert store in [True, False]
+
+        if CompBinManager.isMinimalBin(stat._region):
+            return False
+
+        return (cls.STORE_DISK_MEMOIZATION if store else cls.LOAD_DISK_MEMOIZATION) and \
+               CompBinManager.isMemoBin(stat._region) and \
+               stat.IS_MEMOIZABLE and \
+               cls._allTracksAreMemoizable(stat)
+
+    @classmethod
+    def _shouldUseDiskMemoizationForMinimalRuns(cls, stat):
+        return USE_DISK_MEMOIZATION_FOR_MINIMAL_RUNS and \
+               stat.IS_MINIMAL_MEMOIZABLE and \
+               cls._noTracksAreRandomized(stat)
+
+    @classmethod
+    def _createMinimalMemoPath(cls, pathItems):
+        return os.path.join(*(list(os.path.split(MEMOIZED_DATA_PATH)) + pathItems))
 
     @classmethod
     def _createMemoPath(cls, stat):
-        genome = stat._region.genome
-        #combTrackName = stat._track.trackName + (stat._track2.trackName if hasattr(stat,'_track2') else [])
-        statId = getClassName(stat) + '_' + stat.VERSION
-        configHash = stat.getConfigKey()
-        track1Hash = stat._track.getUniqueKey(genome)
-        track2Hash = (stat._track2.getUniqueKey(genome) if hasattr(stat,'_track2') else None)
-        #basePath = os.sep.join([MEMOIZED_DATA_PATH, getClassName(stat)])
-        return createMemoPath(stat._region, statId, configHash, track1Hash, track2Hash)
-        #return createMemoPath(combTrackName, genome, chr, getClassName(stat))
-    
+        return createMemoPath(*cls._createMemoItems(stat, useTrackFormatAsKey=False))
+
     @classmethod
-    def isMemoizable(cls, stat):
-        allTracks = [stat._track] + ([stat._track2] if hasattr(stat,'_track2') else [])
-        #notRandomized = all([ (re.match('^[0-9]+$',tr.trackName[-1]) is None) for tr in allTracks]) 
-        #notRandomized = not any(isinstance(tr, RandomizedTrack) for tr in allTracks)
-        
-        #return getClassName(stat) not in cls.STATS_WITHOUT_MEMOIZATION \
-        #        and notRandomized \
-        #        and CompBinManager.isCompBin(stat._region)
-        return stat.IS_MEMOIZABLE and all(track.IS_MEMOIZABLE for track in allTracks) and \
-            CompBinManager.isMemoBin(stat._region) 
-#        return stat.IS_MEMOIZABLE and all(track.IS_MEMOIZABLE for track in allTracks) and \
-#            CompBinManager.isMemoBin(stat._region) 
-                                                   
+    def _createMemoItems(cls, stat, useTrackFormatAsKey=True):
+        from gold.description.TrackInfo import TrackInfo
+
+        genome = stat.getGenome()
+
+        statId = getClassName(stat) + '_' + stat.VERSION
+        configHash = stat.getConfigKey(ignoreUsername=False)
+
+        trackHashList = []
+        tracks = [stat._track]
+        if hasattr(stat, '_track2') and stat._track2 is not None:
+            tracks.append(stat._track2)
+        for track in tracks:
+            if useTrackFormatAsKey and not cls._isRandomizedTrack(track):
+                trackFormatHash = TrackInfo(genome, track.trackName).trackFormatHash
+                if not trackFormatHash:
+                    raise MissingInfoError('Precalculated TrackFormat hash is missing from TrackInfo, '
+                                           'for track "{}" of genome "{}". '.format(track.trackName, genome) +
+                                           'Please consider to repeat the preprocessing step.')
+                trackHashList.append(trackFormatHash)
+            else:
+                trackHashList.append(track.getUniqueKey(genome))
+        return [stat._region, statId, configHash] + trackHashList
+
+    @classmethod
+    def _createMinimalMemoKey(cls, stat):
+        memoItems = cls._createMemoItems(stat, useTrackFormatAsKey=True)
+
+        region = memoItems[0]
+        # if isIter(region), we can access first item as we know it is a minimalBin, which is a list
+        region = "[{}]".format(region[0]) if isIter(region) else str(region)
+        return '_'.join(str(_) for _ in [region] + memoItems[1:])
+
+    @classmethod
+    def _allTracksAreMemoizable(cls, stat):
+        return all(track.IS_MEMOIZABLE for track in stat.getAllTracks())
+
+    @classmethod
+    def _noTracksAreRandomized(cls, stat):
+        return not any(cls._isRandomizedTrack(track) for track in stat.getAllTracks())
+
+    @classmethod
+    def _isRandomizedTrack(cls, track):
+        from gold.track.RandomizedTrack import RandomizedTrack
+        return isinstance(track, RandomizedTrack)
 
     @classmethod
     def flushStoredResults(cls):
-        cls.memoDataCollection.close()
-        
-        #for path in cls.writeShelves.keys():
-        #    cls.writeShelves[path].close()
-        #cls.writeShelves = {}
-        #cls.readShelves = cls.writeShelves
-        #for path in cls.readShelves.keys():
-        #    cls.readShelves[path].close()
-        #cls.readShelves = {}
-        
-    
+        cls.memoDataCollection.syncAllDicts()

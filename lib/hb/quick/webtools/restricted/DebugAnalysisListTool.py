@@ -2,12 +2,14 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.description.AnalysisList import ANALYSIS_SPECS
 from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.application.UserBinSource import UserBinSource
+from quick.webtools.mixin.DebugMixin import DebugMixin
 
 import os
 #This is a template prototyping GUI that comes together with a corresponding web page.
 #
 
-class DebugAnalysisListTool(GeneralGuiTool):
+
+class DebugAnalysisListTool(GeneralGuiTool, DebugMixin):
     STD_PREFIX_TN = ['Sample data', 'Track types']
     NO_TRACK_SHORTNAME = '-- No track --'
     @staticmethod
@@ -18,7 +20,7 @@ class DebugAnalysisListTool(GeneralGuiTool):
     def getInputBoxNames():
         "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
         #can have two syntaxes: either a list of stings or a list of tuples where each tuple has two items(Name of box on webPage, name of getOptionsBox)
-        return ['Select analysis list category','Select analysis','Full analysis def','Select genome','Show Track1 simplified','Track1','Show Track2 simplified','Track2','regSpec','binSpec']
+        return ['Select analysis list category','Select analysis','Full analysis def','Select genome','Show Track1 simplified','Track1','Show Track2 simplified','Track2','regSpec','binSpec','Debug mode']
 
     @staticmethod    
     def getOptionsBox1():
@@ -70,7 +72,7 @@ class DebugAnalysisListTool(GeneralGuiTool):
             #    trackList.insert(0, cls._cacheDict.get('track1'))
             return trackList
         else:
-            return '__track__','history'
+            return '__track__', 'preprocessed_history'
         
     @classmethod    
     def getOptionsBox7(cls, prevChoices): 
@@ -89,7 +91,7 @@ class DebugAnalysisListTool(GeneralGuiTool):
             #    trackList.insert(0, cls._cacheDict.get('track2'))
             return [cls.NO_TRACK_SHORTNAME] + trackList
         else:
-            return '__track__','history'
+            return '__track__', 'preprocessed_history'
         
     @staticmethod    
     def getOptionsBox9(prevChoices):
@@ -98,6 +100,10 @@ class DebugAnalysisListTool(GeneralGuiTool):
     @staticmethod    
     def getOptionsBox10(prevChoices):
         return '5m'
+
+    @classmethod
+    def getOptionsBox11(cls, prevChoices):
+        return cls.getOptionsBoxDebugMode(prevChoices)
 
     #@staticmethod
     #def getDemoSelections():
@@ -111,13 +117,19 @@ class DebugAnalysisListTool(GeneralGuiTool):
         If needed, StaticFile can be used to get a path where additional files can be put (e.g. generated image files).
         choices is a list of selections made by web-user in each options box.
         '''
-        from gold.application.LogSetup import setupDebugModeAndLogging
-        setupDebugModeAndLogging()
+        # from gold.application.LogSetup import setupDebugModeAndLogging
+        # setupDebugModeAndLogging()
+
+        # Hack to not have to refactor tool to use keyword-based choices
+        class MockChoices(object):
+            debugMode = choices[10]
+        mockChoices = MockChoices()
+        cls._setDebugModeIfSelected(mockChoices)
         
         analysisDef = choices[2].replace(os.linesep,'')
         #from gold.application.StatRunner import AnalysisDefJob
 
-        print 'Preparing arguments'
+        # print 'Preparing arguments'
         genome = choices[3]
         
         prefixTN1 = cls.STD_PREFIX_TN if choices[4] == 'yes' else []
@@ -136,7 +148,7 @@ class DebugAnalysisListTool(GeneralGuiTool):
         #ubSource = UserBinSource(regVal, binSpecVal, genome=genome)
         from quick.application.GalaxyInterface import GalaxyInterface
         
-        print tn1, tn2
+        # print tn1, tn2
         GalaxyInterface.runManual([tn1, tn2], analysisDef, regVal, binSpecVal, genome, galaxyFn, username=username)
         #ubSource = GalaxyInterface._getUserBinSource(regVal, binSpecVal, genome=genome)
         ##region = list(ubSource)[0]
@@ -191,9 +203,9 @@ from gold.util.CustomExceptions import ShouldNotOccurError
     #def getToolIllustration():
     #    return None
     #
-    #@staticmethod
-    #def isDebugMode():
-    #    return True
+    @staticmethod
+    def isDebugMode():
+       return True
     #
     @staticmethod    
     def getOutputFormat(choices):

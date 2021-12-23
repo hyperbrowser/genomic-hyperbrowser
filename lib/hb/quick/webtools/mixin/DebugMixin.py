@@ -29,13 +29,13 @@ class DebugMixin(object):
         return None
 
     @staticmethod
-    def _setDebugModeIfSelected(choices):
+    def _setDebugModeIfSelected(choices, galaxyFn=None):
         if choices.debugMode:
             if choices.debugMode == DebugModes.NO_DEBUG:
                 DebugConfig.changeMode(choices.debugMode)
             else:
                 #Sets up std.out and std.err to pipe debug and error log messages, respectively,
                 #in addition to setting the debug mode
-                setupDebugModeAndLogging(choices.debugMode)
+                setupDebugModeAndLogging(mode=choices.debugMode, debugFileName=galaxyFn)
             #print DebugConfig
 

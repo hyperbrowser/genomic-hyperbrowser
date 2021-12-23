@@ -93,7 +93,7 @@ class TouchStandardizedTrack(GeneralGuiTool):
         Check box list:         OrderedDict([('key1', True), ('key2', False), ('key3', False)])
         - Returns: OrderedDict from key to selection status (bool).
         '''
-        return '__track__'
+        return '__track__', 'standardized'
     
     
         

@@ -12,6 +12,7 @@ from urllib import unquote, quote
 from config.Config import DebugConfig, DEFAULT_GENOME, STATIC_REL_PATH,\
     IS_EXPERIMENTAL_INSTALLATION, ORIG_DATA_PATH, HB_VERSION, DATA_FILES_PATH, USE_PARALLEL, \
     URL_PREFIX
+from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonConstants import BATCH_COL_SEPARATOR
 from gold.application.LogSetup import logging, HB_LOGGER, usageAndErrorLogging, \
     runtimeLogging, logException, detailedJobRunHandler, logMessage, logLackOfSupport
@@ -38,6 +39,7 @@ from quick.extra.FunctionCategorizer import FunctionCategorizer
 from quick.extra.OrigFormatConverter import OrigFormatConverter
 from quick.extra.StandardizeTrackFiles import runParserClass
 from quick.extra.TrackExtractor import TrackExtractor
+from quick.origdata.OrigTrackFnSource import getOrigSubTracks
 from quick.util.CommonFunctions import extractIdFromGalaxyFn, ensurePathExists
 from proto.ProtoToolRegister import getToolPrototype
 from quick.util.GenomeInfo import GenomeInfo
@@ -613,7 +615,8 @@ class GalaxyInterfaceTools:
     def createIntensityTrack(mainTrackName, controlTrackNameList, outTrackName, regSpec, binSpec, genome, galaxyFn, numDiscreteVals=10):
         print GalaxyInterface.getHbFunctionOutputBegin(galaxyFn, withDebug=True)
 
-        cleanedTrackNames = GalaxyInterface._cleanUpTracks([mainTrackName]+controlTrackNameList, genome, True)
+        trackNames = [mainTrackName]+controlTrackNameList
+        cleanedTrackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True)
         mainTrackName = cleanedTrackNames[0]
         controlTrackNameList = cleanedTrackNames[1:]
 
@@ -624,7 +627,7 @@ class GalaxyInterfaceTools:
             outTrackName = ExternalTrackManager.getStdTrackNameFromGalaxyTN(outTrackName)
 
         print regSpec, binSpec
-        userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, mainTrackName, controlTrackNameList[0])
+        userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, cleanedTrackNames)
         #DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True #as there is only one applicable stat, and informative error message is preferred to uniformative that simply states that analysisDef is
         print 'Note that if main track is of type segment, it will be converted to midpoints'
 
@@ -662,8 +665,9 @@ class GalaxyInterfaceTools:
 
     @staticmethod
     def extractTrackManyBins(genome, trackName, regSpec, binSpec, globalCoords, fileFormatName, asOriginal, allowOverlaps, fn, applyBoundaryFilter=False):
-        trackName = GalaxyInterface._cleanUpTracks([trackName], genome, True)[0]
-        bins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackName)
+        trackNames = [trackName]
+        trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True)
+        bins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackNames)
         if applyBoundaryFilter:
             from quick.origdata.GERegionBoundaryFilter import GERegionBoundaryFilter
             bins = GERegionBoundaryFilter(bins, GlobalBinSource(genome))
@@ -681,9 +685,9 @@ class GalaxyInterfaceTools:
     @staticmethod
     def extractTrackManyBinsToRegionDirsInZipFile(genome, trackName, regSpec, binSpec, globalCoords, fileFormatName, asOriginal, allowOverlaps, extractionFormat, galaxyFn):
         #globalCoords=False
-        #GalaxyInterface.cleanUpTrackName(trackName)
-        trackName = GalaxyInterface._cleanUpTracks([trackName], genome, True)[0]
-        bins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackName)
+        trackNames = [trackName]
+        trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True)
+        bins = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackNames)
         #TODO 20160629 boris: add argument for zip file name
         zipBaseFn = trackName[-1].replace(' ','_') + '.extract.zip'
         zipFile = GalaxyRunSpecificFile([zipBaseFn], galaxyFn)
@@ -723,79 +727,68 @@ class GalaxyInterfaceTools:
 
 class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     ALL_SUBTYPES_TEXT = '-- All subtypes --'
-    UCSC_TRACK_TUPLE = ('UCSC tracks', 'ucsc', False)
     APPEND_ASSEMBLY_GAPS = True
     ALLOW_OVERLAPPING_USER_BINS = False
     #APPEND_COUNTS = True
 
     @staticmethod
     @runtimeLogging
-    def getMainTrackNames(genome, preTracks=[], postTracks=[], username='', addUcscCategory=True):
+    def getMainTrackNames(genome, preTracks=[], postTracks=[], username='', fileTree='preprocessed'):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
+
         #return ['HPV_200kb, allTss']
         #return ProcTrackOptions().getMainTypes(extraTracks)
-        fullAccess = GalaxyInterface.userHasFullAccess(username)
-        tracks = ProcTrackOptions.getSubtypes(genome, [], fullAccess)
+        if fileTree == 'preprocessed':
+            fullAccess = GalaxyInterface.userHasFullAccess(username)
+            tracks = ProcTrackOptions.getSubtypes(genome, [], fullAccess)
+        else:
+            tracks = getOrigSubTracks(genome, [], fileTree)
 
         opts = []
         for track in tracks:
-            opts.append((GalaxyInterface._getTrackNameText(genome, [track]), track, False))
+            opts.append((GalaxyInterface._getTrackNameText(genome, [track], fileTree), track, False))
 
-        if IS_EXPERIMENTAL_INSTALLATION:
-            from quick.origdata.UcscHandler import UcscHandler
-            ucscHandler = UcscHandler()
-            if addUcscCategory and ucscHandler.isGenomeAvailable(genome):
-                opts.append(GalaxyInterface.UCSC_TRACK_TUPLE)
-            if fullAccess:
-                opts.append(('StoreBioInfo','StoreBioInfo',False))
         #return [('external','external',False)]+preTracks + opts + postTracks
         return preTracks + opts + postTracks
 
     @staticmethod
     @runtimeLogging
     #@takes(str, list)
-    def getSubTrackNames(genome, parentTrack, deep=True, username='', state=None, includeAllSubtracksChoice=True):
+    def getSubTrackNames(genome, parentTrack, deep=True, username='',
+                         fileTree='preprocessed', includeAllSubtracksChoice=True):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
         assert (not deep)
-        fullAccess = GalaxyInterface.userHasFullAccess(username)
 
-        if len(parentTrack) > 0 and GalaxyInterface.isUcscTrackName(parentTrack):
-            from quick.origdata.UcscHandler import UcscHandler
-            ucscHandler = UcscHandler(state)
-            opts, state = ucscHandler.getSubTrackNames(genome, parentTrack)
-            #opts = []
-            #for track in tracks:
-            #    opts.append((track, track, False))
-        elif len(parentTrack) > 0 and GalaxyInterface.isStoreBioTrackName(parentTrack):
-            import zmq
-            context = zmq.Context()
-            socket = context.socket(zmq.REQ)
-            socket.connect("tcp://localhost:5559")
-
-            from config.Config import STOREBIOINFO_USER, STOREBIOINFO_PASSWD
-            params = ['username:='+STOREBIOINFO_USER, 'password:='+STOREBIOINFO_PASSWD, 'operation:=getSubTrackName', \
-                      'params:='+repr(parentTrack), 'class:=dataStorageServicePub']
-            socket.send('##'.join(params))
-            message = socket.recv()
-            opts = ast.literal_eval(message)
-        else:
+        if fileTree == 'preprocessed':
+            fullAccess = GalaxyInterface.userHasFullAccess(username)
             tracks = ProcTrackOptions.getSubtypes(genome, parentTrack, fullAccess)
-            if includeAllSubtracksChoice:
-                if len(tracks) > 0 and ProcTrackOptions.isValidTrack(genome, parentTrack, fullAccess):
-                    tracks += [GalaxyInterface.ALL_SUBTYPES_TEXT]
+        else:
+            tracks = getOrigSubTracks(genome, parentTrack, fileTree)
 
-            opts = []
-            for track in tracks:
-                opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track]), track, False))
-        return opts, state
+        if fileTree == 'preprocessed' and includeAllSubtracksChoice:
+            if len(tracks) > 1 and ProcTrackOptions.isValidTrack(genome, parentTrack, fullAccess):
+                tracks += [GalaxyInterface.ALL_SUBTYPES_TEXT]
+
+        opts = []
+        for track in tracks:
+            opts.append((GalaxyInterface._getTrackNameText(genome, parentTrack + [track], fileTree), track, False))
+
+        return opts
 
     @staticmethod
-    def _getTrackNameText(genome, trackName):
-        ti = TrackInfo(genome, trackName)
-        subTrackCount = ti.subTrackCount
-        if subTrackCount in [0,None] or \
-            (subTrackCount == 1 and ti.isValid()):
-            return trackName[-1]
+    def _getTrackNameText(genome, trackName, fileTree='preprocessed'):
+        assert fileTree in ['preprocessed', 'standardized', 'collected', 'parsing error']
+
+        if fileTree == 'preprocessed':
+            ti = TrackInfo(genome, trackName)   
+            subTrackCount = ti.subTrackCount
+            if subTrackCount in [0,None] or \
+                (subTrackCount == 1 and ti.isValid()):
+                return trackName[-1]
+            else:
+                return '%s [%s]' % (trackName[-1], strWithStdFormatting(subTrackCount))
         else:
-            return '%s [%s]' % (trackName[-1], strWithStdFormatting(subTrackCount))
+            return trackName[-1]
 
     @staticmethod
     def userHasFullAccess(username):
@@ -821,13 +814,14 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @runtimeLogging
     #mainCategory in ['Descriptive statistics', 'Hypothesis testing']
     #returns a list of 4-tuples, consisting of (shortName, fullSpec, False, textualDescription)
-    def getStatOptions(genome, trackName1, trackName2, mainCategory, state1=None, state2=None):
+    def getStatOptions(genome, trackName1, trackName2, mainCategory):
         try:
             realPreProc = False
-            trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, realPreProc, [state1,state2])
+            trackNames = [trackName1, trackName2]
+            trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc)
 
             #GalaxyInterface.cleanUpTrackNames(trackName1, trackName2)
-            if not GalaxyInterface.areTrackNamesValid(genome, trackName1, trackName2):
+            if not GalaxyInterface.areTrackNamesValid(genome, trackNames):
                 return []
 
             #trackName1 = GalaxyInterface._handleHistoryTrack(trackName1, '1')
@@ -838,10 +832,11 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             for subCategory in AnalysisManager.getSubCategoryNames(mainCategory):
                 fullCategory = AnalysisManager.combineMainAndSubCategories(mainCategory, subCategory)
                 subCatAnalyses = []
-                for analysis in AnalysisManager.getValidAnalysesInCategory(fullCategory, genome, trackName1, trackName2):
+                for analysis in AnalysisManager.getValidAnalysesInCategory(fullCategory, genome, trackNames[0], trackNames[1]):
                     #print 'analysisDef: ', analysis.getDef(), '<br>'
-                    fulldesc = GalaxyInterface.getTextFromAnalysisDef(analysis.getDef(), genome, trackName1, trackName2)
-                    subCatAnalyses.append([str(analysis).split(':')[0] , quote( ('_' if analysis._reversed else '') + analysis.getDef(), ''), False, fulldesc])
+                    # fullDesc = GalaxyInterface.getTextFromAnalysisDef(analysis.getDef(), genome, trackName1, trackName2)
+                    analysisCat, fullDesc = str(analysis).split(':')
+                    subCatAnalyses.append([analysisCat, quote(('_' if analysis.reversed else '') + analysis.getDef(), ''), False, fullDesc])
                 if len(subCatAnalyses)>0:
                     opts.append( [subCategory, '', True, ''])
                     opts += sorted(subCatAnalyses, key=smartStrLower)
@@ -882,23 +877,12 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             gold.util.CompBinManager.CompBinManager.ALLOW_COMP_BIN_SPLITTING = CFG_ALLOW_COMP_BIN_SPLITTING
 
     @staticmethod
-    def _prepareRun(analysisDef, regSpec, binSpec, genome, trackName1, trackName2, trackNameIntensity=None, username=''):
-        '''
-        Constructs a userBinSource object based on regSpec and binSpec
-        Constructs a fullRunArgs dict based on the bracket syntax in analysisDef
-        Uses trackNames
-        Returns these two objects.
-        '''
-        userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackName1, trackName2)
-
-        GalaxyInterface._tempAnalysisDefHacks(analysisDef)
-
-        fullRunArgs = {}
-        if trackNameIntensity not in [[],None]:
-            fullRunArgs['trackNameIntensity'] = '|'.join(trackNameIntensity)
-        if username not in ['', None]:
-            fullRunArgs['username'] = username
-        return userBinSource, fullRunArgs
+    def _ifDefinedAddTrackNameIntensityToAnalysisDef(analysisDef, trackNameIntensity):
+        if trackNameIntensity not in [None, '', [], ()]:
+            # fullRunArgs['trackNameIntensity'] = '|'.join(trackNameIntensity)
+            tniChoice = '[trackNameIntensity:_trackNameIntensity=%s]' % '^'.join(trackNameIntensity)
+            analysisDef = analysisDef.replace('->', tniChoice + ' ->')
+        return analysisDef
 
     @staticmethod
     def _handleRunResult(res, runDescription, userBinSource, genome, galaxyFn):
@@ -935,17 +919,17 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 #        adj._endProgress()
 
     @classmethod
-    def runManual(cls, trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn=None, trackNameIntensity=None, username='', \
+    def runManual(cls, trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn=None, trackNameIntensity=None, username='',
                   printResults=True, printProgress=True, printHtmlWarningMsgs=True, applyBoundaryFilter=False, printRunDescription=True, **kwArgs):
-        return cls._runCommon(trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn, trackNameIntensity, username, printResults=printResults, \
-                              printProgress=printProgress, printHtmlWarningMsgs=printHtmlWarningMsgs, applyBoundaryFilter=applyBoundaryFilter, \
+        return cls._runCommon(trackNames, analysisDef, regSpec, binSpec, genome, galaxyFn, trackNameIntensity, username, printResults=printResults,
+                              printProgress=printProgress, printHtmlWarningMsgs=printHtmlWarningMsgs, applyBoundaryFilter=applyBoundaryFilter,
                               printRunDescription=printRunDescription, fromMainTool=False, **kwArgs)
 
     @classmethod
     @usageAndErrorLogging
     #@takes(list,list,str,str,str,str,str,list,str)
-    def run(cls, trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, trackNameIntensity=None, username='', \
-            state1=None, state2=None, demoID=None, printHtmlBeginEnd=True, **kwArgs):
+    def run(cls, trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None,
+            trackNameIntensity=None, username='', demoID=None, printHtmlBeginEnd=True, **kwArgs):
         try:
             #startTime = time.time()
             if printHtmlBeginEnd:
@@ -954,8 +938,10 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 print GalaxyInterface._getDemoResultsIntro(demoID)
             print GalaxyInterface.getHtmlForToggles()
 
-            return cls._runCommon([trackName1, trackName2], analysisDef, regSpec, binSpec, genome, galaxyFn, trackNameIntensity, username, [state1, state2], **kwArgs)
+            return cls._runCommon([trackName1, trackName2], analysisDef, regSpec, binSpec, genome,
+                                  galaxyFn, trackNameIntensity, username, **kwArgs)
         except Exception, e:
+            sys.stdout.flush()
             core = HtmlCore()
             core.styleInfoEnd()
             core.styleInfoBegin(styleClass='errormessagelarge')
@@ -976,8 +962,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 print GalaxyInterface.getHtmlEndForRuns()
 
     @staticmethod
-    def _runCommon(trackNames, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, trackNameIntensity=None, username='', \
-                   states=None, printResults=True, printProgress=True, printHtmlWarningMsgs=True, applyBoundaryFilter=False,
+    def _runCommon(trackNames, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, trackNameIntensity=None, username='',
+                   printResults=True, printProgress=True, printHtmlWarningMsgs=True, applyBoundaryFilter=False,
                    printRunDescription=True, fromMainTool=True, **kwArgs):
         assert len(trackNames) > 0
         if len(trackNames) == 1:
@@ -990,11 +976,8 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             print str(HtmlCore().styleInfoBegin(styleClass='debug'))
             print 'Analysis initiated at time: %s \n\n' % datetime.now()
 
-        if fromMainTool:
-            trackNames[0], trackNames[1], analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackNames[0], trackNames[1], analysisDef)
-
         try:
-            trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True, states, raiseIfAnyWarnings=printHtmlWarningMsgs)
+            trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, True, raiseIfAnyWarnings=printHtmlWarningMsgs)
         except Warning, e:
             core = HtmlCore()
             core.styleInfoEnd()
@@ -1007,14 +990,18 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             core.styleInfoBegin(styleClass='debug')
             print str(core)
 
-        userBinSource, fullRunArgs = GalaxyInterface._prepareRun \
-            (analysisDef, regSpec, binSpec, genome, trackNames[0], trackNames[1], trackNames[-1], username)
+        if fromMainTool or trackNameIntensity:
+            trackNames, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackNames, analysisDef)
+
+        userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackNames)
+
+        fullRunArgs = {}
+        if username not in ['', None]:
+            fullRunArgs['username'] = username
 
         if applyBoundaryFilter:
             from quick.origdata.GERegionBoundaryFilter import GERegionBoundaryFilter
             userBinSource = GERegionBoundaryFilter(userBinSource, GlobalBinSource(genome))
-
-        trackName1 = trackNames[0]
 
         if not USE_PARALLEL or ('minimal' in kwArgs and kwArgs['minimal']):
             job = AnalysisDefJob(analysisDef, trackNames[0], trackNames[1] if len(trackNames) > 1 else None, userBinSource, galaxyFn=galaxyFn, **fullRunArgs)
@@ -1046,8 +1033,10 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 manager.shutdown()
 
         if printRunDescription:
-            runDescription = GalaxyInterface.getRunDescription(trackNames[0], trackNames[1], analysisDef, regSpec, \
-                                                               binSpec, genome, username, trackNameIntensity, galaxyFn, showRandomSeed=True)
+            analysisDef = res.getAnalysisDef()
+            runDescription = GalaxyInterface.getRunDescription(trackNames[0], trackNames[1], analysisDef, regSpec,
+                                                               binSpec, genome, username, trackNames[-1], galaxyFn,
+                                                               showRandomSeed=True)
         else:
             runDescription = ''
 
@@ -1169,29 +1158,24 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         return tn is not None and tn[0:len(nmerTn)] == nmerTn and type(tn[-1]) is str and len(tn[-1])>0
 
     @staticmethod
-    def isUcscTrackName(tn):
-        return tn is not None and len(tn)>0 and tn[0] == GalaxyInterface.UCSC_TRACK_TUPLE[1]
-
-    @staticmethod
-    def isStoreBioTrackName(tn):
-        return tn is not None and len(tn)>0 and tn[0] == 'StoreBioInfo'
-
-    @staticmethod
-    def _cleanUpAnalysisDef(trackName1, trackName2, analysisDef):
+    def _cleanUpAnalysisDef(trackNames, analysisDef):
         if len(analysisDef) > 0:
             analysisDef = unquote(analysisDef.replace('X','%'))
 
             if analysisDef[0] == '_':
-               analysisDef = analysisDef[1:]
-               trackName1, trackName2 = trackName2, trackName1
-        return trackName1, trackName2, analysisDef
+                analysisDef = analysisDef[1:]
+                trackNames[0], trackNames[1] = trackNames[1], trackNames[0]
+
+            trackNameIntensity = trackNames[-1]
+            analysisDef = GalaxyInterface._ifDefinedAddTrackNameIntensityToAnalysisDef(analysisDef, trackNameIntensity)
+
+            GalaxyInterface._tempAnalysisDefHacks(analysisDef)
+        return trackNames, analysisDef
 
     @staticmethod
-    def _cleanUpTracks(trackNames, genome, realPreProc, states=None, raiseIfAnyWarnings=False):
-        if states==None:
-            states = [None]*len(trackNames)
-
-        for i,tn in enumerate(trackNames):
+    def _cleanUpTracks(trackNames, genome, realPreProc, raiseIfAnyWarnings=False):
+        trackNames = list(trackNames)
+        for i, tn in enumerate(trackNames):
             GalaxyInterface.cleanUpTrackName(tn)
             #logMessage('statOpt: '+str(tn))
 
@@ -1224,57 +1208,17 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                     else:
                         trackNames[i] = ExternalTrackManager.constructRedirectTrackName \
                             ([NmerManager.GE_SOURCE.__name__], 'ModelsForExternalTracks', 'chr21', 'k-mer')
-            elif GalaxyInterface.isUcscTrackName(tn):
-                from quick.origdata.UcscHandler import UcscHandler
-                ucscHandler = UcscHandler(states[i])
-                if realPreProc:
-                    ti = TrackInfo(genome, trackNames[i])
-                    if ti.timeOfPreProcessing is None or (datetime.now() - ti.timeOfPreProcessing).days > 0:
-                        ucscHandler.downloadTrack(genome, trackNames[i])
-                        job = PreProcessAllTracksJob(genome, trackNames[i], raiseIfAnyWarnings=raiseIfAnyWarnings)
-                        job.process()
-                else:
-                    from gold.origdata.GenomeElementSource import getGenomeElementSourceClass
-                    geSourceCls = getGenomeElementSourceClass('', suffix=trackNames[i][-1])
-                    trackNames[i] = ExternalTrackManager.constructRedirectTrackName \
-                        ([geSourceCls.__name__], 'ModelsForExternalTracks', 'chr21', ucscHandler.getPrettyTrackNameStr())
-
-            elif GalaxyInterface.isStoreBioTrackName(tn):
-                #fixme: should be refactored with more content in StoreBioHelper functions..
-                from quick.extra.StoreBioHelper import getSBFnAndHBTrackAndFn, downloadFirstFtpFile
-
-                fn, hbTrackName, hbFileName = getSBFnAndHBTrackAndFn(tn)
-                if realPreProc:
-                    ti = TrackInfo(genome, trackNames[i])
-                    if ti.timeOfPreProcessing is None or (datetime.now() - ti.timeOfPreProcessing).days > 0:
-                        from quick.extra.StoreBioHelper import getUrlToSBFile
-                        url, hbFileName, hbTrackName = getUrlToSBFile(tn)#, STOREBIOINFO_USER, STOREBIOINFO_PASSWD
-                        fn = createOrigPath(genome, tn, hbFileName)
-                        ensurePathExists(fn)
-                        downloadFirstFtpFile(fn, url)#open(fn,'w').write(urllib2.urlopen(url).read())
-                        job = PreProcessAllTracksJob(genome, trackNames[i], raiseIfAnyWarnings=raiseIfAnyWarnings)
-                        job.process()
-
-                else:
-                    from gold.util.CommonFunctions import getFileSuffix
-                    from quick.extra.StoreBioHelper import getPreviewFile
-                    tempFile = getPreviewFile(tn)
-                    if  tempFile:
-                        suffix = getFileSuffix(hbFileName)
-                        geSource = ExternalTrackManager.getGESource(tempFile.name, suffix)
-                        trackNames[i] = ExternalTrackManager.constructRedirectTrackName \
-                            ([getClassName(geSource)], 'ModelsForExternalTracks', 'chr21', tn[-1])
 
         return trackNames
 
     @staticmethod
     @runtimeLogging
-    def runValid(trackName1, trackName2, statClassName, regSpec, binSpec, genome=DEFAULT_GENOME, galaxyFn=None, **kwArgs):
+    def runValid(trackName1, trackName2, statClassName, regSpec, binSpec, genome=DEFAULT_GENOME, trackNameIntensity=None, **kwArgs):
         #logMessage('runValid: ' + regSpec + ' ' + binSpec)
         #print 'runValidGenome: ',genome
         #print 'VALID: ',regSpec,binSpec
         realPreProc = False
-        trackNames = [trackName1, trackName2, kwArgs.get('trackNameIntensity')]
+        trackNames = [trackName1, trackName2, trackNameIntensity]
         trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, False)
 
         for tn in trackNames:
@@ -1296,7 +1240,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     def trackValid(genome, tn):
         GalaxyInterface.cleanUpTrackName(tn)
 
-        if ExternalTrackManager.isHistoryTrack(tn):
+        if ExternalTrackManager.isHistoryTrack(tn) and not ExternalTrackManager.isExternalTrack(tn):
             try:
                 ExternalTrackManager.getGESourceFromGalaxyOrVirtualTN(tn, genome).parseFirstDataLine()
             except Exception, e:
@@ -1308,12 +1252,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             if not NmerTools.isNmerString(nmer):
                 return NmerTools.getNotNmerErrorString(nmer)
 
-        elif GalaxyInterface.isUcscTrackName(tn) or GalaxyInterface.isStoreBioTrackName(tn):
-            try:
-                GalaxyInterface._cleanUpTracks([tn], genome, realPreProc=False)
-            except Exception, e:
-                return e
-
         elif not len(tn) == 0 and not ProcTrackOptions.isValidTrack(genome, tn, True):
             return 'The track is not valid. Perhaps it is not correctly preprocessed?'
 
@@ -1322,17 +1260,18 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @staticmethod
     def getRunNameAndDescription(trackName1, trackName2, analysisDef, regSpec, binSpec, genome):
         #return 'TestName', 'TestDescription'
-        trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, False)
-        descr = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackName1, trackName2).description
+        trackNames = [trackName1, trackName2]
+        trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, False)
+        descr = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackNames).description
         #logMessage('getRunNameAndDescription past : descr = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome).description..... ')
-        return "HyperBrowser: '%s' on %s" % (unquote(analysisDef).split(':')[0].strip().replace('_',''), prettyPrintTrackName(trackName1)) +\
-                (" vs %s" % prettyPrintTrackName(trackName2) if trackName2 else ""), descr
+        return "HyperBrowser: '%s' on %s" % (unquote(analysisDef).split(':')[0].strip().replace('_',''), prettyPrintTrackName(trackNames[0])) +\
+                (" vs %s" % prettyPrintTrackName(trackNames[1]) if trackNames[1] else ""), descr
                 #'Analysis performed in genome: %s (and more for description field of history element..)' % genome
 
 
     @staticmethod
-    def areTrackNamesValid(genome, trackName1, trackName2):
-        for tn in (trackName1,trackName2):
+    def areTrackNamesValid(genome, trackNames):
+        for tn in trackNames:
             if not GalaxyInterface.isTrackNameValid(genome, tn):
                 return False
         return True
@@ -1351,7 +1290,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #NB! genome is obsolete as parameter, and to be removed
     def runBatchLines(batchLines, galaxyFn=None, genome=None, username='', printResults=True, printProgress=True):
         try:
-            from proto.RSetup import r
+            # from proto.RSetup import r
             #r('options(warn=2)')
 
             if printResults:
@@ -1526,7 +1465,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
             profiler = Profiler()
             profiler.run('webTool.execute(choices, galaxyFn=batchLineSpecificFile.getDiskPath(), username=username)', globals(), locals())
             profiler.printStats()
-            profiler.printLinkToCallGraph(['profile_runBatchLines'], galaxyFn)
+            profiler.printLinkToCallGraph(['profile_runBatchLines'], batchLineSpecificFile.getDiskPath())
         else:
             webTool.execute(choices, galaxyFn=batchLineSpecificFile.getDiskPath(), username=username)
 
@@ -1548,10 +1487,12 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
         if DebugConfig.USE_PROFILING:
             from gold.util.Profiler import Profiler
+            resDict = {}
             profiler = Profiler()
-            res = profiler.run("aeval('GalaxyInterface.' + line)")
+            profiler.run("resDict[0] = aeval('GalaxyInterface.' + line)", globals(), locals())
+            res = resDict[0]
             profiler.printStats()
-            profiler.printLinkToCallGraph(['profile_runBatchLines'], galaxyFn)
+            profiler.printLinkToCallGraph(['profile_runBatchLines'], batchLineSpecificFile.getDiskPath())
         else:
             #logMessage(line)
             #logMessage(repr(globals()))
@@ -1583,20 +1524,19 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def getTrackExtractionOptions(genome, trackName):
-        from quick.application.UserBinSource import MinimalBinSource
         from gold.origdata.FileFormatComposer import findMatchingFileFormatComposers, getComposerClsFromFileSuffix
 
         trackNames = [trackName]
         GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc=False)
         trackName = trackNames[0]
 
-        tf = PlainTrack(trackName).getTrackView(MinimalBinSource(genome)[0]).trackFormat
-
         extractionOptions = []
-        matchingComposers = findMatchingFileFormatComposers(tf)
-        for composerInfo in matchingComposers:
-            allOverlapRules = tf.getAllOverlapRules()
-            for allowOverlaps in allOverlapRules:
+        ti = TrackInfo(genome, trackName)
+        allOverlapRules = ti.preProcOverlapRules
+        for allowOverlaps in allOverlapRules:
+            tf = TrackFormat.createInstanceFromPrefixInfoDict(ti.mergedPrefixInfoDictPerOverlapRule[allowOverlaps])
+            matchingComposers = findMatchingFileFormatComposers(tf)
+            for composerInfo in matchingComposers:
                 extractionOptions.append( \
                     (composerInfo.trackFormatName.capitalize() + \
                         ' ' + TrackExtractor.getFileFormatText(composerInfo.fileFormatName) + \
@@ -1605,7 +1545,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                                  if len(allOverlapRules) > 1 else ''), \
                      composerInfo.fileSuffix) )
 
-        ti = TrackInfo(genome, trackName)
         if ti.fileType != '':
             try:
                 extractionOptions.append(
@@ -1616,13 +1555,13 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
                 logException(e)
 
                 #Temporary fix for old tracks with wrong fileType. Should be removed when all tracks have been preprocessed.
-                if not ti.fileType in GalaxyInterface.getSupportedGalaxyFileFormats() and ti.fileType is not None:
-                    from gold.util.CommonFunctions import getFileSuffix
-                    oldFileType = ti.fileType
-                    ti.fileType = getFileSuffix(oldFileType)
-                    ti.store()
-                    logMessage("Changed file type of track '%s' from '%s' to '%s'" %
-                               (':'.join(trackName), oldFileType, ti.fileType))
+                # if not ti.fileType in GalaxyInterface.getSupportedGalaxyFileFormats() and ti.fileType is not None:
+                #     from gold.util.CommonFunctions import getFileSuffix
+                #     oldFileType = ti.fileType
+                #     ti.fileType = getFileSuffix(oldFileType)
+                #     ti.store()
+                #     logMessage("Changed file type of track '%s' from '%s' to '%s'" %
+                #                (':'.join(trackName), oldFileType, ti.fileType))
 
         return extractionOptions
 
@@ -1671,6 +1610,7 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @takes(basestring, dict)
     def setConfigChoices(analysisDef, optionsDict):
         intensityTrigger = '_intensityTN'
+        # Is this part used anymore?
         if intensityTrigger in optionsDict:
             print 'HANDLING INTENSITY TRACK..'
             intensityTN = optionsDict[intensityTrigger]
@@ -1711,11 +1651,12 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     @returns(str)
     def getTextFromAnalysisDef(analysisDef, genome, trackName1, trackName2):
         realPreProc = False
-        trackName1, trackName2, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackName1, trackName2, analysisDef)
-        trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, realPreProc)
+        trackNames = [trackName1, trackName2]
+        trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc)
+        trackNames, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackNames, analysisDef)
 
         from gold.description.Analysis import Analysis
-        text = str( Analysis(analysisDef, genome, trackName1, trackName2) )
+        text = str( Analysis(analysisDef, genome, trackNames[0], trackNames[1]) )
         return AnalysisDefHandler.splitAnalysisText(text)[1]
         #return text[ text.find(':')+1 :]
         #return text.split(':')[-1]
@@ -1752,56 +1693,39 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     @runtimeLogging
-    def getRunDescription(trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME, \
+    def getRunDescription(trackName1, trackName2, analysisDef, regSpec, binSpec, genome=DEFAULT_GENOME,
                           username='', trackNameIntensity=None, galaxyFn=None, showRandomSeed=False):
-        #logMessage('getRunDescription: ' + regSpec + ' ' + binSpec + ' ' + analysisDef)
-        #assert username != None
 
-        #Clean up and if necessary switch tracknames:
-        #trackName1, trackName2, analysisDef, dummy = GalaxyInterface._handleSpecs(trackName1, trackName2, analysisDef, genome)
+        #TODO: showRandomSeed??
 
-        #trackName1 = GalaxyInterface._handleHistoryTrack(trackName1, '1')
-        #trackName2 = GalaxyInterface._handleHistoryTrack(trackName2, '2')
-        #
-        #if analysisDef[0] == '_':
-        #    analysisDef = analysisDef[1:]
-        #    trackName1, trackName2 = trackName2, trackName1
+        trackNames = [trackName1, trackName2, trackNameIntensity]
+        cleanedTrackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc=False)
+        trackNames, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackNames, analysisDef)
+        userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackNames)
+
         if GalaxyInterface.userHasFullAccess(username):
             from quick.util.CommonFunctions import createHyperBrowserURL
-            urlForTrackAutoSelection = createHyperBrowserURL(genome, trackName1, trackName2)
+            urlForTrackAutoSelection = createHyperBrowserURL(genome, trackNames[0], trackNames[1])
         else:
             urlForTrackAutoSelection = None
 
-        if showRandomSeed:
-            from gold.util.RandomUtil import getManualSeed
-            manualSeed = getManualSeed()
-        else:
-            manualSeed = None
-
         try:
-            #if GalaxyInterface.userHasFullAccess(username):
-            revEngBatchLine = GalaxyInterface._revEngBatchLine(trackName1, trackName2, trackNameIntensity, \
-                                                               analysisDef, regSpec, binSpec, genome, \
-                                                               manualSeed=manualSeed)
+            from gold.description.RunDescription import RunDescription
+
+            revEngBatchLine = RunDescription.getRevEngBatchLine(
+                analysisDef, trackNames, cleanedTrackNames, regSpec, binSpec, genome
+            )
+
             if galaxyFn is not None:
                 batchLineStaticFile = GalaxyRunSpecificFile(['batchlines.txt'], galaxyFn).writeTextToFile(revEngBatchLine)
-            #else:
-                #revEngBatchLine = None
         except Exception, e:
-            logException(e, message='Error in _revEngBatchLine')
+            logException(e, message='Error when reverse engineering batch line')
             revEngBatchLine = None
-        except:
-            revEngBatchLine = None
-
-        realPreProc = False
-        trackName1, trackName2, analysisDef = GalaxyInterface._cleanUpAnalysisDef(trackName1, trackName2, analysisDef)
-        trackName1, trackName2, trackNameIntensity = GalaxyInterface._cleanUpTracks([trackName1, trackName2, trackNameIntensity], genome, realPreProc)
-        userBinSource = GalaxyInterface._getUserBinSource(regSpec, binSpec, genome, trackName1, trackName2)
 
         from gold.description.RunDescription import RunDescription
         try:
-            return RunDescription.getRunDescription(trackName1, trackName2, trackNameIntensity, analysisDef, userBinSource, \
-                                                    revEngBatchLine, urlForTrackAutoSelection, manualSeed)
+            return RunDescription.getRunDescription(genome, trackNames, analysisDef, userBinSource,
+                                                    revEngBatchLine, urlForTrackAutoSelection)
         except Exception, e:
             logException(e,level=logging.WARN,message='Error in generating run description')
             return 'Sorry. The system was not able to generate a description of this analysis.'
@@ -1828,15 +1752,17 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def getValidAnalysisDefFromTitle(analysisTitle, genome, trackName1, trackName2):
+        trackNames = [trackName1, trackName2]
         #GalaxyInterface.cleanUpTrackName(trackName1)
         #GalaxyInterface.cleanUpTrackName(trackName2)
-        trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, realPreProc=False)
+        cleanedTrackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc=False)
         from gold.description.AnalysisManager import AnalysisManager
-        return quote(AnalysisManager.getValidAnalysisDefFromTitle(unquote(analysisTitle), genome, trackName1, trackName2), '')
+        return quote(AnalysisManager.getValidAnalysisDefFromTitle(unquote(analysisTitle), genome,
+                                                                  cleanedTrackNames[0], cleanedTrackNames[1]), '')
 
     @staticmethod
-    def getAnalysisList(genome, category, trackName1, trackName2, state1=None, state2=None):
-        return GalaxyInterface.getStatOptions(genome, trackName1, trackName2, category, state1, state2)
+    def getAnalysisList(genome, category, trackName1, trackName2):
+        return GalaxyInterface.getStatOptions(genome, trackName1, trackName2, category)
 
     @staticmethod
     def getTrackInfoRecord(genome, trackName):
@@ -1925,8 +1851,9 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
 
     @staticmethod
     def _getBinningCategoryTuplesCommon(genome, trackName1, trackName2, ubSourceRegistryCls):
-        trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, False)
-        ubSourceRegistry = ubSourceRegistryCls(genome, [trackName1, trackName2])
+        trackNames = [trackName1, trackName2]
+        cleanedTrackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, False)
+        ubSourceRegistry = ubSourceRegistryCls(genome, cleanedTrackNames)
         return ubSourceRegistry.getNameAndKeyTuplesOfAllUserBinSources()
 
     @classmethod
@@ -1949,9 +1876,9 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         return cls._getBinningCategoryTuplesCommon(genome, trackName1, trackName2, UserBinSourceRegistryForExtraction)
 
     @staticmethod
-    def _getUserBinSource(regSpec, binSpec, genome, trackName1=None, trackName2=None):
+    def _getUserBinSource(regSpec, binSpec, genome, trackNames=[]):
         from quick.application.UserBinManager import UserBinSourceRegistry
-        ubSourceRegistry = UserBinSourceRegistry(genome, [trackName1, trackName2])
+        ubSourceRegistry = UserBinSourceRegistry(genome, trackNames)
         return ubSourceRegistry.getUserBinSource(regSpec, binSpec)
 
     @staticmethod
@@ -1959,18 +1886,6 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
         from quick.application.UserBinManager import UserBinSourceRegistry
         ubSourceRegistry = UserBinSourceRegistry(genome, trackNames)
         return ubSourceRegistry.validateRegAndBinSpec(regSpec, binSpec)
-
-    @staticmethod
-    def _revEngBatchLine(trackName1, trackName2, trackNameIntensity, analysisDef, regSpec, binSpec, genome, manualSeed=None):
-        #GalaxyInterface.cleanUpTrackName(trackName1)
-        #GalaxyInterface.cleanUpTrackName(trackName2)
-        cleanedTrackName1, cleanedTrackName2, cleanedtrackNameIntensity = GalaxyInterface._cleanUpTracks([trackName1, trackName2, trackNameIntensity], genome, realPreProc=False)
-        if trackNameIntensity not in [None,'',[],()]:
-            tniChoice = '[trackNameIntensity=%s]' % '^'.join([quote(x,safe='') for x in trackNameIntensity])
-            analysisDef = analysisDef.replace('->', tniChoice+' ->')
-        from gold.description.RunDescription import RunDescription
-        return RunDescription.getRevEngBatchLine(trackName1, trackName2, cleanedTrackName1, cleanedTrackName2, \
-                                                 analysisDef, regSpec, binSpec, genome, manualSeed)
 
     @staticmethod
     def cleanUpTrackName(trackName):

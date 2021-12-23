@@ -35,7 +35,8 @@ class ClusterMatrixStatUnsplittable(Statistic):
         for id in [self._rowClustId, self._colClustId]:
             if id is not None:
                 assert isinstance(id, int)
-        silenceRWarnings()
+        if kwArgs.get('minimal') != True:
+            silenceRWarnings()
 
     def _compute(self):
         if not isIter(self._region):

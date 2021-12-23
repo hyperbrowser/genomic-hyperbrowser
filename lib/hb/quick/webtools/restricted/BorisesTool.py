@@ -1925,8 +1925,8 @@ class FastaSequencesAnalysisTool(GeneralGuiTool):
 
         #Set random seed if needed
         randomSeed = choices.randSeed
-        from gold.util.RandomUtil import getManualSeed, setManualSeed, random
-        if randomSeed and randomSeed != 'Random' and getManualSeed() is None:
+        from gold.util.RandomUtil import setManualSeed, random
+        if randomSeed:
             setManualSeed(int(randomSeed))
 
         #Read in the sequences

@@ -16,13 +16,14 @@ class FeatureCatalog(object):
 
     @classmethod
     def getValidAnalyses(cls, genome, trackName1, trackName2):
+        trackNames = [trackName1, trackName2]
         allFeatures = cls.getAllFeatures()
         validFeatures = {}
-        trackName1, trackName2 = GalaxyInterface._cleanUpTracks([trackName1, trackName2], genome, realPreProc=False)
+        trackNames = GalaxyInterface._cleanUpTracks(trackNames, genome, realPreProc=False)
         #trackName1 = trackName1[1:] #FixMe, temp, Boris..
         #genome='hg19'
         #print 'TEMP3: ', (genome, trackName1, trackName2)
-        if not GalaxyInterface.areTrackNamesValid(genome, trackName1, trackName2):
+        if not GalaxyInterface.areTrackNamesValid(genome, trackNames):
             return {}
 
         #print 'TEMP2: ', allFeatures

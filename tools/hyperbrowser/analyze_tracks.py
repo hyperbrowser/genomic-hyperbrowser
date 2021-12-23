@@ -24,8 +24,6 @@ def main():
     intensityTrackName = None
     subName1 = ""
     subName2 = ""
-    track1State = None
-    track2State = None
     intensityTrackFile = None
     intensityTrackFileType = None
     statClassName = ""
@@ -85,10 +83,6 @@ def main():
         elif o == "binfile":
             region = "bed"
             userBins = a
-        elif o == 'track1_state':
-            track1State = unquote(a)
-        elif o == 'track2_state':
-            track2State = unquote(a)
         elif o == "statsfile":
             statsFile = a
         elif o == "file_path":
@@ -139,7 +133,7 @@ def main():
         if output != None:
             sys.stdout = open(output, "w", 0)
         demoID = params['demoID'] if params.has_key('demoID') else None
-        GalaxyInterface.run(tracks1, tracks2, statClassName, region, binSize, genome, output, intensityTracks, username, track1State, track2State, demoID)
+        GalaxyInterface.run(tracks1, tracks2, statClassName, region, binSize, genome, output, intensityTracks, username, demoID)
 
 
 if __name__ == "__main__":

@@ -38,8 +38,8 @@ class StandardizeTrackFilesTool(GeneralGuiTool):
         "Returns a list of names for input boxes, implicitly also the number of input boxes to display on page. Each such box will call function getOptionsBoxK, where K is in the range of 1 to the number of boxes"
         return [ \
             ('Genome', 'genome'),\
-            ('Track', 'track'),\
             ('Direction of operation','direction'),\
+            ('Select track', 'track'),\
             ('Run recursively on all subtypes','allSubTypes'),\
             ('Depth of recursion','subTypeDepth'),\
             ('File to display', 'file'),\
@@ -52,17 +52,18 @@ class StandardizeTrackFilesTool(GeneralGuiTool):
     
     @staticmethod
     def getInputBoxOrder():
-        return ('genome','track','direction','allSubTypes','subTypeDepth','file','content','prevRun','parserClass','description',10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,'kwArgs')
+        return ('genome','direction','track','allSubTypes','subTypeDepth','file','content','prevRun','parserClass','description',10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,'kwArgs')
     
     @staticmethod    
     def getOptionsBoxGenome(): 
         '''Returns a list of genomes'''
         return '__genome__'
         
-    @staticmethod    
-    def getOptionsBoxTrack(prevChoices): 
+    @classmethod
+    def getOptionsBoxTrack(cls, prevChoices):
         '''Returns a list of tracks for selected genome'''
-        return '__track__'
+        inputFileTree = cls.DIRECTION_DICT[prevChoices.direction].inputFileTree
+        return '__track__', inputFileTree
     
     @staticmethod   
     def getOptionsBoxAllSubTypes(prevChoices):
@@ -73,24 +74,24 @@ class StandardizeTrackFilesTool(GeneralGuiTool):
         if prevChoices.allSubTypes:
             return ['1','2','3','4','5','6','7','8','9','10']
     
-    @staticmethod    
-    def getOptionsBoxDirection(prevChoices):
-        return StandardizeTrackFilesTool.DIRECTION_DICT.keys()
+    @classmethod
+    def getOptionsBoxDirection(cls, prevChoices):
+        return cls.DIRECTION_DICT.keys()
     
-    @staticmethod
-    def _getFilePathList(prevChoices, input=True):
+    @classmethod
+    def _getFilePathList(cls, prevChoices, input=True):
         if input:
-            fileTree = StandardizeTrackFilesTool.DIRECTION_DICT[prevChoices.direction].inputFileTree
+            fileTree = cls.DIRECTION_DICT[prevChoices.direction].inputFileTree
         else:
-            fileTree = StandardizeTrackFilesTool.DIRECTION_DICT[prevChoices.direction].outputFileTree
+            fileTree = cls.DIRECTION_DICT[prevChoices.direction].outputFileTree
             
-        return getOrigFns(prevChoices[0], prevChoices[1].split(':'), '', fileTree=fileTree)
+        return getOrigFns(prevChoices.genome, prevChoices.track.split(':'), '', fileTree=fileTree)
         
     @staticmethod    
     def getOptionsBoxFile(prevChoices):
         filePathList = StandardizeTrackFilesTool._getFilePathList(prevChoices, input=True)
         
-        if len(filePathList)==0:
+        if len(filePathList) == 0:
             return None
         
         return [v.split('/')[-1] for v in filePathList]

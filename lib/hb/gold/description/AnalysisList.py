@@ -258,10 +258,10 @@ Located nearby?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:S-F'] = '''
 Higher values inside?:Are the values of track 2 [tail:Alternative hypothesis=more:higher/less:lower/different:different] inside the segments of track 1, than what is expected by chance?
-    [H0:_=The expected value of the function of track 2 is the same in the segments of track 1 as in the rest of the bin/genome]
-    [H1_more:_=The expected value of the function of track 2 is higher in the segments of track 1 than in the rest of the bin/genome]
-    [H1_less:_=The expected value of the function of track 2 is lower in the segments of track 1 than in the rest of the bin/genome]
-    [H1_different:_=The expected value of the function of track 2 in the segments of track 1 is different from the expected value in the rest of the bin/genome]
+    [H0:_=The expected value of the function of track 2 is the same in the segments of track 1 as in the rest of the bin (or genome)]
+    [H1_more:_=The expected value of the function of track 2 is higher in the segments of track 1 than in the rest of the bin (or genome)]
+    [H1_less:_=The expected value of the function of track 2 is lower in the segments of track 1 than in the rest of the bin (or genome)]
+    [H1_different:_=The expected value of the function of track 2 in the segments of track 1 is different from the expected value in the rest of the bin (or genome)]
     [rawStatistic:=DiffOfMeanInsideOutsideStat:]
 #    [rawStatistic:=MeanInsideStat:]
     [assumptions:_Null model=
@@ -277,10 +277,10 @@ Higher values inside?:Are the values of track 2 [tail:Alternative hypothesis=mor
 RAW_ANALYSIS_SPECS['Hypothesis testing:P-F'] = '''
 Higher values at locations?:
     Are the values of track 2 [tail:Alternative hypothesis=more:higher/less:lower/different:different] at the points of track 1, than what is expected by chance?
-    [H0:_=The expected value of the function of track 2 is the same at the points of track 1 as in the rest of the bin/genome]
-    [H1_more:_=The expected value of the function of track 2 is higher at the points of track 1 than in the rest of the bin/genome]
-    [H1_less:_=The expected value of the function of track 2 is lower at the points of track 1 than in the rest of the bin/genome]
-    [H1_different:_=The expected value of the function of track 2 at the points of track 1 is different from the expected value in the rest of the bin/genome]
+    [H0:_=The expected value of the function of track 2 is the same at the points of track 1 as in the rest of the bin (or genome)]
+    [H1_more:_=The expected value of the function of track 2 is higher at the points of track 1 than in the rest of the bin (or genome)]
+    [H1_less:_=The expected value of the function of track 2 is lower at the points of track 1 than in the rest of the bin (or genome)]
+    [H1_different:_=The expected value of the function of track 2 at the points of track 1 is different from the expected value in the rest of the bin (or genome)]
     [rawStatistic:=DiffOfMeansAtPointsVsRemainingStat:]
 #    [rawStatistic:=MeanAtPointsStat:]
     [assumptions:_Null model=
@@ -413,7 +413,7 @@ Overlap?:
     -> BpOverlapPValOneTrackFixedStat, BpOverlapPValStat, RandomizationManagerStat
 
 Overlap (experimental MC V2)?:
-    Are the segments of track 1 overlapping the segments of track 2, [tail:Alternative hypothesis=right-tail:more/left-tail:less/two-tail:differently] than expected by chance?
+    Are the segments of track 1 overlapping the segments of track 2, [tails:Alternative hypothesis=right-tail:more/left-tail:less/two-tail:differently] than expected by chance?
     [H0:_=The segments of track 1 are located independently of the segments of track 2 with respect to overlap]
     [H1_right-tail:_=The segments of track 1 tend to overlap the segments of track 2]
     [H1_left-tail:_=The segments of track 1 tend to avoid overlapping the segments of track 2]
@@ -669,7 +669,7 @@ RAW_ANALYSIS_SPECS['Hypothesis testing:P'] = '''
 #    -> RandomizationManagerStat
 #Located nonuniformly inside bin?:
 #   Do the points of track 1 tend to accumulate
-#   [tails=less/more]
+#   [tail=less/more]
 #   at the upstream end of the bin?
 #   [rawStatistic:=FreqChangeRatioStat:]
 #   [assumptions:_Null model=RandomGenomeLocationTrack_:Segments fetched from random genome location (MC)/
@@ -722,7 +722,7 @@ Clustered points? (Poisson params):
 
 
 #    Do the points of track 1 tend to accumulate
-#    [tails=less/more]
+#    [tail=less/more]
 ##[H0:_=The points of track 1 have a uniform distribution within the segments of track 2]
 ##[H1_ha1:_=The points of track 1 tend to be positioned towards the borders of the segments of track 2]
 ##[H1_ha2:_=The points of track 1 tend to be positioned towards the middle of the segments of track 2]
@@ -893,6 +893,7 @@ Correlation?:
 Number of touched segments: the number of T2-segments touched by T1-segments $EXPERIMENTAL$ -> NumT2SegsTouchedByT1SegsStat
 Correlated bin coverage?: [perBinStatistic=CountStat] [corrMethod=pearson/spearman/kendall] $EXPERIMENTAL$ -> GenericT1T2BinValuesCorrelationStat
 
+# TODO: What is the point of this list? Perhaps the need has disappeared over time?
 -> ComputeROCScoreFromRankedTargetControlMarksStat
 -> ZipperStat
 -> RawDataStat

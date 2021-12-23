@@ -50,7 +50,7 @@ class TrackElement(object):
         return self._trackView._extraLists.keys()
 
     def __getattr__(self, key):
-        if key in self._trackView._extraLists:
+        if key != '_trackView' and key in self._trackView._extraLists:
             def extra():
                 return self._trackView._extraLists[key][self._index]
             return extra
@@ -144,8 +144,10 @@ class TrackView(object):
         if self.trackFormat.isPoints():
             self._endList = VirtualPointEnd(self._startList)
 
-    def __init__(self, genomeAnchor, startList, endList, valList, strandList, idList, edgesList, \
-                 weightsList, borderHandling, allowOverlaps, extraLists=OrderedDict()):
+    def __init__(self, genomeAnchor,
+                 startList=None, endList=None, valList=None, strandList=None,
+                 idList=None, edgesList=None, weightsList=None,
+                 borderHandling='crop', allowOverlaps=False, extraLists=OrderedDict()):
         assert (startList is not None) or (endList is not None) or (valList is not None) or (edgesList is not None)
         assert borderHandling in ['crop']
 
@@ -212,7 +214,7 @@ class TrackView(object):
         for list in [self._startList, self._endList, self._valList, self._edgesList]:
             if list is not None:
                 if isinstance(list, numpy.ndarray):
-                    return len(self._removeBlindPassengersFromNumpyArray(list))
+                    return len(self._removeStowawaysFromNumpyArray(list))
                 else:
                     return sum(1 for x in self)
         raise ShouldNotOccurError
@@ -362,9 +364,9 @@ class TrackView(object):
             bpLevelArray[~self.getBinaryBpLevelArray()] = voidValue
         return bpLevelArray
 
-    def _removeBlindPassengersFromNumpyArray(self, numpyArray):
+    def _removeStowawaysFromNumpyArray(self, numpyArray):
         '''
-        To remove any blind passengers - segments entirely in front of genomeanchor,
+        To remove any stowaways - segments entirely in front of genomeanchor,
         but sorted after a larger segment crossing the border.
         '''
         if self.allowOverlaps and len(numpyArray) > 0:
@@ -376,7 +378,7 @@ class TrackView(object):
         if numpyArray is None:
             return None
 
-        numpyArray = self._removeBlindPassengersFromNumpyArray(numpyArray)
+        numpyArray = self._removeStowawaysFromNumpyArray(numpyArray)
 
         if numpyArrayModMethod is not None:
             return numpyArrayModMethod(numpyArray)

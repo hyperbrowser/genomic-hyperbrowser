@@ -1209,12 +1209,16 @@ use_interactive = True
 
 #is_experimental_installation = False
 #use_memory_memoization = True
-#load_disk_memoization = False
-#store_disk_memoization = False
+#load_disk_memoization = True
+#store_disk_memoization = True
 #print_progress = True
 #allow_comp_bin_splitting = False
 #allow_gsuite_file_protocol = False
 #use_parallel = False
+
+# Speedup fix of "Analyze genomic tracks" for non-development instances
+# Note: use_disk_memoization_for_minimal_runs overrides load_disk_memoization and store_disk_memoization
+#use_disk_memoization_for_minimal_runs = True
 
 #
 # Debugging

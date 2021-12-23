@@ -9,6 +9,7 @@ sys.path = new_path
 def extractTestGenomeAndPreProcess(galaxy_dir):
     hbPath = os.path.join(galaxy_dir, 'lib', 'hb')
     from config.Config import ORIG_DATA_PATH
+    from config.DebugConfig import DebugConfig
     from gold.origdata.PreProcessTracksJob import PreProcessAllTracksJob
     from setup.InstallFunctions import executeShellCmd
     from gold.util.CommonFunctions import createDirPath
@@ -22,14 +23,18 @@ def extractTestGenomeAndPreProcess(galaxy_dir):
                     pipe=False, printError=True, onError='exit')
     print 'OK: Extracted TestGenome files.'
 
-    PreProcessAllTracksJob.PASS_ON_EXCEPTIONS = True
     try:
+        prevPassOnPreprocessExceptions = DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = True
         PreProcessAllTracksJob('TestGenome').process()
         PreProcessAllTracksJob('TestGenome', GenomeInfo.getChrTrackName('TestGenome')).process()
         print 'OK: Finished preprocessing TestGenome.'
+        DebugConfig.PASS_ON_PREPROCESS_EXCEPTIONS = prevPassOnPreprocessExceptions
     except Exception, e:
         print 'FAILED: Error when preprocessing TestGenome. Error:'
         print '        ' + str(e).strip()
+        from traceback import print_exc
+        print_exc()
         sys.exit(1)
 
     for allowOverlaps in [False, True]:
@@ -56,7 +61,6 @@ def extractTestGenomeAndPreProcess(galaxy_dir):
     gi.sourceUrls = ['http://hgdownload.cse.ucsc.edu/goldenPath/hg18/chromosomes/chr21.fa.gz', \
                      'http://hgdownload.cse.ucsc.edu/goldenPath/hg18/chromosomes/chrM.fa.gz']
     #gi.sourceChrNames = ['chr21', 'chrM']
-    gi.installedBy = 'Setup.py'
     gi.genomeBuildSource = 'NCBI'
     gi.genomeBuildName = 'hg18'
     gi.species = 'Homo Sapiens'
@@ -65,7 +69,7 @@ def extractTestGenomeAndPreProcess(galaxy_dir):
     gi.isPrivate = False
     gi.privateAccessList = []
     gi.isExperimental = False
-    gi.timeOfInstallation = datetime.now()
-    gi.store()
+    gi.flagAsInstalled(username='Setup.py')
+
 
 extractTestGenomeAndPreProcess(galaxy_dir)

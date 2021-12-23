@@ -7,6 +7,7 @@ from test.integration.GalaxyIntegrationTest import GalaxyIntegrationTest
 import sys
 import numpy
 
+
 class TestRandomization(GalaxyIntegrationTest):
     def testTpReshuffledStat(self):
         self._assertRunEqual([[('DiffFromMean', 0.0), ('MeanOfNullDistr', 4.0), ('MedianOfNullDistr', 4.0), ('NumMoreExtremeThanObs', 13), ('NumPointsTr1', 2), ('NumPointsTr2', 6), ('NumResamplings', 20), ('NumSamplesNotNan', 20), ('P-value', 0.6666666666666666), ('SdNullDistr', 1.3416407864998738), ('TSMC_TpRawOverlapStat', 4L)]],\
@@ -54,10 +55,11 @@ class TestRandomization(GalaxyIntegrationTest):
         #self.testSimilarSegmentsReshuffledStat()
         self.testSegmentOverlapsSegsByIntensityStat()
         pass
-    
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        TestRandomization.VERBOSE = ast.literal_eval(sys.argv[1])
+        TestRandomization.debugMode = sys.argv[1]
         sys.argv = sys.argv[:-1]
     #TestRandomization().debug()
     #TestRandomization().run()

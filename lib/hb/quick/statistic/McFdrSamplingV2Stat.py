@@ -1,6 +1,5 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.util.McEvaluators import computeNumMoreExtreme
-from quick.statistic.McFdr import McFdr
 from gold.util.CommonFunctions import isIter
 import numpy
 from quick.statistic.SequentialMcSamplingV2Stat import SequentialMcSamplingV2StatUnsplittable
@@ -36,8 +35,9 @@ class McFdrSamplingV2StatUnsplittable(SequentialMcSamplingV2StatUnsplittable):
     @classmethod
     def validateAndPossiblyResetLocalResults(cls, localSamplingObjects):
         #TODO: boris, why is this a class method? ask GK.
-        #to load r libraries for McFdr:
-        McFdr._initMcFdr()
+        from quick.statistic.McFdr import McFdr
+        # #to load r libraries for McFdr:
+        # McFdr._initMcFdr()
 
         numNonDetermined = 0
         pvals = [x._getPval() for x in localSamplingObjects]

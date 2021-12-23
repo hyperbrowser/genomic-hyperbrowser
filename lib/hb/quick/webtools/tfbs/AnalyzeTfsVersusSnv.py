@@ -119,7 +119,7 @@ class AnalyzeTfsVersusSnv(GeneralGuiTool):
         from quick.application.ProcTrackOptions import ProcTrackOptions
         #from quick.application.ProcTrackOptions import ProcTrackOptions
         #SHELVE_FN = DATA_FILES_PATH + sep + 'TrackInfo.shelve'
-        #trackInfoShelve = shelve.open(SHELVE_FN, 'c')
+        #trackInfoShelve = safeshelve.open(SHELVE_FN, 'c')
         #
         #cellType = choices.celltype.split('(')[0].strip()
         #hg19Keys = [k for k in trackInfoShelve.keys() if k.startswith('hg19:Gene regulation')]
@@ -173,7 +173,7 @@ class AnalyzeTfsVersusSnv(GeneralGuiTool):
         ##hardcoded tf til pwmId tfNames2pwmIdsFn 
         #DATA_PATH = DATA_FILES_PATH + '/tfbs'
         #tfNames2pwmIdsFn = DATA_PATH + '/tfNames2pwmIds.shelf'
-        #tfToPwmIdsDict = shelve.open(tfNames2pwmIdsFn)
+        #tfToPwmIdsDict = safeshelve.open(tfNames2pwmIdsFn)
         #
         #multiTfDict = MultiExactlySpecifiedTF()
         #trackList = [v[0] for v in GalaxyInterface.getSubTrackNames(genome, ['Private','GWAS', cellType], deep=False)[0]]

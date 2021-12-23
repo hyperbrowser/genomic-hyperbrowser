@@ -1,5 +1,5 @@
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
-import shelve
+import third_party.safeshelve as safeshelve
 import os
 import re
 import glob
