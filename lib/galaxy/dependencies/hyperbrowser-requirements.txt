@@ -36,9 +36,13 @@ backports.functools_lru_cache==1.6.3
 future==0.18.2
 tblib>=1.7.0
 pg8000<1.13
-docker>=2.6.1
-cwltool>=1.0.20171107133715
-pyyaml>=3.12
+docker<5
+ruamel.yaml<0.17
+ruamel.yaml.clib<0.2.3
+networkx==2.2
+decorator<5
+cwltool==1.0.20191225192155
+pyyaml<6
 pydevd>=1.1.1
 futures>=3.2.0
 
