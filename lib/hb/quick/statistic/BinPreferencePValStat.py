@@ -63,7 +63,7 @@ class BinPreferencePValStatUnsplittable(Statistic):
         x = self._pointsInBinStat.getResult()
         size = self._pointsGloballyStat.getResult()
         
-        pval = BinomialTools._computeBinomialTail(x, size, prob, self._tail)
+        pval = BinomialTools._computeBinomialPval(x, size, prob, self._tail)
         
         expPoints = prob*size
         ratioToMean = 1.0 * x / expPoints if expPoints>0 else numpy.nan

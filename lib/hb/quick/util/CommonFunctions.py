@@ -14,7 +14,7 @@ from collections import Iterable, OrderedDict
 from config.Config import PROCESSED_DATA_PATH, DEFAULT_GENOME, \
     ORIG_DATA_PATH, MEMOIZED_DATA_PATH, NONSTANDARD_DATA_PATH, \
     PARSING_ERROR_DATA_PATH, IS_EXPERIMENTAL_INSTALLATION
-from gold.util.CommonConstants import BINARY_MISSING_VAL
+from gold.util.CommonConstants import BINARY_MISSING_VAL, ALLOWED_CHARS
 from quick.application.SignatureDevianceLogging import takes, returns
 from third_party.decorator import decorator
 
@@ -40,13 +40,13 @@ def createDirPath(trackName, genome, chr=None, allowOverlaps=False, basePath=PRO
         list(trackName) + ([chr] if chr is not None else []) )
 
 
-def createMemoPath(region, statId, configHash, track1Hash, track2Hash):
-    chr = region.chr
+def createMemoPath(region, statId, configHash, track1Hash, track2Hash=None):
     genome = region.genome
-    return os.sep.join( [MEMOIZED_DATA_PATH, str(len(region)), statId, genome, str(track1Hash)] + \
-                        ([str(track2Hash)] if track2Hash is not None else []) + \
-                        [str(configHash), chr] ).replace('-','_') #replace('-','_') because hashes can be minus, and minus sign makes problems with file handling
-
+    # Note: minus is replaced with underscore because hashes can be negative, and minus signs
+    # might create problems with file handling
+    return os.sep.join([MEMOIZED_DATA_PATH, str(len(region)), statId, genome, str(track1Hash)] + \
+                       ([str(track2Hash)] if track2Hash is not None else []) + \
+                       [str(configHash)]).replace('-', '_')
 
 @takes(str,(list,tuple),(str,type(None)))
 def createOrigPath(genome, trackName, fn=None):
@@ -80,16 +80,33 @@ def stripFileSuffix(fn):
     return fn[:-len(suffix)-1]
 
 
+def getOrigPathForFileTree(genome, trackName, fileTree):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+
+    if fileTree == 'standardized':
+        return createOrigPath(genome, trackName)
+    elif fileTree == 'collected':
+        return createCollectedPath(genome, trackName)
+    else:
+        return createParsingErrorPath(genome, trackName)
+
+
+def getRootPathForFileTree(fileTree):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
+
+    if fileTree == 'standardized':
+        return ORIG_DATA_PATH
+    elif fileTree == 'collected':
+        return NONSTANDARD_DATA_PATH
+    else:
+        return PARSING_ERROR_DATA_PATH
+
+
 def getOrigFns(genome, trackName, suffix, fileTree='standardized'):
     assert fileTree in ['standardized', 'collected', 'parsing error']
     from gold.application.LogSetup import logMessage, logging
 
-    if fileTree == 'standardized':
-        path = createOrigPath(genome, trackName)
-    elif fileTree == 'collected':
-        path = createCollectedPath(genome, trackName)
-    else:
-        path = createParsingErrorPath(genome, trackName)
+    path = getOrigPathForFileTree(genome, trackName, fileTree)
 
     if not os.path.exists(path):
         if IS_EXPERIMENTAL_INSTALLATION:
@@ -121,9 +138,10 @@ def parseDirPath(path):
     return el[2], tuple(el[3:-1]), el[-1]
 
 
-def extractTrackNameFromOrigPath(path):
+def extractTrackNameFromOrigPath(path, fileTree='standardized'):
+    assert fileTree in ['standardized', 'collected', 'parsing error']
     excludeEl = None if os.path.isdir(path) else -1
-    path = path[len(ORIG_DATA_PATH):]
+    path = path[len(getRootPathForFileTree(fileTree)):]
     path = path.replace('//','/')
     if path[0]=='/':
         path = path[1:]
@@ -468,6 +486,13 @@ def bothIsNan(a, b):
     return False
 
 
+def anyIsNan(a):
+    if isIter(a):
+        return any(isNan(a))
+    else:
+        return isNan(a)
+
+
 def smartAssertEquals(a, b):
     if not bothIsNan(a, b):
         assert a == b
@@ -714,3 +739,48 @@ def cleanUpTrackType(trackTypeStr):
         trackTypeStr = trackTypeStr.replace(old, new).strip()
 
     return trackTypeStr
+
+
+def formatPhraseWithCorrectChrUsage(phrase, useUrlEncoding=True, notAllowedChars=''):
+    corrected = ''
+    for char in phrase:
+        if char not in ALLOWED_CHARS or char in notAllowedChars:
+            if useUrlEncoding:
+                if isinstance(phrase, unicode):
+                    char = char.encode('utf-8')
+                for byte in char:
+                    if not isinstance(byte, int):
+                        byte = ord(byte)
+                    corrected += '%' + '{:0>2X}'.format(byte)
+        else:
+            corrected += char
+    return corrected
+
+
+def urlDecodePhrase(phrase, unquotePlus=False):
+    if unquotePlus:
+        decoded = urllib.unquote_plus(phrase)
+    else:
+        decoded = urllib.unquote(phrase)
+
+    try:
+        try:
+            decoded.decode('ascii')
+            return decoded
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return decoded.decode('utf-8')
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return decoded
+
+
+# From: https://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
+from contextlib import contextmanager
+
+@contextmanager
+def stdout_redirector(stream):
+    old_stdout = sys.stdout
+    sys.stdout = stream
+    try:
+        yield
+    finally:
+        sys.stdout = old_stdout

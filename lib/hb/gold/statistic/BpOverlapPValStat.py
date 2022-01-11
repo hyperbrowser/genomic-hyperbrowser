@@ -50,7 +50,7 @@ class BpOverlapPValStatUnsplittable(Statistic):
             return None
             #raise NotImplementedError()
         else:
-            pval = BinomialTools._computeBinomialTail(x, size, prob, self._tail)
+            pval = BinomialTools._computeBinomialPval(x, size, prob, self._tail)
         return OrderedDict([('P-value', pval), ('Test statistic: ObsBpOverlap', x), ('E(Test statistic): ExpBpOverlap', prob*size), \
                             ('DiffFromMean', x-prob*size), ('NumBpInBin', size), \
                             ('track1Coverage', (1.0*(only1+both)/size)), ('track2Coverage', (1.0*(only2+both)/size))])

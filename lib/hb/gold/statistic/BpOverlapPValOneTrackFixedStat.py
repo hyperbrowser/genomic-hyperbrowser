@@ -13,7 +13,7 @@ class BpOverlapPValOneTrackFixedStat(MagicStatFactory):
             
 class BpOverlapPValOneTrackFixedStatUnsplittable(Statistic):
     def __init__(self, region, track, track2, tail='more', **kwArgs):
-        assert( tail in ['less','more','different'])
+        assert(tail in ['less', 'more', 'different'])
         self._tail = tail
         Statistic.__init__(self, region, track, track2, tail=tail, **kwArgs)
 
@@ -32,7 +32,7 @@ class BpOverlapPValOneTrackFixedStatUnsplittable(Statistic):
         if both == 0 and (only1 == 0 or only2 == 0):
             pval = None
         else:
-            pval = BinomialTools._computeBinomialTail(x, size, prob, self._tail)
+            pval = BinomialTools._computeBinomialPval(x, size, prob, self._tail)
         return OrderedDict([('P-value', pval), ('Test statistic: ObsBpOverlap', x), ('E(Test statistic): ExpBpOverlap', prob*size), \
                             ('DiffFromMean', x-prob*size), ('BpsInTrack2Segments', size), ('NumBpInBin', all), \
                             ('track1Coverage', (1.0*(only1+both)/all)), ('track2Coverage', (1.0*(only2+both)/all))])

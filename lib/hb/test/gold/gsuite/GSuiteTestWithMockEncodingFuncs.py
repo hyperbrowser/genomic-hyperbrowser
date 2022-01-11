@@ -1,6 +1,7 @@
 import unittest
 import quick.application.ExternalTrackManager
 
+
 class GSuiteTestWithMockEncodingFuncs(unittest.TestCase):
     def setUp(self):
         @staticmethod

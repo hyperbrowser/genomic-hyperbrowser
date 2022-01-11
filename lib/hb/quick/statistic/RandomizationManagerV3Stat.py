@@ -53,6 +53,9 @@ class RandomizationManagerV3StatUnsplittable(StatisticV2):
         return numNonDetermined
 
     def validateAndPossiblyResetGlobalResult(self, dummy):
+        if not self.hasChildren():
+            return [0 if self.hasResult() else 1, 0, 0, 0, 0]
+
         res = self._children[0].validateAndPossiblyResetGlobalResult(dummy)
         if res[0]==1:
             #print 'TEMP3'

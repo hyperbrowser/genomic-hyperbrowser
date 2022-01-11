@@ -12,7 +12,14 @@ bitops
 caTools
 gplots
 maptree
+numDeriv
+limSolve
+scatterplot3d
 qvalue
+Iso
+quadprog
+kernlab
+LowRankQP
 pi0
 plotrix
 sm
@@ -35,6 +42,9 @@ locfit
 #DESeq
 limma
 edgeR
+latticeExtra
+irlba
+Hmisc
 #DESeq2
 MASS
 calibrate

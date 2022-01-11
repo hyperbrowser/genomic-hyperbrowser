@@ -95,7 +95,7 @@
 
   
   <label text="Standard Galaxy tools" id="galaxy_tools" />
-  
+
   <section id="textutil" name="Text Manipulation">
     <tool file="filters/fixedValueColumn.xml" />
     <tool file="filters/catWrapper.xml" />

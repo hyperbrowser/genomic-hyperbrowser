@@ -179,19 +179,20 @@ class TestStatistics(GalaxyIntegrationTest):
                              'TestGenome:chr21:10000001-11000000', '500000')
 
     def runTest(self):
-        #self.testHigherFunctionInSegsPValStat()
-        #self.testROCScoreFuncValBasedStat()
-        #self.testNearestPointDistPValStat()
-        #self.testNearestPointDistsStat()
-        #self.testCountStat()
-        #self.testNearestPointDistPValStat()
-        #self.testDiffRelFreqPValStat()
+        # self.testHigherFunctionInSegsPValStat()
+        # self.testROCScoreFuncValBasedStat()
+        # self.testNearestPointDistPValStat()
+        # self.testNearestPointDistsStat()
+        # self.testCountStat()
+        # self.testNearestPointDistPValStat()
+        # self.testDiffRelFreqPValStat()
         pass
-    
+
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        TestStatistics.VERBOSE = ast.literal_eval(sys.argv[1])
+        TestStatistics.debugMode = sys.argv[1]
         sys.argv = sys.argv[:-1]
     unittest.main()
-    TestStatistics().run()
-    TestStatistics().debug()
+    # TestStatistics().run()
+    # TestStatistics().debug()

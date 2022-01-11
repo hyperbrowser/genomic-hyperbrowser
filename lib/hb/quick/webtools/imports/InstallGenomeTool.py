@@ -290,10 +290,8 @@ class InstallGenomeTool(GeneralGuiTool):
         
         GenomeImporter.createGenome(abbrv, gi.fullName, chromNamesDict, stdChrs, username=username)
         
-        gi.installedBy = username
-        gi.timeOfInstallation = datetime.now()
-        gi.store()
-        
+        gi.flagAsInstalled(username)
+
     @staticmethod
     def isPublic():
         return False

@@ -122,7 +122,18 @@ def getGalaxyFnFromAnyDatasetId(id, galaxyFilePath=None):
 
 
 def getGalaxyFilesDir(galaxyFn):
-    return galaxyFn[:-4] + '_files'
+    datasetName = os.path.basename(galaxyFn)
+    if datasetName.startswith('dataset_') and datasetName.endswith('.dat'):
+        return galaxyFn[:-4] + '_files'
+    else:
+        #when running a tool in batch mode, the galaxyFn is incorrect
+        batchId = os.path.basename(os.path.dirname(galaxyFn))
+        if batchId.isdigit():
+            correctGalaxyFn = os.path.dirname(os.path.dirname(galaxyFn))
+            if os.path.basename(correctGalaxyFn).startswith('dataset_') and correctGalaxyFn.endswith('_files'):
+                return os.path.join(correctGalaxyFn, batchId)
+
+        raise Exception('Could not find Galaxy run directory')
 
 
 def getGalaxyFilesFilename(galaxyFn, id):

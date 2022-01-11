@@ -1,12 +1,13 @@
 from collections import OrderedDict
-from gold.util.CustomExceptions import InvalidFormatError, NotSupportedError
+from gold.util.CustomExceptions import InvalidFormatError
 from gold.gsuite.GSuiteConstants import HEADER_VAR_DICT, LOCATION_HEADER, \
                                         FILE_FORMAT_HEADER, TRACK_TYPE_HEADER
 
+
 class GSuiteRequirements(object):
-    def __init__(self, allowedLocations = None, allowedFileFormats = None, allowedTrackTypes = None):
-        #A parameter value of None means that all values are allowed
-        #If the parameter value is a list, the contents of the list are the allowed values
+    def __init__(self, allowedLocations=None, allowedFileFormats=None, allowedTrackTypes=None):
+        # A parameter value of None means that all values are allowed
+        # If the parameter value is a list, the contents of the list are the allowed values
 
         assert allowedFileFormats or allowedLocations or allowedTrackTypes
 
@@ -26,6 +27,8 @@ class GSuiteRequirements(object):
     def check(self, gSuiteOrTrack):
         for header, allowedVals in self._requirements.iteritems():
             if self._getMemberValue(gSuiteOrTrack, header) not in allowedVals:
-                errorString = '\'%s\' is not a supported GSuite %s for this tool. Supported file types are [%s]' % \
-                    (self._getMemberValue(gSuiteOrTrack, header), header, ', '.join(self._requirements[header]))
+                errorString = '\'%s\' is not a supported GSuite %s for this tool. ' \
+                              'Supported file types are [%s]' % \
+                              (self._getMemberValue(gSuiteOrTrack, header), header,
+                               ', '.join(self._requirements[header]))
                 raise InvalidFormatError(errorString)

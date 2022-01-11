@@ -596,6 +596,21 @@ class FixChromOfFastaFiles(GeneralTrackDataModifier):
             outFile.write(line)
 
 
+class FixSequenceNamesInColumn(GeneralTrackDataModifier):
+    @classmethod
+    def parseFile(cls, inFn, outFn, trackName, genome, colNum, **kwArgs):
+        colNum = ast.literal_eval(colNum)
+        genomeInfo = GenomeInfo(genome)
+
+        with open(outFn, 'w') as outFile:
+            for line in open(inFn):
+                cols = line.strip().split('\t')
+                for i, val in enumerate(cols):
+                    if i == colNum:
+                        cols[i] = genomeInfo.findBestMatchingChr(genome, val)
+                print>>outFile, '\t'.join(cols)
+
+
 class MakeNewTrackStructure(GeneralTrackDataModifier):
     @classmethod
     def parseFile(cls, inFn, outFn, trackName, newStructure, **kwArgs):
@@ -1441,6 +1456,14 @@ class AddFileExtension(PlainCopier):
     def parseFile(cls, fromFn, toFn, trackName, genome, direction, extension='', **kwArgs):
         assert extension != '' and extension[0] != '.'
         return PlainCopier.parseFile(fromFn, toFn + '.' + extension, trackName, genome, direction, **kwArgs)
+
+class ChangeWhitespaceToTabs(PlainCopier):
+    @classmethod
+    def parseFile(cls, fromFn, toFn, trackName, **kwArgs):
+        with open(fromFn) as inFile:
+            with open(toFn, 'w') as outFile:
+                for line in inFile:
+                    outFile.write('\t'.join(line.strip().split()) + '\n')
 
 class CreateTrackDirectoriesFromFileName(PlainCopier):
     'Creates track directories from the name of the files with the appropriate suffix (comma-separated), '

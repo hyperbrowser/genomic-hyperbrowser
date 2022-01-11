@@ -1,3 +1,6 @@
+# Note: Due to being imported directly into the Galaxy code base, changes in this module requires
+# the Galaxy code base to be reloaded (typically through restarting the server).
+
 def getSupportedFileSuffixesForBinning():
     return ['gtrack', 'gtrack.gz', 'bed', 'bed.gz', 'point.bed', 'category.bed', 'valued.bed',
             'wig', 'targetcontrol.bedgraph', 'bedgraph', 'gff', 'gff3', 'category.gff',
@@ -10,6 +13,7 @@ def getSupportedFileSuffixesForPointsAndSegments():
 
 def getSupportedFileSuffixesForGSuite():
     return getSupportedFileSuffixesForPointsAndSegments() + \
+           getSupportedFileSuffixesForFunction() + \
            ['fasta', 'microarray',
             'tsv', 'vcf', 'maf']
 # Last three are temporarily added for supporting GSuite repositories via
@@ -21,8 +25,7 @@ def getSupportedFileSuffixesForFunction():
 
 
 def getSupportedFileSuffixes():
-    return getSupportedFileSuffixesForGSuite() + \
-           getSupportedFileSuffixesForFunction()
+    return getSupportedFileSuffixesForGSuite()
 
 
 # Defined to stop searching for GTrackGenomeElementSource subtypes online.

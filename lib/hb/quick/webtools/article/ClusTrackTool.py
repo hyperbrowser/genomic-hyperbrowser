@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from gold.gsuite import GSuiteConstants
 from quick.extra.clustering.ClusteringExecution import ClusteringExecution
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
@@ -37,15 +39,7 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
     SIMILARITY_DIRECT_SEQ_LVL = 'Use direct sequence-level similarity'
     REGIONS_CLUSTERING = 'Regions clustering'
     
-    ##Feature calculation
-    FC_PROP_BP_COVERAGE = 'Prop. Bp coverage per bin'
-    FC_PROP_BP_POINT_COVERAGE = 'Prop. Bp coverage by points per bin'
-    FC_MEAN_BP_WEIGHTED = 'Mean bp-weighted mark value per bin'
-    FC_MICROBIN_BASED = 'Microbin-based point count per bin'
-    FC_MEAN_MARK_VAL = 'Mean mark value per bin'
-    FC_RELATIVE_COVERAGE = 'Relative coverage per bin'
-    
-    ##Options for pair distance 
+    ##Options for pair distance
     PAIR_DIST_RATIO_INTERSECT_UNION_MINUS = 'Ratio of intersection vs union of segments (1 minus the ratio)'
     PAIR_DIST_RATIO_INTERSECT_UNION_OVER = 'Ratio of intersection vs union of segments (1 over the ratio)'
     PAIR_DIST_PAIRWISE_OVERLAP = 'Pairwise overlap enrichment between tracks (v2)'
@@ -110,15 +104,15 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
                 ('', 'basicQuestionId'),
                 ('Select GSuite (tracks to cluster)','gSuite'),
                 ('Select similarity technique', 'similarityTech'),
-                ('Select feature selection option', 'featureSelection'),
-                ('Select pair distance option', 'pairDistOption'),
                 ('Select GSuite (reference tracks)', 'gSuiteRef')
-                ] + cls.getInputBoxNamesForGenomeSelection() \
-                  + cls.getInputBoxNamesForUserBinSelection() + [
+               ] + cls.getInputBoxNamesForGenomeSelection() + [
+                ('Select feature for similarity calculation', 'featureSelection'),
+                ('Select pair distance option', 'pairDistOption'),
                 ('Select clustering method', 'clusteringMethod'),
                 ('Select clustering algorithm', 'clusteringAlgorithm'),
                 ('Select clustering option', 'clusteringOption')
-                ] + cls.getInputBoxNamesForDebug()
+               ] + cls.getInputBoxNamesForUserBinSelection() \
+                 + cls.getInputBoxNamesForDebug()
 
     #@staticmethod
     #def getInputBoxOrder():
@@ -187,8 +181,8 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         '''
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
-    @staticmethod
-    def getOptionsBoxSimilarityTech(prevChoices): 
+    @classmethod
+    def getOptionsBoxSimilarityTech(cls, prevChoices):
         '''
         See getOptionsBoxFirstKey().
 
@@ -200,15 +194,52 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         '''
         
         if prevChoices.isBasic:
-            return ('__hidden__', ClusTrackTool.SIMILARITY_DIRECT_SEQ_LVL)
+            return ('__hidden__', cls.SIMILARITY_DIRECT_SEQ_LVL)
         
-        return [ClusTrackTool.SIMILARITY_POSITIONAL,\
-                ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER,\
-                ClusTrackTool.SIMILARITY_DIRECT_SEQ_LVL
+        return [cls.SIMILARITY_POSITIONAL, \
+                cls.SIMILARITY_RELATIONS_TO_OTHER, \
+                cls.SIMILARITY_DIRECT_SEQ_LVL
                 ]
 
-    @staticmethod
-    def getOptionsBoxFeatureSelection(prevChoices): 
+    @classmethod
+    def getOptionsBoxFeatureSelection(cls, prevChoices):
+        '''
+        See getOptionsBoxFirstKey().
+
+        prevChoices is a namedtuple of selections made by the user in the
+        previous input boxes (that is, a namedtuple containing only one element
+        in this case). The elements can accessed either by index, e.g.
+        prevChoices[0] for the result of input box 1, or by key, e.g.
+        prevChoices.key (case 2).
+        '''
+
+        if prevChoices.gSuite and prevChoices.genome:
+            from quick.extra.clustering.FeatureCatalog import LocalResultsAsFeaturesCatalog, \
+                ReferenceAnalsesAsFeaturesCatalog
+
+            if prevChoices.similarityTech == cls.SIMILARITY_POSITIONAL:
+                featureCatalog = LocalResultsAsFeaturesCatalog
+            elif prevChoices.similarityTech == cls.SIMILARITY_RELATIONS_TO_OTHER:
+                featureCatalog = ReferenceAnalsesAsFeaturesCatalog
+            else:
+                return None
+
+            genome = prevChoices.genome
+            for clustTrack in getGSuiteFromGalaxyTN(prevChoices.gSuite).allTracks():
+                # Only first track in gSuite is currently used for generating feature list,
+                # as in clusteringtool.make
+                clustTN = clustTrack.trackName
+                if prevChoices.gSuiteRef:
+                    gSuiteRef = getGSuiteFromGalaxyTN(prevChoices.gSuiteRef)
+                    refTrackNames = [track.trackName for track in gSuiteRef.allTracks()]
+                else:
+                    refTrackNames = [[]]
+                featureSets = [set(featureCatalog.getValidAnalyses(genome, clustTN, refTN)) for
+                               refTN in refTrackNames]
+                return sorted(set.intersection(*featureSets))
+
+    @classmethod
+    def getOptionsBoxPairDistOption(cls, prevChoices):
         '''
         See getOptionsBoxFirstKey().
 
@@ -219,40 +250,18 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         prevChoices.key (case 2).
         '''
         
-        if prevChoices.similarityTech == ClusTrackTool.SIMILARITY_POSITIONAL:
-            return [ClusTrackTool.FC_PROP_BP_COVERAGE,\
-                    ClusTrackTool.FC_PROP_BP_POINT_COVERAGE,\
-                ClusTrackTool.FC_MEAN_BP_WEIGHTED,\
-                ClusTrackTool.FC_MICROBIN_BASED,\
-                ClusTrackTool.FC_MEAN_MARK_VAL,\
-                ClusTrackTool.FC_RELATIVE_COVERAGE]
-        else:
-            return None
-
-    @staticmethod
-    def getOptionsBoxPairDistOption(prevChoices): 
-        '''
-        See getOptionsBoxFirstKey().
-
-        prevChoices is a namedtuple of selections made by the user in the
-        previous input boxes (that is, a namedtuple containing only one element
-        in this case). The elements can accessed either by index, e.g.
-        prevChoices[0] for the result of input box 1, or by key, e.g.
-        prevChoices.key (case 2).
-        '''
-        
-        if prevChoices.similarityTech == ClusTrackTool.SIMILARITY_DIRECT_SEQ_LVL:
+        if prevChoices.similarityTech == cls.SIMILARITY_DIRECT_SEQ_LVL:
             if prevChoices.isBasic:
-                return ('__hidden__', ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION_MINUS)
+                return ('__hidden__', cls.PAIR_DIST_RATIO_INTERSECT_UNION_MINUS)
             return [
-                    ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION_MINUS,\
-                    ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION_OVER,\
-                    ClusTrackTool.PAIR_DIST_PAIRWISE_OVERLAP]
+                cls.PAIR_DIST_RATIO_INTERSECT_UNION_MINUS, \
+                cls.PAIR_DIST_RATIO_INTERSECT_UNION_OVER, \
+                cls.PAIR_DIST_PAIRWISE_OVERLAP]
         else:
             return None
 
-    @staticmethod
-    def getOptionsBoxGSuiteRef(prevChoices):
+    @classmethod
+    def getOptionsBoxGSuiteRef(cls, prevChoices):
         '''
         See getOptionsBoxFirstKey().
 
@@ -264,14 +273,14 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         '''
         #TODO: boris 20141102, return reference track gsuite element if 
         #appropriate feature extraction strategy is selected
-        if prevChoices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER \
-        or prevChoices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
+        if prevChoices.similarityTech == cls.SIMILARITY_RELATIONS_TO_OTHER \
+        or prevChoices.similarityTech == cls.REGIONS_CLUSTERING:
             return GeneralGuiTool.getHistorySelectionElement('gsuite')
         else:
             return None
 
-    @staticmethod
-    def getOptionsBoxClusteringMethod(prevChoices): 
+    @classmethod
+    def getOptionsBoxClusteringMethod(cls, prevChoices):
         '''
         See getOptionsBoxFirstKey().
 
@@ -282,15 +291,15 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         prevChoices.key (case 2).
         '''
         if prevChoices.isBasic:
-            return ('__hidden__', ClusTrackTool.CLUS_METHOD_HIERARCHICAL)
-        
-        return [ClusTrackTool.CLUS_METHOD_HIERARCHICAL
+            return ('__hidden__', cls.CLUS_METHOD_HIERARCHICAL)
+
+        return [cls.CLUS_METHOD_HIERARCHICAL
 #                 ,\
-#                 ClusTrackTool.CLUS_METHOD_K_MEANS
+#                 cls.CLUS_METHOD_K_MEANS
                 ]
         
-    @staticmethod
-    def getOptionsBoxClusteringAlgorithm(prevChoices): 
+    @classmethod
+    def getOptionsBoxClusteringAlgorithm(cls, prevChoices):
         '''
         See getOptionsBoxFirstKey().
 
@@ -301,28 +310,28 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         prevChoices.key (case 2).
         '''
         
-        if prevChoices.clusteringMethod == ClusTrackTool.CLUS_METHOD_HIERARCHICAL:
+        if prevChoices.clusteringMethod == cls.CLUS_METHOD_HIERARCHICAL:
             if prevChoices.isBasic:
-                return ('__hidden__', ClusTrackTool.CLUS_ALG_HIERAR_SINGLE)
+                return ('__hidden__', cls.CLUS_ALG_HIERAR_SINGLE)
             
             return [
-                    ClusTrackTool.CLUS_ALG_HIERAR_SINGLE,\
-                    ClusTrackTool.CLUS_ALG_HIERAR_AVG,\
-                    ClusTrackTool.CLUS_ALG_HIERAR_COMPLETE,\
-                    ClusTrackTool.CLUS_ALG_HIERAR_WARD,\
-                    ClusTrackTool.CLUS_ALG_HIERAR_MEDIAN,\
-                    ClusTrackTool.CLUS_ALG_HIERAR_CENTROID]
-        elif prevChoices.clusteringMethod == ClusTrackTool.CLUS_METHOD_K_MEANS:
+                cls.CLUS_ALG_HIERAR_SINGLE, \
+                cls.CLUS_ALG_HIERAR_AVG, \
+                cls.CLUS_ALG_HIERAR_COMPLETE, \
+                cls.CLUS_ALG_HIERAR_WARD, \
+                cls.CLUS_ALG_HIERAR_MEDIAN, \
+                cls.CLUS_ALG_HIERAR_CENTROID]
+        elif prevChoices.clusteringMethod == cls.CLUS_METHOD_K_MEANS:
             return [
-                    ClusTrackTool.CLUS_ALG_K_MEANS_HARTIGAN,\
-                    ClusTrackTool.CLUS_ALG_K_MEANS_LLOYD,\
-                    ClusTrackTool.CLUS_ALG_K_MEANS_MACQUEEN,\
-                    ClusTrackTool.CLUS_ALG_K_MEANS_FORGY]
+                cls.CLUS_ALG_K_MEANS_HARTIGAN, \
+                cls.CLUS_ALG_K_MEANS_LLOYD, \
+                cls.CLUS_ALG_K_MEANS_MACQUEEN, \
+                cls.CLUS_ALG_K_MEANS_FORGY]
         else:
             return None
 
-    @staticmethod
-    def getOptionsBoxClusteringOption(prevChoices): 
+    @classmethod
+    def getOptionsBoxClusteringOption(cls, prevChoices):
         '''
         See getOptionsBoxFirstKey().
 
@@ -333,16 +342,16 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         prevChoices.key (case 2).
         '''
         
-        if prevChoices.clusteringMethod == ClusTrackTool.CLUS_METHOD_HIERARCHICAL \
-        and prevChoices.similarityTech != ClusTrackTool.SIMILARITY_DIRECT_SEQ_LVL:
+        if prevChoices.clusteringMethod == cls.CLUS_METHOD_HIERARCHICAL \
+        and prevChoices.similarityTech != cls.SIMILARITY_DIRECT_SEQ_LVL:
             return [
-                    ClusTrackTool.CLUS_OPT_DIST_EUCLIDEAN,\
-                    ClusTrackTool.CLUS_OPT_DIST_MAX,\
-                    ClusTrackTool.CLUS_OPT_DIST_MANHATTAN,\
-                    ClusTrackTool.CLUS_OPT_DIST_CANBERRA,\
-                    ClusTrackTool.CLUS_OPT_DIST_BINARY,\
-                    ClusTrackTool.CLUS_OPT_DIST_MINKOWSKI]
-        elif prevChoices.clusteringMethod == ClusTrackTool.CLUS_METHOD_K_MEANS:
+                cls.CLUS_OPT_DIST_EUCLIDEAN, \
+                cls.CLUS_OPT_DIST_MAX, \
+                cls.CLUS_OPT_DIST_MANHATTAN, \
+                cls.CLUS_OPT_DIST_CANBERRA, \
+                cls.CLUS_OPT_DIST_BINARY, \
+                cls.CLUS_OPT_DIST_MINKOWSKI]
+        elif prevChoices.clusteringMethod == cls.CLUS_METHOD_K_MEANS:
             return ['2', '3', '4', '5']
         else:
             return None
@@ -379,63 +388,46 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         tracks = [track.trackName for track in gSuite.allTracks()]
         
         refTracks = []
-        refTrackFeatures = []
-        refTrackExpandFlags = []
-        refTrackExpansionLengths = []
         if choices.gSuiteRef:
             gSuiteRef = getGSuiteFromGalaxyTN(choices.gSuiteRef)
             refTracks = [track.trackName for track in gSuiteRef.allTracks()]
             refTracksReady = [':'.join(refTrack) for refTrack in refTracks]
-#             print refTracksReady
-            refTrackFeatures = [gsTrack.getAttribute('feature') for gsTrack in gSuiteRef.allTracks()]
-            refTrackExpandFlags = [gsTrack.getAttribute('expand') for gsTrack in gSuiteRef.allTracks()]
-            refTrackExpansionLengths = [gsTrack.getAttribute('expansions') for gsTrack in gSuiteRef.allTracks()]
-        
+
         regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
         clusterMethod = choices.clusteringMethod
         extra_option = choices.clusteringAlgorithm
         distanceType = None
-        if clusterMethod == ClusTrackTool.CLUS_METHOD_HIERARCHICAL:
+        if clusterMethod == cls.CLUS_METHOD_HIERARCHICAL:
             distanceType = choices.clusteringOption
         kmeans_alg = None
-        if clusterMethod == ClusTrackTool.CLUS_METHOD_K_MEANS:
+        if clusterMethod == cls.CLUS_METHOD_K_MEANS:
             kmeans_alg = choices.clusteringAlgorithm
             extra_option = choices.clusteringOption
         
         numreferencetracks = len(refTracks)
         
-        
-        #TODO: boris 20141103, temporary, fix this
-        upFlank = [[] for i in range(numreferencetracks)]
-        downFlank = [[] for i in range(numreferencetracks)]
-        
-#         import sys
-#         sys.path.append(r'/software/VERSIONS/python2-packages-2.7_2/lib/python2.7/site-packages/pysrc')
-#         import pydevd
-#         pydevd.settrace('localhost', stderrToServer=True, stdoutToServer=True)
-
 #         if self.params.get('clusterCase') == 'use pair distance':
-        if choices.similarityTech == ClusTrackTool.SIMILARITY_DIRECT_SEQ_LVL:
+        if choices.similarityTech == cls.SIMILARITY_DIRECT_SEQ_LVL:
             feature = None
             extra_feature = None
-            if choices.pairDistOption == ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION_MINUS:
-                feature = ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION
-                extra_feature = ClusTrackTool.ONE_MINUS_RATIO
-            elif choices.pairDistOption == ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION_OVER:
-                feature = ClusTrackTool.PAIR_DIST_RATIO_INTERSECT_UNION
-                extra_feature = ClusTrackTool.ONE_OVER_RATIO
-            elif choices.pairDistOption == ClusTrackTool.PAIR_DIST_PAIRWISE_OVERLAP:
-                feature = ClusTrackTool.PAIR_DIST_PAIRWISE_OVERLAP
+            if choices.pairDistOption == cls.PAIR_DIST_RATIO_INTERSECT_UNION_MINUS:
+                feature = cls.PAIR_DIST_RATIO_INTERSECT_UNION
+                extra_feature = cls.ONE_MINUS_RATIO
+            elif choices.pairDistOption == cls.PAIR_DIST_RATIO_INTERSECT_UNION_OVER:
+                feature = cls.PAIR_DIST_RATIO_INTERSECT_UNION
+                extra_feature = cls.ONE_OVER_RATIO
+            elif choices.pairDistOption == cls.PAIR_DIST_PAIRWISE_OVERLAP:
+                feature = cls.PAIR_DIST_PAIRWISE_OVERLAP
 
             ClusteringExecution.executePairDistance(genome, tracks, trackTitles, clusterMethod, extra_option, feature, extra_feature, galaxyFn, regSpec, binSpec);
 #         elif self.params.get('clusterCase') == 'use refTracks':
-        elif choices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER:
+        elif choices.similarityTech == cls.SIMILARITY_RELATIONS_TO_OTHER:
+            refTrackFeatures = [choices.featureSelection] * numreferencetracks
             ClusteringExecution.executeReferenceTrack(genome, tracks, trackTitles, clusterMethod, extra_option, 
                                                       distanceType, kmeans_alg, galaxyFn, regSpec, binSpec, 
-                                                      numreferencetracks, refTracksReady, refTrackFeatures, 
-                                                      refTrackExpandFlags, refTrackExpansionLengths, upFlank, downFlank)
+                                                      numreferencetracks, refTracksReady, refTrackFeatures)
 #         elif self.params.get('clusterCase') == 'self feature': #self feature case.
-        elif choices.similarityTech == ClusTrackTool.SIMILARITY_POSITIONAL: #self feature case.
+        elif choices.similarityTech == cls.SIMILARITY_POSITIONAL: #self feature case.
             feature = choices.featureSelection
             ClusteringExecution.executeSelfFeature(genome, tracks, trackTitles, clusterMethod, extra_option, feature, distanceType, kmeans_alg, galaxyFn, regSpec, binSpec);
         else : # regions clustering case
@@ -473,8 +465,8 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
         if errorString:
             return errorString
 
-        if choices.similarityTech == ClusTrackTool.SIMILARITY_RELATIONS_TO_OTHER \
-                or choices.similarityTech == ClusTrackTool.REGIONS_CLUSTERING:
+        if choices.similarityTech == cls.SIMILARITY_RELATIONS_TO_OTHER \
+                or choices.similarityTech == cls.REGIONS_CLUSTERING:
             if not choices.gSuiteRef:
                 from quick.toolguide.controller.ToolGuide import ToolGuideController
                 from quick.toolguide import ToolGuideConfig
@@ -495,6 +487,14 @@ class ClusTrackTool(GeneralGuiTool, GenomeMixin, UserBinMixin, DebugMixin):
                  cls.GSUITE_DISALLOWED_GENOMES)
             if errorString:
                 return errorString
+
+        if choices.similarityTech in [cls.SIMILARITY_POSITIONAL,
+                                      cls.SIMILARITY_RELATIONS_TO_OTHER]:
+            if not choices.featureSelection:
+                return 'Feature for similarity calculation has not been selected. ' \
+                       'If no features are available for selection, the track types ' \
+                       'if the clustering and reference tracks are too inconsistent. ' \
+                       'Please remove the inconsistent tracks from the GSuite.'
 
         errorString = cls._validateGenome(choices)
         if errorString:

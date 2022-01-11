@@ -11,7 +11,8 @@ from gold.origdata.GtrackGenomeElementSource import GtrackGenomeElementSource as
 from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import getStringFromStrand, isIter
 from gold.util.CustomExceptions import InvalidFormatError, ShouldNotOccurError
-from quick.util.CommonFunctions import isNan
+from quick.util.CommonFunctions import isNan, formatPhraseWithCorrectChrUsage
+
 
 class StdGtrackComposer(FileFormatComposer):
     FILE_SUFFIXES = ['gtrack']
@@ -96,7 +97,7 @@ class StdGtrackComposer(FileFormatComposer):
                + os.linesep
 
     def _composeColSpecLine(self, columns):
-        return '###' + '\t'.join(self._formatPhraseWithCorrectChrUsage(str(col), useUrlEncoding=False, \
+        return '###' + '\t'.join(formatPhraseWithCorrectChrUsage(str(col), useUrlEncoding=False, \
                                  notAllowedChars='#\t') for col in columns) + os.linesep
 
     def _composeBoundingRegionLine(self, boundingRegionTuple):
@@ -109,7 +110,7 @@ class StdGtrackComposer(FileFormatComposer):
             region.end = region.end-1 if region.end is not None else None
 
         brLinePartList = [(Gtrack.convertNameToGtrack(attr), getattr(region, attr)) for attr in ['genome', 'chr', 'start', 'end']]
-        return '####' + '; '.join(k + '=' + self._formatPhraseWithCorrectChrUsage(str(v), useUrlEncoding=True, notAllowedChars='=;#\t') \
+        return '####' + '; '.join(k + '=' + formatPhraseWithCorrectChrUsage(str(v), useUrlEncoding=True, notAllowedChars='=;#\t') \
                                   for k,v in brLinePartList if v is not None) + os.linesep
 
     def _composeDataLine(self, ge, hbColumns, dataLineCount, lastGE):
@@ -128,8 +129,9 @@ class StdGtrackComposer(FileFormatComposer):
             elif hbColName == 'weights':
                 pass
             else:
-                cols.append(self._formatPhraseWithCorrectChrUsage(str(getattr(ge, hbColName)), \
-                                                                  useUrlEncoding=True, notAllowedChars='#\t'))
+                cols.append(formatPhraseWithCorrectChrUsage(unicode(getattr(ge, hbColName)), \
+                                                            useUrlEncoding=True,
+                                                            notAllowedChars='#\t'))
 
         if self._headerDict['fixed-size data lines']:
             assert len(cols) == 1
@@ -333,16 +335,6 @@ class StdGtrackComposer(FileFormatComposer):
     def _formatEdgeWeight(self, val):
         return self._commonFormatVal(val, self._headerDict['edge weight type'], self._headerDict['edge weight dimension'])
 
-    def _formatPhraseWithCorrectChrUsage(self, phrase, useUrlEncoding=True, notAllowedChars=''):
-        corrected = ''
-        for char in phrase:
-            if char not in Gtrack.ALLOWED_CHARS or char in notAllowedChars:
-                if useUrlEncoding:
-                    corrected += '%' + '{:0>2X}'.format(ord(char))
-            else:
-                corrected += char
-        return corrected
-
     def _commonFormatVal(self, val, valueType, valueDim):
         valTypeInfo = Gtrack.VAL_TYPE_DICT[valueType]
 
@@ -353,7 +345,8 @@ class StdGtrackComposer(FileFormatComposer):
             if (val == valTypeInfo.missingVal) or (isNan(val) and isNan(valTypeInfo.missingVal)):
                 return '.'
             elif isinstance(val, basestring):
-                return self._formatPhraseWithCorrectChrUsage(val, useUrlEncoding=True, notAllowedChars='#.,;=\t')
+                return formatPhraseWithCorrectChrUsage(val, useUrlEncoding=True,
+                                                       notAllowedChars='#.,;=\t')
             else:
                 if isinstance(val, bool):
                     return '1' if val == True else '0'
@@ -367,7 +360,7 @@ class StdGtrackComposer(FileFormatComposer):
         if len(edges) == 0:
             return '.'
         else:
-            return ';'.join(self._formatPhraseWithCorrectChrUsage(edge, useUrlEncoding=True, notAllowedChars='#,;=\t') + \
+            return ';'.join(formatPhraseWithCorrectChrUsage(edge, useUrlEncoding=True, notAllowedChars='#,;=\t') + \
                              ('=' + self._formatEdgeWeight(weights[i]) if weights is not None else '') \
                               for i,edge in enumerate(edges) )
 

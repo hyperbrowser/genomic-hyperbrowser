@@ -1,6 +1,5 @@
 import os
 import re
-import shelve
 import sys
 import traceback
 from collections import namedtuple, OrderedDict
@@ -9,6 +8,7 @@ from importlib import import_module
 from proto.config.Config import SOURCE_CODE_BASE_DIR, PROTO_TOOL_DIR, PROTO_TOOL_SHELVE_FN, \
     CONFIG_DIR
 from proto.tools.GeneralGuiTool import GeneralGuiTool, MultiGeneralGuiTool
+import third_party.safeshelve as safeshelve
 
 MULTI_GENERAL_GUI_TOOL = 'MultiGeneralGuiTool'
 
@@ -33,7 +33,7 @@ ProtoClassInfo = namedtuple('ProtoClassInfo', ['class_name', 'super_class_list']
 # Public functions
 
 def getInstalledProtoTools():
-    tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
+    tool_shelve = safeshelve.open(PROTO_TOOL_SHELVE_FN, 'r')
     installed_class_info = [tool_shelve.get(t) for t in tool_shelve.keys() if os.path.exists(
         os.path.join(SOURCE_CODE_BASE_DIR, tool_shelve.get(t)[0].replace('.', os.path.sep)) +
         '.py')]
@@ -77,7 +77,7 @@ def storeHiddenModules(hidden_modules_fn, hidden_module_paths, append=False):
 def getToolPrototype(toolId):
     tool_shelve = None
     try:
-        tool_shelve = shelve.open(PROTO_TOOL_SHELVE_FN, 'r')
+        tool_shelve = safeshelve.open(PROTO_TOOL_SHELVE_FN, 'r')
         module_name, class_name = tool_shelve[str(toolId)]
         module = __import__(module_name, fromlist=[class_name])
         prototype = getattr(module, class_name)(toolId)

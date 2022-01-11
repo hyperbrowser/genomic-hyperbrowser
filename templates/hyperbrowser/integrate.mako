@@ -24,9 +24,9 @@ genomeElement = gui.SelectElement('dbkey', genomes, genome)
 integratedname = params.get('integratedname', '')
 historyitem = params.get('historyitem')
 
-track = gui.TrackWrapper('integratedname', hyper, [], galaxy, [], genome)
+track = gui.TrackWrapper('integratedtrackwrapper', hyper, [], galaxy, [], genome, fileTree="standardized")
 track.fetchTracks()
-track.legend = 'Integrated Track'
+track.legend = 'Existing standardized tracks'
 
 formAction = h.url_for('/tool_runner')
 
@@ -56,7 +56,7 @@ formAction = h.url_for('/tool_runner')
 %if hyper.userHasFullAccess(galaxy.getUserName()):    
 
 <p>
-##    Genome build: ${genomeElement.getHTML()} ${genomeElement.getScript()}    
+##    Genome build: ${genomeElement.getHTML()} ${genomeElement.getScript()}
     ${functions.genomeChooser(galaxy, genomeElement, genome)}
 </p>
 
@@ -65,13 +65,12 @@ formAction = h.url_for('/tool_runner')
             <select name="historyitem">
             	<option value=""> - Choose from history - </option>
                 ${galaxy.optionsFromHistory(hyper.getSupportedGalaxyFileFormats(), historyitem)}
-            </select>        
+            </select>
         </fieldset>
-${functions.trackChooserTest(track, 0, params)}
-<!--    <fieldset><legend>Integrated track</legend>
-    <label>Name: <input size="50" name="integratedname" value="${integratedname}"></label>
+    ${functions.trackChooser(track, 0, params)}
+    <fieldset><legend>Specify new track name (colon-separated path) [autoupdated from track selection above]</legend>
+        <label>Name: <input size="50" name="integratedname" value="${track.asString()}" /></label>
     </fieldset>
-    -->
     <div><input type="checkbox" name="access_public" value="True" ${'checked' if params.get('access_public') else ''}> Make track publicly available</div>
     <p><input id="start" type="submit" value="Integrate track"></p>
 %else:

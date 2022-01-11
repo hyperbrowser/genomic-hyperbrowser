@@ -2,10 +2,11 @@ from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.TrackFormat import TrackFormatReq
-from gold.util.RandomUtil import random
+
 
 class MarksSortedBySegmentOverlapStat(MagicStatFactory):
     pass
+
 
 class MarksSortedBySegmentOverlapStatUnsplittable(Statistic):
     def __init__(self, region, track, track2, markReq=None, **kwArgs):        
@@ -13,6 +14,8 @@ class MarksSortedBySegmentOverlapStatUnsplittable(Statistic):
         Statistic.__init__(self, region, track, track2, markReq=markReq, **kwArgs)
 
     def _compute(self):
+        from gold.util.RandomUtil import random
+
         tvMarkSegs = self._children[0].getResult()
         tvCoverSegs = self._children[1].getResult()
         

@@ -352,7 +352,8 @@ class GenericToolController(BaseToolController):
 
                 elif opts[0] == '__track__':
                     self.inputTypes += ['__track__']
-                    val = self.getInputValueForTrack(id, name)
+                    fileTree = opts[1] if len(opts) > 1 else 'preprocessed'
+                    val = self.getInputValueForTrack(id, name, fileTree)
 
                 elif opts[0] == '__hidden__':
                     self.inputTypes += opts[:1]
@@ -685,7 +686,7 @@ class GenericToolController(BaseToolController):
     #    return self.prototype.validateAndReturnErrors(self.inputValues)
 
 
-    def getInputValueForTrack(self, id, name):
+    def getInputValueForTrack(self, id, name, fileTree='preprocessed'):
         return None
 
 

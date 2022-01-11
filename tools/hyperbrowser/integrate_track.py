@@ -1,12 +1,12 @@
 import sys, os, getopt,types
 
 from gold.application.GalaxyInterface import *
-from hyperbrowser.hyper_gui import getDataFilePath,fileToParams
+from proto.hyperbrowser.hyper_gui import getDataFilePath,fileToParams
 
 def trackNameForHistoryItem(field, params):
     item = params[field]
     file_path = params['file_path']
-    gal,id,type,name = item.split(',')
+    gal,type,id,name = item.split(':')
     filename = getDataFilePath(file_path, id)
     return [gal, type, filename, name]
 

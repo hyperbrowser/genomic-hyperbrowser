@@ -140,8 +140,8 @@ if [ $SET_VENV -eq 1 ]; then
                 echo 'import os,sys; os.environ["R_LIBS"]=sys.prefix+"/R/library"' >$LIB/sitecustomize.py
             done
 
-            echo ". `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which R` \$@" >$GALAXY_VIRTUAL_ENV/bin/R
-            echo ". `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which Rscript` \$@" >$GALAXY_VIRTUAL_ENV/bin/Rscript
+            printf "#!/usr/bin/env bash\n. `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which R` \$@" >$GALAXY_VIRTUAL_ENV/bin/R
+            printf "#!/usr/bin/env bash\n. `pwd`/$GALAXY_VIRTUAL_ENV/bin/activate && `which Rscript` \$@" >$GALAXY_VIRTUAL_ENV/bin/Rscript
             chmod a+x $GALAXY_VIRTUAL_ENV/bin/R $GALAXY_VIRTUAL_ENV/bin/Rscript
 
             mkdir $GALAXY_VIRTUAL_ENV/R
@@ -164,7 +164,9 @@ if [ $SET_VENV -eq 1 ]; then
     fi
 fi
 
-: ${GALAXY_WHEELS_INDEX_URL:="https://wheels.galaxyproject.org/simple"}
+: ${GALAXY_WHEELS_INDEX_URL:="https://wheels.galaxyproject.org"}
+: ${DEFAULT_WHEELS_INDEX_URL:="https://pypi.python.org/simple"}
+
 if [ $REPLACE_PIP -eq 1 ]; then
     pip_version=`pip --version | awk '{print $2}'`
     method=`python - << EOF
@@ -179,13 +181,13 @@ else:
 EOF`
     case $method in
         req)
-            pip install --no-index --find-links ${GALAXY_WHEELS_INDEX_URL}/pip --upgrade "pip==${GXPIP_VERSION}"
+            pip install --no-index --find-links ${GALAXY_WHEELS_INDEX_URL}/pip/ --upgrade "pip==${GXPIP_VERSION}"
             ;;
         wheel)
-            pip install --upgrade "https://wheels.galaxyproject.org/packages/pip-${GXPIP_VERSION}-py2.py3-none-any.whl"
+            pip install --upgrade "https://wheels.galaxyproject.org/pip/pip-${GXPIP_VERSION}-py2.py3-none-any.whl"
             ;;
         sdist)
-            pip install --upgrade "https://wheels.galaxyproject.org/packages/pip-${GXPIP_VERSION}.tar.gz"
+            pip install --upgrade "https://wheels.galaxyproject.org/pip/pip-${GXPIP_VERSION}.tar.gz"
             ;;
     esac
 
@@ -194,14 +196,14 @@ EOF`
 fi
 
 if [ $FETCH_WHEELS -eq 1 ]; then
-    pip install -r requirements.txt --index-url ${GALAXY_WHEELS_INDEX_URL}
+    pip install -r requirements.txt --index-url ${GALAXY_WHEELS_INDEX_URL} --extra-index-url ${DEFAULT_WHEELS_INDEX_URL}
     GALAXY_CONDITIONAL_DEPENDENCIES=`PYTHONPATH=lib python -c "import galaxy.dependencies; print '\n'.join(galaxy.dependencies.optional('$GALAXY_CONFIG_FILE'))"`
-    [ -z "$GALAXY_CONDITIONAL_DEPENDENCIES" ] || echo "$GALAXY_CONDITIONAL_DEPENDENCIES" | pip install -r /dev/stdin --index-url ${GALAXY_WHEELS_INDEX_URL}
+    [ -z "$GALAXY_CONDITIONAL_DEPENDENCIES" ] || echo "$GALAXY_CONDITIONAL_DEPENDENCIES" | pip install -r /dev/stdin --index-url ${GALAXY_WHEELS_INDEX_URL} --extra-index-url ${DEFAULT_WHEELS_INDEX_URL}
 fi
 
 if [ $FETCH_WHEELS -eq 1 -a $DEV_WHEELS -eq 1 ]; then
     dev_requirements='./lib/galaxy/dependencies/dev-requirements.txt'
-    [ -f $dev_requirements ] && pip install -r $dev_requirements --index-url ${GALAXY_WHEELS_INDEX_URL}
+    [ -f $dev_requirements ] && pip install -r $dev_requirements --index-url ${GALAXY_WHEELS_INDEX_URL} --extra-index-url ${DEFAULT_WHEELS_INDEX_URL}
 fi
 
 PROTO_TOOL_CACHE="database/proto-tool-cache.shelve"

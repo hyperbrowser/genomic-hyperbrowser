@@ -17,7 +17,8 @@ class FunctionCorrelationPvalStatUnsplittable(Statistic):
         assert tail in ['more', 'less', 'different']
         tailMapping = {'more': "greater", 'less': "less", 'different': "two.sided"}
 
-        silenceRWarnings()
+        if kwArgs.get('minimal') != True:
+            silenceRWarnings()
 
         self._numSubBins = numSubBins
         self._method = method

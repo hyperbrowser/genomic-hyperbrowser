@@ -1,6 +1,8 @@
 import os
 import functools
 #from proto.RSetup import r
+import sys
+import StringIO
 
 from config.Config import HB_SOURCE_CODE_BASE_DIR
 import config.Config
@@ -13,25 +15,42 @@ from gold.statistic.ResultsMemoizer import ResultsMemoizer
 from gold.application.GalaxyInterface import GalaxyInterface
 
 import gold.description.Analysis
-from test.util.Asserts import smartRecursiveAssertList
-from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
+from test.util.Asserts import TestCaseWithImprovedAsserts
 
-gold.application.StatRunner.PRINT_PROGRESS = False
+# gold.application.StatRunner.PRINT_PROGRESS = False
 #gold.description.Analysis.PASS_ON_VALIDSTAT_EXCEPTIONS = True
 from config.Config import DebugConfig
-DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True
+# DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True
 
-GalaxyInterface.APPEND_ASSEMBLY_GAPS = False
-GalaxyInterface.APPEND_COUNTS = False
+# GalaxyInterface.APPEND_ASSEMBLY_GAPS = False
+# GalaxyInterface.APPEND_COUNTS = False
 #quick.application.GalaxyInterface.DEFAULT_GENOME ='TestGenome'
 
-class GalaxyIntegrationTest(ProfiledIntegrationTest):
-    
+
+class GalaxyIntegrationTest(TestCaseWithImprovedAsserts):
+    debugMode = None
+
+    def setUp(self):
+        if self.debugMode:
+            if self.debugMode == 'True':
+                self.debugMode == DebugConfig.DebugModes.UNCHANGED_LOGIC_VERBOSE
+            DebugConfig.changeMode(self.debugMode)
+        else:
+            DebugConfig.resetMode()
+
+        # if not DebugConfig.VERBOSE:
+        #     sys.stdout = StringIO.StringIO()
+
+        DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True
+        gold.application.StatRunner.PRINT_PROGRESS = False
+        GalaxyInterface.APPEND_ASSEMBLY_GAPS = False
+        GalaxyInterface.APPEND_COUNTS = False
+
     def _assertEqualResults(self, target, res):
         resList = [sorted(res[region].items()) for region in res.getAllRegionKeys()]
         if len(res.getAllErrors()) != 0:
             raise res.getAllErrors()[0]
-        if self.VERBOSE:
+        if DebugConfig.VERBOSE:
             print 'Target: ', target
             print 'Result: ', resList
 
@@ -41,7 +60,7 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
         resList = sorted(res.getGlobalResult().items())
         if len(res.getAllErrors()) != 0:
             raise res.getAllErrors()[0]
-        if self.VERBOSE:
+        if DebugConfig.VERBOSE:
             print 'Target: ', target
             print 'Result: ', resList
 
@@ -65,8 +84,7 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
             yield runType
 
     def _assertRunEqual(self, target, *args, **kwArgs):
-        if self.VERBOSE:
-            DebugConfig.PASS_ON_COMPUTE_EXCEPTIONS = True
+        if DebugConfig.VERBOSE:
             print '\n***\n' + str(self.id()) + '\n***'
         
         args = list(args)
@@ -78,13 +96,13 @@ class GalaxyIntegrationTest(ProfiledIntegrationTest):
         args[2] = analysisDef[0] + " -> " + analysisDef[1]
         
         for runType in self._runTypeGenerator():
-            if self._usesProfiling():
-                DebugConfig.USE_PROFILING = True
+            # if self._usesProfiling():
+            #     DebugConfig.USE_PROFILING = True
                 
-            res = GalaxyInterface.run(*args, **{'genome':'TestGenome'})
+            res = GalaxyInterface.run(*args, **{'genome': 'TestGenome'})
 
             self._assertEqualResults(target, res)
-            if kwArgs.get('globalTarget') != None:
+            if kwArgs.get('globalTarget') is not None:
                 self._assertEqualGlobalResults(kwArgs['globalTarget'], res)
                 
             # if self._usesProfiling():

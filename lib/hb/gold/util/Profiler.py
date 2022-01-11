@@ -8,8 +8,8 @@ from quick.util.PstatsUtil import OverheadStats
 
 
 class Profiler:
-    PROFILE_HEADER = '--- Profile ---'
-    PROFILE_FOOTER = '--- End Profile ---'
+    PROFILE_HEADER = '--- Profile ({})---'
+    PROFILE_FOOTER = '--- End Profile ({})---'
 
     def __init__(self):
         self._prof = cProfile.Profile()
@@ -29,16 +29,18 @@ class Profiler:
     def printStats(self):
         if self._stats == None:
             return
-        
-        print Profiler.PROFILE_HEADER
+
+        sortType = 'sorted by cumulative time'
+        print Profiler.PROFILE_HEADER.format(sortType)
         self._stats.sort_stats('cumulative')
         self._stats.print_stats()
-        print Profiler.PROFILE_FOOTER
-        
-        print Profiler.PROFILE_HEADER
+        print Profiler.PROFILE_FOOTER.format(sortType)
+
+        sortType = 'sorted by internal time'
+        print Profiler.PROFILE_HEADER.format(sortType)
         self._stats.sort_stats('time')
         self._stats.print_stats()
-        print Profiler.PROFILE_FOOTER
+        print Profiler.PROFILE_FOOTER.format(sortType)
 
     def printLinkToCallGraph(self, id, galaxyFn, prune=True):
         statsFile = GalaxyRunSpecificFile(id + ['pstats.dump'], galaxyFn)
