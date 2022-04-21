@@ -1,4 +1,4 @@
-import shelve
+import third_party.safeshelve as safeshelve
 from blist import sorteddict
 from collections import namedtuple, OrderedDict
 from gold.util.CustomExceptions import InvalidFormatError
@@ -8,7 +8,7 @@ from quick.util.GenomeInfo import GenomeInfo
 BoundingRegionInfo = namedtuple('BoundingRegionInfo', ['start', 'end', 'startIdx', 'endIdx', 'startBinIdx', 'endBinIdx'])
 
 def storeShelve(genome, brTuples, sparse=True):
-    boundingRegionShelve = shelve.open('/tmp/brshelve.shelve', 'c', writeback=True)
+    boundingRegionShelve = safeshelve.open('/tmp/brshelve.shelve', 'c', writeback=True)
     
     lastRegion = None
     chrStartIdxs = OrderedDict()
@@ -71,7 +71,7 @@ def storeShelve(genome, brTuples, sparse=True):
     boundingRegionShelve.sync()
     
 def getBoundingRegionInfo(region):
-    boundingRegionShelve = shelve.open('/tmp/brshelve.shelve')
+    boundingRegionShelve = safeshelve.open('/tmp/brshelve.shelve')
     #print region
     
     if region.chr in boundingRegionShelve:

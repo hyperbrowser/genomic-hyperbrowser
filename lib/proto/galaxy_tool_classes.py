@@ -1,4 +1,4 @@
-import os, urllib, shelve, logging, json
+import os, urllib, logging, json
 from xml.etree import ElementTree
 
 from galaxy.tools import Tool, DataSourceTool
@@ -9,6 +9,7 @@ from galaxy.tools.parser.output_actions import ToolOutputActionGroup
 from galaxy.tools.parser.output_objects import ToolOutput
 from galaxy.tools.parser.output_collection_def import DEFAULT_DATASET_COLLECTOR_DESCRIPTION
 from galaxy.util.odict import odict
+import third_party.safeshelve as safeshelve
 
 log = logging.getLogger( __name__ )
 
@@ -112,8 +113,8 @@ class ProtoGenericTool(ProtoTool):
             conda_activate_source = None
 
         if proto_module and proto_class:
-            s = shelve.open('database/proto-tool-cache.shelve')
-            s[tool_id] = (proto_module, proto_class, conda_activate_source)
+            s = safeshelve.open('database/proto-tool-cache.shelve')
+            s[tool_id] = (proto_module, proto_class)
             s.close()
 
         if root.find('inputs') is None:

@@ -1,15 +1,11 @@
-from gold.origdata.GESourceWrapper import BrTuplesGESourceWrapper
 from gold.origdata.GEOverlapClusterer import GEOverlapClusterer
 from gold.origdata.GEBoundingRegionElementCounter import GEBoundingRegionElementCounter
-from gold.origdata.GenomeElementSource import BoundingRegionTuple
 from gold.origdata.GEDependentAttributesHolder import GEDependentAttributesHolder
 from gold.origdata.TrackGenomeElementSource import TrackGenomeElementSource
 from gold.util.CommonFunctions import flatten
 from gold.util.CommonConstants import RESERVED_PREFIXES
 from gold.util.CommonClasses import OrderedDefaultDict
-from gold.util.CustomExceptions import NotSupportedError
 from gold.track.TrackFormat import TrackFormat
-from collections import defaultdict
 from functools import partial
 
 class GESourceManager(object):
@@ -215,31 +211,18 @@ class OverlapClusteringGESourceManager(GESourceManager):
         self._brTuplesForClusteredElements = None
 
     def _decorateGESource(self, geSource):
+        # Should probably also be decorated with GEDependentAttributesHolder for generality, but is only now used
+        # for TrackGenomeElementSource, so it seems uneccessary
         return GEBoundingRegionElementCounter(GEOverlapClusterer(geSource), \
                                               self._origBrTuples)
 
 
-class RegionBasedGESourceManager(GESourceManager):
-    def __init__(self, geSource, brRegionList, calcStatsInExtraPass, countElsInBoundingRegions):
-        assert len(brRegionList) > 0
-        self._brRegionList = brRegionList
-        self._calcStatsInExtraPass = calcStatsInExtraPass
-        self._countElsInBoundingRegions = countElsInBoundingRegions
+class SkipExtraPassDenseGESourceManager(GESourceManager):
+    def __init__(self, geSource):
         GESourceManager.__init__(self, geSource)
-
-    def _decorateGESource(self, geSource):
-        if self._countElsInBoundingRegions:
-            brTuples = [BoundingRegionTuple(region, 0) for region in self._brRegionList]
-            return GEBoundingRegionElementCounter(geSource, brTuples)
-        else:
-            brTuples = [BoundingRegionTuple(region, len(region)) for region in self._brRegionList]
-            return BrTuplesGESourceWrapper(geSource, brTuples)
 
     def _calcStatisticsInExtraPass(self):
         if not self._hasCalculatedStats:
-            if self._calcStatsInExtraPass:
-                GESourceManager._calcStatisticsInExtraPass(self)
-            else:
-                for br in self._brRegionList:
-                    self._numElements[br.chr] += len(br)
-                self._hasCalculatedStats = True
+            for br in self._geSource.getBoundingRegionTuples():
+                self._numElements[br.region.chr] += len(br.region)
+            self._hasCalculatedStats = True

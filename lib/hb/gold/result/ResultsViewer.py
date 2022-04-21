@@ -67,12 +67,12 @@ class ResultsViewerCollection(object):
             pickleStaticFile = GalaxyRunSpecificFile(['results.pickle'], self._galaxyFn)
             from copy import copy
             pickleList = [copy(res) for res in self._resultsList]
-            #for res in pickleList:
-            #    res._analysis=None
+            # for res in pickleList:
+            #     res._analysis=None
             dump(pickleList, pickleStaticFile.getFile())
-            #dump(self._resultsList, pickleStaticFile.getFile())
+            # dump(self._resultsList, pickleStaticFile.getFile())
         except Exception, e:
-            logException(e, message='Not able to pickle results object')
+            logException(e, messagePrefix='Not able to pickle results object')
         except:
             logMessage('Exception object not subclassing Exception encountered',level=logging.ERROR)
 
@@ -85,7 +85,7 @@ this type to a corresponding resultsViewer class
 class ResultsViewer(object):
     def __new__(self, results, baseDir):
         presCollectionType = results.getPresCollectionType()
-        #print 'presCollectionType: ',presCollectionType 
+        # print 'presCollectionType: ',presCollectionType
         if presCollectionType == 'standard':
             return StandardResultsViewer.__new__(StandardResultsViewer, results, baseDir)
         elif presCollectionType == 'venndata':
@@ -435,9 +435,9 @@ Significance testing evaluates a <b>null hypothesis (H0)</b> versus an <b>altern
         #if analysisDef is not None:
         #    return str(analysisDef)
         #else:
-        if self._results._analysisText is not None:
+        if self._results._analysis is not None:
             try:
-                return AnalysisDefHandler.splitAnalysisText(self._results._analysisText)[1].strip()
+                return AnalysisDefHandler.splitAnalysisText(str(self._results._analysis))[1].strip()
             except AssertionError:
                 pass
         

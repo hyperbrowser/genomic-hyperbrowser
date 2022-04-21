@@ -58,7 +58,7 @@ class StatJobV2(StatJob):
             res = {} if res is None else {self.GENERAL_RESDICTKEY : res}
             #res = {self.GENERAL_RESDICTKEY : res}
 
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
         return res, stat
      
 # class AnalysisDefJobV2(StatJobV2):

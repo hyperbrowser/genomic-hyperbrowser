@@ -40,13 +40,15 @@ class Results(dict):
 
     def __init__(self, trackName1, trackName2, statClassName):
         self._errors = []
-        self._globalResult = None # is a dict that is returned from the compute method executed on global level
-        self._resDictKeys = None # contains a list of the keys that are available for each element of the Results object
+        # A dict that is returned from the compute method executed on global level
+        self._globalResult = None
+        # Contains a list of the keys that are available for each element of the Results object
+        self._resDictKeys = None
         self._trackName1 = trackName1
         self._trackName2 = trackName2
         self._statClassName = statClassName
-        #self._analysis = None        
-        self._analysisText = None #not needed anymore..
+        self._analysis = None
+        self._analysisDef = None
         self._runDescription = None
         self._genome = None
         self._onlyGlobalResults = None
@@ -54,11 +56,13 @@ class Results(dict):
         self._h0 = None
         self._h1 = None
         self._nullModel = None
-        self._resultInfo = ResultInfo(trackName1, trackName2, statClassName)#is an object based on ResultInfoList.py that converts a resultkey to a textual representation used by the GUI
+        # An object based on ResultInfoList.py that converts a resultkey to a textual representation used by the GUI
+        self._resultInfo = ResultInfo(trackName1, trackName2, statClassName)
         dict.__init__(self)
     
-    def setAnalysis(self, analysis): 
-        #self._analysis = analysis
+    def updateFromAnalysis(self, analysis):
+        # self._analysis = analysis
+        self._analysisDef = analysis.getDef()
         self._genome = analysis.getGenome()
         self._onlyGlobalResults = (analysis is not None and analysis.getChoice('onlyGlobalResults') == 'true')
         self._isTwoSidedTest = (analysis is not None and analysis.isTwoSidedTest())
@@ -68,10 +72,9 @@ class Results(dict):
     
     def getGenome(self):
         return self._genome
-    
-    #probably obsolete
-    def setAnalysisText(self, analysisText): 
-        self._analysisText = analysisText
+
+    def getAnalysisDef(self):
+        return self._analysisDef
         
     def setRunDescription(self, descr):
         self._runDescription = descr
@@ -284,7 +287,7 @@ class Results(dict):
         #regFdrVals = r('p.adjust')(r.unlist(regPVals), self.FDR_KEY)
         regPVals = [ self[reg].get(pValKey) for reg in regKeys]
         from quick.statistic.McFdr import McFdr
-        McFdr._initMcFdr() #to load r libraries..
+        # McFdr._initMcFdr() #to load r libraries..
         regFdrVals = McFdr.adjustPvalues(regPVals, verbose=False)
         
         #if len(regPVals) == 1:

@@ -8,6 +8,7 @@ import gold.description.Analysis
 import gold.statistic.Statistic
 from config.Config import DebugConfig
 
+
 class TestGalaxyInterface(GalaxyIntegrationTest):
     def testRun(self):
         self._assertRunEqual([[('Both', 0L), ('Neither', 29920), ('Only1', 1L), ('Only2', 20079L)], [('Both', 2L), ('Neither', 0), ('Only1', 0L), ('Only2', 49998L)]],\
@@ -31,17 +32,11 @@ class TestGalaxyInterface(GalaxyIntegrationTest):
             ['TestGenome|chr21:10000001-10100000|50000|segsLen1/segsMany|segs|RawOverlapStat'])
 
     def testGetStatOptions(self):
-        if self.VERBOSE:
-            DebugConfig.VERBOSE = True
-            DebugConfig.PASS_ON_COMPUTE_EXCEPTIONS = True
-
-
         prevVal = DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS
         DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS= False
         self.assertTrue(len( GalaxyInterface.getStatOptions('TestGenome',['segsMany'], ['segs'], 'Hypothesis testing') ) > 0)
         self.assertTrue(len( GalaxyInterface.getStatOptions('TestGenome',['segsMany'], ['nums'], 'Hypothesis testing') ) > 0)
         DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS= prevVal
-
 
     def testGetRunDescription(self):
         prevVal = DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS
@@ -135,9 +130,10 @@ class TestGalaxyInterface(GalaxyIntegrationTest):
     def runTest(self):
         self.testRun()
 
+
 if __name__ == "__main__":
     #TestGalaxyInterface().debug()
     if len(sys.argv) == 2:
-        TestGalaxyInterface.VERBOSE = ast.literal_eval(sys.argv[1])
+        TestGalaxyInterface.debugMode = sys.argv[1]
         sys.argv = sys.argv[:-1]
     unittest.main()

@@ -2,15 +2,22 @@
 bx-python==0.7.3
 MarkupSafe==0.23
 PyYAML==3.11
-SQLAlchemy==1.0.15
-mercurial==3.7.3
-numpy==1.9.2
+SQLAlchemy==1.0.8
+# Mercurial >= 3.5 changed the bundle format, which breaks hg push of TS repositories
+mercurial==3.4.2
+numpy==1.12.1
 pycrypto==2.6.1
 uWSGI==2.0.15
 
 # Install python_lzo if you want to support indexed access to lzo-compressed
 # locally cached maf files via bx-python
 #python_lzo==1.8
+
+# HyperBrowser addition, to fix version-conflict
+six==1.10.0
+
+# HyperBrowser addition, to fix dependency issue with marisa-trie
+pytest-runner==4.5.1
 
 # pure Python packages
 bz2file==0.98; python_version < '3.3'

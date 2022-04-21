@@ -437,7 +437,7 @@ class Tool(object, Dictifiable):
             self.parse(tool_source, guid=guid)
         except Exception as e:
             global_tool_errors.add_error(config_file, "Tool Loading", e)
-            raise e
+            raise
         self.history_manager = histories.HistoryManager(app)
         self._view = views.DependencyResolversView(app)
 

@@ -9,6 +9,7 @@ class CreateFunctionTrackStat(MagicStatFactory):
     
 class CreateFunctionTrackStatBase(object):
     IS_MEMOIZABLE = False
+    IS_MINIMAL_MEMOIZABLE = False
     
     def _init(self, outTrackName='', username='', valDataType='float64', **kwArgs):
         self._outTrackName = outTrackName.split('^')

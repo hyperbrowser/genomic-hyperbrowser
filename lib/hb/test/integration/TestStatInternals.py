@@ -3,7 +3,7 @@ import ast
 import sys
 import unittest
 from test.integration.GalaxyIntegrationTest import GalaxyIntegrationTest
-from test.integration.ProfiledIntegrationTest import ProfiledIntegrationTest
+
 
 class TestStatInternals(GalaxyIntegrationTest):
     def testTrackFormatMerging(self):
@@ -15,11 +15,12 @@ class TestStatInternals(GalaxyIntegrationTest):
         
     def runTest(self):
         pass
-    
+
+
 if __name__ == "__main__":
     #TestStatInternals().run()
     #TestStatInternals().debug()
     if len(sys.argv) == 2:
-        TestStatInternals.VERBOSE = ast.literal_eval(sys.argv[1])
+        TestStatInternals.debugMode = sys.argv[1]
         sys.argv = sys.argv[:-1]
     unittest.main()

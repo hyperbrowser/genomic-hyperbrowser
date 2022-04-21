@@ -1599,10 +1599,11 @@ class AdhocReceptorRepertoirTool(GeneralGuiTool):
     def execute(choices, galaxyFn, username):
         ModelText = choices[2]
         clonoFunc = AdhocReceptorRepertoirTool.CURVE_FIT_DICT[choices[3]]
+
         #Set random seed if needed
         randomSeed = choices[4]
-        from gold.util.RandomUtil import getManualSeed, setManualSeed
-        if randomSeed and randomSeed != 'Random' and getManualSeed() is None:
+        from gold.util.RandomUtil import setManualSeed
+        if randomSeed:
             setManualSeed(int(randomSeed))
 
         from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN

@@ -468,7 +468,10 @@ class VariantMeltingProfile(GeneralGuiTool):
         
         print ' '.join(cmd)
 
-        os.environ['PERL5LIB'] += ':' + cls.varmelt_dir
+        if 'PERL5LIB' in os.environ:
+            os.environ['PERL5LIB'] += ':' + cls.varmelt_dir
+        else:
+            os.environ['PERL5LIB'] = cls.varmelt_dir
 
         subprocess.check_call(cmd, stdout=sys.stdout, stderr=sys.stdout, shell=False)
 
@@ -563,12 +566,11 @@ class VariantMeltingProfile(GeneralGuiTool):
         
         results_tsv = GalaxyRunSpecificFile(['results.tsv'], galaxyFn)
         results = results_tsv.getFile()
-        baseurl = results_tsv.getURL().rpartition('/')[0]
         dir = os.path.dirname(results_tsv.getDiskPath())
         for i in range(0, len(cmdList)):
             header = True
             ri = 0
-            for resultline in open('/'.join([dir, str(i), 'results.tsv'])):
+            for resultline in open(os.path.join(dir, str(i), 'results.tsv')):
                 if header:
                     header = False
                     if i == 0:
@@ -578,7 +580,7 @@ class VariantMeltingProfile(GeneralGuiTool):
                 else:
                     results.write(str(i) + '\t' + resultline)
                     if resultline.count('?') == 0:
-                        link = '<a href="%s/%d/html/chart-%d.html">%d (graph)</a>' % (baseurl, i, ri, i)
+                        link = '<a href="%d/html/chart-%d.html">%d (graph)</a>' % (i, ri, i)
                     else:
                         link = str(i)
                     html.tableLine([link] + resultline.split('\t'))

@@ -2,7 +2,7 @@ import numpy
 from gold.util.CommonFunctions import mean
 from config.Config import IS_EXPERIMENTAL_INSTALLATION
 
-class McFdr:
+class McFdr(object):
     MIN_NUM_TESTS_FOR_PI0_ESTIMATION = 100
     
     @staticmethod
@@ -118,3 +118,5 @@ class McFdr:
                 del stat._result
         print 'ALL: ',all([x.det for x in stats])
         return all([x.det for x in stats])
+
+McFdr._initMcFdr()

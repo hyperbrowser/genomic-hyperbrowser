@@ -25,8 +25,10 @@ class DiffRelFreqPValStatUnsplittable(Statistic):
     
     def __init__(self, region, track, track2, tail='more', globalSource='', minimal=False, **kwArgs):
         if isIter(region):
+            # TODO: Introduce a better general mechanism for removing global results. SplittableStatNotAvailableError
+            #       should be exclusive to RawDataStat to minimize confusion.
             raise SplittableStatNotAvailableError()
-        
+
         #if minimal == True:
         #    self._globalSource = MinimalBinSource(region.genome)
         #elif globalSource == 'test':
@@ -97,4 +99,3 @@ class DiffRelFreqPValStatUnsplittable(Statistic):
             
         return OrderedDict([ ('P-value', pval), ('Test statistic: Z-score', zScore), ('EstDiff', p-q), \
                             ('SEDiff', se), ('CountTrack1', c1), ('CountTrack2', c2) ])
-            

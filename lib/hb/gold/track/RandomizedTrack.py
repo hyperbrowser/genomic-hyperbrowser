@@ -1,16 +1,14 @@
 #Untested, to be rewritten
 #import stats
-from gold.util.RandomUtil import random
 import numpy
-from numpy import array
 from gold.track.TrackView import TrackView
 from gold.statistic.RawDataStat import RawDataStat
 from gold.track.Track import Track
 from gold.track.TrackFormat import NeutralTrackFormatReq
-from test.gold.track.common.SampleTrackView import SampleTV_Num
 from gold.util.CommonFunctions import isIter
 from gold.util.CustomExceptions import AbstractClassError
 from config.Config import DebugConfig
+
 
 class RandomizedTrack(Track):
     IS_MEMOIZABLE = False
@@ -28,8 +26,10 @@ class RandomizedTrack(Track):
         self._minimal = ('minimal' in kwArgs and kwArgs['minimal'] == True)
 
         from gold.formatconversion.FormatConverter import TrivialFormatConverter
-        self.formatConverters = [TrivialFormatConverter] #To allow construction of uniqueID
-        self._trackId = None #To allow construction of uniqueID
+        # TODO: Is the hack in the next line required anymore?
+        self.formatConverters = [TrivialFormatConverter]  # To allow construction of uniqueID,
+        self._trackId = None  # To allow construction of uniqueID
+        self._hasBeenRead = False
 
     def _checkTrackFormat(self, origTV):
         pass
@@ -42,11 +42,16 @@ class RandomizedTrack(Track):
                     (isIter(self._origRegion) and region in self._origRegion)
 
         if self._minimal and not self.WORKS_WITH_MINIMAL:
-            return self._origTrack.getTrackView(region)
+            tv = self._origTrack.getTrackView(region)
+        else:
+            tv = self._getTrackView(region)
 
-        return self._getTrackView(region)
+        self._hasBeenRead = True
+        return tv
 
     def _getTrackView(self, region):
+        from gold.util.RandomUtil import random  # To initialize random generators if not done previously
+
         #if self._cachedTV is None:
         rawData = RawDataStat(region, self._origTrack, self._trackFormatReq)
         origTV = rawData.getResult()
