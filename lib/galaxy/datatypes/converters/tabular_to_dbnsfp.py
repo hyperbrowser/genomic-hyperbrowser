@@ -8,7 +8,7 @@ usage: %prog in_file out_file
 import optparse
 import os.path
 
-from pysam import ctabix
+from pysam import libctabix as ctabix
 
 
 def main():

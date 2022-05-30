@@ -9,8 +9,7 @@ usage: %prog in_file out_file
 """
 import optparse
 
-from pysam import ctabix
-
+from pysam import libctabix as ctabix
 
 def main():
     # Read options, args.

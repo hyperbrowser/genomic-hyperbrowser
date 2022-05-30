@@ -10,8 +10,7 @@ import optparse
 import os
 import sys
 
-from pysam import ctabix
-
+from pysam import libctabix as ctabix
 
 def main():
     # Read options, args.

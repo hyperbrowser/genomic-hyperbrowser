@@ -9,7 +9,7 @@ import optparse
 import subprocess
 import tempfile
 
-from pysam import ctabix
+from pysam import libctabix as ctabix
 
 
 def main():

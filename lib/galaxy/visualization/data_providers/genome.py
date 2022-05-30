@@ -14,7 +14,7 @@ import pysam
 from bx.interval_index_file import Indexes
 from bx.bbi.bigbed_file import BigBedFile
 from bx.bbi.bigwig_file import BigWigFile
-from pysam import ctabix
+from pysam import libctabix as ctabix
 
 from galaxy.datatypes.interval import Bed, Gff, Gtf
 from galaxy.datatypes.util.gff_util import convert_gff_coords_to_bed, GFFFeature, GFFInterval, GFFReaderWrapper, parse_gff_attributes
