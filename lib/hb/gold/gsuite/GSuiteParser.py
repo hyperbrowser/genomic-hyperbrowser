@@ -77,8 +77,9 @@ def _setCustomHeaders(gSuite, headerVars):
             gSuite.setCustomHeader(key, val)
 
 
-def _compareHeaders(headerName, textHeader, trackSummaryHeader):
-    if textHeader != trackSummaryHeader:
+def _compareHeaders(headerName, textHeader, trackSummaryHeader,
+                    allowTrackSummaryToOverrideHeaders):
+    if allowTrackSummaryToOverrideHeaders and textHeader != trackSummaryHeader:
         raise InvalidFormatError(
             'The global value for GSuite header variable "%s" (%s) '
             % (headerName, textHeader) + 'is not compatible with the combined '
@@ -86,11 +87,12 @@ def _compareHeaders(headerName, textHeader, trackSummaryHeader):
         )
 
 
-def _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite):
+def _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite, allowTrackSummaryToOverrideHeaders):
     for header in HEADER_VAR_DICT:
         if header in headerVars:
             _compareHeaders(header, headerVars[header],
-                            getattr(gSuite, HEADER_VAR_DICT[header].memberName))
+                            getattr(gSuite, HEADER_VAR_DICT[header].memberName),
+                            allowTrackSummaryToOverrideHeaders)
 
 
 # def _updateUnsetHeaderVarsWithDefaultVals(headerVars):
@@ -305,8 +307,7 @@ def parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders=True):
 
     _setCustomHeaders(gSuite, headerVars)
 
-    if not allowTrackSummaryToOverrideHeaders:
-        _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite)
+    _compareTextHeadersWithTrackSummaryHeaders(headerVars, gSuite, allowTrackSummaryToOverrideHeaders)
 
     return gSuite
 

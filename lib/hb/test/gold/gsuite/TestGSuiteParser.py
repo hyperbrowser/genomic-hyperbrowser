@@ -811,7 +811,8 @@ class TestGTrackSuiteParser(GSuiteTestWithMockEncodingFuncs):
 
     def _assertInvalidFormatWhenParsing(self, contents):
         self.assertRaises(InvalidFormatError,
-                          GSuiteParser.parseLines, contents.split('\n'))
+                          GSuiteParser.parseLines, contents.split('\n'),
+                          allowTrackSummaryToOverrideHeaders=False)
 
     def _assertValueErrorWhenParsing(self, contents):
         self.assertRaises(ValueError,
