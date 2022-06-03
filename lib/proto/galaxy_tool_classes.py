@@ -114,7 +114,7 @@ class ProtoGenericTool(ProtoTool):
 
         if proto_module and proto_class:
             s = safeshelve.open('database/proto-tool-cache.shelve')
-            s[tool_id] = (proto_module, proto_class)
+            s[tool_id] = (proto_module, proto_class, conda_activate_source)
             s.close()
 
         if root.find('inputs') is None:
