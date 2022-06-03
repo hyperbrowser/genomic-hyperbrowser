@@ -41,6 +41,8 @@ DESeq
 limma
 edgeR
 latticeExtra
+irlba
+Hmisc
 DESeq2
 MASS
 calibrate
