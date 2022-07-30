@@ -4,6 +4,7 @@ import unittest
 import os
 from subprocess import call
 
+from gold.description.TrackInfo import TrackInfo
 from gold.util.CommonFunctions import createOrigPath, createDirPath
 from quick.util.CommonFunctions import ensurePathExists
 
@@ -25,6 +26,8 @@ class TestWithGeSourceData(unittest.TestCase):
     def _removePreprocessedTrackData(self, trackName):
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=False), trackName)
         self._removeDir(createDirPath(trackName, self.GENOME, allowOverlaps=True), trackName)
+
+        TrackInfo.removeFilteredEntriesFromShelve(self.GENOME, trackName)
 
     def _commonSetup(self):
         from test.gold.origdata.TestGenomeElementSource import TestGenomeElementSource
