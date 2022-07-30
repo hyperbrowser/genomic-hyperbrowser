@@ -118,7 +118,10 @@ class TrackInfo(object):
             if stored is not None:
                 return stored
             else:
-                return object.__new__(cls)
+                obj = object.__new__(cls)
+                fullKey = constructKey(genome=genome, trackName=trackName)
+                cls._memoDict[fullKey] = obj
+                return obj
 
     def __init__(self, genome, trackName):
         existingAttrs = copy.copy(self.__dict__)
@@ -332,7 +335,7 @@ class TrackInfo(object):
     @classmethod
     def removeFilteredEntriesFromShelve(cls, genome, trackNameFilter):
         filteredKeys = TrackInfo.getFilteredEntriesFromShelve(genome, trackNameFilter)
-        trackInfoShelve = cls._openShelve(genome, 'r')
+        trackInfoShelve = cls._openShelve(genome, 'rw')
         for key in filteredKeys:
             del trackInfoShelve[key]
         trackInfoShelve.close()

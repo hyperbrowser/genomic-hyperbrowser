@@ -9,6 +9,7 @@ from copy import deepcopy
 import numpy
 
 from config.Config import DebugConfig
+from gold.description.TrackInfo import TrackInfo
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackSource import TrackSource
@@ -109,6 +110,8 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
             self.assertEquals(chrElCountDict[chr], self._getNumTrackElements(trackName, chr, allowOverlaps))
         self.assertEquals(sum(chrElCountDict.values()),
                           self._getTotalNumTrackElementsFromMemmap(trackName, allChrs, allowOverlaps))
+        self.assertEquals(sum(chrElCountDict.values()),
+                          self._getTotalNumTrackElementsFromTrackInfo(trackName, allowOverlaps))
 
     def _getNumTrackElements(self, trackName, chr, allowOverlaps):
         trackSource = TrackSource()
@@ -144,6 +147,10 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
             return allArrayLenghts[0]
         else:
             return 0
+
+    def _getTotalNumTrackElementsFromTrackInfo(self, trackName, allowOverlaps):
+        ti = TrackInfo(self.GENOME, trackName)
+        return ti.origElCount if allowOverlaps else ti.clusteredElCount
 
     def _getTrackView(self, trackName, region, allowOverlaps):
         track = Track(trackName)
@@ -389,7 +396,6 @@ class TestGESourceTracksPreprocessing(TestTrackPreProcessor):
 
     def runTest(self):
         pass
-        # self.testPreProcessMicroarray()
 
 
 if __name__ == "__main__":
