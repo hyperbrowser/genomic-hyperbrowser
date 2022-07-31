@@ -56,7 +56,7 @@ class Results(dict):
         self._trackName1 = trackName1
         self._trackName2 = trackName2
         self._statClassName = statClassName
-        # self._analysis = None
+        self._analysis = None
         self._analysisDef = None
         self._runDescription = None
         self._genome = None
@@ -381,4 +381,3 @@ class Results(dict):
     
     #def addWarning(self):
     #    pass
-    

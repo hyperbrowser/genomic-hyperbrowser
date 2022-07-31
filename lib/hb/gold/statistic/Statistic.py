@@ -776,7 +776,7 @@ class MultipleTrackStatistic(Statistic):
         if 'extraTracks' in self._kwArgs:
             from gold.util.CommonConstants import MULTIPLE_EXTRA_TRACKS_SEPARATOR
             extraTracks = self._kwArgs['extraTracks']
-            if isinstance(extraTracks, basestring):
+            if extraTracks and isinstance(extraTracks, basestring):
                 extraTracks = extraTracks.split(MULTIPLE_EXTRA_TRACKS_SEPARATOR)
             for extraT in extraTracks:
                 

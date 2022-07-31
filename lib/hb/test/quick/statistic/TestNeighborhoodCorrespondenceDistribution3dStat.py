@@ -11,7 +11,7 @@ class TestNeighborhoodCorrespondenceDistribution3dStatUnsplittable(StatUnitTest)
     #    self._assertIncompatibleTracks(SampleTV(  ))
 
     def test_compute(self):
-        # from gold.application.StatRunner import StatJob
+        # from quick.deprecated.StatRunner import StatJob
         # from quick.application.UserBinSource import UserBinSource
         # from gold.track.GenomeRegion import GenomeRegion
 

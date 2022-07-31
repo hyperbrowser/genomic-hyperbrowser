@@ -9,6 +9,7 @@ from copy import deepcopy
 import numpy
 
 from config.Config import DebugConfig
+from gold.description.TrackInfo import TrackInfo
 from gold.track.Track import Track
 from gold.track.TrackFormat import TrackFormatReq
 from gold.track.TrackSource import TrackSource
@@ -52,6 +53,8 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
         self._assertCounts(trackName, noOverlapsFileCount, withOverlapsFileCount, noOverlapsChrElCount,
                            withOverlapsChrElCount)
 
+        self._assertHasTrackFormatHash(trackName)
+
         # self._storeProfile()
 
     def _preProcessCustomTracks(self, subTrackName, regionList, getGeSourceCallBackFunc,
@@ -87,9 +90,9 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
         if withOverlapsFileCount is not None:
             self.assertEquals(withOverlapsFileCount, self._countFiles(withOverlapsPath))
         if noOverlapsChrElCount is not None:
-            self.assertChrElCounts(trackName, noOverlapsChrElCount, False)
+            self._assertChrElCounts(trackName, noOverlapsChrElCount, False)
         if withOverlapsChrElCount is not None:
-            self.assertChrElCounts(trackName, withOverlapsChrElCount, True)
+            self._assertChrElCounts(trackName, withOverlapsChrElCount, True)
 
     @staticmethod
     def _countFiles(dir):
@@ -103,12 +106,14 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
         withOverlapsPath = createDirPath(trackName, self.GENOME, allowOverlaps=True)
         return noOverlapsPath, withOverlapsPath
 
-    def assertChrElCounts(self, trackName, chrElCountDict, allowOverlaps):
+    def _assertChrElCounts(self, trackName, chrElCountDict, allowOverlaps):
         allChrs = chrElCountDict.keys()
         for chr in allChrs:
             self.assertEquals(chrElCountDict[chr], self._getNumTrackElements(trackName, chr, allowOverlaps))
         self.assertEquals(sum(chrElCountDict.values()),
                           self._getTotalNumTrackElementsFromMemmap(trackName, allChrs, allowOverlaps))
+        self.assertEquals(sum(chrElCountDict.values()),
+                          self._getTotalNumTrackElementsFromTrackInfo(trackName, allowOverlaps))
 
     def _getNumTrackElements(self, trackName, chr, allowOverlaps):
         trackSource = TrackSource()
@@ -144,6 +149,14 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
             return allArrayLenghts[0]
         else:
             return 0
+
+    def _getTotalNumTrackElementsFromTrackInfo(self, trackName, allowOverlaps):
+        ti = TrackInfo(self.GENOME, trackName)
+        return ti.origElCount if allowOverlaps else ti.clusteredElCount
+
+    def _assertHasTrackFormatHash(self, trackName):
+        ti = TrackInfo(self.GENOME, trackName)
+        assert ti.trackFormatHash
 
     def _getTrackView(self, trackName, region, allowOverlaps):
         track = Track(trackName)
@@ -224,7 +237,7 @@ class TestTrackPreProcessor(GalaxyIntegrationTest, TestWithGeSourceData):
             trackElOffsets += [tv.genomeAnchor.start for x in tv]
             prevAssertElCount += brTuple.elCount
 
-        for i,ge in enumerate(allAssertEls):
+        for i, ge in enumerate(allAssertEls):
             self._assertGenomeAndTrackElementEqual(ge, allTrackEls[i], trackElChrs[i], trackElOffsets[i])
 
 
@@ -389,7 +402,6 @@ class TestGESourceTracksPreprocessing(TestTrackPreProcessor):
 
     def runTest(self):
         pass
-        # self.testPreProcessMicroarray()
 
 
 if __name__ == "__main__":

@@ -49,7 +49,7 @@ def doAnalysis(analysisSpec, analysisBins, trackStructure):
     if isinstance(trackStructure, TrackStructureV2):
         analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
         statClass = analysisDef._statClassList[0]
-        validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True))
+        validStatClass = wrapClass(statClass, keywords=analysisDef.getAllChoices(filterByActivation=True))
         job = StatJob(analysisBins, trackStructure, validStatClass)
     else:
         tracks = trackStructure

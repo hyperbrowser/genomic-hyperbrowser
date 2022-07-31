@@ -2,12 +2,12 @@
 # from gold.statistic.AllStatistics import STAT_CLASS_DICT
 # from gold.statistic.MagicStatFactory import MagicStatFactory
 # from quick.application.UserBinSource import UserBinSource
-# #from gold.application.StatRunner import StatJob        
+# #from quick.deprecated.StatRunner import StatJob
 # from os import sep
 # from quick.util.GenomeInfo import GenomeInfo
 # from config.Config import NONSTANDARD_DATA_PATH
 # from quick.application.GalaxyInterface import GalaxyInterface
-# from gold.application.StatRunner import *
+# from quick.deprecated.StatRunner import *
 # import re
 # from gold.track.Track import PlainTrack
 # from collections import defaultdict, Counter
@@ -193,7 +193,7 @@
 #         
 #         tfToPwmIdsDict = safeshelve.open(tfNames2pwmIdsFn)
 #         multiTfDict = MultiExactlySpecifiedTF()
-#         trackList = [v[0] for v in GalaxyInterface.getSubTrackNames(genome, ['Private','GWAS', cellType], deep=False)[0]]
+#         trackList = [v[0] for v in GalaxyInterface.getSubTrackNames(genome, ['Private','GWAS', cellType], deep=False)]
 #         count, tfNums = 0, len(tfToPwmIdsDict)
 #         for keyTf, motifList in tfToPwmIdsDict.items(): #tfToChipSeqDict.items():
 #             count+=1
@@ -441,13 +441,13 @@
 # #from gold.statistic.AllStatistics import STAT_CLASS_DICT
 # #from gold.statistic.MagicStatFactory import MagicStatFactory
 # #from quick.application.UserBinSource import UserBinSource
-# ##from gold.application.StatRunner import StatJob        
+# ##from quick.deprecated.StatRunner import StatJob
 # #from os import sep
 # #from quick.util.GenomeInfo import GenomeInfo
 # #import time
 # #from config.Config import NONSTANDARD_DATA_PATH
 # #from quick.application.GalaxyInterface import GalaxyInterface
-# #from gold.application.StatRunner import *
+# #from quick.deprecated.StatRunner import *
 # ##This is a template prototyping GUI that comes together with a corresponding web page.
 # ##
 # #

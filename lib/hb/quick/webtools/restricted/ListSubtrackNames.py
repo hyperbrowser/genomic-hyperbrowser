@@ -38,9 +38,9 @@ class ListSubtrackNames(GeneralGuiTool):
         from quick.application.GalaxyInterface import GalaxyInterface
         from collections import OrderedDict
         try:
-            subTrackList = [v[0] for v in GalaxyInterface.getSubTrackNames(prevChoices[0], prevChoices[1].split(':'), deep=False)[0]]
+            subTrackList = [v[0] for v in GalaxyInterface.getSubTrackNames(prevChoices[0], prevChoices[1].split(':'), deep=False)]
             if len(subTrackList)>0:
-                subSubTrackList =  GalaxyInterface.getSubTrackNames(prevChoices[0], prevChoices[1].split(':')+[subTrackList[0]], deep=False)[0]
+                subSubTrackList =  GalaxyInterface.getSubTrackNames(prevChoices[0], prevChoices[1].split(':')+[subTrackList[0]], deep=False)
                 if len(subSubTrackList) ==0:
                     return OrderedDict([(v, False)for v in subTrackList])
             #return ('\n'.join(subTrackList), len(subTrackList), True)

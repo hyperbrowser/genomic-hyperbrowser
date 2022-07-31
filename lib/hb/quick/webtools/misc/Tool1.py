@@ -551,7 +551,7 @@ class ScanFastaByPwmTool(GeneralGuiTool):
         from third_party.Fasta import load
 
         countMats = parseTransfacMatrixFile(motifFn)
-        #from gold.application.StatRunner import Progress
+        #from quick.deprecated.StatRunner import Progress
         #progress = Progress(len(countMats))
         utfil = open(galaxyFn, 'w')
         for motifId, countMat in countMats.items():

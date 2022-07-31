@@ -66,10 +66,10 @@ def updateTrackFolderStatistics():
         print('plan to update genomeinfo', genome, ' set number of folders to ', thisndirs, ' and number of tracks to ', thisntracks)
 
 
-# Recursice count of tracks and folders.
+# Recursive count of tracks and folders.
 def countSubTracks(genome, parentTrack, recursioncount):
     if recursioncount < 10:
-        thissubs=GalaxyInterface.getSubTrackNames(genome, parentTrack, False)[0]
+        thissubs=GalaxyInterface.getSubTrackNames(genome, parentTrack, False)
         tname=genome+":"+":".join( parentTrack)
         #ti = TrackInfo.
         if thissubs: # has subtrakcs, ie is a folder
@@ -87,7 +87,7 @@ def countSubTracks(genome, parentTrack, recursioncount):
         else:# is a track.          
             return (0,1)
     else:
-        print "to many recursions"
+        print "too many recursions"
 
 
 
@@ -107,9 +107,3 @@ def countSubTracks(genome, parentTrack, recursioncount):
 
 
 print('Ferdig trackinfocleanup')
-
-
-
-
-
-
