@@ -394,7 +394,7 @@ class AnalyzeFunctionalGenomicsOfGwasTracks(GeneralGuiTool):
         from gold.application.HyperBrowserCLI import getSubTrackLeafTerms
         from quick.application.ProcTrackOptions import ProcTrackOptions
 
-        #for gwasTrackLeaf in GalaxyInterface.getSubTrackNames(genome, gwasTnBase,deep=False, username=username)[0]:
+        #for gwasTrackLeaf in GalaxyInterface.getSubTrackNames(genome, gwasTnBase,deep=False, username=username):
         allDiseases = getSubTrackLeafTerms(genome, gwasTnBase, username=username)
         if len(allDiseases)==0:
             assert ProcTrackOptions.isValidTrack(genome, gwasTnBase, GalaxyInterface.userHasFullAccess(username)), 'Genome: %s, TN: %s, Access: %s' % (genome, gwasTnBase, GalaxyInterface.userHasFullAccess(username))
@@ -432,7 +432,7 @@ class AnalyzeFunctionalGenomicsOfGwasTracks(GeneralGuiTool):
             
             res = ResultClass(gwasId=disease,verbose=True,galaxyFn=galaxyFn)
             #referenceSubTypes = enrichments.keys()
-            #referenceSubTypes = [x[0] for x in GalaxyInterface.getSubTrackNames(genome, 'Private:GK:Psych:DHSs'.split(':'), deep=False, username=username)[0] if not x[0] == '-- All subtypes --']
+            #referenceSubTypes = [x[0] for x in GalaxyInterface.getSubTrackNames(genome, 'Private:GK:Psych:DHSs'.split(':'), deep=False, username=username) if not x[0] == '-- All subtypes --']
             if referenceTrackSource=='H3K4me3':
                 refTrackBase = 'Private:GK:Psych:H3K4me3'
                 refTrackCoverageFunction = 'Private^GK^Psych^H3K4me3CoverageTrack'
@@ -452,7 +452,7 @@ class AnalyzeFunctionalGenomicsOfGwasTracks(GeneralGuiTool):
                 raise
             refTrackSelectType = choices[13]
             
-            allReferenceTracks = [x[0] for x in GalaxyInterface.getSubTrackNames(genome, refTrackBase.split(':'), deep=False, username=username)[0] if not x[0] == '-- All subtypes --']
+            allReferenceTracks = [x[0] for x in GalaxyInterface.getSubTrackNames(genome, refTrackBase.split(':'), deep=False, username=username) if not x[0] == '-- All subtypes --']
             if refTrackSelectType == 'Use all reference tracks':
                 referenceSubTypes = allReferenceTracks
             elif refTrackSelectType == 'Select single reference track':
@@ -644,6 +644,3 @@ class AnalyzeFunctionalGenomicsOfGwasTracks(GeneralGuiTool):
         history item box.
         '''
         return 'customhtml'
-
-
-

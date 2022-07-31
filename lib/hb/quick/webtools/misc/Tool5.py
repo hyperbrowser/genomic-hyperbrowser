@@ -86,7 +86,7 @@ class Tool5(GeneralGuiTool):
     def analyseTrackData(genome, baseTn, username, galaxyFn):        
         from quick.application.GalaxyInterface import GalaxyInterface
         print GalaxyInterface.getSubTrackNames(genome, baseTn, deep=False, username=username)
-        allTns = [baseTn+[leafTn[0]] for leafTn in GalaxyInterface.getSubTrackNames(genome, baseTn, deep=False, username=username)[0] if leafTn!=None]
+        allTns = [baseTn+[leafTn[0]] for leafTn in GalaxyInterface.getSubTrackNames(genome, baseTn, deep=False, username=username) if leafTn!=None]
         mainTns = allTns[:2]
         extraTracks = '&'.join(['^'.join(tn) for tn in allTns[2:]])
         analysisDef = '[extraTracks=%s] -> ThreeWayCoverageDepthStat' %extraTracks

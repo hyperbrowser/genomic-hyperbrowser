@@ -937,7 +937,7 @@ def getAllRepeatsProportionOverlapData(gSuite, analysisBins=None, username=''):
 
     subtracks = GalaxyInterface.getSubTrackNames(
         gSuite.genome, ['Sequence', 'Repeating elements'],
-        deep=False, username=username)[0]
+        deep=False, username=username)
     subtrackList = []
 
     for subtrack in subtracks:

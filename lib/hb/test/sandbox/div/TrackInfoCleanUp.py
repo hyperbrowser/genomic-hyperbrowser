@@ -69,7 +69,7 @@ def updateTrackFolderStatistics():
 # Recursice count of tracks and folders.
 def countSubTracks(genome, parentTrack, recursioncount):
     if recursioncount < 10:
-        thissubs=GalaxyInterface.getSubTrackNames(genome, parentTrack, False)[0]
+        thissubs=GalaxyInterface.getSubTrackNames(genome, parentTrack, False)
         tname=genome+":"+":".join( parentTrack)
         #ti = TrackInfo.
         if thissubs: # has subtrakcs, ie is a folder
