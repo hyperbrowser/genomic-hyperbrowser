@@ -2,7 +2,7 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.statistic.AllStatistics import STAT_CLASS_DICT
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.application.UserBinSource import UserBinSource
-#from gold.application.StatRunner import StatJob        
+#from quick.deprecated.StatRunner import StatJob
 from os import sep
 from quick.util.GenomeInfo import GenomeInfo
 import time

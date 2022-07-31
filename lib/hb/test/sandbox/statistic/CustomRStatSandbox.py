@@ -7,7 +7,7 @@ from gold.statistic.CustomRStat import CustomRStat, CustomRStatUnsplittable
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import Track
 from quick.application.UserBinSource import UserBinSource
-from gold.application.StatRunner import StatRunner
+from quick.deprecated.StatRunner import StatRunner
 from quick.util.CommonFunctions import wrapClass
 import urllib
 

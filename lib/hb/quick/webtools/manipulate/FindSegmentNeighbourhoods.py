@@ -3,7 +3,6 @@ from gold.statistic.AllStatistics import STAT_CLASS_DICT
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from quick.application.UserBinSource import UserBinSource
 from quick.application.ExternalTrackManager import ExternalTrackManager
-#from gold.application.StatRunner import StatJob        
 from os import sep, makedirs
 from gold.util.CommonFunctions import createOrigPath
 from quick.util.CommonFunctions import ensurePathExists

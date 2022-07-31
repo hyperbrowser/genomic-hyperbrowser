@@ -1,5 +1,5 @@
 from gold.track.GenomeRegion import GenomeRegion
-from gold.application.StatRunner import StatRunner
+from quick.deprecated.StatRunner import StatRunner
 from gold.track.Track import Track
 from gold.origdata.GenomeElementSource import GenomeElementSource
 from quick.postprocess.GlobalCollectorPP import GlobalCollectorPP

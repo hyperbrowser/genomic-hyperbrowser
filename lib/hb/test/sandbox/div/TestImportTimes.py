@@ -4,7 +4,7 @@ import os
 from urllib import unquote, quote
 from config.Config import DEFAULT_GENOME#, brk
 print '.'
-from gold.application.StatRunner import StatRunner
+from quick.deprecated.StatRunner import StatRunner
 print '.'
 from gold.track.Track import Track
 from gold.util.CommonFunctions import insertTrackNames, smartStrLower, getClassName, prettyPrintTrackName, createOrigPath

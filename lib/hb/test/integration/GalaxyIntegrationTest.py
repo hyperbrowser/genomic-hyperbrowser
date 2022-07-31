@@ -42,7 +42,7 @@ class GalaxyIntegrationTest(TestCaseWithImprovedAsserts):
         #     sys.stdout = StringIO.StringIO()
 
         DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True
-        gold.application.StatRunner.PRINT_PROGRESS = False
+        quick.deprecated.StatRunner.PRINT_PROGRESS = False
         GalaxyInterface.APPEND_ASSEMBLY_GAPS = False
         GalaxyInterface.APPEND_COUNTS = False
 
