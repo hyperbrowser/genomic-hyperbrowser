@@ -19,7 +19,7 @@ from test.util.Asserts import TestCaseWithImprovedAsserts
 
 # quick.deprecated.StatRunner.PRINT_PROGRESS = False
 #gold.description.Analysis.PASS_ON_VALIDSTAT_EXCEPTIONS = True
-from config.Config import DebugConfig
+from config.Config import DebugConfig, DebugModes
 # DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = True
 
 # GalaxyInterface.APPEND_ASSEMBLY_GAPS = False
@@ -33,7 +33,7 @@ class GalaxyIntegrationTest(TestCaseWithImprovedAsserts):
     def setUp(self):
         if self.debugMode:
             if self.debugMode == 'True':
-                self.debugMode == DebugConfig.DebugModes.UNCHANGED_LOGIC_VERBOSE
+                self.debugMode == DebugModes.UNCHANGED_LOGIC_VERBOSE
             DebugConfig.changeMode(self.debugMode)
         else:
             DebugConfig.resetMode()
