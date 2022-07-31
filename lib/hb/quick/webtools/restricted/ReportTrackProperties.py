@@ -629,8 +629,8 @@ class AnalysisTrack(object):
         tnGenes =['Genes and gene subsets','Genes']
         multiCountDef = 'dummy -> PointCountInsideSegsStat'
         try:
-            genesList = [ v[0] for v in GalaxyInterface.getSubTrackNames(genome, tnGenes, deep=False)[0]]
-            exonList =  [ v[0] for v in GalaxyInterface.getSubTrackNames(genome, tnExon, deep=False)[0]]
+            genesList = [ v[0] for v in GalaxyInterface.getSubTrackNames(genome, tnGenes, deep=False)]
+            exonList =  [ v[0] for v in GalaxyInterface.getSubTrackNames(genome, tnExon, deep=False)]
             
             for tn in genesList:
                 self.analysisDict['Genes_CountPointStat_'+tn] = [tnGenes+[tn], multiCountDef, 'Result']
@@ -781,4 +781,3 @@ class StepFunction(AnalysisTrack):
         if type(statsToRun) == dict:
             stepFunction.update(statsToRun)
         super(StepFunction, self).__init__(genome, stepFunction)
-        

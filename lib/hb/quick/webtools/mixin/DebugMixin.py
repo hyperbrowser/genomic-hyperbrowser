@@ -16,11 +16,15 @@ class DebugMixin(object):
                     DebugModes.UNCHANGED_LOGIC_TRACE_CREATE_VERBOSE,
                     DebugModes.UNCHANGED_LOGIC_TRACE_COMPUTE_VERBOSE,
                     DebugModes.UNCHANGED_LOGIC_FULL_TRACE_VERBOSE,
+                    DebugModes.RAISE_SIGNATURE_DEVIANCY_NO_VERBOSE,
+                    DebugModes.RAISE_SIGNATURE_DEVIANCY_WITH_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_NO_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_WITH_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_FULL_TRACE_VERBOSE,
                     DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_WITH_VERBOSE,
-                    DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE]
+                    DebugModes.RAISE_HIDDEN_EXCEPTIONS_INCLUDING_NONE_FULL_TRACE_WITH_VERBOSE,
+                    DebugModes.RAISE_HIDDEN_EXCEPTIONS_AND_SIGNATURE_DEVIANCY_NO_VERBOSE,
+                    DebugModes.RAISE_HIDDEN_EXCEPTIONS_AND_SIGNATURE_DEVIANCY_WITH_VERBOSE]
 
     @classmethod
     def getInputBoxGroups(cls, choices=None):
@@ -38,4 +42,3 @@ class DebugMixin(object):
                 #in addition to setting the debug mode
                 setupDebugModeAndLogging(mode=choices.debugMode, debugFileName=galaxyFn)
             #print DebugConfig
-

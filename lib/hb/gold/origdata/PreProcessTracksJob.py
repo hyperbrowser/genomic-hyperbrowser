@@ -90,6 +90,8 @@ class PreProcessTracksJob(object):
                             self._status = 'Trying to remove chromosome folders'
                             PreProcessUtils.removeChrMemmapFolders(self._genome, trackName, allowOverlaps)
 
+                            collector.updatePreProcFilesExistFlag(allowOverlaps, preProcFilesExist=True, merged=True)
+
                         self._status = 'Trying to check whether 3D data is correct'
                         PreProcessUtils.checkIfEdgeIdsExist(self._genome, trackName, allowOverlaps)
                         PreProcessUtils.checkUndirectedEdges(self._genome, trackName, allowOverlaps)
