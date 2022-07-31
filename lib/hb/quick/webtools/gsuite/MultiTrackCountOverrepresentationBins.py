@@ -30,7 +30,7 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
 
     Q1 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments"
     Q1_SHORT = "Enrichment in bins [number of segments]"
-    Q2 = "Show me a list of all binsand the enrichment within each bin, based on the number of base pairs covered by segments"
+    Q2 = "Show me a list of all bins and the enrichment within each bin, based on the number of base pairs covered by segments"
     Q2_SHORT = "Enrichment in bins [number of base pairs]"
     Q3 = "Show me a list of all bins and the enrichment within each bin, based on the number of segments. Also compute p-values for each bin."
     Q3_SHORT = "Enrichment in bins [number of segments, p-val]"
