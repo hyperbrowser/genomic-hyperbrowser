@@ -1,9 +1,10 @@
-from third_party.typecheck import Checker, getargspec, type_name
+from gold.util.CustomExceptions import ShouldNotOccurError
+from third_party.typecheck import Checker, getargspec, type_name, InputParameterError, \
+    one_of, anything, nothing, list_of, tuple_of, dict_of, optional, ReturnValueError
 from gold.application.LogSetup import SIGNATURE_DEVIANCE_LOGGER, logMessageOnce
 
 NO_CHECK = False
-from config.Config import IS_EXPERIMENTAL_INSTALLATION
-
+from config.Config import DebugConfig
 #def takes_strict():
 #    pass
 
@@ -16,8 +17,8 @@ def takes(*args, **kwargs):
     for i, arg in enumerate(args):
         checker = Checker.create(arg)
         if checker is None:
-            if IS_EXPERIMENTAL_INSTALLATION:
-                raise TypeError("@takes decorator got parameter %d of unsupported "
+            if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
+                raise ShouldNotOccurError("@takes decorator got parameter %d of unsupported "
                             "type %s" % (i + 1, type_name(arg)))
             else:
                 logMessageOnce("@takes decorator got parameter %d of unsupported " +
@@ -28,8 +29,8 @@ def takes(*args, **kwargs):
     for kwname, kwarg in kwargs.iteritems():
         checker = Checker.create(kwarg)
         if checker is None:
-            if IS_EXPERIMENTAL_INSTALLATION:
-                raise TypeError("@takes decorator got parameter %s of unsupported "
+            if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
+                raise ShouldNotOccurError("@takes decorator got parameter %s of unsupported "
                             "type %s" % (kwname, type_name(kwarg)))
             else:
                 logMessageOnce("@takes decorator got parameter %s of unsupported " +
@@ -59,23 +60,27 @@ def takes(*args, **kwargs):
 
                 for i, (arg, checker) in enumerate(zip(args, checkers)):
                     if not checker.check(arg):
-                        #raise InputParameterError("%s() got invalid parameter "
-                                                  #"%d of type %s" %
-                                                  #(method.__name__, i + 1, 
-                                                   #type_name(arg)))
-                        mainMessage = "%s() got invalid parameter %d of type %s" %\
+                        if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
+                            raise InputParameterError("%s() got invalid parameter "
+                                                      "%d of type %s" %
+                                                      (method.__name__, i + 1,
+                                                       type_name(arg)))
+                        else:
+                            mainMessage = "%s() got invalid parameter %d of type %s" %\
                                                   (method.__name__, i + 1, 
                                                    type_name(arg))                        
-                        logMessageOnce(mainMessage, level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
+                            logMessageOnce(mainMessage, level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
                         
 
                 for kwname, checker in kwcheckers.iteritems():
                     if not checker.check(kwargs.get(kwname, None)):
-                        #raise InputParameterError("%s() got invalid parameter "
-                                                  #"%s of type %s" %
-                                                  #(method.__name__, kwname, 
-                                                   #type_name(kwargs.get(kwname, None))))
-                        logMessageOnce("%s() got invalid parameter " 
+                        if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
+                            raise InputParameterError("%s() got invalid parameter "
+                                                  "%s of type %s" %
+                                                  (method.__name__, kwname,
+                                                   type_name(kwargs.get(kwname, None))))
+                        else:
+                            logMessageOnce("%s() got invalid parameter "
                                                   "%s of type %s" %
                                                   (method.__name__, kwname, 
                                                    type_name(kwargs.get(kwname, None))), level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
@@ -94,9 +99,11 @@ def returns(sometype):
 
     checker = Checker.create(sometype)
     if checker is None:
-        #raise TypeError("@returns decorator got parameter of unsupported "
-        #                "type %s" % type_name(sometype))
-        logMessageOnce("@returns decorator got parameter of unsupported "
+        if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
+            raise ShouldNotOccurError("@returns decorator got parameter of unsupported "
+                        "type %s" % type_name(sometype))
+        else:
+            logMessageOnce("@returns decorator got parameter of unsupported "
                         "type %s" % type_name(sometype), level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
 
     if NO_CHECK: # no type checking is performed, return decorated method itself
@@ -113,10 +120,12 @@ def returns(sometype):
                 result = method(*args, **kwargs)
                 
                 if not checker.check(result):
-                    #raise ReturnValueError("%s() has returned an invalid "
-                    #                       "value of type %s" % 
-                    #                       (method.__name__, type_name(result)))
-                    logMessageOnce("%s() has returned an invalid "
+                    if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
+                        raise ReturnValueError("%s() has returned an invalid "
+                                          "value of type %s" %
+                                          (method.__name__, type_name(result)))
+                    else:
+                        logMessageOnce("%s() has returned an invalid "
                                            "value of type %s" % 
                                            (method.__name__, type_name(result)), level=5, logger=SIGNATURE_DEVIANCE_LOGGER)
 
