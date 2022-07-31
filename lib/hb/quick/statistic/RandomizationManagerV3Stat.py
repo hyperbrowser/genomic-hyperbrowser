@@ -27,7 +27,7 @@ class RandomizationManagerV3StatUnsplittable(StatisticV2):
             evaluatorFunc = globals()[evaluatorFunc]
         self._evaluatorFunc = evaluatorFunc
 
-        if type(mcSamplerClass) is str:
+        if isinstance(mcSamplerClass, basestring):
             mcSamplerClass = globals()[mcSamplerClass]
         self._mcSamplerClass = mcSamplerClass
         
