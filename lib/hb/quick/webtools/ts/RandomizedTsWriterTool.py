@@ -59,7 +59,8 @@ class RandomizedTsWriterTool(GeneralGuiTool, RandAlgorithmMixin):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select a GSuite', 'gs')] + \
+        return [('Basic user mode', 'isBasic'),
+                ('Select a GSuite', 'gs')] + \
                cls.getInputBoxNamesForRandAlgSelection() + \
                [('Category to randomize within (set to \'None\' in order to '
                  'randomize between all tracks in the GSuite)', 'category')]
@@ -74,7 +75,11 @@ class RandomizedTsWriterTool(GeneralGuiTool, RandAlgorithmMixin):
         return True
 
     @classmethod
-    def getOptionsBoxGs(cls):  # Alt: getOptionsBox1()
+    def getOptionsBoxIsBasic(cls):
+        return False
+
+    @classmethod
+    def getOptionsBoxGs(cls, prevChoices):  # Alt: getOptionsBox1()
         return GeneralGuiToolMixin.getHistorySelectionElement('gsuite')
 
     @classmethod
