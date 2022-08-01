@@ -29,10 +29,10 @@ def evaluatePvalueAndNullDistribution(observedAndMcSamplesTuple, tails, rawStati
     assert isinstance(observation, (int, float, long))
     assert all([isinstance(mcSample, (int, float, long)) for mcSample in mcSamples])
 
-    return _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisticMainClassName, tail)
+    return _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisticMainClassName, tails)
 
 
-def _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisticMainClassName, tail):
+def _evaluatePvalueAndNullDistributionCommon(mcSamples, observation, rawStatisticMainClassName, tails):
     numResamplings = len(mcSamples)
     numpyRandResults = array(mcSamples)
     nonNanNumpyRandResults = numpyRandResults[~isnan(numpyRandResults)]
@@ -80,7 +80,8 @@ def evaluatePvalueAndNullDistributionList(observedAndMcSamplesTuple, tails, rawS
         raise Exception('not implemented yet!')
 
     for trackTitle, observation in observedResultDict.iteritems():
-        resultsDict[trackTitle] = evaluatePvalueAndNullDistribution((observation, mcSamplesResultDict[trackTitle]), tail, rawStatisticMainClassName)
+        resultsDict[trackTitle] = evaluatePvalueAndNullDistribution((observation, mcSamplesResultDict[trackTitle]),
+                                                                    tails, rawStatisticMainClassName)
 
     return resultsDict
 

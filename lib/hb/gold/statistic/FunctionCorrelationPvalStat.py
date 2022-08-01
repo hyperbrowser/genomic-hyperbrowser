@@ -12,9 +12,9 @@ class FunctionCorrelationPvalStat(MagicStatFactory):
 #    pass
             
 class FunctionCorrelationPvalStatUnsplittable(Statistic):    
-    def __init__(self, region, track, track2, numSubBins=10, method='pearson', tail='different', **kwArgs):
+    def __init__(self, region, track, track2, numSubBins=10, method='pearson', tails='different', **kwArgs):
         assert method in ['pearson','spearman','kendall']
-        assert tail in ['more', 'less', 'different']
+        assert tails in ['more', 'less', 'different']
         tailMapping = {'more': "greater", 'less': "less", 'different': "two.sided"}
 
         if kwArgs.get('minimal') != True:
@@ -22,8 +22,8 @@ class FunctionCorrelationPvalStatUnsplittable(Statistic):
 
         self._numSubBins = numSubBins
         self._method = method
-        self._rTail = tailMapping[tail]
-        Statistic.__init__(self, region, track, track2, method=method, tail=tail, **kwArgs)
+        self._rTails = tailMapping[tails]
+        Statistic.__init__(self, region, track, track2, method=method, tails=tails, **kwArgs)
     
     def _checkAssumptions(self, assumptions):
         if not assumptions == 'summarize':
@@ -39,13 +39,13 @@ class FunctionCorrelationPvalStatUnsplittable(Statistic):
             from proto.RSetup import r
             xAsR = r.unlist([float(num) for num in x])
             yAsR = r.unlist([float(num) for num in y])
-            #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTail, method=self._method)
+            #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTails, method=self._method)
             #pval = corTestRes['p.value']            
             #testStat = corTestRes['statistic'].values()[0]
 
-            pval, testStat, correlation = r('function(xAsR, yAsR, alternative,method){res = cor.test(xAsR, yAsR, alternative=alternative,method=method); return(list(res$p.value,res$statistic,res$estimate))}')(xAsR, yAsR, alternative=self._rTail, method=self._method)
+            pval, testStat, correlation = r('function(xAsR, yAsR, alternative,method){res = cor.test(xAsR, yAsR, alternative=alternative,method=method); return(list(res$p.value,res$statistic,res$estimate))}')(xAsR, yAsR, alternative=self._rTails, method=self._method)
 
-            #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTail, method=self._method)
+            #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTails, method=self._method)
             #pval = corTestRes.rx('p.value')
             #testStat = corTestRes.rx('statistic').rx('t')
         return OrderedDict([ ('P-value', pval), ('Test statistic: ' + self._method, testStat), ('Correlation, '+self._method,correlation)])

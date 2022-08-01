@@ -25,7 +25,7 @@ class BinPreferencePValStat(MagicStatFactory):
 class BinPreferencePValStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
     
-    def __init__(self, region, track, track2, tail='more', globalSource='chrs', minimal=False, **kwArgs):
+    def __init__(self, region, track, track2, tails='more', globalSource='chrs', minimal=False, **kwArgs):
         if isIter(region):
             raise SplittableStatNotAvailableError()
         
@@ -49,10 +49,10 @@ class BinPreferencePValStatUnsplittable(Statistic):
         #    raise ShouldNotOccurError('globalSource not recognized')
         #    #self._globalSource = GlobalBinSource(region.genome)
         
-        assert tail in ['more', 'less', 'different']
-        self._tail = tail
+        assert tails in ['more', 'less', 'different']
+        self._tails = tails
         
-        super(self.__class__, self).__init__(region, track, track2, tail=tail, globalSource=globalSource, minimal=minimal, **kwArgs)
+        super(self.__class__, self).__init__(region, track, track2, tails=tails, globalSource=globalSource, minimal=minimal, **kwArgs)
     
     def _checkAssumptions(self, assumptions):
         if not assumptions == 'poissonPoints':
@@ -63,7 +63,7 @@ class BinPreferencePValStatUnsplittable(Statistic):
         x = self._pointsInBinStat.getResult()
         size = self._pointsGloballyStat.getResult()
         
-        pval = BinomialTools._computeBinomialPval(x, size, prob, self._tail)
+        pval = BinomialTools._computeBinomialPval(x, size, prob, self._tails)
         
         expPoints = prob*size
         ratioToMean = 1.0 * x / expPoints if expPoints>0 else numpy.nan

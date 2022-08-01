@@ -401,7 +401,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
             analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
-            analysisSpec.addParameter('tail', 'right-tail')
+            analysisSpec.addParameter('tails', 'right-tail')
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
             analysisSpec.addParameter('runLocalAnalysis', 'Yes' if localAnalysis else 'No')
 
@@ -456,7 +456,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             # analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similaryStatClassName])
             # analysisSpec.addParameter('summaryFunc', GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             # analysisSpec.addParameter('multitrackSummaryFunc', 'avg')  # should it be a choice?
-            # analysisSpec.addParameter('tail', 'right-tail')
+            # analysisSpec.addParameter('tails', 'right-tail')
             # results = doAnalysis(analysisSpec, analysisBins, tracks).getGlobalResult()
 
             mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
@@ -472,7 +472,7 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('summaryFunc',
                                       GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
             analysisSpec.addParameter('multitrackSummaryFunc', 'avg')  # should it be a choice?
-            analysisSpec.addParameter('tail', 'right-tail')
+            analysisSpec.addParameter('tails', 'right-tail')
             analysisSpec.addParameter('tvProviderClass', getClassName(createTrackViewProvider(choices.randType, choices.randAlg)))
             results = doAnalysis(analysisSpec, analysisBins, ts).getGlobalResult()
 

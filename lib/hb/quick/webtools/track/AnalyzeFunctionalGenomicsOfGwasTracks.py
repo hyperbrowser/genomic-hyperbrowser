@@ -65,7 +65,7 @@ def directGetTestResults(diseaseTrack, refTrackLeaf, refTrackBase, kernelType, k
 @TN2=%s
 @rawStat=rawStatistic=DiffRelCoverageMainValueStat
 @assump=assumptions=%s
-@randParams=randomSeed=Random,tail=more,@assump
+@randParams=randomSeed=Random,tails=more,@assump
 @mcParams=%s
 @conv=tf1=TrivialFormatConverter,tf2=TrivialFormatConverter
 @kernelParams=kernelType=binSizeNormalized
@@ -79,7 +79,7 @@ hg19|track|@TraitBins|@TN1|@TN2|RandomizationManagerStat(@rawStat,globalSource=u
 @binning=__chrArms__|*
 @rawStat=rawStatistic=ThreeTrackT2inT1vsT3inT1KernelVersionStat
 @assump=assumptions=%s
-@randParams=randomSeed=Random,tail=more,@assump
+@randParams=randomSeed=Random,tails=more,@assump
 @mcParams=%s
 @conv=tf1=TrivialFormatConverter,tf2=TrivialFormatConverter
 @kernelParams=kernelType=%s%s%s

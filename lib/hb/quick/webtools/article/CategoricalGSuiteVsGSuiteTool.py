@@ -678,8 +678,7 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
         analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
         analysisSpec.addParameter('rawStatistic', PairedTSStat.__name__)
         analysisSpec.addParameter('pairedTsRawStatistic', ObservedVsExpectedStat.__name__)
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tails', 'right-tail')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('runLocalAnalysis', 'No')
         return analysisSpec
-

@@ -28,7 +28,7 @@ class PointsInTracksStat:
             analysisSpec.addParameter('rawStatistic', 'MultitrackRawSingleBinV2Stat')
 #        analysisSpec.addParameter('pairwiseStatistic', choices.stat)
         analysisSpec.addParameter('summaryFunc', choices.summaryFunc)
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tails', 'right-tail')
         analysisSpec.addParameter('localBinSize', choices.binSize)
         analysisSpec.addParameter('question', choices.question)
         analysisBins = GlobalBinSource(choices.genome)
@@ -49,7 +49,7 @@ class PointsInTracksStat:
 #        analysisSpec.addParameter('rawStatistic', 'SummarizedInteractionWithOtherTracksStat')
 #        analysisSpec.addParameter('pairwiseStatistic', choices.stat)
 #        analysisSpec.addParameter('summaryFunc', choices.summaryFunc)
-#        analysisSpec.addParameter('tail', 'right-tail')
+#        analysisSpec.addParameter('tails', 'right-tail')
 #        analysisBins = GlobalBinSource(choices.genome)
 #        gsuite = getGSuiteFromGalaxyTN(choices.tracks)
 #

@@ -13,14 +13,14 @@ class SimpleFunctionCorrelationPvalStat(MagicStatFactory):
 #    pass
             
 class SimpleFunctionCorrelationPvalStatUnsplittable(Statistic):    
-    def __init__(self, region, track, track2, method='pearson', tail='different', **kwArgs):
+    def __init__(self, region, track, track2, method='pearson', tails='different', **kwArgs):
         assert method in ['pearson','spearman','kendall']
-        assert tail in ['more', 'less', 'different']
+        assert tails in ['more', 'less', 'different']
         tailMapping = {'more': "greater", 'less': "less", 'different': "two.sided"}
         
         self._method = method
-        self._rTail = tailMapping[tail]
-        Statistic.__init__(self, region, track, track2, method=method, tail=tail, **kwArgs)
+        self._rTails = tailMapping[tails]
+        Statistic.__init__(self, region, track, track2, method=method, tails=tails, **kwArgs)
 
     def _checkAssumptions(self, assumptions):
         if not assumptions == 'preserveBoth':
@@ -38,9 +38,9 @@ class SimpleFunctionCorrelationPvalStatUnsplittable(Statistic):
             #rpy1
             #xAsR = r.unlist([float(num) for num in x])
             #yAsR = r.unlist([float(num) for num in y])
-            #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTail, method=self._method)
+            #corTestRes = r('cor.test')(xAsR, yAsR, alternative=self._rTails, method=self._method)
             
-            corTestRes = r('cor.test')(x, y, alternative=self._rTail, method=self._method)
+            corTestRes = r('cor.test')(x, y, alternative=self._rTails, method=self._method)
             pval = corTestRes.rx2(3) #should be rx("p.value")
             testStat = corTestRes.rx2(1) #should be rx("statistic")
             
