@@ -58,7 +58,9 @@ class TsTreeWriterVisitor(TrackStructureVisitor):
         from gold.track.RandomizedTrack import OrigTrackWrapper
         from gold.track.RandomizedTrack import RandomizedTrack
 
-        if any(isinstance(track, cls) for cls in [OrigTrackWrapper, RandomizedTrack]):
+        if track is None:
+            return 'None'
+        elif any(isinstance(track, cls) for cls in [OrigTrackWrapper, RandomizedTrack]):
             return '{}({})'.format(getClassName(track), self._formatTrack(track._origTrack))
         else:
             return '{} [{}]'.format(':'.join(track.trackName), track.trackTitle)
