@@ -5,9 +5,7 @@ from gold.application.LogSetup import SIGNATURE_DEVIANCE_LOGGER, logMessageOnce
 from functools import partial
 
 NO_CHECK = False
-from config.Config import IS_EXPERIMENTAL_INSTALLATION
-RAISE_DEVIANCES = IS_EXPERIMENTAL_INSTALLATION
-RAISE_DEVIANCES = True #TODO: remove after handling IS_EXPERIMENTAL_INSTALLATION
+from config.Config import DebugConfig
 #def takes_strict():
 #    pass
 
@@ -29,7 +27,7 @@ def takes(*args, **kwargs):
     for i, arg in enumerate(args):
         checker = Checker.create(arg)
         if checker is None:
-            if RAISE_DEVIANCES:
+            if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
                 raise ShouldNotOccurError("@takes decorator got parameter %d of unsupported "
                             "type %s" % (i + 1, type_name(arg)))
             else:
@@ -41,7 +39,7 @@ def takes(*args, **kwargs):
     for kwname, kwarg in kwargs.iteritems():
         checker = Checker.create(kwarg)
         if checker is None:
-            if RAISE_DEVIANCES:
+            if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
                 raise ShouldNotOccurError("@takes decorator got parameter %s of unsupported "
                             "type %s" % (kwname, type_name(kwarg)))
             else:
@@ -72,7 +70,7 @@ def takes(*args, **kwargs):
 
                 for i, (arg, checker) in enumerate(zip(args, checkers)):
                     if not checker.check(arg):
-                        if RAISE_DEVIANCES:
+                        if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
                             raise InputParameterError("%s() got invalid parameter "
                                                       "%d of type %s" %
                                                       (method.__name__, i + 1,
@@ -86,7 +84,7 @@ def takes(*args, **kwargs):
 
                 for kwname, checker in kwcheckers.iteritems():
                     if not checker.check(kwargs.get(kwname, None)):
-                        if RAISE_DEVIANCES:
+                        if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
                             raise InputParameterError("%s() got invalid parameter "
                                                   "%s of type %s" %
                                                   (method.__name__, kwname,
@@ -111,7 +109,7 @@ def returns(sometype):
 
     checker = Checker.create(sometype)
     if checker is None:
-        if RAISE_DEVIANCES:
+        if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
             raise ShouldNotOccurError("@returns decorator got parameter of unsupported "
                         "type %s" % type_name(sometype))
         else:
@@ -132,7 +130,7 @@ def returns(sometype):
                 result = method(*args, **kwargs)
                 
                 if not checker.check(result):
-                    if RAISE_DEVIANCES:
+                    if DebugConfig.RAISE_SIGNATURE_DEVIANCY:
                         raise ReturnValueError("%s() has returned an invalid "
                                           "value of type %s" %
                                           (method.__name__, type_name(result)))

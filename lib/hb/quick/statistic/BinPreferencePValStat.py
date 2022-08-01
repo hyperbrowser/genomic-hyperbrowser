@@ -41,7 +41,7 @@ class BinPreferencePValStatUnsplittable(Statistic):
         #elif globalSource == 'ensembl':
         #    self._globalSource = GenomeInfo.getStdGeneRegs(region.genome)
         #elif globalSource == 'userbins':
-        #    from gold.application.StatRunner import StatJob
+        #    from quick.deprecated.StatRunner import StatJob
         #    assert StatJob.USER_BIN_SOURCE is not None
         #    self._globalSource = StatJob.USER_BIN_SOURCE
         #    #self._globalSource = kwArgs['userBins']
@@ -77,4 +77,3 @@ class BinPreferencePValStatUnsplittable(Statistic):
         self._pointsGloballyStat = self._addChild(CountPointStat(self._globalSource , self._track))
         self._binSizeStat = self._addChild( BinSizeStat(self._region, self._track))
         self._globalSizeStat = self._addChild( BinSizeStat(self._globalSource, self._track))
-

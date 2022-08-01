@@ -101,7 +101,7 @@ class CalculateWeekdayProfits(GeneralGuiTool):
         #    binSpec = ExternalTrackManager.extractFnFromGalaxyTN(choices[4].split(':'))
         #numBins = open(binSpec).read().count('\n')
         #if numBins>330000:
-        #    gold.application.StatRunner.MAX_NUM_USER_BINS = numBins
+        #    quick.deprecated.StatRunner.MAX_NUM_USER_BINS = numBins
         #    
         #
         #percent = float(choices[5]) if float(choices[5])<=1.0 else float(choices[5])/100.0

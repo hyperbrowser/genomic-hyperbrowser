@@ -127,7 +127,7 @@ class DebugAnalysisListTool(GeneralGuiTool, DebugMixin):
         cls._setDebugModeIfSelected(mockChoices)
         
         analysisDef = choices[2].replace(os.linesep,'')
-        #from gold.application.StatRunner import AnalysisDefJob
+        #from quick.deprecated.StatRunner import AnalysisDefJob
 
         # print 'Preparing arguments'
         genome = choices[3]

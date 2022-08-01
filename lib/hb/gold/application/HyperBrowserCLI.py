@@ -56,7 +56,7 @@ def integrateHashBasedTrackFromFile(inFn, genome, username=''):
 @sdl.returns(list)
 def getSubTrackLeafTerms(genome, parentTrack, excludeSelfIfValid=True, username=''):
     from quick.application.GalaxyInterface import GalaxyInterface
-    subTrackTriples = GalaxyInterface.getSubTrackNames(genome, parentTrack, deep=False, username=username)[0]
+    subTrackTriples = GalaxyInterface.getSubTrackNames(genome, parentTrack, deep=False, username=username)
     filteredSubTrackLeaves = [x[0] for x in subTrackTriples if x not in [[],None] and not (excludeSelfIfValid and x[0]=='-- All subtypes --')]
     return filteredSubTrackLeaves
 

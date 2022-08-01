@@ -695,10 +695,11 @@ def generatePilotPageOneParagraphs(gSuite, galaxyFn, regSpec='*', binSpec='*', u
 
         commonRepeatsOverlapResults = \
             getCommonRepeatsRawAndDerivedOverlapData(gSuite, analysisBins=userBin)
-        avgRepeatsOverlap, repeatOverlapTableLink, minRepeatsOverlap, maxRepeatsOverlap, \
-        avgRepeatsEnrichment, repeatEnrichmentTableLink, minRepeatsEnrihment, maxRepeatsEnrichment\
-        = getOverlapAndEnrichmentValuesFromResultsDict(
-            commonRepeatsOverlapResults, 'Overlap with repeats', 'Enrichment in repeats', galaxyFn)
+        (avgRepeatsOverlap, repeatOverlapTableLink, minRepeatsOverlap, maxRepeatsOverlap,
+         avgRepeatsEnrichment, repeatEnrichmentTableLink, minRepeatsEnrichment, maxRepeatsEnrichment) = \
+            getOverlapAndEnrichmentValuesFromResultsDict(
+                commonRepeatsOverlapResults, 'Overlap with repeats', 'Enrichment in repeats', galaxyFn
+            )
 
         allRepeatsOverlapResultsDict = getAllRepeatsProportionOverlapData(
             gSuite, analysisBins=userBin, username=username)
@@ -708,19 +709,18 @@ def generatePilotPageOneParagraphs(gSuite, galaxyFn, regSpec='*', binSpec='*', u
             allRepeatsOverlapResultsDict, plotType='columnCharts')
 
         vals = (
-                toPercentageValue(avgRepeatsOverlap),
-                repeatOverlapTableLink,
-                toPercentageValue(minRepeatsOverlap),
-                toPercentageValue(maxRepeatsOverlap),
-                avgRepeatsEnrichment,
-                repeatEnrichmentTableLink,
-                minRepeatsEnrihment,
-                maxRepeatsEnrichment,
-                allRepeatsOverlapTableLink
-                )
+            toPercentageValue(avgRepeatsOverlap),
+            repeatOverlapTableLink,
+            toPercentageValue(minRepeatsOverlap),
+            toPercentageValue(maxRepeatsOverlap),
+            avgRepeatsEnrichment,
+            repeatEnrichmentTableLink,
+            minRepeatsEnrichment,
+            maxRepeatsEnrichment,
+            allRepeatsOverlapTableLink
+        )
 
         vals = tuple([strWithNatLangFormatting(x) for x in vals])
-
 
         repeatsParagraph = paragraph1Text % vals
         paragraphs.append(repeatsParagraph)
@@ -937,7 +937,7 @@ def getAllRepeatsProportionOverlapData(gSuite, analysisBins=None, username=''):
 
     subtracks = GalaxyInterface.getSubTrackNames(
         gSuite.genome, ['Sequence', 'Repeating elements'],
-        deep=False, username=username)[0]
+        deep=False, username=username)
     subtrackList = []
 
     for subtrack in subtracks:
@@ -946,6 +946,7 @@ def getAllRepeatsProportionOverlapData(gSuite, analysisBins=None, username=''):
 
     analysisSpec = AnalysisSpec(DerivedOverlapStat)
     resultsDict = defaultdict(list)
+
     for subtrack in subtrackList:
         for track in gSuite.allTracks():
             singleResult = doAnalysis(analysisSpec, analysisBins, [Track(subtrack), Track(track.trackName)])
@@ -1311,5 +1312,3 @@ def getQueryTrackCoverageFromRawOverlapResults(results):
     assert(len(resultsList) > 0)
     singleResult = resultsList[0]
     return singleResult['Only1'] + singleResult['Both']
-
-

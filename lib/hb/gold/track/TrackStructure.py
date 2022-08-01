@@ -72,7 +72,6 @@ class TrackStructureV2(MutableMapping):
     # and its existence has to be checked with hasattr(ts,'results')
 
     TRACK_NAME_SEPARATOR = "#&&#"
-    # REF_KEY = 'case-control'
     QUERY_KEY = 'query'
     REF_KEY = 'reference'
 

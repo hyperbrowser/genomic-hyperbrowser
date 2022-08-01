@@ -29,12 +29,16 @@ class RandAlgorithmMixin(object):
                 ('Select track with segments to avoid', 'excludedTrack')]
 
     @classmethod
+    def _isBasic(cls, choices):
+        return hasattr(choices, 'isBasic') and choices.isBasic
+
+    @classmethod
     def getInputBoxGroups(cls, choices=None):
         prevBoxGroups = None
         if hasattr(super(RandAlgorithmMixin, cls), 'getInputBoxGroups'):
             prevBoxGroups = super(RandAlgorithmMixin, cls).getInputBoxGroups(choices)
 
-        if cls._showRandAlgorithmChoices(choices) and not choices.isBasic:
+        if cls._showRandAlgorithmChoices(choices) and not cls._isBasic(choices):
             if not prevBoxGroups:
                 prevBoxGroups = []
             return prevBoxGroups + \
@@ -55,13 +59,13 @@ class RandAlgorithmMixin(object):
     @classmethod
     def getOptionsBoxRandType(cls, prevChoices):
         if cls._showRandAlgorithmChoices(prevChoices):
-            if not prevChoices.isBasic:
+            if not cls._isBasic(prevChoices):
                 return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
 
     @classmethod
     def getOptionsBoxRandAlg(cls, prevChoices):
         if cls._showRandAlgorithmChoices(prevChoices):
-            if not prevChoices.isBasic:
+            if not cls._isBasic(prevChoices):
                 for definedRandType in TsRandAlgReg.getCategories():
                     if prevChoices.randType == definedRandType:
                         return [cls.SELECT_CHOICE_STR] + \
@@ -89,7 +93,7 @@ class RandAlgorithmMixin(object):
 
     @classmethod
     def createTrackViewProvider(cls, choices, origTs, binSource, genome):
-        if choices.isBasic:
+        if cls._isBasic(choices):
             return createDefaultTrackViewProvider()
 
         reqArgs = TsRandAlgReg.getRequiredArgsForAlgorithm(choices.randType, choices.randAlg)
@@ -117,11 +121,12 @@ class RandAlgorithmMixin(object):
 
     @classmethod
     def validateRandAlgorithmSelection(cls, choices):
-        if cls._showExcludedTrackSelection(choices):
+        if cls._showRandAlgorithmChoices(choices):
             for requiredParameter in (choices.randType, choices.randAlg):
                 if requiredParameter in [None, '', '--- Select ---']:
                     return 'Please select all randomization parameters'
 
+        if cls._showExcludedTrackSelection(choices):
             if choices.selectExcludedTrack == cls.YES:
                 if not choices.excludedTrack:
                     return 'Please select a track with the regions to be excluded in the ' \

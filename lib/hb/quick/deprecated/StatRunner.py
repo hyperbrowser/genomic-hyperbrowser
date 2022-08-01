@@ -89,7 +89,7 @@ class StatJob(object):
                                        numSamplesPerIteration=nspi)
         self._progress.addCount(0)
 
-    def run(self, reset=True, printProgress=PRINT_PROGRESS):
+    def run(self, reset=True, printProgress=PRINT_PROGRESS, flushMemoized=True):
         if reset:
             MagicStatFactory.resetMemoDict()
 
@@ -118,36 +118,40 @@ class StatJob(object):
 
         startLocal = time.time()
 
-        while True:
-            stats = self._doLocalAnalysis(results, stats=[])
-            # stats[0] is used to call class method
-            if self._kwArgs.get('minimal') == True:
-                break
+        try:
+            while True:
+                stats = self._doLocalAnalysis(results, stats=[])
+                # stats[0] is used to call class method
+                if self._kwArgs.get('minimal') == True:
+                    break
 
-            numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats) > 0 else 0
-            self._progress.addFullLocalAnalysisIteration(numNotDetermined)
-            if len(stats) == 0 or numNotDetermined == 0:
-                break
-            # print 'Continuing McFdr'
+                numNotDetermined = stats[0].validateAndPossiblyResetLocalResults(stats) if len(stats) > 0 else 0
+                self._progress.addFullLocalAnalysisIteration(numNotDetermined)
+                if len(stats) == 0 or numNotDetermined == 0:
+                    break
+                # print 'Continuing McFdr'
 
-        localAnalysisTime = time.time() - startLocal
-        if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']):
-            print "local analysis took %f seconds" % localAnalysisTime
+            localAnalysisTime = time.time() - startLocal
+            if USE_PARALLEL and not ('minimal' in self._kwArgs and self._kwArgs['minimal']):
+                print "local analysis took %f seconds" % localAnalysisTime
 
-        # startGlobal = time.time()
-        # import pdb
-        # pdb.set_trace()
-        self._progress.globalAnalysisStarted()
-        self._progress.printMessage('\nPerforming global analysis...')
-        while True:
-            stat = self._doGlobalAnalysis(results, stats)
-            if stat is None:
-                break
-            nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)
-            self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
+            # startGlobal = time.time()
+            # import pdb
+            # pdb.set_trace()
+            self._progress.globalAnalysisStarted()
+            self._progress.printMessage('\nPerforming global analysis...')
+            while True:
+                stat = self._doGlobalAnalysis(results, stats)
+                if stat is None:
+                    break
+                nonDetermined, mValue, mThreshold, pValue, pThreshold = stat.validateAndPossiblyResetGlobalResult(stat)
+                self._progress.addGlobalAnalysisIteration(mValue, mThreshold, pValue, pThreshold)
 
-            if nonDetermined == 0:
-                break
+                if nonDetermined == 0:
+                    break
+        finally:
+            if flushMemoized:
+                ResultsMemoizer.flushStoredResults()
 
         self._progress.globalAnalysisEnded()
         # print "<br>global analysis took %f seconds" % (time.time() - startGlobal)
@@ -160,7 +164,8 @@ class StatJob(object):
             results[region] = res
             if not self._avoidUbStatMemoization():
                 stats.append(stat)
-            # Currently, just to ensure that rawdata is not memoized for all userbins..:
+            # Currently, just to ensure that rawdata is not memoized for all userbins..
+            # TODO: Could this be moved to inside Statistic?
             stat.afterComputeCleanup()
 
             self._progress.addCount()
@@ -193,7 +198,7 @@ class StatJob(object):
             res = {} if res is None else {self.GENERAL_RESDICTKEY: res}
             # res = {self.GENERAL_RESDICTKEY : res}
 
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
         return res, stat
 
     def getNumUserBins(self):
@@ -233,7 +238,7 @@ class AssemblyGapJob(StatJob):
 
     def run(self, printProgress=PRINT_PROGRESS):
         res = StatJob.run(self, printProgress=printProgress)
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
         return res
 
 
@@ -244,11 +249,10 @@ class AssemblyGapJob(StatJob):
 
 
 class AnalysisDefJob(StatJob):
-    '''
+    """
     @takes(AnalysisDefJob, str, list, list, UserBinSource)
     @returns Results
-    '''
-
+    """
     def __init__(self, analysisDef, trackName1, trackName2, userBinSource,
                  genome=None, galaxyFn=None, *args, **kwArgs):
         from quick.deprecated.Analysis import Analysis
@@ -264,17 +268,13 @@ class AnalysisDefJob(StatJob):
         self._galaxyFn = galaxyFn
 
         self._analysis = Analysis(analysisDef, genome, trackName1, trackName2)
-        self._setRandomSeedIfNeeded()
 
         track, track2 = self._analysis.getTracks()
-        StatJob.__init__(self, userBinSource, track, track2,
-                         self._analysis.getStat(), *args, **kwArgs)
+        statistic = self._analysis.getStat()
+        self._analysis.initRandomUtilAndUpdateSeedIfNeeded()
 
-    def _setRandomSeedIfNeeded(self):
-        from gold.util.RandomUtil import getRandomSeed
-        randSeedChoice = self._analysis.getChoice('randomSeed')
-        if randSeedChoice == 'Random':
-            self._analysis.changeChoices('randomSeed', [(str(getRandomSeed()),) * 2])
+        StatJob.__init__(self, userBinSource, track, track2,
+                         statistic, *args, **kwArgs)
 
     def run(self, printProgress=PRINT_PROGRESS):
         '''
@@ -295,10 +295,9 @@ class AnalysisDefJob(StatJob):
         else:
             res = StatJob.run(self, printProgress=printProgress)
 
-        res.setAnalysis(self._analysis)
-        res.setAnalysisText(str(self._analysis))
+        res.updateFromAnalysis(self._analysis)
 
-        ResultsMemoizer.flushStoredResults()
+        # ResultsMemoizer.flushStoredResults()
 
         if DebugConfig.USE_PROFILING:
             profiler.printStats()
@@ -403,7 +402,7 @@ class SequentialMcProgress(Progress):
         self._numSamplesPerIteration = int(
             numSamplesPerIteration) if numSamplesPerIteration is not None else 100  # RandomizationManagerStatUnsplittable.NUM_SAMPLES_PER_CHUNK
         self._description += '\nComputing p-values by %s, printing one dot per %i samples across bins' % (
-        self.SCHEME_NAME, self._numSamplesPerIteration)
+            self.SCHEME_NAME, self._numSamplesPerIteration)
 
     def addFullLocalAnalysisIteration(self, numBinsNotDetermined):
         self._numIterations += 1
@@ -422,7 +421,7 @@ class SequentialMcProgress(Progress):
                 self._numIterations * self._numSamplesPerIteration, mValue, mThreshold, pValue, pThreshold))
 
     def addCount(self, newCounts=1):
-        if self._description != None:
+        if self._description is not None:
             self.printMessage(self._description)
             self._description = None
 

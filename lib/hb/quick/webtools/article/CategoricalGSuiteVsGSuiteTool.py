@@ -79,16 +79,17 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select first GSuite', 'firstGSuite'),
-                ('Select category for first GSuite', 'firstGSuiteCat'),
-                ('Select second GSuite', 'secondGSuite')] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
-                [('Select category for second GSuite', 'secondGSuiteCat'),
-                 ('Select analysis', 'analysis')] + \
-                cls.getInputBoxNamesForRandAlgSelection() + \
-                [('Select MCFDR sampling depth', 'mcfdrDepth')] + \
-                cls.getInputBoxNamesForUserBinSelection() + \
-                cls.getInputBoxNamesForDebug()
+        return \
+            [('Select first GSuite', 'firstGSuite'),
+             ('Select category for first GSuite', 'firstGSuiteCat'),
+             ('Select second GSuite', 'secondGSuite'),
+             ('Select category for second GSuite', 'secondGSuiteCat')] + \
+            cls.getInputBoxNamesForGenomeSelection() + \
+            [('Select analysis', 'analysis')] + \
+            cls.getInputBoxNamesForRandAlgSelection() + \
+            [('Select MCFDR sampling depth', 'mcfdrDepth')] + \
+            cls.getInputBoxNamesForUserBinSelection() + \
+            cls.getInputBoxNamesForDebug()
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -342,8 +343,8 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
             transformedResultsDict = OrderedDefaultDict(list)
             data = []
             for cat, res in result.iteritems():
-                transformedResultsDict[cat].append(res.result)
-                data.append(res.result)
+                transformedResultsDict[cat].append(res.getResult())
+                data.append(res.getResult())
             addTableWithTabularAndGsuiteImportButtons(
                 core, choices, galaxyFn, choices.analysis,
                 tableDict=transformedResultsDict,
@@ -473,6 +474,32 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
         return ts
 
     @classmethod
+    def validateGSuiteSelection(cls, gsuiteChoice, which):
+        errorString = cls._checkGSuiteFile(gsuiteChoice)
+        if not errorString:
+            gSuite = getGSuiteFromGalaxyTN(gsuiteChoice)
+            errorString = GeneralGuiTool._checkGSuiteRequirements \
+                (gSuite,
+                 cls.GSUITE_ALLOWED_FILE_FORMATS,
+                 cls.GSUITE_ALLOWED_LOCATIONS,
+                 cls.GSUITE_ALLOWED_TRACK_TYPES,
+                 cls.GSUITE_DISALLOWED_GENOMES)
+        if errorString:
+            return 'Error in {} GSuite file: '.format(which) + errorString
+
+    @classmethod
+    def validateGSuiteCategories(cls, choices):
+        import quick.gsuite.GuiBasedTsFactory as factory
+        firstTs = factory.getFlatTracksTS(choices.genome, choices.firstGSuite)
+        secondTs = factory.getFlatTracksTS(choices.genome, choices.secondGSuite)
+        ts = cls._prepareTs(firstTs, secondTs,
+                            choices.firstGSuiteCat, choices.secondGSuiteCat)
+        if len(ts) == 0:
+            return 'There are no overlapping category values between the GSuite ' \
+                   'files for the categories chosen for the respective GSuites. Please ' \
+                   'reconsider your choices.'
+
+    @classmethod
     def validateAndReturnErrors(cls, choices):
         """
         Should validate the selected input parameters. If the parameters are
@@ -484,11 +511,11 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
 
         Optional method. Default return value if method is not defined: None
         """
-        errorString = cls._checkGSuiteFile(choices.firstGSuite)
+        errorString = cls.validateGSuiteSelection(choices.firstGSuite, 'first')
         if errorString:
             return errorString
 
-        errorString = cls._checkGSuiteFile(choices.secondGSuite)
+        errorString = cls.validateGSuiteSelection(choices.secondGSuite, 'second')
         if errorString:
             return errorString
 
@@ -501,6 +528,10 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
             return errorString
 
         errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateGSuiteCategories(choices)
         if errorString:
             return errorString
 
@@ -682,4 +713,3 @@ class CategoricalGSuiteVsGSuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('runLocalAnalysis', 'No')
         return analysisSpec
-

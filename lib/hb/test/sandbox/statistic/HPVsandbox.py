@@ -4,7 +4,7 @@ from quick.application.AutoBinner import AutoBinner
 from gold.track.Track import Track
 from gold.track.GenomeRegion import GenomeRegion
 from config.Config import DEFAULT_GENOME
-from gold.application.StatRunner import StatRunner
+from quick.deprecated.StatRunner import StatRunner
 from gold.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import parseRegSpec
 import profile

@@ -195,7 +195,7 @@ def scoreMotifOnFastaAsProductOfBestScores(motif, fastaFn, verbose=False):
 
 def mcPvalFromMotifAndFastas(motifFn, observedFasta, randomFastaPath, scoreFunc):
     countMats = parseTransfacMatrixFile(motifFn)
-    from gold.application.StatRunner import Progress
+    from quick.deprecated.StatRunner import Progress
     progress = Progress(len(countMats))        
     
     pvals = {}
