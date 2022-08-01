@@ -165,9 +165,9 @@ class AnalyzeMultiTrackRelations(GeneralGuiTool, MultiTrackMixin, UserBinMixin):
             randOption = cls._getRandomizationAnalysisOption(choices)
             numResamplingsOption = '[numResamplings=%s]' % choices.NumResamplings
             #assert len(trackNames) == 3, trackNames #currently, due to ThreeTrackBpsCoveredByAllTracksStat
-            #analysisDef = 'dummy [tail=different] [rawStatistic=ThreeTrackBpsCoveredByAllTracksStat] %s %s -> RandomizationManagerStat' % (randOption, numResamplingsOption)
+            #analysisDef = 'dummy [tails=different] [rawStatistic=ThreeTrackBpsCoveredByAllTracksStat] %s %s -> RandomizationManagerStat' % (randOption, numResamplingsOption)
             resDictKey = '1'*(len(trackNames))
-            analysisDef = 'dummy [tail=different] [rawStatistic=SingleValExtractorStat] [childClass=ThreeWayBpOverlapStat] [resultKey=%s] %s %s -> RandomizationManagerStat' % (resDictKey, randOption, numResamplingsOption)
+            analysisDef = 'dummy [tails=different] [rawStatistic=SingleValExtractorStat] [childClass=ThreeWayBpOverlapStat] [resultKey=%s] %s %s -> RandomizationManagerStat' % (resDictKey, randOption, numResamplingsOption)
             print analysisDef
         elif choices.Analysis == 'Coverage depth of multiple tracks along the genome':
             analysisDef = 'dummy -> ThreeWayCoverageDepthStat'

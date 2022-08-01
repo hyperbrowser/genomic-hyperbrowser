@@ -14,12 +14,12 @@ class PointCountInSegsPvalStat(MagicStatFactory):
 #    pass
             
 class PointCountInSegsPvalStatUnsplittable(Statistic):
-    def __init__(self, region, track, track2, assumptions='poissonPoints', tail='different', **kwArgs):
-        assert( tail in ['less','more','different'])
+    def __init__(self, region, track, track2, assumptions='poissonPoints', tails='different', **kwArgs):
+        assert(tails in ['less', 'more', 'different'])
         assert assumptions=='poissonPoints'
         
-        self._tail = tail
-        Statistic.__init__(self, region, track, track2, assumptions=assumptions, tail=tail, **kwArgs)
+        self._tails = tails
+        Statistic.__init__(self, region, track, track2, assumptions=assumptions, tails=tails, **kwArgs)
     
     def _compute(self):
         from proto.RSetup import r
@@ -33,11 +33,11 @@ class PointCountInSegsPvalStatUnsplittable(Statistic):
         se = math.sqrt(1.0*(prob)*(1-prob)/size)
         if size < 1 or prob in [0,1]:
             return None
-        if self._tail=='less':
+        if self._tails== 'less':
             pval = r.pbinom(x,size,prob)
-        elif self._tail=='more':
+        elif self._tails== 'more':
             pval = 1 - r.pbinom(x-1,size,prob)
-        elif self._tail=='different':
+        elif self._tails== 'different':
             pval = min(1, 2*min( r.pbinom(x,size,prob), 1 - r.pbinom(x-1,size,prob)))
             
         #return {'P-value':pval, 'SegCover':prob, 'PointsInside':x, 'PointsTotal':size}

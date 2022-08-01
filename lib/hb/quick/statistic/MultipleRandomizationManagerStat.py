@@ -20,7 +20,7 @@ class MultipleRandomizationManagerStat(MagicStatFactory):
 
 class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
 
-    def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, maxSamples, **kwArgs):
+    def _init(self, evaluatorFunc, mcSamplerClass, tails, rawStatistic, maxSamples, **kwArgs):
         if isinstance(evaluatorFunc, basestring):
             evaluatorFunc = globals()[str(evaluatorFunc)]
         self._evaluatorFunc = evaluatorFunc
@@ -29,7 +29,7 @@ class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
             mcSamplerClass = globals()[mcSamplerClass]
         self._mcSamplerClass = mcSamplerClass
 
-        self._tail = tail
+        self._tails = tails
         self._rawStatistic = self.getRawStatisticClass(rawStatistic)  # just to extract name
         if kwArgs.get('minimal') == True:
             self._maxSamples = 1
@@ -53,7 +53,7 @@ class MultipleRandomizationManagerStatUnsplittable(StatisticV2):
             hypothesisRes = TSResult(hypothesisTS,
                                      self._evaluatorFunc(
                                          currentMcSampler.getAllResults(),
-                                         self._tail,
+                                         self._tails,
                                          self._rawStatistic.__name__))
 
             tsRes[hypothesisKey] = hypothesisRes

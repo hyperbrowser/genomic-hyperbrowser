@@ -216,7 +216,7 @@ class MultiTrackCountOverrepresentationBins(GeneralGuiTool, GenomeMixin,
         analysisSpec.addParameter('pairwiseStatistic', 'ProportionCountStat')
         analysisSpec.addParameter('summaryFunc', choices.summaryFunc)
         analysisSpec.addParameter('evaluatorFunc','evaluatePvalueAndNullDistribution')
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tails', 'right-tail')
         analysisSpec.addParameter('assumptions', 'RandomGenomeLocationTrack')
         analysisSpec.addParameter('maxSamples', 10)
 

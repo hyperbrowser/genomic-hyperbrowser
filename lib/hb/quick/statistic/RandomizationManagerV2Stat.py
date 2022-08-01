@@ -80,7 +80,7 @@ class ScrapMetalRandomizationManagerStatUnsplittable(Statistic):
 
     def __init__(self, region, track, track2, rawStatistic, randTrackClass=None, assumptions=None, tails=None, numResamplings=2000, randomSeed=None, **kwArgs):
         #print 'TEMP RM:',kwArgs
-        if tails==None:
+        if tails is None:
             if 'tail' in kwArgs:
                 tailTranslator = {'more':'right-tail', 'less':'left-tail', 'different':'two-tail'}
                 tails = tailTranslator[kwArgs['tail']]

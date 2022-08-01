@@ -17,10 +17,10 @@ class BpOverlapPValStatUnsplittable(Statistic):
     MIN_SUCCESSES_FOR_NORM_APPROXIMATION = 5
     MAX_SUCCESSES_FOR_BINOMIAL_RUNTIME = 100
 
-    def __init__(self, region, track, track2, tail='more', **kwArgs):
-        assert( tail in ['less','more','different'])
-        self._tail = tail
-        Statistic.__init__(self, region, track, track2, tail=tail, **kwArgs)
+    def __init__(self, region, track, track2, tails='more', **kwArgs):
+        assert(tails in ['less', 'more', 'different'])
+        self._tails = tails
+        Statistic.__init__(self, region, track, track2, tails=tails, **kwArgs)
 
     def _checkAssumptions(self, assumptions):
         if not assumptions == 'bothIndependentBps':
@@ -40,17 +40,17 @@ class BpOverlapPValStatUnsplittable(Statistic):
             mean = size * prob
             sd = (size*prob*(1-prob))**0.5
             lessPval = r.pnorm(x,mean,sd)
-            if self._tail=='less':
+            if self._tails == 'less':
                 pval = lessPval                
-            elif self._tail=='more':
+            elif self._tails == 'more':
                 pval = 1 - lessPval
-            elif self._tail=='different':
+            elif self._tails == 'different':
                 pval = min(1,2*min( lessPval, 1-lessPval))
         elif x > self.MAX_SUCCESSES_FOR_BINOMIAL_RUNTIME:
             return None
             #raise NotImplementedError()
         else:
-            pval = BinomialTools._computeBinomialPval(x, size, prob, self._tail)
+            pval = BinomialTools._computeBinomialPval(x, size, prob, self._tails)
         return OrderedDict([('P-value', pval), ('Test statistic: ObsBpOverlap', x), ('E(Test statistic): ExpBpOverlap', prob*size), \
                             ('DiffFromMean', x-prob*size), ('NumBpInBin', size), \
                             ('track1Coverage', (1.0*(only1+both)/size)), ('track2Coverage', (1.0*(only2+both)/size))])
@@ -60,4 +60,3 @@ class BpOverlapPValStatUnsplittable(Statistic):
         self._addChild( RawOverlapStat(self._region, self._track, self._track2) )
         self._addChild( FormatSpecStat(self._region, self._track, TrackFormatReq(dense=False, interval=True)) )
         self._addChild( FormatSpecStat(self._region, self._track2, TrackFormatReq(dense=False, interval=True)) )
-

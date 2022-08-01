@@ -285,7 +285,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
                     analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
                     analysisSpec.addParameter('rawStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
                     analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName]) #needed for call of non randomized stat for assertion
-                    analysisSpec.addParameter('tail', 'more')
+                    analysisSpec.addParameter('tails', 'more')
                     analysisSpec.addParameter('trackTitles', trackTitles)#that need to be string
 
                     #i added that one later
@@ -487,7 +487,7 @@ class AllTfsOfRegions(GeneralGuiTool, UserBinMixin, DebugMixin):
             analysisSpec.addParameter('assumptions', 'PermutedSegsAndIntersegsTrack_')
             analysisSpec.addParameter('rawStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName])
             analysisSpec.addParameter('pairwiseStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[similarityStatClassName]) #needed for call of non randomized stat for assertion
-            analysisSpec.addParameter('tail', 'more')
+            analysisSpec.addParameter('tails', 'more')
             analysisSpec.addParameter('trackTitles', trackTitles)#that need to be string
             analysisSpec.addParameter('queryTracksNum', str(len(tracks)))
 

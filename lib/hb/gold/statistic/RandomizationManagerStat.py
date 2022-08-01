@@ -214,7 +214,7 @@ class RandomizationManagerStatUnsplittable(Statistic):
         return [(1 if not statDetermined else 0), mVal, M_THRESHOLD, pval, GLOBAL_PVAL_THRESHOLD]
         
     def __init__(self, region, track, track2, rawStatistic, randTrackClass=None, assumptions=None, tails=None, numResamplings=2000, randomSeed=None, **kwArgs):
-        if tails==None:
+        if tails is None:
             if 'tail' in kwArgs:
                 tailTranslator = {'more':'right-tail', 'less':'left-tail', 'different':'two-tail'}
                 tails = tailTranslator[kwArgs['tail']]

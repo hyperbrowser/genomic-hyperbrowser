@@ -1634,13 +1634,13 @@ class GalaxyInterface(GalaxyInterfaceTools, GalaxyInterfaceAux):
     #@staticmethod
     #def _syncH1WithTail(analysisDef):
     #    optionKeys = analysisDef.getAllOptionsAsKeys()
-    #    if 'H1' in optionKeys and 'tail' in optionKeys:
+    #    if 'H1' in optionKeys and 'tails' in optionKeys:
     #        try:
-    #            tailChoice = analysisDef.getChoice('tail')
+    #            tailChoice = analysisDef.getChoice('tails')
     #            analysisDef.setChoice('H1', tailChoice)
     #
     #        except (ShouldNotOccurError), e:
-    #            logException(e, logging.WARNING,'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)' % self.getChoice('tail') )
+    #            logException(e, logging.WARNING,'Could not find H1, probably mismatch between tails and H1 in analysisDef (tails choice: %s)' % self.getChoice('tails') )
     #        except Exception, e:
     #            logException(e, logging.WARNING,'Could not find H1')
     #
