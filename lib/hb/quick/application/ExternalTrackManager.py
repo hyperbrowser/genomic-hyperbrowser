@@ -10,6 +10,7 @@ from gold.track.TrackFormat import TrackFormat
 from gold.util.CommonFunctions import createDirPath, getClassName
 from gold.util.CustomExceptions import ShouldNotOccurError, InvalidFormatError
 from gold.application.DataTypes import getSupportedFileSuffixes
+from quick.util.CommonFunctions import getFileSuffix
 from quick.util.GenomeInfo import GenomeInfo
 from quick.application.SignatureDevianceLogging import takes,returns
 import proto.CommonFunctions as protoFunctions
@@ -293,3 +294,31 @@ class ExternalTrackManager(object):
         if fileEnding is None:
             fileEnding = fn.split('.')[-1]
         return ['galaxy', fileEnding, fn, name]
+
+    @classmethod
+    def createGalaxyTnFromExternalTn(cls, externalTN):
+        # Hack to support ConvertPrimaryGsuiteToLocalPathsTool
+
+        from config.Config import EXT_RESULTS_PATH
+        assert externalTN[0] == 'external'
+        assert len(externalTN) == 5
+
+        resultsPathDirs = EXT_RESULTS_PATH.rstrip(os.path.sep).split(os.path.sep)
+        assert resultsPathDirs[-1] == URL_PREFIX.strip('/')
+
+        instance = externalTN[1]
+        # Hack
+        if instance == 'dev2':
+            instance = 'developer'
+        resultsPathDirs[-1] = instance
+        extResultsFilesPath = os.path.sep.join(resultsPathDirs + ['files'])
+
+        galaxyFn = protoFunctions.getGalaxyFnFromAnyDatasetId(externalTN[3],
+                                                              galaxyFilePath=extResultsFilesPath)
+        filePath = protoFunctions.getGalaxyFilesFilename(galaxyFn, [externalTN[4]])
+        if not os.path.exists(filePath):
+            raise ValueError('Original track file {} does not exist'.format(filePath))
+        fileSuffix = getFileSuffix(filePath)
+        return cls.constructGalaxyTnFromSuitedFn(filePath,
+                                                 fileEnding=fileSuffix,
+                                                 name=externalTN[4])
