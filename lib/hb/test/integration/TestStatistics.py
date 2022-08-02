@@ -44,7 +44,7 @@ class TestStatistics(GalaxyIntegrationTest):
 
     def testPointPositioningPValStat(self):
         self._assertRunEqual([[('Distribution', 'Normal approximation'), ('N', 43), ('P-value', 0.016785313177222032), ('Test statistic: W12', 297.0), ('altHyp', 'ha1')], [('Distribution', 'N/A'), ('N', 0), ('P-value', None), ('Test statistic: W12', 0), ('altHyp', 'ha1')]],\
-           ["segsMany"],["segs"],'Dummy [assumptions:=independentPoints:] [tail:=ha1:] -> PointPositioningPValStat','TestGenome:chr21:10000001-12000000','1000000')
+           ["segsMany"],["segs"],'Dummy [assumptions:=independentPoints:] [tails:=ha1:] -> PointPositioningPValStat','TestGenome:chr21:10000001-12000000','1000000')
 
     #@unittest.SkipTest
     def testPointCountInSegsPvalStat(self):

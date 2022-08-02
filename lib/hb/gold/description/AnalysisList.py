@@ -228,7 +228,7 @@ VALUED_POINTS_SUMMARIZERS = 'MeanMarkStat:Mean of values/' + POINTS_SUMMARIZERS
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:P-P'] = '''
 Different frequencies?:
-    Where is the relative frequency of points of track 1 different from the relative frequency of points of track 2, [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
+    Where is the relative frequency of points of track 1 different from the relative frequency of points of track 2, [tails:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
     $GLOBAL_SOURCE$
     [withOverlaps:_Overlap handling=no:Cluster overlaps/yes:Allow overlaps]
     [H0:_=The expected fraction of points of track 1 in the bin is equal to the expected fraction of points of track 2 in the bin]
@@ -239,7 +239,7 @@ Different frequencies?:
     -> DiffRelFreqPValStat
 
 Located nearby?:
-    Are the points of track 1 [tail:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the points of track 2 than expected by chance?
+    Are the points of track 1 [tails:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the points of track 2 than expected by chance?
     [H0:_=The points of track 1 are located independently of the points of track 2]
     [H1_more:_=The points of track 1 are located far apart from the points of track 2]
     [H1_less:_=The points of track 1 are located close to the points of track 2]
@@ -257,7 +257,7 @@ Located nearby?:
 '''
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:S-F'] = '''
-Higher values inside?:Are the values of track 2 [tail:Alternative hypothesis=more:higher/less:lower/different:different] inside the segments of track 1, than what is expected by chance?
+Higher values inside?:Are the values of track 2 [tails:Alternative hypothesis=more:higher/less:lower/different:different] inside the segments of track 1, than what is expected by chance?
     [H0:_=The expected value of the function of track 2 is the same in the segments of track 1 as in the rest of the bin (or genome)]
     [H1_more:_=The expected value of the function of track 2 is higher in the segments of track 1 than in the rest of the bin (or genome)]
     [H1_less:_=The expected value of the function of track 2 is lower in the segments of track 1 than in the rest of the bin (or genome)]
@@ -276,7 +276,7 @@ Higher values inside?:Are the values of track 2 [tail:Alternative hypothesis=mor
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:P-F'] = '''
 Higher values at locations?:
-    Are the values of track 2 [tail:Alternative hypothesis=more:higher/less:lower/different:different] at the points of track 1, than what is expected by chance?
+    Are the values of track 2 [tails:Alternative hypothesis=more:higher/less:lower/different:different] at the points of track 1, than what is expected by chance?
     [H0:_=The expected value of the function of track 2 is the same at the points of track 1 as in the rest of the bin (or genome)]
     [H1_more:_=The expected value of the function of track 2 is higher at the points of track 1 than in the rest of the bin (or genome)]
     [H1_less:_=The expected value of the function of track 2 is lower at the points of track 1 than in the rest of the bin (or genome)]
@@ -293,7 +293,7 @@ Higher values at locations?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:P-S'] = '''
 Located inside?:
-    Are the points of track 1 falling inside the segments of track 2, [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
+    Are the points of track 1 falling inside the segments of track 2, [tails:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
     [H0:_=The points of track 1 are located independently of the segments of track 2 with respect to whether they fall inside or outside]
     [H1_more:_=The points of track 1 tend to fall inside the segments of track 2]
     [H1_less:_=The points of track 1 tend to fall outside the segments of track 2]
@@ -315,8 +315,8 @@ Located inside?:
     -> PointCountInSegsPvalStat, RandomizationManagerStat
 
 Located nonuniformly inside?:
-    Do the points of track 1 tend to accumulate more [tail:Alternative hypothesis=ha1:towards the borders/ha2:towards the middle/ha3:towards the upstream side/ha4:towards the downstream side/less] of the segments of track 2?
-#    [tail=less/more]
+    Do the points of track 1 tend to accumulate more [tails:Alternative hypothesis=ha1:towards the borders/ha2:towards the middle/ha3:towards the upstream side/ha4:towards the downstream side/less] of the segments of track 2?
+#    [=less/more]
     [H0:_=The points of track 1 have a uniform distribution within the segments of track 2]
     [H1_less:_=The points of track 1 tend to be positioned towards the upstream side of the segments of track 2]
     [H1_more:_=The points of track 1 tend to be positioned towards the downstream side of the segments of track 2]
@@ -340,7 +340,7 @@ Located nonuniformly inside?:
 #    -> PointPositioningPValStat,RandomizationManagerStat
 
 Located nearby?:
-    Are the points of track 1 [tail:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the segments of track 2 than expected by chance?
+    Are the points of track 1 [tails:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the segments of track 2 than expected by chance?
     [H0:_=The points of track 1 are located independently of the segments of track 2]
     [H1_less:_=The points of track 1 are located close to the segments of track 2]
     [H1_more:_=The points of track 1 are located far apart from the segments of track 2]
@@ -360,7 +360,7 @@ Located nearby?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:S-VP'] = '''
 Higher values inside segments?:
-    Do the points of track 2 that occur inside segments of track 1 have [tail:Alternative hypothesis=more:higher/less:lower/different:different] values than points occurring outside the segments of track 1?
+    Do the points of track 2 that occur inside segments of track 1 have [tails:Alternative hypothesis=more:higher/less:lower/different:different] values than points occurring outside the segments of track 1?
     [H0:_=The tendency of points of track 2 to locate inside versus outside segments of track 1, is independent of the value of the points of track 2]
     [H1_more:_=Higher valued points of track 2 are located more inside segments of track 1 than lower valued points]
     [H1_less:_=Lower valued points of track 2 are located more inside segments of track 1 than higher valued points]
@@ -375,7 +375,7 @@ Higher values inside segments?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:S-S'] = '''
 Similar segments?:
-    Are track1-segments similar (in position and length) to track2-segments, [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
+    Are track1-segments similar (in position and length) to track2-segments, [tails:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
     [rawStatistic:=SimpleSimilarSegmentStat:]
     $MCFDR$
     $RANDSEED$
@@ -393,7 +393,7 @@ Similar segments?:
     -> RandomizationManagerStat
 
 Overlap?:
-    Are the segments of track 1 overlapping the segments of track 2, [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
+    Are the segments of track 1 overlapping the segments of track 2, [tails:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
     [H0:_=The segments of track 1 are located independently of the segments of track 2 with respect to overlap]
     [H1_more:_=The segments of track 1 tend to overlap the segments of track 2]
     [H1_less:_=The segments of track 1 tend to avoid overlapping the segments of track 2]
@@ -432,7 +432,7 @@ Overlap (experimental MC V2)?:
     -> RandomizationManagerV2Stat
 
 Proportional overlap?:
-    Are the segments of track 1 overlapping the segments of track 2, [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
+    Are the segments of track 1 overlapping the segments of track 2, [tails:Alternative hypothesis=more:more/less:less/different:differently] than expected by chance?
     [H0:_=The segments of track 1 are located independently of the segments of track 2 with respect to overlap]
     [H1_more:_=The segments of track 1 tend to overlap the segments of track 2]
     [H1_less:_=The segments of track 1 tend to avoid overlapping the segments of track 2]
@@ -451,7 +451,7 @@ Proportional overlap?:
     -> RandomizationManagerStat
 
 Located nearby?:
-    Are the segments of track 1 [tail:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the segments of track 2 than expected by chance?
+    Are the segments of track 1 [tails:Alternative hypothesis=less:closer to/more:further apart from/different:either closer to or further apart from] the segments of track 2 than expected by chance?
     [H0:_=The segments of track 1 are located independently of the segments of track 2]
     [H1_less:_=The segments of track 1 are located close to the segments of track 2]
     [H1_more:_=The segments of track 1 are located far apart from the segments of track 2]
@@ -467,7 +467,7 @@ Located nearby?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:VP-VP'] = '''
 Nearby values similar?:
-    When track1-points and track2-point are nearby each other, are the values [tail:Alternative hypothesis=more:more/less:less/different:differently] similar than expected by chance?
+    When track1-points and track2-point are nearby each other, are the values [tails:Alternative hypothesis=more:more/less:less/different:differently] similar than expected by chance?
     [H0:_=The value of a point in track 1 and the value of its nearest point in track 2 are independent]
     [H1_more:_=The value of a point in track 1 is more similar to the value of its nearest point in track 2]
     [H1_less:_=The value of a point in track 1 is less similar to the value of its nearest point in track 2]
@@ -482,7 +482,7 @@ Nearby values similar?:
 
 
 Nearby values correlate?:
-    Are the values track1-points and track2-point [tail:Alternative hypothesis=more:more/less:less/different:differently] similar than expected by chance?
+    Are the values track1-points and track2-point [tails:Alternative hypothesis=more:more/less:less/different:differently] similar than expected by chance?
     [H0:_=The value of a point in track 1 and the value of its nearest point in track 2 are independent]
     [H1_more:_=The value of a point in track 1 is more similar to the value of its nearest point in track 2]
     [H1_less:_=The value of a point in track 1 is less similar to the value of its nearest point in track 2]
@@ -501,7 +501,7 @@ Nearby values correlate?:
 # Discrete values
 #
 #Nearby values similar?:
-#    When track1-points and track2-point are nearby each other, are the values [tail:Alternative hypothesis=different:differently] similar than expected by chance?
+#    When track1-points and track2-point are nearby each other, are the values [tails:Alternative hypothesis=different:differently] similar than expected by chance?
 #    [H0:_=The value of a point in track 1 and the value of its nearest point in track 2 are independent]
 #    [H1_different:_=The value of a point in track 1 depends on the value of its nearest point in track 2]]
 #    [assumptions:_Null model=
@@ -553,7 +553,7 @@ Category pairs differentially co-located?:
 RAW_ANALYSIS_SPECS['Hypothesis testing:P-VS'] = '''
 Located in segments with high values?:
     Does the number of track1-points that fall in track2-segments depend on the value of track2-segments?
-    [tail:_=different]
+    [tails:_=different]
     [H0:_=For the segments of track 2, the value of a segment is uncorrelated with the number of points from track 1 that fall within that segment]
     [H1_different:_=For the segments of track 2, the value of a segment is correlated with the number of points from track 1 that fall within that segment]
     [assumptions:_Null model=
@@ -565,7 +565,7 @@ Located in segments with high values?:
 
 Located in case segments:
     Does the number of track1-points that fall in track2-segments depend on whether the track2-segments are marked as case or control?
-    [tail:_=different]
+    [tails:_=different]
     [H0:_=For the segments of track 2, the value of a segment is uncorrelated with the number of points from track 1 that fall within that segment]
     [H1_different:_=For the segments of track 2, the value of a segment is correlated with the number of points from track 1 that fall within that segment]
     [assumptions:_Null model=
@@ -579,7 +579,7 @@ Located in case segments:
 '''
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:F-F'] = '''
-Correlated?:Are the values of track1 and track2 more [tail:Alternative hypothesis=more:positively/less:negatively/different:] correlated than expected by chance?
+Correlated?:Are the values of track1 and track2 more [tails:Alternative hypothesis=more:positively/less:negatively/different:] correlated than expected by chance?
     [H0:_=Function values of the two tracks are uncorrelated]
     [H1_more:_=Function values of the two tracks are positively correlated]
     [H1_less:_=Function values of the two tracks are negatively correlated]
@@ -595,7 +595,7 @@ Correlated?:Are the values of track1 and track2 more [tail:Alternative hypothesi
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:VS-S'] = '''
 Preferential overlap?:
-    Are the segments of track 1 marked as case overlapping unexpectedly [tail:Alternative hypothesis=more:more/less:less/different:differently] with the segments of track 2 than the segments of track 1 marked as control?
+    Are the segments of track 1 marked as case overlapping unexpectedly [tails:Alternative hypothesis=more:more/less:less/different:differently] with the segments of track 2 than the segments of track 1 marked as control?
 #    [H0:_=The segments of track 1 are located independently of the segments of track 2 with respect to overlap]
 #    [H1_more:_=The segments of track 1 tend to overlap the segments of track 2]
 #    [H1_less:_=The segments of track 1 tend to avoid overlapping the segments of track 2]
@@ -611,7 +611,7 @@ Preferential overlap?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:SF-S'] = '''
 Higher values in segments?:
-    Are the values of track 1 that falls inside segments of track 2 [tail:Alternative hypothesis=more:higher/less:lower/different:different] than expected by chance?
+    Are the values of track 1 that falls inside segments of track 2 [tails:Alternative hypothesis=more:higher/less:lower/different:different] than expected by chance?
     [method:_Aggregate method=sum_of_sum:Sum of bp values for each segment, summed over each region/
      sum_of_mean:Mean of bp values for each segment, summed over each region/
      mean_of_mean:Mean of bp values for each segment, averaged over the regions/
@@ -626,7 +626,7 @@ Higher values in segments?:
     -> RandomizationManagerStat
 
 #Higher values in segments?:
-#    Are the values of track 1 in segments of track 2 [tail:Alternative hypothesis=more:higher/less:lower/different:different] than expected by chance?
+#    Are the values of track 1 in segments of track 2 [tails:Alternative hypothesis=more:higher/less:lower/different:different] than expected by chance?
 ##    [H0:_=The segments of track 1 are located independently of the segments of track 2 with respect to overlap]
 ##    [H1_more:_=The segments of track 1 tend to overlap the segments of track 2]
 ##    [H1_less:_=The segments of track 1 tend to avoid overlapping the segments of track 2]
@@ -643,7 +643,7 @@ Higher values in segments?:
 
 RAW_ANALYSIS_SPECS['Hypothesis testing:LGP-P'] = '''
 Colocalized in 3D?:
-    Are the points of track 2 [tail:Alternative hypothesis=more:closer/less:further apart/different:closer or further apart] in 3D (as defined by track 1) than expected by chance?
+    Are the points of track 2 [tails:Alternative hypothesis=more:closer/less:further apart/different:closer or further apart] in 3D (as defined by track 1) than expected by chance?
     [H0:_=The points of track 2 are located independently in 3D, as defined by track 1]
     [H1_more:_=The points of track 2 are located closer in 3D, as defined by track 1]
     [H1_less:_=The points of track 2 are located further apart in 3D, as defined by track 1]
@@ -669,7 +669,7 @@ RAW_ANALYSIS_SPECS['Hypothesis testing:P'] = '''
 #    -> RandomizationManagerStat
 #Located nonuniformly inside bin?:
 #   Do the points of track 1 tend to accumulate
-#   [tail=less/more]
+#   [tails=less/more]
 #   at the upstream end of the bin?
 #   [rawStatistic:=FreqChangeRatioStat:]
 #   [assumptions:_Null model=RandomGenomeLocationTrack_:Segments fetched from random genome location (MC)/
@@ -693,13 +693,13 @@ Located nonuniformly in bin (MC)?:
  -> RandomizationManagerStat
 
 Preferentially located in bin?:
- Do the points of track 1 tend to accumulate [tail:Alternative hypothesis=more:more/less:less/different:differently] than expected in given bins?
+ Do the points of track 1 tend to accumulate [tails:Alternative hypothesis=more:more/less:less/different:differently] than expected in given bins?
  [globalSource:_Normalize against=chrs:Whole genome (all chromosomes)/chrarms:Genome excl centromere (all chr arms)/ensembl:Genes (All Ensembl gene regions)/userbins:Analysis domain (Union of analysis bins)]
  $EXPERIMENTAL$
  -> BinPreferencePValStat
 
 Clustered points? (Ripleys K):
- Do the points of track 1 display [tail:Alternative hypothesis=more:more/less:less/different:different degree of] clustering (as measured by Ripleys K) than expected by chance?
+ Do the points of track 1 display [tails:Alternative hypothesis=more:more/less:less/different:different degree of] clustering (as measured by Ripleys K) than expected by chance?
  [bpWindow=100/10000/1000000]
  [rawStatistic=RipleysKStat]
  [assumptions:_Null model=PermutedSegsAndSampledIntersegsTrack_:Preserve number of points, randomize positions (MC)/
@@ -710,7 +710,7 @@ Clustered points? (Ripleys K):
  -> RandomizationManagerStat
 
 Clustered points? (Poisson params):
- Do the points of track 1 display [tail:Alternative hypothesis=more:more/less:less/different:different degree of] clustering (as measured by Poisson mean and var) than expected by chance?
+ Do the points of track 1 display [tails:Alternative hypothesis=more:more/less:less/different:different degree of] clustering (as measured by Poisson mean and var) than expected by chance?
  [bpWindow=100/10000/1000000]
  [rawStatistic=PoissonVarToExpOfGapsStat]
  [assumptions:_Null model=PermutedSegsAndSampledIntersegsTrack_:Preserve number of points, randomize positions (MC)/
@@ -722,7 +722,7 @@ Clustered points? (Poisson params):
 
 
 #    Do the points of track 1 tend to accumulate
-#    [tail=less/more]
+#    [tails=less/more]
 ##[H0:_=The points of track 1 have a uniform distribution within the segments of track 2]
 ##[H1_ha1:_=The points of track 1 tend to be positioned towards the borders of the segments of track 2]
 ##[H1_ha2:_=The points of track 1 tend to be positioned towards the middle of the segments of track 2]
@@ -738,8 +738,8 @@ Clustered points? (Poisson params):
 
 Located nonuniformly in bin (analytic)?:
     Do the points of track 1 tend to accumulate
-    [tail:Alternative hypothesis=ha1:towards the borders/ha2:towards the middle/ha3:towards the upstream side/ha4:towards the downstream side/less] of the segments of track 2?
-#    [tail=less/more]
+    [tails:Alternative hypothesis=ha1:towards the borders/ha2:towards the middle/ha3:towards the upstream side/ha4:towards the downstream side/less] of the segments of track 2?
+#    [tails=less/more]
     [H0:_=The points of track 1 have a uniform distribution within the bin]
 #    [H1_less:_=The points of track 1 tend to be positioned towards the upstream side of the bin]
 #    [H1_more:_=The points of track 1 tend to be positioned towards the downstream side of the bin]

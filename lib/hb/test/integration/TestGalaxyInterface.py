@@ -41,7 +41,7 @@ class TestGalaxyInterface(GalaxyIntegrationTest):
     def testGetRunDescription(self):
         prevVal = DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS
         DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = False
-        analysisDef = 'Different frequency inside segments?:Are track1-points occurring [tail:Alternative hypothesis=different:with different frequency/more:more frequently/less:less frequently] inside track2-segment than outside? [rawStatistic:=PointCountInsideSegsStat:] [assumptions:_Assumptions=poissonPoints:Poisson-distributed points/_PermutedSegsAndSampledIntersegsTrack:Permuted segments, sampled spaces (MC)/_PermutedSegsAndIntersegsTrack:Permuted segments, permuted spaces (MC)/_RandomGenomeLocationTrack:Segments fetched from random genome location (MC)] [numResamplings:_Resamplings=20/200/2000] -> PointCountInSegsPvalStat, RandomizationManagerStat'
+        analysisDef = 'Different frequency inside segments?:Are track1-points occurring [tails:Alternative hypothesis=different:with different frequency/more:more frequently/less:less frequently] inside track2-segment than outside? [rawStatistic:=PointCountInsideSegsStat:] [assumptions:_Assumptions=poissonPoints:Poisson-distributed points/_PermutedSegsAndSampledIntersegsTrack:Permuted segments, sampled spaces (MC)/_PermutedSegsAndIntersegsTrack:Permuted segments, permuted spaces (MC)/_RandomGenomeLocationTrack:Segments fetched from random genome location (MC)] [numResamplings:_Resamplings=20/200/2000] -> PointCountInSegsPvalStat, RandomizationManagerStat'
         GalaxyInterface.getRunDescription(['segsMany'], ['segs'], analysisDef, 'chr21:2-4001','2000', 'TestGenome')
         DebugConfig.PASS_ON_VALIDSTAT_EXCEPTIONS = prevVal
 

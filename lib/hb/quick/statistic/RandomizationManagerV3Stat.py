@@ -27,7 +27,7 @@ class RandomizationManagerV3StatUnsplittable(StatisticV2):
     IS_MEMOIZABLE = False
 
     @takes("RandomizationManagerV3StatUnsplittable", one_of(callable, basestring), one_of(basestring,type),basestring, one_of(basestring,Statistic))
-    def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, **kwArgs):
+    def _init(self, evaluatorFunc, mcSamplerClass, tails, rawStatistic, **kwArgs):
         if type(evaluatorFunc) is str:
             evaluatorFunc = globals()[evaluatorFunc]
         self._evaluatorFunc = evaluatorFunc
@@ -37,11 +37,11 @@ class RandomizationManagerV3StatUnsplittable(StatisticV2):
             assert issubclass(mcSamplerClass, (MCSamplingStatUnsplittable,MagicStatFactory)), (type(mcSamplerClass), mcSamplerClass)
         self._mcSamplerClass = mcSamplerClass
         
-        self._tail = tail
+        self._tails = tails
         self._rawStatistic = self.getRawStatisticClass(rawStatistic) #just to extract name
 
     def _compute(self):
-        return self._evaluatorFunc( self._children[0].getResult(), self._tail, self.getRawStatisticMainClassName() )
+        return self._evaluatorFunc( self._children[0].getResult(), self._tails, self.getRawStatisticMainClassName() )
     
     def _createChildren(self):
         self._addChild(self._mcSamplerClass(self._region, self._trackStructure, **self._kwArgs) )

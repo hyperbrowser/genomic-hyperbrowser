@@ -87,7 +87,7 @@ class AnalysisSpec(object):
 class AnalysisDefHandler(AnalysisSpec):
     H0_KEY = 'H0'
     H1_KEY = 'H1'
-    TAIL_KEY = 'tail'
+    TAIL_KEY = 'tails'
     TAIL_CHOICE_LEFT  = 'less'
     TAIL_CHOICE_RIGHT = 'more'
     TAIL_CHOICE_BOTH = 'different'
@@ -253,17 +253,17 @@ class AnalysisDefHandler(AnalysisSpec):
     #
     # def getH1(self):
     #    #optionKeys = self.getOptionsAsKeys()
-    #    #if 'H1' in optionKeys and 'tail' in optionKeys:
+    #    #if 'H1' in optionKeys and 'tails' in optionKeys:
     #    choices = self.getChoices()
-    #    if 'H1' in choices and 'tail' in choices:
+    #    if 'H1' in choices and 'tails' in choices:
     #        try:
-    #            #tailChoice = self.getChoice('tail')
-    #            tailChoice = choices['tail']
+    #            #tailChoice = self.getChoice('tails')
+    #            tailChoice = choices['tails']
     #            self.setChoice('H1', tailChoice)
     #            return self.getChoiceText('H1')
     #
     #        except (ShouldNotOccurError), e:
-    #            logException(e, logging.WARNING,'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)' % self.getChoice('tail') )
+    #            logException(e, logging.WARNING,'Could not find H1, probably mismatch between tails and H1 in analysisDef (tails choice: %s)' % self.getChoice('tails') )
     #        except Exception, e:
     #            logException(e, logging.WARNING,'Could not find H1')
     #    return 'No H1 found..'
@@ -316,8 +316,8 @@ class AnalysisDefHandler(AnalysisSpec):
         H1 = self.getChoice(selectedH1Key)
         if H1 is None:
             logMessage(
-                'Could not find H1, probably mismatch between tail-choice and corresponding H1-option in analysisDef '
-                '(tail choice: %s, options: %s)' % (self.getChoice('tail'), self.getAllOptionsAsKeys())
+                'Could not find H1, probably mismatch between tails-choice and corresponding H1-option in analysisDef '
+                '(tails choice: %s, options: %s)' % (self.getChoice('tails'), self.getAllOptionsAsKeys())
             )
     
         return H1
@@ -332,7 +332,7 @@ class AnalysisDefHandler(AnalysisSpec):
             
             except (ShouldNotOccurError) as e:
                 logException(e, logging.WARNING,
-                             'Could not find H1, probably mismatch between tail and H1 in analysisDef (tail choice: %s)'
+                             'Could not find H1, probably mismatch between tails and H1 in analysisDef (tails choice: %s)'
                              % self.getChoice(self.TAIL_KEY))
             except Exception as e:
                 logException(e, logging.WARNING,'Could not find H1')

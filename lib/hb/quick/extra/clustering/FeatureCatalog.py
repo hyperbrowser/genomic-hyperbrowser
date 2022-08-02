@@ -7,7 +7,7 @@ class FeatureCatalog(object):
     def getFeaturesFromTrackFormatCombination(tfName1, tfName2):
         if tfName1.lower() == tfName2.lower() == 'segments':
             return {'Bp overlap': ['-> RawOverlapStat', 'Both'],
-                    'Bp overlap, diff from expected': ['[tail=more] [assumptions=bothIndependentBps]-> BpOverlapPValStat', 'DiffFromMean']}
+                    'Bp overlap, diff from expected': ['[tails=more] [assumptions=bothIndependentBps]-> BpOverlapPValStat', 'DiffFromMean']}
 
     #@obsoleteHbFunction
     @staticmethod
@@ -71,7 +71,7 @@ class ReferenceAnalsesAsFeaturesCatalog(FeatureCatalog):
         #US-US
         allFeatures['Bp overlap'] = ['dummy -> RawOverlapStat', 'Both']
         allFeatures['Prop. of tr2 covered by tr1'] = ['dummy -> DerivedOverlapStat', '1inside2']
-        allFeatures['Bp overlap, diff from expected'] = ['[tail=more] [assumptions=bothIndependentBps]-> BpOverlapPValStat', 'DiffFromMean']
+        allFeatures['Bp overlap, diff from expected'] = ['[tails=more] [assumptions=bothIndependentBps]-> BpOverlapPValStat', 'DiffFromMean']
         #US-F
         allFeatures['Mean inside'] = ['dummy -> MeanInsideStat','Result']
         #UP-US

@@ -192,7 +192,7 @@ class MultiTrackHypothesisTesting(MultiTrackAnalysis):
     
     def getAnalysisDefinitionString(self):
         #Old version
-        analysisDef = 'dummy [tail=different] [rawStatistic=SingleValExtractorStat] \
+        analysisDef = 'dummy [tails=different] [rawStatistic=SingleValExtractorStat] \
             [childClass=ThreeWayBpOverlapStat] [resultKey=%s] %s %s -> RandomizationManagerStat' \
             % ('1'*(len(self._tracks)), self._randOption, self._numResamplingsOption)
 
@@ -200,7 +200,7 @@ class MultiTrackHypothesisTesting(MultiTrackAnalysis):
         from gold.application.LogSetup import setupDebugModeAndLogging
         setupDebugModeAndLogging()
 
-#         analysisDef = 'dummy [tail=different] [rawStatistic=SingleValExtractorStat] \
+#         analysisDef = 'dummy [tails=different] [rawStatistic=SingleValExtractorStat] \
 #             [childClass=MultitrackBpOverlapStat] [resultKey=%s] %s %s -> RandomizationManagerStat' \
 #             % ('1'*(len(self._tracks)), self._randOption, self._numResamplingsOption)
         analysisDef = 'dummy [extraTracks=%s] '\

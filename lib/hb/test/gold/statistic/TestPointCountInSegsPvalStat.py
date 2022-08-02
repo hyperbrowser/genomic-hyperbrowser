@@ -17,15 +17,15 @@ class TestPointCountInSegsPvalStatUnsplittable(StatUnitTest):
         self._assertCompute(None, SampleTV( starts=[] ), SampleTV( segments=[[15,40], [50,75]] ))
         self._assertCompute({'DiffFromExpected': -0.5, 'P-value': 0.5, 'SegCoverage': 0.5, 'E(Test statistic): ExpPointsInside': 2.5, 'Test statistic: PointsInside': 2, 'PointsTotal': 5},\
                              SampleTV( starts=[15, 40, 45, 60, 80], anchor=[0,100] ), \
-                             SampleTV( segments=[[15,40], [50,75]], anchor=[0,100] ), tail='less',\
+                             SampleTV( segments=[[15,40], [50,75]], anchor=[0,100] ), tails='less',\
                             assertFunc=self.assertListsOrDicts)
         self._assertCompute({'DiffFromExpected': 0.5, 'P-value': 0.5, 'SegCoverage': 0.5, 'E(Test statistic): ExpPointsInside': 2.5, 'Test statistic: PointsInside': 3, 'PointsTotal': 5},\
                              SampleTV( starts=[15, 40, 45, 60, 70], anchor=[0,100] ), \
-                             SampleTV( segments=[[15,40], [50,75]], anchor=[0,100] ), tail='more',\
+                             SampleTV( segments=[[15,40], [50,75]], anchor=[0,100] ), tails='more',\
                             assertFunc=self.assertListsOrDicts)
         self._assertCompute({'DiffFromExpected': -0.5, 'P-value': 1.0, 'SegCoverage': 0.5, 'E(Test statistic): ExpPointsInside': 2.5, 'Test statistic: PointsInside': 2, 'PointsTotal': 5},\
                              SampleTV( starts=[15, 40, 45, 60, 80], anchor=[0,100] ), \
-                             SampleTV( segments=[[15,40], [50,75]], anchor=[0,100] ), tail='different',\
+                             SampleTV( segments=[[15,40], [50,75]], anchor=[0,100] ), tails='different',\
                             assertFunc=self.assertListsOrDicts)
         
     #def test_createChildren(self):

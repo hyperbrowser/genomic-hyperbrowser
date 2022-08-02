@@ -488,7 +488,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
         analysisSpec.addParameter('rawStatistic', PairedTSStat.__name__)
         analysisSpec.addParameter('pairedTsRawStatistic', GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
             similarityStatClassName])
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tails', 'right-tail')
         analysisSpec.addParameter('summaryFunc', 'raw')
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('runLocalAnalysis', 'Yes' if localAnalysis else 'No')
@@ -566,7 +566,7 @@ class GSuiteTracksCoincidingWithQueryTrackTool(GeneralGuiTool, UserBinMixin,
                                       similarityStatClassName])  # needed for call of non randomized stat for assertion
         analysisSpec.addParameter('summaryFunc',
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[summaryFunc])
-        analysisSpec.addParameter('tail', 'right-tail')
+        analysisSpec.addParameter('tails', 'right-tail')
         analysisSpec.addParameter('tvProviderClass', 'ShuffleElementsBetweenTracksTvProvider')
         return analysisSpec
 

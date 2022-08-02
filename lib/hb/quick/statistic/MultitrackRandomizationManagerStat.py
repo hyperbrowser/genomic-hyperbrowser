@@ -26,7 +26,7 @@ class MultitrackRandomizationManagerStat(MagicStatFactory):
 class MultitrackRandomizationManagerStatUnsplittable(StatisticV2):    
     IS_MEMOIZABLE = False
 
-    def _init(self, evaluatorFunc, mcSamplerClass, tail, rawStatistic, **kwArgs):
+    def _init(self, evaluatorFunc, mcSamplerClass, tails, rawStatistic, **kwArgs):
 
         if type(evaluatorFunc) is str:
             evaluatorFunc = globals()[evaluatorFunc]
@@ -36,14 +36,14 @@ class MultitrackRandomizationManagerStatUnsplittable(StatisticV2):
             mcSamplerClass = globals()[mcSamplerClass]
         self._mcSamplerClass = mcSamplerClass
         
-        self._tail = tail
+        self._tails = tails
         self._rawStatistic = self.getRawStatisticClass(rawStatistic) #just to extract name
 
     def _compute(self):
         #if not self._children[0].isMcDetermined():
             #return "Undetermined"
         #else:
-        return self._evaluatorFunc( self._children[0].getResult(), self._tail, self.getRawStatisticMainClassName() )
+        return self._evaluatorFunc(self._children[0].getResult(), self._tails, self.getRawStatisticMainClassName())
     
     def _createChildren(self):
         self._addChild(self._mcSamplerClass(self._region, self._trackStructure, **self._kwArgs) )
@@ -89,7 +89,7 @@ class MultitrackRandomizationManagerStatUnsplittable(StatisticV2):
 #         '''
 #         
 #         #print 'TEMP RM:',kwArgs
-#         if tails==None:
+#         if tails is None:
 #             if 'tail' in kwArgs:
 #                 tailTranslator = {'more':'right-tail', 'less':'left-tail', 'different':'two-tail'}
 #                 tails = tailTranslator[kwArgs['tail']]

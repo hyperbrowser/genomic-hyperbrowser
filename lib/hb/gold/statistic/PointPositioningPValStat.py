@@ -1,15 +1,15 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from gold.statistic.PointPositionsInSegsStat import PointPositionsInSegsStat
-from gold.util.CustomExceptions import ShouldNotOccurError, NotSupportedError
+from gold.util.CustomExceptions import ShouldNotOccurError, NotSupportedError, IncompatibleAssumptionsError
 from collections import OrderedDict
 
 class PointPositioningPValStat(MagicStatFactory):
     pass
 
 class PointPositioningPValStatUnsplittable(Statistic):
-    def _init(self, tail='', **kwArgs):
-        self._altHyp = tail
+    def _init(self, tails='', **kwArgs):
+        self._altHyp = tails
         if not self._altHyp in ['ha1','ha2','ha3','ha4']:
             raise NotSupportedError(self._altHyp)
 
@@ -92,7 +92,7 @@ class PointPositioningPValStatUnsplittable(Statistic):
             assert self._altHyp == 'ha3'
             from copy import copy
             kwArgs = copy(self._kwArgs)
-            kwArgs['tail'] = 'less'
+            kwArgs['tails'] = 'less'
             self._addChild( RandomizationManagerStat(self._region, self._track, self._track2, **kwArgs) )
         else:
             self._addChild( PointPositionsInSegsStat(self._region, self._track, self._track2) )

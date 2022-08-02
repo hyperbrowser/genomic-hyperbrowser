@@ -276,7 +276,7 @@ class MultiTrackCooccurrenceBins(GeneralGuiTool, GenomeMixin,
             analysisSpec.addParameter('pairwiseStatistic', 'ObservedVsExpectedStat')
             analysisSpec.addParameter('summaryFunc', summaryFunc)
             # analysisSpec.addParameter('evaluatorFunc','evaluatePvalueAndNullDistribution')
-            analysisSpec.addParameter('tail', 'right-tail')
+            analysisSpec.addParameter('tails', 'right-tail')
             analysisSpec.addParameter('assumptions', 'RandomGenomeLocationTrack')
             #analysisSpec.addParameter('maxSamples', 10)
             analysisSpec.addParameter('multitrackSummaryFunc', summaryFunc)

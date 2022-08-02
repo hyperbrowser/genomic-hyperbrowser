@@ -23,7 +23,7 @@ class DiffRelFreqPValStat(MagicStatFactory):
 class DiffRelFreqPValStatUnsplittable(Statistic):
     IS_MEMOIZABLE = False
     
-    def __init__(self, region, track, track2, tail='more', globalSource='', minimal=False, **kwArgs):
+    def __init__(self, region, track, track2, tails='more', globalSource='', minimal=False, **kwArgs):
         if isIter(region):
             # TODO: Introduce a better general mechanism for removing global results. SplittableStatNotAvailableError
             #       should be exclusive to RawDataStat to minimize confusion.
@@ -37,10 +37,10 @@ class DiffRelFreqPValStatUnsplittable(Statistic):
         #    self._globalSource = GlobalBinSource(region.genome)
         self._globalSource = GenericRelativeToGlobalStatUnsplittable.getGlobalSource(globalSource, region.genome, minimal)
         
-        assert tail in ['more', 'less', 'different']
-        self._tail = tail
+        assert tails in ['more', 'less', 'different']
+        self._tails = tails
         
-        super(self.__class__, self).__init__(region, track, track2, tail=tail, globalSource=globalSource, minimal=minimal, **kwArgs)
+        super(self.__class__, self).__init__(region, track, track2, tails=tails, globalSource=globalSource, minimal=minimal, **kwArgs)
     
     def _createChildren(self):
         countClass = CountPointAllowingOverlapStat if self._configuredToAllowOverlaps(strict=False) else CountPointStat 
@@ -69,15 +69,15 @@ class DiffRelFreqPValStatUnsplittable(Statistic):
             and c2>=DiffRelFreqPValStat.MIN_POP_FOR_GAUSSIAN_APPROXIMATION:
             se = math.sqrt( r*(1-r)/n1 + r*(1-r)/n2)
             zScore = (p-q) / se
-            if self._tail == 'more':
+            if self._tails == 'more':
                 pval = 1.0-stats.zprob(zScore)
-            elif self._tail == 'less':
+            elif self._tails == 'less':
                 pval = stats.zprob(zScore)
-            elif self._tail == 'different':
+            elif self._tails == 'different':
                 #fixme: which of these two solutions are correct?
                 #pval = 2.0*(1.0-zprob(abs(zScore)))
                 pval = min(1.0, 2.0*min(1.0-stats.zprob(zScore), stats.zprob(zScore)))
-        elif c1+c2 >= DiffRelFreqPValStat.MIN_SUM_OF_POP_FOR_FISHER_TEST and self._tail == 'different':
+        elif c1+c2 >= DiffRelFreqPValStat.MIN_SUM_OF_POP_FOR_FISHER_TEST and self._tails == 'different':
             #import traceback
             #from gold.util.CustomExceptions import ShouldNotOccurError
             #from gold.util.CommonFunctions import getClassName

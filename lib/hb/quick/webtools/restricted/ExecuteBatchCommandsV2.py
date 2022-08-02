@@ -117,7 +117,7 @@ class ExecuteBatchCommandsV2(GeneralGuiTool):
 @nullModelParam1=assumptions=PermutedSegsAndSampledIntersegsTrack_
 @nullModelParam2=assumptions=PermutedSegsAndIntersegsTrack_
 @mcfdrParams=fdrCriterion=simultaneous,fdrThreshold=0.05,maxSamples=unlimited,globalPvalThreshold=0.005,numResamplings=10,mThreshold=20
-@otherParams=randomSeed=0,tail=more,rawStatistic=TpRawSegsOverlapStat
+@otherParams=randomSeed=0,tails=more,rawStatistic=TpRawSegsOverlapStat
 
 @stat1=RandomizationManagerStat(@nullModelParam1,@mcfdrParams,@otherParams)
 @stat2=RandomizationManagerStat(@nullModelParam2,@mcfdrParams,@otherParams)

@@ -13,16 +13,16 @@ class TestSimilarSegmentStatUnsplittable(StatUnitTest):
     def test_compute(self):
         self._assertCompute(0, SampleTV( segments=[] ), \
                                SampleTV( segments=[] ), \
-                               maxRelDifference=0.5, maxAbsDifference=5, tail='different')
+                               maxRelDifference=0.5, maxAbsDifference=5, tails='different')
         self._assertCompute(0, SampleTV( segments=[] ), \
                                SampleTV( segments=[[2,5]] ), \
-                               maxRelDifference=0.5, maxAbsDifference=5, tail='different')
+                               maxRelDifference=0.5, maxAbsDifference=5, tails='different')
         self._assertCompute(0, SampleTV( segments=[[10,30]] ), \
                                SampleTV( segments=[] ), \
-                               maxRelDifference=0.5, maxAbsDifference=5, tail='different')
+                               maxRelDifference=0.5, maxAbsDifference=5, tails='different')
         self._assertCompute(1, SampleTV( segments=[[10,30], [60,80], [90,95]] ), \
                                SampleTV( segments=[[2,5], [9,11], [12,28], [29,35], [40,50], [55,76], [89,91]] ), \
-                               maxRelDifference=0.5, maxAbsDifference=5, tail='different')
+                               maxRelDifference=0.5, maxAbsDifference=5, tails='different')
         
     #def test_createChildren(self):
     #    self._assertCreateChildren([], SampleTV_Num( anchor= ))
