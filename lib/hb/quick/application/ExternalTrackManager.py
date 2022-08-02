@@ -2,6 +2,8 @@
 #import os.path
 import os
 import re
+from copy import copy
+
 from config.Config import DEFAULT_GENOME, URL_PREFIX
 from gold.description.TrackInfo import TrackInfo
 from gold.track.TrackFormat import TrackFormat
@@ -34,7 +36,7 @@ class ExternalTrackManager(object):
         used as id in the form [XXX, YYYY] The last element is the name of the
         track, only used for presentation purposes.
 
-        Note: GalaxyTN is is called datasetInfo in Galaxy ProTo.
+        Note: GalaxyTN is called datasetInfo in Galaxy ProTo.
 
     ['virtual','...'] VirtualMinimalTN. An especially coded TN, used for
         minimal runs of all statistics in order to display the analyses fitting
@@ -156,7 +158,8 @@ class ExternalTrackManager(object):
                         ExternalTrackManager.extractNameFromHistoryTN(galaxyTN)])
 
     @classmethod
-    def getStdTrackNameFromGalaxyTN(cls, galaxyTN, allowUnsupportedSuffixes=False):
+    def getStdTrackNameFromGalaxyTN(cls, galaxyTN, allowUnsupportedSuffixes=False,
+                                    doEncodeId=True, urlPrefix=None):
         if isinstance(galaxyTN, basestring):
             galaxyTN = galaxyTN.split(':')
 
@@ -165,18 +168,27 @@ class ExternalTrackManager(object):
             raise InvalidFormatError('File type "%s" is not supported.' % galaxyTN[1].lower())
 
         fn = cls.extractFnFromGalaxyTN(galaxyTN)
-        id = cls.extractIdFromGalaxyFn(fn)
+        datasetId = cls.extractIdFromGalaxyFn(fn)
         name = galaxyTN[-1]
-        return ExternalTrackManager.createStdTrackName(id, name)
+        return ExternalTrackManager.createStdTrackName(datasetId, name,
+                                                       doEncodeId=doEncodeId,
+                                                       urlPrefix=urlPrefix)
 
     @classmethod
-    def createStdTrackName(cls, id, name, subtype = ''):
-        encodedId = cls.getEncodedDatasetIdFromPlainGalaxyId(id[1])
-        urlPrefix = URL_PREFIX.replace(os.path.sep, '')
-        #return ['external'] + ([urlPrefix] if urlPrefix != '' else []) + id + [name] + ([subtype] if subtype != '' else [])
-        return ['external'] + ([urlPrefix] if urlPrefix != '' else []) + \
-               [encodedId[:2], encodedId] + id[2:] + ([name] if name else []) + \
-               ([subtype] if subtype != '' else [])
+    def createStdTrackName(cls, datasetId, name="", doEncodeId=True, urlPrefix=None):
+        datasetId = copy(datasetId)
+
+        if doEncodeId is True:
+            encodedId = cls.getEncodedDatasetIdFromPlainGalaxyId(datasetId[1])
+            datasetId[0] = encodedId[:2]
+            datasetId[1] = encodedId
+
+        if not urlPrefix:
+            urlPrefix = URL_PREFIX.replace(os.path.sep, '')
+
+        return \
+            ['external'] + ([urlPrefix] if urlPrefix != '' else []) + \
+            datasetId + ([name] if name else [])
 
     @classmethod
     def renameExistingStdTrackIfNeeded(cls, genome, stdTrackName):
@@ -233,13 +245,16 @@ class ExternalTrackManager(object):
     @classmethod
     def getPreProcessedTrackFromGalaxyTN(cls, genome, galaxyTN, printErrors=True, printProgress=True,
                                          raiseIfAnyWarnings=False, renameExistingTracksIfNeeded=True,
-                                         mergeChrFolders=True):
+                                         mergeChrFolders=True, doEncodeId=True, urlPrefix=None):
         '''
         Takes a GalaxyTN as input, pre-processes the data that GalaxyTN refers to, and finally returns
         an ExternalTN that refers to the pre-processed data and can be used as a normal track name.
         '''
         from gold.util.CommonFunctions import replaceIllegalElementsInTrackNames
-        stdTrackName = cls.getStdTrackNameFromGalaxyTN(galaxyTN, allowUnsupportedSuffixes=True)
+        stdTrackName = cls.getStdTrackNameFromGalaxyTN(galaxyTN,
+                                                       allowUnsupportedSuffixes=True,
+                                                       doEncodeId=doEncodeId,
+                                                       urlPrefix=urlPrefix)
         legalTrackName = [replaceIllegalElementsInTrackNames(part) for part in stdTrackName]
 
         if renameExistingTracksIfNeeded:
@@ -271,7 +286,7 @@ class ExternalTrackManager(object):
         return legalTrackName
 
     @classmethod
-    def constructGalaxyTnFromSuitedFn(cls, fn, fileEnding=None,name=''):
+    def constructGalaxyTnFromSuitedFn(cls, fn, fileEnding=None, name=''):
         #to check that valid ID can later be constructed
         cls.extractIdFromGalaxyFn(fn)
 
