@@ -181,21 +181,21 @@ class TFsFromGenes(TFsFromRegions):
         GalaxyInterface.combineToTargetControl(targetGeneRegsTempFn, controlGeneRegsTempFn, tcGeneRegsTempFn)
 
         #tcGeneRegsExternalTN = ['external'] +galaxyId +  [tcGeneRegsTempFn]
-        tcGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId, 'tempTc')
+        tcGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId + ['tempTc'])
 
         #tcGeneRegsExternalTN = ['external'] +targetGalaxyId +  [tcGeneRegsTempFn]
         #tcGeneRegsExternalTN = ['galaxy', externalId, tcGeneRegsTempFn]
 
-        targetGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId, 'tempTc', '1')
-        controlGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId, 'tempTc', '0')
+        targetGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId + ['tempTc', '1'])
+        controlGeneRegsExternalTN = ExternalTrackManager.createStdTrackName(galaxyId + ['tempTc', '0'])
 
         #pre-process
         print 'Pre-processing file: %s, with trackname: %s ' % (tcGeneRegsTempFn, tcGeneRegsExternalTN)
-        ExternalTrackManager.preProcess(tcGeneRegsTempFn, tcGeneRegsExternalTN, 'targetcontrol.bedgraph',genome)
+        ExternalTrackManager.preProcess(tcGeneRegsTempFn, tcGeneRegsExternalTN, 'targetcontrol.bedgraph', genome)
         print 'Pre-processing TN: ', targetGeneRegsExternalTN
-        ExternalTrackManager.preProcess(targetGeneRegsTempFn, targetGeneRegsExternalTN, 'bed',genome)
+        ExternalTrackManager.preProcess(targetGeneRegsTempFn, targetGeneRegsExternalTN, 'bed', genome)
         print 'Pre-processing TN: ', controlGeneRegsExternalTN
-        ExternalTrackManager.preProcess(controlGeneRegsTempFn, controlGeneRegsExternalTN, 'bed',genome)
+        ExternalTrackManager.preProcess(controlGeneRegsTempFn, controlGeneRegsExternalTN, 'bed', genome)
 
         #print tcGeneRegsExternalTN
         trackName1, trackName2 = tfTrackName, tcGeneRegsExternalTN
