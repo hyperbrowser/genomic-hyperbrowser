@@ -283,6 +283,7 @@
     <tool file="proto/hyperbrowser/restricted/GetDiskPathForHistoryElement.xml" />
     <tool file="proto/hyperbrowser/restricted/ListSubtrackNames.xml" />
     <tool file="proto/hyperbrowser/restricted/gsuite/ConvertPrimaryGsuiteToLocalPathsTool.xml" />
+    <tool file="proto/hyperbrowser/restricted/gsuite/ConvertPreprocessedGSuiteToFileBasedPrimaryTool.xml" />
     <!--<tool file="proto/hyperbrowser/restricted/InspectMemmapFile.xml" />-->
     <!--<tool file="hyperbrowser/rt_link.xml" />-->
     <!--<tool file="hyperbrowser/agilezen_link.xml" />-->

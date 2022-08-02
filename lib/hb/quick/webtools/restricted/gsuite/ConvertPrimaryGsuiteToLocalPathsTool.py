@@ -129,7 +129,7 @@ class ConvertPrimaryGsuiteToLocalPathsTool(GeneralGuiTool):
 
         core.divider()
         core.paragraph(str(HtmlCore().highlight('NOTE: SHOULD NOT BE MADE PUBLIC FOR SECURITY '
-                                            'REASONS.')))
+                                                'REASONS.')))
 
         cls._addGSuiteFileDescription(core,
                                       allowedLocations=cls.GSUITE_ALLOWED_LOCATIONS,
