@@ -5,11 +5,12 @@ from quick.application.ProcTrackOptions import ProcTrackOptions
 from quick.util.GenomeInfo import GenomeInfo
 
 class ProcTrackNameSource(object):
-    def __init__(self, genome, fullAccess=False, avoidLiterature=True, includeParentTrack=True):
+    def __init__(self, genome, fullAccess=False, avoidLiterature=True, includeParentTrack=True, includeInvalid=False):
         self._genome = genome
         self._fullAccess = fullAccess
         self._avoidLiterature = avoidLiterature
         self._includeParentTrack = includeParentTrack
+        self._includeInvalid = includeInvalid
     
     def __iter__(self):
         return self.yielder([])
@@ -31,5 +32,5 @@ class ProcTrackNameSource(object):
                 yield subTn
 
         if self._includeParentTrack or level > 0:
-            if ProcTrackOptions.isValidTrack(self._genome, curTn, self._fullAccess):
+            if self._includeInvalid or ProcTrackOptions.isValidTrack(self._genome, curTn, self._fullAccess):
                 yield curTn

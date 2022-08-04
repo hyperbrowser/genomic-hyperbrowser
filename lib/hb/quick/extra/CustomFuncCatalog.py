@@ -18,6 +18,7 @@ from gold.description.TrackInfo import TrackInfo
 from gold.track.GenomeRegion import GenomeRegion
 from gold.track.Track import PlainTrack, Track
 from gold.track.TrackFormat import TrackFormat
+from gold.util.CustomExceptions import InvalidFormatError
 from quick.application.AutoBinner import AutoBinner
 from quick.application.ProcTrackNameSource import ProcTrackNameSource
 from quick.origdata.OrigTrackFnSource import OrigTrackNameSource
@@ -986,27 +987,40 @@ def updateTrackInfoToVersion15(genome, trackName):
                 mergedPrefixInfoDict = PreProcessUtils.getMergedPrefixInfoDict(genome, trackName, allowOverlaps)
                 ti.mergedPrefixInfoDictPerOverlapRule[allowOverlaps] = mergedPrefixInfoDict
                 trackFormatList.append(TrackFormat.createInstanceFromPrefixInfoDict(mergedPrefixInfoDict))
+            else:
+                raise ValueError('Merged preprocessed memmap files do not exist for track: ' + ':'.join(trackName))
     if trackFormatList:
+        if not ti.isValid():
+            raise InvalidFormatError()
         ti.trackFormatHash = hash(tuple(trackFormatList))
-    if not ti.geSourceVersion:
-        ti.geSourceVersion = ti.preProcVersion
-    ti.preProcVersion = '1.5'
-    origPath = qcf.createOrigPath(genome, trackName)
-    if os.path.exists(origPath):
-        ti.id = ti.constructIdFromPath(genome, qcf.createOrigPath(genome, trackName), ti.geSourceVersion, ti.preProcVersion)
-    print ti.id, ti.preProcOverlapRules, ti.mergedPrefixInfoDictPerOverlapRule, ti.trackFormatHash, ti.geSourceVersion, ti.preProcVersion
-    ti.store()
-    print Track(trackName).getUniqueKey(genome)
+        if not ti.geSourceVersion:
+            ti.geSourceVersion = ti.preProcVersion
+        ti.preProcVersion = '1.5'
+        origPath = qcf.createOrigPath(genome, trackName)
+        if os.path.exists(origPath):
+            ti.id = ti.constructIdFromPath(genome, qcf.createOrigPath(genome, trackName), ti.geSourceVersion, ti.preProcVersion)
+        print ti.id, ti.preProcOverlapRules, ti.mergedPrefixInfoDictPerOverlapRule, ti.trackFormatHash, ti.geSourceVersion, ti.preProcVersion
+        ti.store()
+        print Track(trackName).getUniqueKey(genome)
 
 
 def updateGenomeTrackInfoToVersion15(genome):
     "genome"
     print genome
     for trackName in ProcTrackNameSource(genome, fullAccess=True,
-                                         includeParentTrack=False):
+                                         includeParentTrack=False,
+                                         includeInvalid=True):
         print trackName
-        updateTrackInfoToVersion15(genome, trackName)
-
+        try:
+            updateTrackInfoToVersion15(genome, trackName)
+        except ValueError, e:
+            print 'ValueError raised: ', e
+            with open('failing_tracks.txt', 'a') as error_files:
+                error_files.write('{}, {}\n'.format(genome, ':'.join(trackName)))
+        except InvalidFormatError, e:
+            print ':'.join(trackName) + ' is not valid'
+            with open('invalid_tracks.gsuite', 'a') as error_files:
+                error_files.write('hb:/{}\n'.format('/'.join(trackName)))
 
 def updateAllTrackInfoToVersion15():
     from quick.application.GalaxyInterface import GalaxyInterface
@@ -1065,4 +1079,3 @@ if __name__ == "__main__":
                 print 'usage: python CustomFuncCatalog.py ' + str(func.__name__) + ' ' + str(func.__doc__)
                 print
                 raise
-
