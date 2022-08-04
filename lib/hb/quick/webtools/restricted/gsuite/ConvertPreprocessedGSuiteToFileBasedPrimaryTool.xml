@@ -1,4 +1,4 @@
 <tool id="hb_convert_preprocessed_g_suite_to_file_based_primary_tool" name="Converts a preprocessed GSuite into a primary GSuite with local file paths" version="1.0.0"
-  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.gsuite.ConvertPreprocessedGSuiteToFileBasedPrimaryTool" proto_tool_class="ConvertPreprocessedGSuiteToFileBasedPrimaryTool">
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.restricted.gsuite.ConvertPreprocessedGSuiteToFileBasedPrimaryTool" proto_tool_class="ConvertPreprocessedGSuiteToFileBasedPrimaryTool">
   <description>(not secure)</description>
 </tool>
