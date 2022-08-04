@@ -73,7 +73,7 @@ class GSuiteTrackPreprocessor(Visitor):
         doEncodeId = instance == curInstance
         urlPrefix = instance
 
-        baseFileName = gSuiteTrack.title
+        baseFileName = pathSplitted[-1]
 
         return self._createPreprocessedGsuiteTrack(gSuiteTrack, baseFileName,
                                                    doEncodeId, urlPrefix)
