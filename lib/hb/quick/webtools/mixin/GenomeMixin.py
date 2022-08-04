@@ -107,7 +107,7 @@ class GenomeMixin(object):
     ERROR_MULTIPLE_GENOMES_NOT_ALLOWED = 'This tool does not allow multiple genomes to be defined in the same ' +\
                                          'GSuite file.'
     ERROR_PREPROCESSED_TRACK_INVALID = 'Preprocessed track "%s" is not a valid track. Often this is due to ' +\
-                                 'specifying an incorrect genome build.'
+                                       'specifying an incorrect genome build.'
 
     @classmethod
     def getInputBoxNamesForGenomeSelection(cls):
