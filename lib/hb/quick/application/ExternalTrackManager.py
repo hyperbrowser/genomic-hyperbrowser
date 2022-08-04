@@ -299,17 +299,24 @@ class ExternalTrackManager(object):
     def createGalaxyTnFromExternalTn(cls, externalTN):
         # Hack to support ConvertPrimaryGsuiteToLocalPathsTool
 
+        URL_PREFIX_MAP = {'hb': 'stable'}
+        INSTANCE_MAP = {'dev2': 'developer'}
+        
         from config.Config import EXT_RESULTS_PATH
         assert externalTN[0] == 'external'
         assert len(externalTN) == 5
 
+        urlPrefix = URL_PREFIX.strip('/')
+        if urlPrefix in URL_PREFIX_MAP:
+            urlPrefix = URL_PREFIX_MAP[urlPrefix]
+
         resultsPathDirs = EXT_RESULTS_PATH.rstrip(os.path.sep).split(os.path.sep)
-        assert resultsPathDirs[-1] == URL_PREFIX.strip('/')
+        assert resultsPathDirs[-1] == urlPrefix, '{} != {}'.format(resultsPathDirs[-1], urlPrefix)
 
         instance = externalTN[1]
-        # Hack
-        if instance == 'dev2':
-            instance = 'developer'
+        if instance in INSTANCE_MAP:
+            instance = INSTANCE_MAP[instance]
+
         resultsPathDirs[-1] = instance
         extResultsFilesPath = os.path.sep.join(resultsPathDirs + ['files'])
 
