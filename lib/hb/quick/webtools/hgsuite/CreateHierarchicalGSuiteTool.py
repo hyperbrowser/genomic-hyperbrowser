@@ -13,7 +13,7 @@ class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def getToolName(cls):
-        return "Create or modify hierarchy of hGSuite"
+        return "Create or modify hierarchy of hGSuite jhg"
 
     @classmethod
     def getInputBoxNames(cls):

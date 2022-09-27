@@ -5,7 +5,7 @@ from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 from proto.CommonFunctions import ensurePathExists
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.origdata.UcscHandler import UcscHandler
+#from quick.origdata.UcscHandler import UcscHandler
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 #if line.startswith(
@@ -21,7 +21,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
     def getInputBoxNames(cls):
         return [('Select hGSuite', 'gSuite'),
                 ('Select operation', 'operation'),
-                ('Select words (use colon to provide more than one word)', 'param'),
+                ('Select words (use comma to provide more than one word)', 'param'),
                 ('Add words separately', 'add')
                 ]
 

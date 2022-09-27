@@ -68,7 +68,9 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
                                                          binSpec,
                                                          choices.genome)
         analysisSpec = AnalysisSpec(SingleTSStat)
+        print(HotSpotRegionsStat.__name__)
         analysisSpec.addParameter('rawStatistic', HotSpotRegionsStat.__name__)
+        print(choices.param)
         analysisSpec.addParameter("numberOfTopHotSpots", choices.param)
 
         htmlCore = HtmlCore()
@@ -98,6 +100,8 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
 
                 resList = resultDict
                 resList.sort(key=operator.itemgetter(1), reverse=False)
+                print(resList)
+                print(int(choices.param))
                 elNum = resList[int(choices.param) - 1][1]
 
                 for elN in range(int(choices.param), len(resList)):

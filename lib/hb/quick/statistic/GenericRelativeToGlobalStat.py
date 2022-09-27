@@ -1,5 +1,6 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
+from gold.track.GenomeRegion import GenomeRegion
 from gold.util.CommonFunctions import isIter
 from gold.util.CustomExceptions import SplittableStatNotAvailableError, ShouldNotOccurError
 from quick.application.UserBinSource import MinimalBinSource, UserBinSource

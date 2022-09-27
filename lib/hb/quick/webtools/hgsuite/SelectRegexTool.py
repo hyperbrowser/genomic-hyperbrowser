@@ -1,3 +1,5 @@
+import warnings
+
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
@@ -127,7 +129,8 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
 
         genome = choices.genome
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        pattern = '^chr([0-9A-Za-z])\t\d+\t\d+\t\w\w$'
+        pattern = '^chr([0-9A-Za-z]{1,2})\s\d+\s\d+\s\w\w$'
+        pattern2 = '^chr([0-9A-Za-z]{1,2})\s\d+\s\w\w$'
         matchedLines = []
 
         outGSuite = GSuite()
@@ -141,17 +144,26 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
             outFn = gSuiteTrack.path
             ensurePathExists(outFn)
 
-
             with open(track.path, 'rb') as f:
                 readCsv = csv.reader(f, delimiter='\t')
                 for line in readCsv:
-                    eachLine = '\t'.join([str(elem) for elem in line])
-                    result = re.match(pattern, eachLine)
-                    if result:
-                        line = line.split('\t')
-                        line[2] = int(line[2]) + 1
-                        matchedLines.append(line)
-                        
+
+                    if len(line) >= 5:
+                        new_line = line[0:4]
+                        line_str = "\t".join(new_line).replace("\n", "")
+                        result = re.search(pattern,line_str)
+                        if result:
+                            matchedLines.append(line_str)
+                        else:
+                            warnings.warn("Not proper bed file")
+                    elif len(line) == 3:
+                        line_str = "\t".join(new_line).replace("\n", "")
+                        result = re.match(pattern2, line_str)
+                        if result:
+                            updated_line = "\t".join([line[0], line[1], int(line[1])+1, line[2]])
+                            matchedLines.append(updated_line)
+                    else:
+                        raise RuntimeError("Incorrect bed file.")
 
             uniqueList = [list(x) for x in set(tuple(x) for x in matchedLines)]
 
@@ -161,7 +173,6 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
             contentFile.close()
 
             outGSuite.addTrack(GSuiteTrack(uri, title=''.join(track.title), genome=genome))
-
 
         GSuiteComposer.composeToFile(outGSuite, galaxyFn)
 

@@ -23,6 +23,8 @@ class HotSpotRegionsStatUnsplittable(Statistic):
         
     
     def _createChildren(self):
+        print(self._region)
+        print(self._track)
         self._localCount = self._addChild( RankOfCountPerBinStat(self._region, self._track))
         #self._allGlobalCounts = self._addChild( RankOfCountPerBinStat(self._globalSource, self._track))
 

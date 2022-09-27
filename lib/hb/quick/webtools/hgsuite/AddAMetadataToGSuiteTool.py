@@ -4,6 +4,7 @@ from functools import partial
 from gold.gsuite import GSuiteComposer
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteConstants import TITLE_COL
+from quick.application.ExternalTrackManager import ExternalTrackManager
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from quick.webtools.hgsuite.Legend import Legend
@@ -19,26 +20,72 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
         return [('Select GSuite or hGSuite', 'gsuite'),
+                ('Add data from file?', 'fileYesNo'),
+                ('Select text file', 'selFile'),  #select a txt file that has track name and the corresponding metadata to add
+                ('File info', 'filename'),
                 ('Add metadata column', 'attrName'),
                 ('', 'gsuiteTitles'),
                 ('', 'gsuiteAttributeValues')] + \
                [('', 'selectAttribute%s' % i) for i
                 in range((cls.MAX_NUM_OF_TRACKS * 2))]
 
+    #     cls.getInputBoxNamesForGSuiteSelection() + \
+    #     [('Select text file', 'selFile')
+    #
+    # ] + cls.getInputBoxNamesForbedfile()
+
     @classmethod
     def getOptionsBoxGsuite(cls):
         return GeneralGuiTool.getHistorySelectionElement('gsuite')
 
     @classmethod
+    def getOptionsBoxFileYesNo(cls,prevChoices):
+        return ["no","yes"]
+
+    @classmethod
+    def getOptionsBoxSelFile(cls, prevChoices):
+        if prevChoices.fileYesNo == 'yes':
+            return GeneralGuiTool.getHistorySelectionElement('tabular')
+
+
+    @classmethod
+    def getOptionsBoxFilename(cls, prevChoices):
+        if prevChoices.fileYesNo == 'yes':
+            if prevChoices.selFile:
+                ll=cls.readFile(prevChoices.selFile)
+                num=10
+                if len(ll) >= num:
+                    return ll[0:num]
+                else:
+                    return ll
+
+    @classmethod
     def getOptionsBoxAttrName(cls, prevChoices):
-        if prevChoices.gsuite:
-            return ''
+        if prevChoices.fileYesNo == 'no':
+            if prevChoices.gsuite:
+                return ''
+
+    @classmethod
+    def readFile(cls, selFile2):
+        allDataList = []
+        with open(ExternalTrackManager.extractFnFromGalaxyTN(selFile2.split(':')), 'r') as f:
+            for r in f:
+                line = r.strip('\n').split('\t')
+                if line != ['']:
+                    allDataList.append([i for i in line])
+        return allDataList
 
     @classmethod
     def getOptionsBoxGsuiteTitles(cls, prevChoices):
-        if prevChoices.gsuite:
-            gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
-            return '__hidden__', gSuite.allTrackTitles()
+            if prevChoices.gsuite:
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+                return '__hidden__', gSuite.allTrackTitles()
+
+        # if prevChoices.selFile:
+        #     return None
+            #gsuite = getGSuiteFromGalaxyTN(prevChoices.gsuite)
+            #file = readFile(prevChoices.filename)
+            #return '__hidden__', gSuite.allTrackTitles()
 
     @classmethod
     def _getGsuiteTitles(cls, prevChoices):
@@ -109,22 +156,42 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
-        attrName = choices.attrName
         outputGSuite = GSuite()
+        if choices.fileYesNo == 'yes':
+            #reads only tabular file from user and file should have the correct sample name
+            ourFile = cls.readFile(choices.selFile)
+            for i, track in enumerate(gSuite.allTracks()):  #loops through the tracks
+                if i < cls.MAX_NUM_OF_TRACKS:
+                    trackTitle = track.title.split(' - ', 1)[1]
+                    indexOfTitle = [item[0] for item in ourFile].index(trackTitle)
+                    for j in range(1, len(ourFile[0])):
+                        attrName = ourFile[0][j]
+                        newAttrValue = str(ourFile[indexOfTitle][j])
+                        if newAttrValue == 'None':
+                            newAttrValue = '.'
+                        track.setAttribute(attrName.encode('utf-8'), newAttrValue.encode('utf-8'))
 
-        for i, track in enumerate(gSuite.allTracks()):
-            if i < cls.MAX_NUM_OF_TRACKS:
-                newAttrValue = getattr(choices, 'selectAttribute%s' % ((i*2)+1))
-                if(attrName == TITLE_COL):
-                    track.title = newAttrValue
-                else:
-                    if newAttrValue == 'None' or newAttrValue == '':
-                        newAttrValue = '.'
-                    track.setAttribute(attrName.encode('utf-8'), newAttrValue.encode('utf-8'))
-            outputGSuite.addTrack(track)
+                    outputGSuite.addTrack(track)
+            GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
-        #Creates the new GSuite
-        GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
+        else:
+
+            attrName = choices.attrName
+            outputGSuite = GSuite()
+
+            for i, track in enumerate(gSuite.allTracks()):
+                if i < cls.MAX_NUM_OF_TRACKS:
+                    newAttrValue = getattr(choices, 'selectAttribute%s' % ((i*2)+1))
+                    if(attrName == TITLE_COL):
+                        track.title = newAttrValue
+                    else:
+                        if newAttrValue == 'None' or newAttrValue == '':
+                            newAttrValue = '.'
+                        track.setAttribute(attrName.encode('utf-8'), newAttrValue.encode('utf-8'))
+                outputGSuite.addTrack(track)
+
+            #Creates the new GSuite
+            GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
     @classmethod
     def validateAndReturnErrors(cls, choices):

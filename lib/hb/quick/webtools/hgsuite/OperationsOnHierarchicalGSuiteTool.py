@@ -54,6 +54,7 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
             if prevChoices.gSuiteNum == 'yes':
                 gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
                 return ['None'] + [cls.TITLE] + gSuiteTN.attributes
+
             # else:
             #     gSuiteTN = getGSuiteFromGalaxyTN(prevChoices.gsuite)
             #     return ['all'] + gSuiteTN.attributes
@@ -311,10 +312,16 @@ class OperationsOnHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
-        if not choices.gsuite and choices.gSuiteNum is not 'yes':
-            return 'Select first hGSuite'
+        if choices.gsuite and choices.gSuiteNum is not 'yes':
+            #return 'Select first hGSuite'
+            #GeneralGuiTool.getHistorySelectionElement('gsuite')
+            gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+            if gsuite.isPreprocessed():
+                return "Please select a primary hGSuite"
+        # it is only working on primary gsuite
+        #if gsuite.isPreprocessed() == False:
 
-        # if choices.gsuite and choices.gSuiteNum is not 'yes':
+    # if choices.gsuite and choices.gSuiteNum is not 'yes':
         #     gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
         #     if gsuite.isPreprocessed():
         #         return 'hGSuite need to be primary. If you have preprocessed hGSuite, then use tool: Convert GSuite tracks from preprocessed to primary.'

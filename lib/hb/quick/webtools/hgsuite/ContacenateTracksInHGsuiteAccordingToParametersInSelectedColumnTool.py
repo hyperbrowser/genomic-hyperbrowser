@@ -29,9 +29,9 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                 ('Select column, you want to use to combine tracks', 'column'),
                 ('Show possible keywords', 'possibleColumns')
         ] + \
-                [('Select keyword %s' % (i+1) + ', you want to combain (use colon to combine)', 'selectedColumns%s' % i) for i \
+                [('Select keyword %s' % (i+1) + ', you want to combain (use comma to combine)', 'selectedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)] + \
-                [('Select column %s' % (i+1) + ' which you would like to treat as unique (datasets will be combain separately to selected groups)', 'excludedColumns%s' % i) for i \
+                [('Select column %s' % (i+1) + ' which you would like to treat as unique (datasets will be combined separately to selected groups)', 'excludedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)]
 
     @classmethod
@@ -141,6 +141,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
     def execute(cls, choices, galaxyFn=None, username=''):
         column = choices.column.encode('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        #what to combine
         phraseList = [a.strip(' ').split(',') for a in cls._getSelectedPhrases(choices)]
 
         excludedList = cls._getExcludedColumns(choices)
@@ -208,6 +209,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
         for i, iTrack in enumerate(gSuite.allTracks()):
 
             excludedColumn = []
+            #print ("excludedList"+str(excludedList))
             for attrName in excludedList:
                 excludedColumn.append(iTrack.getAttribute(attrName))
             excludedColumn = tuple(excludedColumn)
@@ -218,11 +220,12 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                     whichTracksWillBeCombinedTogether[excludedColumn].append([])
 
             phrase = iTrack.getAttribute(column)
-            # print phraseList, phrase, '<br>'
+            #print phraseList, phrase, '<br>'
             j = cls._getPhraseIndex(phraseList, phrase)
-            # print 'excludedColumn=', excludedColumn, ' i=', i, ' j=', j, '<br>'
+            #print 'excludedColumn=', excludedColumn, ' i=', i, ' j=', j, '<br>'
             if j != None:
                 whichTracksWillBeCombinedTogether[excludedColumn][j] += [i]
+            #print(whichTracksWillBeCombinedTogether)
         return  whichTracksWillBeCombinedTogether
 
     @classmethod

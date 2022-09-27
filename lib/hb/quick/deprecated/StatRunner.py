@@ -159,6 +159,7 @@ class StatJob(object):
         return results
 
     def _doLocalAnalysis(self, results, stats):
+
         for region in self._userBinSource:
             res, stat = self._getSingleResult(region)
             results[region] = res

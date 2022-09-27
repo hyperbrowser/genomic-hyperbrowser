@@ -12,6 +12,7 @@ from quick.webtools.hgsuite.Legend import Legend
 
 
 class PlotHClustTool(GeneralGuiTool):
+    TITLE = '-- Select --'
     @classmethod
     def getToolName(cls):
         return "Plot hierarchical clustering for tabular file or hGSuite"
@@ -36,10 +37,10 @@ class PlotHClustTool(GeneralGuiTool):
                 return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile,
                                                               asListResponse=True)
             if suffixForFile == 'gsuite':
-                gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile, asListResponse=True)
+                #gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile, asListResponse=True)
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
                 return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile,
-                                                              gSuiteAttributes=gSuite.attributes + [
-                                                                  cls.TITLE])
+                                                              gSuiteAttributes=[cls.TITLE] + gSuite.attributes, asListResponse=True)
 
     @classmethod
     def getOptionsBoxSelCol(cls, prevChoices):
@@ -49,9 +50,9 @@ class PlotHClustTool(GeneralGuiTool):
             if suffixForFile == 'tabular':
                 return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile, asListResponse=True)
             if suffixForFile == 'gsuite':
-                gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile, asListResponse=True)
+                gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
                 return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile,
-                                         gSuiteAttributes=gSuite.attributes + [cls.TITLE])
+                                         gSuiteAttributes=[cls.TITLE]+ gSuite.attributes, asListResponse=True)
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
@@ -116,6 +117,10 @@ class PlotHClustTool(GeneralGuiTool):
     @classmethod
     def validateAndReturnErrors(cls, choices):
         if choices.selFile:
+            if choices.selColNames == cls.TITLE:
+                return "Select column to define clustering"
+            if choices.selCol == cls.TITLE:
+                return "Select column that has numbers"
             if choices.selCol:
                 suffixForFile = extractFileSuffixFromDatasetInfo(choices.selFile)
                 if suffixForFile == 'tabular':
