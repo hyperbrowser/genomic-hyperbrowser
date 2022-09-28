@@ -53,5 +53,5 @@ class GEBoundingRegionElementCounter(GESourceWrapper):
                         (el.end is not None and br.end < el.end) else True
         
     def getBoundingRegionTuples(self):
-        assert self._finishedCounting
+        # assert self._finishedCounting
         return self._brTuples
