@@ -46,6 +46,11 @@ class VirtualStartFromIntervalMid(VirtualStartFromInterval):
     #    #    return (self._endArray[key] + self._startArray[key]) / 2
 
     def _asNumpyArray(self):
+        # TODO: This does not seem correct. The mid-points of segments of even length are
+        # rounded up, which seems a strange choice (default to round down seems more natural
+        # and what users would assume).
+        # In any case, removing the consideration of strandArray removes a simple way to reduce
+        # analysis bias for tracks with strands.
         return (self._endArray + self._startArray) / 2
 
 #class VirtualStartFromIntervalMidCeil(VirtualStartFromInterval):
