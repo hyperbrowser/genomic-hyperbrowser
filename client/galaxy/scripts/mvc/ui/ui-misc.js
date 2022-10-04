@@ -10,268 +10,217 @@ define(['utils/utils',
     'mvc/ui/ui-modal'],
     function( Utils, Select, Slider, Options, Drilldown, Buttons, Modal ) {
 
-    /** Image wrapper */
-    var Image = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = Utils.merge(options, {
-                url  : '',
-                cls  : ''
-            });
-            this.setElement(this._template(this.options));
-        },
-        _template: function(options) {
-            return '<img class="ui-image ' + options.cls + '" src="' + options.url + '"/>';
-        }
-    });
-
     /** Label wrapper */
     var Label = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = Utils.merge(options, {
-                title   : '',
-                cls     : '',
-                tagname : 'label'
-            });
-            this.setElement(this._template(this.options));
+        tagName: 'label',
+        initialize: function( options ) {
+            this.model = options && options.model || new Backbone.Model( options );
+            this.tagName = options.tagName || this.tagName;
+            this.setElement( $( '<' + this.tagName + '/>' ) );
+            this.listenTo( this.model, 'change', this.render, this );
+            this.render();
         },
-        title: function(new_title) {
-            this.$el.html(new_title);
+        title: function( new_title ) {
+            this.model.set( 'title', new_title );
         },
         value: function() {
-            return options.title;
+            return this.model.get( 'title' );
         },
-        _template: function(options) {
-            return $( '<' + options.tagname + '/>' ).addClass( 'ui-label' ).addClass( options.cls ).html( options.title );
-        }
-    });
-
-    /** Displays an icon with title */
-    var Icon = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = Utils.merge(options, {
-                floating    : 'right',
-                icon        : '',
-                tooltip     : '',
-                placement   : 'bottom',
-                title       : '',
-                cls         : ''
-            });
-            this.setElement(this._template(this.options));
-            $(this.el).tooltip({title: options.tooltip, placement: 'bottom'});
-        },
-        _template: function(options) {
-            return  '<div>' +
-                        '<span class="fa ' + options.icon + '" class="ui-icon"/>&nbsp;' +
-                        options.title +
-                    '</div>';
-        }
-    });
-
-    /** Renders an anchor element */
-    var Anchor = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = Utils.merge(options, {
-                title  : '',
-                cls    : ''
-            });
-            this.setElement(this._template(this.options));
-            $(this.el).on('click', options.onclick);
-        },
-        _template: function(options) {
-            return '<div><a href="javascript:void(0)" class="ui-anchor ' + options.cls + '">' + options.title + '</a></div>';
+        render: function() {
+            this.$el.removeClass()
+                    .addClass( 'ui-label' )
+                    .addClass( this.model.get( 'cls' ) )
+                    .html( this.model.get( 'title' ) );
+            return this;
         }
     });
 
     /** Displays messages used e.g. in the tool form */
     var Message = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = Utils.merge(options, {
+        initialize: function( options ) {
+            this.model = options && options.model || new Backbone.Model({
                 message     : null,
                 status      : 'info',
                 cls         : '',
-                persistent  : false
-            });
-            this.setElement('<div class="' + this.options.cls + '"/>');
-            this.options.message && this.update(this.options);
+                persistent  : false,
+                fade        : true
+            }).set( options );
+            this.listenTo( this.model, 'change', this.render, this );
+            this.render();
         },
-
-        // update
-        update: function(options) {
-            // get options
-            this.options = Utils.merge(options, this.options);
-
-            // show message
-            if (options.message != '') {
-                this.$el.html(this._template(this.options));
-                this.$el.fadeIn();
-
-                // clear previous timeouts
-                if (this.timeout) {
-                    window.clearTimeout(this.timeout);
-                }
-
-                // set timeout if message is not persistent
-                if (!options.persistent) {
+        update: function( options ) {
+            this.model.set( options );
+        },
+        render: function() {
+            this.$el.removeClass().addClass( 'ui-message' ).addClass( this.model.get( 'cls' ) );
+            var status = this.model.get( 'status' );
+            if ( this.model.get( 'large' ) ) {
+                this.$el.addClass((( status == 'success' && 'done' ) ||
+                                   ( status == 'danger' && 'error' ) ||
+                                     status ) + 'messagelarge' );
+            } else {
+                this.$el.addClass( 'alert' ).addClass( 'alert-' + status );
+            }
+            if ( this.model.get( 'message' ) ) {
+                this.$el.html( this.messageForDisplay() );
+                this.$el[ this.model.get( 'fade' ) ? 'fadeIn' : 'show' ]();
+                this.timeout && window.clearTimeout( this.timeout );
+                if ( !this.model.get( 'persistent' ) ) {
                     var self = this;
-                    this.timeout = window.setTimeout(function() {
-                        if (self.$el.is(':visible')) {
-                            self.$el.fadeOut();
-                        } else {
-                            self.$el.hide();
-                        }
-                    }, 3000);
+                    this.timeout = window.setTimeout( function() {
+                        self.model.set( 'message', '' );
+                    }, 3000 );
                 }
             } else {
                 this.$el.fadeOut();
             }
+            return this;
         },
-
-        // template
-        _template: function(options) {
-            var cls_status = 'ui-message alert alert-' + options.status;
-            if (options.large) {
-                cls_status = ( ( options.status == 'success' && 'done' ) ||
-                               ( options.status == 'danger' && 'error' ) ||
-                                 options.status ) + 'messagelarge';
-            }
-            return  '<div class="' + cls_status + '" >' +
-                        options.message +
-                    '</div>';
+        messageForDisplay: function() {
+            return _.escape( this.model.get( 'message' ) );
         }
     });
 
-    /** Render a search box */
-    var Searchbox = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = Utils.merge(options, {
-                onclick : null,
-                searchword : ''
-            });
-            this.setElement(this._template(this.options));
-            var self = this;
-            if (this.options.onclick) {
-                this.$el.on('submit', function(e) {
-                    var search_field = self.$el.find('#search');
-                    self.options.onclick(search_field.val());
-                });
-            }
-        },
-        _template: function(options) {
-            return  '<div class="ui-search">' +
-                        '<form onsubmit="return false;">' +
-                            '<input id="search" class="form-control input-sm" type="text" name="search" placeholder="Search..." value="' + options.searchword + '">' +
-                            '<button type="submit" class="btn search-btn">' +
-                                '<i class="fa fa-search"></i>' +
-                            '</button>' +
-                        '</form>' +
-                    '</div>';
+    var UnescapedMessage = Message.extend({
+        messageForDisplay: function() {
+            return this.model.get( 'message' );
         }
     });
 
     /** Renders an input element used e.g. in the tool form */
     var Input = Backbone.View.extend({
-        initialize : function(options) {
-            // configure options
-            this.options = Utils.merge(options, {
+        initialize: function( options ) {
+            this.model = options && options.model || new Backbone.Model({
                 type            : 'text',
                 placeholder     : '',
                 disabled        : false,
+                readonly        : false,
                 visible         : true,
                 cls             : '',
-                area            : false
-            });
-
-            // create new element
-            this.setElement(this._template(this.options));
-
-            // set initial value
-            if (this.options.value !== undefined) {
-                this.value(this.options.value);
-            }
-
-            // disable input field
-            if (this.options.disabled) {
-                this.$el.prop('disabled', true);
-            }
-
-            // hide input field
-            if (!this.options.visible) {
-                this.$el.hide();
-            }
-
-            // onchange event handler. fires on user activity.
+                area            : false,
+                color           : null,
+                style           : null
+            }).set( options );
+            this.tagName = this.model.get( 'area' ) ? 'textarea' : 'input';
+            this.setElement( $( '<' + this.tagName + '/>' ) );
+            this.listenTo( this.model, 'change', this.render, this );
+            this.render();
+        },
+        events: {
+            'input': '_onchange'
+        },
+        value: function( new_val ) {
+            new_val !== undefined && this.model.set( 'value', typeof new_val === 'string' ? new_val : '' );
+            return this.model.get( 'value' );
+        },
+        render: function() {
             var self = this;
-            this.$el.on('input', function() {
-                if (self.options.onchange) {
-                    self.options.onchange(self.$el.val());
-                }
+            this.$el.removeClass()
+                    .addClass( 'ui-' + this.tagName )
+                    .addClass( this.model.get( 'cls' ) )
+                    .addClass( this.model.get( 'style' ) )
+                    .attr( 'id', this.model.id )
+                    .attr( 'type', this.model.get( 'type' ) )
+                    .attr( 'placeholder', this.model.get( 'placeholder' ) )
+                    .css( 'color', this.model.get( 'color' ) || '' )
+                    .css( 'border-color', this.model.get( 'color' ) || '' );
+            var datalist = this.model.get( 'datalist' );
+            if ( $.isArray( datalist ) && datalist.length > 0 ) {
+                this.$el.autocomplete( { source : function( request, response ) { response( self.model.get( 'datalist' ) ) },
+                                         change : function() { self._onchange() } } );
+            }
+            if ( this.model.get( 'value' ) !== this.$el.val() ) {
+                this.$el.val( this.model.get( 'value' ) );
+            }
+            _.each( [ 'readonly', 'disabled' ], function( attr_name ) {
+                self.model.get( attr_name ) ? self.$el.attr( attr_name, true ) : self.$el.removeAttr( attr_name );
             });
+            this.$el[ this.model.get( 'visible' ) ? 'show' : 'hide' ]();
+            return this;
         },
-
-        // value
-        value : function (new_val) {
-            if (new_val !== undefined) {
-                this.$el.val( ( typeof new_val === 'string' && new_val ) || '' );
-            }
-            return this.$el.val();
-        },
-
-        // template
-        _template: function(options) {
-            if (options.area) {
-                return '<textarea id="' + options.id + '" class="ui-textarea ' + options.cls + '"></textarea>';
-            } else {
-                return '<input id="' + options.id + '" type="' + options.type + '" value="' + options.value + '" placeholder="' + options.placeholder + '" class="ui-input ' + options.cls + '">';
-            }
+        _onchange: function() {
+            this.value( this.$el.val() );
+            this.model.get( 'onchange' ) && this.model.get( 'onchange' )( this.model.get( 'value' ) );
         }
     });
 
     /** Creates a hidden element input field used e.g. in the tool form */
     var Hidden = Backbone.View.extend({
-        initialize : function(options) {
-            this.options = options;
-            this.setElement(this._template(this.options));
-            if (this.options.value !== undefined) {
-                this.value(this.options.value);
-            }
+        initialize: function( options ) {
+            this.model = options && options.model || new Backbone.Model( options );
+            this.setElement( $ ( '<div/>' ).append( this.$info = $( '<div/>' ) )
+                                           .append( this.$hidden = $( '<div/>' ) ) );
+            this.listenTo( this.model, 'change', this.render, this );
+            this.render();
         },
-        value : function (new_val) {
-            if (new_val !== undefined) {
-                this.$('hidden').val(new_val);
-            }
-            return this.$('hidden').val();
+        value: function( new_val ) {
+            new_val !== undefined && this.model.set( 'value', new_val );
+            return this.model.get( 'value' );
         },
-        _template: function(options) {
-            var tmpl =  '<div id="' + options.id + '" >';
-            if (options.info) {
-                tmpl +=     '<div>' + options.info + '</div>';
+        render: function() {
+            this.$el.attr( 'id', this.model.id );
+            this.$hidden.val( this.model.get( 'value' ) );
+            this.model.get( 'info' ) ? this.$info.show().text( this.model.get( 'info' ) ) : this.$info.hide();
+            return this;
+        }
+    });
+
+    /** Creates a upload element input field */
+    var Upload = Backbone.View.extend({
+        initialize: function( options ) {
+            var self = this;
+            this.model = options && options.model || new Backbone.Model( options );
+            this.setElement( $ ( '<div/>' ).append( this.$info = $( '<div/>' ) )
+                                           .append( this.$file = $( '<input/>' ).attr( 'type', 'file' ).addClass( 'ui-margin-bottom' ) )
+                                           .append( this.$text = $( '<textarea/>' ).addClass( 'ui-textarea' ).attr( 'disabled', true ) )
+                                           .append( this.$wait = $( '<i/>' ).addClass( 'fa fa-spinner fa-spin' ) ) );
+            this.listenTo( this.model, 'change', this.render, this );
+            this.$file.on( 'change', function( e ) { self._readFile( e ) } );
+            this.render();
+        },
+        value: function( new_val ) {
+            new_val !== undefined && this.model.set( 'value', new_val );
+            return this.model.get( 'value' );
+        },
+        render: function() {
+            this.$el.attr( 'id', this.model.id );
+            this.model.get( 'info' ) ? this.$info.show().text( this.model.get( 'info' ) ) : this.$info.hide();
+            this.model.get( 'value' ) ? this.$text.text( this.model.get( 'value' ) ).show() : this.$text.hide();
+            this.model.get( 'wait' ) ? this.$wait.show() : this.$wait.hide();
+            return this;
+        },
+        _readFile: function( e ) {
+            var self = this;
+            var file = e.target.files && e.target.files[ 0 ];
+            if ( file ) {
+                var reader = new FileReader();
+                reader.onload = function() {
+                    self.model.set( { wait: false, value: this.result } );
+                }
+                this.model.set( { wait: true, value: null } );
+                reader.readAsText( file );
             }
-            tmpl +=         '<hidden value="' + options.value + '"/>' +
-                        '</div>';
-            return tmpl;
         }
     });
 
     return {
-        Anchor      : Anchor,
-        Button      : Buttons.ButtonDefault,
-        ButtonIcon  : Buttons.ButtonIcon,
-        ButtonCheck : Buttons.ButtonCheck,
-        ButtonMenu  : Buttons.ButtonMenu,
-        ButtonLink  : Buttons.ButtonLink,
-        Icon        : Icon,
-        Image       : Image,
-        Input       : Input,
-        Label       : Label,
-        Message     : Message,
-        Modal       : Modal,
-        RadioButton : Options.RadioButton,
-        Checkbox    : Options.Checkbox,
-        Radio       : Options.Radio,
-        Searchbox   : Searchbox,
-        Select      : Select,
-        Hidden      : Hidden,
-        Slider      : Slider,
-        Drilldown   : Drilldown
+        Button           : Buttons.ButtonDefault,
+        ButtonIcon       : Buttons.ButtonIcon,
+        ButtonCheck      : Buttons.ButtonCheck,
+        ButtonMenu       : Buttons.ButtonMenu,
+        ButtonLink       : Buttons.ButtonLink,
+        Input            : Input,
+        Label            : Label,
+        Message          : Message,
+        UnescapedMessage : UnescapedMessage,
+        Upload           : Upload,
+        Modal            : Modal,
+        RadioButton      : Options.RadioButton,
+        Checkbox         : Options.Checkbox,
+        Radio            : Options.Radio,
+        Select           : Select,
+        Hidden           : Hidden,
+        Slider           : Slider,
+        Drilldown        : Drilldown
     }
 });

@@ -5,7 +5,7 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( LIST_ITEM, STATES, faIconButton, BASE_MVC, _l ){
-/* global Backbone */
+'use strict';
 
 var logNamespace = 'dataset';
 /*==============================================================================
@@ -42,19 +42,33 @@ var DatasetListItemView = _super.extend(
     /** event listeners */
     _setUpListeners : function(){
         _super.prototype._setUpListeners.call( this );
+        var self = this;
 
         // re-rendering on any model changes
-        this.model.on( 'change', function( model, options ){
-            // if the model moved into the ready state and is expanded without details, fetch those details now
-            if( this.model.changedAttributes().state && this.model.inReadyState()
-            &&  this.expanded && !this.model.hasDetails() ){
-                // will render automatically (due to fetch -> change)
-                this.model.fetch();
-
-            } else {
-                this.render();
+        return self.listenTo( self.model, {
+            'change': function( model ){
+                // if the model moved into the ready state and is expanded without details, fetch those details now
+                if( self.model.changedAttributes().state &&
+                    self.model.inReadyState() &&
+                    self.expanded &&
+                    !self.model.hasDetails() ){
+                    // normally, will render automatically (due to fetch -> change),
+                    // but! setting_metadata sometimes doesn't cause any other changes besides state
+                    // so, not rendering causes it to seem frozen in setting_metadata state
+                    self.model.fetch({ silent : true })
+                        .done( function(){ self.render(); });
+                } else {
+                    if( _.has( model.changed, 'tags' ) && _.keys( model.changed ).length === 1 ){
+                        // If only the tags have changed, rerender specifically
+                        // the titlebar region.  Otherwise default to the full
+                        // render.
+                        self.$( '.nametags' ).html( self._renderNametags() );
+                    } else {
+                        self.render();
+                    }
+                }
             }
-        }, this );
+        });
     },
 
     // ......................................................................... expandable
@@ -92,17 +106,6 @@ var DatasetListItemView = _super.extend(
         I've considered (a couple of times) - creating a view for each state
             - but recreating the view during an update...seems wrong
     */
-    /** Render this HDA, set up ui.
-     *  @param {Number or String} speed jq fx speed
-     *  @returns {Object} this
-     */
-    render : function( speed ){
-        //HACK: hover exit doesn't seem to be called on prev. tooltips when RE-rendering - so: no tooltip hide
-        // handle that here by removing previous view's tooltips
-        //this.$el.find("[title]").tooltip( "destroy" );
-        return _super.prototype.render.call( this, speed );
-    },
-
     /** In this override, add the dataset state as a class for use with state-based CSS */
     _swapNewRender : function( $newRender ){
         _super.prototype._swapNewRender.call( this, $newRender );
@@ -121,12 +124,11 @@ var DatasetListItemView = _super.extend(
 
     /** Render icon-button to display dataset data */
     _renderDisplayButton : function(){
-//TODO:?? too complex - possibly move into template
         // don't show display if not viewable or not accessible
         var state = this.model.get( 'state' );
-        if( ( state === STATES.NOT_VIEWABLE )
-        ||  ( state === STATES.DISCARDED )
-        ||  ( !this.model.get( 'accessible' ) ) ){
+        if( ( state === STATES.NOT_VIEWABLE ) ||
+            ( state === STATES.DISCARDED ) ||
+            ( !this.model.get( 'accessible' ) ) ){
             return null;
         }
 
@@ -188,7 +190,6 @@ var DatasetListItemView = _super.extend(
             .prepend( this._renderDetailMessages() );
         $details.find( '.display-applications' ).html( this._renderDisplayApplications() );
 
-//TODO: double tap
         this._setUpBehaviors( $details );
         return $details;
     },
@@ -206,7 +207,7 @@ var DatasetListItemView = _super.extend(
         var view = this,
             $warnings = $( '<div class="detail-messages"></div>' ),
             json = view.model.toJSON();
-//TODO:! unordered (map)
+        //TODO:! unordered (map)
         _.each( view.templates.detailMessages, function( templateFn ){
             $warnings.append( $( templateFn( json, view ) ) );
         });
@@ -248,15 +249,22 @@ var DatasetListItemView = _super.extend(
             classes     : 'params-btn',
             href        : this.model.urls.show_params,
             target      : this.linkTarget,
-            faIcon      : 'fa-info-circle'
+            faIcon      : 'fa-info-circle',
+            onclick     : function( ev ) {
+                if ( Galaxy.frame && Galaxy.frame.active ) {
+                    Galaxy.frame.add( { title: 'Dataset details', url: this.href } );
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                }
+            }
         });
     },
+
 
     /** Render icon-button/popupmenu to download the data (and/or the associated meta files (bai, etc.)) for this.
      *  @returns {jQuery} rendered DOM
      */
     _renderDownloadButton : function(){
-//TODO: to (its own) template fn
         // don't show anything if the data's been purged
         if( this.model.get( 'purged' ) || !this.model.hasData() ){ return null; }
 
@@ -267,7 +275,8 @@ var DatasetListItemView = _super.extend(
         }
 
         return $([
-            '<a class="download-btn icon-btn" href="', this.model.urls.download, '" title="' + _l( 'Download' ) + '" download>',
+            '<a class="download-btn icon-btn" ',
+                'href="', this.model.urls.download, '" title="' + _l( 'Download' ) + '" download>',
                 '<span class="fa fa-floppy-o"></span>',
             '</a>'
         ].join( '' ));
@@ -294,6 +303,16 @@ var DatasetListItemView = _super.extend(
                 '</ul>',
             '</div>'
         ].join( '\n' ));
+    },
+
+    _renderNametags : function(){
+        var tpl =  _.template([
+            '<% _.each(_.sortBy(_.uniq(tags), function(x) { return x }), function(tag){ %>',
+                '<% if (tag.indexOf("name:") == 0){ %>',
+                    '<span class="label label-info"><%- tag.slice(5) %></span>',
+                '<% } %>',
+            '<% }); %>'].join(''));
+        return tpl({tags: this.model.get('tags')});
     },
 
     // ......................................................................... misc

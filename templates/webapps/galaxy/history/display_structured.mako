@@ -232,7 +232,7 @@ elif entity_name == "WorkflowInvocation":
     <% id = trans.security.encode_id( hda.id ) %>
     <%
         folder = hda.copied_from_library_dataset_dataset_association.library_dataset.folder
-        folder_id = 'F' + trans.security.encode_id( folder.id )
+        folder_id = trans.security.encode_id( folder.id )
     %>
     <div class="copied-from copied-from-library">
         <div class="header">
@@ -258,7 +258,7 @@ elif entity_name == "WorkflowInvocation":
 ## render a job (as a toolForm) and its children (hdas)
     <div class="tool toolForm">
         <%
-            tool = trans.app.toolbox.get_tool( job.tool_id )
+            tool = trans.app.toolbox.get_tool( job.tool_id, tool_version=job.tool_version )
             if tool:
                 tool_name = tool.name
                 tool_desc = tool.description

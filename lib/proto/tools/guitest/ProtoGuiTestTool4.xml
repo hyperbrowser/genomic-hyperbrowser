@@ -1,0 +1,4 @@
+<tool id="proto_proto_gui_test_tool4" name="Multitool:" version="1.0.0"
+  tool_type="proto_generic" proto_tool_module="proto.tools.guitest.ProtoGuiTestTool4" proto_tool_class="ProtoGuiTestTool4">
+  <description>Test tool #4 for Galaxy ProTo GUI</description>
+</tool>

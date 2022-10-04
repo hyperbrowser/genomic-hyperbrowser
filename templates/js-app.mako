@@ -9,6 +9,13 @@
         <meta name="viewport" content="maximum-scale=1.0">
         ## Force IE to standards mode, and prefer Google Chrome Frame if the user has already installed it
         <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+
+        <title>
+            Galaxy
+            %if app.config.brand:
+            | ${app.config.brand}
+            %endif
+        </title>
         ## relative href for site root
         <link rel="index" href="${ h.url_for( '/' ) }"/>
         <link href="${h.url_for('/static/hyperbrowser/state/styles.css')}" rel="stylesheet" type="text/css" >
@@ -30,6 +37,7 @@
             'bootstrap-tour',
         )}
         ${ page_setup() }
+        <link rel="icon" href="static/favicon.png">
     </head>
 
     <body scroll="no" class="full-content">
@@ -51,10 +59,25 @@
 
         ## js libraries and bundled js app
         ${ h.js(
+            'libs/require',
             'bundled/libs.bundled',
             'bundled/' + js_app_name + '.bundled'
         )}
         <script type="text/javascript">
+            require.config({
+                baseUrl: "${h.url_for('/static/scripts') }",
+                shim: {
+                    "libs/underscore": {
+                        exports: "_"
+                    },
+                    "libs/backbone": {
+                        deps: [ 'jquery', 'libs/underscore' ],
+                        exports: "Backbone"
+                    }
+                },
+                // cache busting using time server was restarted
+                urlArgs: 'v=${app.server_starttime}',
+            });
             ${js_app_entry_fn}(
                 ${ h.dumps( options ) },
                 ${ h.dumps( bootstrapped ) }
@@ -68,7 +91,7 @@
 <%def name="page_setup()">
     ## Send js errors to Sentry server if configured
     %if app.config.sentry_dsn:
-    ${h.js( "libs/tracekit", "libs/raven" )}
+    ${h.js( "libs/raven" )}
     <script>
         Raven.config('${app.config.sentry_dsn_public}').install();
         %if trans.user:

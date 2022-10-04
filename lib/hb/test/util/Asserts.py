@@ -45,11 +45,29 @@ class TestCaseWithImprovedAsserts(unittest.TestCase):
         self.assertListsOrDicts(a.val, b.val)
         self.assertListsOrDicts(a.edges, b.edges)
         self.assertListsOrDicts(a.weights, b.weights)
+        self.assertListsOrDicts(a.start, b.start)
+        self.assertListsOrDicts(a.end, b.end)
+        self.assertListsOrDicts(a.strand, b.strand)
         a.val = b.val = None
         a.edges = b.edges = None
         a.weights = b.weights = None
-        
-        unittest.TestCase.assertEqual(self, a, b)
+
+        # a.end is used in GtrackGenomeElementSource in _checkLastBoundingRegion so it can't set to None
+        # here, checking for other fields here as well just to be sure
+        if isinstance(a.start, numpy.ndarray):
+            a.start = b.start = None
+        if isinstance(a.end, numpy.ndarray):
+            a.end = b.end = None
+        if isinstance(a.strand, numpy.ndarray):
+            a.strand = b.strand = None
+
+        if a.extra:
+            for e in a.orderedExtraKeys:
+                self.assertListsOrDicts(a.extra[e], b.extra[e])
+                a.extra.pop(e, None)
+                b.extra.pop(e, None)
+
+        return unittest.TestCase.assertEqual(self, a, b)
         
     def assertGenomeElementLists(self, a, b):
         self.assertEqual(sum([1 for el in a]), sum([1 for el in b]))

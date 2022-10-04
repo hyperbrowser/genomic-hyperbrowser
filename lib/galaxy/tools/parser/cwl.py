@@ -1,43 +1,44 @@
 import logging
 import os
 
-from .interface import ToolSource
-from .interface import PagesSource
-from .interface import PageSource
-from .interface import ToolStdioExitCode
-from .yaml import YamlInputSource
+from galaxy.tools.cwl import tool_proxy
+from galaxy.tools.deps import requirements
+from galaxy.util.odict import odict
 
+from .interface import PageSource
+from .interface import PagesSource
+from .interface import ToolSource
+from .interface import ToolStdioExitCode
 from .output_actions import ToolOutputActionGroup
 from .output_objects import ToolOutput
-
-from galaxy.tools.deps import requirements
-from galaxy.tools.cwl import tool_proxy
-
-from galaxy.util.odict import odict
+from .yaml import YamlInputSource
 
 log = logging.getLogger(__name__)
 
 
 class CwlToolSource(ToolSource):
 
-    def __init__(self, tool_file):
+    def __init__(self, tool_file, strict_cwl_validation=True):
         self._cwl_tool_file = tool_file
         self._id, _ = os.path.splitext(os.path.basename(tool_file))
-        self._tool_proxy = tool_proxy(tool_file)
+        self._tool_proxy = None
+        self._source_path = tool_file
+        self._strict_cwl_validation = strict_cwl_validation
 
     @property
     def tool_proxy(self):
+        if self._tool_proxy is None:
+            self._tool_proxy = tool_proxy(self._source_path, strict_cwl_validation=self._strict_cwl_validation)
         return self._tool_proxy
 
     def parse_tool_type(self):
         return 'cwl'
 
     def parse_id(self):
-        log.warn("TOOL ID is %s" % self._id)
         return self._id
 
     def parse_name(self):
-        return self._id
+        return self.tool_proxy.label() or self.parse_id()
 
     def parse_command(self):
         return "$__cwl_command"
@@ -58,8 +59,20 @@ class CwlToolSource(ToolSource):
 
         return environment_variables
 
+    def parse_edam_operations(self):
+        return []
+
+    def parse_edam_topics(self):
+        return []
+
     def parse_help(self):
-        return ""
+        return self.tool_proxy.description() or ""
+
+    def parse_sanitize(self):
+        return False
+
+    def parse_strict_shell(self):
+        return True
 
     def parse_stdio(self):
         # TODO: remove duplication with YAML
@@ -83,14 +96,14 @@ class CwlToolSource(ToolSource):
         return "0.0.1"
 
     def parse_description(self):
-        return self._tool_proxy.description() or ""
+        return self.tool_proxy.description()
 
     def parse_input_pages(self):
-        page_source = CwlPageSource(self._tool_proxy)
+        page_source = CwlPageSource(self.tool_proxy)
         return PagesSource([page_source])
 
     def parse_outputs(self, tool):
-        output_instances = self._tool_proxy.output_instances()
+        output_instances = self.tool_proxy.output_instances()
         outputs = odict()
         output_defs = []
         for output_instance in output_instances:
@@ -103,8 +116,11 @@ class CwlToolSource(ToolSource):
     def _parse_output(self, tool, output_instance):
         name = output_instance.name
         # TODO: handle filters, actions, change_format
-        output = ToolOutput( name )
-        output.format = "_sniff_"
+        output = ToolOutput(name)
+        if "File" in output_instance.output_data_type:
+            output.format = "_sniff_"
+        else:
+            output.format = "expression.json"
         output.change_format = []
         output.format_source = None
         output.metadata_source = ""
@@ -113,15 +129,14 @@ class CwlToolSource(ToolSource):
         output.count = None
         output.filters = []
         output.tool = tool
-        output.from_work_dir = "__cwl_output_%s" % name
         output.hidden = ""
-        output.dataset_collectors = []
-        output.actions = ToolOutputActionGroup( output, None )
+        output.dataset_collector_descriptions = []
+        output.actions = ToolOutputActionGroup(output, None)
         return output
 
     def parse_requirements_and_containers(self):
         containers = []
-        docker_identifier = self._tool_proxy.docker_identifier()
+        docker_identifier = self.tool_proxy.docker_identifier()
         if docker_identifier:
             containers.append({"type": "docker",
                                "identifier": docker_identifier})
@@ -129,6 +144,9 @@ class CwlToolSource(ToolSource):
             requirements=[],  # TODO: enable via extensions
             containers=containers,
         ))
+
+    def parse_profile(self):
+        return "16.04"
 
 
 class CwlPageSource(PageSource):

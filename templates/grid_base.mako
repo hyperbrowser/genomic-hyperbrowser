@@ -64,22 +64,9 @@
 
     ## load javascript
     <script type="text/javascript">
-        var gridView = null;
-        function add_tag_to_grid_filter( tag_name, tag_value ){
-            // Put tag name and value together.
-            var tag = tag_name + ( tag_value !== undefined && tag_value !== "" ? ":" + tag_value : "" );
-            var advanced_search = $( '#advanced-search').is(":visible" );
-            if( !advanced_search ){
-                $('#standard-search').slideToggle('fast');
-                $('#advanced-search').slideToggle('fast');
-            }
-            gridView.add_filter_condition( "tags", tag );
-        };
-
-        // load grid viewer
         require(['mvc/grid/grid-view'], function(GridView) {
             $(function() {
-                gridView = new GridView( ${ h.dumps( self.get_grid_config( embedded=embedded, insert=insert ) ) } );
+                var gridView = new GridView( ${ h.dumps( self.get_grid_config( embedded=embedded, insert=insert ) ) } );
             });
         });
     </script>
@@ -89,10 +76,6 @@
 ## generates dictionary
 <%
     item_class = grid.model_class.__name__
-    print item_class
-
-    print 'tag url:', url( controller='tag', action='tag_autocomplete_data', item_class=item_class )
-    ## print 'name url:', url( controller='history', action='name_autocomplete_data' )
     self.grid_config = {
         'title'                         : grid.title,
         'url_base'                      : trans.request.path_url,
@@ -105,15 +88,13 @@
         'cur_page_num'                  : cur_page_num,
         'num_pages'                     : num_pages,
         'num_page_links'                : num_page_links,
-        'history_tag_autocomplete_url'  : url( controller='tag', action='tag_autocomplete_data', item_class=item_class ),
-        ## 'history_name_autocomplete_url' : url( controller='history', action='name_autocomplete_data' ),
         'status'                        : status,
         'message'                       : util.restore_text(message),
         'global_actions'                : [],
         'operations'                    : [],
         'items'                         : [],
         'columns'                       : [],
-        'get_class_plural'              : get_class_plural( grid.model_class ).lower(),
+        'model_class'                   : str( grid.model_class ),
         'use_paging'                    : grid.use_paging,
         'legend'                        : grid.legend,
         'current_item_id'               : False,
@@ -164,6 +145,7 @@
             'sortable'          : column.sortable,
             'label'             : column.label,
             'filterable'        : column.filterable,
+            'target'            : column.target,
             'is_text'           : isinstance(column, TextColumn),
             'href'              : href,
             'extra'             : extra
@@ -178,7 +160,6 @@
             'target'                : operation.target,
             'label'                 : operation.label,
             'confirm'               : operation.confirm,
-            'inbound'               : operation.inbound,
             'global_operation'      : False
         })
         if operation.allow_multiple:
@@ -193,7 +174,7 @@
         self.grid_config['global_actions'].append({
             'url_args'  : url(**action.url_args),
             'label'     : action.label,
-            'inbound'   : action.inbound
+            'target'    : action.target
         })
     endfor
 
@@ -230,8 +211,8 @@
                     link = None
                 endif
 
-                ## inbound
-                inbound = column.inbound
+                ## target
+                target = column.target
 
                 ## get value
                 value = column.get_value( trans, grid, item )
@@ -246,7 +227,7 @@
                 item_dict['column_config'][column.label] = {
                     'link'      : link,
                     'value'     : value,
-                    'inbound'   : inbound
+                    'target'    : target
                 }
             endif
         endfor

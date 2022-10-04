@@ -1,3 +1,4 @@
+
 from gold.origdata.GenomeElement import GenomeElement
 from quick.util.GenomeInfo import GenomeInfo
 from gold.util.CommonFunctions import getFileSuffix
@@ -321,7 +322,7 @@ def getGenomeElementSourceClass(fn, suffix=None, forPreProcessor=False):
     if not suffix:
         from gold.util.CommonFunctions import getFileSuffix
         suffix = getFileSuffix(fn)
-    
+
     if not suffix.lower() in getUnsupportedFileSuffixes():
         for geSourceCls in getAllGenomeElementSourceClasses(forPreProcessor):
             for clsSuffix in geSourceCls.FILE_SUFFIXES:
@@ -340,6 +341,7 @@ def getGenomeElementSourceClass(fn, suffix=None, forPreProcessor=False):
 
     raise NotSupportedError('File type "%s" not supported.' % suffix)
 
+
 def getAllGenomeElementSourceClasses(forPreProcessor):
     from gold.origdata.BedGenomeElementSource import PointBedGenomeElementSource, BedValuedGenomeElementSource, \
                                                      BedCategoryGenomeElementSource, BedGenomeElementSource
@@ -348,11 +350,13 @@ def getAllGenomeElementSourceClasses(forPreProcessor):
     from gold.origdata.HBFunctionGenomeElementSource import HBFunctionGenomeElementSource
     from gold.origdata.BedGraphGenomeElementSource import BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource
     from gold.origdata.MicroarrayGenomeElementSource import MicroarrayGenomeElementSource
+    from gold.origdata.BigBedGenomeElementSource import BigBedGenomeElementSource
 
     allGESourceClasses = [PointBedGenomeElementSource, BedCategoryGenomeElementSource, BedValuedGenomeElementSource, \
                           BedGenomeElementSource, GffCategoryGenomeElementSource, GffGenomeElementSource, \
                           FastaGenomeElementSource, HBFunctionGenomeElementSource, \
-                          BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource, MicroarrayGenomeElementSource]
+                          BedGraphTargetControlGenomeElementSource, BedGraphGenomeElementSource, MicroarrayGenomeElementSource,
+                          BigBedGenomeElementSource]
 
     if forPreProcessor:
         from gold.origdata.WigGenomeElementSource import HbWigGenomeElementSource

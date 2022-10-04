@@ -1,5 +1,6 @@
 # Python package requirements of Galaxy ProTo
 inflection>=0.3.1
+humanize>=0.5.1
 
 # Optional packages
 rpy2>=2.7,<2.9

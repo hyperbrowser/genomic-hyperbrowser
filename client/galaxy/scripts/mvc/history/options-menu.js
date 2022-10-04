@@ -2,10 +2,12 @@ define([
     "mvc/ui/popup-menu",
     "mvc/history/copy-dialog",
     "mvc/base-mvc",
-    "utils/localization"
-], function( PopupMenu, historyCopyDialog, BASE_MVC, _l ){
+    "utils/localization",
+    "mvc/webhooks"
+], function( PopupMenu, historyCopyDialog, BASE_MVC, _l, Webhooks ){
 
-"use strict";
+'use strict';
+
 // ============================================================================
 var menu = [
     {
@@ -14,15 +16,17 @@ var menu = [
     },
     {
         html    : _l( 'Saved Histories' ),
-        href    : 'history/list',
+        href    : 'histories/list',
+        target  : '_top'
+
     },
     {
         html    : _l( 'Histories Shared with Me' ),
-        href    : 'history/list_shared'
+        href    : 'histories/list_shared',
+        target  : '_top'
     },
-
     {
-        html    : _l( 'History Actions' ),
+        html    : _l( 'Current History' ),
         header  : true,
         anon    : true
     },
@@ -58,15 +62,23 @@ var menu = [
     },
     {
         html    : _l( 'Delete' ),
-        confirm : _l( 'Really delete the current history?' ),
-        href    : 'history/delete_current',
+        anon    : true,
+        func    : function() {
+            if( Galaxy && Galaxy.currHistoryPanel && confirm( _l( 'Really delete the current history?' ) ) ){
+                Galaxy.currHistoryPanel.model._delete().done(function(){Galaxy.currHistoryPanel.loadCurrentHistory();});
+            }
+        },
     },
     {
         html    : _l( 'Delete Permanently' ),
-        confirm : _l( 'Really delete the current history permanently? This cannot be undone.' ),
-        href    : 'history/delete_current?purge=True',
         purge   : true,
         anon    : true,
+        func    : function() {
+            if( Galaxy && Galaxy.currHistoryPanel
+            &&  confirm( _l( 'Really delete the current history permanently? This cannot be undone.' ) ) ){
+                Galaxy.currHistoryPanel.model.purge().done(function(){Galaxy.currHistoryPanel.loadCurrentHistory();});
+            }
+        },
     },
 
 
@@ -100,17 +112,11 @@ var menu = [
         html    : _l( 'Unhide Hidden Datasets' ),
         anon    : true,
         func    : function() {
+            // TODO: Deprecate this functionality and replace with group dataset selector and action combination
             if( Galaxy && Galaxy.currHistoryPanel && confirm( _l( 'Really unhide all hidden datasets?' ) ) ){
-                var filtered = Galaxy.currHistoryPanel.model.contents.hidden();
-                //TODO: batch
-                filtered.ajaxQueue( Backbone.Model.prototype.save, { visible : true })
-                    .done( function(){
-                        Galaxy.currHistoryPanel.renderItems();
-                    })
-                    .fail( function(){
-                        alert( 'There was an error unhiding the datasets' );
-                        console.error( arguments );
-                    });
+                $.post(Galaxy.root + "history/adjust_hidden",
+                       { 'user_action' : 'unhide' },
+                       function(){Galaxy.currHistoryPanel.loadCurrentHistory();});
             }
         },
     },
@@ -118,18 +124,11 @@ var menu = [
         html    : _l( 'Delete Hidden Datasets' ),
         anon    : true,
         func    : function() {
+            // TODO: Deprecate this functionality and replace with group dataset selector and action combination
             if( Galaxy && Galaxy.currHistoryPanel && confirm( _l( 'Really delete all hidden datasets?' ) ) ){
-                var filtered = Galaxy.currHistoryPanel.model.contents.hidden();
-                //TODO: batch
-                // both delete *and* unhide them
-                filtered.ajaxQueue( Backbone.Model.prototype.save, { deleted : true, visible: true })
-                    .done( function(){
-                        Galaxy.currHistoryPanel.renderItems();
-                    })
-                    .fail( function(){
-                        alert( 'There was an error deleting the datasets' );
-                        console.error( arguments );
-                    });
+                $.post(Galaxy.root + "history/adjust_hidden",
+                       { 'user_action' : 'delete' },
+                       function(){Galaxy.currHistoryPanel.loadCurrentHistory();});
             }
         },
     },
@@ -167,6 +166,35 @@ var menu = [
     }
 ];
 
+// Webhooks
+Webhooks.add({
+    url: 'api/webhooks/history-menu/all',
+    async: false,   // (hypothetically) slows down the performance
+    callback: function(webhooks) {
+        var webhooks_menu = [];
+
+        $.each(webhooks.models, function(index, model) {
+            var webhook = model.toJSON();
+            if (webhook.activate) {
+                webhooks_menu.push({
+                    html : _l( webhook.config.title ),
+                    // func: function() {},
+                    anon : true
+                });
+            }
+        });
+
+        if (webhooks_menu.length > 0) {
+            webhooks_menu.unshift({
+                html   : _l( 'Webhooks' ),
+                header : true
+            });
+            $.merge(menu, webhooks_menu);
+        }
+    }
+});
+
+
 function buildMenu( isAnon, purgeAllowed, urlRoot ){
     return _.clone( menu ).filter( function( menuOption ){
         if( isAnon && !menuOption.anon ){
@@ -179,7 +207,7 @@ function buildMenu( isAnon, purgeAllowed, urlRoot ){
         //TODO:?? hard-coded galaxy_main
         if( menuOption.href ){
             menuOption.href = urlRoot + menuOption.href;
-            menuOption.target = 'galaxy_main';
+            menuOption.target = menuOption.target || 'galaxy_main';
         }
 
         if( menuOption.confirm ){

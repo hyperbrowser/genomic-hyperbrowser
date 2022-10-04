@@ -93,6 +93,7 @@ var LibraryRouter = Backbone.Router.extend({
 var LibraryPrefs = mod_baseMVC.SessionStorageModel.extend({
     defaults : {
         with_deleted      : false,
+        without_restricted: false,
         sort_order        : 'asc',
         sort_by           : 'name',
         library_page_size : 20,
@@ -181,7 +182,7 @@ var GalaxyLibrary = Backbone.View.extend({
             if (Galaxy.libraries.datasetView){
                 Galaxy.libraries.datasetView.$el.unbind('click');
             }
-            Galaxy.libraries.datasetView = new mod_library_dataset_view.LibraryDatasetView({id: dataset_id});
+            Galaxy.libraries.datasetView = new mod_library_dataset_view.LibraryDatasetView({id: dataset_id, show_version: false, show_permissions: false});
         });
 
         this.library_router.on( 'route:dataset_version', function(folder_id, dataset_id, ldda_id){

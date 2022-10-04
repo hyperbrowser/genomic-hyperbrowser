@@ -16,7 +16,6 @@ class TableCoreMixin(object):
 
         if presorted is not None and presorted > -1:
             assert isinstance(presorted, int), 'presorted must be int'
-            from quick.util import CommonFunctions
             dataDictOfLists = CommonFunctions.smartSortDictOfLists(
                 dataDictOfLists, sortColumnIndex=presorted)
 

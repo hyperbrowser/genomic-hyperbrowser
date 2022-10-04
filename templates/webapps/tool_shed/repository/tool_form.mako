@@ -6,12 +6,18 @@
     from galaxy.util.expressions import ExpressionContext
     from galaxy import util
     from galaxy.tools.parameters.basic import DataToolParameter, ColumnListParameter, GenomeBuildParameter, SelectToolParameter
-    from galaxy.web.form_builder import SelectField
+    from galaxy.web.form_builder import SelectField, TextField
 %>
 
 <html>
     <head>
-        <title>Galaxy tool preview</title>
+        <title>
+            Galaxy
+            %if app.config.brand:
+            | ${app.config.brand}
+            %endif
+            | Tool Preview
+        </title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         ${h.css( "base" )}
     </head>
@@ -95,8 +101,8 @@
                         field.add_option( "Dynamically generated from old-style Dynamic Options.", "none" )
                     field_html = field.get_html( prefix )
                 else:
-                    field = param.get_html_field( trans, None, other_values )
-                    field_html = field.get_html( prefix )
+                    field = TextField( param.name, value="Parameter type: %s" % param.type )
+                    field_html = field.get_html( prefix, disabled=True )
             %>
             <div class="form-row">
                 %if label:
@@ -127,7 +133,7 @@
                 <div class="toolFormTitle">${tool.name | h} (version ${tool.version | h})</div>
                 <div class="toolFormBody">
                     <form id="tool_form" name="tool_form" action="" method="get">
-                        <input type="hidden" name="tool_state" value="${util.object_to_string( tool_state.encode( tool, app ) )}">
+                        <input type="hidden" name="tool_state" value="">
                         ${do_inputs( tool.inputs_by_page[ tool_state.page ], tool_state.inputs, "" )}
                     </form>
                 </div>

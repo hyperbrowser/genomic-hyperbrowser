@@ -19,9 +19,9 @@ var FolderToolbarView = Backbone.View.extend({
     'click #toolbtn_create_folder'        : 'createFolderFromModal',
     'click #toolbtn_bulk_import'          : 'modalBulkImport',
     'click #include_deleted_datasets_chk' : 'checkIncludeDeleted',
+    'click #toolbtn_bulk_delete'          : 'deleteSelectedItems',
     'click .toolbtn-show-locinfo'         : 'showLocInfo',
-    'click #toolbtn_bulk_delete'          : 'deleteSelectedDatasets',
-    'click #page_size_prompt'             : 'showPageSizePrompt'
+    'click .page_size_prompt'             : 'showPageSizePrompt'
 
   },
 
@@ -99,7 +99,7 @@ var FolderToolbarView = Backbone.View.extend({
   renderPaginator: function( options ){
       this.options = _.extend( this.options, options );
       var paginator_template = this.templatePaginator();
-      this.$el.find( '#folder_paginator' ).html( paginator_template({
+      $("body").find( '.folder-paginator' ).html( paginator_template({
           id: this.options.id,
           show_page: parseInt( this.options.show_page ),
           page_count: parseInt( this.options.page_count ),
@@ -161,8 +161,13 @@ var FolderToolbarView = Backbone.View.extend({
       var folderDetails = this.serialize_new_folder();
       if (this.validate_new_folder(folderDetails)){
           var folder = new mod_library_model.FolderAsModel();
-          url_items = Backbone.history.fragment.split('/');
-          current_folder_id = url_items[url_items.length-1];
+          var url_items = Backbone.history.fragment.split('/'),
+              current_folder_id;
+          if(url_items.indexOf('page') > -1){
+            current_folder_id = url_items[url_items.length-3];
+          }else {
+            current_folder_id = url_items[url_items.length-1];
+          }
           folder.url = folder.urlRoot + current_folder_id ;
 
           folder.save(folderDetails, {
@@ -177,7 +182,7 @@ var FolderToolbarView = Backbone.View.extend({
               if (typeof response.responseJSON !== "undefined"){
                 mod_toastr.error(response.responseJSON.err_msg);
               } else {
-                mod_toastr.error('An error ocurred.');
+                mod_toastr.error('An error occurred.');
               }
             }
           });
@@ -200,44 +205,36 @@ var FolderToolbarView = Backbone.View.extend({
       return folderDetails.name !== '';
   },
 
-
   // show bulk import modal
   modalBulkImport : function(){
-      var checkedValues = $('#folder_table').find(':checked');
-      if(checkedValues.length === 0){
+      var $checkedValues = this.findCheckedRows();
+      if($checkedValues.length === 0){
           mod_toastr.info('You must select some datasets first.');
       } else {
-          this.refreshUserHistoriesList(function(that){
-            var template = that.templateBulkImportInModal();
-            that.modal = Galaxy.modal;
-            that.modal.show({
-                closing_events  : true,
-                title           : 'Import into History',
-                body            : template({histories : that.histories.models}),
-                buttons         : {
-                    'Import'    : function() {that.importAllIntoHistory();},
-                    'Close'     : function() {Galaxy.modal.hide();}
-                }
-            });
+        var that = this;
+        this.histories = new mod_library_model.GalaxyHistories();
+        this.histories.fetch()
+        .done(function(){
+          var template = that.templateBulkImportInModal();
+          that.modal = Galaxy.modal;
+          that.modal.show({
+              closing_events  : true,
+              title           : 'Import into History',
+              body            : template({histories : that.histories.models}),
+              buttons         : {
+                  'Import'    : function() {that.importAllIntoHistory();},
+                  'Close'     : function() {Galaxy.modal.hide();}
+              }
           });
+        })
+        .fail(function(model, response){
+          if (typeof response.responseJSON !== "undefined"){
+            mod_toastr.error(response.responseJSON.err_msg);
+          } else {
+            mod_toastr.error('An error occurred.');
+          }
+        });
       }
-  },
-
-  refreshUserHistoriesList: function(callback){
-    var that = this;
-    this.histories = new mod_library_model.GalaxyHistories();
-    this.histories.fetch({
-      success: function (){
-        callback(that);
-      },
-      error: function(model, response){
-        if (typeof response.responseJSON !== "undefined"){
-          mod_toastr.error(response.responseJSON.err_msg);
-        } else {
-          mod_toastr.error('An error ocurred.');
-        }
-      }
-    });
   },
 
   /**
@@ -245,17 +242,38 @@ var FolderToolbarView = Backbone.View.extend({
    */
   importAllIntoHistory : function (){
     this.modal.disableButton('Import');
-    var history_id = $("select[name=dataset_import_bulk] option:selected").val();
-    var history_name = $("select[name=dataset_import_bulk] option:selected").text();
-    // we can save last used history to pre-select it next time
-    this.options.last_used_history_id = history_id;
+    var new_history_name = this.modal.$('input[name=history_name]').val();
+    var that = this;
+    if (new_history_name !== ''){
+      $.post(Galaxy.root + 'api/histories', {name: new_history_name})
+        .done(function( new_history ) {
+          that.options.last_used_history_id = new_history.id;
+          that.processImportToHistory(new_history.id, new_history.name);
+        })
+        .fail(function( xhr, status, error ) {
+          mod_toastr.error('An error occurred.');
+        })
+        .always(function() {
+          that.modal.enableButton('Import');
+        });
+    } else {
+      var history_id = $("select[name=dataset_import_bulk] option:selected").val();
+      this.options.last_used_history_id = history_id;
+      var history_name = $("select[name=dataset_import_bulk] option:selected").text();
+      this.processImportToHistory(history_id, history_name);
+      this.modal.enableButton('Import');
+    }
+  },
+
+  processImportToHistory: function( history_id, history_name ){
     var dataset_ids = [];
     var folder_ids = [];
-    $('#folder_table').find(':checked').each(function(){
-        if (this.parentElement.parentElement.id !== '' && this.parentElement.parentElement.classList.contains('dataset_row') ) {
-            dataset_ids.push(this.parentElement.parentElement.id);
-        } else if (this.parentElement.parentElement.id !== '' && this.parentElement.parentElement.classList.contains('folder_row') ) {
-            folder_ids.push(this.parentElement.parentElement.id);
+    this.findCheckedRows().each(function(){
+        var row_id = $(this).closest('tr').data('id');
+        if (row_id.substring(0,1) == 'F'){
+            folder_ids.push(row_id);
+        } else {
+            dataset_ids.push(row_id);
         }
     });
     // prepare the dataset objects to be imported
@@ -293,7 +311,7 @@ var FolderToolbarView = Backbone.View.extend({
   updateProgress: function(){
       this.progress += this.progressStep;
       $( '.progress-bar-import' ).width( Math.round( this.progress ) + '%' );
-      txt_representation = Math.round( this.progress ) + '% Complete';
+      var txt_representation = Math.round( this.progress ) + '% Complete';
       $( '.completion_span' ).text( txt_representation );
   },
 
@@ -305,11 +323,12 @@ var FolderToolbarView = Backbone.View.extend({
   download : function( folder_id, format ){
     var dataset_ids = [];
     var folder_ids = [];
-        $( '#folder_table' ).find( ':checked' ).each( function(){
-            if ( this.parentElement.parentElement.id !== '' && this.parentElement.parentElement.classList.contains('dataset_row') ) {
-                dataset_ids.push( this.parentElement.parentElement.id );
-            } else if ( this.parentElement.parentElement.id !== '' && this.parentElement.parentElement.classList.contains('folder_row') ) {
-                folder_ids.push( this.parentElement.parentElement.id );
+        this.findCheckedRows().each( function(){
+            var row_id = $(this).closest('tr').data('id');
+            if (row_id.substring(0,1) == 'F'){
+                folder_ids.push(row_id);
+            } else {
+                dataset_ids.push(row_id);
             }
         } );
     var url = Galaxy.root + 'api/libraries/datasets/download/' + format;
@@ -344,33 +363,36 @@ var FolderToolbarView = Backbone.View.extend({
   },
 
   addFilesFromHistoryModal: function(){
-    this.refreshUserHistoriesList( function( self ){
-      self.modal = Galaxy.modal;
-      var template_modal = self.templateAddFilesFromHistory();
-      var folder_name = self.options.full_path[self.options.full_path.length - 1][1]
-      self.modal.show({
-          closing_events  : true,
-          title           : 'Adding datasets from your history to folder ' + folder_name,
-          body            : template_modal({histories: self.histories.models}),
-          buttons         : {
-              'Add'       : function() {self.addAllDatasetsFromHistory();},
-              'Close'     : function() {Galaxy.modal.hide();}
-          },
-          closing_callback: function(){
-            Galaxy.libraries.library_router.back();
-          }
-      });
-
-      // user should always have a history, even anonymous user
-      if (self.histories.models.length > 0){
+    this.histories = new mod_library_model.GalaxyHistories();
+    var self = this;
+    this.histories.fetch()
+      .done(function(){
+        self.modal = Galaxy.modal;
+        var template_modal = self.templateAddFilesFromHistory();
+        self.modal.show({
+            closing_events  : true,
+            title           : 'Adding datasets from your history',
+            body            : template_modal({histories: self.histories.models}),
+            buttons         : {
+                'Add'       : function() {self.addAllDatasetsFromHistory();},
+                'Close'     : function() {Galaxy.modal.hide();}
+            },
+            closing_callback: function(){
+              Galaxy.libraries.library_router.navigate('folders/' + self.id, {trigger: true});
+            }
+        });
         self.fetchAndDisplayHistoryContents(self.histories.models[0].id);
         $( "#dataset_add_bulk" ).change(function(event) {
           self.fetchAndDisplayHistoryContents(event.target.value);
         });
-      } else {
-        mod_toastr.error( 'An error ocurred.' );
-      }
-    });
+      })
+      .fail(function(model, response){
+        if (typeof response.responseJSON !== "undefined"){
+          mod_toastr.error(response.responseJSON.err_msg);
+        } else {
+          mod_toastr.error('An error occurred.');
+        }
+      });
   },
 
   /**
@@ -406,7 +428,8 @@ var FolderToolbarView = Backbone.View.extend({
     mod_utils.get({
         url      :  Galaxy.root + "api/datatypes?extension_only=False",
         success  :  function( datatypes ) {
-                        for (key in datatypes) {
+                        that.list_extensions = [];
+                        for (var key in datatypes) {
                             that.list_extensions.push({
                                 id              : datatypes[key].extension,
                                 text            : datatypes[key].extension,
@@ -418,12 +441,14 @@ var FolderToolbarView = Backbone.View.extend({
                             return a.id > b.id ? 1 : a.id < b.id ? -1 : 0;
                         });
                         that.list_extensions.unshift(that.auto);
-                    }
+                    },
+        cache    : true
       });
     mod_utils.get({
         url     :    Galaxy.root + "api/genomes",
         success : function( genomes ) {
-                    for ( key in genomes ) {
+                    that.list_genomes = [];
+                    for (var key in genomes ) {
                         that.list_genomes.push({
                             id      : genomes[key][1],
                             text    : genomes[key][0]
@@ -432,7 +457,8 @@ var FolderToolbarView = Backbone.View.extend({
                     that.list_genomes.sort(function(a, b) {
                         return a.id > b.id ? 1 : a.id < b.id ? -1 : 0;
                     });
-                }
+                },
+        cache   : true
     });
   },
 
@@ -482,6 +508,13 @@ var FolderToolbarView = Backbone.View.extend({
       }
     });
 
+    $('.libimport-select-all').bind("click", function(){
+      $('#jstree_browser').jstree("check_all");
+    });
+    $('.libimport-select-none').bind("click", function(){
+      $('#jstree_browser').jstree("uncheck_all");
+    });
+
     this.renderSelectBoxes();
     options.disabled_jstree_element = 'folders';
     this.renderJstree( options );
@@ -492,12 +525,10 @@ var FolderToolbarView = Backbone.View.extend({
           that.renderJstree( options );
           $('.jstree-folders-message').hide();
           $('.jstree-preserve-structure').hide();
-          $('.jstree-link-files').hide();
           $('.jstree-files-message').show();
         } else if ( event.target.value ==='jstree-disable-files' ){
           $('.jstree-files-message').hide();
           $('.jstree-folders-message').show();
-          $('.jstree-link-files').show();
           $('.jstree-preserve-structure').show();
           options.disabled_jstree_element = 'files';
           that.renderJstree( options );
@@ -556,7 +587,7 @@ var FolderToolbarView = Backbone.View.extend({
             mod_toastr.error(response.responseJSON.err_msg);
           }
         } else {
-          mod_toastr.error('An error ocurred.');
+          mod_toastr.error('An error occurred.');
         }
       }
     })
@@ -570,6 +601,9 @@ var FolderToolbarView = Backbone.View.extend({
   importFromPathsClicked: function(){
     var preserve_dirs = this.modal.$el.find('.preserve-checkbox').is(':checked');
     var link_data = this.modal.$el.find('.link-checkbox').is(':checked');
+    var space_to_tab = this.modal.$el.find('.spacetab-checkbox').is(':checked');
+    var to_posix_lines = this.modal.$el.find('.posix-checkbox').is(':checked');
+    var tag_using_filenames = this.modal.$el.find('.tag-files').is(':checked');
     var file_type = this.select_extension.value();
     var dbkey = this.select_genome.value();
     var paths = $('textarea#import_paths').val();
@@ -580,7 +614,7 @@ var FolderToolbarView = Backbone.View.extend({
       this.modal.disableButton('Import');
       paths = paths.split('\n');
       for (var i = paths.length - 1; i >= 0; i--) {
-        trimmed = paths[i].trim();
+        var trimmed = paths[i].trim();
         if (trimmed.length!==0){
           valid_paths.push(trimmed);
         }
@@ -589,8 +623,11 @@ var FolderToolbarView = Backbone.View.extend({
       this.chainCallImportingFolders( { paths: valid_paths,
                                         preserve_dirs: preserve_dirs,
                                         link_data: link_data,
+                                        space_to_tab: space_to_tab,
+                                        to_posix_lines: to_posix_lines,
                                         source: 'admin_path',
                                         file_type: file_type,
+                                        tag_using_filenames: tag_using_filenames,
                                         dbkey: dbkey } );
     }
   },
@@ -608,7 +645,7 @@ var FolderToolbarView = Backbone.View.extend({
         this.modal.$el.find( '.modal-body' ).html( template( { folder_name : this.options.folder_name } ) );
         break;
       case "deleting_datasets":
-        template = this.templateDeletingDatasetsProgressBar();
+        template = this.templateDeletingItemsProgressBar();
         this.modal.$el.find( '.modal-body' ).html( template() );
         break;
       case "to_history":
@@ -616,7 +653,7 @@ var FolderToolbarView = Backbone.View.extend({
         this.modal.$el.find( '.modal-body' ).html( template( { history_name : options.history_name } ) );
         break;
       default:
-        console.error( 'Wrong action specified.')
+        Galaxy.emit.error( 'Wrong action specified.', 'datalibs');
         break;
     }
 
@@ -637,11 +674,16 @@ var FolderToolbarView = Backbone.View.extend({
    * @see renderJstree
    */
   importFromJstreePath: function ( that, options ){
-    var selected_nodes = $( '#jstree_browser' ).jstree().get_selected( true );
+    var all_nodes = $( '#jstree_browser' ).jstree().get_selected( true );
+    // remove the disabled elements that could have been trigerred with the 'select all'
+    var selected_nodes = _.filter(all_nodes, function(node){ return node.state.disabled == false; })
     var preserve_dirs = this.modal.$el.find( '.preserve-checkbox' ).is( ':checked' );
     var link_data = this.modal.$el.find( '.link-checkbox' ).is( ':checked' );
+    var space_to_tab = this.modal.$el.find('.spacetab-checkbox').is(':checked');
+    var to_posix_lines = this.modal.$el.find('.posix-checkbox').is(':checked');
     var file_type = this.select_extension.value();
     var dbkey = this.select_genome.value();
+    var tag_using_filenames = this.modal.$el.find( '.tag-files' ).is( ':checked' );
     var selection_type = selected_nodes[0].type;
     var paths = [];
     if ( selected_nodes.length < 1 ){
@@ -659,15 +701,22 @@ var FolderToolbarView = Backbone.View.extend({
         this.chainCallImportingFolders( { paths: paths,
                                           preserve_dirs: preserve_dirs,
                                           link_data: link_data,
+                                          space_to_tab: space_to_tab,
+                                          to_posix_lines: to_posix_lines,
                                           source: full_source,
                                           file_type: file_type,
-                                          dbkey: dbkey } );
+                                          dbkey: dbkey,
+                                          tag_using_filenames: tag_using_filenames } );
       } else if ( selection_type === 'file' ){
         var full_source = options.source + '_file';
         this.chainCallImportingUserdirFiles( { paths : paths,
                                                file_type: file_type,
                                                dbkey: dbkey,
-                                               source: full_source } );
+                                               link_data: link_data,
+                                               space_to_tab: space_to_tab,
+                                               to_posix_lines: to_posix_lines,
+                                               source: full_source,
+                                               tag_using_filenames: tag_using_filenames } );
       }
     }
   },
@@ -680,12 +729,18 @@ var FolderToolbarView = Backbone.View.extend({
         var history_contents_template = self.templateHistoryContents();
         self.histories.get(history_id).set({'contents' : history_contents});
         self.modal.$el.find('#selected_history_content').html(history_contents_template({history_contents: history_contents.models.reverse()}));
+        self.modal.$el.find('.history-import-select-all').bind("click", function(){
+          $('#selected_history_content [type=checkbox]').prop('checked', true);
+        });
+        self.modal.$el.find('.history-import-unselect-all').bind("click", function(){
+          $('#selected_history_content [type=checkbox]').prop('checked', false);
+        });
       },
       error: function(model, response){
         if (typeof response.responseJSON !== "undefined"){
           mod_toastr.error(response.responseJSON.err_msg);
         } else {
-          mod_toastr.error('An error ocurred.');
+          mod_toastr.error('An error occurred.');
         }
       }
     });
@@ -696,27 +751,34 @@ var FolderToolbarView = Backbone.View.extend({
    */
   addAllDatasetsFromHistory : function (){
     var checked_hdas = this.modal.$el.find( '#selected_history_content' ).find( ':checked' );
-    var history_dataset_ids = [];
-    var hdas_to_add = [];
+    var history_item_ids = [];  // can be hda or hdca
+    var history_item_types = [];
+    var items_to_add = [];
     if ( checked_hdas.length < 1 ){
       mod_toastr.info( 'You must select some datasets first.' );
     } else {
       this.modal.disableButton( 'Add' );
       checked_hdas.each(function(){
-        var hid = $( this.parentElement ).data( 'id' );
-          if ( hid ) {
-            history_dataset_ids.push( hid );
-          }
+        var hid = $(this).closest('li').data( 'id' );
+        if ( hid ) {
+          var item_type = $(this).closest('li').data( 'name' );
+          history_item_ids.push( hid );
+          history_item_types.push( item_type );
+        }
       });
-      for ( var i = history_dataset_ids.length - 1; i >= 0; i-- ) {
-        history_dataset_id = history_dataset_ids[i];
+      for ( var i = history_item_ids.length - 1; i >= 0; i-- ) {
+        var history_item_id = history_item_ids[i];
         var folder_item = new mod_library_model.Item();
         folder_item.url = Galaxy.root + 'api/folders/' + this.options.id + '/contents';
-        folder_item.set( { 'from_hda_id':history_dataset_id } );
-        hdas_to_add.push( folder_item );
+        if (history_item_types[i] === 'collection') {
+          folder_item.set({'from_hdca_id': history_item_id});
+        } else {
+          folder_item.set({'from_hda_id': history_item_id});
+        }
+        items_to_add.push(folder_item);
       }
-      this.initChainCallControl( { length: hdas_to_add.length, action: 'adding_datasets' } );
-      this.chainCallAddingHdas( hdas_to_add );
+      this.initChainCallControl( { length: items_to_add.length, action: 'adding_datasets' } );
+      this.chainCallAddingHdas( items_to_add );
     }
   },
 
@@ -731,11 +793,11 @@ var FolderToolbarView = Backbone.View.extend({
     var popped_item = history_item_set.pop();
     if ( typeof popped_item == "undefined" ) {
       if ( this.options.chain_call_control.failed_number === 0 ){
-        mod_toastr.success( 'Selected datasets imported into history. Click this to start analysing it.', '', { onclick: function() { window.location='/' } } );
+        mod_toastr.success( 'Selected datasets imported into history. Click this to start analyzing it.', '', { onclick: function() { window.location=Galaxy.root } } );
       } else if ( this.options.chain_call_control.failed_number === this.options.chain_call_control.total_number ){
         mod_toastr.error( 'There was an error and no datasets were imported into history.' );
       } else if ( this.options.chain_call_control.failed_number < this.options.chain_call_control.total_number ){
-        mod_toastr.warning( 'Some of the datasets could not be imported into history. Click this to see what was imported.', '', { onclick: function() { window.location='/' } } );
+        mod_toastr.warning( 'Some of the datasets could not be imported into history. Click this to see what was imported.', '', { onclick: function() { window.location=Galaxy.root } } );
       }
       Galaxy.modal.hide();
       return true;
@@ -754,12 +816,12 @@ var FolderToolbarView = Backbone.View.extend({
   },
 
   /**
-   * Take the array of paths and createa request for each of them
+   * Take the array of paths and create a request for each of them
    * calling them in chain. Update the progress bar in between each.
-   * @param  {array} paths           paths relative to user folder on Galaxy
+   * @param  {array} paths                    paths relative to user folder on Galaxy
+   * @param  {boolean} tag_using_filenames    add tags to datasets using names of files
    */
   chainCallImportingUserdirFiles: function( options ){
-
     var that = this;
     var popped_item = options.paths.pop();
     if ( typeof popped_item === "undefined" ) {
@@ -775,7 +837,11 @@ var FolderToolbarView = Backbone.View.extend({
                                                        '&source=' + options.source +
                                                        '&path=' + popped_item +
                                                        '&file_type=' + options.file_type +
-                                                       '&dbkey=' + options.dbkey ) )
+                                                       '&link_data=' + options.link_data +
+                                                       '&space_to_tab=' + options.space_to_tab +
+                                                       '&to_posix_lines=' + options.to_posix_lines +
+                                                       '&dbkey=' + options.dbkey +
+                                                       '&tag_using_filenames=' + options.tag_using_filenames ) )
     promise.done( function( response ){
               that.updateProgress();
               that.chainCallImportingUserdirFiles( options );
@@ -788,13 +854,16 @@ var FolderToolbarView = Backbone.View.extend({
   },
 
   /**
-   * Take the array of paths and createa request for each of them
-   * calling them in chain. Update the progress bar in between each.
-   * @param  {array} paths           paths relative to Galaxy root folder
-   * @param  {boolean} preserve_dirs indicates whether to preserve folder structure
-   * @param  {boolean} link_data     copy files to Galaxy or link instead
-   * @param  {str} source            string representing what type of folder
-   *                                 is the source of import
+   * Take the array of paths and create a request for each of them
+   * calling them in series. Update the progress bar in between each.
+   * @param  {array} paths                    paths relative to Galaxy root folder
+   * @param  {boolean} preserve_dirs          indicates whether to preserve folder structure
+   * @param  {boolean} link_data              copy files to Galaxy or link instead
+   * @param  {boolean} to_posix_lines         convert line endings to POSIX standard
+   * @param  {boolean} space_to_tab           convert spaces to tabs
+   * @param  {str} source                     string representing what type of folder
+   *                                          is the source of import
+   * @param  {boolean} tag_using_filenames    add tags to datasets using names of files
    */
   chainCallImportingFolders: function( options ){
     // TODO need to check which paths to call
@@ -815,8 +884,11 @@ var FolderToolbarView = Backbone.View.extend({
                                                           '&path=' + popped_item +
                                                           '&preserve_dirs=' + options.preserve_dirs +
                                                           '&link_data=' + options.link_data +
+                                                          '&to_posix_lines=' + options.to_posix_lines +
+                                                          '&space_to_tab=' + options.space_to_tab +
                                                           '&file_type=' + options.file_type +
-                                                          '&dbkey=' + options.dbkey ) )
+                                                          '&dbkey=' + options.dbkey +
+                                                          '&tag_using_filenames=' + options.tag_using_filenames ) )
     promise.done(function(response){
               that.updateProgress();
               that.chainCallImportingFolders( options );
@@ -870,8 +942,8 @@ var FolderToolbarView = Backbone.View.extend({
   chainCallDeletingItems: function( items_to_delete ){
   var self = this;
   this.deleted_items = new mod_library_model.Folder();
-  var popped_item = items_to_delete.pop();
-  if ( typeof popped_item === "undefined" ) {
+  var item_to_delete = items_to_delete.pop();
+  if ( typeof item_to_delete === "undefined" ) {
     if ( this.options.chain_call_control.failed_number === 0 ){
       mod_toastr.success( 'Selected items were deleted.' );
     } else if ( this.options.chain_call_control.failed_number === this.options.chain_call_control.total_number ){
@@ -882,10 +954,9 @@ var FolderToolbarView = Backbone.View.extend({
     Galaxy.modal.hide();
     return this.deleted_items;
   }
-  var promise = $.when( popped_item.destroy() );
-
-  promise.done( function( item ){
-            Galaxy.libraries.folderListView.collection.remove( popped_item.id );
+  item_to_delete.destroy()
+      .done( function( item ){
+            Galaxy.libraries.folderListView.collection.remove( item_to_delete.id );
             self.updateProgress();
             // add the deleted item to collection, triggers rendering
             if ( Galaxy.libraries.folderListView.options.include_deleted ){
@@ -895,18 +966,18 @@ var FolderToolbarView = Backbone.View.extend({
               } else if (item.type === 'file' || item.model_class === 'LibraryDataset'){
                 updated_item = new mod_library_model.Item( item );
               } else {
-                console.error('Unknown library item type found.');
-                console.error(item.type || item.model_class);
+                Galaxy.emit.error('Unknown library item type found.', 'datalibs');
+                Galaxy.emit.error(item.type || item.model_class, 'datalibs');
               }
               Galaxy.libraries.folderListView.collection.add( updated_item );
             }
             self.chainCallDeletingItems( items_to_delete );
           })
-          .fail( function(){
-            self.options.chain_call_control.failed_number += 1;
-            self.updateProgress();
-            self.chainCallDeletingItems( items_to_delete );
-          });
+      .fail( function(){
+        self.options.chain_call_control.failed_number += 1;
+        self.updateProgress();
+        self.chainCallDeletingItems( items_to_delete );
+      });
   },
 
   /**
@@ -921,18 +992,20 @@ var FolderToolbarView = Backbone.View.extend({
   },
 
   /**
-   * Deletes the selected datasets. Atomic. One by one.
+   * Delete the selected items. Atomic. One by one.
    */
-  deleteSelectedDatasets: function(){
-    var checkedValues = $('#folder_table').find(':checked');
-    if(checkedValues.length === 0){
-        mod_toastr.info('You must select at least one dataset for deletion.');
+  deleteSelectedItems: function(){
+    var dataset_ids = [];
+    var folder_ids = [];
+    var $checkedValues = this.findCheckedRows();
+    if($checkedValues.length === 0){
+        mod_toastr.info('You must select at least one item for deletion.');
     } else {
-      var template = this.templateDeletingDatasetsProgressBar();
+      var template = this.templateDeletingItemsProgressBar();
       this.modal = Galaxy.modal;
       this.modal.show({
           closing_events  : true,
-          title           : 'Deleting selected datasets',
+          title           : 'Deleting selected items',
           body            : template({}),
           buttons         : {
               'Close'     : function() {Galaxy.modal.hide();}
@@ -941,15 +1014,13 @@ var FolderToolbarView = Backbone.View.extend({
       // init the control counters
       this.options.chain_call_control.total_number = 0;
       this.options.chain_call_control.failed_number = 0;
-
-      var dataset_ids = [];
-      var folder_ids = [];
-      checkedValues.each(function(){
-          if (this.parentElement.parentElement.id !== '') {
-              if (this.parentElement.parentElement.id.substring(0,1) == 'F'){
-                folder_ids.push(this.parentElement.parentElement.id);
+      $checkedValues.each(function(){
+          var row_id = $(this).closest('tr').data('id');
+          if (row_id !== undefined) {
+              if (row_id.substring(0,1) == 'F'){
+                folder_ids.push(row_id);
               } else {
-                dataset_ids.push(this.parentElement.parentElement.id);
+                dataset_ids.push(row_id);
               }
           }
       });
@@ -969,7 +1040,7 @@ var FolderToolbarView = Backbone.View.extend({
           items_to_delete.push(folder);
       }
 
-      this.options.chain_call_control.total_number = items_total.length;
+      this.options.chain_call_control.total_number = items_total;
       // call the recursive function to call ajax one after each other (request FIFO queue)
       this.chainCallDeletingItems(items_to_delete);
     }
@@ -992,7 +1063,7 @@ var FolderToolbarView = Backbone.View.extend({
           if (typeof response.responseJSON !== "undefined"){
             mod_toastr.error(response.responseJSON.err_msg);
           } else {
-            mod_toastr.error('An error ocurred.');
+            mod_toastr.error('An error occurred.');
           }
         }
       })
@@ -1005,7 +1076,7 @@ var FolderToolbarView = Backbone.View.extend({
     this.modal = Galaxy.modal;
     this.modal.show({
         closing_events  : true,
-        title           : 'Location Information',
+        title           : 'Location Details',
         body            : template({library: library, options: that.options}),
         buttons         : {
             'Close'     : function() {Galaxy.modal.hide();}
@@ -1045,78 +1116,93 @@ var FolderToolbarView = Backbone.View.extend({
     }
   },
 
+  findCheckedRows: function(){
+    return $('#folder_list_body').find(':checked');
+  },
+
   templateToolBar: function(){
-    tmpl_array = [];
-
-    // CONTAINER START
-    tmpl_array.push('<div class="library_style_container">');
-    // TOOLBAR START
-    tmpl_array.push(' <div id="library_toolbar">');
-    tmpl_array.push('<form class="form-inline" role="form">');
-    tmpl_array.push('   <span><strong>DATA LIBRARIES</strong></span>');
-    tmpl_array.push('          <span id="folder_paginator" class="library-paginator">');
-    // paginator will append here
-    tmpl_array.push('          </span>');
-    tmpl_array.push('<div class="checkbox toolbar-item logged-dataset-manipulation" style="height: 20px; display:none;">');
-    tmpl_array.push('<label>');
-    tmpl_array.push('<input id="include_deleted_datasets_chk" type="checkbox"> include deleted </input>');
-    tmpl_array.push('</label>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('   <button style="display:none;" data-toggle="tooltip" data-placement="top" title="Create New Folder" id="toolbtn_create_folder" class="btn btn-default primary-button add-library-items" type="button"><span class="fa fa-plus"></span> <span class="fa fa-folder"></span></button>');
-
-    tmpl_array.push('<% if(mutiple_add_dataset_options) { %>');
-    tmpl_array.push('   <div class="btn-group add-library-items" style="display:none;">');
-    tmpl_array.push('     <button title="Add Datasets to Current Folder" id="" type="button" class="primary-button dropdown-toggle" data-toggle="dropdown">');
-    tmpl_array.push('     <span class="fa fa-plus"></span> <span class="fa fa-file"></span> <span class="caret"></span>');
-    tmpl_array.push('     </button>');
-    tmpl_array.push('     <ul class="dropdown-menu" role="menu">');
-    tmpl_array.push('        <li><a href="#folders/<%= id %>/import/history"> from History</a></li>');
-    tmpl_array.push('<% if(Galaxy.config.user_library_import_dir !== null) { %>');
-    tmpl_array.push('        <li><a href="#folders/<%= id %>/import/userdir"> from User Directory</a></li>');
-    tmpl_array.push('<% } %>');
-    tmpl_array.push('<% if(Galaxy.config.allow_library_path_paste) { %>');
-
-    tmpl_array.push('   <li class="divider"></li>');
-    tmpl_array.push('   <li class="dropdown-header">Admins only</li>');
-
-    tmpl_array.push('<% if(Galaxy.config.library_import_dir !== null) { %>');
-    tmpl_array.push('   <li><a href="#folders/<%= id %>/import/importdir">from Import Directory</a></li>');
-    tmpl_array.push('<% } %>');
-
-    tmpl_array.push('<% if(Galaxy.config.allow_library_path_paste) { %>');
-    tmpl_array.push('        <li><a href="#folders/<%= id %>/import/path">from Path</a></li>');
-    tmpl_array.push('<% } %>');
-    tmpl_array.push('<% } %>');
-    tmpl_array.push('     </ul>');
-    tmpl_array.push('   </div>');
-    tmpl_array.push('<% } else { %>');
-    tmpl_array.push(' <a  data-placement="top" title="Add Datasets to Current Folder" style="display:none;" class="btn btn-default add-library-items" href="#folders/<%= id %>/import/history" role="button"><span class="fa fa-plus"></span> <span class="fa fa-file"></span></span></a>');
-    tmpl_array.push('<% } %>');
-
-    tmpl_array.push('  <button data-toggle="tooltip" data-placement="top" title="Import selected datasets into history" id="toolbtn_bulk_import" class="primary-button dataset-manipulation" style="margin-left: 0.5em; display:none;" type="button"><span class="fa fa-book"></span> to History</button>');
-    tmpl_array.push('   <div id="toolbtn_dl" class="btn-group dataset-manipulation" style="margin-left: 0.5em; display:none; ">');
-    tmpl_array.push('     <button title="Download selected datasets as archive" id="drop_toggle" type="button" class="primary-button dropdown-toggle" data-toggle="dropdown">');
-    tmpl_array.push('     <span class="fa fa-download"></span> Download <span class="caret"></span>');
-    tmpl_array.push('     </button>');
-    tmpl_array.push('     <ul class="dropdown-menu" role="menu">');
-    tmpl_array.push('        <li><a href="#/folders/<%= id %>/download/tgz">.tar.gz</a></li>');
-    tmpl_array.push('        <li><a href="#/folders/<%= id %>/download/tbz">.tar.bz</a></li>');
-    tmpl_array.push('        <li><a href="#/folders/<%= id %>/download/zip">.zip</a></li>');
-    tmpl_array.push('     </ul>');
-    tmpl_array.push('   </div>');
-    tmpl_array.push('   <button data-toggle="tooltip" data-placement="top" title="Mark selected datasets deleted" id="toolbtn_bulk_delete" class="primary-button logged-dataset-manipulation" style="margin-left: 0.5em; display:none; " type="button"><span class="fa fa-times"></span> Delete</button>');
-    tmpl_array.push('   <button data-id="<%- id %>" data-toggle="tooltip" data-placement="top" title="Show location information" class="primary-button toolbtn-show-locinfo" style="margin-left: 0.5em;" type="button"><span class="fa fa-info-circle"></span> Location Info</button>');
-    tmpl_array.push('   <span class="help-button" data-toggle="tooltip" data-placement="top" title="Visit Libraries Wiki"><a href="https://wiki.galaxyproject.org/DataLibraries/screen/FolderContents" target="_blank"><button class="primary-button" type="button"><span class="fa fa-question-circle"></span> Help</button></a></span>');
-    tmpl_array.push(' </div>');
-    tmpl_array.push('</form>');
-
-    // TOOLBAR END
-    tmpl_array.push(' <div id="folder_items_element">');
-    tmpl_array.push(' </div>');
-    tmpl_array.push('</div>');
-    // CONTAINER END
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    // container start
+    '<div class="library_style_container">',
+      // toolbar start
+      '<div id="library_toolbar">',
+        '<form class="form-inline" role="form">',
+          '<span><strong>DATA LIBRARIES</strong></span>',
+          // paginator will append here
+          '<span class="library-paginator folder-paginator"></span>',
+          '<div class="checkbox toolbar-item logged-dataset-manipulation" style="height: 20px; display:none;">',
+            '<label>',
+              '<input id="include_deleted_datasets_chk" type="checkbox">include deleted</input>',
+            '</label>',
+          '</div>',
+          '<button style="display:none;" data-toggle="tooltip" data-placement="top" title="Create New Folder" id="toolbtn_create_folder" class="btn btn-default primary-button add-library-items toolbar-item" type="button">',
+            '<span class="fa fa-plus"></span><span class="fa fa-folder"></span>',
+          '</button>',
+          '<% if(mutiple_add_dataset_options) { %>',
+          '<div class="btn-group add-library-items" style="display:none;">',
+            '<button title="Add Datasets to Current Folder" id="" type="button" class="primary-button dropdown-toggle" data-toggle="dropdown">',
+              '<span class="fa fa-plus"></span><span class="fa fa-file"></span><span class="caret"></span>',
+            '</button>',
+            '<ul class="dropdown-menu" role="menu">',
+              '<li><a href="#folders/<%= id %>/import/history"> from History</a></li>',
+              '<% if(Galaxy.config.user_library_import_dir !== null) { %>',
+                '<li><a href="#folders/<%= id %>/import/userdir"> from User Directory</a></li>',
+              '<% } %>',
+              '<% if(Galaxy.config.allow_library_path_paste) { %>',
+                '<li class="divider"></li>',
+                '<li class="dropdown-header">Admins only</li>',
+                '<% if(Galaxy.config.library_import_dir !== null) { %>',
+                  '<li><a href="#folders/<%= id %>/import/importdir">from Import Directory</a></li>',
+                '<% } %>',
+                '<% if(Galaxy.config.allow_library_path_paste) { %>',
+                  '<li><a href="#folders/<%= id %>/import/path">from Path</a></li>',
+                '<% } %>',
+              '<% } %>',
+            '</ul>',
+          '</div>',
+          '<% } else { %>',
+            '<a  data-placement="top" title="Add Datasets to Current Folder" style="display:none;" class="btn btn-default add-library-items" href="#folders/<%= id %>/import/history" role="button">',
+              '<span class="fa fa-plus"></span><span class="fa fa-file"></span>',
+            '</a>',
+          '<% } %>',
+          '<button data-toggle="tooltip" data-placement="top" title="Import selected datasets into history" id="toolbtn_bulk_import" class="primary-button dataset-manipulation" style="margin-left: 0.5em; display:none;" type="button">',
+            '<span class="fa fa-book"></span>',
+            '&nbsp;to History',
+          '</button>',
+          '<div class="btn-group dataset-manipulation" style="margin-left: 0.5em; display:none; ">',
+            '<button title="Download selected items as archive" type="button" class="primary-button dropdown-toggle" data-toggle="dropdown">',
+              '<span class="fa fa-download"></span> Download <span class="caret"></span>',
+            '</button>',
+            '<ul class="dropdown-menu" role="menu">',
+              '<li><a href="#/folders/<%= id %>/download/tgz">.tar.gz</a></li>',
+              '<li><a href="#/folders/<%= id %>/download/tbz">.tar.bz</a></li>',
+              '<li><a href="#/folders/<%= id %>/download/zip">.zip</a></li>',
+            '</ul>',
+          '</div>',
+            '<button data-toggle="tooltip" data-placement="top" title="Mark selected items deleted" id="toolbtn_bulk_delete" class="primary-button logged-dataset-manipulation" style="margin-left: 0.5em; display:none; " type="button">',
+            '<span class="fa fa-times"></span> Delete</button>',
+            '<button data-id="<%- id %>" data-toggle="tooltip" data-placement="top" title="Show location details" class="primary-button toolbtn-show-locinfo" style="margin-left: 0.5em;" type="button">',
+              '<span class="fa fa-info-circle"></span>',
+              '&nbsp;Details',
+            '</button>',
+            '<span class="help-button" data-toggle="tooltip" data-placement="top" title="See this screen annotated">',
+              '<a href="https://galaxyproject.org/data-libraries/screen/folder-contents/" target="_blank">',
+                '<button class="primary-button" type="button">',
+                  '<span class="fa fa-question-circle"></span>',
+                  '&nbsp;Help',
+                '</button>',
+              '</a>',
+            '</span>',
+          '</div>',
+        '</form>',
+      // toolbar end
+      '<div id="folder_items_element">',
+      '</div>',
+      // paginator will append here
+      '<div class="folder-paginator paginator-bottom"></div>',
+    // container end
+    '</div>',
+    ].join(''));
   },
 
   templateLocInfoInModal: function(){
@@ -1183,220 +1269,273 @@ var FolderToolbarView = Backbone.View.extend({
   },
 
   templateNewFolderInModal: function(){
-    tmpl_array = [];
-
-    tmpl_array.push('<div id="new_folder_modal">');
-    tmpl_array.push('<form>');
-    tmpl_array.push('<input type="text" name="Name" value="" placeholder="Name">');
-    tmpl_array.push('<input type="text" name="Description" value="" placeholder="Description">');
-    tmpl_array.push('</form>');
-    tmpl_array.push('</div>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div id="new_folder_modal">',
+      '<form>',
+        '<input type="text" name="Name" value="" placeholder="Name" autofocus>',
+        '<input type="text" name="Description" value="" placeholder="Description">',
+      '</form>',
+    '</div>'
+    ].join(''));
   },
 
 
   templateBulkImportInModal : function(){
-    var tmpl_array = [];
-
-    tmpl_array.push('<span id="history_modal_combo_bulk" style="width:90%; margin-left: 1em; margin-right: 1em; ">');
-    tmpl_array.push('Select history: ');
-    tmpl_array.push('<select id="dataset_import_bulk" name="dataset_import_bulk" style="width:50%; margin-bottom: 1em; "> ');
-    tmpl_array.push('   <% _.each(histories, function(history) { %>'); //history select box
-    tmpl_array.push('       <option value="<%= _.escape(history.get("id")) %>"><%= _.escape(history.get("name")) %></option>');
-    tmpl_array.push('   <% }); %>');
-    tmpl_array.push('</select>');
-    tmpl_array.push('</span>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div>',
+      '<div class="library-modal-item">',
+        'Select history: ',
+        '<select id="dataset_import_bulk" name="dataset_import_bulk" style="width:50%; margin-bottom: 1em; " autofocus>',
+          '<% _.each(histories, function(history) { %>',
+            '<option value="<%= _.escape(history.get("id")) %>"><%= _.escape(history.get("name")) %></option>',
+          '<% }); %>',
+        '</select>',
+      '</div>',
+      '<div class="library-modal-item">',
+        'or create new: ',
+        '<input type="text" name="history_name" value="" placeholder="name of the new history" style="width:50%;">',
+        '</input>',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
   templateImportIntoHistoryProgressBar : function (){
-    var tmpl_array = [];
-
-    tmpl_array.push('<div class="import_text">');
-    tmpl_array.push('Importing selected datasets to history <b><%= _.escape(history_name) %></b>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('<div class="progress">');
-    tmpl_array.push('   <div class="progress-bar progress-bar-import" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">');
-    tmpl_array.push('       <span class="completion_span">0% Complete</span>');
-    tmpl_array.push('   </div>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div class="import_text">',
+      'Importing selected items to history <b><%= _.escape(history_name) %></b>',
+    '</div>',
+    '<div class="progress">',
+      '<div class="progress-bar progress-bar-import" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">',
+        '<span class="completion_span">0% Complete</span>',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
   templateAddingDatasetsProgressBar: function (){
-    var tmpl_array = [];
-
-    tmpl_array.push('<div class="import_text">');
-    tmpl_array.push('Adding selected datasets to library folder <b><%= _.escape(folder_name) %></b>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('<div class="progress">');
-    tmpl_array.push('   <div class="progress-bar progress-bar-import" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">');
-    tmpl_array.push('       <span class="completion_span">0% Complete</span>');
-    tmpl_array.push('   </div>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div class="import_text">',
+      'Adding selected datasets to library folder <b><%= _.escape(folder_name) %></b>',
+    '</div>',
+    '<div class="progress">',
+      '<div class="progress-bar progress-bar-import" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">',
+        '<span class="completion_span">0% Complete</span>',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
-  templateDeletingDatasetsProgressBar: function (){
-    var tmpl_array = [];
-
-    tmpl_array.push('<div class="import_text">');
-    tmpl_array.push('</div>');
-    tmpl_array.push('<div class="progress">');
-    tmpl_array.push('   <div class="progress-bar progress-bar-import" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">');
-    tmpl_array.push('       <span class="completion_span">0% Complete</span>');
-    tmpl_array.push('   </div>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('');
-
-    return _.template(tmpl_array.join(''));
+  templateDeletingItemsProgressBar: function (){
+    return _.template([
+    '<div class="import_text">',
+    '</div>',
+    '<div class="progress">',
+      '<div class="progress-bar progress-bar-import" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 00%;">',
+        '<span class="completion_span">0% Complete</span>',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
   templateBrowserModal: function(){
-    var tmpl_array = [];
-
-    tmpl_array.push('<div id="file_browser_modal">');
-    tmpl_array.push('<div class="alert alert-info jstree-files-message">All files you select will be imported into the current folder.</div>');
-    tmpl_array.push('<div class="alert alert-info jstree-folders-message" style="display:none;">All files within the selected folders and their subfolders will be imported into the current folder.</div>');
-
-
-    tmpl_array.push('<div style="margin-bottom:1em;">');
-    tmpl_array.push('<label class="radio-inline">');
-    tmpl_array.push('  <input title="Switch to selecting files" type="radio" name="jstree-radio" value="jstree-disable-folders" checked="checked"> Files');
-    tmpl_array.push('</label>');
-    tmpl_array.push('<label class="radio-inline">');
-    tmpl_array.push('  <input title="Switch to selecting folders" type="radio" name="jstree-radio" value="jstree-disable-files"> Folders');
-    tmpl_array.push('</label>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('<div style="margin-bottom:1em;">');
-    tmpl_array.push('<label class="checkbox-inline jstree-preserve-structure" style="display:none;">');
-    tmpl_array.push('   <input class="preserve-checkbox" type="checkbox" value="preserve_directory_structure">');
-    tmpl_array.push('Preserve directory structure');
-    tmpl_array.push(' </label>');
-    tmpl_array.push('<label class="checkbox-inline jstree-link-files" style="display:none;">');
-    tmpl_array.push('   <input class="link-checkbox" type="checkbox" value="link_files">');
-    tmpl_array.push('Link files instead of copying');
-    tmpl_array.push(' </label>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('<div id="jstree_browser">');
-    tmpl_array.push('</div>');
-
-    tmpl_array.push('<hr />');
-    tmpl_array.push('<p>You can set extension type and genome for all imported datasets at once:</p>');
-    tmpl_array.push('<div>');
-    tmpl_array.push('Type: <span id="library_extension_select" class="library-extension-select" />');
-    tmpl_array.push('  Genome: <span id="library_genome_select" class="library-genome-select" />');
-    tmpl_array.push('</div>');
-    tmpl_array.push('</div>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div id="file_browser_modal">',
+      '<div class="alert alert-info jstree-files-message">All files you select will be imported into the current folder ignoring their folder structure.</div>',
+      '<div class="alert alert-info jstree-folders-message" style="display:none;">All files within the selected folders and their subfolders will be imported into the current folder.</div>',
+      '<div style="margin-bottom:1em;">',
+        '<label title="Switch to selecting files" class="radio-inline import-type-switch">',
+          '<input type="radio" name="jstree-radio" value="jstree-disable-folders" checked="checked"> Choose Files',
+        '</label>',
+        '<label title="Switch to selecting folders" class="radio-inline import-type-switch">',
+        '<input type="radio" name="jstree-radio" value="jstree-disable-files"> Choose Folders',
+        '</label>',
+      '</div>',
+      '<div style="margin-bottom:1em;">',
+        '<label class="checkbox-inline jstree-preserve-structure" style="display:none;">',
+          '<input class="preserve-checkbox" type="checkbox" value="preserve_directory_structure">',
+          'Preserve directory structure',
+        '</label>',
+        '<label class="checkbox-inline">',
+          '<input class="link-checkbox" type="checkbox" value="link_files">',
+          'Link files instead of copying',
+        '</label>',
+        '<label class="checkbox-inline">',
+          '<input class="posix-checkbox" type="checkbox" value="to_posix_lines" checked="checked">',
+          'Convert line endings to POSIX',
+        '</label>',
+        '<label class="checkbox-inline">',
+          '<input class="spacetab-checkbox" type="checkbox" value="space_to_tab">',
+          'Convert spaces to tabs',
+        '</label>',
+      '</div>',
+      '<button title="Select all files" type="button" class="button primary-button libimport-select-all">',
+        'Select all',
+      '</button>',
+      '<button title="Select no files" type="button" class="button primary-button libimport-select-none">',
+        'Unselect all',
+      '</button>',
+      '<hr />',
+      // append jstree object here
+      '<div id="jstree_browser">',
+      '</div>',
+      '<hr />',
+      '<p>You can set extension type and genome for all imported datasets at once:</p>',
+      '<div>',
+        'Type: <span id="library_extension_select" class="library-extension-select" />',
+        'Genome: <span id="library_genome_select" class="library-genome-select" />',
+      '</div>',
+      '<br>',
+      '<div>',
+         '<label class="checkbox-inline tag-files">',
+            'Tag datasets based on file names.',
+            '<input class="tag-files" type="checkbox" value="tag_using_filenames" checked="checked">',
+         '</label>',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
   templateImportPathModal: function(){
-    var tmpl_array = [];
-
-    tmpl_array.push('<div id="file_browser_modal">');
-    tmpl_array.push('<div class="alert alert-info jstree-folders-message">All files within the given folders and their subfolders will be imported into the current folder.</div>');
-
-    tmpl_array.push('<div style="margin-bottom: 0.5em;">');
-    tmpl_array.push('<label class="checkbox-inline jstree-preserve-structure">');
-    tmpl_array.push('   <input class="preserve-checkbox" type="checkbox" value="preserve_directory_structure">');
-    tmpl_array.push('Preserve directory structure');
-    tmpl_array.push(' </label>');
-    tmpl_array.push('<label class="checkbox-inline jstree-link-files">');
-    tmpl_array.push('   <input class="link-checkbox" type="checkbox" value="link_files">');
-    tmpl_array.push('Link files instead of copying');
-    tmpl_array.push(' </label>');
-    tmpl_array.push('</div>');
-
-    tmpl_array.push('<textarea id="import_paths" class="form-control" rows="5" placeholder="Absolute paths (or paths relative to Galaxy root) separated by newline"></textarea>');
-
-    tmpl_array.push('<hr />');
-    tmpl_array.push('<p>You can set extension type and genome for all imported datasets at once:</p>');
-    tmpl_array.push('<div>');
-    tmpl_array.push('Type: <span id="library_extension_select" class="library-extension-select" />');
-    tmpl_array.push('  Genome: <span id="library_genome_select" class="library-genome-select" />');
-    tmpl_array.push('</div>');
-
-    tmpl_array.push('</div>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div id="file_browser_modal">',
+      '<div class="alert alert-info jstree-folders-message">All files within the given folders and their subfolders will be imported into the current folder.</div>',
+      '<div style="margin-bottom: 0.5em;">',
+        '<label class="checkbox-inline">',
+          '<input class="preserve-checkbox" type="checkbox" value="preserve_directory_structure">',
+          'Preserve directory structure',
+        '</label>',
+        '<label class="checkbox-inline">',
+          '<input class="link-checkbox" type="checkbox" value="link_files">',
+          'Link files instead of copying',
+        '</label>',
+        '<br>',
+        '<label class="checkbox-inline">',
+          '<input class="posix-checkbox" type="checkbox" value="to_posix_lines" checked="checked">',
+          'Convert line endings to POSIX',
+        '</label>',
+        '<label class="checkbox-inline">',
+          '<input class="spacetab-checkbox" type="checkbox" value="space_to_tab">',
+          'Convert spaces to tabs',
+        '</label>',
+      '</div>',
+      '<textarea id="import_paths" class="form-control" rows="5" placeholder="Absolute paths (or paths relative to Galaxy root) separated by newline" autofocus></textarea>',
+      '<hr />',
+      '<p>You can set extension type and genome for all imported datasets at once:</p>',
+      '<div>',
+        'Type: <span id="library_extension_select" class="library-extension-select" />',
+        'Genome: <span id="library_genome_select" class="library-genome-select" />',
+      '</div>',
+      '<div>',
+         '<label class="checkbox-inline tag-files">',
+            'Tag datasets based on file names.',
+            '<input class="tag-files" type="checkbox" value="tag_using_filenames" checked="checked">',
+         '</label>',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
   templateAddFilesFromHistory: function (){
-    var tmpl_array = [];
-
-    tmpl_array.push('<div id="add_files_modal">');
-    tmpl_array.push('<div id="history_modal_combo_bulk">');
-    tmpl_array.push('Select history:  ');
-    tmpl_array.push('<select id="dataset_add_bulk" name="dataset_add_bulk" style="width:66%; "> ');
-    tmpl_array.push('   <% _.each(histories, function(history) { %>'); //history select box
-    tmpl_array.push('       <option value="<%= _.escape(history.get("id")) %>"><%= _.escape(history.get("name")) %></option>');
-    tmpl_array.push('   <% }); %>');
-    tmpl_array.push('</select>');
-    tmpl_array.push('</div>');
-    tmpl_array.push('<br/>');
-    tmpl_array.push('<div id="selected_history_content">');
-
-    tmpl_array.push('</div>');
-    tmpl_array.push('</div>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<div id="add_files_modal">',
+      '<div>',
+        '1.&nbsp;Select history:&nbsp;',
+        '<select id="dataset_add_bulk" name="dataset_add_bulk" style="width:66%; "> ',
+          '<% _.each(histories, function(history) { %>', //history select box
+            '<option value="<%= _.escape(history.get("id")) %>"><%= _.escape(history.get("name")) %></option>',
+          '<% }); %>',
+        '</select>',
+      '</div>',
+      '<br/>',
+      '<div id="selected_history_content">',
+      '</div>',
+    '</div>'
+    ].join(''));
   },
 
   templateHistoryContents: function (){
-    var tmpl_array = [];
-
-    tmpl_array.push('<strong>Choose the datasets to import:</strong>');
-    tmpl_array.push('<ul>');
-    tmpl_array.push(' <% _.each(history_contents, function(history_item) { %>');
-    tmpl_array.push(' <li data-id="<%= _.escape(history_item.get("id")) %>">');
-    tmpl_array.push('   <input style="margin: 0;" type="checkbox"> <%= _.escape(history_item.get("hid")) %>: <%= _.escape(history_item.get("name")) %>');
-    tmpl_array.push(' </li>');
-    tmpl_array.push(' <% }); %>');
-    tmpl_array.push('</ul>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<p>2.&nbsp;Choose the datasets to import:</p>',
+    '<div>',
+    '<button title="Select all datasets" type="button" class="button primary-button history-import-select-all">',
+      'Select all',
+    '</button>',
+    '<button title="Select all datasets" type="button" class="button primary-button history-import-unselect-all">',
+      'Unselect all',
+    '</button>',
+    '</div>',
+    '<br>',
+    '<ul>',
+      '<% _.each(history_contents, function(history_item) { %>',
+        '<% if (history_item.get("deleted") != true ) { %>',
+          '<% var item_name = history_item.get("name") %>',
+          '<% if (history_item.get("type") === "collection") { %>',
+              '<% var collection_type = history_item.get("collection_type") %>',
+              '<% if (collection_type === "list") { %>',
+                '<li data-id="<%= _.escape(history_item.get("id")) %>" data-name="<%= _.escape(history_item.get("type")) %>">',
+                  '<label>',
+                '<label title="<%= _.escape(item_name) %>">',
+                    '<input style="margin: 0;" type="checkbox"> <%= _.escape(history_item.get("hid")) %>: ',
+                    '<%= item_name.length > 75 ? _.escape("...".concat(item_name.substr(-75))) : _.escape(item_name) %> (Dataset Collection)',
+                  '</label>',
+                '</li>',
+               '<% } else { %>',
+                 '<li><input style="margin: 0;" type="checkbox" onclick="return false;" disabled="disabled">',
+                    '<span title="You can convert this collection into a collection of type list using the Collection Tools">',
+                      '<%= _.escape(history_item.get("hid")) %>: ',
+                      '<%= item_name.length > 75 ? _.escape("...".concat(item_name.substr(-75))) : _.escape(item_name) %> (Dataset Collection of type <%= _.escape(collection_type) %> not supported.)',
+                    '</span>',
+                  '</li>',
+                '<% } %>',
+          '<% } else if (history_item.get("visible") === true && history_item.get("state") === "ok") { %>',
+              '<li data-id="<%= _.escape(history_item.get("id")) %>" data-name="<%= _.escape(history_item.get("type")) %>">',
+                '<label title="<%= _.escape(item_name) %>">',
+                  '<input style="margin: 0;" type="checkbox"> <%= _.escape(history_item.get("hid")) %>: ',
+                  '<%= item_name.length > 75 ? _.escape("...".concat(item_name.substr(-75))) : _.escape(item_name) %>',
+                '</label>',
+              '</li>',
+          '<% } %>',
+        '<% } %>',
+      '<% }); %>',
+    '</ul>',
+    ].join(''));
   },
 
   templatePaginator: function(){
-    tmpl_array = [];
-
-    tmpl_array.push('   <ul class="pagination pagination-sm">');
-    tmpl_array.push('       <% if ( ( show_page - 1 ) > 0 ) { %>');
-    tmpl_array.push('           <% if ( ( show_page - 1 ) > page_count ) { %>'); // we are on higher page than total page count
-    tmpl_array.push('               <li><a href="#folders/<%= id %>/page/1"><span class="fa fa-angle-double-left"></span></a></li>');
-    tmpl_array.push('               <li class="disabled"><a href="#folders/<%= id %>/page/<% print( show_page ) %>"><% print( show_page - 1 ) %></a></li>');
-    tmpl_array.push('           <% } else { %>');
-    tmpl_array.push('               <li><a href="#folders/<%= id %>/page/1"><span class="fa fa-angle-double-left"></span></a></li>');
-    tmpl_array.push('               <li><a href="#folders/<%= id %>/page/<% print( show_page - 1 ) %>"><% print( show_page - 1 ) %></a></li>');
-    tmpl_array.push('           <% } %>');
-    tmpl_array.push('       <% } else { %>'); // we are on the first page
-    tmpl_array.push('           <li class="disabled"><a href="#folders/<%= id %>/page/1"><span class="fa fa-angle-double-left"></span></a></li>');
-    tmpl_array.push('           <li class="disabled"><a href="#folders/<%= id %>/page/<% print( show_page ) %>"><% print( show_page - 1 ) %></a></li>');
-    tmpl_array.push('       <% } %>');
-    tmpl_array.push('       <li class="active">');
-    tmpl_array.push('       <a href="#folders/<%= id %>/page/<% print( show_page ) %>"><% print( show_page ) %></a>');
-    tmpl_array.push('       </li>');
-    tmpl_array.push('       <% if ( ( show_page ) < page_count ) { %>');
-    tmpl_array.push('           <li><a href="#folders/<%= id %>/page/<% print( show_page + 1 ) %>"><% print( show_page + 1 ) %></a></li>');
-    tmpl_array.push('           <li><a href="#folders/<%= id %>/page/<% print( page_count ) %>"><span class="fa fa-angle-double-right"></span></a></li>');
-    tmpl_array.push('       <% } else { %>');
-    tmpl_array.push('           <li class="disabled"><a href="#folders/<%= id %>/page/<% print( show_page  ) %>"><% print( show_page + 1 ) %></a></li>');
-    tmpl_array.push('           <li class="disabled"><a href="#folders/<%= id %>/page/<% print( page_count ) %>"><span class="fa fa-angle-double-right"></span></a></li>');
-    tmpl_array.push('       <% } %>');
-    tmpl_array.push('   </ul>');
-    tmpl_array.push('   <span>');
-    tmpl_array.push('       showing <a data-toggle="tooltip" data-placement="top" title="Click to change the number of items on page" id="page_size_prompt"><%- items_shown %></a> of <%- total_items_count %> items');
-    tmpl_array.push('   </span>');
-
-    return _.template(tmpl_array.join(''));
+    return _.template([
+    '<ul class="pagination pagination-sm">',
+      '<% if ( ( show_page - 1 ) > 0 ) { %>',
+        '<% if ( ( show_page - 1 ) > page_count ) { %>', // we are on higher page than total page count
+          '<li><a href="#folders/<%= id %>/page/1"><span class="fa fa-angle-double-left"></span></a></li>',
+          '<li class="disabled"><a href="#folders/<%= id %>/page/<% print( show_page ) %>"><% print( show_page - 1 ) %></a></li>',
+        '<% } else { %>',
+          '<li><a href="#folders/<%= id %>/page/1"><span class="fa fa-angle-double-left"></span></a></li>',
+          '<li><a href="#folders/<%= id %>/page/<% print( show_page - 1 ) %>"><% print( show_page - 1 ) %></a></li>',
+        '<% } %>',
+      '<% } else { %>', // we are on the first page
+        '<li class="disabled"><a href="#folders/<%= id %>/page/1"><span class="fa fa-angle-double-left"></span></a></li>',
+        '<li class="disabled"><a href="#folders/<%= id %>/page/<% print( show_page ) %>"><% print( show_page - 1 ) %></a></li>',
+      '<% } %>',
+      '<li class="active">',
+        '<a href="#folders/<%= id %>/page/<% print( show_page ) %>"><% print( show_page ) %></a>',
+      '</li>',
+      '<% if ( ( show_page ) < page_count ) { %>',
+        '<li><a href="#folders/<%= id %>/page/<% print( show_page + 1 ) %>"><% print( show_page + 1 ) %></a></li>',
+        '<li><a href="#folders/<%= id %>/page/<% print( page_count ) %>"><span class="fa fa-angle-double-right"></span></a></li>',
+      '<% } else { %>',
+        '<li class="disabled"><a href="#folders/<%= id %>/page/<% print( show_page  ) %>"><% print( show_page + 1 ) %></a></li>',
+        '<li class="disabled"><a href="#folders/<%= id %>/page/<% print( page_count ) %>"><span class="fa fa-angle-double-right"></span></a></li>',
+      '<% } %>',
+    '</ul>',
+    '<span>',
+      '&nbsp;showing&nbsp;',
+      '<a data-toggle="tooltip" data-placement="top" title="Click to change the number of items on page" class="page_size_prompt">',
+        '<%- items_shown %>',
+      '</a>',
+      '&nbsp;of <%- total_items_count %> items',
+    '</span>'
+    ].join(''));
   },
 
 });

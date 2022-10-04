@@ -29,6 +29,8 @@
 @import "library.less";
 @import "toastr.less";
 @import "jstree.less";
+@import "tour.less";
+@import "flex.less";
 
 // Mixins
 .unselectable {
@@ -141,6 +143,24 @@ body  {
     right: 250 + @border-default-color_padding;
     overflow: hidden;
     z-index: 1;
+    .center-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        .center-panel {
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            overflow: auto;
+        }
+        .center-frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+    }
 }
 #right-border  {
     right: 250px;
@@ -252,6 +272,7 @@ body.has-message-box.has-inactivity-box {
         content:'\f054';
     }
     z-index: 201;
+    cursor: pointer;
     display: block;
     position: fixed;
     left: 0;
@@ -291,8 +312,9 @@ div.unified-panel-body {
     width: 100%;
     padding: 0px;
 }
+
 div.unified-panel-body-background {
-    background: none repeat scroll 0 0 #DFE5F9;
+    background: none repeat scroll 0 0 @panel-bg-color;
 }
 
 #left > div.unified-panel-body, #right > div.unified-panel-body {
@@ -428,6 +450,10 @@ div.unified-panel-body-background {
     .navbar-tabs {
         .toggle {
             color           : gold;
+        }
+        .dropdown-icon {
+            top             : 1px;
+            font-size       : 1.8em;
         }
         .dropdown-note {
             font-weight     : bold;
@@ -584,7 +610,6 @@ div.toolHelpBody {
     }
 }
 
-
 div.form, div.toolForm {
     border: solid @form-border 1px;
     .border-radius(@panel-border-radius);
@@ -596,6 +621,7 @@ div.form-title, div.toolFormTitle {
     padding: 5px 10px;
     background: @form-heading-bg;
     border-bottom: solid @form-border 1px;
+    word-wrap:break-word;
 }
 
 div.form-body {
@@ -663,6 +689,10 @@ div.form-row-error-message {
     margin-top: 5px;
 }
 
+.workflow-right .right-content .section-row {
+    margin-bottom: 10px;
+}
+
 // Selects
 select {
     //border: 1px solid @input-border;
@@ -725,6 +755,8 @@ input[type="submit"], button {
     display: none;
     right: 6px;
     top: 9px;
+    font-size: 1.4em;
+    color: #888;
 }
 
 #search-clear-btn {
@@ -750,6 +782,9 @@ input[type="submit"], button {
     background-image: url(error_large.png);
     background-repeat: no-repeat;
     background-position: 10px 8px;
+    .messagerow {
+        padding: 10px 20px;
+    }
 }
 
 .errormessagelarge {
@@ -867,7 +902,6 @@ table.tabletip tbody tr:hover td {
     background-color: #eee;
 }
 
-
 table.colored {
     border-top: solid @table-border-color 1px;
     border-bottom: solid @table-border-color 1px;
@@ -909,16 +943,13 @@ div.debug {
 .grid-header {
     padding-bottom: 1em;
 }
-
 .grid-header h2 {
     margin: 0;
     margin-bottom: 0.5em;
 }
-
 .grid-header .title {
     font-weight: bold;
 }
-
 .grid {
     padding-top: 1em;
     border-collapse: collapse;
@@ -1240,6 +1271,10 @@ a.action-button {
     }
 }
 
+.menubutton.background-none {
+    background: none;
+}
+
 // A split menu button, the main button has an action, the arrow causes the
 // popup menu to appear
 
@@ -1362,6 +1397,10 @@ div.permissionContainer {
 
 }
 
+.preserve-text-breaks {
+    white-space: pre-line;
+}
+
 // Icon buttons.
 
 .icon-button  {
@@ -1441,8 +1480,9 @@ div.permissionContainer {
 // ============================================================================ History
 @import "ui/icon-btn.less";
 @import "list-item.less";
+@import "dataset.less";
 @import "history.less";
-@import "collections.less";
+@import "collection.less";
 @import "job.less";
 
 @import "ui/paired-collection-creator.less";
@@ -1451,6 +1491,7 @@ div.permissionContainer {
 @import "ui/dataset-choice.less";
 @import "ui/peek-column-selector.less";
 @import "ui/pagination.less";
+@import "ui/error-modal.less";
 
 
 // ==== Tool menu styles
@@ -1460,7 +1501,7 @@ div.permissionContainer {
     color: @base-text-color;
     background: @side-panel-bg;
     min-height: 100%;
-    padding: 5px 10px;
+    padding: 35px 10px;
 }
 
 div.toolSectionPad
@@ -1509,6 +1550,15 @@ div.toolTitle
   }
 }
 
+div a.tool-link {
+	text-decoration: none;
+	display: block;
+
+	span.tool-old-link {
+		text-decoration: underline;
+	}
+}
+
 div.toolSectionBody div.toolPanelLabel
 {
   padding-top: 5px;
@@ -1528,7 +1578,9 @@ div.toolTitleNoSection
 #tool-search {
     padding-top: 5px;
     padding-bottom: 10px;
-    position: relative;
+    position: fixed;
+    top: 65px;
+    width: 210px;
 }
 
 // Dataset Display Styles
@@ -1708,4 +1760,94 @@ div.toolTitleNoSection
 // honeypot for registration form
 #for_bears {
     display: none;
+}
+
+// communication channel bootstrap modal 
+.chat-modal {
+    overflow: hidden;
+}
+
+.modal-header-body {
+    padding: 2px;
+}
+
+.communication-iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.close-modal {
+    float: right; 
+    cursor: pointer;
+}
+
+.expand-compress-modal {
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 93.2%;
+}
+
+// password complexity monitor
+#change_password, #registrationForm {
+    .progress {
+        width:200px;
+        margin-left: 20px;
+    }
+    .progress-bar {
+        color:black;
+        text-align:left;
+    }
+}
+
+
+// workflow
+.wf {
+    overflow: auto;
+    th {
+        white-space: nowrap;
+    }
+    td:first-child {
+        white-space: nowrap;
+    }
+}
+
+.wf-action span {
+    padding-left: 3px;
+    font-family: "Lucida Grande", verdana, arial, helvetica, sans-serif;
+}
+
+
+.wf-nodata {
+    padding-left: 1%;
+}
+
+.wf-back {
+    margin-left: 0.5%;
+}
+
+.other-options {
+    margin-bottom: 2%;
+}
+
+.hidden_description_layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(200, 200, 200, 0.6);
+  visibility: hidden;
+  opacity: 0;
+  font-size: 2.0em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* transition effect. not necessary */
+  transition: opacity .2s, visibility .2s;
+}
+
+.hidden_description_layer.dragover {
+  visibility: visible;
+  opacity: 1;
 }

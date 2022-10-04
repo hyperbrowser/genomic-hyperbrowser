@@ -1,13 +1,12 @@
-from math import isinf
-
 import os
 import os.path
-import tempfile
 import shutil
+import tempfile
+import unittest
+
+from math import isinf
 
 from galaxy.tools.parser.factory import get_tool_source
-
-import unittest
 
 
 TOOL_XML_1 = """
@@ -124,6 +123,10 @@ class BaseLoaderTestCase(unittest.TestCase):
 class XmlLoaderTestCase(BaseLoaderTestCase):
     source_file_name = "bwa.xml"
     source_contents = TOOL_XML_1
+
+    def test_tool_source_to_string(self):
+        # Previously this threw an Exception - test for regression.
+        str(self._tool_source)
 
     def test_version(self):
         assert self._tool_source.parse_version() == "1.0.1"
@@ -244,6 +247,12 @@ class XmlLoaderTestCase(BaseLoaderTestCase):
         assert len(exit) == 2, exit
         assert len(regexes) == 2, regexes
 
+    def test_sanitize_option(self):
+        assert self._tool_source.parse_sanitize() is True
+
+    def test_refresh_option(self):
+        assert self._tool_source.parse_refresh() is False
+
 
 class YamlLoaderTestCase(BaseLoaderTestCase):
     source_file_name = "bwa.yml"
@@ -363,6 +372,9 @@ class YamlLoaderTestCase(BaseLoaderTestCase):
         assert attributes1["compare"] == "sim_size"
         assert attributes1["lines_diff"] == 4
 
+    def test_sanitize(self):
+        assert self._tool_source.parse_sanitize() is True
+
 
 class DataSourceLoaderTestCase(BaseLoaderTestCase):
     source_file_name = "ds.xml"
@@ -390,6 +402,12 @@ class DataSourceLoaderTestCase(BaseLoaderTestCase):
     <options sanitize="False" refresh="True"/>
 </tool>
 """
+
+    def test_sanitize_option(self):
+        assert self._tool_source.parse_sanitize() is False
+
+    def test_refresh_option(self):
+        assert self._tool_source.parse_refresh() is True
 
     def test_tool_type(self):
         assert self._tool_source.parse_tool_type() == "data_source"

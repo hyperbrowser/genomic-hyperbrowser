@@ -7,20 +7,28 @@ def getUrlPrefix(config):
     return prefix if filterWith == 'proxy-prefix' else ''
 
 
+def _getFullPathFromConfig(galaxyBaseDir, configPath):
+    return configPath if configPath.startswith('/') else \
+        '/'.join([galaxyBaseDir, configPath])
+
+
 config = GalaxyConfigParser()
 
 if not globals().get('URL_PREFIX'):
     URL_PREFIX = getUrlPrefix(config)
 
-GALAXY_FILE_PATH = GALAXY_BASE_DIR + '/' + config.getWithDefault('file_path', 'database/files')
-GALAXY_REL_TOOL_CONFIG_FILE = config.getWithDefault('tool_config_file', 'config/tool_conf.xml')
+GALAXY_INI_FILE_PATH = config.getWithDefault('file_path', 'database/files')
+GALAXY_FILE_PATH = _getFullPathFromConfig(GALAXY_BASE_DIR, GALAXY_INI_FILE_PATH)
+
+GALAXY_INI_TOOL_CONFIG_FILE = config.getWithDefault('tool_config_file', 'config/tool_conf.xml')
+GALAXY_TOOL_CONFIG_FILE = _getFullPathFromConfig(GALAXY_BASE_DIR, GALAXY_INI_TOOL_CONFIG_FILE)
+
 ADMIN_USERS = [username.strip() for username in
                config.getWithDefault('admin_users', '').split(',')]
 RESTRICTED_USERS = [username.strip() for username in
                     config.getWithDefault('restricted_users', '', 'galaxy_proto').split(',')]
 OUTPUT_PRECISION = int(config.getWithDefault('output_precision', '4', 'galaxy_proto'))
 
-GALAXY_TOOL_CONFIG_FILE = GALAXY_BASE_DIR + '/' + GALAXY_REL_TOOL_CONFIG_FILE
 PROTO_TOOL_DIR = GALAXY_BASE_DIR + '/lib/proto/tools'
 PROTO_TOOL_SHELVE_FN = GALAXY_BASE_DIR + '/database/proto-tool-cache.shelve'
 CONFIG_DIR = GALAXY_BASE_DIR + '/config'

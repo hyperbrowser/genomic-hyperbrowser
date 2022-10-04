@@ -4,15 +4,15 @@ define([
     "mvc/base-mvc",
     "utils/localization"
 ], function( DATASET_LI_EDIT, HDA_LI, BASE_MVC, _l ){
+
+'use strict';
+
 //==============================================================================
 var _super = DATASET_LI_EDIT.DatasetListItemEdit;
 /** @class Editing view for HistoryDatasetAssociation.
  */
 var HDAListItemEdit = _super.extend(
 /** @lends HDAListItemEdit.prototype */{
-
-    /** logger used to record this.log messages, commonly set to console */
-    //logger              : console,
 
     className   : _super.prototype.className + " history-content",
 
@@ -51,7 +51,6 @@ var HDAListItemEdit = _super.extend(
 // ............................................................................ TEMPLATES
 /** underscore templates */
 HDAListItemEdit.prototype.templates = (function(){
-//TODO: move to require text! plugin
 
     var warnings = _.extend( {}, _super.prototype.templates.warnings, {
         hidden : BASE_MVC.wrapTemplate([

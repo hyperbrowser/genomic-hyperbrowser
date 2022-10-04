@@ -15,11 +15,12 @@
 # -o            Output file
 # -d            Delimiter
 # -c            Column list (Comma Seperated)
+from __future__ import print_function
 
-import sys
 import re
-import string
-import commands
+import subprocess
+import sys
+
 
 # This function is exceedingly useful, perhaps package for reuse?
 def getopts(argv):
@@ -32,52 +33,53 @@ def getopts(argv):
             argv = argv[1:]
     return opts
 
+
 def main():
     args = sys.argv[1:]
 
     try:
         opts = getopts(args)
     except IndexError:
-        print "Usage:"
-        print " -i        Input file"
-        print " -o        Output file"
-        print " -c        Column list (comma seperated)"
-        print " -d        Delimiter:"
-        print "                     T   Tab"
-        print "                     C   Comma"
-        print "                     D   Dash"
-        print "                     U   Underscore"
-        print "                     P   Pipe"
-        print "                     Dt  Dot"
-        print "                     Sp  Space"
-        print " -s        Sorting: value (default), largest, or smallest"
+        print("Usage:")
+        print(" -i        Input file")
+        print(" -o        Output file")
+        print(" -c        Column list (comma seperated)")
+        print(" -d        Delimiter:")
+        print("                     T   Tab")
+        print("                     C   Comma")
+        print("                     D   Dash")
+        print("                     U   Underscore")
+        print("                     P   Pipe")
+        print("                     Dt  Dot")
+        print("                     Sp  Space")
+        print(" -s        Sorting: value (default), largest, or smallest")
         return 0
 
     outputfile = opts.get("-o")
-    if outputfile == None:
-        print "No output file specified."
+    if outputfile is None:
+        print("No output file specified.")
         return -1
-    
+
     inputfile = opts.get("-i")
-    if inputfile == None:
-        print "No input file specified."
+    if inputfile is None:
+        print("No input file specified.")
         return -2
 
     delim = opts.get("-d")
-    if delim == None:
-        print "Field delimiter not specified."
+    if delim is None:
+        print("Field delimiter not specified.")
         return -3
 
     columns = opts.get("-c")
-    if columns == None or columns == 'None':
-        print "Columns not specified."
+    if columns is None or columns == 'None':
+        print("Columns not specified.")
         return -4
 
     sorting = opts.get("-s")
     if sorting is None:
         sorting = "value"
     if sorting not in ["value", "largest", "smallest"]:
-        print "Unknown sorting option %r" % sorting
+        print("Unknown sorting option %r" % sorting)
         return -5
 
     # All inputs have been specified at this point, now validate.
@@ -85,31 +87,31 @@ def main():
     columnRegEx = re.compile("([0-9]{1,},?)+")
 
     if not columnRegEx.match(columns):
-        print "Illegal column specification."
+        print("Illegal column specification.")
         return -4
     if not fileRegEx.match(outputfile):
-        print "Illegal output filename."
+        print("Illegal output filename.")
         return -5
     if not fileRegEx.match(inputfile):
-        print "Illegal input filename."
+        print("Illegal input filename.")
         return -6
 
-    column_list = re.split(",",columns)
+    column_list = re.split(",", columns)
     columns_for_display = "c" + ", c".join(column_list)
 
     commandline = "cut "
     # Set delimiter
-    if delim=='C':
+    if delim == 'C':
         commandline += "-d \",\" "
-    if delim=='D':
+    if delim == 'D':
         commandline += "-d \"-\" "
-    if delim=='U':
+    if delim == 'U':
         commandline += "-d \"_\" "
-    if delim=='P':
+    if delim == 'P':
         commandline += "-d \"|\" "
-    if delim=='Dt':
+    if delim == 'Dt':
         commandline += "-d \".\" "
-    if delim=='Sp':
+    if delim == 'Sp':
         commandline += "-d \" \" "
 
     # set columns
@@ -129,10 +131,11 @@ def main():
     # uniq -C puts a space between the count and the field, want a tab.
     # To replace just first tab, use sed again with 1 as the index
     commandline += " | sed 's/^\ *//' | sed 's/ /\t/1' > " + outputfile
-    errorcode, stdout = commands.getstatusoutput(commandline)
+    errorcode = subprocess.call(commandline, shell=True)
 
-    print "Count of unique values in " + columns_for_display
+    print("Count of unique values in " + columns_for_display)
     return errorcode
+
 
 if __name__ == "__main__":
     main()

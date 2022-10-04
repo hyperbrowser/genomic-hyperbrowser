@@ -9,6 +9,12 @@ guidelines for longer term planning for various Galaxy related projects.
 Some inspiration taken from the way the
 `Docker <https://github.com/docker/docker>`__ project labels issues.
 
+Issue Reporting
+===============
+
+Issues (bugs, feature requests, etc.) should be reported at `GitHub issues`_, and
+handling of issues follows the procedures described in the `issues document`_.
+
 Milestones
 ==========
 
@@ -105,19 +111,33 @@ Area Labels
 
 The 'area' label is used for tagging issues and pull requests to a
 particular focus area. This allows for easy searching within that
-particular domain, as well as more organized release notes. Some
-examples, not-exhaustive, are here:
+particular domain, as well as more organized release notes.
 
+-  ``area/admin`` - Changes to admin functionality of the Galaxy webapp.
 -  ``area/API``
--  ``area/cleanup``
--  ``area/jobs``
+-  ``area/cleanup`` - General code cleanup.
+-  ``area/database`` - Change requires a modification to Galaxy's database.
+-  ``area/dataset-collections``
+-  ``area/datatypes`` - Changes to Galaxy's datatypes
+-  ``area/datatype-framework`` - Changes to Galaxy's datatype and metadata framework
 -  ``area/documentation``
+-  ``area/framework``
 -  ``area/GIEs``
--  ``area/toolshed``
+-  ``area/histories``
+-  ``area/jobs``
+-  ``area/performance``
+-  ``area/reports``
+-  ``area/system`` - Changes to scripts used to run or manage Galaxy.
+-  ``area/tools`` - Changes to specific tools in Galaxy.
+-  ``area/tool-framework``
+-  ``area/toolshed``- Changes to the tool shed client or server.
 -  ``area/UI-UX``
+-  ``area/util``
+-  ``area/visualizations``
 -  ``area/workflows``
 
-This list will definitely grow over time.
+New labels should be proposed by opening a pull request against this document
+in the dev branch of Galaxy.
 
 Other Useful Labels
 -------------------
@@ -143,10 +163,18 @@ special purpose.
    serves as an entry point to the high level development of the
    project.
 
--  ``beginner-friendly`` can be used to indicate a nice entry-level
+-  ``friendliness/beginner`` can be used to indicate a nice entry-level
    issue that only requires limited understanding of the larger Galaxy
    framework and ecosystem. This is useful for encouraging new
    contributors.
+   
+-  ``friendliness/intermediate`` can be used to indicate an advanced
+   level issue that requires decent understanding of the larger Galaxy
+   framework and system.
+         
+-  ``friendliness/unfriendly`` can be used to mark issues that require
+   deep understanding of the framework and/or exquisite programming
+   abilities.
 
 -  ``minor`` is a special tag used to generate release notes. It should
    only be applied to pull requests made by committers that fix
@@ -155,10 +183,22 @@ special purpose.
    outside the committers group should have this tag applied because
    these pull requests must be highlighted in the release notes.
 
-* ``major`` is a special tag used to generate release notes. In practice
+-  ``major`` is a special tag used to generate release notes. In practice
    this should be applied to at most a couple dozen pull requests each
    release and is used to prioritize important items of note for the
    top of release notes sections.
+   
+-  ``merge`` tag used to indicate PR that only merges a change that has
+   been previously added. Used to filter things out of release notes.
+   
+-  ``feature-request`` is used to indicate a request for change or feature.
+
+-  ``triage`` is a tag automatically added by a GalaxyBot to indicate that
+   the issue needs to be evaluated and properly tagged.
+   
+-  ``hacktoberfest`` is a tag that encourages contributions to Galaxy codebase
+   by including these issues in the `Hacktoberfest <https://hacktoberfest.digitalocean.com/>`__ event.
+   Similar to ``friendliness/beginner`` tag in other characteristics.
 
 
 The Roadmap
@@ -198,3 +238,5 @@ For now, we will rely on a few simple automation rules:
    ``triage`` to indicate that they require attention prior to merge.
 
 .. _ORGANIZATION: https://github.com/galaxyproject/galaxy/blob/dev/doc/source/project/organization.rst
+.. _issues document: https://github.com/galaxyproject/galaxy/blob/dev/doc/source/project/issues.rst
+.. _Github issues: https://github.com/galaxyproject/galaxy/issues/

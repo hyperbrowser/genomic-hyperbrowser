@@ -6,13 +6,10 @@
     "libs/underscore",
     "viz/trackster/util",
     "mvc/dataset/data",
-    "mvc/tool/tool-form",
-    "templates/tool_form.handlebars",
-    "templates/tool_link.handlebars",
-    "templates/panel_section.handlebars",
-    "templates/tool_search.handlebars",
+    "mvc/tool/tool-form"
 
-], function(_, util, data, ToolForm, tool_form_template, tool_link_template, panel_section_template, tool_search_template) {
+], function(_, util, data, ToolForm) {
+    'use strict';
 
 /**
  * Mixin for tracking model visibility.
@@ -353,9 +350,7 @@ var ToolSearch = Backbone.Model.extend({
     defaults: {
         search_hint_string: "search tools",
         min_chars_for_search: 3,
-        spinner_url: "",
         clear_btn_url: "",
-        search_url: "",
         visible: true,
         query: "",
         results: null,
@@ -496,7 +491,7 @@ var ToolPanel = Backbone.Model.extend({
 /**
  * View classes for Galaxy tools and tool panel.
  *
- * Views use precompiled Handlebars templates for rendering. Views update as needed
+ * Views use the templates defined below for rendering. Views update as needed
  * based on (a) model/collection events and (b) user interactions; in this sense,
  * they are controllers are well and the HTML is the real view in the MVC architecture.
  */
@@ -523,8 +518,9 @@ var ToolLinkView = BaseView.extend({
     render: function() {
         // create element
         var $link = $('<div/>');
-        $link.append(tool_link_template(this.model.toJSON()));
+        $link.append(templates.tool_link(this.model.toJSON()));
 
+        var formStyle = this.model.get( 'form_style', null );
         // open upload dialog for upload tool
         if (this.model.id === 'upload1') {
             $link.find('a').on('click', function(e) {
@@ -532,14 +528,11 @@ var ToolLinkView = BaseView.extend({
                 Galaxy.upload.show();
             });
         }
-        else if ( this.model.get( 'model_class' ) === 'Tool' ) { // regular tools
+        else if ( formStyle === 'regular' ) { // regular tools
             var self = this;
             $link.find('a').on('click', function(e) {
                 e.preventDefault();
-                var form = new ToolForm.View( { id : self.model.id, version : self.model.get('version') } );
-                form.deferred.execute(function() {
-                    Galaxy.app.display( form );
-                });
+                Galaxy.router.push( '/', { tool_id : self.model.id, version : self.model.get('version') } );
             });
         }
 
@@ -576,7 +569,7 @@ var ToolSectionView = BaseView.extend({
 
     render: function() {
         // Build using template.
-        this.$el.append( panel_section_template(this.model.toJSON()) );
+        this.$el.append( templates.panel_section(this.model.toJSON()) );
 
         // Add tools to section.
         var section_body = this.$el.find(".toolSectionBody");
@@ -628,14 +621,21 @@ var ToolSearchView = Backbone.View.extend({
     events: {
         'click': 'focus_and_select',
         'keyup :input': 'query_changed',
+        'change :input': 'query_changed',
         'click #search-clear-btn': 'clear'
     },
 
     render: function() {
-        this.$el.append( tool_search_template(this.model.toJSON()) );
+        this.$el.append( templates.tool_search(this.model.toJSON()) );
         if (!this.model.is_visible()) {
             this.$el.hide();
         }
+
+        // Adjust top for issue 2907 depending on whether the messagebox is visible.
+        if ($("#messagebox").is(":visible")) {
+            this.$el.css("top","95px");
+        }
+
         this.$el.find('[title]').tooltip();
         return this;
     },
@@ -736,7 +736,7 @@ var ToolFormView = Backbone.View.extend({
 
     render: function() {
         this.$el.children().remove();
-        this.$el.append( tool_form_template(this.model.toJSON()) );
+        this.$el.append( templates.tool_form(this.model.toJSON()) );
     }
 });
 
@@ -784,6 +784,74 @@ var IntegratedToolMenuAndView = Backbone.View.extend({
         });
     }
 });
+
+// TODO: move into relevant views
+var templates = {
+    // the search bar at the top of the tool panel
+    tool_search : _.template([
+        '<input id="tool-search-query" class="search-query parent-width" name="query" ',
+                'placeholder="<%- search_hint_string %>" autocomplete="off" type="text" />',
+        '<a id="search-clear-btn" title="clear search (esc)"> </a>',
+        //TODO: replace with icon
+        '<span id="search-spinner" class="search-spinner fa fa-spinner fa-spin"></span>',
+    ].join('')),
+
+    // the category level container in the tool panel (e.g. 'Get Data', 'Text Manipulation')
+    panel_section : _.template([
+        '<div class="toolSectionTitle" id="title_<%- id %>">',
+            '<a href="javascript:void(0)"><span><%- name %></span></a>',
+        '</div>',
+        '<div id="<%- id %>" class="toolSectionBody" style="display: none;">',
+            '<div class="toolSectionBg"></div>',
+        '<div>'
+    ].join('')),
+
+    // a single tool's link in the tool panel; will load the tool form in the center panel
+    tool_link : _.template([
+        '<a class="<%- id %> tool-link" href="<%= link %>" target="<%- target %>" minsizehint="<%- min_width %>">',
+            '<span class="labels">',
+                '<% _.each( labels, function( label ){ %>',
+                '<span class="label label-default label-<%- label %>">',
+                    '<%- label %>',
+                '</span>',
+                '<% }); %>',
+            '</span>',
+            '<span class="tool-old-link">',
+                '<%- name %>',
+            '</span>',
+            ' <%- description %>',
+        '</a>'
+    ].join('')),
+
+    // the tool form for entering tool parameters, viewing help and executing the tool
+    // loaded when a tool link is clicked in the tool panel
+    tool_form : _.template([
+        '<div class="toolFormTitle"><%- tool.name %> (version <%- tool.version %>)</div>',
+        '<div class="toolFormBody">',
+            '<% _.each( tool.inputs, function( input ){ %>',
+            '<div class="form-row">',
+                '<label for="<%- input.name %>"><%- input.label %>:</label>',
+                '<div class="form-row-input">',
+                    '<%= input.html %>',
+                '</div>',
+                '<div class="toolParamHelp" style="clear: both;">',
+                    '<%- input.help %>',
+                '</div>',
+                '<div style="clear: both;"></div>',
+            '</div>',
+            '<% }); %>',
+        '</div>',
+        '<div class="form-row form-actions">',
+            '<input type="submit" class="btn btn-primary" name="runtool_btn" value="Execute" />',
+        '</div>',
+        '<div class="toolHelp">',
+            '<div class="toolHelpBody"><% tool.help %></div>',
+        '</div>',
+    // TODO: we need scoping here because 'help' is the dom for the help menu in the masthead
+    // which implies a leaky variable that I can't find
+    ].join(''), { variable: 'tool' }),
+};
+
 
 // Exports
 return {

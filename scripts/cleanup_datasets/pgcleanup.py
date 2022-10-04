@@ -4,6 +4,7 @@ pgcleanup.py - A script for cleaning up datasets in Galaxy efficiently, by
     bypassing the Galaxy model and operating directly on the database.
     PostgreSQL 9.1 or greater is required.
 """
+from __future__ import print_function
 
 import datetime
 import inspect
@@ -11,14 +12,14 @@ import logging
 import os
 import shutil
 import sys
-from ConfigParser import ConfigParser
 from optparse import OptionParser
 
-galaxy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
-sys.path.insert(0, os.path.join(galaxy_root, 'lib'))
-
 import psycopg2
+from six.moves.configparser import ConfigParser
 from sqlalchemy.engine.url import make_url
+
+galaxy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+sys.path.insert(1, os.path.join(galaxy_root, 'lib'))
 
 import galaxy.config
 from galaxy.exceptions import ObjectNotFound
@@ -71,12 +72,13 @@ class Cleanup(object):
         parser.add_option('-U', '--no-update-time', action='store_false', dest='update_time', help="Don't set update_time on updated objects", default=True)
         parser.add_option('-s', '--sequence', dest='sequence', help='Comma-separated sequence of actions, chosen from: %s' % self.action_names, default='')
         parser.add_option('-w', '--work-mem', dest='work_mem', help='Set PostgreSQL work_mem for this connection', default=None)
-        ( self.options, self.args ) = parser.parse_args()
+        parser.add_option('-l', '--log-dir', dest='log_dir', help='Log file directory', default=os.path.join(galaxy_root, 'scripts', 'cleanup_datasets'))
+        (self.options, self.args) = parser.parse_args()
 
-        self.options.sequence = [ x.strip() for x in self.options.sequence.split(',') ]
+        self.options.sequence = [x.strip() for x in self.options.sequence.split(',')]
 
         if self.options.sequence == ['']:
-            print "Error: At least one action must be specified in the action sequence\n"
+            print("Error: At least one action must be specified in the action sequence\n")
             parser.print_help()
             sys.exit(0)
 
@@ -104,7 +106,7 @@ class Cleanup(object):
         url = make_url(self.config.database_connection)
 
         log.info('Connecting to database with URL: %s' % url)
-        args = url.translate_connect_args( username='user' )
+        args = url.translate_connect_args(username='user')
         args.update(url.query)
 
         assert url.get_dialect().name == 'postgresql', 'This script can only be used with PostgreSQL.'
@@ -116,7 +118,7 @@ class Cleanup(object):
 
     def _open_logfile(self):
         action_name = inspect.stack()[1][3]
-        logname = os.path.join(galaxy_root, 'scripts', 'cleanup_datasets', action_name + '.log')
+        logname = os.path.join(self.options.log_dir, action_name + '.log')
 
         if self.options.dry_run:
             log.debug('--dry-run specified, logging changes to stdout instead of log file: %s' % logname)
@@ -239,14 +241,14 @@ class Cleanup(object):
         try:
             filename = self.object_store.get_filename(metadata_file, extra_dir='_metadata_files', extra_dir_at_root=True, alt_name="metadata_%d.dat" % id)
             self._log('Removing from disk: %s' % filename, action_name)
-        except (ObjectNotFound, AttributeError), e:
+        except (ObjectNotFound, AttributeError) as e:
             log.error('Unable to get MetadataFile %s filename: %s' % (id, e))
             return
 
         if not self.options.dry_run:
             try:
                 os.unlink(filename)
-            except Exception, e:
+            except Exception as e:
                 self._log('Removal of %s failed with error: %s' % (filename, e), action_name)
 
     def _update_user_disk_usage(self):
@@ -739,7 +741,7 @@ class Cleanup(object):
             dataset = Dataset(id=tup[0], object_store_id=tup[1])
             try:
                 filename = self.object_store.get_filename(dataset)
-            except (ObjectNotFound, AttributeError), e:
+            except (ObjectNotFound, AttributeError) as e:
                 log.error('Unable to get Dataset %s filename: %s' % (tup[0], e))
                 continue
 
@@ -753,7 +755,7 @@ class Cleanup(object):
             if not self.options.dry_run:
                 try:
                     os.unlink(filename)
-                except Exception, e:
+                except Exception as e:
                     self._log('Removal of %s failed with error: %s' % (filename, e))
 
             # extra_files_dir is optional so it's checked first
@@ -762,10 +764,11 @@ class Cleanup(object):
                 if not self.options.dry_run:
                     try:
                         shutil.rmtree(extra_files_dir)
-                    except Exception, e:
+                    except Exception as e:
                         self._log('Removal of %s failed with error: %s' % (extra_files_dir, e))
 
         self._close_logfile()
+
 
 if __name__ == '__main__':
     cleanup = Cleanup()

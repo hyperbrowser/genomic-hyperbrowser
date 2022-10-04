@@ -1,6 +1,6 @@
 # Overview of software licenses
 
-This code repository consists of code from three separate projects, licensed separately, as
+This code repository consists of code from two separate projects, licensed separately, as
 follows:
 
 ### The Genomic HyperBrowser

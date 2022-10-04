@@ -4,6 +4,8 @@
 # eg lped/eigen/fbat/snpmatrix all to pbed
 # and pbed to lped/eigen/fbat/snpmatrix ?
 # that's a lot of converters
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -38,16 +40,14 @@ def rgConv(inpedfilepath, outhtmlname, outfilepath, plink):
     """
     basename = os.path.split(inpedfilepath)[-1]  # get basename
     outroot = os.path.join(outfilepath, basename)
-    cl = '%s --noweb --bfile %s --recode --out %s ' % (plink, inpedfilepath, outroot)
-    p = subprocess.Popen(cl, shell=True, cwd=outfilepath)
-    p.wait()  # run plink
+    subprocess.check_call([plink, '--noweb', '--bfile', inpedfilepath, '--recode', '--out', outroot], cwd=outfilepath)
 
 
 def main():
     """
     need to work with rgenetics composite datatypes
     so in and out are html files with data in extrafiles path
-    <command interpreter="python">pbed_to_lped_converter.py '$input1/$input1.metadata.base_name'
+    <command>python '$__tool_directory__/pbed_to_lped_converter.py' '$input1/$input1.metadata.base_name'
     '$output1' '$output1.extra_files_path' '${GALAXY_DATA_INDEX_DIR}/rg/bin/plink'
     </command>
     """
@@ -64,16 +64,15 @@ def main():
         pass
     plink = sys.argv[4]
     rgConv(inpedfilepath, outhtmlname, outfilepath, plink)
-    f = file(outhtmlname, 'w')
-    f.write(galhtmlprefix % prog)
     flist = os.listdir(outfilepath)
-    s = '## Rgenetics: http://bitbucket.org/rgalaxy Galaxy Tools %s %s' % (prog, timenow())  # becomes info
-    print s
-    f.write('<div>%s\n<ol>' % (s))
-    for i, data in enumerate( flist ):
-        f.write('<li><a href="%s">%s</a></li>\n' % (os.path.split(data)[-1], os.path.split(data)[-1]))
-    f.write("</ol></div></div></body></html>")
-    f.close()
+    with open(outhtmlname, 'w') as f:
+        f.write(galhtmlprefix % prog)
+        s = '## Rgenetics: http://bitbucket.org/rgalaxy Galaxy Tools %s %s' % (prog, timenow())  # becomes info
+        print(s)
+        f.write('<div>%s\n<ol>' % (s))
+        for i, data in enumerate(flist):
+            f.write('<li><a href="%s">%s</a></li>\n' % (os.path.split(data)[-1], os.path.split(data)[-1]))
+        f.write("</ol></div></div></body></html>")
 
 
 if __name__ == "__main__":

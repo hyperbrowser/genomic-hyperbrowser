@@ -5,7 +5,7 @@ from base64 import urlsafe_b64encode
 from cgi import escape
 from urllib import quote, unquote
 
-import proto.hyper_gui as gui
+import proto.gui as gui
 
 %>
 <%
@@ -27,13 +27,11 @@ else:
     ${self.includeScripts()}
     ${h.js('proto/sorttable')}
 </%def>
-
 <%def name="includeScripts()">\
     <script type="text/javascript">
         <%include file="common.js"/>
     </script>
 </%def>
-
 <%def name="showOptionsBox(control, params, i)">
         %if control.inputTypes[i] == 'select':
             ${functions.select(control.inputIds[i], control.options[i], control.displayValues[i], control.inputNames[i], info=control.inputInfo[i])}
@@ -63,9 +61,7 @@ else:
             ${control.displayValues[i]}
         %endif
 </%def>
-
 %if control.userHasFullAccess():
-
     <form method="post" action="${formAction}">
 
     <INPUT TYPE="HIDDEN" NAME="cached_options" VALUE="${control.encodeCache(control.cachedOptions)}">
@@ -90,15 +86,12 @@ else:
                 <fieldset><legend>${label}</legend>
             %endfor
         %endif
-
         ${self.showOptionsBox(control, params, i)}
-
         %if i in control.inputGroup[1]:
             %for j in range(0, control.inputGroup[1].count(i)):
                 </fieldset>
             %endfor
         %endif
-
     %endfor
     
     <p><input id="start" type="submit" name="start" value="Execute" ${'disabled' if not control.isValid() else ''}></p>
@@ -131,7 +124,7 @@ else:
 
     %if control.getIllustrationImage():
         %if os.path.exists(control.getIllustrationImage().getDiskPath()):
-            <p><hr><img width="100%" style="max-width: 640px; width: expression(this.width > 640 ? 640: true);" src="${control.getIllustrationImage().getURL()}"></p>
+            <p><hr><img style="max-width: 640px; width: expression(this.width > 640 ? 640 : true);" src="${control.getIllustrationImage().getURL()}"></p>
         %elif control.isDebugging():
             <p class="warningmessage">No imagefile exists at: ${control.getIllustrationImage().getDiskPath()}</p>
         %endif

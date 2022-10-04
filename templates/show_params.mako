@@ -1,6 +1,6 @@
 <%inherit file="/base.mako"/>
 <%namespace file="/message.mako" import="render_msg" />
-<% from galaxy.util import nice_size %>
+<% from galaxy.util import nice_size, unicodify %>
 
 <style>
     .inherit {
@@ -9,10 +9,20 @@
         text-align: center;
         background-color: #eee;
     }
+
+    table.info_data_table {
+        table-layout: fixed;
+        word-break: break-word;
+    }
+    table.info_data_table td:nth-child(1) {
+        width: 25%;
+    }
+
 </style>
 
 <%def name="inputs_recursive( input_params, param_values, depth=1, upgrade_messages=None )">
     <%
+        from galaxy.util import listify
         if upgrade_messages is None:
             upgrade_messages = {}
     %>
@@ -59,7 +69,32 @@
                         <td>${ len( param_values[input.name] ) } uploaded datasets</td>
                         <td></td>
                     </tr>
-            %elif input.visible:
+            ## files used for inputs
+            %elif input.type == "data":
+                    <tr>
+                        ${inputs_recursive_indent( text=input.label, depth=depth )}
+                        <td>
+                        %for i, element in enumerate(listify(param_values[input.name])):
+                            %if i > 0:
+                            ,
+                            %endif
+                            %if element.history_content_type == "dataset":
+                                <%
+                                    hda = element
+                                    encoded_id = trans.security.encode_id( hda.id )
+                                    show_params_url = h.url_for( controller='dataset', action='show_params', dataset_id=encoded_id )
+                                %>
+                                <a class="input-dataset-show-params" data-hda-id="${encoded_id}"
+                                       href="${show_params_url}">${hda.hid}: ${hda.name | h}</a>
+
+                            %else:
+                                ${element.hid}: ${element.name | h}
+                            %endif
+                        %endfor
+                        </td>
+                        <td></td>
+                    </tr>
+             %elif input.visible:
                 <%
                 if  hasattr( input, "label" ) and input.label:
                     label = input.label
@@ -69,7 +104,7 @@
                 %>
                 <tr>
                     ${inputs_recursive_indent( text=label, depth=depth )}
-                    <td>${input.value_to_display_text( param_values[input.name], trans.app ) | h}</td>
+                    <td>${input.value_to_display_text( param_values[input.name] ) | h}</td>
                     <td>${ upgrade_messages.get( input.name, '' ) | h }</td>
                 </tr>
             %endif
@@ -101,27 +136,34 @@
     </td>
 </%def>
 
-<table class="tabletip">
-    <thead>
-        <tr><th colspan="2" style="font-size: 120%;">
-            % if tool:
-                Tool: ${tool.name | h}
-            % else:
-                Unknown Tool
-            % endif
-        </th></tr>
-    </thead>
+<h2>
+% if tool:
+    ${tool.name | h}
+% else:
+    Unknown Tool
+% endif
+</h2>
+
+<h3>Dataset Information</h3>
+<table class="tabletip" id="dataset-details">
     <tbody>
         <%
         encoded_hda_id = trans.security.encode_id( hda.id )
         encoded_history_id = trans.security.encode_id( hda.history_id )
         %>
+        <tr><td>Number:</td><td>${hda.hid | h}</td></tr>
         <tr><td>Name:</td><td>${hda.name | h}</td></tr>
-        <tr><td>Created:</td><td>${hda.create_time.strftime(trans.app.config.pretty_datetime_format)}</td></tr>
+        <tr><td>Created:</td><td>${unicodify(hda.create_time.strftime(trans.app.config.pretty_datetime_format))}</td></tr>
         ##      <tr><td>Copied from another history?</td><td>${hda.source_library_dataset}</td></tr>
         <tr><td>Filesize:</td><td>${nice_size(hda.dataset.file_size)}</td></tr>
         <tr><td>Dbkey:</td><td>${hda.dbkey | h}</td></tr>
         <tr><td>Format:</td><td>${hda.ext | h}</td></tr>
+    </tbody>
+</table>
+
+<h3>Job Information</h3>
+<table class="tabletip">
+    <tbody>
         %if job:
             <tr><td>Galaxy Tool ID:</td><td>${ job.tool_id | h }</td></tr>
             <tr><td>Galaxy Tool Version:</td><td>${ job.tool_version | h }</td></tr>
@@ -141,22 +183,15 @@
         <tr><td>UUID:</td><td>${hda.dataset.uuid}</td></tr>
         %endif
         %if trans.user_is_admin() or trans.app.config.expose_dataset_path:
-            <tr><td>Full Path:</td><td>${hda.file_name | h}</td></tr>
+            %if not hda.purged:
+                <tr><td>Full Path:</td><td>${hda.file_name | h}</td></tr>
+            %endif
         %endif
-        %if job and job.command_line and trans.user_is_admin():
-            <tr><td>Job Command-Line:</td><td>${ job.command_line | h }</td></tr>
-        %endif
-        %if job and trans.user_is_admin():
-            <% job_metrics = trans.app.job_metrics %>
-            %for metric in job.metrics:
-                <% metric_title, metric_value = job_metrics.format( metric.plugin, metric.metric_name, metric.metric_value ) %>
-                <tr><td>${ metric_title | h }</td><td>${ metric_value | h }</td></tr>
-            %endfor
-        %endif
+    </tbody>
 </table>
-<br />
 
-<table class="tabletip">
+<h3>Tool Parameters</h3>
+<table class="tabletip" id="tool-parameters">
     <thead>
         <tr>
             <th>Input Parameter</th>
@@ -179,12 +214,80 @@
     ${ render_msg( 'One or more of your original parameters may no longer be valid or displayed properly.', status='warning' ) }
 %endif
 
-    <h3>Inheritance Chain</h3>
-    <div class="inherit" style="background-color: #fff; font-weight:bold;">${hda.name | h}</div>
 
-    % for dep in inherit_chain:
-        <div style="font-size: 36px; text-align: center; position: relative; top: 3px">&uarr;</div>
-        <div class="inherit">
-            '${dep[0].name | h}' in ${dep[1]}<br/>
-        </div>
-    % endfor
+<h3>Inheritance Chain</h3>
+<div class="inherit" style="background-color: #fff; font-weight:bold;">${hda.name | h}</div>
+
+% for dep in inherit_chain:
+    <div style="font-size: 36px; text-align: center; position: relative; top: 3px">&uarr;</div>
+    <div class="inherit">
+        '${dep[0].name | h}' in ${dep[1]}<br/>
+    </div>
+% endfor
+
+
+
+%if job and job.command_line and (trans.user_is_admin() or trans.app.config.expose_dataset_path):
+<h3>Command Line</h3>
+<pre class="code">
+${ job.command_line | h }</pre>
+%endif
+
+%if job and (trans.user_is_admin() or trans.app.config.expose_potentially_sensitive_job_metrics):
+<h3>Job Metrics</h3>
+<% job_metrics = trans.app.job_metrics %>
+<% plugins = set([metric.plugin for metric in job.metrics]) %>
+    %for plugin in sorted(plugins):
+    %if trans.user_is_admin() or plugin != 'env':
+    <h4>${ plugin | h }</h4>
+    <table class="tabletip info_data_table">
+        <tbody>
+        <%
+            plugin_metrics = filter(lambda x: x.plugin == plugin, job.metrics)
+            plugin_metric_displays = [job_metrics.format( metric.plugin, metric.metric_name, metric.metric_value ) for metric in plugin_metrics]
+            plugin_metric_displays = sorted(plugin_metric_displays, key=lambda pair: pair[0])  # Sort on displayed title
+        %>
+            %for metric_title, metric_value in plugin_metric_displays:
+                <tr><td>${ metric_title | h }</td><td>${ metric_value | h }</td></tr>
+            %endfor
+        </tbody>
+    </table>
+    %endif
+    %endfor
+%endif
+
+%if job and job.dependencies:
+<h3>Job Dependencies</h3>
+    <table class="tabletip">
+        <thead>
+        <tr>
+            <th>Dependency</th>
+            <th>Dependency Type</th>
+            <th>Version</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            %for dependency in job.dependencies:
+                <tr><td>${ dependency['name'] | h }</td>
+                    <td>${ dependency['dependency_type'] | h }</td>
+                    <td>${ dependency['version'] | h }</td>
+                </tr>
+            %endfor
+
+        </tbody>
+    </table>
+%endif
+
+
+
+<script type="text/javascript">
+$(function(){
+    $( '.input-dataset-show-params' ).on( 'click', function( ev ){
+        ## some acrobatics to get the Galaxy object that has a history from the contained frame
+        if( window.parent.Galaxy && window.parent.Galaxy.currHistoryPanel ){
+            window.parent.Galaxy.currHistoryPanel.scrollToId( 'dataset-' + $( this ).data( 'hda-id' ) );
+        }
+    })
+});
+</script>

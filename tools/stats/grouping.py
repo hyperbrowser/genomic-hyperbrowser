@@ -4,8 +4,10 @@
 """
 This tool provides the SQL "group by" functionality.
 """
-import commands
+from __future__ import print_function
+
 import random
+import subprocess
 import sys
 import tempfile
 from itertools import groupby
@@ -26,7 +28,7 @@ def mode(data):
     modelist = []
     for x in counts:
         if counts[x] == maxcount:
-            modelist.append( str(x) )
+            modelist.append(str(x))
     return ','.join(modelist)
 
 
@@ -38,19 +40,20 @@ def main():
     round_val = []
 
     if sys.argv[5] != "None":
-        oldfile = open(inputfile, 'r')
-        oldfilelines = oldfile.readlines()
-        newinputfile = "input_cleaned.tsv"
-        newfile = open(newinputfile, 'w')
-        asciitodelete = sys.argv[5].split(',')
-        for i in range(len(asciitodelete)):
-            asciitodelete[i] = chr(int(asciitodelete[i]))
-        for line in oldfilelines:
-            if line[0] not in asciitodelete:
-                newfile.write(line)
-        oldfile.close()
-        newfile.close()
-        inputfile = newinputfile
+        asciitodelete = sys.argv[5]
+        if asciitodelete:
+            oldfile = open(inputfile, 'r')
+            newinputfile = "input_cleaned.tsv"
+            newfile = open(newinputfile, 'w')
+            asciitodelete = asciitodelete.split(',')
+            for i in range(len(asciitodelete)):
+                asciitodelete[i] = chr(int(asciitodelete[i]))
+            for line in oldfile:
+                if line[0] not in asciitodelete:
+                    newfile.write(line)
+            oldfile.close()
+            newfile.close()
+            inputfile = newinputfile
 
     for var in sys.argv[6:]:
         op, col, do_round = var.split()
@@ -67,7 +70,7 @@ def main():
     try:
         group_col = int(sys.argv[3]) - 1
     except:
-        stop_err( "Group column not specified." )
+        stop_err("Group column not specified.")
 
     tmpfile = tempfile.NamedTemporaryFile()
 
@@ -84,13 +87,13 @@ def main():
         if ignorecase == 1:
             case = '-f'
         command_line = "sort -t '	' %s -k%s,%s -o %s %s" % (case, group_col + 1, group_col + 1, tmpfile.name, inputfile)
-    except Exception, exc:
-        stop_err( 'Initialization error -> %s' % str(exc) )
+    except Exception as exc:
+        stop_err('Initialization error -> %s' % str(exc))
 
-    error_code, stdout = commands.getstatusoutput(command_line)
-
-    if error_code != 0:
-        stop_err( "Sorting input dataset resulted in error: %s: %s" % ( error_code, stdout ))
+    try:
+        subprocess.check_output(command_line, stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError as e:
+        stop_err("Sorting input dataset resulted in error: %s: %s" % (e.returncode, e.output))
 
     fout = open(sys.argv[1], "w")
 
@@ -98,14 +101,14 @@ def main():
         try:
             item = line.strip().split("\t")[group_col]
         except IndexError:
-            stop_err( "The following line didn't have %s columns: %s" % (group_col + 1, line) )
+            stop_err("The following line didn't have %s columns: %s" % (group_col + 1, line))
 
         if ignorecase == 1:
             return item.lower()
         return item
 
     for key, line_list in groupby(tmpfile, key=is_new_item):
-        op_vals = [ [] for _ in ops ]
+        op_vals = [[] for _ in ops]
         out_str = key
 
         for line in line_list:
@@ -116,17 +119,17 @@ def main():
                     val = fields[col].strip()
                     op_vals[i].append(val)
                 except IndexError:
-                    sys.stderr.write( 'Could not access the value for column %s on line: "%s". Make sure file is tab-delimited.\n' % (col + 1, line) )
-                    sys.exit( 1 )
+                    sys.stderr.write('Could not access the value for column %s on line: "%s". Make sure file is tab-delimited.\n' % (col + 1, line))
+                    sys.exit(1)
 
         # Generate string for each op for this group
-        for i, op in enumerate( ops ):
+        for i, op in enumerate(ops):
             data = op_vals[i]
             rval = ""
             if op == "mode":
-                rval = mode( data )
+                rval = mode(data)
             elif op == "length":
-                rval = len( data )
+                rval = len(data)
             elif op == "random":
                 rval = random.choice(data)
             elif op in ['cat', 'cat_uniq']:
@@ -134,15 +137,15 @@ def main():
                     data = numpy.unique(data)
                 rval = ','.join(data)
             elif op == "unique":
-                rval = len( numpy.unique(data) )
+                rval = len(numpy.unique(data))
             else:
                 # some kind of numpy fn
                 try:
-                    data = map(float, data)
+                    data = [float(_) for _ in data]
                 except ValueError:
-                    sys.stderr.write( "Operation %s expected number values but got %s instead.\n" % (op, data) )
-                    sys.exit( 1 )
-                rval = getattr(numpy, op)( data )
+                    sys.stderr.write("Operation %s expected number values but got %s instead.\n" % (op, data))
+                    sys.exit(1)
+                rval = getattr(numpy, op)(data)
                 if round_val[i] == 'yes':
                     rval = int(round(rval))
                 else:
@@ -167,9 +170,10 @@ def main():
 
         msg += op + "[c" + cols[i] + "] "
 
-    print msg
+    print(msg)
     fout.close()
     tmpfile.close()
+
 
 if __name__ == "__main__":
     main()

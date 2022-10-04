@@ -16,25 +16,26 @@ class HtmlCore(TableCoreMixin):
     def begin(self, extraJavaScriptFns=[], extraJavaScriptCode=None, extraCssFns=[], redirectUrl=None, reloadTime=None):
         from config.Config import URL_PREFIX
 
-        self._str = '''
-<html>
+        self._str = \
+'''<html>
+
 <head>'''
 
         if redirectUrl:
             self._str += '''
-<meta http-equiv="refresh" content="0; url=%s" />''' % redirectUrl
+    <meta http-equiv="refresh" content="0; url=%s" />''' % redirectUrl
 
         if reloadTime:
             self._str += '''
-<script type="text/javascript">
-    var done = false;
-    setTimeout("if (!done) document.location.reload(true);", %s);
-</script>
+    <script type="text/javascript">
+        var done = false;
+        setTimeout("if (!done) document.location.reload(true);", %s);
+    </script>
 ''' % (reloadTime * 1000)
 
         self._str += '''
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
-<script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/proto/sorttable.js"></script>
+    <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/libs/jquery/jquery.js"></script>
+    <script type="text/javascript" src="''' + URL_PREFIX + '''/static/scripts/proto/sorttable.js"></script>
 '''
         for javaScriptFn in extraJavaScriptFns:
             if re.match('https?://', javaScriptFn):
@@ -44,21 +45,22 @@ class HtmlCore(TableCoreMixin):
 
         if extraJavaScriptCode is not None:
             self._str += '''
-<script type="text/javascript">%s</script>
+    <script type="text/javascript">%s</script>
 ''' % extraJavaScriptCode
 
         self._str += '''
-<link href="''' + URL_PREFIX + '''/static/style/base.css" rel="stylesheet" type="text/css" />
+    <link href="''' + URL_PREFIX + '''/static/style/base.css" rel="stylesheet" type="text/css" />
+    <link href="''' + URL_PREFIX + '''/static/style/proto_base.css" rel="stylesheet" type="text/css" />
 '''
 
         for cssFn in extraCssFns:
             if re.match('https?://', cssFn):
-                self._str += '<link href="%s" rel="stylesheet" type="text/css" />\n' % cssFn
+                self._str += '    <link href="%s" rel="stylesheet" type="text/css" />\n' % cssFn
             else:
-                self._str += '<link href="%s/static/style/%s" rel="stylesheet" type="text/css" />\n'  % (URL_PREFIX, cssFn)
+                self._str += '    <link href="%s/static/style/%s" rel="stylesheet" type="text/css" />\n'  % (URL_PREFIX, cssFn)
 
-        self._str += '''
-</head>
+        self._str += '''</head>
+
 <body>''' + os.linesep
 
         return self
@@ -72,7 +74,9 @@ class HtmlCore(TableCoreMixin):
         return self
 
     def smallHeader(self, title):
-        return self.highlight(title)
+        self.highlight(title)
+        self._str += os.linesep
+        return self
 
     def end(self, stopReload=False):
         if stopReload:
@@ -82,6 +86,7 @@ class HtmlCore(TableCoreMixin):
 </script>'''
         self._str += '''
 </body>
+
 </html>'''
         return self
 
@@ -107,7 +112,7 @@ class HtmlCore(TableCoreMixin):
         return self
 
     def format(self, val):
-        from gold.util.CommonFunctions import strWithStdFormatting
+        from proto.CommonFunctions import strWithStdFormatting
         self._str += strWithStdFormatting(val, separateThousands=True)
         return self
 
@@ -143,17 +148,17 @@ class HtmlCore(TableCoreMixin):
                 tableClassList.append('sortable')
             tableClassStr = 'class="' + ' '.join(tableClassList) + '" ' \
                 if tableClassList else ''
-            self._str += '<table %s%s" width="100%%" style="%s">' \
+            self._str += '<table %s%s width="100%%" style="%s">' \
                 % (tableIdStr, tableClassStr, style) + os.linesep
 
         if headerRow not in [None, []]:
             if tagRow is None:
                 tagRow = [''] * len(headerRow)
-            self._str += '<tr>'
             headerClassStr = ' class="' + ' '.join(headerClass.split()) + '"' \
                 if headerClass else ''
+            self._str += '<tr%s' % headerClassStr + '>'
             for tag, el in zip(tagRow, headerRow):
-                self._str += '<th%s' % headerClassStr + \
+                self._str += '<th' + \
                              (' ' + tag if tag != '' else '') + \
                              '>' + unicode(el) + '</th>'
             self._str += '</tr>' + os.linesep
@@ -219,56 +224,55 @@ class HtmlCore(TableCoreMixin):
 
     def tableExpandButton(self, tableId, totalRows, visibleRows=6):
             self.script('''
-    function expandTable(tableId) {
-        tblId = "#" + tableId;
-        $(tblId).find("tr").show();
-        btnDivId = "#toggle_table_" + tableId;
-        $(btnDivId).find("input").toggle();
-        $(tblId).off("click");
+function expandTable(tableId) {
+    tblId = "#" + tableId;
+    $(tblId).find("tr").show();
+    btnDivId = "#toggle_table_" + tableId;
+    $(btnDivId).find("input").toggle();
+    $(tblId).off("click");
+}
+
+function collapseTable(tableId, visibleRows) {
+    tblId = "#" + tableId;
+    trScltr = tblId + " tr:nth-child(n + " + visibleRows + ")";
+    $(trScltr).hide();
+    btnDivId = "#toggle_table_" + tableId;
+    $(btnDivId).find("input").toggle();
+    $(tblId).on("click", resetFunc(tableId, visibleRows));
+}
+
+var resetFunc = function(tableId, visibleRows) {
+    return function(e) {
+        return resetTable(e, tableId, visibleRows);
     }
+}
 
-    function collapseTable(tableId, visibleRows) {
-        tblId = "#" + tableId;
-        trScltr = tblId + " tr:nth-child(n + " + visibleRows + ")";
-        $(trScltr).hide();
-        btnDivId = "#toggle_table_" + tableId;
-        $(btnDivId).find("input").toggle();
-        $(tblId).on("click", resetFunc(tableId, visibleRows));
+function resetTable(e, tableId, visibleRows) {
+    expandTable(tableId)
+    collapseTable(tableId, visibleRows)
+}
+
+$(document).ready(function(){
+    tableId = "%s";
+    visibleRows = %s;
+    tblId = "#" + tableId;
+    hiddenRowsSlctr = tblId + " tr:nth-child(n + " + (visibleRows+2) + ")";
+    //  'visibleRows+2' for some reason (one of life's great mysteries)
+    if ($(hiddenRowsSlctr).length>0) {
+        $(hiddenRowsSlctr).hide();
+        $(tblId).on("click", resetFunc(tableId, visibleRows+1));
+    //  'visibleRows+1' for some other reason (one of life's other great mysteries)
+
     }
-
-    var resetFunc = function(tableId, visibleRows) {
-        return function(e) {
-            return resetTable(e, tableId, visibleRows);
-        }
-    }
-
-    function resetTable(e, tableId, visibleRows) {
-        expandTable(tableId)
-        collapseTable(tableId, visibleRows)
-    }
-
-    $(document).ready(function(){
-        tableId = "%s";
-        visibleRows = %s;
-        tblId = "#" + tableId;
-        hiddenRowsSlctr = tblId + " tr:nth-child(n + " + (visibleRows+2) + ")";
-        //  'visibleRows+2' for some reason (one of life's great mysteries)
-        if ($(hiddenRowsSlctr).length>0) {
-            $(hiddenRowsSlctr).hide();
-            $(tblId).on("click", resetFunc(tableId, visibleRows+1));
-        //  'visibleRows+1' for some other reason (one of life's other great mysteries)
-
-        }
-    }
-    );
-
-    ''' % (tableId, visibleRows))
+}
+);
+''' % (tableId, visibleRows))
 
             self._str += '''
-    <div id="toggle_table_%s" class="toggle_table_btn">
-    <input type="button" value="Expand table (now showing %s of %s rows)..." id="expand_table_btn" style="background: #F5F5F5;" onclick="expandTable('%s')"/>
-    <input type="button" value="Collapse table (now showing %s of %s rows)" id="collapse_table_btn" style="background: #F5F5F5; display: none;" onclick="collapseTable('%s', %s)"/>
-    ''' % (tableId, visibleRows, totalRows, tableId, totalRows, totalRows, tableId,
+<div id="toggle_table_%s" class="toggle_table_btn">
+<input type="button" value="Expand table (now showing %s of %s rows)..." id="expand_table_btn" style="background: #F5F5F5;" onclick="expandTable('%s')"/>
+<input type="button" value="Collapse table (now showing %s of %s rows)" id="collapse_table_btn" style="background: #F5F5F5; display: none;" onclick="collapseTable('%s', %s)"/>
+''' % (tableId, visibleRows, totalRows, tableId, totalRows, totalRows, tableId,
            visibleRows + 1)
             return self
 
@@ -310,7 +314,7 @@ class HtmlCore(TableCoreMixin):
         return self
 
     def link(self, text, url, popup=False, args='', withLine=True):
-        self._str += '<a %s href="' % ('style="text-decoration:none;"' if not withLine else '') \
+        self._str += '<a%s href="' % (' style="text-decoration:none;"' if not withLine else '') \
                   + url +('" target="_blank" ' if popup else '"')\
                   + '%s>' % (' ' + args if args != '' else '') + text + '</a>'
         return self

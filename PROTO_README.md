@@ -14,6 +14,7 @@
       * [Extra output files linked from the main HTML output](#extra-output-files-linked-from-the-main-html-output)
       * [Running R code](#running-r-code)
       * [More than one output history element](#more-than-one-output-history-element)
+      * [Adding result file browser](#adding-result-file-browser)
       * [Storing state information](#storing-state-information)
       * [Variable number of option boxes](#variable-number-of-option-boxes)
       * [Use class constants to store selection box text](#use-class-constants-to-store-selection-box-text)
@@ -23,7 +24,7 @@
   * [Version log](#version-log)
 
 ## Introduction
-The Galaxy Prototyping Tool API (Galaxy ProTo) is an extension of the Galaxy web-based platform for data intensive biomedical research, which is available from [galaxyproject.org](https://galaxyproject.org). Galaxy ProTo is a new tool building methodology introduced by the [Genomic HyperBrowser project] (https://hyperbrowser.uio.no) as an unofficial alternative for defining Galaxy tools. Galaxy ProTo provides:
+The Galaxy Prototyping Tool API (Galaxy ProTo) is an extension of the Galaxy web-based platform for data intensive biomedical research, which is available from [galaxyproject.org](https://galaxyproject.org). Galaxy ProTo is a new tool building methodology introduced by the [Genomic HyperBrowser project](https://hyperbrowser.uio.no) as an unofficial alternative for defining Galaxy tools. Galaxy ProTo provides:
 
 - Rapid and simple development of Galaxy tools using Python code only (no XML knowledge needed)
 - Fully on-the-fly development, no need to restart the server or reload the tool to witness changes
@@ -58,11 +59,11 @@ It is highly recommended that users of Galaxy ProTo create a GitHub fork of the 
   1. `cd config`
   2. `cp galaxy.ini.sample galaxy.ini`
   3. `cp tool_conf.xml.sample tool_conf.xml`
-6. Set up an empty PostgreSQL database (follow a PostgreSQL tutorial to do this). See [Known Limitations] (#known-limitations).
+6. Set up an empty PostgreSQL database (follow a PostgreSQL tutorial to do this). See [Known Limitations](#known-limitations).
 7. Edit galaxy.ini:
   1. Uncomment "port" and set it to an unused port number (or keep the default 8080 if you want).
   2. Uncomment "host" and set it to `0.0.0.0` (given that you want to access the Galaxy ProTo web server from other computers).
-  3. Uncomment "database_connection" and set it to point to your PostgreSQL database, as explained in the [Galaxy Wiki] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer#Switching_to_a_database_server).
+  3. Uncomment "database_connection" and set it to point to your PostgreSQL database, as explained in the [Galaxy Wiki](https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer#Switching_to_a_database_server).
   4. Uncomment "admin_users" and add the email address(es) for the admins. An admin account is needed to publish finished ProTo tools to the tool menu. You will need to register with the same address in Galaxy to get the admin account.
   5. Uncomment "id_secret" and set it to the result of the one-liner generation code in the comments.
   6. Uncomment "restricted_users" and add any users that need access to private development tools (e.g. developers or test users). Admin users are by default also restricted users and no not need to be listed twice.
@@ -88,15 +89,15 @@ See the help text inside each tool for more usage details.
 
 ### Documentation of the API
 
-The complete API is documented as pydoc strings within the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) file, and a HTML compilation of the documentation (with some manual modifications) is available in the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) file.
+The complete API is documented as pydoc strings within the [ToolTemplate.py](lib/proto/tools/ToolTemplate.py) file, and a HTML compilation of the documentation (with some manual modifications) is available in the [ToolTemplate.html](https://elixir-no-nels.github.io/proto/html/proto.tools.ToolTemplate.html) file.
 
 A basic tutorial has yet to be written, but here are some points to get you started:
 
-1. A ProTo tool is a subclass of the `GeneralGuiTool` class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py] (lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py] (lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method.
+1. A ProTo tool is a subclass of the `GeneralGuiTool` class. The user interface and functionality of the tool is defined based upon whether certain methods are available in the subclass (uncommented from the [ToolTemplate.py](lib/proto/tools/ToolTemplate.py) or [ToolTemplateMinimal.py](lib/proto/tools/ToolTemplateMinimal.py) file), and if available, the exact content which is returned from the method.
 2. The minimal set of methods to be defined is `getToolName()` and `execute()`. Only defining these two methods will produce a tool existing of a single execute button.
-3. Adding other input (and output) boxes is a matter of first defining them in the return statement of `getInputBoxNames()` with a certain key, e.g. "histSelect". Secondly, one needs to implement a method `getOptionsBoxKey`, exchanging the actual key string in the method, e.g. `getOptionsBoxHistSelect`. The return value of this method defines the type of input field, e.g. returning a string creates a text box, while a list of strings creates a selection list. See the [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) documentation for the complete list of input fields.
+3. Adding other input (and output) boxes is a matter of first defining them in the return statement of `getInputBoxNames()` with a certain key, e.g. "histSelect". Secondly, one needs to implement a method `getOptionsBoxKey`, exchanging the actual key string in the method, e.g. `getOptionsBoxHistSelect`. The return value of this method defines the type of input field, e.g. returning a string creates a text box, while a list of strings creates a selection list. See the [ToolTemplate.html](https://elixir-no-nels.github.io/proto/html/proto.tools.ToolTemplate.html) documentation for the complete list of input fields.
 4. The parameter `prevChoices` provided to the `getOptionsBox...()` methods is a namedtuple object of all previous options boxes (including the previous content of the current options box). One can access previous user selections and unput by using standard member access, e.g. `prevChoices.histSelect`. Similarly the parameter `choices` provided to the `execute()` method and others contain the full list of option box selections, in the same format.
-5. The parameter `galaxyFn` contains the disk path to the output dataset of the tool. Please write tool output to this file path. See [ToolTemplate.html] (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/ToolTemplate.html) for more details.
+5. The parameter `galaxyFn` contains the disk path to the output dataset of the tool. Please write tool output to this file path. See [ToolTemplate.html](https://elixir-no-nels.github.io/proto/html/proto.tools.ToolTemplate.html) for more details.
 6. Validation of input parameters can be done in the method `validateAndReturnErrors()`. It takes in the `choices` parameter (as explained in point 4), so that the selections and other input from the user can be validated. If there is something wrong with the input, e.g. the user typed some alphabetic characters in a numbers-only input field, just return a string with the error message, and this will be shown to the user (and the "Execute" button will be hidden).
 
 ### Miscellaneous features, tips and best practices
@@ -104,7 +105,7 @@ A basic tutorial has yet to be written, but here are some points to get you star
 #### Reading datasets from history
 To read a dataset from history, first define one of the input boxes to be a `"__history__"` input box, optionally filtering for certain file types. For reading the file, make use of the utility method `extractFnFromDatasetInfo`, e.g.:
 
-```
+```python
 @classmethod
 def getOptionBoxHistory(cls, prevChoices):
     return '__history__, 'txt'
@@ -123,7 +124,7 @@ def execute(cls, choices, galaxyFn=None, username=''):
 #### Hide options box
 To make an options box visible only if the user has selected something in a previous options box (e.g. selected a history element):
 
-```
+```python
 @classmethod
 def getOptionBoxHideable(cls, prevChoices):
     if prevChoices.history:
@@ -133,8 +134,8 @@ def getOptionBoxHideable(cls, prevChoices):
 The reason this works is that returning None from an getOptionsBox method hides the box. If no return is specified in a Python method, it by default returns None.
 
 #### HTML output
-The module [HtmlCore] (lib/proto/HtmlCore.py) contains an API for simple generation of HTML pages. For example, a simple HTML page can be created like this (in the `execute()` method):
-```
+The module [HtmlCore](lib/proto/HtmlCore.py) contains an API for simple generation of HTML pages. For example, a simple HTML page can be created like this (in the `execute()` method):
+```python
 from proto.HtmlCore import HtmlCore
 
 with open(galaxyFn, 'w') as outFile:
@@ -148,12 +149,12 @@ with open(galaxyFn, 'w') as outFile:
 
 Note that when using `begin()` and `end()` methods, which adds the HTML start and end tags, the output file format (as defined by the `getOutputFormat()` method of the tool) must be set to 'customhtml'.
 
-An overview of the methods are available from [HtmlCore.html]  (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/HtmlCore.html). However, the methods have not been documented yet.
+An overview of the methods are available from [HtmlCore.html](https://elixir-no-nels.github.io/proto/html/proto.HtmlCore.html). However, the methods have not been documented yet.
 
 #### Extra output files linked from the main HTML output
-The module [StaticFile] (lib/proto/StaticFile.py) contains a very useful class, especially for HTML output, named `GalaxyRunSpecificFile`. The aim of this class is to serve as a reference to an additional output file connected to the output dataset. Such extra files are stored under the 'dataset_XYZ_files' directory (for those familiar with the Galaxy file hierarchy). The class is aimed for use in the `execute()` method of a tool. The following example (also making use of [HtmlCore] (#html-output)) shows the usage:
+The module [StaticFile](lib/proto/StaticFile.py) contains a very useful class, especially for HTML output, named `GalaxyRunSpecificFile`. The aim of this class is to serve as a reference to an additional output file connected to the output dataset. Such extra files are stored under the 'dataset_XYZ_files' directory (for those familiar with the Galaxy file hierarchy). The class is aimed for use in the `execute()` method of a tool. The following example (also making use of [HtmlCore](#html-output)) shows the usage:
 
-```
+```python
 from proto.HtmlCore import HtmlCore
 from proto.StaticFile import GalaxyRunSpecificFile
 
@@ -175,18 +176,45 @@ with open(galaxyFn, 'w') as outFile:
     print>>outFile, core
 ```
 
-An overview of the methods are available from [StaticFile.html]  (https://rawgit.com/elixir-no-nels/proto/proto_dev/static/proto/html/StaticFile.html), but not yet with detailed documentation.
+An overview of the methods are available from [StaticFile.html](https://elixir-no-nels.github.io/proto/html/proto.StaticFile.html), but not yet with detailed documentation.
+
+#### Adding result file browser
+Galaxy ProTo contains support for generating a HTML-based file browser to browse the result files from a job. The file browser is essentially a set of simple HTML pages, one per result directory. To create the file browser, one has two possibilities:
+
+  i. Printing the file browser start page as the main output in the history:
+```python
+from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
+
+@classmethod
+def execute(cls, choices, galaxyFn=None, username=''):
+    
+    # (... Some code to generate result files ...)
+
+    generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=True)
+```
+  ii. Printing the file browser start page as separate HTML page and add as a link in the main output in the history:
+```python
+from proto.FileBrowser import generateHtmlFileBrowserForGalaxyFilesDir
+
+@classmethod
+def execute(cls, choices, galaxyFn=None, username=''):
+    
+    # (... Some code to generate result files ...)
+
+    rootFile = generateHtmlFileBrowserForGalaxyFilesDir(galaxyFn, writeRootPageToGalaxyFn=False)
+    print rootFile.getLink('File browser')
+```
 
 #### Running R code
 Galaxy ProTo includes support for running `R` code via the `rpy2` Python package. If `R` is available when starting up Galaxy ProTo, `rpy2` is automatically installed. However, `R` is not a mandatory dependency for Galaxy ProTo; the rest of the functionality still works without `R` installed.
 
 In addition to the standard `rpy2` setup, Galaxy ProTo includes advanced autoconversion setup that automatically converts standard Python object (lists, vectors, dicts) and `NumPy` objects (arrays, matrices, scalars) into the corresponding `R` objects, and vice-versa. In almost all cases, no extra thought needs to be put on conversion, just include the parameters that feels natural, in stark contrast to the default `rpy2` setup.
 
-To run `R` code, just import `from proto.RSetup import r` (or `robjects`), and follow the documentation of the [rpy2] (http://rpy2.readthedocs.io/) library. In order to install R libraries into the virtualenv that Galaxy runs within, just add the name of the library into the [r-packages.txt file] (lib/galaxy/dependencies/r-packages.txt), and restart Galaxy ProTo.
+To run `R` code, just import `from proto.RSetup import r` (or `robjects`), and follow the documentation of the [rpy2](http://rpy2.readthedocs.io/) library. In order to install R libraries into the virtualenv that Galaxy runs within, just add the name of the library into the [r-packages.txt file](lib/galaxy/dependencies/r-packages.txt), and restart Galaxy ProTo.
 
-Here follows an example (in the `execute()` method) that creates a `R` histogram plot as an extra file, linked to from the main HTML output file. (The example also makes use of the [HtmlCore] (#html-output) and [GalaxyRunSpecificFile] (#extra-output-files-linked-from-the-main-html-output) classes.):
+Here follows an example (in the `execute()` method) that creates a `R` histogram plot as an extra file, linked to from the main HTML output file. (The example also makes use of the [HtmlCore](#html-output) and [GalaxyRunSpecificFile](#extra-output-files-linked-from-the-main-html-output) classes.):
 
-```
+```python
 from proto.HtmlCore import HtmlCore
 from proto.RSetup import r
 from proto.StaticFile import GalaxyRunSpecificFile
@@ -208,10 +236,28 @@ with open(galaxyFn, 'w') as outFile:
     print>>outFile, core
 ```
 
-#### More than one output history element
-Galaxy ProTo supports the creation of more than one history element, as in this code snippet (**Note: As of version 0.9, this functionality is not operational. We are working on a fix.**):
+#### Making use of Conda dependencies
+Since version 1.1, Galaxy ProTo supports the definition, installation and use of software dependencies using the integrated Conda support in Galaxy. To so this, you need to follow a 3-step process (where steps 1 and 2 is the same as in standard Galaxy):
 
-```
+1. In order to carry out this step, you need to have installed your ProTo tool directly in the tool menu using the "Install ProTo tool" tool. This will generate an XML file for your tool. In the XML file, add the Conda dependencies as in plain Galaxy, as described in the [Galaxy Tool XML File](https://docs.galaxyproject.org/en/release_17.09/dev/schema.html?highlight=requirements#tool-requirements-requirement) documentation. This may for instance look like this:
+
+        <requirements>
+            <requirement type="package" version="0.1.18">samtools</requirement>
+        </requirements>
+
+2. Make sure that you are logged in as an Admin user. In the Admin menu, select "Manage Tool Dependencies", select your tool and click "Install checked dependencies using Conda". This process will take a while, and your browser might seem to hang. Don't worry. If you go back to this menu after some time, the dependencies should be green (installed).
+
+3. As the execute() method in a ProTo depends on the Galaxy ProTo code base and the Galaxy-installed Python environment, you will not have access to the Conda dependencies directly from the Python code. However, if you launch a subprocess somehow from the `execute()` method, you should have access to the Conda environment activation script in the `cls.conda_activate_source` class variable. Example usage:
+
+        from subprocess import check_call
+
+        script = 'samtools sort ' + bam_filename
+        exit_code = check_call(cls.conda_activate_source + '; ' + script, shell=True)
+
+#### More than one output history element
+Galaxy ProTo supports the creation of more than one history element, as in this code snippet:
+
+```python
 class MyTool(GeneralGuiTool):
     EXTRA_OUTPUT_TITLE = 'Title of extra output'
     EXTRA_OUTPUT_FORMAT = 'bed'
@@ -258,9 +304,10 @@ class MyTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
     # Existing option boxes
-      + [('Extra box number %s' % (i+1), 'extra%s' % i) for i \
+      + [('Extra box number {}'.format(i+1), 'extra{}'.format(i)) for i \
          in range(cls.MAX_NUM_OF_EXTRA_BOXES)]
     (...)
+    @classmethod
     def _getOptionBoxExtra(cls, prevChoices, index):
         if index < numBoxes(prevChoices): #numBoxes is placeholder for some logic that returns the exact number of boxes
             #code for option box
@@ -270,12 +317,12 @@ class MyTool(GeneralGuiTool):
     def setupExtraBoxMethods(cls):
         from functools import partial
         for i in xrange(cls.MAX_NUM_OF_EXTRA_BOXES):
-            setattr(cls, 'getOptionsBoxExtra%s' % i, partial(cls._getOptionBoxExtra, index=i))
+            setattr(cls, 'getOptionsBoxExtra{}'.format(i), partial(cls._getOptionBoxExtra, index=i))
     (...)
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
         (...)
-        extraChoices = [getattr(choices, 'extra%s' % i) \
+        extraChoices = [getattr(choices, 'extra{}'.format(i)) \
                         for i in range(numBoxes(choices))]
 
 (...)
@@ -288,7 +335,7 @@ up `MAX_NUM_OF_EXTRA_BOXES` new option boxes. The code for each box is essential
 ```
     @classmethod
     def getOptionsBoxExtra0(cls, prevChoices):
-        return cls._methodForOptionsBox(prevChoices, index=0)
+        return cls._getOptionBoxExtra(prevChoices, index=0)
 ```
 
 #### Use class constants to store selection box text
@@ -334,16 +381,16 @@ class MyTool(GeneralGuiTool):
 If one want to change the text later, the change is thus done only one place.
 
 #### Changing type of ProTo option box
-**One should never dynamically change the type of a single option box (e.g. from text field to selection box)!** If such changes are needed, just specify two option boxes and hide the one that is not in use. See [Hide option box] (#hide-options-box).
+**One should never dynamically change the type of a single option box (e.g. from text field to selection box)!** If such changes are needed, just specify two option boxes and hide the one that is not in use. See [Hide option box](#hide-options-box).
 
 #### CamelCase or snake_case?
 
-For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixedCase") styling for functions, member variables and methods, contrary to the recommended Python standard [PEP8] (https://www.python.org/dev/peps/pep-0008/), even though it is allowed ("allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards compatibility."). As the superclass of new ProTo tools use "camelCase", the subclasses themselves also need to follow the "camelCase" standard. If there is enough interest in it, it might be possible create support for the snake_case style, but it has not been a priority until now.
+For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixedCase") styling for functions, member variables and methods, contrary to the recommended Python standard [PEP8](https://www.python.org/dev/peps/pep-0008/), even though it is allowed ("allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards compatibility."). As the superclass of new ProTo tools use "camelCase", the subclasses themselves also need to follow the "camelCase" standard. If there is enough interest in it, it might be possible create support for the snake_case style, but it has not been a priority until now.
 
 ## Known limitations
 
 - Galaxy ProTo tools will not run as part of a Galaxy workflow. Support for this might be developed if the need is high, but it is not a priority right now, as Galaxy ProTo is envisioned first and foremost as a way to provide easy and dynamic interaction directly with the user.
-- Galaxy ProTo works best connected to a PostgreSQL database (as recommended for [production Galaxy instances] (https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer)). It will work out-of-the-box with the default SQLite database, but due to a basically unfixable deadlock issue, the user will experience significant waiting time when using the tools. Using SQLite, the opening of tools will once in a while fail and time out after 15 seconds, after which the tool reloads for another try. Because of this is it highly recommended to use PostgreSQL instead of SQLite.
+- Galaxy ProTo works best connected to a PostgreSQL database (as recommended for [production Galaxy instances](https://wiki.galaxyproject.org/Admin/Config/Performance/ProductionServer)). It will work out-of-the-box with the default SQLite database, but due to a basically unfixable deadlock issue, the user will experience significant waiting time when using the tools. Using SQLite, the opening of tools will once in a while fail and time out after 15 seconds, after which the tool reloads for another try. Because of this is it highly recommended to use PostgreSQL instead of SQLite.
 - Galaxy ProTo has only been tested on Linux-based operating systems. It will probably also work on Mac OS X, and probably not on Windows.
 - The "Run this job again" functionality of Galaxy will break for old history elements if the "proto_id_secret" configuration options is changed in the "galaxy.ini" file.
 - ProTo tools are not supported in Galaxy Tool Shed, mainly because the API is an unofficial alternative to the Galaxy XML.
@@ -351,5 +398,14 @@ For historical reasons, Galaxy ProTo is implemented using "camelCase" (or "mixed
 
 ## Version log
 
+* v1.2.3: Bugfix to support full paths from galaxy.ini
+* v1.2.2: Small addition in StaticFile.
+* v1.2.1: File browser can now be output as a separate history element. Fixed package install bug.
+* v1.2: Added result file browser. Fixed bug in Explore ProTo tool. Fixed job rerun bug. Added support for Unicode. Various small fixes and cleanup.
+* v1.1: Updated to Galaxy version 17.09. Implemented Conda support. Cleaned up Sphinx documentation.
+* v1.0.3: Small fixes to extra history element creation.
+* v1.0.2: Created first version of Galaxy ProTo API documentation using Sphinx.
+* v1.0.1: Small fixes. Made client.
+* v1.0: All HyperBrowser code been cleaned out. Tools for generating, developing and installing Galaxy ProTo tools have been greatly improved. Several core components have been refactored and numerous bugs have been fixed. Example tools for testing the GUI elements, showcasing most of the functionality, have been implemented. First fully functional release.
 * v0.9.1: Small bugfixes and updates to the README.md.
 * v0.9: Full functionality, but still with rests of HyperBrowser code to ble cleaned out.

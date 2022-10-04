@@ -10,19 +10,17 @@ This file is printed to standard out. This script is designed to be
 run from the Galaxy root.
 
  % python script/edam_mapping.py > edam_mapping.tsv
-
 """
 from __future__ import absolute_import
 from __future__ import print_function
 
 import os
-import urllib2
 import sys
 from xml import etree
 
-new_path = [ os.path.join( os.path.dirname( __file__ ), os.pardir, "lib" ) ]
-new_path.extend( sys.path[1:] )  # remove scripts/ from the path
-sys.path = new_path
+import requests
+
+sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, 'lib')))
 
 import galaxy.model
 import galaxy.datatypes.registry
@@ -38,7 +36,7 @@ EDAM_OWL_URL = "http://data.bioontology.org/ontologies/EDAM/submissions/25/downl
 
 
 if not os.path.exists("/tmp/edam.owl"):
-    open("/tmp/edam.owl", "w").write( urllib2.urlopen( EDAM_OWL_URL ).read() )
+    open("/tmp/edam.owl", "w").write(requests.get(EDAM_OWL_URL).text)
 
 
 owl_xml_tree = etree.ElementTree.parse("/tmp/edam.owl")
