@@ -1004,15 +1004,18 @@ def updateTrackInfoToVersion15(genome, trackName):
         print Track(trackName).getUniqueKey(genome)
 
 
-def updateGenomeTrackInfoToVersion15(genome):
-    "genome"
+def updateGenomeTrackInfoToVersion15(genome, onlyExternal=False):
+    "genome onlyExternal=False"
+    from quick.application.ExternalTrackManager import ExternalTrackManager as etm
+
     print genome
     for trackName in ProcTrackNameSource(genome, fullAccess=True,
                                          includeParentTrack=False,
                                          includeInvalid=True):
-        print trackName
         try:
-            updateTrackInfoToVersion15(genome, trackName)
+            if onlyExternal is False or etm.isExternalTrack(trackName):
+                print trackName
+                updateTrackInfoToVersion15(genome, trackName)
         except ValueError, e:
             print 'ValueError raised: ', e
             with open('failing_tracks.txt', 'a') as error_files:
@@ -1022,13 +1025,15 @@ def updateGenomeTrackInfoToVersion15(genome):
             with open('invalid_tracks.gsuite', 'a') as error_files:
                 error_files.write('hb:/{}\n'.format('/'.join(trackName)))
 
-def updateAllTrackInfoToVersion15():
+
+def updateAllTrackInfoToVersion15(onlyExternal=False):
+    "onlyExternal=False"
     from quick.application.GalaxyInterface import GalaxyInterface
     from gold.origdata.PreProcessUtils import PreProcessUtils
 
     for genomeTuple in GalaxyInterface.getAllGenomes():
         genome = genomeTuple[1]
-        updateGenomeTrackInfoToVersion15(genome)
+        updateGenomeTrackInfoToVersion15(genome, onlyExternal=onlyExternal)
 
 
 def _usage():
