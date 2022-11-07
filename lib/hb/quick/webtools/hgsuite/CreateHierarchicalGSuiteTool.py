@@ -13,7 +13,7 @@ class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
     @classmethod
     def getToolName(cls):
-        return "Create or modify hierarchy of hGSuite jhg"
+        return "Create or modify hierarchy of hGSuite"
 
     @classmethod
     def getInputBoxNames(cls):
@@ -290,12 +290,12 @@ class CreateHierarchicalGSuiteTool(GeneralGuiTool, GenomeMixin):
 
         l = Legend()
 
-        toolDescription = "This tool creates or modifies hierarchy of hGSuite"
+        toolDescription = "This tool creates or modifies the hierarchy of an hGSuite"
 
         stepsToRunTool = ['Select hGSuite',
-                          'Select group which define hdGSuite at level N'
+                          'Select group which defines hGSuite at level N'
                           ]
-        toolResult = 'The output of this tool is one hGsuite with definied field called levels.'
+        toolResult = 'The output of this tool is an hGsuite with the predefined level N field.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

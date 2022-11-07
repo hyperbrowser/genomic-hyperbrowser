@@ -6,6 +6,8 @@ from gold.gsuite.GSuiteTrack import GalaxyGSuiteTrack, GSuiteTrack
 from proto.CommonFunctions import ensurePathExists
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
+
 import csv
 import re
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
@@ -42,7 +44,7 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
 
         Optional method. Default return value if method is not defined: []
         """
-        return [('Select gSuite', 'gsuite')] + \
+        return [('Select a gSuite', 'gsuite')] + \
                cls.getInputBoxNamesForGenomeSelection()
 
     # @classmethod
@@ -147,15 +149,18 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
             with open(track.path, 'rb') as f:
                 readCsv = csv.reader(f, delimiter='\t')
                 for line in readCsv:
-
-                    if len(line) >= 5:
+                    #Edited from 5 to 4
+                    if len(line) >= 4:
                         new_line = line[0:4]
                         line_str = "\t".join(new_line).replace("\n", "")
+                        #print line_str
                         result = re.search(pattern,line_str)
+                        #print result
                         if result:
                             matchedLines.append(line_str)
-                        else:
-                            warnings.warn("Not proper bed file")
+                        # else:
+                        #     print "yes"
+                        #     warnings.warn("Not proper bed file")
                     elif len(line) == 3:
                         line_str = "\t".join(new_line).replace("\n", "")
                         result = re.match(pattern2, line_str)
@@ -276,15 +281,21 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
     #     """
     #     return []
     #
-    # @classmethod
-    # def getToolDescription(cls):
-    #     """
-    #     Specifies a help text in HTML that is displayed below the tool.
-    #
-    #     Optional method. Default return value if method is not defined: ''
-    #     """
-    #     return ''
-    #
+    @classmethod
+    def getToolDescription(cls):
+
+        l = Legend()
+
+        toolDescription = 'This tool formats the bed files within a GSuite to match the hyperbrowser formatting requirements.'
+
+        stepsToRunTool = ['Select a GSuite containing a or several bed files.']
+
+        toolResult = 'This tool outputs a GSuite with the formatted bed files'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult)
+
     # @classmethod
     # def getToolIllustration(cls):
     #     """

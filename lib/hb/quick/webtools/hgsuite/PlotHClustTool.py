@@ -15,7 +15,7 @@ class PlotHClustTool(GeneralGuiTool):
     TITLE = '-- Select --'
     @classmethod
     def getToolName(cls):
-        return "Plot hierarchical clustering for tabular file or hGSuite"
+        return "Plot hierarchical clustering for tabular file or GSuite/hGSuite"
 
     @staticmethod
     def getInputBoxNames():
@@ -40,7 +40,9 @@ class PlotHClustTool(GeneralGuiTool):
                 #gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile, asListResponse=True)
                 gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
                 return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile,
-                                                              gSuiteAttributes=[cls.TITLE] + gSuite.attributes, asListResponse=True)
+                                                              gSuiteAttributes=[cls.TITLE] + ["title"] + gSuite.attributes, asListResponse=True)
+                # return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile,gSuiteAttributes=gSuite.attributes,
+                #                                               asListResponse=True)
 
     @classmethod
     def getOptionsBoxSelCol(cls, prevChoices):
@@ -52,7 +54,7 @@ class PlotHClustTool(GeneralGuiTool):
             if suffixForFile == 'gsuite':
                 gSuite = getGSuiteFromGalaxyTN(prevChoices.selFile)
                 return CreateBoxPlotForFileTool.returnColFile(prevChoices.selFile,
-                                         gSuiteAttributes=[cls.TITLE]+ gSuite.attributes, asListResponse=True)
+                                         gSuiteAttributes=[cls.TITLE]+ ["title"] +  gSuite.attributes, asListResponse=True)
     @classmethod
     def execute(cls, choices, galaxyFn=None, username=''):
 
@@ -177,7 +179,7 @@ class PlotHClustTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to plot hierarchical clustering from columns of hGSuite or results from tabular file.'
+        toolDescription = 'The tool performs and plots the hierarchical clusters from columns of the GSuite/hGSuite or results from tabular file.'
 
         stepsToRunTool = ['Select file',
                           'Select column with names',

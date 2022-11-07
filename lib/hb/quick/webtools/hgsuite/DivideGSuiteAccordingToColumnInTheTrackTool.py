@@ -88,16 +88,13 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             trackPath = iTrack.path
 
             if choices.operation == 'filter by word':
-                cls.divisionByPhrase(add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath,
-                                 trackTitle)
+                cls.divisionByPhrase(add, attrMut, gSuite, galaxyFn, i, outputGSuite, par, trackPath, trackTitle)
             elif choices.operation == 'filter by individual titles':
                 cls.divisionByIndividualTitles('', attrMut, gSuite, galaxyFn, i, outputGSuite, par,
-                                     trackPath,
-                                     trackTitle)
+                                     trackPath, trackTitle)
             else:
                 cls.divisionBySymbol('', attrMut, gSuite, galaxyFn, i, outputGSuite, par,
-                                     trackPath,
-                                     trackTitle)
+                                     trackPath, trackTitle)
 
         GSuiteComposer.composeToFile(outputGSuite, galaxyFn)
 
@@ -139,7 +136,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             contentFile.close()
 
             gs = GSuiteTrack(uri, title=''.join(
-                str(trackTitle) + '--' + str(p)), genome=gSuite.genome,
+                str(trackTitle) + '--' + str(p)), genome=gSuite.genome, trackType=gSuite.trackType,
                              attributes=attr)
 
             outputGSuite.addTrack(gs)
@@ -165,6 +162,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             outFn = gSuiteTrack.path
             ensurePathExists(outFn)
 
+
             lineAll = []
             with open(trackPath, 'r') as f:
                 for l in f.readlines():
@@ -180,7 +178,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             contentFile.close()
 
             gs = GSuiteTrack(uri, title=''.join(
-                str(trackTitle) + '--' + str(p)), genome=gSuite.genome,
+                str(trackTitle) + '--' + str(p)), genome=gSuite.genome, trackType=gSuite.trackType,
                              attributes=attr)
 
             outputGSuite.addTrack(gs)
@@ -230,7 +228,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
                 attrTemp[kt] = k[ik]
                 ik += 1
 
-            gs = GSuiteTrack(uri, title=''.join(str(trackTitle) + '--' + str(kTit)), genome=gSuite.genome, attributes=cls.merge_two_dicts(attr, attrTemp))
+            gs = GSuiteTrack(uri, title=''.join(str(trackTitle) + '--' + str(kTit)), genome=gSuite.genome, trackType=gSuite.trackType, attributes=cls.merge_two_dicts(attr, attrTemp))
 
             outputGSuite.addTrack(gs)
 
@@ -258,7 +256,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
             gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
             for i, iTrack in enumerate(gSuite.allTracks()):
                 if iTrack.suffix != 'bed':
-                    return 'Your tracks need to be in .bed format'
+                    return 'Your GSuite/hGSuite should be in primary format (non pre-processed)'
 
         return None
 
@@ -391,14 +389,14 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = "This tool filters hGSuite according to words or symbols in the title column of tracks"
+        toolDescription = "This tool filters GSuite/hGSuite using specified words within the 'title' column of the GSuite/hGSuite"
 
-        stepsToRunTool = ['Select hGSuite',
-                          'Select operation',
-                          'Select words (use colon to provide more than one word)',
-                          'Add words separately'
+        stepsToRunTool = ['Select GSuite/hGSuite',
+                          'Select filter method',
+                          'Write words (use comma to provide more than one word)',
+                          'Include each character of the words as individual columns - default should be yes'
                           ]
-        toolResult = 'The output of this tool is one hGsuite.'
+        toolResult = 'The output is the filtered GSuite/hGsuite.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

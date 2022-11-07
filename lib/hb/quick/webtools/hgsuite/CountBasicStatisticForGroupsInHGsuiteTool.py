@@ -56,7 +56,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select hGSuite', 'gsuite')] + \
+        return [('Select GSuite/hGSuite', 'gsuite')] + \
                 cls.getInputBoxNamesForGenomeSelection() + \
                [('Select statistic %s' % (i + 1) + '',
                  'selectedStat%s' % i) for i \
@@ -148,20 +148,23 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
         #count overview
         trackTitles = {}
+        trackTitlesCopy = {}
         i = 0
         for iTrack in gSuite.allTracks():
             for stat in statList:
 
                 tupleList = []
                 if len(attrNameList) == 0:
-                    tupleList = tuple(iTrack.title)
+                    tupleList = iTrack.title
                 else:
                     for attrName in attrNameList:
                         at = iTrack.getAttribute(attrName)
                         if at == None:
                             at = 'No group'
                         tupleList.append(at)
+                    #check if tuple here is correct
                     tupleList = tuple(tupleList)
+                #print tupleList
 
                 if not stat in trackTitles.keys():
                     trackTitles[stat] = {}
@@ -170,13 +173,30 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                 if not str(tupleList) in trackTitles[stat][str(iTrack.title)].keys():
                     trackTitles[stat][str(iTrack.title)][str(tupleList)] = 0
 
+
+                if not stat in trackTitlesCopy.keys():
+                    trackTitlesCopy[stat] = {}
+                if not str(tupleList) in trackTitlesCopy[stat].keys():
+                    trackTitlesCopy[stat][str(tupleList)] = {}
+                if not str(iTrack.title) in trackTitlesCopy[stat][str(tupleList)].keys():
+                    trackTitlesCopy[stat][str(tupleList)][str(iTrack.title)] = 0
+
+
                 if not tupleList in resDict[stat].keys():
                     if stat == cls.NUMTRACK:
                         resDict[stat][tupleList] = 0
                     else:
                         resDict[stat][tupleList] = []
 
+                # print '<br><br><br><br><br>'
+                # print cls.STAT_LIST.keys()
+                # print '<br><br><br><br><br>'
+                # print stat
+
+
                 if stat in cls.STAT_LIST.keys():
+                    # print stat
+                    # exit()
                     regSpec, binSpec = UserBinMixin.getRegsAndBinsSpec(choices)
                     analysisBins = GalaxyInterface._getUserBinSource(regSpec, binSpec,
                                                                      genome=gSuite.genome)
@@ -196,13 +216,31 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
                     res = doAnalysis(analysisSpec, analysisBins, sts)
 
+                    #print "res.getGlobalResult()['Result'].getResult()"  + str(res.getGlobalResult()['Result'].getResult())
 
                     resDict[stat][tupleList].append(res.getGlobalResult()['Result'].getResult())
+                    #print resDict[stat][tupleList]
                     trackTitles[stat][str(iTrack.title)][str(tupleList)] = res.getGlobalResult()['Result'].getResult()
+
+                    #print trackTitles[stat][str(iTrack.title)][str(tupleList)]
 
                 if stat == cls.NUMTRACK:
                     resDict[stat][tupleList] += 1
+                    # print iTrack.title
+                    # print "<br><br><br><br><br>"
+                    # print resDict[stat][tupleList]
+                    #trackTitles[stat][str(iTrack.title)][str(tupleList)] += 1
+                    trackTitlesCopy[stat][str(tupleList)][str(iTrack.title)] += 1
             i+=1
+
+        #print "trackTitlesCopy" + str(trackTitlesCopy)
+        #exit()
+
+        for tt in trackTitlesCopy[stat].keys():
+            for tt2 in trackTitlesCopy[stat][tt].keys():
+                trackTitles[stat][str(tt2)][str(tt)] = len(trackTitlesCopy[stat][tt])
+
+
 
         #exclude which will now have min-max
         notToExcludeFromResults = [cls.NUMTRACK]
@@ -251,9 +289,9 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
         ########################################################################
         #Overview table
 
+
         resDictDraw = resDictExtra.copy()
         cls.createGSuiteWithExtraFields(attrNameList, gSuite, resDictExtra, trackTitles)
-
 
         core = cls.drawPlots(group, groupTuple, resDictDraw, choices, galaxyFn)
         core.end()
@@ -263,15 +301,25 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
     @classmethod
     def createGSuiteWithExtraFields(cls, attrNameList, gSuite, resDictMerged, trackTitles):
 
+        keyToRemove = resDictMerged.keys()[0]
+        keyToRemove = keyToRemove.replace('-min','').replace('-max','').replace('-avg','')
+        #print resDictMerged
+
         # add column for which we counted data
         for i, iTrack in enumerate(gSuite.allTracks()):
             for s in resDictMerged.keys():
+                #print "s" + s  + "<br>"
                 name = s.replace('-min','').replace('-max','').replace('-avg','')
+                #print "name" + name + "<br>"
+
                 if not name in resDictMerged.keys():
                     resDictMerged[name] = OrderedDict()
                 for sName in resDictMerged[s].keys():
-                    if not tuple(sName) in resDictMerged[name].keys():
-                       resDictMerged[name][tuple(sName)] = ''.join(list(sName))
+                    if not sName in resDictMerged[name].keys():
+                        # print '<br>'
+                        # print sName
+                        # exit()
+                        resDictMerged[name][sName] = ''.join(list(sName))
 
 
         # build results
@@ -290,7 +338,7 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
             tupleList = []
             if len(attrNameList) == 0:
-                tupleList = tuple(trackTitle)
+                tupleList = trackTitle
             else:
                 for attrName in attrNameList:
                     at = iTrack.getAttribute(attrName)
@@ -298,20 +346,37 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
                         at = 'No group'
                     tupleList.append(at)
                 tupleList = tuple(tupleList)
+
+            # print "<br><br><br>"
+            # print "gggg"
+            # print resDictMerged
             for s in resDictMerged.keys():
                 attrChange = str(s)
+                # print attrChange
+                # print attr.keys()
+                # print s
                 if attrChange in attr.keys():
                     attrChange = attrChange + str('-') + str(len(attr.keys()))
-
+                #print "tupleList " + tupleList
                 attr[attrChange] = str(resDictMerged[s][tupleList])
 
-            attr['--'.join(attrNameList)] = '--'.join(tupleList)
 
+            #attr['--'.join(attrNameList)] = '--'.join(tupleList)
+            # print "<br><br><br><br><br><br>"
             for s in trackTitles.keys():
+                #print "s" + s
+                #print "attr[str(s)]" + attr[str(s)]
+                #print trackTitles
                 attr[str(s)] = str(trackTitles[s][str(iTrack.title)][str(tupleList)])
+                #print "attr[str(s)]" + attr[str(s)]
+
 
             trackType = iTrack.trackType
 
+            #print(outGSuite)
+
+
+            del attr[keyToRemove]
             cls._buildTrack(outGSuite, trackTitle, gSuite.genome, trackPath, attr, trackType)
         GSuiteComposer.composeToFile(outGSuite, cls.extraGalaxyFn['overview gSuite'])
 
@@ -532,9 +597,10 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
 
         l = Legend()
 
-        toolDescription = "This tool provide overview of groups (defined by metadata values) such as " + cls.NUMTRACK.lower() + ", " + cls.NUMELEMENTS.lower() + ", " + cls.BPELEMENTS.lower() + ", " + cls.AVGLENGTHSEG.lower() + " in hGSuite."
+        toolDescription = "This tool provides an overview of groups (defined by metadata values) such as " + cls.NUMTRACK.lower() + ", " + cls.NUMELEMENTS.lower() + ", " + cls.BPELEMENTS.lower() + ", " + cls.AVGLENGTHSEG.lower() + " in GSuite/hGSuite. <br>" \
+        "Both primary and pre-processed GSuites/hGSuites can be submitted. If a primary is submitted, only the number of tracks can be calculated."
 
-        stepsToRunTool = ['Select hGSuite',
+        stepsToRunTool = ['Select GSuite/hGSuite',
                           'Select statistic',
                           'Select group'
                           ]
@@ -572,9 +638,9 @@ class CountBasicStatisticForGroupsInHGsuiteTool(GeneralGuiTool, GenomeMixin, Deb
               ]
         }
 
-        toolResult = 'The output of this tool is a page with visualizations and hGsuite with extra columns.'
+        toolResult = 'The tool outputs an element with a visualization of results as well as a GSuite/hGsuite with the extra columns.'
 
-        notice = 'Different statistic are available for different type (primary, preprocessed) of hGSuites.'
+        notice = 'Different statistic are available for different type (primary, preprocessed) of GSuite/hGSuites.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

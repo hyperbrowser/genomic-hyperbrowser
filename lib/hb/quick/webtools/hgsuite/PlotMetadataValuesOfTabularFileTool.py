@@ -29,8 +29,8 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
     def getInputBoxNames():
         return [
             ('Select file', 'selFile'),
-            ('Select way of showing series as', 'plotSeries'),
-            ('Select type of chart', 'plotType'),
+            ('Select series visualization method', 'plotSeries'),
+            ('Select type of plot', 'plotType'),
             ('Select value for x-Axis', 'columnX'),
             ('Select type of scale for x-Axis', 'axesScaleX'),
             ('Select value for y-Axis', 'columnY'),
@@ -731,10 +731,10 @@ class PlotMetadataValuesOfTabularFileTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to present metadata columns from hGSuite or results from tabular file in the chart.'
+        toolDescription = 'This tool allows for the illustration of metadata columns from GSuite/hGSuite or from results originating from tabular files generated from plots.'
 
         stepsToRunTool = ['Select file',
-                          'Select way of showing series as (Single, Multi)',
+                          'Select series visualization method (Single, Multi)',
                           'Select type of chart (Single: Column, Heatmap, Line, Pie, Scatter; Multi: Column, Line, Pie, Scatter)',
                           'Select value for x-Axis',
                           'Select type of scale for x-Axis',

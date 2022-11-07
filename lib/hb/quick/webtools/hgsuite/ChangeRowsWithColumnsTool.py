@@ -129,9 +129,9 @@ class ChangeRowsWithColumnsTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to transpose tabular file.'
+        toolDescription = 'The tool transposes tabular files.'
 
-        stepsToRunTool = ['Select file'
+        stepsToRunTool = ['Select a file'
                           ]
 
 
@@ -152,7 +152,7 @@ class ChangeRowsWithColumnsTool(GeneralGuiTool):
 
                             """],
                                 [
-                                    ['Select file', 'tabular'],
+                                    ['Select a file', 'tabular'],
                                 ],
                                 [
                                     """

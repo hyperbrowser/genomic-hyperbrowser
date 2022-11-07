@@ -11,7 +11,7 @@ from proto.CommonFunctions import ensurePathExists
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.application.UserBinSource import UserBinSource
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
-from quick.statistic.HotSpotRegionsStat import HotSpotRegionsStat
+from quick.statistic.HotSpotRegionsStatv2 import HotSpotRegionsStatv2
 from quick.statistic.SingleTSStat import SingleTSStat
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
 from gold.track.TrackStructure import SingleTrackTS
@@ -68,8 +68,8 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
                                                          binSpec,
                                                          choices.genome)
         analysisSpec = AnalysisSpec(SingleTSStat)
-        print(HotSpotRegionsStat.__name__)
-        analysisSpec.addParameter('rawStatistic', HotSpotRegionsStat.__name__)
+
+        analysisSpec.addParameter('rawStatistic', HotSpotRegionsStatv2.__name__)
         print(choices.param)
         analysisSpec.addParameter("numberOfTopHotSpots", choices.param)
 
@@ -84,8 +84,10 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
                                 OrderedDict(title=tt, genome=str(gSuite.genome)))
 
             result = doAnalysis(analysisSpec, analysisBins, sts)
-            resultDict = result.getGlobalResult()['Result'].getResult()
 
+
+            resultDict = result.getGlobalResult()['Result'].getResult()
+            print resultDict
             param = int(choices.param)
 
             if resultDict:
@@ -98,10 +100,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
                 outFn = gSuiteTrack.path
                 ensurePathExists(outFn)
 
-                resList = resultDict
-                resList.sort(key=operator.itemgetter(1), reverse=False)
-                print(resList)
-                print(int(choices.param))
+                resList= sorted(resultDict,key=operator.itemgetter(1), reverse=True)
                 elNum = resList[int(choices.param) - 1][1]
 
                 for elN in range(int(choices.param), len(resList)):
@@ -113,7 +112,7 @@ class GenerateGsuiteFileWithHotSpotRegions(GeneralGuiTool, UserBinMixin, GenomeM
                 outputFile = open(outFn, 'w')
                 elNX = 0
                 for x in resList[0:param]:
-                    outputFile.write(x[0].replace(':', '\t').replace('-', '\t') + '\n')
+                    outputFile.write(x[0].replace(':', '\t').replace('-', '\t') + '\t' + str(x[1]) + '\n')
                     elNX += 1
                 outputFile.close()
 

@@ -18,9 +18,9 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     @classmethod
     def getInputBoxNames(cls):
 
-        return [('Select hGSuite', 'gSuite'),
+        return [('Select GSuite/hGSuite', 'gSuite'),
                 ('See columns', 'possibleColumns'),
-                ('Select columns numbers which you want to combine (e.g. 1,2, 4-6)', 'selectedColumns')
+                ('Select column numbers which you want to combine (e.g. 1,2, 4-6)', 'selectedColumns')
                 ]
 
     @classmethod
@@ -134,10 +134,10 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'This tool combain metadata of hGSuite.'
+        toolDescription = 'This tool combines metadata columns of a GSuite/hGSuite.'
 
-        stepsToRunTool = ['Select hGSuite',
-                          'Select columns numbers which you want to combain (e.g. 1,2, 4-6)']
+        stepsToRunTool = ['Select GSuite/hGSuite',
+                          'Select column numbers which you want to combine (e.g. 1,2, 4-6)']
 
         example = {'Example':['',["""
     ##location: local
@@ -152,7 +152,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
     hb:/external/gsuite/c2/c298599af8b0d539/track5.bed	track5.bed	.	.
     """],
                    [['Select hGSuite', 'gsuite'],
-                    ['Select columns numbers which you want to combain (e.g. 1,2, 4-6) ', '1,2']],
+                    ['Select columns numbers which you want to combine (e.g. 1,2, 4-6) ', '1,2']],
    ["""
     ##location: local
     ##file format: preprocessed
@@ -168,7 +168,7 @@ class CreateHGsuiteFromCsvFileTool(GeneralGuiTool):
    ]
                 ]}
 
-        toolResult = 'The output of this tool is hGsuite with extra columns, which have combained data.'
+        toolResult = 'The output of this tool is a GSuite/hGsuite with the new combined columns data.'
 
 
 

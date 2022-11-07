@@ -4062,6 +4062,7 @@ class visualizationGraphs(object):
                          yAxisType=None,
                          extraScriptButton=None,
                          visible=None,
+                         stacking=None,
                          addTable=None,
                          histogram=None,
                          sortableAccordingToTable=None,
@@ -4151,7 +4152,8 @@ class visualizationGraphs(object):
                                                   plotOptions=plotOptions, minY=minY,
                                                   plotLines=pLine, plotLinesName=pLineName,
                                                   plotBands=None,
-                                                  plotBandsColor=None
+                                                  plotBandsColor=None,
+                                                  stacking=stacking
                                                   )
             else:
                 graph += self.drawColumnChart(dataY, height=height, addOptions=addOptions,
@@ -4184,7 +4186,8 @@ class visualizationGraphs(object):
                                               plotOptions=plotOptions, minY=minY,
                                               plotLines=plotLines, plotLinesName=plotLinesName,
                                               plotBands=None,
-                                              plotBandsColor=None
+                                              plotBandsColor=None,
+                                              stacking=stacking
                                               )
         return str(graph) + '<div style="clear:both"></div>'
 

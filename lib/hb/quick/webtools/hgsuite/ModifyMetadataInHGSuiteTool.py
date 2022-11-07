@@ -137,12 +137,12 @@ class ModifyMetadataInHGSuiteTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = "This tool creates or modifies hierarchy of hGSuite"
+        toolDescription = "This tool modifies a metadata column to a GSuite/hGSuite. The metadata column is edited manually"
 
-        stepsToRunTool = ['Select hGSuite',
-                          'Select group which define hdGSuite at level N'
+        stepsToRunTool = ['Select GSuite/hGSuite',
+                          'Select the metadata column to be edited'
                           ]
-        toolResult = 'The output of this tool is one hGsuite with definied field called levels.'
+        toolResult = 'This tool creates a new Gsuite/hGSuite with the edited metadata column'
 
 
         return Legend().createDescription(toolDescription=toolDescription,

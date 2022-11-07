@@ -290,7 +290,7 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'This tool add metadata for GSuite (hGSuite).'
+        toolDescription = 'This tool adds a metadata column for GSuite (hGSuite).'
 
         stepsToRunTool = ['Select GSuite (hGSuite)',
                           'Add metadata column ',
@@ -333,7 +333,7 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
                                 ]
                                ]}
 
-        toolResult = 'The output of this tool is GSuite (hGsuite) with extra column.'
+        toolResult = 'The output of this tool is GSuite (hGsuite) with the extra metadata column.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

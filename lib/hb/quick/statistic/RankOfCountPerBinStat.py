@@ -15,7 +15,7 @@ class RankOfCountPerBinStatUnsplittable(Statistic):
     def _compute(self):
         localVal = self._localCount.getResult()[0]
         globalVals = self._allGlobalCounts.getResult()
-        
+
         return [sum(x>localVal for x in globalVals) + 1]
     
     def _createChildren(self):

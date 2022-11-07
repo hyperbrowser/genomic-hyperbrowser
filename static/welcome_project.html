@@ -8,7 +8,7 @@
    <link rel="stylesheet" href="welcome_project.css">
    <meta charset='UTF-8'>
    <title>
-       hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis
+       hGSuite HyperBrowser AAA: A web platform for high dimensional genomic data analysis
    </title>
 </head>
 <body>
@@ -27,9 +27,9 @@
            <!--<li  value="tab1">-->
                <!--<a data-toggle="tab" href="#menu1">Technical details</a>-->
            <!--</li>-->
-           <li  value="tab3">
-               <a data-toggle="tab" href="#menu3">List of other projects</a>
-           </li>
+           <!--<li  value="tab3">-->
+               <!--<a data-toggle="tab" href="#menu3">List of other projects</a>-->
+           <!--</li>-->
            <li  value="tab4">
                <a data-toggle="tab" href="#menu4">About</a>
            </li>
@@ -43,7 +43,7 @@
                        <h2 class="projectTitle">
                            hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis</h2>
                        <div class = 'project'>
-                           <div class = 'projectDesc'>description</div>
+                           <div class = 'projectDesc'>Hierarchical gSuite (hGsuite) is an extension of the hyper browser platform which enables the hierarchical clustering of tracks, multi dimensional statistical calculations as well as several visualization methods.</div>
                        </div>
                    </div>
                </div>
@@ -56,12 +56,13 @@
                                Multi dimensional genomic data
                            </h4>
                            <div class = 'descriptionDesc'>
-                               Multidimensional genomic data can be presented as a matrix, with each row representing a genomic track and the column containing the features of the track. A collection of features of a track typically represents a cell type, mutation type, experimental condition and so on. These collections are also known metadata of the tracks. Here we present the multi dimensional genomic data in a GSuite format, that entitles each track along with its metadata. To know more about GSuite format please read <a href = "../tool_runner/data_source_redirect?tool_id=gsuite_spec">GSuite specification</a>
+                               hGSuite represents multi dimensional data as a matrix with each row representing a genomic track while the columns contain the features of the tracks. Collections of features typically represent cell type, experimental condition, and so on. These collections are also known as metadata. hGSuite presents this multi dimensional genomic data within a GSuite format while associating each track with the corresponding metadata. You can read more about GSuite  <a href = "../tool_runner/data_source_redirect?tool_id=gsuite_spec">GSuite specification</a>
 
                                <br /><br />
 
 
-                               In the example below, each row represents a genomic tracks and its set of characteristics in each column (i.e. genotype and mutation type). This representation of the data allows for effective analysis of single genomic track collections as well as analysis within groups of genomic tracks.
+                               In the below example we illustrate the basic appearance of a HGSuite. Each row represents a genomic track as indicated by the ‘path_to_track’ entries. Each track also has metadata associated to it, in this example the metadata is the genotype and the mutation type. By representing data in this way we are able to perform analyses on single tracks as well as comparative analyses between or across tracks.
+
                                <div style="width:50%;margin: 10px auto;display:block;">
                                <img class="img-thumbnail" src="../static/project/hdGSuite.png" \>
                                </div>
@@ -71,7 +72,7 @@
                                <p class="paragraph">
                                The data can be grouped based on the question of interest, enabling easier analysis. For example if we are interested in statistical analysis like average number of genomic elements per defined group, where the group is defined by the character genotype (look at the left figure) or it can also be a group defined in combination with genotype and mutation type (look at the right figure).                                </p>
                                <p class="paragraph">
-                               In the example below, we calculated the average number of genomic elements for each tracks and calculated the average based on the group, eta and iota respectively. For the groups defined by the combinations of genotype and mutation type, we calculated the number of genomic elements for track 1 and 2 separately and calculated the average based genotype and mutation types like eta-CA group, eta-CG, iota-CA, iota-CT.
+                               In the example below, we calculated the average number of genomic elements for each track and calculated the average based on the group, eta and iota respectively. For the groups defined by the combinations of genotype and mutation type, we calculated the number of genomic elements for track 1 and 2 separately and calculated the average based genotype and mutation types like eta-CA group, eta-CG, iota-CA, iota-CT.
                                For the groups defined by the combinations of genotype and mutation type, we calculated a number of genomic elements for tracks 1-2 separately and averaged them out (eta-CA group), and we did the same for the other groups (eta-CG, iota-CA, iota-CG, iota-CT).
                                <div style="display: block">
                                    <div style="width:49%;margin: 10px auto;float:left">
@@ -81,6 +82,10 @@
                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups2.png" \>
                                    </div>
                                </div>
+                               <p class="paragraph">
+                               HGSuite can group the data in several different ways. Depending on the question of interest, the grouping method is likely to change. For example, the panel on the left side shows that grouping can be defined by the genotype of the tracks, while the panel on the right shows that grouping can be defined by a combination of genotype and the type of mutation.
+                               <p class="paragraph">
+                               From these various groupings we can calculate the number of genomic elements per track (which have been grouped) as well as calculate the base pair coverage within genotype or mutation type (or both). These are a few of the possibilities available when using HGSuite.
 
 
                            </div>
@@ -106,58 +111,42 @@
                <div class="rowSpecialWithGap">
                    <div class="colAll">
                        <h4 class = 'descriptionTitle'>
-                           Why do you want to use it?
+                           Why use hGSuite?
                        </h4>
                        <div class = 'project'>
                            <div class = 'projectDesc'>
 
-                                The hGSuite HyperBrowser web platform is a set of independent tools that
-                                can be used  in combination to perform an entire analysis starting from data
-                                preparation to result exploration. It offers an easy straight forward way to
-                                manage and analyse your data collection. At the core of the system is GSuite,
-                                a simple tabular format representing genomic track collection along with related
-                                metadata. hgSuite works on the metadata of such tracks.
-                                The figure below shows a pipeline used to
-                                analyse a collection of genomic tracks based on metadata of interest.
-                                The pipeline can be divided into four major steps.
+                               The hGSuite HyperBrowser web platform is a set of independent tools that can be used in
+                               combination to perform an entire analysis starting from data preparation to result exploration.
+                               It offers an easy straight forward way to manage and analyse your data collection.
+                               At the core of the system is GSuite, a simple tabular format representing genomic track collection along with related metadata.
+                               hgSuite works on the metadata of such tracks. The figure below shows a pipeline used to analyse a collection of genomic tracks based on metadata of interest. The pipeline can be divided into four major steps.
                                 <ol>
-                                <li>Data - A user can upload their own data or the data can be downloaded from
-                                external repositories using tools 'Create a GSuite from an integrated
-                                catalog of genomic datasets' and 'Create a remote GSuite from a public
-                                repository'. Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a
-                                tar or zip file (using tool 'Create a GSuite from an archive (Zip/tar)
-                                in history'). A hGSuite can be created from an uploaded tar file (using
-                                tool 'Create a GSuite from an archive (Zip/tar) in history'), where the
-                                folder structure of uploaded data will be reflected as metadata columns
-                                in the hGSuite. To rename metadata columns in the hGSuite can be used
-                                tool 'Modify metadata in hGSuite'. To add metadata we can use tool 'Add
-                                a metadata column in hGSuite'.</li>
+                                <li>Data - A user can upload their own data or download it from external repositories using the tools named 'Create a GSuite from an integrated catalog of genomic datasets' or 'Create a remote GSuite from a public repository' respectively.
+                                    Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a tar or zip file with the tool named 'Create a GSuite from an archive (Zip/tar) in history'). A hGSuite can be created from an uploaded tar file using the same tool, where the folder structure of uploaded data will be reflected as metadata columns in the hGSuite. To rename metadata columns the 'Modify metadata in hGSuite' tool can be used. To add metadata we can use the 'Add a metadata column in hGSuite' tool.
+                                .</li>
 
-                                <li>Data pre-processing - Within the web platform, collections of datasets
-                                are represented in the GSuite format, which isi.e. a
-                                simple tabular text format that includes metadata for each track in a
-                                given collection. The platform includes tools for preprocessing the
-                                GSuite 'Preprocess a GSuite for analysis'. </li>
+                                <li>Data pre-processing - Within the web platform, collections of datasets are represented in the GSuite format,
+                                    a simple tabular text format that includes metadata for each track in a given collection.
+                                    The platform includes a tool for preprocessing the GSuite: 'Preprocess a GSuite for analysis'. </li>
 
-                                <li>Statistical analysis and visualization - Analysis are provided within
-                                collection of genomic tracks (using tool 'Compute Pivot table for
-                                hGSuite') as well as pairwise combination of genomic tracks (using tool
-                                'Compute Pivot table for relations between hGSuites'). They are
-                                restricted by the their metadata where hGSuites requires the metadata to be match.
-                                'Create or modify hierarchy of hGSuite' tool is used to specify the metadata.</li>
+                                <li>Statistical analysis and visualization - Analyses are provided within a collection of genomic tracks
+                                    (using the  'Compute data cube for hGSuite' tool) as well as a pairwise combination of genomic tracks
+                                    (using the 'Compute data cube for relations between hGSuites' tool).
+                                    Both tools are restricted by their metadata where hGSuites require that the metadata column titles match.
+                                    If this is not the case, the 'Create or modify hierarchy of hGSuite' tool can be used
+                                    to add or edit the metadata within a hGSuite.</li>
 
-                                <li>Exploration of analysis results - The results of analysis for each genomic
-                                track is represented as a data cube (multidimensional array of values).
-                                A data cube is an arrangement of data suitable for analysis from
-                                different perspectives through operations like slicing, dicing,
-                                pivoting, and aggregation. We use the metadata of the genomic
-                                tracks based on the user input to carry out the above operation on the
-                                data cube. The results of that would be a two dimensional array, that
-                                would enable the user to draw overall conclusions in a time efficient
-                                manner. The tool 'Compute Pivot table for hGSuite' allows user to
-                                compute statistics for single hGSuite, while tool 'Compute Pivot table
-                                for relations between hGSuites' is used to represent results as data
-                                cube for two HGSuites. </li>
+                                <li>Exploration of analysis results - The results of analyses for each genomic track are
+                                    represented as a data cube (multidimensional array of values).
+                                    A data cube is an arrangement of data suitable for analysis from different perspectives
+                                    through operations like slicing, dicing, pivoting, and aggregation.
+                                    The metadata of the genomic tracks is used based on user input to carry out the above operation(s) on the data cube.
+                                    The results of that would be a two dimensional array, that would enable
+                                    the user to draw overall conclusions in a time efficient manner. T
+                                    he tool 'Compute data cube for hGSuite' allows users to compute statistics for a single hGSuite
+                                    (which may contain multiple tracks), while the 'Compute data cube for relations between hGSuites'
+                                    tool is used to represent results as data cube between two HGSuites. </li>
                                 </ol>
 
                                <div style="width:80%;margin: 10px auto;">
@@ -172,7 +161,7 @@
            </div>
           <div class="footer">
                <div class = 'contactInfo'>
-                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
+                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:sumanak@ifi.uio.no" target="_top"> Sumana Kalyanasundaram</a> or <a href="mailto:y.p.lefol@medisin.uio.no" target="_top"> Yohan Lefol</a> or <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
                </div>
            </div>
        </div>
@@ -280,6 +269,7 @@
                                Customize a hGSuite
                            </h4>
                            <div class = 'descriptionDesc'>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb__hg_suite_according_to_column_tool">Modify metdata in hGSuite</a></b> - tool is used to modify a metadata column of a Gsuite</p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool">Divide/Filter hGSuite according to metadata</a></b> - tool used to divide hGSuite</p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGsuite</a></b> - tool used to concatenate tracks in hGSuite according to selected phrases in the selected columns.</p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Create hGSuite based on phrases in title column in tracks</a></b> - tool used to create hGSuite based on the column 'title' (inside genomic track) </p>
@@ -473,7 +463,7 @@
                                </div>
 
                                <h4 class = 'exampleTitle'>
-                                   To Check whether some mutation are more active in certain mutation type
+                                   To Check whether some mutations are more active in certain mutation type
                                </h4>
 
                                <div class = 'exampleDesc'>
@@ -487,7 +477,7 @@
                                </div>
 
                                <h4 class = 'exampleTitle'>
-                                   To check whether some mutation types are enriched in certain genotype more than you would expected by chance
+                                   To check whether some mutation types are enriched in certain genotype more than you would expect by chance
                                </h4>
 
                                <div class = 'exampleDesc'>
@@ -670,6 +660,7 @@
                </p>
            </div>
      </div>
+
 
        <div class="containerNext">
            <div class="rowSpecial">

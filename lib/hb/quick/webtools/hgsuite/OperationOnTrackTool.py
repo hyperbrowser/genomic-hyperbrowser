@@ -146,7 +146,7 @@ class OperationOnTrackTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to proceed operations: intersection or subtract between tracks or genome and track'
+        toolDescription = 'The tool can perform either intersection or subtraction between tracks or between a reference genome and a track'
 
         stepsToRunTool = ['Select genome or track',
                           'Select first track/Genome build',
@@ -188,7 +188,7 @@ class OperationOnTrackTool(GeneralGuiTool):
                                ]
                    }
 
-        toolResult = 'The output of this tool is a bed file.'
+        toolResult = 'This tool outputs a bed file with the calculated results.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

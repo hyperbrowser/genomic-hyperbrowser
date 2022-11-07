@@ -25,7 +25,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
     def getInputBoxNames(cls):
 
         return [('Select file', 'selFile'),
-                ('Do you want to have box plot separately for category', 'response'),
+                ('Create a separate box plot per category', 'response'),
                 ('Select category', 'responseValue'),
                 ('Select column', 'selCol'),
                 ('Include 0 values to count results', 'resValue')
@@ -363,13 +363,13 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
 
         l = Legend()
 
-        toolDescription = 'The tool allow to present metadata columns from gSuite or results from tabular file in the box chart.'
+        toolDescription = 'This tool creates a box plot using either metadata from a GSuite/hGSuite or data from a tabular file.'
 
         stepsToRunTool = ['Select file',
-                          'Do you want to have box plot separately for category',
+                          'Separate box plots by category (yes/no)',
                           'Select category',
                           'Select column',
-                          'Include 0 values to count results'
+                          'Include 0 values to count results (yes/no)'
                           ]
         urlexample1Output = StaticImage(['hgsuite', 'img',
                                          'CreateBoxPlotForFileTool-img1.png']).getURL()
@@ -406,7 +406,7 @@ class CreateBoxPlotForFileTool(GeneralGuiTool):
           ]
         }
 
-        toolResult = 'The results are presented in an interactive box chart.'
+        toolResult = 'The results are presented as an interactive box chart.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

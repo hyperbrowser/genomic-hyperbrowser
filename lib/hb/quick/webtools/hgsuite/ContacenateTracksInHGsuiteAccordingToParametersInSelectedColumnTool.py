@@ -25,11 +25,11 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select hGSuite', 'gSuite'),
-                ('Select column, you want to use to combine tracks', 'column'),
+        return [('Select GSuite/hGSuite', 'gSuite'),
+                ('Select column', 'column'),
                 ('Show possible keywords', 'possibleColumns')
         ] + \
-                [('Select keyword %s' % (i+1) + ', you want to combain (use comma to combine)', 'selectedColumns%s' % i) for i \
+                [('Write keyword(s) grouping %s' % (i+1) + ', you want to combine (use comma to combine)', 'selectedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)] + \
                 [('Select column %s' % (i+1) + ' which you would like to treat as unique (datasets will be combined separately to selected groups)', 'excludedColumns%s' % i) for i \
                  in range(cls.MAX_NUM_OF_COLS)]
@@ -155,6 +155,8 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                 attr = OrderedDict()
                 #metadata
                 trackData = phraseList[id]
+                #print trackData
+                #print "</br>"
                 name = '-'.join(k)
 
                 attr[column] = str('-'.join(trackData))
@@ -330,12 +332,11 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
         l = Legend()
 
-        toolDescription = 'This tool concatenate tracks in hGSuite according to selected phrases in the selected columns..'
+        toolDescription = 'This tool concatenates tracks in GSuite/hGSuite based on specified words in a selected column. Several combinations can be inputted.'
 
-        stepsToRunTool = ['Select hGSuite',
-                          'Select column, you want to use to combain tracks',
-                          'Select phrase 1, you want to combain (use colon to combain) ',
-                          'Select column 1 which you would like to treat as unique'
+        stepsToRunTool = ['Select GSuite/hGSuite',
+                          'Select column',
+                          'Write keywords(s) which will be combined (use comma to combine) ',
                           ]
 
         example = {'Example': ['', ["""
@@ -368,7 +369,7 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
                                 ]
                                ]}
 
-        toolResult = 'The output of this tool is hGsuite with concatenated tracks according to selected parameters.'
+        toolResult = 'The output of this tool is a GSuite/hGsuite with concatenated tracks according to the selected parameters.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

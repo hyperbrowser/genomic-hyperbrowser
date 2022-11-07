@@ -44,9 +44,9 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
     DIMENSIONS = ''
 
     COUNTSTAT = 'Coverage (Counts of elements)'
-    NORMALIZESTAT = 'Normalize (Coverege divided by sum of coverages)'
-    OBSVSEXPECTEDSTAT = 'Compare of observed coverege values vs expected coverage values'
-    OBSVSEXPINREGIONSTAT = 'Compare of observed coverege values vs expected coverage values within bin track'
+    NORMALIZESTAT = 'Normalize (Coverage divided by sum of coverages with tracks)'
+    OBSVSEXPECTEDSTAT = 'Compare of observed coverage values vs expected coverage values'
+    OBSVSEXPINREGIONSTAT = 'Compare of observed coverage values vs expected coverage values within bin track'
 
     SUMMARIZE = {'sum': 'sum', 'average': 'average', 'minimum': 'min', 'maximum': 'max',
                  'no': 'no', 'raw': 'raw'}
@@ -59,7 +59,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def getInputBoxNames(cls):
-
         return [('Select hGSuite', 'gsuite')] + cls.getInputBoxNamesForGenomeSelection() + \
                [('Select statistic ', 'selectedStat%s' % i) for i in range(cls.MAX_NUM_OF_STAT)]  + \
                [('Information', 'groupDefined')] + \
@@ -412,6 +411,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     if stat == cls.NORMALIZESTAT or stat == cls.OBSVSEXPECTEDSTAT:
                         sumBp[stat] += countPerTrack
 
+
                         # remove the opeation which happens before
                         # if cls.SUMMARIZE[summarize] == 'no':
                         #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append([gi.metadata['title'], gi.metadata['title'], countPerTrack])
@@ -427,10 +427,11 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
                             [orginalTitle, countPerTrack])
 
+
         # print 'resultsDict',resultsDict, '<br>'
         # print 'colList', colList, '<br>'
         # print 'summarize', summarize, '<br>'
-        # print 'sumBp', sumBp, '<br>'
+        #print 'sumBp', sumBp, '<br>'
 
         extraJavaScriptCode = """
                 $(document).ready(function(){
@@ -474,6 +475,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         expectedDict = OrderedDict()
         expectedOrderedDict = OrderedDict()
         extraCalc = OrderedDict()
+
         for statKey, statItem in resultsDict.iteritems():
 
             if sumBp[statKey] == 0:
@@ -499,7 +501,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             # expectedDict[g] += float(sum([g[-1] for g in groupItem])) / float(
                             #     sumBp[statKey])
 
-        for statKey, statItem in resultsDict.iteritems():
+
             if statKey == cls.OBSVSEXPECTEDSTAT:
                 for summarizeKey, summarizeItem in statItem.iteritems():
                     for groupKey, groupItem in summarizeItem.iteritems():
@@ -513,6 +515,21 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                             # expectedOrderedDict[groupKey] *= expectedDict[g]
                             expectedOrderedDict[(g[0], groupKey[0])] = extraCalc[groupKey[0]] * \
                                                                        expectedDict[g[0]]
+        tempDict = {}
+        if statKey == cls.NORMALIZESTAT:
+            for statKey, statItem in resultsDict.iteritems():
+                for summarizeKey, summarizeItem in statItem.iteritems():
+                    for groupKey, groupItem in summarizeItem.iteritems():
+                        for g in groupItem:
+                            #print "dfhsgfdhsgg" + str(g) + "</br>"
+                            if not g[0] in tempDict.keys():
+                                tempDict[g[0]] = 0
+                            tempDict[g[0]] += int(g[1])
+
+            #print "tempDict" + str(tempDict) + "</br>"
+
+
+
         # print 'resultsDict', resultsDict, '<br> '
         for statKey, statItem in resultsDict.iteritems():
             data = []
@@ -524,16 +541,16 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     # print 'groupKey', list(groupKey), '<br>'
                     # print 'groupItem', groupItem, '<br>'
 
-
+                    #print summarizeKey
                     if summarizeKey == 'no':
                         data += groupItem
                     elif summarizeKey == 'raw':
 
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
-                                           sumBp, summarizeKey)
+                                           sumBp, summarizeKey, tempDict)
                     else:
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
-                                           sumBp, summarizeKey)
+                                           sumBp, summarizeKey, tempDict)
 
             # print 'data', data, '<br>'
 
@@ -556,6 +573,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                 # headerToPresent = header
                 dp = zip(*dataToPresent)
                 # print 'cc'
+
+            #print dataToPresent
 
             optionData = []
             for z in range(0, len(dp) - 1):
@@ -660,7 +679,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def countSummarize(cls, data, expectedOrderedDict, groupItem, groupKey, statKey, sumBp,
-                       summarizeKey):
+                       summarizeKey, tempDict):
 
         if statKey == cls.OBSVSEXPECTEDSTAT:
             if summarizeKey == 'sum':
@@ -684,6 +703,18 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     except:
                         data.append([g[0]] + [
                             (float(g[1]) * sumBp[statKey]) / expectedOrderedDict[(g[0], groupKey[0])]])
+        elif statKey == cls.NORMALIZESTAT:
+            if summarizeKey == 'raw':
+
+                #print "tempDict" + str(tempDict) + " <br>"
+                for g in groupItem:
+                    # print "groupKey" + str(groupKey) + "</br>"
+                    # print "g" + str(g) + "</br>"
+                    # print "g[1]" + str(g[1]) + "</br>"
+                    # print "tempDict[g[0]]" + str(tempDict[g[0]]) + "</br>"
+                    # print "</br>"
+                    g[1] = round(float(float(g[1])/float(tempDict[g[0]])), 2)
+                    data.append(list(groupKey) + g)
         else:
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])
@@ -736,10 +767,17 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         if not choices.gsuite:
             return 'Select hGSuite'
 
+            #return choices
+
         if choices.gsuite:
             gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
             if not gsuite.isPreprocessed():
                 return 'hGSuite need to preprocessed.'
+        if choices.selectedStat0 == cls.PHRASE:
+            return "Please select statistics"
+        if choices.selectedColumn0 == cls.PHRASE:
+            return "Please select at least one group"
+
 
 
         return None
@@ -755,13 +793,15 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
         l = Legend()
 
-        toolDescription = "This tool count descriptive statistics for hGSuite."
+        toolDescription = "This tool calculates descriptive statistics for hGSuite. <br>" \
+        "Statistics are calculated based on the different dimensions of the data (columns). <br>" \
+        "The cube can perform these statistics for each unique element found in specified (columns) defined above as 'levels'."
 
-        stepsToRunTool = ['Select first hGSuite',
+        stepsToRunTool = ['Select hGSuite',
                           'Select statistic',
                           'Summarize within groups (no, sum, minimum, maximum, average)',
-                          'Select column which you would like to group',
-                          'Do you want to do above summarize data for column from hGSuite'
+                          'Select column(s) which will be grouped',
+                          'Do you want to summarize data for the column(s) from GSuite/hGSuite'
                           ]
 
         urlexample1Output = StaticImage(['hgsuite', 'img',

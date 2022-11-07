@@ -1218,7 +1218,7 @@ use_interactive = True
 
 # Speedup fix of "Analyze genomic tracks" for non-development instances
 # Note: use_disk_memoization_for_minimal_runs overrides load_disk_memoization and store_disk_memoization
-#use_disk_memoization_for_minimal_runs = True
+use_disk_memoization_for_minimal_runs = False
 
 #
 # Debugging

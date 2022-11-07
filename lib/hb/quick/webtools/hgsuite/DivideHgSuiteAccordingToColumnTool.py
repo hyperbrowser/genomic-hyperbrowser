@@ -273,7 +273,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 else:
                     attrDict[a] = tr.getAttribute(a)
 
-            gs = GSuiteTrack(uri, title=title, genome=gSuite.genome,
+            gs = GSuiteTrack(uri, title=title, genome=gSuite.genome, trackType = gSuite.trackType,
                              attributes=attrDict)
             outputGSuite.addTrack(gs)
 
@@ -367,7 +367,8 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                         attributes[key] = track.attributes[key]
                     except:
                         attributes[key] = '.'
-                gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome,
+
+                gs = GSuiteTrack(track.uri, title=track.title, genome=gSuite.genome, trackType = gSuite.trackType,
                                  attributes=attributes)
 
                 outputGSuite.addTrack(gs)
@@ -452,20 +453,21 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
     def getToolDescription(cls):
         l = Legend()
 
-        toolDescription = 'This tool divide hGSuite in the two possible ways. <br>' \
-                          'The first one is division according to selected column, ' \
-                          'the second one is division according to selected phrases.'
+        toolDescription = 'This tool can divide an GSuite/hGSuite in three different ways. <br>' \
+                          'First: Divide the data using a specified column. ' \
+                          'Second: Divide the data based on specified words within a column.' \
+                          'Third: Divide the data based on specified values within a column'
 
         stepsToRunTool = ['Select hGSuite',
-                          'Select division',
+                          'Select division method',
                           'Select column',
-                          'Select phrases (use colon to provide more than one phrase)',
-                          'Add phrases separately'
+                          'Select words/values (use comma to provide more than one word/value)',
+                          'Should each word/value be included in a separate column (yes/no) - Default should be yes'
                           ]
 
-        toolResult = 'The output of this tool is one or many hGsuites.'
+        toolResult = 'This tool will output the modified GSuite/hGSuite'
 
-        notice = 'The name of the output hGSuite is the same as phrases in the selecetd column.'
+        notice = 'The name of the outputed GSuite/hGSuite is the same as words/values in the selected column.'
 
         example = OrderedDict()
         example['Example 1 - Division by column'] = ['',

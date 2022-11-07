@@ -6,6 +6,8 @@ from functools import partial
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
+from gold.statistic.CountStat import CountStat
+from gold.statistic.CountSegmentStat import CountSegmentStat
 from gold.statistic.RawOverlapStat import RawOverlapStat
 from gold.track.Track import PlainTrack
 from proto.hyperbrowser.StaticFile import StaticImage
@@ -28,7 +30,7 @@ from quick.webtools.mixin.DebugMixin import DebugMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.util.TrackReportCommon import STAT_OVERLAP_COUNT_BPS, processResult
-
+from quick.statistic.SingleTSStat import SingleTSStat
 
 class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
                                                   DebugMixin):
@@ -40,7 +42,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED=MAX_NUM_OF_COLS_IN_GSUITE+2
     MERGED_SIGN = ' - '
     PHRASE = '-- SELECT --'
-    STAT_LIST = {'Overlap': STAT_OVERLAP_COUNT_BPS, 'Forbes coefficient': 'Forbes coefficient'}
+    STAT_LIST = {'Overlap': STAT_OVERLAP_COUNT_BPS, 'Normalise': 'Normalise', 'Forbes coefficient': 'Forbes coefficient'}
     FIRST_GSUITE = 'First GSuite'
     SECOND_GSUITE = 'Second GSuite'
     SUMMARIZE = {'no': 'no', 'sum': 'sum', 'average': 'avg', 'minimum': 'min', 'maximum': 'max', 'raw': 'raw'}
@@ -70,15 +72,15 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 ('Select second hGSuite', 'secondGSuite'),
                 ('Select column from second hGSuite', 'secondGSuiteColumn')] + \
                [('Select statistic %s' % (i + 1) + '', 'selectedStat%s' % i) for i in range(cls.MAX_NUM_OF_STAT)] + \
-               [('Select overlap handling', 'intraOverlap')] + \
+               [('Select overlap method', 'intraOverlap')] + \
                [('Information', 'groupDefined')] + \
                [('Do you want to specify groups', 'groupResponse')] + \
                [('', 'preselectedGroup')] + \
-               [('Select the column for first hGSuite which define the group at level %s' % (i + 2) + '',
+               [('Select the column for first hGSuite which defines the group at level %s' % (i + 2) + '',
                  'selectedColumnFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
-               [('Select the column for second hGSuite which define the group at level %s' % (i + 2) + '',
+               [('Select the column for second hGSuite which defines the group at level %s' % (i + 2) + '',
                  'selectedColumnSecond%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
-               [('Do you want to have preselected presenting options for hGSuites', 'preselectedDecision')] + \
+               [('Do you want to have a preselected presenting option for hGSuites', 'preselectedDecision')] + \
                [('Select main option for first hGSuite for the group at level %s' % (i + 1) + '',
                  'selectedMainOptionFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
                [('', 'selectedOptionFirst%s' % i) for i in range(cls.MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED)] + \
@@ -601,9 +603,9 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         #
         # print 'ifAnyElements', ifAnyElements, '<br>'
         # print 'which groups', whichGroups, '<br>'
-        selectedAnalysis, statIndex = cls.addStat(choices, statList)
+        selectedAnalysis, statIndex, selectedAnalysis2, selectedAnalysis3 = cls.addStat(choices, statList)
 
-        resultsDict = cls.countStat(analysisBins, selectedAnalysis,
+        resultsDict = cls.countStat(analysisBins, selectedAnalysis,selectedAnalysis2,selectedAnalysis3,
                                     statIndex, whichGroups, statList, summarize, columnOptionsDict, gSuite, secondGSuite)
 
         summarize = 'raw'
@@ -953,6 +955,8 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
     @classmethod
     def addStat(cls, choices, statList):
         selectedAnalysis = []
+        selectedAnalysis2 = []
+        selectedAnalysis3 = []
         for a in statList:
             if cls.STAT_LIST[a] == STAT_OVERLAP_COUNT_BPS:
                 statIndex = TrackReportCommon.STAT_LIST_INDEX[cls.STAT_LIST[a]]
@@ -971,8 +975,25 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                 analysisSpec.addParameter('reverse', 'No')
                 analysisSpec.addParameter("summaryFunc", 'raw')
                 selectedAnalysis.append(analysisSpec)
+            if cls.STAT_LIST[a] == 'Normalise':
+                statIndex = TrackReportCommon.STAT_LIST_INDEX[STAT_OVERLAP_COUNT_BPS]
 
-        return selectedAnalysis, statIndex
+                #count stat
+                analysisSpec = AnalysisSpec(SingleTSStat)
+                analysisSpec.addParameter('rawStatistic', CountStat.__name__)
+                selectedAnalysis.append(analysisSpec)
+
+                #count segment
+                analysisSpec2 = AnalysisSpec(SingleTSStat)
+                analysisSpec2.addParameter('rawStatistic', CountSegmentStat.__name__)
+                selectedAnalysis2.append(analysisSpec2)
+
+                #overlap
+                analysisSpec3 = AnalysisSpec(PairedTSStat)
+                analysisSpec3.addParameter('pairedTsRawStatistic', RawOverlapStat.__name__)
+                selectedAnalysis3.append(analysisSpec3)
+
+        return selectedAnalysis, statIndex, selectedAnalysis2, selectedAnalysis3
 
     # print summarizeTable([['ata', '1 - 243-2--eta-.bed--TG', 863], ['ata', '1 - 243-2--eta-.bed--TA', 781]], [-1, -1, -2])
     # [[1644]]
@@ -990,7 +1011,7 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
         return flat
 
     @classmethod
-    def countStat(cls, analysisBins, selectedAnalysis, statIndex, whichGroups, statList, summarize,
+    def countStat(cls, analysisBins, selectedAnalysis, selectedAnalysis2,selectedAnalysis3, statIndex, whichGroups, statList, summarize,
                   columnOptionsDict, gSuite, secondGSuite):
         resultsDict = OrderedDict()
 
@@ -1022,54 +1043,117 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         # print 'analysisBins', analysisBins, '<br>'
         # print 'selectedAnalysis', selectedAnalysis, '<br>'
+        # print 'selectedAnalysis2', selectedAnalysis2, '<br>'
         # print 'statIndex', statIndex, '<br>'
         # print 'whichGroups', whichGroups, '<br>'
         # print 'statList', statList, '<br>'
         # print 'summarize', summarize, '<br>', '<br>', '<br>'
 
         summarize = 'raw'
+
         for saNum, sa in enumerate(selectedAnalysis):
             stat = statList[saNum]
+            if stat != 'Normalise':
 
-            if not stat in resultsDict.keys():
-                resultsDict[stat] = OrderedDict()
-            if not cls.SUMMARIZE[summarize] in resultsDict[stat].keys():
-                resultsDict[stat][cls.SUMMARIZE[summarize]] = OrderedDict()
-            for groupKey, groupItem in whichGroups.iteritems():
-                groupKey = cls.changeOptions(columnOptionsDict, groupKey)
-                if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
-                    resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
+                if not stat in resultsDict.keys():
+                    resultsDict[stat] = OrderedDict()
+                if not cls.SUMMARIZE[summarize] in resultsDict[stat].keys():
+                    resultsDict[stat][cls.SUMMARIZE[summarize]] = OrderedDict()
+                for groupKey, groupItem in whichGroups.iteritems():
+                    groupKey = cls.changeOptions(columnOptionsDict, groupKey)
+                    if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
+                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
 
-                for gi in groupItem:
-                    result = doAnalysis(sa, analysisBins, gi)
-                    res = result.getGlobalResult()['Result']
-                    allResults = res.getResult()
-                    queryTrackTitle = res.getTrackStructure()['query'].metadata['title']
-                    refTrackTitle = res.getTrackStructure()['reference'].metadata['title']
-                    if stat == 'Forbes coefficient':
-                        resVal = float(allResults[0])
-                    else:
-                        resVal = int(allResults['Both'])
+                    for gi in groupItem:
 
-                    # if cls.SUMMARIZE[summarize] == 'raw':
-                    #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
-                    #         [queryTrackTitle, refTrackTitle, resVal])
+                        result = doAnalysis(sa, analysisBins, gi)
+                        res = result.getGlobalResult()['Result']
+                        allResults = res.getResult()
+                        queryTrackTitle = res.getTrackStructure()['query'].metadata['title']
+                        refTrackTitle = res.getTrackStructure()['reference'].metadata['title']
 
-                    if cls.SUMMARIZE[summarize] == 'raw':
-                        title = res.getTrackStructure()['query'].metadata['title']
+                        if stat == 'Forbes coefficient':
+                            resVal = float(allResults[0])
+                        else:
+                            resVal = int(allResults['Both'])
+
+                        # if cls.SUMMARIZE[summarize] == 'raw':
+                        #     resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
+                        #         [queryTrackTitle, refTrackTitle, resVal])
+
+                        if cls.SUMMARIZE[summarize] == 'raw':
+                            title = res.getTrackStructure()['query'].metadata['title']
+                            if orgnalTitleAllCount == 1:
+                                orginalTitle = orgnalTitleAll[title]
+                            else:
+                                orginalTitle = title
+                            titleSecond = res.getTrackStructure()['reference'].metadata['title']
+                            #print 'orgnalTitleAllSecond', orgnalTitleAllSecond, '<br>'
+                            #print 'titleSecond', titleSecond, '<br>'
+                            if orgnalTitleAllCountSecond == 1:
+                                orginalTitleSecond = orgnalTitleAllSecond[titleSecond]
+                            else:
+                                orginalTitleSecond = titleSecond
+                            resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
+                                [orginalTitle, orginalTitleSecond, resVal])
+
+
+        for saNum, sa in enumerate(selectedAnalysis3):
+            stat = statList[saNum]
+            if stat == 'Normalise':
+                if not stat in resultsDict.keys():
+                    resultsDict[stat] = OrderedDict()
+                if not cls.SUMMARIZE[summarize] in resultsDict[stat].keys():
+                    resultsDict[stat][cls.SUMMARIZE[summarize]] = OrderedDict()
+                for groupKey, groupItem in whichGroups.iteritems():
+                    groupKey = cls.changeOptions(columnOptionsDict, groupKey)
+                    if not groupKey in resultsDict[stat][cls.SUMMARIZE[summarize]].keys():
+                        resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey] = []
+
+                    #print "groupItem: " + str(groupItem) + "<br>"
+
+                    for gi in groupItem:
+                        query = gi.getQueryTS()
+                        ref = gi.getReferenceTS()
+
+
+                        #res = doAnalysis(sa, analysisBins, query)
+                        #countPerTrack = res.getGlobalResult()['Result'].getResult()
+
+                        result = doAnalysis(sa, analysisBins, gi)
+                        res = result.getGlobalResult()['Result']
+                        #print "res" + str(res.getResult()) + "<br>"
+                        allResults = res.getResult()
+                        countPerTrack = float(allResults['Both'])
+
+                        res2 = doAnalysis(selectedAnalysis2[saNum], analysisBins, ref)
+                        countPerTrack2 = res2.getGlobalResult()['Result'].getResult()
+
+                        #print 'countPerTrack', countPerTrack, '<br>'
+                        #print 'countPerTrack2', countPerTrack2, '<br>'
+
+                        resVal = round(float(countPerTrack)/float(countPerTrack2), 10)
+                        #print "resVal", resVal, '<br>'
+
+                        title = query.track.trackName[-1]
+                        #print "title", title, '<br>'
+
                         if orgnalTitleAllCount == 1:
                             orginalTitle = orgnalTitleAll[title]
                         else:
                             orginalTitle = title
-                        titleSecond = res.getTrackStructure()['reference'].metadata['title']
-                        #print 'orgnalTitleAllSecond', orgnalTitleAllSecond, '<br>'
-                        #print 'titleSecond', titleSecond, '<br>'
+                        titleSecond = ref.track.trackName[-1]
+                        #print "titleSecond", titleSecond, '<br>'
+                        #print '<br>'
+
                         if orgnalTitleAllCountSecond == 1:
                             orginalTitleSecond = orgnalTitleAllSecond[titleSecond]
                         else:
                             orginalTitleSecond = titleSecond
+
                         resultsDict[stat][cls.SUMMARIZE[summarize]][groupKey].append(
                             [orginalTitle, orginalTitleSecond, resVal])
+
 
 
         return resultsDict
@@ -1354,7 +1438,10 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
 
         l = Legend()
 
-        toolDescription = "This tool count descriptive statistics for relations between hGSuites."
+        toolDescription = "This tool calculates descriptive statistics between two hGSuites. <br>" \
+        "hGSuites can only be compared if they have a matching header (column title). <br>" \
+        "Statistics are calculated based on the different dimensions of the datasets (columns). <br>" \
+        "The cube can perform these statistics for each unique element found in specified (columns) defined above as 'levels'."
 
         stepsToRunTool = ['Select first hGSuite',
                           'Select column from first hGSuite',

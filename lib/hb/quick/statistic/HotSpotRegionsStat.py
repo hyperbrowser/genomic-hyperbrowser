@@ -1,6 +1,7 @@
 from gold.statistic.MagicStatFactory import MagicStatFactory
 from gold.statistic.Statistic import Statistic
 from quick.statistic.RankOfCountPerBinStat import RankOfCountPerBinStat
+from quick.statistic.CountPerBinStat import CountPerBinStat
 
 class HotSpotRegionsStat(MagicStatFactory):
     "Statistic description"
@@ -12,8 +13,9 @@ class HotSpotRegionsStatUnsplittable(Statistic):
             self._numberOfTopHotSpots = numberOfTopHotSpots
     
     def _compute(self):
-        #numberOfBins = len(list(self._globalSource))   
-        return [[str(self._region), self._localCount.getResult()[0]]]
+        #numberOfBins = len(list(self._globalSource))
+        print "Suman"
+        return [str(self._region),5]# self._localCount.getResult()[0]]]
         
 #         if (self._localCount.getResult()[0] <= self._numberOfTopHotSpots):
 #             return [self._region]
@@ -23,9 +25,7 @@ class HotSpotRegionsStatUnsplittable(Statistic):
         
     
     def _createChildren(self):
-        print(self._region)
-        print(self._track)
-        self._localCount = self._addChild( RankOfCountPerBinStat(self._region, self._track))
+        self._localCount = self._addChild( CountPerBinStat(self._region, self._track))
         #self._allGlobalCounts = self._addChild( RankOfCountPerBinStat(self._globalSource, self._track))
 
 from gold.statistic.Statistic import StatisticConcatResSplittable
