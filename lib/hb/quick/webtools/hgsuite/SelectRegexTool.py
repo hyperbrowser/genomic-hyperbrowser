@@ -12,7 +12,7 @@ import csv
 import re
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
 
-class SelectRegexTool(GeneralGuiTool, GenomeMixin):
+class SelectRegexTool(GeneralGuiTool, GenomeMixin):  #VerifyGsuiteBedFormat
     @classmethod
     def getToolName(cls):
         """
@@ -21,7 +21,7 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):
 
         Mandatory method for all ProTo tools.
         """
-        return "Select lines based on Regex"
+        return "Verify if Gsuite is in the correct BED format"
 
     @classmethod
     def getInputBoxNames(cls):

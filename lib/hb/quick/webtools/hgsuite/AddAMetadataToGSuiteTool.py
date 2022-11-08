@@ -293,8 +293,11 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
         toolDescription = 'This tool adds a metadata column for GSuite (hGSuite).'
 
         stepsToRunTool = ['Select GSuite (hGSuite)',
-                          'Add metadata column ',
-                          'Add value for track nr. 1 with title ...']
+                          'Add metadata column or Select "yes" on the "Add data from file" option',
+                          'Add value for track nr. 1 with title or Select your metadata from your history',
+                          'Check the overview provided by the tool and execute']
+
+
 
         example = {'Example': ['', ["""
         ##location: local
@@ -333,7 +336,7 @@ class AddAMetadataToGSuiteTool(GeneralGuiTool):
                                 ]
                                ]}
 
-        toolResult = 'The output of this tool is GSuite (hGsuite) with the extra metadata column.'
+        toolResult = 'Metadata file must be uploaded to hyperbrowser, this can be done using the upload file tool). Ensure that this file is of tabular format. Ensure that the first column of the file has names matching the imputed bed files (including the .bed extension). Therefore if a bed file called my_bed_1.bed is in the GSuite, that same name is expected to be found in the first column of the file. Following columns will be the metadata associated to the bed files marked in the first column. The output of this tool is GSuite (hGsuite) with the extra metadata column.'
 
         return Legend().createDescription(toolDescription=toolDescription,
                                           stepsToRunTool=stepsToRunTool,

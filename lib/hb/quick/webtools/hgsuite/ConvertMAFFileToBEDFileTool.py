@@ -7,6 +7,7 @@ from gold.gsuite.GSuiteFunctions import changeSuffixIfPresent
 from quick.gsuite.GSuiteHbIntegration import getGSuiteHistoryOutputName
 from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.hgsuite.Legend import Legend
 
 
 class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
@@ -473,34 +474,49 @@ class ConvertMAFFileToBEDFileTool(GeneralGuiTool):
         '''
         Specifies a help text in HTML that is displayed below the tool.
         '''
-        from proto.hyperbrowser.HtmlCore import HtmlCore
+        l = Legend()
 
-        core = HtmlCore()
-        core.paragraph('This tool contains various operations for manipulating textual '
-                       'track files referred to in a GSuite file.')
-        core.divider()
-        core.smallHeader('Instructions')
-        core.orderedList(['Select a GSuite file referring to local textual track files',
-                          'The first track referred to in the GSuite is automatically selected '
-                          'as an example track, with the beginning of the file shown in a '
-                          'text box. The example file is later used to show the results of the '
-                          'selected operation. If you want to use another file as the example track '
-                          'please select it in the selection box. ',
-                          'Select the required operation from the list of operations '
-                          '(click the info box if you need further description of each operation '
-                          'and its parameters):' +
-                          str(HtmlCore().unorderedList(
-                              [key for key in cls.ALL_OPERATIONS.keys()])),
-                          'Each parameter for the selected operation is shown in a selection box, '
-                          'with the default value indicated. If another value than the default is '
-                          'needed, please select the parameter and change its value. '
-                          'the order in which the parameters is selected is unimportant.',
-                          'The output of the selected operation with the selected parameter values '
-                          'on the beginning of the selected example track is shown in a text box.',
-                          'If the file format (e.g. "bed") of the track is changed as a result of '
-                          'carrying out the operation, please indicate the new file suffix. '
-                          'It is important for the tracks to have the correct file suffix for further '
-                          'analysis.'])
+        toolDescription = 'MAF files stand for Mutation Annotation Format. This tool allows to convert a GSuite created using these files to a GSuite which instead has the BED format for its tracks. Performing this step is important for many downstream analyses, as most analyses have been standardized to the BED format.'
+        stepsToRunTool = ['Select the GSuite build using MAF files (Must be in primary format)',
+                          'Execute the tool. This will return a GSuite in primary format with the tracks in bed format and the user specified metadata column(s)',
+                          ]
+        toolResult = 'The results are presented in a interactive chart (png, pdf).'
+
+        return Legend().createDescription(toolDescription=toolDescription,
+                                          stepsToRunTool=stepsToRunTool,
+                                          toolResult=toolResult,
+                                          )
+        # from proto.hyperbrowser.HtmlCore import HtmlCore
+        #
+        # core = HtmlCore()
+        # core.paragraph('MAF files stand for Mutation Annotation Format. This tool allows to convert a GSuite created using these files to a GSuite which instead has the BED format for its tracks. Performing this step is important for many downstream analyses, as most analyses have been standardized to the BED format.')
+        # core.divider()
+        # core.smallHeader('Instructions')
+        # core.orderedList(['Select the GSuite build using MAF files (Must be in primary format)',
+        #                   'If desired, extract metadata column(s) by writing the column name of the would-be metadata(s). ',
+        #                   'Execute the tool. This will return a GSuite in primary format with the tracks in bed format and the user specified metadata column(s).'
+        #                   ])
+        # core.orderedList(['Select a GSuite file referring to local textual track files',
+        #                   'The first track referred to in the GSuite is automatically selected '
+        #                   'as an example track, with the beginning of the file shown in a '
+        #                   'text box. The example file is later used to show the results of the '
+        #                   'selected operation. If you want to use another file as the example track '
+        #                   'please select it in the selection box. ',
+        #                   'Select the required operation from the list of operations '
+        #                   '(click the info box if you need further description of each operation '
+        #                   'and its parameters):' +
+        #                   str(HtmlCore().unorderedList(
+        #                       [key for key in cls.ALL_OPERATIONS.keys()])),
+        #                   'Each parameter for the selected operation is shown in a selection box, '
+        #                   'with the default value indicated. If another value than the default is '
+        #                   'needed, please select the parameter and change its value. '
+        #                   'the order in which the parameters is selected is unimportant.',
+        #                   'The output of the selected operation with the selected parameter values '
+        #                   'on the beginning of the selected example track is shown in a text box.',
+        #                   'If the file format (e.g. "bed") of the track is changed as a result of '
+        #                   'carrying out the operation, please indicate the new file suffix. '
+        #                   'It is important for the tracks to have the correct file suffix for further '
+        #                   'analysis.'])
 
         cls._addGSuiteFileDescription(core,
                                       allowedLocations=cls.GSUITE_ALLOWED_LOCATIONS,
