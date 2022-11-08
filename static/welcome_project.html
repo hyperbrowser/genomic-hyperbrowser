@@ -380,7 +380,7 @@
                    <div class="colAll">
                        <p class = 'description'>
                            <h4 class = 'descriptionTitle'>
-                               1. Explore DNA repair enzymes and mutations (i.e knockout mouse data)
+                               Example 1. Explore DNA repair enzymes and mutations (i.e knockout mouse data)
                            </h4>
                            <div class = 'descriptionDesc'>
                                <p>
@@ -412,7 +412,7 @@
                    <div class="colAll">
                        <div class = 'description'>
                            <h4 class = 'descriptionTitle'>
-                               Step 2. Data preparation
+                               Step 1. Data preparation
                            </h4>
                            <div class = 'example'>
                                <h4 class = 'exampleTitle'>
@@ -437,12 +437,12 @@
                                    In this event, leave the genome as unspecified. This step can be rectified in step 3.
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>3) Create a GSuite using the ‘Create a GSuite from datasets in your history’ tool.</b><br>
+                                    <b>3) Create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool </a></b><br>
                                    Note: If a genome was left unspecified in step 2, it can be specified during the creation
                                    of the GSuite. Here we select the mm10 genome build.
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>4) Metadata is added using the ‘Add metadata column in hGSuite’.</b><br>
+                                    <b>4) Metadata is added using the <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add metadata column in hGSuite </a>.</b><br>
                                    Here the metadata must be added manually for each file. Metadata can represent anything.
                                    Though using this tool, only one column can be added at a time, therefore it is
                                    important to ensure that for every column added, the same type of data is added to
@@ -457,7 +457,7 @@
                                    UNG -/- ; SMUG1 -/- (ung-smug1) → 6 samples<br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>5) Convert the GSuite to HGSuite using the ‘Create or modify hierarchy of hGSuite’ tool.</b><br>
+                                    <b>5) Convert the GSuite to HGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool </a>.</b><br>
                                    A hGSuite allows for hierarchical clustering of the GSuite. In essence, it’s a GSuite
                                    but with more options to perform cross-metadata statistics. Since this examples takes
                                    us from bed files to the analysis of mutation data, it is important to do so with the
@@ -472,7 +472,7 @@
                                    later in the example.
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>6) Extract mutations as metadata using the ‘Filter hGSuite based on words in the title column of tracks’ tool.</b><br>
+                                    <b>6) Extract mutations as metadata using the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Filter hGSuite based on words in the title column of tracks tool </a>.</b><br>
                                    This tool essentially extracts information for the column called ‘title’ in your tracks.
                                    This column represents the mutation types found in your bed file. Our use of this tool
                                    is to extract all mutation types found and store them as metadata as we will want to
@@ -485,7 +485,7 @@
                                    We then ensure that words are added separately (by selecting ‘yes’ in the appropriate drop-down menu)
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>7) Concatenation of mutations using the ‘Concatenate tracks in hGSuite based on metadata’</b><br>
+                                    <b>7) Concatenation of mutations using the <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGSuite based on metadata tool </a></b><br>
                                    In part 6 we extracted all the mutation types, however it is important to note that
                                    certain mutation types essentially represent the same mutation. For example, AT to TA is
                                    exactly the same mutation when looked at from a DNA perspective. Therefore for this example,
@@ -510,7 +510,7 @@
                                    mutations is only done within each genotype and not across all genotypes.
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>8) We preprocess the data using the ‘Preprocess a GSuite for analysis’ tool. </b><br>
+                                    <b>8) We preprocess the data using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess a GSuite for analysis tool </a>. </b><br>
                                     Preprocessing the data creates three elements in the history. One is the preprocessed
                                    GSuite, the other is the bed files that could not be preprocessed (if any) and the third
                                    is a progress bar. In our example, the progress bar is somewhat meaningless as it will
@@ -556,7 +556,7 @@
                        <div class = 'example'>
 
                            <h4 class = 'exampleTitle'>
-                               <b>Step 3. Analysis</b>
+                               <b>Step 2. Analysis</b>
                            </h4>
 
                            <div class = 'example'>
@@ -566,7 +566,7 @@
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                    Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite </a> tool
+                                    Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite tool</a>
                                        we will start by inputting the preprocessed hGSuite created in the previous step, and
                                        ensure that the correct genome assembly is selected.<br>
                                        We can then select one of four statistics, here we choose the ‘Coverage (Counts of elements)’. <br>
@@ -627,7 +627,7 @@
                                        through the following example.<br>
                                        Note that the submitted GSuite or hGSuite must be in primary format.<br>
 
-                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">ADJUST REF FOR RAINFALL </a> tool
+                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=bloop">LINK BROKEN-NEEDS TO BE RAINFALL </a> tool
                                        to first generate a 'multi' rainfall plot
 
                                     <a href = "../u/hbsuperuser/h/analysis-q1---11">/ADJUST REF</a>
@@ -662,7 +662,7 @@
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">ADJUST REF FOR FILTER </a> tool
+                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool </a>
                                        to split our hGSuite per genotype.<br>
                                        We start by submitting our primary hGSuite to this tool, select the division to be ‘by column’
                                        and the selected column to be ‘genotype’ and execute the tool. This creates 5 separate hGSuite subsets,
@@ -719,21 +719,20 @@
                                         <b> 2) Convert tracks to a GSuite</b>
                                    </h5>
                                    <p class="paragraph">
-                                        Here we simply create a GSuite using the ‘Create a GSuite from datasets
-                                       in your history’ tool.
+                                        Here we simply create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool</a>.
                                    </p>
                                    <h5 class = 'exampleTitle'>
                                         <b> 3) Preprocess the gSuite</b>
                                    </h5>
                                    <p class="paragraph">
-                                        Done using the ‘Convert GSuite tracks from primary to preprocessed’ tool
+                                        Done using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Convert GSuite tracks from primary to preprocessed tool </a>.
                                    </p>
                                    <h5 class = 'exampleTitle'>
                                         <b> 4) Compute the data cube</b>
                                    </h5>
                                    <p class="paragraph">
-                                       We once again use the data cube, but this time the tool is named ‘Compute data cube
-                                       for relations between hGSuites'. This version of the data cube allows us to
+                                       We once again use the data cube, but this time the tool is named <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute data cube
+                                       for relations between hGSuites</a>. This version of the data cube allows us to
                                        compare two GSuites. We enter our original hGSuite (the one with the KOs and mutations)
                                        in the first slot and our freshly created genomic location GSuite in the second slot.
                                        We select the statistic method to be overlap. <br>
@@ -748,7 +747,7 @@
                                         <b> 5) Chromosomal frequency view</b>
                                    </h5>
                                    <p class="paragraph">
-                                        Using the ‘plot frequency of mutation along chromosome’ tool, we can generate
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=broken">/LINK TO CHROMO FREQ BROKEN </a>‘plot frequency of mutation along chromosome’ tool, we can generate
                                        frequency plots for each individual chromosome. We can do so with a single GSuite,
                                        or use two GSuites. <br>
                                        The first track inputted will be shown in the bottom of the plot while the second
@@ -759,7 +758,12 @@
                                    <div style="width:100%;margin: 10px auto;display:block;">
                                    <img class="img-thumbnail" src="../static/project/ex1.png" \>
                                    </div>
-                                   <p class="paragraph">Have chromo freq above</p>
+                                   <p class="paragraph">Have chromo freq above
+                                   <br>
+                                       Here we observe that our peaks of interest in chromosome 5 primarily coincide
+                                       with exon (blue line) and not CpG islands (orange). This was the expected
+                                       outcome as we utilized whole-exome sequencing for this dataset.
+                                   </p>
                                </div>
 
                                <!--<h4 class = 'exampleTitle'>
@@ -814,13 +818,222 @@
                    </div>
                </div>
                    </div>
-
            <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <p class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Example 2. Explore mutations in individual patients within three distinct cancer types
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               <p>
+                                   Our goal in this project is to explore the nature of DNA repair enzymes and mutations
+                                   in human cancer data. We received 30 genomic tracks from the Hartwig database,
+                                   these are called query tracks. <br>
+                                   These 30 tracks are divided into three even groups of skin cancer, colorectal cancer,
+                                   and breast cancer.
+                               </p>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+<div class="containerNext">
                <div class="rowSpecialWithGap">
                    <div class="colAll">
                        <div class = 'description'>
                            <h4 class = 'descriptionTitle'>
-                               2. Example: Explore the schizophrenia-associated gene variants within primary cells of DNase I hypersensitive sites genomic tracks
+                               Step 1. Data preparation
+                           </h4>
+                           <p class="paragraph">
+                               The data preparation steps are very similar in both examples. One point of divergence between the
+                               two examples is how the metadata is added.
+                           </p>
+                           <div class = 'example'>
+                               <h4 class = 'exampleTitle'>
+                                   Preparing the data: (<a href = "../u/hbsuperuser/h/dataset---10">Click here to view an example</a>)
+                               </h4>
+
+                               <div class = 'exampleDesc'>
+                                    <b>1) Create a new history</b><br>
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>2) Upload/load the data</b><br>
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>3) Create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool </a></b><br>
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>4) Metadata is added using the <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add metadata column in hGSuite </a>.</b><br>
+                                   For this dataset we add the metadata using a tabular file downloaded from the Hartwig
+                                   database. To do so, we select yes for the ‘add data from file’ slot. We then select our
+                                   metadata file (that has already been uploaded to hyperbrowser).<br>
+                                   Note that the file must have a sampleID column where the names match the titles in the
+                                   GSuite it will be added to.
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>5) Convert the GSuite to HGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool </a>.</b><br>
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>6) Extract mutations as metadata using the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Filter hGSuite based on words in the title column of tracks tool </a>.</b><br>
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>7) Concatenation of mutations using the <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGSuite based on metadata tool </a></b><br>
+                               </div>
+                               <div class = 'exampleDesc'>
+                                    <b>8) We preprocess the data using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess a GSuite for analysis tool </a>. </b><br>
+
+                               </div>
+                           </div>
+                       </div>
+
+<div class = 'example'>
+
+                           <h4 class = 'exampleTitle'>
+                               <b>Step 2. Analysis</b>
+                           </h4>
+
+                           <div class = 'example'>
+                               <h4 class = 'exampleTitle'>
+                                   Observe the distribution in mutations across patients and cancer types
+                               </h4>
+
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite tool</a>
+                                        we input our hGSuite and select the ‘Coverage (counts of elements)’ statistic. We then specify the three columns of interest,
+                                       these are 'hmfpatientid','attribute', and 'primarytumorlocation'.
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex1.png" \>
+                                   </div>
+                                   <p class="paragraph">
+                                       ABOVE SHOULD BE CUBE HW PLOT<br>
+                                       By aggregating 'raw' we can observe the mutation distribution per patient. We can also
+                                       aggregate across hmfpatientid to obtain the mutation distribution across cancer types.
+                                   </p>
+                               </div>
+
+                               <h4 class = 'exampleTitle'>
+                                   Create multi rainfall plots
+                               </h4>
+
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                       Due to the large amount of information, we first filter/divide our hGSuite (primary format) by cancer type
+                                       in order to not overwhelm the rainfall plots. This is done using the
+                                       <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool </a>
+                                       and selecting the 'primarytumorlocation' as the filter column.<br>
+                                       We then submit all three hGSuites to the RAINFALL TOOL REF! and use multi as the plotting
+                                       option.
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex1.png" \>
+                                   </div>
+                                   <p class="paragraph">Put multi rain breast image above</p>
+                                   <p class="paragraph">
+                                       Here each color represents a specific mutation type in a specific breast cancer patient.
+                                       For example, the tallest peak (blue-ish in line with the 50G on the x axis) represents patient
+                                       HMF002114 and only the C>T;G>A mutations for that patient.<br>
+                                       Using this type of plot we are able to look for possible abnormal mutation loads
+                                       in patients. The applications of such a tool are great. For the purpose of the
+                                       example, let’s focus our attention on that patient for now.
+                                   </p>
+                               </div>
+                               <h4 class = 'exampleTitle'>
+                                   Extract individual patient data and plot rainfall
+                               </h4>
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool </a>
+                                       and select 'hmfpatientid' as the column. <br>
+                                       We then input the patient of interest (hmf002114) to the rainfall plot and select
+                                       the 'single' parameter.
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex1.png" \>
+                                   </div>
+                                   <p class="paragraph">
+                                       What we can notice here is that there is a very large area of chromosome 6 that
+                                       appears to be mutated. We also know that this is preferentially the CT-GA mutation.<br>
+                                       An interesting question to ask would be if these mutations map to specific DNA repair
+                                       pathways.
+                                   </p>
+                               </div>
+                               <h4 class = 'exampleTitle'>
+                                   Explore genomic locations
+                               </h4>
+
+                               <div class = 'exampleDesc'>
+                                   <p class="paragraph">
+                                       In this section we check for the overlap between mutations of a single patient
+                                       with genes of DNA repair pathways. To do so, we created bed files representing six DNA
+                                       repair pathways. This information was extracted from a gtf file for the hg19 genome.
+                                       SHOW PICTURE OF PATHWAYS?
+                                   </p>
+                                   <h5 class = 'exampleTitle'>
+                                        <b> 1) Upload bed files</b>
+                                   </h5>
+                                   <p class="paragraph">
+                                   </p>
+                                   <h5 class = 'exampleTitle'>
+                                        <b> 2) Convert tracks to a GSuite</b>
+                                   </h5>
+                                   <p class="paragraph">
+                                       We create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool</a>.
+                                   </p>
+                                   <h5 class = 'exampleTitle'>
+                                        <b> 3) Preprocess the gSuite</b>
+                                   </h5>
+                                   <p class="paragraph">
+                                        Done using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Convert GSuite tracks from primary to preprocessed tool </a>.
+                                   </p>
+                                   <h5 class = 'exampleTitle'>
+                                        <b> 4) Compute the data cube</b>
+                                   </h5>
+                                   <p class="paragraph">
+                                       We once again use the data cube, but this time the tool is named <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute data cube
+                                       for relations between hGSuites</a>.
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex1.png" \>
+                                   </div>
+                                   <p class="paragraph">
+                                       Bar plot +  interpretation
+                                   </p>
+
+                                   <h5 class = 'exampleTitle'>
+                                        <b> 5) Chromosomal frequency view</b>
+                                   </h5>
+                                   <p class="paragraph">
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=broken">/LINK TO CHROMO FREQ BROKEN </a>‘plot frequency of mutation along chromosome’ tool, we can generate
+                                   </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="../static/project/ex1.png" \>
+                                   </div>
+                                   <p class="paragraph">
+                                       The above picture shows that the peak of interest in chromosome 6 does partially overlap
+                                       with genes found in the DNA polymerase repair pathway.
+                                   </p>
+                               </div>
+
+                               <h4 class = 'exampleTitle'>
+                                   Kmers analysis
+                               </h4>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+                   </div>
+
+
+
+           <!--<div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               2. Example: Explore mutations in individual patients within three distinct cancer types
                            </h4>
                            <div class = 'example'>
                                <h4 class = 'exampleTitle'>
@@ -867,15 +1080,15 @@
                    </div>
                </div>
            </div>
-
-           <div class="containerNext">
+-->
+           <!--<div class="containerNext">
                <div class="rowSpecialWithGap">
                    <div class="colAll">
                        <div class = 'description'>
                            <h4 class = 'descriptionTitle'>
                                4. TCGA
                            </h4>
-                           <div class = 'example'>
+                           <div class = 'example'>-->
                                <!--<h4 class = 'exampleTitle'>-->
                                    <!--Preparing the data (<a href = "../u/hbsuperuser/h/analysis-schizophrenia-data">click here to view an example</a>)-->
                                <!--</h4>-->
@@ -890,10 +1103,10 @@
 
 
 
-                           </div>
+                         <!--  </div>
                        </div>
 
-                      <div class = 'example'>
+                      <div class = 'example'>-->
                            <!--<h4 class = 'exampleTitle'>-->
                                <!--Check average Forbes coefficient of schizophrenia-associated variants-->
                            <!--</h4>-->
@@ -910,7 +1123,7 @@
                                <!--<img class="img-thumbnail" src="../static/project/ex-TCGA.png" \>-->
                                <!--</div>-->
                            <!--</div>-->
-
+<!--
                        </div>
 
 
@@ -918,6 +1131,7 @@
                        </div>
                    </div>
                </div>
+                -->
 
            <div class="footer">
                <div class = 'contactInfo'>
