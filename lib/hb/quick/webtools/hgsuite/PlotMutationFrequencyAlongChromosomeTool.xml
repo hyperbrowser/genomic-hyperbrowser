@@ -1,0 +1,4 @@
+<tool id="hb_plot_mutation_frequency_along_chromosome_tool" name="Plot frequency of mutation along chromosome" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.PlotMutationFrequencyAlongChromosomeTool" proto_tool_class="PlotMutationFrequencyAlongChromosomeTool">
+  <description>Generates plot summarising the number of mutations along the chromosome</description>
+</tool>

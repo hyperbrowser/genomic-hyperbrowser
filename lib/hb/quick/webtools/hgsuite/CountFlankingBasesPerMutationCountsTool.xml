@@ -1,0 +1,4 @@
+<tool id="hb_count_flanking_bases_per_mutation_counts_tool" name="Plot flanking bases per mutation counts" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CountFlankingBasesPerMutationCountsTool" proto_tool_class="CountFlankingBasesPerMutationCountsTool">
+  <description>Plots composition of flanking bases in different mutation types</description>
+</tool>

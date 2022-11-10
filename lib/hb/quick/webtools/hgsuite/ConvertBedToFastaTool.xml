@@ -1,0 +1,4 @@
+<tool id="hb_convert_bed_to_fasta_tool" name="Convert BED to FASTA" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.ConvertBedToFastaTool" proto_tool_class="ConvertBedToFastaTool">
+  <description>Converts a GSuite of Bed file to fasta </description>
+</tool>

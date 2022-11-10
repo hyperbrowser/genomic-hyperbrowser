@@ -1,0 +1,4 @@
+<tool id="hb_generate_distribution_of_points_of_interest_tool" name="Generate distribution of points of interest" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.GenerateDistributionOfPointsOfInterestTool" proto_tool_class="GenerateDistributionOfPointsOfInterestTool">
+  <description>Generates distribution of mutations in region of interest</description>
+</tool>

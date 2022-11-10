@@ -1,0 +1,4 @@
+<tool id="hb_generate_rainfall_plot_tool" name="Generate rainfall plot" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.GenerateRainfallPlotTool" proto_tool_class="GenerateRainfallPlotTool">
+  <description>Generates plot summarising mutation number per location in chromosomes </description>
+</tool>

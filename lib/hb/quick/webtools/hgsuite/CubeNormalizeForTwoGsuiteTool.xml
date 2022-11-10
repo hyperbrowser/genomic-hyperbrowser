@@ -1,0 +1,4 @@
+<tool id="hb_cube_normalize_for_two_gsuite_tool" name="Test tool to normalise between two Gsuites" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.CubeNormalizeForTwoGsuiteTool" proto_tool_class="CubeNormalizeForTwoGsuiteTool">
+  <description>Just a testing tool</description>
+</tool>
