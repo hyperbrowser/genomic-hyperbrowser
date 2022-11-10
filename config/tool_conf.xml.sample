@@ -4,7 +4,7 @@
 
   <label text="Hierarchical GSuite tools" id="hgsuite_tools" />
 
-  <section name="Create a hdGSuite" id="hgsuite_create_tools">
+  <section name="Create a hGSuite" id="hgsuite_create_tools">
     <tool file="proto/hyperbrowser/hgsuite/CreateHierarchicalGSuiteTool.xml" />
   </section>
 
@@ -23,10 +23,11 @@
   </section>
 
   <section name="Statistical analysis of hGSuites" id="12analysis_hGsuite" >
-    <!--<label text="for hGSuites" id="hgsuite_analysis_1"/>-->
+    <!--<tool file="proto/hyperbrowser/hgsuite/CubeNormalizeForTwoGsuiteTool.xml" />-->
+    <label text="for hGSuites" id="hgsuite_analysis_1"/>
     <tool file="proto/hyperbrowser/hgsuite/CountBasicStatisticForGroupsInHGsuiteTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/CountDescriptiveStatisticForHGSuiteTool.xml" />
-    <!--<label text="between hGSuites" id="hgsuite_analysis_2"/>-->
+    <label text="between hGSuites" id="hgsuite_analysis_2"/>
       <tool file="proto/hyperbrowser/hgsuite/CountDescriptiveStatisticBetweenHGsuiteTool.xml" />
   </section>
 
@@ -37,34 +38,33 @@
   <!--</section>-->
 
   <section name="Visual analysis" id="13visual_analysis_hGsuite" >
-    <tool file="proto/hyperbrowser/hgsuite/PlotMetadataValuesOfTabularFileTool.xml" />
-    <tool file="proto/hyperbrowser/hgsuite/CreateBoxPlotForFileTool.xml" />
-    <tool file="proto/hyperbrowser/hgsuite/PlotHClustTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/CountFlankingBasesPerMutationCountsTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/PlotMutationFrequencyAlongChromosomeTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/GenerateRainfallPlotTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/PlotMetadataValuesOfTabularFileTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/CreateBoxPlotForFileTool.xml" />
+    <tool file="proto/hyperbrowser/hgsuite/PlotHClustTool.xml" />
+    <!--<tool file="proto/hyperbrowser/hgsuite/CreateHistogramTool.xml" />-->
   </section>
 
   <section name="Additional" id="14additional_hGsuite" >
     <tool file="proto/hyperbrowser/hgsuite/ConvertBedToFastaTool.xml" />
-    <!--<tool file="proto/hyperbrowser/hgsuite/ConvertTxtGsuiteToBedGsuiteTool.xml" />-->
     <tool file="proto/hyperbrowser/hgsuite/ConvertMAFFileToBEDFileTool.xml" />
-    <tool file="proto/hyperbrowser/hgsuite/ModifyTracksResolutionTool.xml" />
     <label text="For hGSuites" id="additional_hgsuite_hgsuite"/>
     <!--<tool file="proto/hyperbrowser/hgsuite/ConcatenateGSuiteWithTxtFilesTool.xml" />-->
-    <tool file="proto/hyperbrowser/hgsuite/OperationsOnHierarchicalGSuiteTool.xml" />
-    <!--<tool file="proto/hyperbrowser/hgsuite/ModifyTracksResolutionTool.xml" />-->
+    <!--<tool file="proto/hyperbrowser/hgsuite/OperationsOnHierarchicalGSuiteTool.xml" />-->
+    <tool file="proto/hyperbrowser/hgsuite/ModifyTracksResolutionTool.xml" />
     <!--<tool file="proto/hyperbrowser/hgsuite/GenerateGsuiteFileWithHotSpotRegions.xml" />-->
-    <!--<tool file="proto/hyperbrowser/hgsuite/PlotHClustTool.xml" />-->
-    <!--<label text="For tracks" id="15additional_hgsuite_tracks_hgsuite"/>-->
-    <!--<tool file="proto/hyperbrowser/hgsuite/OperationOnTrackTool.xml" />-->
+    <label text="For tracks" id="15additional_hgsuite_tracks_hgsuite"/>
+    <tool file="proto/hyperbrowser/hgsuite/OperationOnTrackTool.xml" />
     <tool file="proto/hyperbrowser/hgsuite/SelectRegexTool.xml" />
-    <!--<label text="For tabular files" id="16additional_tabular_hgsuite"/>-->
+    <label text="For tabular files" id="16additional_tabular_hgsuite"/>
     <tool file="proto/hyperbrowser/hgsuite/ChangeRowsWithColumnsTool.xml" />
     <!--<tool file="proto/hyperbrowser/nmer/CreateKmersTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/hgsuite/GSuiteTracksBasicAnalysisTool.xml" />-->
     <!--<tool file="proto/hyperbrowser/hgsuite/ModifyMetadataAccordingToUserOperationsTool.xml" />-->
   </section>
+
 
   <!--
   <label text="Benchmarking project tools" id="benchmarking_project_tools" />
