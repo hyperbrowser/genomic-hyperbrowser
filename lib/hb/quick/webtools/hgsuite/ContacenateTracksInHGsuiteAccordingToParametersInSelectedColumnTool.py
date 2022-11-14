@@ -51,10 +51,11 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
             gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
 
             tableElements = [['Unique phrases']]
-            for a in gSuite.getAttributeValueList(prevChoices.column.encode('utf-8')):
-                if not [a] in tableElements:
-                    tableElements.append([a])
-            return tableElements
+            if prevChoices.column is str:
+                for a in gSuite.getAttributeValueList(prevChoices.column.encode('utf-8')):
+                    if not [a] in tableElements:
+                        tableElements.append([a])
+                return tableElements
 
 
     @classmethod
@@ -244,6 +245,8 @@ class ContacenateTracksInHGsuiteAccordingToParametersInSelectedColumnTool(Genera
 
         if choices.gSuite:
             gsuite = getGSuiteFromGalaxyTN(choices.gSuite)
+            if not gsuite.attributes:
+                return 'Please select hGSuite with metadata'
             if gsuite.isPreprocessed():
                 return 'hGSuite need to primary.'
 

@@ -41,7 +41,7 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 range(cls.NUM_CATEGORY_FIELDS)] + \
                 [('Select column', 'column'),
                 ('Show possible phrases', 'possibleColumns'),
-                ('Select phrases (use commma to provide more than one phrase)', 'param'),
+                ('Select phrases (use comma to provide more than one phrase)', 'param'),
                 ('Add phrases separately', 'add')
                 ]
 
@@ -125,10 +125,11 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
                 gSuite = getGSuiteFromGalaxyTN(prevChoices.gSuite)
 
                 tableElements = [['Unique phrases']]
-                for a in gSuite.getAttributeValueList(prevChoices.column.encode('utf-8')):
-                    if not [a] in tableElements:
-                        tableElements.append([a])
-                return tableElements
+                if prevChoices.column is str:
+                    for a in gSuite.getAttributeValueList(prevChoices.column.encode('utf-8')):
+                        if not [a] in tableElements:
+                            tableElements.append([a])
+                        return tableElements
 
     @classmethod
     def getOptionsBoxParam(cls, prevChoices):
@@ -380,6 +381,18 @@ class DivideHgSuiteAccordingToColumnTool(GeneralGuiTool):
 
         if not choices.gSuite:
             return 'Please select hGSuite'
+
+        if choices.gSuite:
+            gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+            if not gSuite.attributes:
+                return 'Please select hGSuite with metadata'
+
+        # if choices.column is str:
+        #     return choices.gSuite.getAttributeValueList()
+        #     return "Please select hGSuite with metadata"
+
+        # if type(choices.gSuite.getAttributeValueList()) == 'NoneType' :
+        #     return 'Select hGSuite with metadata'
 
     @classmethod
     def isPublic(cls):

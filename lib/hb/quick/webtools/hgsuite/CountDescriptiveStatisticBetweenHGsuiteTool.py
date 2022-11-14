@@ -2,14 +2,14 @@ from collections import OrderedDict, defaultdict
 
 import itertools
 from functools import partial
-
+import urllib, urllib2
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteConstants
 from gold.statistic.CountStat import CountStat
 from gold.statistic.CountSegmentStat import CountSegmentStat
 from gold.statistic.RawOverlapStat import RawOverlapStat
-from gold.track.Track import PlainTrack
+from gold.track.Track import PlainTrack, Track
 from proto.hyperbrowser.StaticFile import StaticImage
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.hyperbrowser.StaticFile import GalaxyRunSpecificFile
@@ -1116,12 +1116,27 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         query = gi.getQueryTS()
                         ref = gi.getReferenceTS()
 
+                        #ft = FlatTracksTS(gi)
+                        #ftList = list(ft.getAllValuesForMetadataField('title'))
+                        #print "ftList" + str(ftList) + "<br>"
+                        #refTitle  = ftList[0]
+                        #queryTitle = ftList[1]
+
+                        #print "refTitle: " + str(refTitle) + "<br>"
+                        #print "queryTitle: " + str(queryTitle) + "<br>"
+
+
 
                         #res = doAnalysis(sa, analysisBins, query)
                         #countPerTrack = res.getGlobalResult()['Result'].getResult()
 
                         result = doAnalysis(sa, analysisBins, gi)
                         res = result.getGlobalResult()['Result']
+
+                        queryTrackTitle = res.getTrackStructure()['query'].metadata['title']
+                        refTrackTitle = res.getTrackStructure()['reference'].metadata['title']
+
+
                         #print "res" + str(res.getResult()) + "<br>"
                         allResults = res.getResult()
                         countPerTrack = float(allResults['Both'])
@@ -1135,16 +1150,21 @@ class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, U
                         resVal = round(float(countPerTrack)/float(countPerTrack2), 10)
                         #print "resVal", resVal, '<br>'
 
-                        title = query.track.trackName[-1]
-                        #print "title", title, '<br>'
+
+
+                        #title = urllib2.url2pathname(query.track.trackName[-1])
+                        title =queryTrackTitle
+
 
                         if orgnalTitleAllCount == 1:
                             orginalTitle = orgnalTitleAll[title]
                         else:
                             orginalTitle = title
-                        titleSecond = ref.track.trackName[-1]
-                        #print "titleSecond", titleSecond, '<br>'
-                        #print '<br>'
+
+                        #titleSecond = urllib2.url2pathname(ref.track.trackName[-1])
+                        titleSecond = refTrackTitle
+
+                        #print "orgnalTitleAllSecond: " + str(orgnalTitleAllSecond) + "<br>"
 
                         if orgnalTitleAllCountSecond == 1:
                             orginalTitleSecond = orgnalTitleAllSecond[titleSecond]

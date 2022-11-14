@@ -67,7 +67,7 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
         elif choices.operation == 'filter by individual titles':
             par = ''
         else:
-            par = choices.param.encode('utf-8')
+            par = choices.param('utf-8')
         gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
         attrMut = OrderedDict()
 
@@ -247,6 +247,11 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
 
         if not choices.gSuite:
             return 'Select hGSuite'
+        if choices.gSuite:
+            gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+            if not gSuite.attributes:
+                return 'Please select hGSuite with metadata'
+
 
             if choices.operation != 'filter by individual titles':
                 if not choices.param:

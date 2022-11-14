@@ -79,7 +79,7 @@ class ModifyMetadataInHGSuiteTool(GeneralGuiTool):
 
         gSuite = getGSuiteFromGalaxyTN(choices.gsuite)
         if not gSuite.attributes:
-            return 'There are not attributes in the gSuite'
+            return 'There are no attributes in the gSuite'
 
         return None
 
