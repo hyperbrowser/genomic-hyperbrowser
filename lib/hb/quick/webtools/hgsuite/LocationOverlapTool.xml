@@ -1,0 +1,4 @@
+<tool id="hb_location_overlap_tool" name="Location of overlap" version="1.0.0"
+  tool_type="hb_generic" proto_tool_module="proto.tools.hyperbrowser.hgsuite.LocationOverlapTool" proto_tool_class="LocationOverlapTool">
+  <description></description>
+</tool>
