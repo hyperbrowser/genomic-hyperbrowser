@@ -8,7 +8,7 @@
    <link rel="stylesheet" href="welcome_project.css">
    <meta charset='UTF-8'>
    <title>
-       hGSuite HyperBrowser : A web platform for hierarchical genome arthmetics of genomic tracks based on metadata
+       hGSuite HyperBrowser : a web-based toolkit for hierarchical metadata-informed analysis of genomic tracks
    </title>
 </head>
 <body>
@@ -41,9 +41,9 @@
                <div class="rowSpecial">
                    <div class="colAll">
                        <h2 class="projectTitle">
-                           hGSuite HyperBrowser: Domain logic on hierarchical genomic tracks using metadata</h2>
+                           hGSuite HyperBrowser: a web-based toolkit for hierarchical metadata-informed analysis of genomic tracks</h2>
                        <div class = 'project'>
-                           <div class = 'projectDesc'>Hierarchical gSuite (hGsuite) is an extension of the HyperBrowser platform which enables the hierarchical clustering of tracks, multi-dimensional genome arithmetic operations and statistical calculations as well as several visualization methods.</div>
+                           <div class = 'projectDesc'>Hierarchical gSuite (hGSuite) is an extension of the HyperBrowser platform which enables the hierarchical clustering of tracks, multi-dimensional genome arithmetic operations and statistical calculations as well as several visualization methods.</div>
                        </div>
                    </div>
                </div>
@@ -81,18 +81,15 @@
                                <br /><br />
 
 
-                               In the below example we illustrate the basic appearance of a HGSuite. Each row represents a genomic track as indicated by the ‘path_to_track’ entries. Each track also has metadata associated to it, in this example the metadata is the genotype and the mutation type. By representing data in this way we are able to perform analyses on single tracks as well as comparative analyses between or across tracks.
+                               In the below example we illustrate the basic appearance of a hGSuite. Each row represents a genomic track as indicated by the ‘path_to_track’ entries. Each track also has metadata associated to it, in this example the metadata is the genotype and the mutation type. By representing data in this way we are able to perform analyses on single tracks as well as comparative analyses between or across tracks.
 
                                <div style="width:50%;margin: 10px auto;display:block;">
                                <img class="img-thumbnail" src="../static/project/hdGSuite.png"
                                     width = "400"
                                     height = "300"\>
-                               </div>Step 1. Data preparation
+                               </div>
                                <p class="paragraph">
-
-                               </p>
-                               <p class="paragraph">
-                               The data can be grouped based on the question of interest, enabling easier analysis. For example if we are interested in statistical analysis like average number of genomic elements per defined group, where the group is defined by the character genotype (look at the left figure) or it can also be a group defined in combination with genotype and mutation type (look at the right figure).                                </p>
+                               The data can be grouped based on the question of interest, enabling easier analysis. For example if we are interested in statistical analyses like average number of genomic elements per defined group, where the group is defined by the character genotype (look at the left figure) or it can also be a group defined in combination with genotype and mutation type (look at the right figure).                                </p>
                                <p class="paragraph">
                                In the example below, we calculated the average number of genomic elements for each track and calculated the average based on the group, eta and iota respectively. For the groups defined by the combinations of genotype and mutation type, we calculated the number of genomic elements for track 1 and 2 separately and calculated the average based genotype and mutation types like eta-CA group, eta-CG, iota-CA, iota-CT.
                                For the groups defined by the combinations of genotype and mutation type, we calculated a number of genomic elements for tracks 1-2 separately and averaged them out (eta-CA group), and we did the same for the other groups (eta-CG, iota-CA, iota-CG, iota-CT).
@@ -106,9 +103,9 @@
                                    </div>
                                </div>
                                <p class="paragraph">
-                               HGSuite can group the data in several different ways. Depending on the question of interest, the grouping method is likely to change. For example, the panel on the left side shows that grouping can be defined by the genotype of the tracks, while the panel on the right shows that grouping can be defined by a combination of genotype and the type of mutation.
+                               hGSuite can group the data in several different ways. Depending on the question of interest, the grouping method is likely to change. For example, the panel on the left side shows that grouping can be defined by the genotype of the tracks, while the panel on the right shows that grouping can be defined by a combination of genotype and the type of mutation.
                                <p class="paragraph">
-                               From these various groupings we can calculate the number of genomic elements per track (which have been grouped) as well as calculate the base pair coverage within genotype or mutation type (or both). These are a few of the possibilities available when using HGSuite.
+                               From these various groupings we can calculate the number of genomic elements per track (which have been grouped) as well as calculate the base pair coverage within genotype or mutation type (or both). These are a few of the possibilities available when using hGSuite.
 
 
                            </div>
@@ -141,23 +138,22 @@
 
                                The hGSuite HyperBrowser web platform is a set of independent tools that can be used in
                                combination to perform an entire analysis starting from data preparation to result exploration.
-                               It offers an easy straight forward way to manage and analyse your data collection.
+                               It offers an eaIf you have any questions, requests or comments regarding the hGSuite HyperBrowser projects straight forward way to manage and analyse your data collection.
                                At the core of the system is GSuite, a simple tabular format representing genomic track collection along with related metadata.
-                               hgSuite works on the metadata of such tracks. The figure below shows a pipeline used to analyse a collection of genomic tracks based on metadata of interest. The pipeline can be divided into four major steps.
+                               hGSuite works on the metadata of such tracks. The figure below shows a pipeline used to analyse a collection of genomic tracks based on metadata of interest. The pipeline can be divided into four major steps.
                                 <ol>
-                                <li>Data - A user can upload their own data or download it from external repositories using the tools named 'Create a GSuite from an integrated catalog of genomic datasets' or 'Create a remote GSuite from a public repository' respectively.
-                                    Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a tar or zip file with the tool named 'Create a GSuite from an archive (Zip/tar) in history'). A hGSuite can be created from an uploaded tar file using the same tool, where the folder structure of uploaded data will be reflected as metadata columns in the hGSuite. To rename metadata columns the 'Modify metadata in hGSuite' tool can be used. To add metadata we can use the 'Add a metadata column in hGSuite' tool.
-                                .</li>
-
+                                <li>Data - A user can upload their own data or download it from external repositories using the tools named <a href="../tool_runner/data_source_redirect?tool_id=hb_track_global_search_tool">'Create a GSuite from an integrated catalog of genomic datasets'</a> or <a href="../tool_runner/data_source_redirect?tool_id=hb_track_source_test_tool">'Create a remote GSuite from a public repository'</a> respectively.
+                                    Data on a local computer can be organized into a hierarchical folder structure and uploaded to the web server as a tar or zip file with the tool named <a href="../tool_runner/data_source_redirect?tool_id=hb_compile_g_suite_from_archive_tool">'Create a GSuite from an archive (Zip/tar) in history'</a>). A hGSuite can be created from an uploaded tar file using the same tool, where the folder structure of uploaded data will be reflected as metadata columns in the hGSuite. To rename metadata columns the <a href="../tool_runner/data_source_redirect?tool_id=hb__hg_suite_according_to_column_tool">'Modify metadata in hGSuite'</a> tool can be used. To add metadata we can use the <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">'Add a metadata column in hGSuite' </a> tool.
+                                </li>
                                 <li>Data pre-processing - Within the web platform, collections of datasets are represented in the GSuite format,
                                     a simple tabular text format that includes metadata for each track in a given collection.
-                                    The platform includes a tool for preprocessing the GSuite: 'Preprocess a GSuite for analysis'. </li>
+                                    The platform includes a tool for preprocessing the GSuite: <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">'Preprocess a GSuite for analysis'</a>. </li>
 
                                 <li>Statistical analysis and visualization - Analyses are provided within a collection of genomic tracks
-                                    (using the  'Compute data cube for hGSuite' tool) as well as a pairwise combination of genomic tracks
-                                    (using the 'Compute data cube for relations between hGSuites' tool).
+                                    (using the  <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">'Compute data cube for hGSuite' </a>tool) as well as a pairwise combination of genomic tracks
+                                    (using the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">'Compute data cube for relations between hGSuites'</a> tool).
                                     Both tools are restricted by their metadata where hGSuites require that the metadata column titles match.
-                                    If this is not the case, the 'Create or modify hierarchy of hGSuite' tool can be used
+                                    If this is not the case, the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">'Create or modify hierarchy of hGSuite'</a> tool can be used
                                     to add or edit the metadata within a hGSuite.</li>
 
                                 <li>Exploration of analysis results - The results of analyses for each genomic track are
@@ -166,10 +162,9 @@
                                     through operations like slicing, dicing, pivoting, and aggregation.
                                     The metadata of the genomic tracks is used based on user input to carry out the above operation(s) on the data cube.
                                     The results of that would be a two dimensional array, that would enable
-                                    the user to draw overall conclusions in a time efficient manner. T
-                                    he tool 'Compute data cube for hGSuite' allows users to compute statistics for a single hGSuite
-                                    (which may contain multiple tracks), while the 'Compute data cube for relations between hGSuites'
-                                    tool is used to represent results as data cube between two HGSuites. </li>
+                                    the user to draw overall conclusions in a time efficient manner. The tool <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">'Compute data cube for hGSuite'</a> allows users to compute statistics for a single hGSuite
+                                    (which may contain multiple tracks), while the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">'Compute data cube for relations between hGSuites'</a>
+                                    tool is used to represent results as data cube between two hGSuites. </li>
                                 </ol>
 
                                <div style="width:80%;margin: 10px auto;">
@@ -295,8 +290,8 @@
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb__hg_suite_according_to_column_tool">Modify metadata in hGSuite</a></b> - tool is used to modify a metadata column of a Gsuite</p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool">Filter hGSuite according to metadata</a></b> - tool used to divide hGSuite</p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Filter hGSuite based on words in title column in the title column of tracks</a></b> - tool used to create hGSuite based on the column 'title' (inside genomic track) </p>
-                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGsuite based on metadata</a></b> - tool used to concatenate tracks in hGSuite according to selected phrases in the selected columns.</p>
-                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_h_gsuite_from_csv_file_tool">Combine metadata for hGsuite</a></b> - tool used to combine metadata of hGSuite  </p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGSuite based on metadata</a></b> - tool used to concatenate tracks in hGSuite according to selected phrases in the selected columns.</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_h_gsuite_from_csv_file_tool">Combine metadata for hGSuite</a></b> - tool used to combine metadata of hGSuite  </p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add a metadata column in hGSuite</a></b> - tool used to  add metadata for GSuite (hGSuite)</p>
                            </div>
                        </div>
@@ -367,7 +362,7 @@
 
           <div class="footer">
                <div class = 'contactInfo'>
-                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
+                   <p class="paragraph">If you have any questions, requests or comments regarding the hGSuite HyperBrowser project, please contact: <a href="mailto:sumanak@ifi.uio.no" target="_top"> Sumana Kalyanasundaram</a> or <a href="mailto:y.p.lefol@medisin.uio.no" target="_top"> Yohan Lefol</a> or <a href="mailto:dianadom@ifi.uio.no" target="_top"> Diana Domanska</a> or <a href="mailto:geirksa@ifi.uio.no" target="_top">Geir Kjetil Sandve</a>.
                </div>
            </div>
        </div>
@@ -381,7 +376,7 @@
                            <div class = 'project'>
                                <div class = 'projectDesc'>
                                    <p>
-                                       HGSuite is a galaxy-esque tool which allows users to perform a large diversity of
+                                       hGSuite is a galaxy-esque tool which allows users to perform a large diversity of
                                        statistical analyses on datasets of various sizes. Every tool can be found or searched
                                        for on the left hand side while the history on the right hand side will contain the
                                        elements created by the tools used. After every tool use, the webpage will refresh
@@ -480,14 +475,14 @@
                                    UNG -/- ; SMUG1 -/- (ung-smug1) → 6 samples<br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>5) Convert the GSuite to HGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool <a href = "../u/hbsuperuser/h/mm10example/25"></a>.</b><br>
+                                    <b>5) Convert the GSuite to hGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool <a href = "../u/hbsuperuser/h/mm10example/25"></a>.</b><br>
                                    A hGSuite allows for hierarchical clustering of the GSuite. In essence, it’s a GSuite
                                    but with more options to perform cross-metadata statistics. Since this examples takes
                                    us from bed files to the analysis of mutation data, it is important to do so with the
                                    hierarchical version as we will want to compare statistics between genotypes and mutation types.
                                    Comparison across more than two metadatas are possible if necessary.<br>
                                    Note: This tool can take in both a preprocessed or primary GSuite, however it will
-                                   output a HGSuite of the same type. Since we will still be performing additional modifications
+                                   output a hGSuite of the same type. Since we will still be performing additional modifications
                                    to the file, we submit a primary version.<br>
                                    When we submit a file to this tool, we are asked to define a level of hierarchy.
                                    These are the ‘levels’ that will be available to use within cross-metadata statistics.
@@ -513,7 +508,7 @@
                                    certain mutation types essentially represent the same mutation. For example, AT to TA is
                                    exactly the same mutation when looked at from a DNA perspective. Therefore for this example,
                                    we concatenate this pair (and other pairs of the same nature). <br>
-                                   We start by inputting our hgSuite which has the mutations and is primary.
+                                   We start by inputting our hGSuite which has the mutations and is primary.
                                    We then select the metadata requiring concatenation, in our example, that is the ‘attribute’
                                    column. Afterwards, we write the following concatenations, each in a separate window.<br>
                                    Note that a new window appears every time one is filled in.<br>
@@ -540,7 +535,7 @@
                                    occur quickly, but in larger analyses the progress bar is a neat element which allows
                                    you to better plan your day around elements which are currently in progress but not
                                    completed yet. <br>
-                                   NOTE: Preprocessing is a step that must be taken to analyze GSuite (or HGSuite) files.
+                                   NOTE: Preprocessing is a step that must be taken to analyze GSuite (or hGSuite) files.
                                    However, in order to modify files, for example add metadata, you must do so on a
                                    non-preprocessed version of the file (which we call ‘primary’).<br>
                                    The reason this exists is because preprocessing is a mathematical preparation for analysis,
@@ -549,7 +544,7 @@
                                    using a preprocessed file. <br>
                                    TIP: Due to the sometimes confusing nature of preprocessed and primary files, we recommend
                                    to re-name the elements in the history to a naming convention that makes sense to the user.
-                                   In this example, we use the file type (GSuite/HGSuite) followed by a defining feature (i.e w/ metadata)
+                                   In this example, we use the file type (GSuite/hGSuite) followed by a defining feature (i.e w/ metadata)
                                    and then it’s format (primary or preprocessed). All together, this would look like the following:
                                    GSuite w/ metadata primary. <br>
                                    By default, a tool will output a file in the history which has the name of the tool itself.
@@ -566,7 +561,7 @@
                                </div>
 
                                <div class = 'exampleDesc'>
-                               - hGSuite contains 36 tracks with genotype metadata and divided by mutation type (dataset 3) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 20, 23 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Use tool to concatenate tracks in hGsuite </a>
+                               - hGSuite contains 36 tracks with genotype metadata and divided by mutation type (dataset 3) - <a href = "../u/hbsuperuser/h/dataset---10">here to view an example, el. 20, 23 (preprocessed)</a>. <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Use tool to concatenate tracks in hGSuite </a>
                                </div>
 
                                <div class = 'exampleDesc'>
@@ -905,7 +900,7 @@
                                    GSuite it will be added to.
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>5) Convert the GSuite to HGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool <a href = "../u/hbsuperuser/h/hwhg19example/34"></a>.</b><br>
+                                    <b>5) Convert the GSuite to hGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool <a href = "../u/hbsuperuser/h/hwhg19example/34"></a>.</b><br>
                                </div>
                                <div class = 'exampleDesc'>
                                     <b>6) Extract mutations as metadata using the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Filter hGSuite based on words in the title column of tracks tool <a href = "../u/hbsuperuser/h/hwhg19example/35"></a>.</b><br>
