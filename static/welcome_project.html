@@ -8,7 +8,7 @@
    <link rel="stylesheet" href="welcome_project.css">
    <meta charset='UTF-8'>
    <title>
-       hGSuite HyperBrowser AAA: A web platform for high dimensional genomic data analysis
+       hGSuite HyperBrowser : A web platform for hierarchical genome arthmetics of genomic tracks based on metadata
    </title>
 </head>
 <body>
@@ -41,9 +41,29 @@
                <div class="rowSpecial">
                    <div class="colAll">
                        <h2 class="projectTitle">
-                           hGSuite HyperBrowser: A web platform for high dimensional genomic data analysis</h2>
+                           hGSuite HyperBrowser: Domain logic on hierarchical genomic tracks using metadata</h2>
                        <div class = 'project'>
-                           <div class = 'projectDesc'>Hierarchical gSuite (hGsuite) is an extension of the hyper browser platform which enables the hierarchical clustering of tracks, multi dimensional statistical calculations as well as several visualization methods.</div>
+                           <div class = 'projectDesc'>Hierarchical gSuite (hGsuite) is an extension of the HyperBrowser platform which enables the hierarchical clustering of tracks, multi-dimensional genome arithmetic operations and statistical calculations as well as several visualization methods.</div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+           <div class="containerNext">
+               <div class="rowSpecialWithGap">
+                   <div class="colAll">
+                       <div class = 'description'>
+                           <h4 class = 'descriptionTitle'>
+                               Tabs
+                           </h4>
+                           <div class = 'descriptionDesc'>
+                               1. hGSuite - explains in detail about the technical hierarchical GSuite
+                               <br>
+                               2. Examples - Case study describing the use of hGSuite. Here you can find detailed information about uploading the data, different statistical and visualization tool that can be used to on the genomic tracks.
+                               <br>
+                               3. Tool - This tab has the list of tools that are available and the hyperlinks.
+                               <br>
+                               4. About - Information about the hierarchical genomic HyperBrowser and the contact information.
+                           </div>
                        </div>
                    </div>
                </div>
@@ -64,8 +84,10 @@
                                In the below example we illustrate the basic appearance of a HGSuite. Each row represents a genomic track as indicated by the ‘path_to_track’ entries. Each track also has metadata associated to it, in this example the metadata is the genotype and the mutation type. By representing data in this way we are able to perform analyses on single tracks as well as comparative analyses between or across tracks.
 
                                <div style="width:50%;margin: 10px auto;display:block;">
-                               <img class="img-thumbnail" src="../static/project/hdGSuite.png" \>
-                               </div>
+                               <img class="img-thumbnail" src="../static/project/hdGSuite.png"
+                                    width = "400"
+                                    height = "300"\>
+                               </div>Step 1. Data preparation
                                <p class="paragraph">
 
                                </p>
@@ -77,6 +99,7 @@
                                <div style="display: block">
                                    <div style="width:49%;margin: 10px auto;float:left">
                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups1.png" \>
+
                                    </div>
                                    <div style="width:49%;margin: 10px auto;float:right">
                                    <img class="img-thumbnail" src="../static/project/hdGSuite-groups2.png" \>
@@ -333,7 +356,7 @@
                                <!--<p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_generate_gsuite_file_with_hot_spot_regions">Generate hGSuite with hotspot regions</a></b> - tool used to generate hGSuite with selected hotspot regions.</p>-->
                                <!--<p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_h_clust_tool">Plot hierarchical clustering</a></b> - tool used to plot hierarchical clustering from columns of hGSuite or results from tabular file.</p>-->
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_operation_on_track_tool">Operations on track</a></b> - tool used to proceed operations: intersection or subtract between tracks or genome and track.</p>
-                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_select_regex_tool"> Select lines based on regex</a></b> - formats the bed files within a GSuite to match the hyperbrowser formatting requirements</p>
+                               <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_select_regex_tool"> Select lines based on regex</a></b> - formats the bed files within a GSuite to match the HyperBrowser formatting requirements</p>
                                <p><b><a href="../tool_runner/data_source_redirect?tool_id=hb_plot_metadata_values_of_tabular_file_tool">Change rows with columns (transpose)</a></b> - tool used to transpose tabular file.</p>
 
                            </div>
@@ -425,7 +448,7 @@
                                <div class = 'exampleDesc'>
                                     <b>2) Upload/load the data</b><br>
                                     Data can be uploaded in a variety of ways. In the case of this example, we had vcf
-                                   files which were converted into bed files (step done outside of hyperbrowser).
+                                   files which were converted into bed files (step done outside of HyperBrowser).
                                    We then uploaded these bed files to our freshly created history using the ‘Upload File’ tool.
                                    There are several methods to upload the data, in our case, we have all the bed files needed
                                    in one folder of the computer and we load them all together using the ‘Choose local file’
@@ -503,7 +526,7 @@
                                    CG,GC <br>
                                    The last step is to indicate which column should be treated as unique. This option means
                                    that the selected column(s) will not be concatenated, in our case this is the genotype column.
-                                   To further explain, if we were to not select the genotype column, hyperbrowser would
+                                   To further explain, if we were to not select the genotype column, HyperBrowser would
                                    concatenate all the AT,TA found across all genotypes, this would result in the inability
                                    to distinguish results between genotypes since they would all be merged together.
                                    Therefore by treating the genotype column as ‘unique’ we ensure that concatenation of
@@ -531,7 +554,7 @@
                                    GSuite w/ metadata primary. <br>
                                    By default, a tool will output a file in the history which has the name of the tool itself.
                                    We therefore recommend renaming each file as they are created. In addition,
-                                   hyperbrowser allows users to add descriptions to each file. This can be used to
+                                   HyperBrowser allows users to add descriptions to each file. This can be used to
                                    further organize and detail the various steps taken in the analysis.
                                </div>
                                <!--                               <div class = 'exampleDesc'>
@@ -583,7 +606,9 @@
                                        mutation type within each genotype.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/cube10.png" \>
+                                   <img class="img-thumbnail" src="../static/project/cube10.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph">
                                        From here we can start doing some basic result interpretation.<br>
@@ -627,19 +652,21 @@
                                        through the following example.<br>
                                        Note that the submitted GSuite or hGSuite must be in primary format.<br>
 
-                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_generate_rainfall_plot_tool">LINK BROKEN-NEEDS TO BE RAINFALL </a> tool
+                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_generate_rainfall_plot_tool">Generate rainfall plot </a> tool
                                        to first generate a 'multi' rainfall plot
 
                                     <a href = "../u/hbsuperuser/h/mm10example/33"></a>
 
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/mrp.png" \>
+                                   <img class="img-thumbnail" src="../static/project/mrp.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph"></p>
                                    <p class="paragraph">
                                        In this rainfall we see that the six groups to the left seem to be of larger interest
-                                       than the remainder of the data. Within hyperbrowser and the full image the legend is
+                                       than the remainder of the data. Within HyperBrowser and the full image the legend is
                                        made available, though it was too large to include in this figure. The six groups of
                                        interest from left to right are the following:<br>
                                        UNG AT-TA<br>
@@ -674,14 +701,16 @@
                                        selecting 'single' as the plot type
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/single10.png" \>
+                                   <img class="img-thumbnail" src="../static/project/single10.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph"></p>
                                    <p class="paragraph">
                                        We see a large dominance of CT-GA mutations (green), of which these are found in
                                        high density within the 13th chromosome as well as two different locations within
                                        the 5th chromosome.<br>
-                                       The rainfall plot within the hyperbrowser allows us to drag the cursor across the
+                                       The rainfall plot within the HyperBrowser allows us to drag the cursor across the
                                        screen to select a zoom area. Below we show these zoomed areas respectively.<br>
                                        <a href = "../u/hbsuperuser/h/mm10example/40"></a>
                                    </p>
@@ -758,7 +787,9 @@
                                        ‘count point’ must be selected as the statistic.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/cf10.png" \>
+                                   <img class="img-thumbnail" src="../static/project/cf10.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph">Have chromo freq above
                                    <br>
@@ -869,7 +900,7 @@
                                     <b>4) Metadata is added using the <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add metadata column in hGSuite <a href = "../u/hbsuperuser/h/hwhg19example/33"></a>.</b><br>
                                    For this dataset we add the metadata using a tabular file downloaded from the Hartwig
                                    database. To do so, we select yes for the ‘add data from file’ slot. We then select our
-                                   metadata file (that has already been uploaded to hyperbrowser).<br>
+                                   metadata file (that has already been uploaded to HyperBrowser).<br>
                                    Note that the file must have a sampleID column where the names match the titles in the
                                    GSuite it will be added to.
                                </div>
@@ -907,14 +938,20 @@
                                        these are 'patientid','attribute', and 'primarytumorlocation'.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/CAP.png" \>
-                                   <img class="img-thumbnail" src="../static/project/CAC.png" \>
+                                   <img class="img-thumbnail" src="../static/project/CAP.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph">
                                        <br>
                                        By aggregating 'raw' we can observe the mutation distribution per patient. We can also
                                        aggregate across hmfpatientid to obtain the mutation distribution across cancer types.
                                    </p>
+                                   <div style="width:100%;margin: 10px auto;display:block;">
+                                   <img class="img-thumbnail" src="project/CAC_hw.png"
+                                        width = "500"
+                                        height = "400"\>
+                                   </div>
                                </div>
 
                                <h4 class = 'exampleTitle'>
@@ -931,13 +968,15 @@
                                        option.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/rainfall.png" \>
+                                   <img class="img-thumbnail" src="../static/project/rainfall.png"
+                                        width = "500"
+                                        height = "600"\>
                                    </div>
                                    <p class="paragraph"></p>
                                    <p class="paragraph">
                                        Here each color represents a specific mutation type in a specific breast cancer patient.
-                                       For example, the tallest peak (blue-ish in line with the 50G on the x axis) represents patient
-                                       HMF002114 and only the C>T;G>A mutations for that patient.<br>
+                                       For example, the tallest peak (blue-ish in line with the 50G on the x axis) represents patient_006
+                                       and only the C>T;G>A mutations for that patient.<br>
                                        Using this type of plot we are able to look for possible abnormal mutation loads
                                        in patients. The applications of such a tool are great. For the purpose of the
                                        example, let’s focus our attention on that patient for now.
@@ -950,11 +989,13 @@
                                    <p class="paragraph">
                                        We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool </a>
                                        and select 'hmfpatientid' as the column. <br>
-                                       We then input the patient of interest (hmf002114) to the rainfall plot and select
+                                       We then input the patient of interest (patient_006) to the rainfall plot and select
                                        the 'single' parameter.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/rainfall2.png" \>
+                                   <img class="img-thumbnail" src="../static/project/rainfall2.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph">
                                        What we can notice here is that there is a very large area of chromosome 6 that
@@ -972,7 +1013,6 @@
                                        In this section we check for the overlap between mutations of a single patient
                                        with genes of DNA repair pathways. To do so, we created bed files representing six DNA
                                        repair pathways. This information was extracted from a gtf file for the hg19 genome.
-                                       SHOW PICTURE OF PATHWAYS?
                                    </p>
                                    <h5 class = 'exampleTitle'>
                                         <b> 1) Upload bed files</b>
@@ -999,20 +1039,24 @@
                                        for relations between hGSuites</a>.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/RGB.png" \>
+                                   <img class="img-thumbnail" src="../static/project/RGB.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
-                                   <p class="paragraph">
-                                       Bar plot +  interpretation
-                                   </p>
+<!--                                   <p class="paragraph">-->
+<!--                                       Bar plot +  interpretation-->
+<!--                                   </p>-->
 
                                    <h5 class = 'exampleTitle'>
                                         <b> 5) Chromosomal frequency view</b>
                                    </h5>
                                    <p class="paragraph">
-                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=broken">/LINK TO CHROMO FREQ BROKEN </a>‘plot frequency of mutation along chromosome’ tool, we can generate
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=broken"></a>‘plot frequency of mutation along chromosome’ tool, we can generate
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/distpl.png" \>
+                                   <img class="img-thumbnail" src="../static/project/distpl.png"
+                                        width = "500"
+                                        height = "400"\>
                                    </div>
                                    <p class="paragraph">
                                        The above picture shows that the peak of interest in chromosome 6 does partially overlap
@@ -1024,7 +1068,9 @@
                                    Kmers analysis
                                </h4>
                                <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/kmer.png" \>
+                                   <img class="img-thumbnail" src="../static/project/kmer.png"
+                                        width = "500"
+                                        height = "400"\>
                                </div>
                            </div>
                        </div>
@@ -1173,9 +1219,9 @@
                <b>Contact information</b>
                <p>
                If you have any questions, requests or comments, please use our discussion forum (available from the <a minsizehint="-1" href="https://sites.google.com/site/hyperbrowserhelp/?tool_id=hb_help">Help</a> menu) or send us an email to <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>&#x200E;. We are happy to respond and welcome collaborative projects that help further develop our system. If you encounter any bugs, please let us know via an email to
-               <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a>.
+               <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">HyperBrowser-requests@usit.uio.no</a>.
                </p>
-               <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">hyperbrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
+               <p>If you register as a user, you will be able to subscribe to the <a href="#" onclick="this.href='mailto:'+ this.innerHTML.split('').reverse().join('')" class="codedirection">HyperBrowser-requests@usit.uio.no</a> mailing list, which serves for distribution of system-related announcements and administrative messages.
                 A backlog of announcements is available from the Help menu. The Help menu also contains citation information.
                </p>
            </div>

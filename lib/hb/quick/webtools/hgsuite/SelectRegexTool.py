@@ -21,7 +21,7 @@ class SelectRegexTool(GeneralGuiTool, GenomeMixin):  #VerifyGsuiteBedFormat
 
         Mandatory method for all ProTo tools.
         """
-        return "Verify if Gsuite is in the correct BED format"
+        return "Verify GSuite for BED format"
 
     @classmethod
     def getInputBoxNames(cls):

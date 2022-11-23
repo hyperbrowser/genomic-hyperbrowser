@@ -247,10 +247,10 @@ class DivideGSuiteAccordingToColumnInTheTrackTool(GeneralGuiTool):
 
         if not choices.gSuite:
             return 'Select hGSuite'
-        if choices.gSuite:
-            gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
-            if not gSuite.attributes:
-                return 'Please select hGSuite with metadata'
+        # if choices.gSuite:
+        #     gSuite = getGSuiteFromGalaxyTN(choices.gSuite)
+        #     if not gSuite.attributes:
+        #         return 'Please select hGSuite with metadata'
 
 
             if choices.operation != 'filter by individual titles':

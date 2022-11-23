@@ -34,9 +34,9 @@ from quick.statistic.SingleTSStat import SingleTSStat
 
 class CountDescriptiveStatisticBetweenHGsuiteTool(GeneralGuiTool, GenomeMixin, UserBinMixin,
                                                   DebugMixin):
+    OPTIONS_LIST = ['sum', 'average', 'max', 'min']
     MAIN_OPTIONS = ['Select one value', 'Show results for each value',
                     'Aggregate across this dimension']
-    OPTIONS_LIST = ['sum', 'average', 'max', 'min']
     MAX_NUM_OF_COLS = 15
     MAX_NUM_OF_COLS_IN_GSUITE = 10
     MAX_NUM_OF_COLS_IN_GSUITE_PREDEFINED=MAX_NUM_OF_COLS_IN_GSUITE+2

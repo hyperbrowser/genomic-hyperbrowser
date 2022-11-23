@@ -85,11 +85,15 @@ class PlotHClustTool(GeneralGuiTool):
         ensurePathExists(fileOutputPdf.getDiskPath())
         pathOutputPdf = fileOutputPdf.getDiskPath()
 
+        #print pathInput + "</br>" + pathOutput + "</br>" + pathOutputPdf + "</br>"
+
         from proto.RSetup import r
 
         rCode = """
             myPlot <- function(pathInput, pathOutput, pathOutputPdf){
-                rt <- read.table(pathInput, dec='\t', fill=T, header=F, row.names=1)
+                print ("Hello")
+                rt <- read.table(pathInput, dec='\t', fill=T, header=F, check.names=FALSE, row.names=1)
+                print(rt)
                 clusters <- hclust(dist(rt))
                 
                 png(pathOutput, width = 800, height = 600, pointsize = 12)
