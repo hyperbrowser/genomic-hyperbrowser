@@ -297,6 +297,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         summarizeResponse = 'no'
         summarize = 'no'
 
+
+
         orgnalTitleAll = {}
         orgnalTitleAllCount = 0
         try:
@@ -345,6 +347,8 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         summarize = 'raw'
         columnOptionsDict = {}
 
+
+
         if groupResponse != 'no':
             colList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices,
                                                                                       'selectedColumn%s',
@@ -356,8 +360,22 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
             except:
                 pass
 
+        dictWithColList = {}
+        for tr in gSuite.allTracks():
+            newkey = []
+            for md in colList:
+                attr = tr.getAttribute(md)
+                newkey.append(attr)
+
+            mdCombined = '-'.join(newkey)
+            if not mdCombined in dictWithColList.keys():
+                dictWithColList[mdCombined] = []
+            dictWithColList[mdCombined].append(tr.title)
+
+
+
         # print 'groupResponse', groupResponse, '<br>'
-        # print 'colList', colList, '<br>'
+
 
         # if summarize != 'no':
         #     colList = CountDescriptiveStatisticBetweenHGsuiteTool._getSelectedOptions(choices, 'selectedColumn%s', cls.MAX_NUM_OF_COLS_IN_GSUITE)
@@ -458,14 +476,14 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         # print 'otionList', optionList, '<br>'
 
 
-        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [], summarize, sumBp,
-                         mainOptionList, optionList)
+        cls.writeResults(galaxyFn, resultsDict, htmlCore, colList, [],summarize, sumBp,
+                         mainOptionList, optionList, dictWithColList)
         htmlCore.end()
         print htmlCore
 
     @classmethod
     def writeResults(cls, galaxyFn, resultsDict, htmlCore, firstColumnList, secondColumnList,
-                     summarize, sumBp, mainOptionList, optionList):
+                     summarize, sumBp, mainOptionList, optionList, dictWithColList):
 
         cube = Cube()
         statNum = 0
@@ -528,8 +546,6 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
             #print "tempDict" + str(tempDict) + "</br>"
 
-
-
         # print 'resultsDict', resultsDict, '<br> '
         for statKey, statItem in resultsDict.iteritems():
             data = []
@@ -547,10 +563,10 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
                     elif summarizeKey == 'raw':
 
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
-                                           sumBp, summarizeKey, tempDict)
+                                           sumBp, summarizeKey, tempDict, dictWithColList)
                     else:
                         cls.countSummarize(data, expectedOrderedDict, groupItem, groupKey, statKey,
-                                           sumBp, summarizeKey, tempDict)
+                                           sumBp, summarizeKey, tempDict, dictWithColList)
 
             # print 'data', data, '<br>'
 
@@ -679,7 +695,7 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
 
     @classmethod
     def countSummarize(cls, data, expectedOrderedDict, groupItem, groupKey, statKey, sumBp,
-                       summarizeKey, tempDict):
+                       summarizeKey, tempDict, dictWithColList):
 
         if statKey == cls.OBSVSEXPECTEDSTAT:
             if summarizeKey == 'sum':
@@ -706,15 +722,42 @@ class CountDescriptiveStatisticForHGSuiteTool(GeneralGuiTool, GenomeMixin, UserB
         elif statKey == cls.NORMALIZESTAT:
             if summarizeKey == 'raw':
 
-                #print "tempDict" + str(tempDict) + " <br>"
+                #print "tempDict" + str(tempDict) + " </br>"
+                #print "dictcol" + str(dictWithColList) + "</br>"
+                #newDict = {}
                 for g in groupItem:
-                    # print "groupKey" + str(groupKey) + "</br>"
+                    sumOfEl = 0
+                    #print "g" + str(g) + "</br>"
+                    for key in dictWithColList.keys():
+                        if g[0] in dictWithColList[key]:
+                            for allG in dictWithColList[key]:
+                                #print tempDict[allG]
+                                sumOfEl += float(tempDict[allG])
+                        else:
+                            continue;
+
+                    #print str(sumOfEl) + "</br>"
+                        #break
+
+                    # id = g[0].split("-")[0]
+                    # print "id" + id + "</br>"
+                    # print "count" + str(g[1]) + "</br>"
+                    # if id in newDict.keys():
+                    #     sumOfgroup = float(newDict[id])+float(g[1])
+                    #     newDict[id] = sumOfgroup
+                    # else:
+                    #     newDict[id] = float(g[1])
+
+
                     # print "g" + str(g) + "</br>"
                     # print "g[1]" + str(g[1]) + "</br>"
-                    # print "tempDict[g[0]]" + str(tempDict[g[0]]) + "</br>"
+                    #print "tempDict[g[0]]" + str(tempDict[g[0]]) + "</br>"
                     # print "</br>"
-                    g[1] = round(float(float(g[1])/float(tempDict[g[0]])), 2)
+                    g[1] = round(float(float(g[1])/float(sumOfEl)), 2)
+                    #sumOFAttribute
+                    #print "g" + str(g) + "</br>"
                     data.append(list(groupKey) + g)
+                #print "newdict" + str(newDict) + " </br>"
         else:
             if summarizeKey == 'sum':
                 data.append(list(groupKey) + [(float(sum(groupItem)) / sumBp[statKey])])

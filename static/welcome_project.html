@@ -417,11 +417,10 @@
                                    in knockout mouse data. We received 22 genomic tracks from our collaborators,
                                    these are called query tracks.
                                     These 22 tracks are divided into four groups <br>
-                                    a) Two tracks of UNG-/-;AICDA-/- <br>
-                                    b) Six tracks of UNG-/-;SMUG1-/- <br>
-                                    c) Four tracks of SMUG1-/- <br>
-                                    d) Five tracks of UNG-/- <br>
-                                    e) Five tracks for Wild-Type(WT) <br>
+                                    a) Six tracks of UNG-/-;SMUG1-/- <br>
+                                    b) Four tracks of SMUG1-/- <br>
+                                    c) Five tracks of UNG-/- <br>
+                                    d) Five tracks for Wild-Type(WT) <br>
                                </p>
                                <!--<p>
                                    So we decided to make the grouping based on the meta levels.
@@ -482,7 +481,6 @@
                                    Wild-Type (WT) → 5 samples<br>
                                    UNG -/- (ung) → 5 samples<br>
                                    SMUG1 -/- (smug1) → 4 samples<br>
-                                   UNG -/- ; AICDA -/- (ung-acida) → 2 samples<br>
                                    UNG -/- ; SMUG1 -/- (ung-smug1) → 6 samples<br>
                                </div>
                                <div class = 'exampleDesc'>
@@ -535,7 +533,7 @@
                                    To further explain, if we were to not select the genotype column, HyperBrowser would
                                    concatenate all the AT,TA found across all genotypes, this would result in the inability
                                    to distinguish results between genotypes since they would all be merged together.
-                                   Therefore by treating the genotype column as ‘unique’ we ensure that concatenation of
+                                   Therefore, by treating the genotype column as ‘unique’ we ensure that concatenation of
                                    mutations is only done within each genotype and not across all genotypes.
                                </div>
                                <div class = 'exampleDesc'>
@@ -551,7 +549,7 @@
                                    non-preprocessed version of the file (which we call ‘primary’).<br>
                                    The reason this exists is because preprocessing is a mathematical preparation for analysis,
                                    though this preparation can alter based on the format of the file (i.e number of metadata
-                                   columns). Therefore modifications must occur on primary files while analysis must be made
+                                   columns). Therefore, modifications must occur on primary files while analysis must be made
                                    using a preprocessed file. <br>
                                    TIP: Due to the sometimes confusing nature of preprocessed and primary files, we recommend
                                    to re-name the elements in the history to a naming convention that makes sense to the user.
@@ -612,7 +610,7 @@
                                        mutation type within each genotype.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/cube10.png"
+                                   <img class="img-thumbnail" src="../static/project/chart_mm_nm.png"
                                         width = "500"
                                         height = "400"\>
                                    </div>
@@ -620,16 +618,13 @@
                                        From here we can start doing some basic result interpretation.<br>
                                        The first observation that can be made is that there is little to no difference
                                        between the WT and the SMUG1 KO. We can also see that the UNG KO seems to generate
-                                       the largest amount of mutations, and the CT-GA mutation is by far the dominant one,
-                                       we notice that the UNG-AICDA KO seems to have the same pattern but with far fewer
-                                       mutations. Finally we notice that the UNG-SMUG1 KO has fewer mutations the the UNG KO
-                                       alone while having more mutations than the UNG-AICDA KO.<br>
-                                       From a biological perspective, we know that AICDA is a gene which is responsible
-                                       for a large amount of C to T (therefore G to A as well). We also know that UNG is a
+                                       the largest amount of mutations, and the CT-GA mutation is by far the dominant one.
+                                       Finally, we notice that the UNG-SMUG1 KO has fewer mutations than the UNG KO
+                                       alone.<br>
+                                       From a biological perspective, we know that UNG is a
                                        DNA glycosylase which is responsible for the repairing of these mutations. It is
-                                       therefore expected to see a large amount of C to T mutations when UNG is not present,
-                                       and also to see this amount of mutation drop when AICDA is no longer present. It also
-                                       appears that SMUG1 serves as a compensatory element in the absence of UNG, however it
+                                       therefore expected to see a large amount of C to T mutations when UNG is not present.
+                                       It also appears that SMUG1 serves as a compensatory element in the absence of UNG, however it
                                        is error-prone and therefore generates further mutations.
                                    </p>
                                </div>
@@ -665,7 +660,7 @@
 
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/mrp.png"
+                                   <img class="img-thumbnail" src="../static/project/multi_rainfall.png"
                                         width = "500"
                                         height = "400"\>
                                    </div>
@@ -784,7 +779,7 @@
                                         <b> 5) Chromosomal frequency view <a href = "../u/hbsuperuser/h/mm10example/56"></a></b>
                                    </h5>
                                    <p class="paragraph">
-                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_plot_mutation_frequency_along_chromosome_tool">/LINK TO CHROMO FREQ BROKEN </a>‘plot frequency of mutation along chromosome’ tool, we can generate
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_plot_mutation_frequency_along_chromosome_tool">plot frequency of mutation along chromosome tool</a>, we can generate
                                        frequency plots for each individual chromosome. We can do so with a single GSuite,
                                        or use two GSuites. <br>
                                        The first track inputted will be shown in the bottom of the plot while the second
@@ -870,14 +865,15 @@
                                    in human cancer data. We received 30 genomic tracks from the Hartwig database,
                                    these are called query tracks. <br>
                                    These 30 tracks are divided into three even groups of skin cancer, colorectal cancer,
-                                   and breast cancer.
+                                   and breast cancer. We have set of few basic exploratory question about the data that we can ask
+
                                </p>
                            </div>
                        </div>
                    </div>
                </div>
 
-<div class="containerNext">
+           <div class="containerNext">
                <div class="rowSpecialWithGap">
                    <div class="colAll">
                        <div class = 'description'>
@@ -897,13 +893,13 @@
                                     <b>1) Create a new history</b><br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>2) Upload/load the data</b><br>
+                                    <b>2) Upload/load the data: Use the standard galaxy tool "Get Data" and click on "Upload File from your computer". Check elements 1-31 in <a href = "../u/hbsuperuser/h/hwhg19example"></a></b><br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>3) Create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool <a href = "../u/hbsuperuser/h/hwhg19example/32"></a></b><br>
+                                    <b>3) Create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/32">GSuite</a></b><br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>4) Metadata is added using the <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add metadata column in hGSuite <a href = "../u/hbsuperuser/h/hwhg19example/33"></a>.</b><br>
+                                    <b>4) Metadata is added using the <a href="../tool_runner/data_source_redirect?tool_id=hb_add_a_metadata_to_g_suite_tool">Add metadata column in hGSuite</a> <a href = "../u/hbsuperuser/h/hwhg19example/33">hGSuite with metadata</a>.</b><br>
                                    For this dataset we add the metadata using a tabular file downloaded from the Hartwig
                                    database. To do so, we select yes for the ‘add data from file’ slot. We then select our
                                    metadata file (that has already been uploaded to HyperBrowser).<br>
@@ -911,35 +907,35 @@
                                    GSuite it will be added to.
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>5) Convert the GSuite to hGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool <a href = "../u/hbsuperuser/h/hwhg19example/34"></a>.</b><br>
+                                    <b>5) Convert the GSuite to hGSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/34">hGSuite</a>.</b><br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>6) Extract mutations as metadata using the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Filter hGSuite based on words in the title column of tracks tool <a href = "../u/hbsuperuser/h/hwhg19example/35"></a>.</b><br>
+                                    <b>6) Extract mutations as metadata using the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_g_suite_according_to_column_in_the_track_tool">Filter hGSuite based on words in the title column of tracks tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/35">filtered hGsuite</a>.</b><br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>7) Concatenation of mutations using the <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGSuite based on metadata tool <a href = "../u/hbsuperuser/h/hwhg19example/36"></a></b><br>
+                                   <b>7) Concatenation of mutations using the <a href="../tool_runner/data_source_redirect?tool_id=hb_contacenate_tracks_in_h_gsuite_according_to_parameters_in_selected_column_tool">Concatenate tracks in hGSuite based on metadata tool </a><a href = "../u/hbsuperuser/h/hwhg19example/36">hGSuite with concatenated tracks</a></b><br>
                                </div>
                                <div class = 'exampleDesc'>
-                                    <b>8) We preprocess the data using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess a GSuite for analysis tool <a href = "../u/hbsuperuser/h/hwhg19example/39"></a></b><br>
+                                    <b>8) We preprocess the data using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess a GSuite for analysis tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/39">preprocessed hGSuite</a></b><br>
 
                                </div>
                            </div>
                        </div>
-
-<div class = 'example'>
+                       <div class = 'example'>
 
                            <h4 class = 'exampleTitle'>
-                               <b>Step 2. Analysis</b>
+                               <b>Step 2. Exploratory analysis - Here we will illustrate the cube by answering few common questions that can be explored with a dataset like the above.   </b>
                            </h4>
 
                            <div class = 'example'>
                                <h4 class = 'exampleTitle'>
-                                   Observe the distribution in mutations across patients and cancer types
+                                   1. What is the observed distribution in mutations across patients and cancer types ?
                                </h4>
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite tool<a href = "../u/hbsuperuser/h/hwhg19example/40"></a>
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_for_hg_suite_tool">Compute data cube for hGSuite tool</a>
+                                       <a href = "../u/hbsuperuser/h/hwhg19example/40">example</a>
                                         we input our hGSuite and select the ‘Coverage (counts of elements)’ statistic. We then specify the three columns of interest,
                                        these are 'patientid','attribute', and 'primarytumorlocation'.
                                    </p>
@@ -950,7 +946,7 @@
                                    </div>
                                    <p class="paragraph">
                                        <br>
-                                       By aggregating 'raw' we can observe the mutation distribution per patient. We can also
+                                       By aggregating 'raw' we can observe the mutation distribution per patient, that is shown in the plot above. We can also
                                        aggregate across hmfpatientid to obtain the mutation distribution across cancer types.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
@@ -961,16 +957,16 @@
                                </div>
 
                                <h4 class = 'exampleTitle'>
-                                   Create multi rainfall plots
+                                   The above data can also be plotted using multi rainfall plots
                                </h4>
 
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
                                        Due to the large amount of information, we first filter/divide our hGSuite (primary format) by cancer type
                                        in order to not overwhelm the rainfall plots. This is done using the
-                                       <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool <a href = "../u/hbsuperuser/h/hwhg19example/41"></a>
+                                       <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/41"></a>
                                        and selecting the 'primarytumorlocation' as the filter column.<br>
-                                       We then submit all three hGSuites to the RAINFALL TOOL REF! and use multi as the plotting
+                                       We then submit all three hGSuites to the <a href = "../tool_runner/data_source_redirect?tool_id=hb_generate_rainfall_plot_tool">Generate Rainfall plot tool </a> and use multi as the plotting
                                        option.
                                    </p>
                                    <div style="width:100%;margin: 10px auto;display:block;">
@@ -989,11 +985,11 @@
                                    </p>
                                </div>
                                <h4 class = 'exampleTitle'>
-                                   Extract individual patient data and plot rainfall
+                                   Extract individual patient data and plot using rainfall plots
                                </h4>
                                <div class = 'exampleDesc'>
                                    <p class="paragraph">
-                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool"> filter hGSuite according to metadata tool </a>
+                                       We use the <a href="../tool_runner/data_source_redirect?tool_id=hb_divide_hg_suite_according_to_column_tool">filter hGSuite according to metadata tool </a>
                                        and select 'hmfpatientid' as the column. <br>
                                        We then input the patient of interest (patient_006) to the rainfall plot and select
                                        the 'single' parameter.
@@ -1011,66 +1007,221 @@
                                    </p>
                                </div>
                                <h4 class = 'exampleTitle'>
-                                   Explore genomic locations
+                                   2. What is the distribution of mutations across different genomic regions and how does it vary based other factors such as tumor type, gender and etc ?
                                </h4>
 
-                               <div class = 'exampleDesc'>
+                               <div class = 'exampleDesc' >
+                                   <h4 class = 'exampleTitle'>
+                                       2a. Do the mutations occur more often in coding regions or non-coding regions of the genome?
+                                   </h4>
                                    <p class="paragraph">
+                                       We upload bed files with genomic positions for coding and non-coding regions for the hg19. The uploaded bed files were converted to GSuite using the tool
+                                       <b><a href="../tool_runner/data_source_redirect?tool_id=hb_create_hierarchical_g_suite_tool">Create or modify hierarchy of hGSuite tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/81">hGSuite</a>.</b><br>
+                                       Further this data is preprocessed using the tool <b><a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Preprocess a GSuite for analysis tool</a><a href = "../u/hbsuperuser/h/hwhg19example/84">preprocessed GSuite</a></b><br>
+                                       To get the results and the plot we upload both the hGSuites, one for the coding and non-coding regions and the other containing the patient data along with the metadata that was preprocessed in the above step
+                                       (for reference check out element 39 and 84).
+                                       <b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_hg_gsuite_tool">Compute data cube for relations between hGSuites tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/98">Relational data cube</a></b>
+                                       This cube element gives you a general overview of introns vs exons in the data. But we can several question with this cube using the pivot functionality.
+                                       Below is a set of questions and their answers that can be obtained using one cube. To do this we use the tool  <b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_hg_gsuite_tool">Compute data cube for relations between hGSuites tool</a>Relational data cube <a href = "../u/hbsuperuser/h/hwhg19example/98"></a></b>
+                                       After we upload the cube we can set the hierarchy based on the metadata. The figure below shows the selections that has to be made in order to explore the data in different dimensions
+                                       SCREENSHOT OF THE SELECTIONS OF ELEMENT 98
+
+                                       1. Which mutation type across different cancer types occur most frequently in the coding regions?
+                                       We can still use the previous element <a href = "../u/hbsuperuser/h/hwhg19example/98">Relational data cube</a> and transpose the table and plot to get the results for this question. The screenshot below on the left shows the
+                                       results along with selections that was made to get the results. On the right is the transposed plot that appears when you click on the transpose option.
+                                       <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_1_left.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_1_right.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+
+                                       2. How does the frequency of certain mutation type in the coding region vary across patients ?
+                                       Using the same element 98, the results are obtained using the selections in the image below.
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+<!--                                        <img class="img-thumbnail" src="../static/project/2_2a_2.png"-->
+<!--                                            width = "500"-->
+<!--                                            height = "400"\>-->
+<!--                                        </div>-->
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2t.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+
+                                        From the results shown below we can observe the mutation CT-GA occurs more often in general and also in the coding regions. This is as expected because mutation signature 2 which occurs most commonly in cancer patient is caused by the APOBEC cytidine deaminases that are predominantly characterized by C>T mutations.
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2_breast.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2_col.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2_skin.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        The above images can also to transposed to plot the occurrence of different mutation types across cancer.
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2t_breast.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2t_col.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        <img class="img-thumbnail" src="../static/project/2_2a_2t_skin.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        From the above images, we can observe certain patients have very high occurrences of mutation and certain mutation types seem to show a very high frequency in certain patients. We can also do a similar analysis with age and gender to know if the occurrence of certain mutation types is age or gender dependent.
+                                        The aggregated results based on each cancer type is displayed below, which shows the relative occurrence of different mutation type across cancers. We can observe that skin cancer patients have the highest average of CT-GA mutation. Ultraviolet light is the major driver of mutagenesis in cutaneous melanomas which produces a distinct mutational signature with C>T and CC>TT transitions. Similarly, in colon cancer patients, after the C>T-G>A mutation, it is C>A-G>T that appears most frequently which explains the KRAS gene mutations.
+
+                                       3. Is there a higher occurance of particular mutation type (C>T-G>A) in certain cancer type ?
+                                        Using the same element and different settings you can achieve the plot below. The plot shows C>T-G>A has the highest number of mutation across all cancer types.(aging)
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/2_2a_3.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+
+                                       4. Do male or female have higher number of mutations in skin and colorectal cancer?
+                                       <a href = "../u/hbsuperuser/h/hwhg19example/96">TEXT</a> Aggregate along the gender and raw, and "show results for each" for the birth year and the primary tumor location.
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/4_a.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+
+                                       5. Do a particular mutation type show increase in frequency in a given cancer type based on the age of the patient ?
+                                        Use the preprocessed hGSuite from el 100 in the <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_hg_gsuite_tool"> Compute data cube for hGSuite tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/102">Data cube</a>
+                                       <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/5_a.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+
+                                        6. Does a 3-mer occur more frequently in particular cancer type across all patients ?
+                                        hGSuite has preprocessed 3-mer data for hg19 available to download. We use the preprocessed Gsuite of all the breast cancer patients against the preprocessed GSuite of hg19 3-mer in the tool
+                                        <b><a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_hg_gsuite_tool">Compute data cube for relations between hGSuites tool</a> <a href = "../u/hbsuperuser/h/hwhg19example/104">data cube of kmer</a></b>
+                                        From the plots we can observe the 3mer CTT occurs more often in patients and it belongs to the mutation type C>T-G>A. This result is as expected in most cancer types since 5-methyl cytosine deamination increases with aging.
+                                        7. It has been shown that mutation in open chromatin regions are a prognostic factor in various cancers (15). Therefore, understanding the effects of individual mutations in the open-chromatin regions will allow identification of novel cancer-associated regulatory genes or sequences (15).
+                                            Does the mutation occur more frequently in open or close chromatin regions ? If yes how do they vary across cancer type and mutation type ?
+                                        To answer the above question, we downloaded GSuites from ENCODE that contain chromatin data for colon and skin cancer.
+                                        The downloaded GSuites were further preprocessed and made ready for analysis. (Preprocessed GSuite is available as el https://hyperbrowser.uio.no/trackfind_test/u/sveinugu/h/preprosessering-sumana). We use the similar tool as the above to find the regions that overlap with the open chromatin region so the genome.<a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_hg_gsuite_tool"> “Compute relation between two hGSuite”</a>
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/chromatin_state_colon.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                        <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/chromatin_state_skin.png"
+                                            width = "500"
+                                            height = "400"\>
+                                        </div>
+                                       8. Based on the observations of step 1, the interesting question would be if these mutations map to specific DNA repair
+                                       pathways ? DNA repair pathways and cell cycle checkpoint networks cooperate to ensure the maintenance of genetic stability. A failure in either of the pathways or the cell cycle mechanism leads to tumor growth (14). Hence the next set of questions we want to ask about our data is based on the DNA repair genes and the associated pathways. To do so we downloaded th location of the DNA repair gene (based on MD Andersons database). The genes are classified based on the DNA repair pathways such as mismatch repair(MMR), base-excision repair (BER) and non-homologous end joining repair (NHEJ) pathways. We obtained bed files of location of all the genes and follows the above specified steps to make it into a preprocessed GSuite ( check element 64-73). Then we used the “Compute relations between hGSuites” tool to find the overlap and the normailzed count of number mutations in DNA repair pathways. (between element 39 and 73). For the results, <a href = "../u/hbsuperuser/h/hwhg19example/119">></a>.
+                                        Below is a screenshot of the average number of mutations normalized across different types.
+                                        To do so, we created bed files representing six DNA repair pathways. This information was extracted from a gtf file for the hg19 genome.
+                                        We follow the previous steps to preprocess the bed files of the DNA repair pathway data. We once again use the data cube, but this time the tool is named <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute data cube
+                                       for relations between hGSuites</a>. The cube calculates the overlap between the patients and the DNA repair pathway genes. Check <a href = "../u/hbsuperuser/h/hwhg19example/116">Data cube with DNA repair pathway</a>
+                                   The screenshot below shows the frequency of mutation in each DNA repair pathway across cancer types. In patients with colorectal cancer the highest number of mutation occur in
+                                   Mismatch repair genes (MMR), base excision repair (BER) pathway and non-homologus end joining repaie (NHEJ) pathway. While in skin and breast cancer it the highest number of mutations in observed in base excision repair (BER).
+                                   Colon cancer patients tend to have more depletion and inhibition in DNA-PKcs protein that causes decrease in amplification of the DHFR gene (dna synthesis and methylation)
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/8_a.png"
+                                            width = "500"
+                                            height = "400"\>
+                                    </div>
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/8_b.png"
+                                            width = "500"
+                                            height = "400"\>
+                                    </div>
+
+
+
+
+
+                        <div class = 'exampleDesc'>
+                                    <p class="paragraph">
                                        In this section we check for the overlap between mutations of a single patient
                                        with genes of DNA repair pathways. To do so, we created bed files representing six DNA
                                        repair pathways. This information was extracted from a gtf file for the hg19 genome.
-                                   </p>
-                                   <h5 class = 'exampleTitle'>
+                                    </p>
+                                    <h5 class = 'exampleTitle'>
                                         <b> 1) Upload bed files</b>
-                                   </h5>
-                                   <p class="paragraph">
-                                   </p>
-                                   <h5 class = 'exampleTitle'>
+                                    </h5>
+                                    <p class="paragraph">
+                                    </p>
+                                    <h5 class = 'exampleTitle'>
                                         <b> 2) Convert tracks to a GSuite</b>
-                                   </h5>
-                                   <p class="paragraph">
+                                    </h5>
+                                    <p class="paragraph">
                                        We create a GSuite using the <a href="../tool_runner/data_source_redirect?tool_id=hb_create_g_suite_file_from_history_elements_tool">Create a GSuite from datasets in your history tool</a>.
-                                   </p>
-                                   <h5 class = 'exampleTitle'>
+                                    </p>
+                                    <h5 class = 'exampleTitle'>
                                         <b> 3) Preprocess the gSuite</b>
-                                   </h5>
-                                   <p class="paragraph">
+                                    </h5>
+                                    <p class="paragraph">
                                         Done using the <a href="../tool_runner/data_source_redirect?tool_id=hb_preprocess_g_suite_tracks_tool">Convert GSuite tracks from primary to preprocessed tool </a>.
-                                   </p>
-                                   <h5 class = 'exampleTitle'>
+                                    </p>
+                                    <h5 class = 'exampleTitle'>
                                         <b> 4) Compute the data cube</b>
-                                   </h5>
-                                   <p class="paragraph">
+                                    </h5>
+                                    <p class="paragraph">
                                        We once again use the data cube, but this time the tool is named <a href="../tool_runner/data_source_redirect?tool_id=hb_count_descriptive_statistic_between_h_gsuite_tool">Compute data cube
                                        for relations between hGSuites</a>.
-                                   </p>
-                                   <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/RGB.png"
-                                        width = "500"
-                                        height = "400"\>
-                                   </div>
+                                    </p>
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/RGB.png"
+                                            width = "500"
+                                            height = "400"\>
+                                    </div>
 <!--                                   <p class="paragraph">-->
 <!--                                       Bar plot +  interpretation-->
 <!--                                   </p>-->
 
-                                   <h5 class = 'exampleTitle'>
+                                    <h5 class = 'exampleTitle'>
                                         <b> 5) Chromosomal frequency view</b>
-                                   </h5>
-                                   <p class="paragraph">
-                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=broken"></a>‘plot frequency of mutation along chromosome’ tool, we can generate
-                                   </p>
-                                   <div style="width:100%;margin: 10px auto;display:block;">
-                                   <img class="img-thumbnail" src="../static/project/distpl.png"
-                                        width = "500"
-                                        height = "400"\>
-                                   </div>
-                                   <p class="paragraph">
-                                       The above picture shows that the peak of interest in chromosome 6 does partially overlap
-                                       with genes found in the DNA polymerase repair pathway.
-                                   </p>
+                                    </h5>
+                                    <p class="paragraph">
+                                        Using the <a href="../tool_runner/data_source_redirect?tool_id=broken"></a>‘plot frequency of mutation along chromosome’</a>tool, we can generate
+                                    </p>
+                                    <div style="width:100%;margin: 10px auto;display:block;">
+                                        <img class="img-thumbnail" src="../static/project/distpl.png"
+                                            width = "500"
+                                            height = "400"\>
+                                    </div>
+                                        <p class="paragraph">
+                                           The above picture shows that the peak of interest in chromosome 6 does partially overlap
+                                           with genes found in the DNA polymerase repair pathway.
+                                        </p>
+                                </div>
+
+
+
+
                                </div>
                            </div>
                        </div>
+
+
+
+
+
+
+
+
                    </div>
                </div>
                    </div>
@@ -1249,5 +1400,9 @@
 </div>
 </body>
 </html>
+
+
+
+
 
 
