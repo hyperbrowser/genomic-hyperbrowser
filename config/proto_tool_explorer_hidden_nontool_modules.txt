@@ -13,3 +13,6 @@
 /hb/quick/webtools/restricted/EncodeDatabase
 /hb/quick/webtools/restricted/visualization/visualizationGraphs
 /proto/tools/GeneralGuiTool
+/hb/quick/webtools/mixin/RandAlgorithmMixin
+/hb/quick/webtools/mixin/QueryTrackVsCategoricalGSuiteMixin
+/hb/quick/webtools/mixin/SimpleProgressOutputMixin
