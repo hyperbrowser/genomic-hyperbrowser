@@ -60,7 +60,7 @@ class RandAlgorithmMixin(object):
     def getOptionsBoxRandType(cls, prevChoices):
         if cls._showRandAlgorithmChoices(prevChoices):
             if not cls._isBasic(prevChoices):
-                return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories()
+                return [cls.SELECT_CHOICE_STR] + TsRandAlgReg.getCategories() + ["Wilcoxon"] + ["T-test"]
 
     @classmethod
     def getOptionsBoxRandAlg(cls, prevChoices):

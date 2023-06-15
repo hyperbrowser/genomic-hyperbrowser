@@ -1,9 +1,10 @@
 from gold.track.TrackStructure import TrackStructureV2
 from quick.extra.plot import RPlotUtil
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable
+from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
 
 
-class QueryTrackVsCategoricalGSuiteMixin(object):
+class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
 
     RANDOMIZABLE_INPUTS = [TrackStructureV2.REF_KEY, TrackStructureV2.QUERY_KEY]
 
@@ -14,14 +15,15 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
 
     @classmethod
     def getInputBoxNamesForQueryTrackVsCatGSuite(cls):
-        return [('Select primary case label', 'categoryVal'),
-                ('Select null model', 'randType'),
-                ('Select pairwise similarity measure', 'similarityFunc'),
+        # ('Select statistical test', 'statTest'),
+        return [('Select primary case label', 'categoryVal')] + \
+                cls.getInputBoxNamesForRandAlgSelection() + \
+                [('Select pairwise similarity measure', 'similarityFunc'),
                 ('Select between group summary function', 'catSummaryFunc'),
                 ('Select within group summary function', 'summaryFunc'),
                 ('Select MCFDR sampling depth', 'mcfdrDepth'),
                 ('Select tail alternative for the hypothesis test', 'tail'),
-                ('Select preservation and randomization scheme', 'randAlg'),
+                # ('Select preservation and randomization scheme', 'randAlg'),
                 ('Randomize reference or case-control tracks?', 'randInput')
                 ]
 
@@ -41,9 +43,18 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         return getattr(choices, cls.CAT_GSUITE_KEY)
 
     @staticmethod
-    def getOptionsBoxRandType(prevChoices):
-        from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
-        return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys() + ["Wilcoxon"] + ["T-test"]
+    def getOptionsBoxStatTest(prevChoices):
+        return ["Monte Carlo"] + ["Wilcoxon"] + ["T-test"]
+
+    @classmethod
+    def _showRandAlgorithmChoices(cls, prevChoices):
+        """
+        Override this method in the tool if the randomization algorithm option boxes should not be
+        shown for certain settings in choices.
+        :param: The selected choices selected by the user before the first rand alg option box
+        :return: True if the randomization algorithm option boxes should be shown, else False
+        """
+        return prevChoices.randType not in ["Wilcoxon", "T-test"]
 
     @staticmethod
     def getOptionsBoxSimilarityFunc(prevChoices):
@@ -75,13 +86,13 @@ class QueryTrackVsCategoricalGSuiteMixin(object):
         # return ['two.sided', 'less', 'greater']
         return ['right-tail', 'left-tail', 'two-tail']
 
-    @staticmethod
-    def getOptionsBoxRandAlg(prevChoices):
-        if prevChoices.randType not in ["Wilcoxon", "T-test"]:
-            from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
-            for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
-                if prevChoices.randType == definedRandType:
-                    return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
+    # @staticmethod
+    # def getOptionsBoxRandAlg(prevChoices):
+    #     if prevChoices.randType not in ["Wilcoxon", "T-test"]:
+    #         from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
+    #         for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
+    #             if prevChoices.randType == definedRandType:
+    #                 return RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[definedRandType].keys()
 
     @classmethod
     def getOptionsBoxRandInput(cls, prevChoices):
