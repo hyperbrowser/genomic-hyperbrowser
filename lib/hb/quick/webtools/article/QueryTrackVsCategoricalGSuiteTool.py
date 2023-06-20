@@ -503,7 +503,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                       choices.similarityFunc])
         analysisSpec.addParameter('runLocalAnalysis', "No")
         analysisSpec.addParameter('segregateNodeKey', 'reference')
-        analysisSpec.addParameter('alternative', choices.tail)
+        analysisSpec.addParameter('alternative', choices.tails)
         analysisSpec.addParameter('primaryCatVal', categoryVal)
         results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
         return results
@@ -686,7 +686,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('tail', choices.tail)
+        analysisSpec.addParameter('tails', choices.tails)
         analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', categoryVal)

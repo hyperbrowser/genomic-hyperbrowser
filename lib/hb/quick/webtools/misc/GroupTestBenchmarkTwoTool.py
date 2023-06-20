@@ -259,12 +259,12 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
             analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
             analysisSpec.addParameter('genericTSChildrenRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
-            analysisSpec.addParameter('alternative', choices.tail)
+            analysisSpec.addParameter('alternative', choices.tails)
         elif choices.statTest == 'T-test':
             analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
             analysisSpec.addParameter('genericTSChildrenRawStatistic', TtestUnpairedTestStat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
-            analysisSpec.addParameter('alternative', choices.tail)
+            analysisSpec.addParameter('alternative', choices.tails)
         else:
             mcfdrDepth = choices.mcfdrDepth if choices.mcfdrDepth else \
                 AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0][0]
@@ -278,7 +278,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
                 analysisSpec.addParameter('summaryFunc',
                                           GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
                 analysisSpec.addParameter('catSummaryFunc', str(choices.catSummaryFunc))
-            analysisSpec.addParameter('tail', choices.tail)
+            analysisSpec.addParameter('tails', choices.tails)
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
         analysisSpec.addParameter('progressPoints', opCount)
         analysisSpec.addParameter('segregateNodeKey', 'reference')

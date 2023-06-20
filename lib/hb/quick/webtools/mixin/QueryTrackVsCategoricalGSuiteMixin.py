@@ -26,7 +26,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
                 ('Randomize reference or case-control tracks?', 'randInput')] + \
                 cls.getInputBoxNamesForRandAlgSelection() + \
                 [('Select MCFDR sampling depth', 'mcfdrDepth'),
-                 ('Select tail alternative for the hypothesis test', 'tail')]
+                 ('Select tail alternative for the hypothesis test', 'tails')]
 
     @classmethod
     def getOptionsBoxCategoryVal(cls, prevChoices):
@@ -83,7 +83,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
             return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
 
     @staticmethod
-    def getOptionsBoxTail(prevChoices):
+    def getOptionsBoxTails(prevChoices):
         # return ['two.sided', 'less', 'greater']
         return ['right-tail', 'left-tail', 'two-tail']
 

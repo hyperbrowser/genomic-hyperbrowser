@@ -387,7 +387,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
         core.divBegin()
         observedAndMcSamplesTuple = tuple([results['real'].getResult(), results['rand'].getResult()])
         hypothesisTestingResults = McEvaluators.evaluatePvalueAndNullDistribution(
-            observedAndMcSamplesTuple, str(choices.tail),
+            observedAndMcSamplesTuple, str(choices.tails),
             GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[choices.similarityFunc])
         resTableDict = OrderedDict()
         # if choices.statTest == "Wilcoxon":
