@@ -1,4 +1,7 @@
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.TsRandAlgorithmRegistry import \
+    PERMUTED_SEGS_AND_SAMPLED_INTERSEGS_STR, WITHIN_TRACKS_CATEGORY, BETWEEN_TRACKS_CATEGORY, \
+    SHUFFLE_BETWEEN_TRACKS_STR
 from quick.extra.plot import RPlotUtil
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2StatUnsplittable
 from quick.webtools.mixin.RandAlgorithmMixin import RandAlgorithmMixin
@@ -15,17 +18,15 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
 
     @classmethod
     def getInputBoxNamesForQueryTrackVsCatGSuite(cls):
-        # ('Select statistical test', 'statTest'),
-        return [('Select primary case label', 'categoryVal')] + \
-                cls.getInputBoxNamesForRandAlgSelection() + \
-                [('Select pairwise similarity measure', 'similarityFunc'),
+        return [('Select primary case label', 'categoryVal'),
+                ('Select statistical test', 'statTest'),
+                ('Select pairwise similarity measure', 'similarityFunc'),
                 ('Select between group summary function', 'catSummaryFunc'),
                 ('Select within group summary function', 'summaryFunc'),
-                ('Select MCFDR sampling depth', 'mcfdrDepth'),
-                ('Select tail alternative for the hypothesis test', 'tail'),
-                # ('Select preservation and randomization scheme', 'randAlg'),
-                ('Randomize reference or case-control tracks?', 'randInput')
-                ]
+                ('Randomize reference or case-control tracks?', 'randInput')] + \
+                cls.getInputBoxNamesForRandAlgSelection() + \
+                [('Select MCFDR sampling depth', 'mcfdrDepth'),
+                 ('Select tail alternative for the hypothesis test', 'tail')]
 
     @classmethod
     def getOptionsBoxCategoryVal(cls, prevChoices):
@@ -54,7 +55,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
         :param: The selected choices selected by the user before the first rand alg option box
         :return: True if the randomization algorithm option boxes should be shown, else False
         """
-        return prevChoices.randType not in ["Wilcoxon", "T-test"]
+        return prevChoices.statTest == "Monte Carlo"
 
     @staticmethod
     def getOptionsBoxSimilarityFunc(prevChoices):
@@ -63,7 +64,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
 
     @classmethod
     def getOptionsBoxCatSummaryFunc(cls, prevChoices):
-        if prevChoices.randType not in ["Wilcoxon", "T-test"]:
+        if prevChoices.statTest == "Monte Carlo":
             return SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys() + \
                    [cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL]
 
@@ -76,7 +77,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
 
     @staticmethod
     def getOptionsBoxMcfdrDepth(prevChoices):
-        if prevChoices.randType not in ["Wilcoxon", "T-test"]:
+        if prevChoices.statTest == "Monte Carlo":
             from gold.description.AnalysisDefHandler import AnalysisDefHandler
             from gold.description.AnalysisList import REPLACE_TEMPLATES
             return AnalysisDefHandler(REPLACE_TEMPLATES['$MCFDRv5$']).getOptionsAsText().values()[0]
@@ -96,7 +97,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
 
     @classmethod
     def getOptionsBoxRandInput(cls, prevChoices):
-        if prevChoices.randType not in ["Wilcoxon", "T-test"] and cls.RANDOMIZABLE_INPUTS and \
+        if prevChoices.statTest == "Monte Carlo" and cls.RANDOMIZABLE_INPUTS and \
                 len(cls.RANDOMIZABLE_INPUTS) > 1:
             return ['reference', 'case-control']
             #return cls.RANDOMIZABLE_INPUTS
@@ -169,27 +170,26 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
     @classmethod
     def _determineMethod(cls, choices):
         if choices.catSummaryFunc not in [cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL]:
-            if choices.randType == "Wilcoxon":
+            if choices.statTest == "Wilcoxon":
                 return 1
-            elif choices.randType == 'Within tracks':
-                if choices.randAlg == \
-                        'Permute segments and sampled inter-segment regions (size of inter-segment regions is random)':
-                    if choices.randInput == "reference":
-                        return 2
-                    else:
-                        return 3
-            elif choices.randType == 'Between tracks':
-                if choices.randAlg == 'Shuffle between tracks':
-                    if choices.randInput == "case-control":
-                        return 4
+            elif choices.statTest == "Monte Carlo":
+                if choices.randType == WITHIN_TRACKS_CATEGORY:
+                    if choices.randAlg == PERMUTED_SEGS_AND_SAMPLED_INTERSEGS_STR:
+                        if choices.randInput == "reference":
+                            return 2
+                        else:
+                            return 3
+                elif choices.randType == BETWEEN_TRACKS_CATEGORY:
+                    if choices.randAlg == SHUFFLE_BETWEEN_TRACKS_STR:
+                        if choices.randInput == "case-control":
+                            return 4
         else:
             if choices.randInput == "reference":
-                if choices.randAlg == \
-                        'Permute segments and sampled inter-segment regions (size of inter-segment regions is random)':
+                if choices.randAlg == PERMUTED_SEGS_AND_SAMPLED_INTERSEGS_STR:
 
                     return 6
-            elif choices.randType == 'Between tracks':
-                if choices.randAlg == 'Shuffle between tracks':
+            elif choices.randType == BETWEEN_TRACKS_CATEGORY:
+                if choices.randAlg == SHUFFLE_BETWEEN_TRACKS_STR:
                     return 5
 
         return -1
