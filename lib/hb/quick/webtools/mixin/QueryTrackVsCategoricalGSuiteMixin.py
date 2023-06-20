@@ -89,7 +89,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
 
     # @staticmethod
     # def getOptionsBoxRandAlg(prevChoices):
-    #     if prevChoices.randType not in ["Wilcoxon", "T-test"]:
+    #     if prevChoices.statTest == 'Monte Carlo":
     #         from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
     #         for definedRandType in RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT.keys():
     #             if prevChoices.randType == definedRandType:
@@ -157,7 +157,7 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
         strOut += "method={}".format(cls._determineMethod(choices)) + linesep
         strOut += "simMeasure={}".format(choices.similarityFunc) + linesep
         strOut += "catSummaryFunc={}".format(choices.catSummaryFunc) + linesep
-        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+        if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
             for key, val in results.iteritems():
                 strOut += "pval_{}={}".format(key, val.getResult()['p.value']) + linesep
         else:

@@ -206,8 +206,8 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     @classmethod
     def _getOpertationsCount(cls, analysisBins, choices, ts):
         operationCount = 0
-        isWilcoxon = choices.randType == "Wilcoxon"
-        isTtest = choices.randType == "T-test"
+        isWilcoxon = choices.statTest == "Wilcoxon"
+        isTtest = choices.statTest == "T-test"
         for subIndex, subTS in ts.items():
             currTS = subTS if isWilcoxon or isTtest else subTS['real']
             operationCount += cls._calculateNrOfOperationsForProgresOutput(currTS,
@@ -220,7 +220,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     def _prepareTrackStructure(cls, querySTS, catTS, randType, randAlg, randInput, analysisBins):
 
         ts = TrackStructureV2()
-        if randType == 'Wilcoxon' or randType == "T-test":
+        if statTest == 'Wilcoxon' or statTest == "T-test":
             for cat, subTS in catTS.items():
                 ts[cat] = cls._prepareQueryRefTrackStructure(querySTS, subTS)
         else:
@@ -254,13 +254,13 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
     @classmethod
     def _prepareAnalysis(cls, choices, opCount):
-        if choices.randType == 'Wilcoxon':
+        if choices.statTest == 'Wilcoxon':
 
             analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
             analysisSpec.addParameter('genericTSChildrenRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
             analysisSpec.addParameter('alternative', choices.tail)
-        elif choices.randType == 'T-test':
+        elif choices.statTest == 'T-test':
             analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
             analysisSpec.addParameter('genericTSChildrenRawStatistic', TtestUnpairedTestStat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
@@ -299,18 +299,18 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         core = HtmlCore()
         core.divBegin()
 
-        if choices.randType == 'Wilcoxon' or choices.randType == "T-test":
+        if choices.statTest == 'Wilcoxon' or choices.statTest == "T-test":
             core.paragraph('The table contains the results from %s unpaired rank sum test executed for '
                            'each sub-GSuite, using the similarity measure "<b>{}</b>".'.format(
-                            choices.randType, choices.similarityFunc))
+                            choices.statTest, choices.similarityFunc))
             resTableDict = OrderedDict()
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
 
-            columnNames = ["GSuite index", "%s statistic" % choices.randType, "P-value"]
+            columnNames = ["GSuite index", "%s statistic" % choices.statTest, "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
 
-            nameList = [choices.randType, 'qqplot.png']
+            nameList = [choices.statTest, 'qqplot.png']
             pvals = [x[1] for x in resTableDict.values()]
 
             cls._addQQPlot(core, pvals, nameList, galaxyFn)

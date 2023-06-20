@@ -390,7 +390,7 @@ class GroupTestQueryGSuiteVsCategoricalRefGSuiteTool(GeneralGuiTool, UserBinMixi
             observedAndMcSamplesTuple, str(choices.tail),
             GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[choices.similarityFunc])
         resTableDict = OrderedDict()
-        # if choices.randType == "Wilcoxon":
+        # if choices.statTest == "Wilcoxon":
         #     for key, val in results.iteritems():
         #         resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
         #     core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
