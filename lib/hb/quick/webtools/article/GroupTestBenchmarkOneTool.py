@@ -5,11 +5,13 @@ from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from proto.tools.GeneralGuiTool import HistElement
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
 from quick.gsuite.GSuiteHbIntegration import addTableWithTabularAndGsuiteImportButtons
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.TtestUnpairedTestStat import TtestUnpairedTestStat
 from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
@@ -80,7 +82,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
                 ('Select GSuite column with case-control labels', 'categoryName'),
                 ] + \
                cls.getInputBoxNamesForGenomeSelection() + \
-                cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
+               cls.getInputBoxNamesForQueryTrackVsCatGSuite() + \
                cls.getInputBoxNamesForUserBinSelection() \
                # + \
                # cls.getInputBoxNamesForDebug()
@@ -191,13 +193,13 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         core = HtmlCore()
         core.divBegin()
         resTableDict = OrderedDict()
-        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+        if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
             for key, val in results.iteritems():
                 resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-            columnNames = ["Query track", choices.randType + " score", "P-value"]
+            columnNames = ["Query track", choices.statTest + " score", "P-value"]
             addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
 
-            nameList = [choices.randType, 'qqplot.png']
+            nameList = [choices.statTest, 'qqplot.png']
             pvals = [x[1] for x in resTableDict.values()]
 
             cls._addQQPlot(core, pvals, nameList, galaxyFn)
@@ -228,28 +230,60 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+        from quick.toolguide.controller.ToolGuide import ToolGuideController
+        from quick.toolguide import ToolGuideConfig
+
+        if not choices.gsuite:
+            return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT],
+                                               choices.isBasic)
+
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
+        if errorString:
+            return errorString
+
+        errorString = cls._validateGenome(choices)
+        if errorString:
+            return errorString
+
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gsuite,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
 
     @classmethod
     def prepareTrackStructure(cls, queryTS, catTS, analysisBins, choices):
-        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+        if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
             return cls._prepareQueryRefTrackStructure(queryTS, catTS)
         else:
             ts = TrackStructureV2()
+            randTvProvider = cls.createTrackViewProvider(choices, ts, analysisBins, choices.genome)
+            localAnalysis = randTvProvider.supportsLocalAnalysis()
+
             randAlgorithm = RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg]
             for queryTitle, querySTS in queryTS.items():
                 randQuerySTS = querySTS
                 randCatTS = catTS
                 #if choices.randInput == TrackStructureV2.QUERY_KEY:
                 if choices.randInput == 'reference':
-                    randQuerySTS = querySTS.getRandomizedVersion(
-                        randAlgorithm,
-                        binSource=analysisBins)
+                    randQuerySTS = getRandomizedVersionOfTs(querySTS, randTvProvider)
                 #elif choices.randInput == TrackStructureV2.REF_KEY:
                 elif choices.randInput == 'case-control':
-                    randCatTS = catTS.getRandomizedVersion(
-                        randAlgorithm,
-                        binSource=analysisBins)
+                    randCatTS = getRandomizedVersionOfTs(catTS, randTvProvider)
                 else:
                     raise ValueError("Randomization input must be one of {}".format(str(cls.RANDOMIZABLE_INPUTS)))
                 ts[queryTitle] = cls._prepareHypothesisTS(catTS, querySTS, randCatTS, randQuerySTS)
@@ -270,7 +304,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
     @classmethod
     def _calculateNrOfOperations(cls, ts, analysisBins, choices):
-        if choices.randType == "Wilcoxon" or choices.randType  == "T-test":
+        if choices.statTest == "Wilcoxon" or choices.statTest  == "T-test":
             return cls._calculateNrOfOperationsForProgresOutput(ts,
                                                                 analysisBins,
                                                                 choices,
@@ -287,9 +321,9 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
     @classmethod
     def prepareMultiQueryAnalysis(cls, choices, opCount):
-        if choices.randType == "Wilcoxon" or choices.randType == "T-test":
+        if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
             statName = WilcoxonUnpairedTestRV2Stat.__name__
-            if choices.randType == "T-test":
+            if choices.statTest == "T-test":
                 statName == TtestUnpairedTestStat.__name__
 
             analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
