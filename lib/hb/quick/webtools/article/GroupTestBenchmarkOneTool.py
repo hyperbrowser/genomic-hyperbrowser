@@ -24,7 +24,6 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVsCategoricalGSuiteMixin
 from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
 class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
@@ -233,19 +232,20 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         from quick.toolguide.controller.ToolGuide import ToolGuideController
         from quick.toolguide import ToolGuideConfig
 
-        if not choices.gsuite:
+        if not (choices.queryGsuite and choices.refGsuite):
             return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT],
-                                               choices.isBasic)
+                                               isBasicMode=False)
 
-        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
-        if errorString:
-            return errorString
+        for gsuiteFile in [choices.queryGsuite, choices.refGsuite]:
+            errorString = GeneralGuiTool._checkGSuiteFile(gsuiteFile)
+            if errorString:
+                return errorString
 
         errorString = cls._validateGenome(choices)
         if errorString:
             return errorString
 
-        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+        gsuite = getGSuiteFromGalaxyTN(choices.queryGsuite)
 
         errorString = GeneralGuiTool._checkGSuiteRequirements \
             (gsuite,
@@ -272,9 +272,6 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
         else:
             ts = TrackStructureV2()
             randTvProvider = cls.createTrackViewProvider(choices, ts, analysisBins, choices.genome)
-            localAnalysis = randTvProvider.supportsLocalAnalysis()
-
-            randAlgorithm = RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg]
             for queryTitle, querySTS in queryTS.items():
                 randQuerySTS = querySTS
                 randCatTS = catTS
