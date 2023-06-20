@@ -16,7 +16,7 @@ class SimpleProgressOutputMixin(object):
             analysisSpec = AnalysisDefHandler(analysisDefString)
             analysisSpec.setChoice('MCFDR sampling depth', mcfdrDepth)
             analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
-            aDChoicec = analysisDef.getChoices(filterByActivation=True)
+            aDChoicec = analysisDef.getAllChoices(filterByActivation=True)
             maxSamples = int(aDChoicec['maxSamples'])
         return n * m * k * (maxSamples + 1)
 

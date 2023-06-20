@@ -61,6 +61,7 @@ class ShuffleElementsBetweenTracksPool(object):
         self.origArrays = {'starts':[], 'ends':[], 'vals':[], 'strands':[], 'ids':[], 'edges':[], 'weights':[]}
 
         allowOverlaps = None
+        index = 0
         for index, leafNode in enumerate(origTs.getLeafNodes()):
             track = leafNode.track
             trackId = track.getUniqueKey(region.genome)
