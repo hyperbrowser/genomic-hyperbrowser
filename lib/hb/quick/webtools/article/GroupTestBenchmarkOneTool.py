@@ -270,18 +270,26 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             return cls._prepareQueryRefTrackStructure(queryTS, catTS)
         else:
             ts = TrackStructureV2()
-            randTvProvider = cls.createTrackViewProvider(choices, ts, analysisBins, choices.genome)
+            queryTsRandTvProvider = cls.createTrackViewProvider(choices, queryTS, analysisBins,
+                                                                choices.genome)
+            randCatTS = catTS
+            if choices.randInput == 'case-control':
+                catTsRandTvProvider = cls.createTrackViewProvider(choices, catTS, analysisBins,
+                                                                  choices.genome)
+                randCatTS = getRandomizedVersionOfTs(catTS, catTsRandTvProvider)
+            elif choices.randInput == 'reference':
+                queryTsRandTvProvider = cls.createTrackViewProvider(choices, queryTS, analysisBins,
+                                                                    choices.genome)
+            else:
+                raise ValueError(
+                    "Randomization input must be one of {}".format(str('reference', 'case-control')))
+
             for queryTitle, querySTS in queryTS.items():
                 randQuerySTS = querySTS
-                randCatTS = catTS
-                #if choices.randInput == TrackStructureV2.QUERY_KEY:
+
                 if choices.randInput == 'reference':
-                    randQuerySTS = getRandomizedVersionOfTs(querySTS, randTvProvider)
-                #elif choices.randInput == TrackStructureV2.REF_KEY:
-                elif choices.randInput == 'case-control':
-                    randCatTS = getRandomizedVersionOfTs(catTS, randTvProvider)
-                else:
-                    raise ValueError("Randomization input must be one of {}".format(str(cls.RANDOMIZABLE_INPUTS)))
+                    randQuerySTS = getRandomizedVersionOfTs(querySTS, queryTsRandTvProvider)
+
                 ts[queryTitle] = cls._prepareHypothesisTS(catTS, querySTS, randCatTS, randQuerySTS)
             return ts
 
