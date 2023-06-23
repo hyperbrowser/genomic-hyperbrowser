@@ -13,7 +13,7 @@ class RandTrackBasedTrackViewProvider(WithinTrackRandomTvProvider):
 
     _NEEDS_ORIG_TRACK_SOURCE = False
     _NEEDS_BIN_SOURCE = False
-    _SUPPORTS_LOCAL_ANALYSIS = False
+    _SUPPORTS_LOCAL_ANALYSIS = True
 
     @abstractproperty
     def _RAND_TRACK_CLS(self):

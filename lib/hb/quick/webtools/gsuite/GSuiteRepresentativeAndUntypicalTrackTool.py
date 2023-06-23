@@ -403,7 +403,12 @@ class GSuiteRepresentativeAndUntypicalTrackTool(GeneralGuiTool, UserBinMixin,
             analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
             analysisSpec.addParameter('tails', 'right-tail')
             analysisSpec.addParameter('evaluatorFunc', 'evaluatePvalueAndNullDistribution')
-            analysisSpec.addParameter('runLocalAnalysis', 'Yes' if localAnalysis else 'No')
+            # analysisSpec.addParameter('runLocalAnalysis', 'Yes' if localAnalysis else 'No')
+            # TODO: Why would we need local analysis here?
+            #       RandTrackBasedTrackViewProvider._SUPPORTS_LOCAL_ANALYSIS was in any case set to
+            #       False, so local analysis has not been run in practice.
+            #       Same issue in GSuiteTracksCoincidingWithQueryTrackTool
+            analysisSpec.addParameter('runLocalAnalysis', 'No')
 
             results = doAnalysis(analysisSpec, analysisBins, q2TS).getGlobalResult()
             resultsTuples = []
