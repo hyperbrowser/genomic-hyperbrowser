@@ -333,7 +333,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
                                           choices.similarityFunc])
             analysisSpec.addParameter('segregateNodeKey', 'reference')
             analysisSpec.addParameter('progressPoints', opCount)
-            analysisSpec.addParameter('runLocalAnalysis', "No")
+            analysisSpec.addParameter('runLocalAnalysis', 'No')
             analysisSpec.addParameter('selectedCategory', choices.categoryVal)
             return analysisSpec
         else:
@@ -358,7 +358,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
                                       GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                           choices.similarityFunc])
             analysisSpec.addParameter('selectedCategory', choices.categoryVal)
-            analysisSpec.addParameter('runLocalAnalysis', "No")
+            analysisSpec.addParameter('runLocalAnalysis', 'No')
 
             return analysisSpec
 

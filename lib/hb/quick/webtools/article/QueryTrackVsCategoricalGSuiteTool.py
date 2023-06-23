@@ -501,7 +501,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         analysisSpec.addParameter('pairwiseStatistic',
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
-        analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('runLocalAnalysis', 'No')
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('alternative', choices.tails)
         analysisSpec.addParameter('primaryCatVal', categoryVal)
@@ -691,7 +691,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         # analysisSpec.addParameter('tvProviderClass', RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[choices.randType][choices.randAlg])
         analysisSpec.addParameter('selectedCategory', categoryVal)
         analysisSpec.addParameter('progressPoints', opCount)
-        analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('runLocalAnalysis', 'No')
 
         if choices.catSummaryFunc == cls.DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL:
             analysisSpec.addParameter('rawStatistic', DiffOfSummarizedRanksPerTsCatV2Stat.__name__)
@@ -723,7 +723,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                                   GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
         analysisSpec.addParameter('segregateNodeKey', 'reference')
         analysisSpec.addParameter('progressPoints', opCount)
-        analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('runLocalAnalysis', 'No')
         return analysisSpec
 
     @classmethod
