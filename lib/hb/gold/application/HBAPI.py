@@ -81,7 +81,7 @@ def doAnalysisWithProfiling(analysisSpec, analysisBins, trackStructure, galaxyFn
     silenceNumpyWarnings()
     analysisDef = AnalysisDefHandler(analysisSpec.getDefAfterChoices())
     statClass = analysisDef._statClassList[0]
-    validStatClass = wrapClass(statClass, keywords=analysisDef.getChoices(filterByActivation=True) )
+    validStatClass = wrapClass(statClass, keywords=analysisDef.getAllChoices(filterByActivation=True) )
     job = StatJob(analysisBins, trackStructure, validStatClass)
 
     from config.DebugConfig import DebugConfig
