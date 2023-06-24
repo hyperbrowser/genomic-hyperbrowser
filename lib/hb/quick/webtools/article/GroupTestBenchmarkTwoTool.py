@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -23,8 +24,14 @@ from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin, DebugMixin):
 
+    GSUITE_FILE_OPTIONS_BOX_KEYS = ['gsuite']
+    ALLOW_UNKNOWN_GENOME = False
+    WHAT_GENOME_IS_USED_FOR = 'the analysis'
+
+    CAT_GSUITE_KEY = 'gsuite'
     CAT_LBL_KEY = 'catTwoLbl'
     INFO_HIST_ELEMENT = 'BM2 info'
+
     REF_GSUITE_INPUT_LBL = 'Select a GSuite of case-control tracks simulated from the reference'
 
     @classmethod
@@ -107,9 +114,9 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
     @classmethod
     def getOptionsBoxQueryTrack(cls):  # Alt: getOptionsBox1()
-        return GeneralGuiTool.getHistorySelectionElement()
-
-
+        return GeneralGuiTool.getHistorySelectionElement(
+            *getSupportedFileSuffixesForPointsAndSegments()
+        )
 
     @staticmethod
     def getOptionsBoxGsuite(prevChoices):
@@ -336,7 +343,42 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+
+        errorString = cls._checkTrack(choices, 'queryTrack', genomeChoiceIndex=None)
+        if errorString:
+            return errorString
+
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
+        if errorString:
+            return errorString
+
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gsuite,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = cls._checkGSuiteTrackListSize(gsuite)
+        if errorString:
+            return errorString
+
+        errorString = cls._validateGenome(choices, validateBinaryTracksIfPresent=True)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
 
     # @classmethod
     # def getSubToolClasses(cls):

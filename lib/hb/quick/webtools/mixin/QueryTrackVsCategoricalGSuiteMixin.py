@@ -1,3 +1,4 @@
+from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.trackstructure import TsRandAlgorithmRegistry
 from gold.track.trackstructure.TsRandAlgorithmRegistry import \
@@ -16,6 +17,16 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
     CAT_LBL_KEY = 'categoryName'
     SUMMARY_FUNC_DICT = SummarizedInteractionPerTsCatV2StatUnsplittable.functionDict.keys()
     DIFF_RANK_SUM_CAT_SUMMARY_FUNC_LBL = "Difference of rank averages"
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
+                                  GSuiteConstants.VALUED_POINTS,
+                                  GSuiteConstants.SEGMENTS,
+                                  GSuiteConstants.VALUED_SEGMENTS]
+
+    GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
+                                 GSuiteConstants.MULTIPLE]
 
     @classmethod
     def getInputBoxNamesForQueryTrackVsCatGSuite(cls):

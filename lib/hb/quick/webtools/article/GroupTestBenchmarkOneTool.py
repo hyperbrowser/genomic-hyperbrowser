@@ -3,7 +3,6 @@ from collections import OrderedDict
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec, AnalysisDefHandler
 from gold.description.AnalysisList import REPLACE_TEMPLATES
-from gold.gsuite import GSuiteConstants
 from gold.track.TrackStructure import TrackStructureV2
 from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from proto.hyperbrowser.HtmlCore import HtmlCore
@@ -30,18 +29,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
     GSUITE_FILE_OPTIONS_BOX_KEYS = ['queryGsuite', 'refGsuite']
     ALLOW_UNKNOWN_GENOME = False
-    ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
-
-    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
-    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
-    GSUITE_ALLOWED_TRACK_TYPES = [GSuiteConstants.POINTS,
-                                  GSuiteConstants.VALUED_POINTS,
-                                  GSuiteConstants.SEGMENTS,
-                                  GSuiteConstants.VALUED_SEGMENTS]
-
-    GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
-                                 GSuiteConstants.MULTIPLE]
 
     CAT_GSUITE_KEY = 'refGsuite'
 
@@ -239,31 +227,29 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
 
         Optional method. Default return value if method is not defined: None
         """
-        from quick.toolguide.controller.ToolGuide import ToolGuideController
-        from quick.toolguide import ToolGuideConfig
-
-        if not (choices.queryGsuite and choices.refGsuite):
-            return ToolGuideController.getHtml(cls.toolId, [ToolGuideConfig.GSUITE_INPUT],
-                                               isBasicMode=False)
-
         for gsuiteFile in [choices.queryGsuite, choices.refGsuite]:
             errorString = GeneralGuiTool._checkGSuiteFile(gsuiteFile)
             if errorString:
                 return errorString
 
+            gsuite = getGSuiteFromGalaxyTN(gsuiteFile)
+
+            errorString = GeneralGuiTool._checkGSuiteRequirements \
+                (gsuite,
+                 cls.GSUITE_ALLOWED_FILE_FORMATS,
+                 cls.GSUITE_ALLOWED_LOCATIONS,
+                 cls.GSUITE_ALLOWED_TRACK_TYPES,
+                 cls.GSUITE_DISALLOWED_GENOMES)
+
+            if errorString:
+                return errorString
+
+            errorString = cls._checkGSuiteTrackListSize(gsuite)
+            if errorString:
+                return errorString
+
+
         errorString = cls._validateGenome(choices)
-        if errorString:
-            return errorString
-
-        gsuite = getGSuiteFromGalaxyTN(choices.queryGsuite)
-
-        errorString = GeneralGuiTool._checkGSuiteRequirements \
-            (gsuite,
-             cls.GSUITE_ALLOWED_FILE_FORMATS,
-             cls.GSUITE_ALLOWED_LOCATIONS,
-             cls.GSUITE_ALLOWED_TRACK_TYPES,
-             cls.GSUITE_DISALLOWED_GENOMES)
-
         if errorString:
             return errorString
 
