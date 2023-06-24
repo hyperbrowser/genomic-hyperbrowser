@@ -5,9 +5,11 @@ from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from proto.tools.GeneralGuiTool import HistElement
 from quick.application.GalaxyInterface import GalaxyInterface
 from quick.gsuite import GSuiteStatUtils, GuiBasedTsFactory
+from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
 from quick.statistic.DiffOfSummarizedRanksPerTsCatV2Stat import DiffOfSummarizedRanksPerTsCatV2Stat
 from quick.statistic.GenericTSChildrenV2Stat import GenericTSChildrenV2Stat
 from quick.statistic.SummarizedInteractionPerTsCatV2Stat import SummarizedInteractionPerTsCatV2Stat
@@ -19,7 +21,6 @@ from quick.webtools.mixin.QueryTrackVsCategoricalGSuiteMixin import QueryTrackVs
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.mixin.SimpleProgressOutputMixin import SimpleProgressOutputMixin
 from quick.webtools.mixin.GenomeMixin import GenomeMixin
-from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
 class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin, DebugMixin):
@@ -181,8 +182,8 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         for key, val in catTS.items():
             catTS[key] = val.getSplittedByCategoryTS(choices.catTwoLbl)
 
-        ts = cls._prepareTrackStructure(querySTS, catTS, choices.randType, choices.randAlg, choices.randInput, analysisBins)
-        operationCount = cls._getOpertationsCount(analysisBins, choices, ts)
+        ts = cls._prepareTrackStructure(querySTS, catTS, analysisBins, choices)
+        operationCount = cls._getOperationsCount(analysisBins, choices, ts)
         analysisSpec = cls._prepareAnalysis(choices, operationCount)
         cls._startProgressOutput()
         from config.DebugConfig import DebugConfig
@@ -210,48 +211,50 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         cls._writeInfo(2, choices, results, fn)
 
     @classmethod
-    def _getOpertationsCount(cls, analysisBins, choices, ts):
+    def _getOperationsCount(cls, analysisBins, choices, ts):
         operationCount = 0
-        isWilcoxon = choices.statTest == "Wilcoxon"
-        isTtest = choices.statTest == "T-test"
+        isMC = choices.statTest == "Monte Carlo"
         for subIndex, subTS in ts.items():
-            currTS = subTS if isWilcoxon or isTtest else subTS['real']
+            currTS = subTS['real'] if isMC else subTS
             operationCount += cls._calculateNrOfOperationsForProgresOutput(currTS,
                                                                            analysisBins,
                                                                            choices,
-                                                                           isMC=(not isWilcoxon and not isTtest))
+                                                                           isMC)
         return operationCount
 
     @classmethod
-    def _prepareTrackStructure(cls, querySTS, catTS, randType, randAlg, randInput, analysisBins):
+    def _prepareTrackStructure(cls, querySTS, catTS, analysisBins, choices):
 
         ts = TrackStructureV2()
-        if statTest == 'Wilcoxon' or statTest == "T-test":
+        if choices.statTest == 'Wilcoxon' or choices.statTest == "T-test":
             for cat, subTS in catTS.items():
                 ts[cat] = cls._prepareQueryRefTrackStructure(querySTS, subTS)
         else:
-            randAlgorithm = RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg]
+            randQuerySTS = querySTS
+
+            if choices.randInput == 'reference':
+                queryTsRandTvProvider = cls.createTrackViewProvider(choices, querySTS, analysisBins,
+                                                                    choices.genome)
+                randQuerySTS = getRandomizedVersionOfTs(querySTS, queryTsRandTvProvider)
+            elif choices.randInput == 'case-control':
+                catTsRandTvProvider = cls.createTrackViewProvider(choices, catTS, analysisBins,
+                                                                  choices.genome)
+            else:
+                raise ValueError(
+                    "Randomization input must be one of {}".format(str('reference', 'case-control')))
+
             for cat, subTS in catTS.items():
-                randQuerySTS = querySTS
-                randCatTS = subTS
-                #if randInput == TrackStructureV2.QUERY_KEY:
-                if randInput == 'reference':
-                    randQuerySTS = querySTS.getRandomizedVersion(
-                        randAlgorithm,
-                        binSource=analysisBins)
-                #elif randInput == TrackStructureV2.REF_KEY:
-                elif randInput == 'case-control':
-                    randCatTS = subTS.getRandomizedVersion(
-                        randAlgorithm,
-                        binSource=analysisBins)
-                else:
-                    raise ValueError("Randomization input must be one of {}".format(str(cls.RANDOMIZABLE_INPUTS)))
-                realTS = cls._prepareQueryRefTrackStructure(querySTS, subTS)
-                randTS = cls._prepareQueryRefTrackStructure(randQuerySTS, randCatTS)
-                hypothesisTS = TrackStructureV2()
-                hypothesisTS["real"] = realTS
-                hypothesisTS["rand"] = randTS
-                ts[cat] = hypothesisTS
+                    randCatTS = subTS
+
+                    if choices.randInput == 'case-control':
+                        randCatTS = getRandomizedVersionOfTs(subTS, catTsRandTvProvider)
+
+                    realTS = cls._prepareQueryRefTrackStructure(querySTS, subTS)
+                    randTS = cls._prepareQueryRefTrackStructure(randQuerySTS, randCatTS)
+                    hypothesisTS = TrackStructureV2()
+                    hypothesisTS["real"] = realTS
+                    hypothesisTS["rand"] = randTS
+                    ts[cat] = hypothesisTS
         return ts
 
     @classmethod
@@ -261,7 +264,6 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
     @classmethod
     def _prepareAnalysis(cls, choices, opCount):
         if choices.statTest == 'Wilcoxon':
-
             analysisSpec = AnalysisSpec(GenericTSChildrenV2Stat)
             analysisSpec.addParameter('genericTSChildrenRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
             analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
@@ -293,7 +295,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
                                   GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
                                       choices.similarityFunc])
         analysisSpec.addParameter('selectedCategory', choices.categoryVal)
-        analysisSpec.addParameter('runLocalAnalysis', "No")
+        analysisSpec.addParameter('runLocalAnalysis', 'No')
 
         return analysisSpec
 
@@ -328,8 +330,6 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
 
         core.end()
         print str(core)
-
-
 
     @classmethod
     def validateAndReturnErrors(cls, choices):
