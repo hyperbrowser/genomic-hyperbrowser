@@ -3,6 +3,7 @@ from collections import OrderedDict, defaultdict
 
 import quick.gsuite.GuiBasedTsFactory as factory
 from config.Config import STATIC_DIR
+from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.application.HBAPI import doAnalysisWithProfiling
 from gold.description.AnalysisDefHandler import AnalysisDefHandler, AnalysisSpec
 from gold.description.AnalysisList import REPLACE_TEMPLATES
@@ -32,12 +33,9 @@ from quick.webtools.mixin.UserBinMixin import UserBinMixin
 from quick.webtools.ts.RandomizedTsWriterTool import RandomizedTsWriterTool
 
 
-
-
 class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixin, DebugMixin,
                                         QueryTrackVsCategoricalGSuiteMixin, SimpleProgressOutputMixin):
     ALLOW_UNKNOWN_GENOME = False
-    ALLOW_GENOME_OVERRIDE = False
     WHAT_GENOME_IS_USED_FOR = 'the analysis'
 
     GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
@@ -49,8 +47,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
     GSUITE_DISALLOWED_GENOMES = [GSuiteConstants.UNKNOWN,
                                  GSuiteConstants.MULTIPLE]
-    ALL_VS_ALL = 'All versus all'
 
+    ALL_VS_ALL = 'All versus all'
     CASE_VS_CONTROL = 'Case versus control value'
 
     @classmethod
@@ -88,13 +86,13 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 #('Use a GSuite of randomized query track', 'isQueryGSuite'),
                 ('Add GSuite to history', 'exampleGSuite'),
                 ('Select reference track', 'queryTrack'),
-                ('Select a GSuite of case-control tracks', 'gsuite'),
-                ('Select category column', cls.CAT_LBL_KEY),
+                ('Select a GSuite of case-control tracks', 'gsuite')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Select category column', cls.CAT_LBL_KEY),
                 ('Tool mode', 'toolMode'),
                 ('Select control value', 'controlVal'),
                 ('Select case value', 'caseVal')] + \
                 cls.getInputBoxNamesForQueryTrackVsCatGSuite()[1:] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
                 cls.getInputBoxNamesForUserBinSelection() + \
                 cls.getInputBoxNamesForDebug()
 
@@ -207,7 +205,9 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         """
         # return GeneralGuiTool.getHistorySelectionElement('gsuite') if prevChoices.isQueryGSuite \
         #     else GeneralGuiTool.getHistorySelectionElement()
-        return GeneralGuiTool.getHistorySelectionElement()
+        return GeneralGuiTool.getHistorySelectionElement(
+            *getSupportedFileSuffixesForPointsAndSegments()
+        )
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -659,7 +659,41 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         Optional method. Default return value if method is not defined: None
         """
-        return None
+        errorString = cls._checkTrack(choices, 'queryTrack', genomeChoiceIndex=None)
+        if errorString:
+            return errorString
+
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
+        if errorString:
+            return errorString
+
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gsuite,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = cls._checkGSuiteTrackListSize(gsuite)
+        if errorString:
+            return errorString
+
+        errorString = cls._validateGenome(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateRandAlgorithmSelection(choices)
+        if errorString:
+            return errorString
+
+        errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
 
     @classmethod
     def prepareMCTrackStructure(cls, queryTS, catTS, randType, randAlg, analysisBins, categoryVal):

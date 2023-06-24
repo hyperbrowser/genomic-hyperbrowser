@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from gold.gsuite import GSuiteComposer
+from gold.gsuite import GSuiteComposer, GSuiteConstants
 from gold.gsuite.GSuite import GSuite
 from gold.gsuite.GSuiteEditor import concatenateGSuitesAddingCategories
 from gold.gsuite.GSuiteTrack import GSuiteTrack
@@ -9,6 +9,12 @@ from quick.webtools.GeneralGuiTool import GeneralGuiTool
 
 
 class GroupTestBM3ShuffleGroupsInGSuiteTool(GeneralGuiTool):
+
+    GSUITE_ALLOWED_FILE_FORMATS = [GSuiteConstants.PREPROCESSED]
+    GSUITE_ALLOWED_LOCATIONS = [GSuiteConstants.LOCAL]
+    GSUITE_ALLOWED_TRACK_TYPES = []
+    GSUITE_DISALLOWED_GENOMES = []
+
     @classmethod
     def getToolName(cls):
         return "Group difference test - Shuffle group labels in GSuite (BM3)"
@@ -18,7 +24,6 @@ class GroupTestBM3ShuffleGroupsInGSuiteTool(GeneralGuiTool):
         return [('Select a gsuite', 'gsuite'),
                 ('Nr. of simulated sub-GSuites', 'nrSubGSuites'),
                 ('Category name', 'catLbl')]
-
 
     # @classmethod
     # def getInputBoxOrder(cls):
@@ -76,7 +81,6 @@ class GroupTestBM3ShuffleGroupsInGSuiteTool(GeneralGuiTool):
 
         GSuiteComposer.composeToFile(newGSuite, galaxyFn)
 
-
     @classmethod
     def _generateNewGSuite(cls, gsuite, subGSuiteIndex, catLbl, categoryVals, galaxyFn):
         newTracks = []
@@ -89,18 +93,35 @@ class GroupTestBM3ShuffleGroupsInGSuiteTool(GeneralGuiTool):
 
         return GSuite(trackList=newTracks)
 
-
     @classmethod
     def validateAndReturnErrors(cls, choices):
+        errorString = GeneralGuiTool._checkGSuiteFile(choices.gsuite)
+        if errorString:
+            return errorString
 
-        if not choices.gsuite:
-            return "Please select a GSuite"
+        gsuite = getGSuiteFromGalaxyTN(choices.gsuite)
+
+        errorString = GeneralGuiTool._checkGSuiteRequirements \
+            (gsuite,
+             cls.GSUITE_ALLOWED_FILE_FORMATS,
+             cls.GSUITE_ALLOWED_LOCATIONS,
+             cls.GSUITE_ALLOWED_TRACK_TYPES,
+             cls.GSUITE_DISALLOWED_GENOMES)
+
+        if errorString:
+            return errorString
+
+        errorString = cls._checkGSuiteTrackListSize(gsuite)
+        if errorString:
+            return errorString
 
         try:
-            int(choices.nrSubGSuites)
+            assert int(choices.nrSubGSuites) > 0
         except:
-            return "Nr. of sub-GSuites must be a valid integer."
+            return "Nr. of sub-GSuites must be a valid positive integer"
 
+        if not choices.catLbl:
+            return "Please select a category name"
 
     # @classmethod
     # def getSubToolClasses(cls):

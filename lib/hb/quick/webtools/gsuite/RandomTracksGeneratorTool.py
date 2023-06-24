@@ -5,6 +5,7 @@ from proto.CommonFunctions import ensurePathExists
 from proto.tools.GeneralGuiTool import HistElement
 from quick.extra.SimulationTools import SimulationManager, SegIter, SimulationSegIter
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
@@ -210,8 +211,6 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
     def getOptionsBoxMaxSegLen(cls, prevChoices):  # Alt: getOptionsBox2()
         return '1000'
 
-
-
     # @classmethod
     # def getInfoForOptionsBoxKey(cls, prevChoices):
     #     """
@@ -311,9 +310,39 @@ class RandomTracksGeneratorTool(GeneralGuiTool):
         Optional method. Default return value if method is not defined: None
         """
         try:
-            int(choices.nrTracks)
+            assert int(choices.nrTracks) > 0
         except:
-            return "Number of tracks must be a valid integer."
+            return "Number of tracks must be a valid positive integer."
+
+        errorString = cls._checkGenome(choices.genome)
+        if errorString:
+            return errorString
+
+        procProbErr = "The process rates and probabilities must be real numbers between 0.0 and 1.0."
+
+        try:
+            interRate = float(choices.interRate)
+            intraRate = float(choices.intraRate)
+            interProb = float(choices.interProb)
+        except:
+            return procProbErr
+        else:
+            if interRate > 1 or interRate < 0 \
+                or intraRate > 1 or intraRate < 0 \
+                or interProb > 1 or interProb < 0:
+                    return procProbErr
+
+        try:
+            assert int(choices.minSegLen) > 0
+            assert int(choices.maxSegLen) > 0
+        except:
+            return "Minimum and maximum segment lengths must be a valid positive integer."
+
+        try:
+            assert int(choices.minSegLen) <= int(choices.maxSegLen)
+        except:
+            return "Maximum segment lengths must be larger than or equal to minimum segment length."
+
 
     # @classmethod
     # def getSubToolClasses(cls):

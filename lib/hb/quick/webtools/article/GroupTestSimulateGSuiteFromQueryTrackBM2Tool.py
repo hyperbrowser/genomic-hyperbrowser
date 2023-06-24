@@ -193,14 +193,14 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
             return errorStr
 
         try:
-            int(choices.nrSubGSuites)
+            assert int(choices.nrSubGSuites) > 0
         except:
-            return "Nr. of sub-GSuites must be a valid integer."
+            return "Nr. of sub-GSuites must be a valid positive integer."
 
         try:
-            int(choices.nrTracks)
+            assert int(choices.nrTracks) > 0
         except:
-            return "Nr. of tracks per group must be a valid integer."
+            return "Nr. of tracks per group must be a valid positive integer."
 
         probErr = "The probabilities must be real numbers between 0.0 and 1.0."
 
