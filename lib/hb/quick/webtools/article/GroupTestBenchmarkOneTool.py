@@ -281,8 +281,7 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
             return cls._prepareQueryRefTrackStructure(queryTS, catTS)
         else:
             ts = TrackStructureV2()
-            queryTsRandTvProvider = cls.createTrackViewProvider(choices, queryTS, analysisBins,
-                                                                choices.genome)
+
             randCatTS = catTS
             if choices.randInput == 'case-control':
                 catTsRandTvProvider = cls.createTrackViewProvider(choices, catTS, analysisBins,
