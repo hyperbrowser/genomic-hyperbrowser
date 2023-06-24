@@ -1,5 +1,5 @@
 from proto.tools.GeneralGuiTool import HistElement
-from quick.webtools.misc.GroupTestBenchmarkTwoTool import GroupTestBenchmarkTwoTool
+from quick.webtools.article.GroupTestBenchmarkTwoTool import GroupTestBenchmarkTwoTool
 
 
 class GroupTestBenchmarkThreeTool(GroupTestBenchmarkTwoTool):

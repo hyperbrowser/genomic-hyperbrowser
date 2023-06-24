@@ -9,7 +9,6 @@
       <tool file="proto/hyperbrowser/article/GroupTestSimulateGSuiteFromQueryTrackBM2Tool.xml" />
       <tool file="proto/hyperbrowser/article/GroupTestBenchmarkThreeTool.xml" />
       <tool file="proto/hyperbrowser/article/GroupTestBM3ShuffleGroupsInGSuiteTool.xml" />
-      <tool file="proto/hyperbrowser/article/GroupTestSimulateGSuiteFromQueryTrackBM2Tool.xml" />
       <tool file="proto/hyperbrowser/gsuite/RandomTracksGeneratorTool.xml" />
   </section>
     <section name="Methods" id="methods_tools">
