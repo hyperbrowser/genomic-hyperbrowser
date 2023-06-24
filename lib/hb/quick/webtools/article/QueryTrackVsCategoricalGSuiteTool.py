@@ -447,37 +447,37 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         return combinationGsuites
 
-    @classmethod
-    def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
-        # cls._startProgressOutput()
-        ts = cls.prepareTrackStructure(queryTS, catTS)
-        operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
-        analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
-        results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
-        # cls._endProgressOutput()
-        cls._endDebugOutput()
-        cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
-
-    @classmethod
-    def _printMultiQueryScenarioResult(cls, results, catNames, choices, galaxyFn):
-        core = HtmlCore()
-        # core.divBegin()
-        resTableDict = OrderedDict()
-        if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
-            for key, val in results.iteritems():
-                resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
-            columnNames = ["Query track", choices.statTest + " score", "P-value"]
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
-            # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
-        else:
-            for key, val in results.iteritems():
-                resTableDict[key] = val.getResult()
-            columnNames = ["Query track"] + catNames
-            addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
-            # core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
-        # core.divEnd()
-        # core.end()
-        print str(core)
+    # @classmethod
+    # def _executeMultipleQueryScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS):
+    #     # cls._startProgressOutput()
+    #     ts = cls.prepareTrackStructure(queryTS, catTS)
+    #     operationCount = cls._calculateNrOfOperationsForProgresOutput(ts, analysisBins, choices, isMC=False)
+    #     analysisSpec = cls.prepareMultiQueryAnalysis(choices, operationCount)
+    #     results = doAnalysisWithProfiling(analysisSpec, analysisBins, ts, galaxyFn).getGlobalResult()["Result"]
+    #     # cls._endProgressOutput()
+    #     cls._endDebugOutput()
+    #     cls._printMultiQueryScenarioResult(results, catTS.keys(), choices, galaxyFn)
+    #
+    # @classmethod
+    # def _printMultiQueryScenarioResult(cls, results, catNames, choices, galaxyFn):
+    #     core = HtmlCore()
+    #     # core.divBegin()
+    #     resTableDict = OrderedDict()
+    #     if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
+    #         for key, val in results.iteritems():
+    #             resTableDict[key] = [val.getResult()['statistic'], val.getResult()['p.value']]
+    #         columnNames = ["Query track", choices.statTest + " score", "P-value"]
+    #         addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+    #         # core.tableFromDictionary(resTableDict, columnNames=["Query track", "Wilcoxon score", "P-value"])
+    #     else:
+    #         for key, val in results.iteritems():
+    #             resTableDict[key] = val.getResult()
+    #         columnNames = ["Query track"] + catNames
+    #         addTableWithTabularAndGsuiteImportButtons(core, choices, galaxyFn, 'table', resTableDict, columnNames)
+    #         # core.tableFromDictionary(resTableDict, columnNames=["Query track"] + catNames)
+    #     # core.divEnd()
+    #     # core.end()
+    #     print str(core)
 
     @classmethod
     def _executeQueryTrackScenario(cls, analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal=None):
@@ -762,28 +762,28 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
 
         return analysisSpec
 
-    @classmethod
-    def prepareMultiQueryAnalysis(cls, choices, opCount):
-        analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
-        if choices.statTest == "Wilcoxon":
-            analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
-            analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
-        elif choices.statTest == "T-test":
-            analysisSpec.addParameter('multitrackRawStatistic', TtestUnpairedTestStat.__name__)
-        else:
-            analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
-
-        analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
-
-        analysisSpec.addParameter('pairwiseStatistic',
-                                  GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
-                                      choices.similarityFunc])
-        analysisSpec.addParameter('summaryFunc',
-                                  GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
-        analysisSpec.addParameter('segregateNodeKey', 'reference')
-        analysisSpec.addParameter('progressPoints', opCount)
-        analysisSpec.addParameter('runLocalAnalysis', 'No')
-        return analysisSpec
+    # @classmethod
+    # def prepareMultiQueryAnalysis(cls, choices, opCount):
+    #     analysisSpec = AnalysisSpec(MultitrackSummarizedInteractionWithOtherTracksV2Stat)
+    #     if choices.statTest == "Wilcoxon":
+    #         analysisSpec.addParameter('multitrackRawStatistic', WilcoxonUnpairedTestRV2Stat.__name__)
+    #         analysisSpec.addParameter('primaryCatVal', choices.categoryVal)
+    #     elif choices.statTest == "T-test":
+    #         analysisSpec.addParameter('multitrackRawStatistic', TtestUnpairedTestStat.__name__)
+    #     else:
+    #         analysisSpec.addParameter('multitrackRawStatistic', SummarizedInteractionPerTsCatV2Stat.__name__)
+    #
+    #     analysisSpec.addParameter('multitrackSummaryFunc', 'raw')
+    #
+    #     analysisSpec.addParameter('pairwiseStatistic',
+    #                               GSuiteStatUtils.PAIRWISE_STAT_LABEL_TO_CLASS_MAPPING[
+    #                                   choices.similarityFunc])
+    #     analysisSpec.addParameter('summaryFunc',
+    #                               GSuiteStatUtils.SUMMARY_FUNCTIONS_MAPPER[choices.summaryFunc])
+    #     analysisSpec.addParameter('segregateNodeKey', 'reference')
+    #     analysisSpec.addParameter('progressPoints', opCount)
+    #     analysisSpec.addParameter('runLocalAnalysis', 'No')
+    #     return analysisSpec
 
     @classmethod
     def prepareTrackStructure(cls, queryTS, catTS):
@@ -921,7 +921,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     
         Optional method. Default return value if method is not defined: False
         """
-        return True
+        return False
 
     @classmethod
     def getOutputFormat(cls, choices):
