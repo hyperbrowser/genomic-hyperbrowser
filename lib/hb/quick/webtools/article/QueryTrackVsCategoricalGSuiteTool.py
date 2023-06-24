@@ -52,6 +52,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     ALL_VS_ALL = 'All versus all'
     CASE_VS_CONTROL = 'Case versus control value'
 
+    CONTROL_CASE_KEY_SPLIT_STR = "||"
+
     @classmethod
     def getToolName(cls):
         """
@@ -400,11 +402,14 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             refTS = factory.getFlatTracksTSFromGsuiteObject(choices.genome, gsuite)
             catTS = refTS.getSplittedByCategoryTS(choices.categoryName)
 
-            categoryVal = combination.split("_")[0]
+            cls._printCombinationHeader(combination.split(cls.CONTROL_CASE_KEY_SPLIT_STR))
+
+            categoryVal = combination.split(cls.CONTROL_CASE_KEY_SPLIT_STR)[0]
             results, resultsMC, resultsWilcoxonTtest = cls._executeQueryTrackScenario(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal)
 
             resultsDict[combination] = (results, resultsMC, resultsWilcoxonTtest)
 
+        cls._endDebugOutput()
         cls._printResultsHtml(choices, resultsDict, galaxyFn)
 
     @classmethod
@@ -417,7 +422,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 filteredGSuite.addTrack(track)
 
         combinationGsuites = {}
-        combinationGsuites["_".join([controlVal, caseVal])] = filteredGSuite
+        combinationGsuites[cls.CONTROL_CASE_KEY_SPLIT_STR.join([controlVal, caseVal])] = filteredGSuite
 
         return combinationGsuites
 
@@ -438,7 +443,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 categoryTracks = categoriesTracksDict[category]
                 for track in categoryTracks:
                     combGsuite.addTrack(track)
-            combinationGsuites["_".join(sorted(combination))] = combGsuite
+            combinationGsuites[cls.CONTROL_CASE_KEY_SPLIT_STR.join(sorted(combination))] = combGsuite
 
         return combinationGsuites
 
@@ -481,12 +486,12 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         # cls._startProgressOutput()
         results = cls._getResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
         if choices.statTest == "Wilcoxon" or choices.statTest == "T-test":
-            assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon test."
+            assert len(catTS.keys()) == 2, "Must have exactly two categories to run the Wilcoxon or T-tests."
             resultsWilcoxonTtest = cls.getWilcoxonOrTtestResults(analysisBins, catTS, choices, galaxyFn, queryTS, categoryVal).getResult()
         else:
             resultsMC = cls._getMCResults(queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal)
         # cls._endProgressOutput()
-        cls._endDebugOutput()
+        # cls._endDebugOutput()
         return results, resultsMC, resultsWilcoxonTtest
 
 
@@ -562,6 +567,12 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
                 choices.summaryFunc, choices.similarityFunc))
 
     @classmethod
+    def _printCombinationHeader(cls, combination):
+        core = HtmlCore()
+        core.paragraph(' & '.join(combination) + ':')
+        print str(core)
+
+    @classmethod
     def _printResultsHtml(cls, choices, resultsDict, galaxyFn):
         core = HtmlCore()
         cls._printResultsHeader(choices, core)
@@ -570,7 +581,7 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
         index = 1
         for combination, allResults in resultsDict.iteritems():
             results, resultsMC, resultsWilcoxonTtest = allResults
-            categoryVal, secondVal = combination.split("_")
+            categoryVal, secondVal = combination.split(cls.CONTROL_CASE_KEY_SPLIT_STR)
             if resultsWilcoxonTtest:
                 resTableRow = []
                 resTableRow.append(categoryVal)
