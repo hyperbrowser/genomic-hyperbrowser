@@ -10,6 +10,7 @@ from gold.description.AnalysisList import REPLACE_TEMPLATES
 from gold.gsuite import GSuiteConstants
 from gold.gsuite.GSuite import GSuite
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure.TsUtils import getRandomizedVersionOfTs
 from proto.StaticFile import GalaxyRunSpecificFile
 from proto.hyperbrowser.HtmlCore import HtmlCore
 from quick.application.GalaxyInterface import GalaxyInterface
@@ -519,8 +520,8 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
     def _getMCResults(cls, queryTS, catTS, analysisBins, choices, galaxyFn, categoryVal=None):
         if not categoryVal:
             categoryVal = choices.categoryVal
-        tsMC = cls.prepareMCTrackStructure(queryTS, catTS, choices.randType, choices.randAlg, analysisBins,
-                                           categoryVal)
+        tsMC = cls.prepareMCTrackStructure(queryTS, catTS, analysisBins, categoryVal, choices)
+
         operationCount = cls._calculateNrOfOperationsForProgresOutput(tsMC.values()[0]['real'], analysisBins, choices)
         analysisSpecMC = cls.prepareMCAnalysis(choices, operationCount, categoryVal)
         globalResult = doAnalysisWithProfiling(analysisSpecMC, analysisBins, tsMC, galaxyFn).getGlobalResult()
@@ -696,11 +697,24 @@ class QueryTrackVsCategoricalGSuiteTool(GeneralGuiTool, UserBinMixin, GenomeMixi
             return errorString
 
     @classmethod
-    def prepareMCTrackStructure(cls, queryTS, catTS, randType, randAlg, analysisBins, categoryVal):
-        randCatTS = catTS.getRandomizedVersion(RandomizedTsWriterTool.RANDOMIZATION_ALGORITHM_DICT[randType][randAlg],
-                                               binSource=analysisBins)
+    def prepareMCTrackStructure(cls, queryTS, catTS, analysisBins, categoryVal, choices):
+        randQueryTS = queryTS
+        randCatTS = catTS
+
+        if choices.randInput == 'reference':
+            queryTsRandTvProvider = cls.createTrackViewProvider(choices, queryTS, analysisBins,
+                                                                choices.genome)
+            randQueryTS = getRandomizedVersionOfTs(queryTS, queryTsRandTvProvider)
+        elif choices.randInput == 'case-control':
+            catTsRandTvProvider = cls.createTrackViewProvider(choices, catTS, analysisBins,
+                                                              choices.genome)
+            randCatTS = getRandomizedVersionOfTs(catTS, catTsRandTvProvider)
+        else:
+            raise ValueError(
+                "Randomization input must be one of {}".format(str('reference', 'case-control')))
+
         realTS = cls.prepareTrackStructure(queryTS, catTS)
-        randTS = cls.prepareTrackStructure(queryTS, randCatTS)
+        randTS = cls.prepareTrackStructure(randQueryTS, randCatTS)
         hypothesisTS = TrackStructureV2()
         hypothesisTS["real"] = realTS
         hypothesisTS["rand"] = randTS
