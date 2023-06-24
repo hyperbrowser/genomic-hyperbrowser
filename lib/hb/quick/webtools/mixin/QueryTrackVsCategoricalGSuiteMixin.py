@@ -34,7 +34,10 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
         if cls._getGSuite(prevChoices) and cls._getCategoryName(prevChoices):
             from quick.multitrack.MultiTrackCommon import getGSuiteFromGalaxyTN
             gsuite = getGSuiteFromGalaxyTN(cls._getGSuite(prevChoices))
-            return list(set(gsuite.getAttributeValueList(cls._getCategoryName(prevChoices))))
+            try:
+                return list(set(gsuite.getAttributeValueList(cls._getCategoryName(prevChoices))))
+            except AssertionError:
+                return []
 
     @classmethod
     def _getCategoryName(cls, choices):
