@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import time
 
+from gold.application.DataTypes import getSupportedFileSuffixesForPointsAndSegments
 from gold.application.HBAPI import doAnalysis
 from gold.description.AnalysisDefHandler import AnalysisSpec
 from gold.gsuite import GSuiteComposer
@@ -17,19 +18,23 @@ from quick.statistic.StatTvOutputWriterStat import StatTvOutputWriterStat
 from quick.statistic.StatTvOutputWriterWrapperV2Stat import StatTvOutputWriterWrapperV2Stat
 from quick.util.debug import DebugUtil
 from quick.webtools.GeneralGuiTool import GeneralGuiTool
+from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin):
+class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, GenomeMixin, UserBinMixin):
+    GSUITE_FILE_OPTIONS_BOX_KEYS = []
+    ALLOW_UNKNOWN_GENOME = False
+
     @classmethod
     def getToolName(cls):
         return "Simulate two level GSuite from a base track (Benchmark 2)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select the base track', 'baseTrack'),
-                ('Select the genome build', 'genome'),
-                ('Nr. of simulated sub-GSuites', 'nrSubGSuites'),
+        return [('Select the base track', 'baseTrack')] + \
+                cls.getInputBoxNamesForGenomeSelection() + \
+                [('Nr. of simulated sub-GSuites', 'nrSubGSuites'),
                 ('Nr. of tracks per group', 'nrTracks'),
                 ('True positive probability (group A)', 'tpProbGroup1'),
                 ('True negative probability (group A)', 'tnProbGroup1'),
@@ -47,7 +52,9 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
 
     @classmethod
     def getOptionsBoxBaseTrack(cls):
-        return GeneralGuiTool.getHistorySelectionElement()
+        return GeneralGuiTool.getHistorySelectionElement(
+            *getSupportedFileSuffixesForPointsAndSegments()
+        )
 
     @classmethod
     def getOptionsBoxGenome(cls, prevChoices):
@@ -180,18 +187,13 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
     @classmethod
     def validateAndReturnErrors(cls, choices):
 
-        if not choices.baseTrack:
-            return "Please select a base track dataset from your history."
+        errorString = cls._checkTrack(choices, 'baseTrack', genomeChoiceIndex=None)
+        if errorString:
+            return errorString
 
-        if not choices.genome or choices.genome == '--- Select ---':
-            return "Please select a genome build."
-        #
-        # if choices.baseTrack and choices.genome:
-        #     try:
-        #         ExternalTrackManager.getPreProcessedTrackFromGalaxyTN(choices.genome, choices.baseTrack,
-        #                                                               printProgress=False)
-        #     except:
-        #         return "Please select a valid base track (BED, GTrack...)."
+        errorString = cls._validateGenome(choices)
+        if errorString:
+            return errorString
 
         try:
             int(choices.nrSubGSuites)
@@ -204,6 +206,7 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
             return "Nr. of tracks per group must be a valid integer."
 
         probErr = "The probabilities must be real numbers between 0.0 and 1.0."
+
         try:
             tpProb1 = float(choices.tpProbGroup1)
             tnProb1 = float(choices.tnProbGroup1)
@@ -216,6 +219,10 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin)
                 return probErr
             if tnProb2 > 1 or tnProb2 < 0 or tpProb2 > 1 or tnProb2 < 0:
                 return probErr
+
+        errorString = cls.validateUserBins(choices)
+        if errorString:
+            return errorString
 
 
     # @classmethod
