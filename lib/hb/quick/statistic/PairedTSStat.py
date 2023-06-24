@@ -34,6 +34,8 @@ class PairedTSStat(MagicStatFactory):
 
 class PairedTSStatUnsplittable(StatisticV2):
 
+    # TODO: Using class variables for non-constants is a bad idea. Refactor
+
     PROGRESS_COUNT = 1
     PROGRESS_START_TIME = None
 

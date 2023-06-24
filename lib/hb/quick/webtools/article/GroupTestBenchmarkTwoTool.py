@@ -368,7 +368,7 @@ class GroupTestBenchmarkTwoTool(GeneralGuiTool, GenomeMixin, UserBinMixin, Query
         if errorString:
             return errorString
 
-        errorString = cls._validateGenome(choices, validateBinaryTracksIfPresent=True)
+        errorString = cls._validateGenome(choices)
         if errorString:
             return errorString
 
