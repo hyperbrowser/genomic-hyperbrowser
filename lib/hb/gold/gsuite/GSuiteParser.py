@@ -262,7 +262,7 @@ def _checkCharUsageOfPhrase(phrase):
 # GSuiteParser
 #
 
-def parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders=True):
+def parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders=True, onlyFirstTrack=False):
     """
     :return GSuite:
     """
@@ -302,6 +302,8 @@ def parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders=True):
     for trackLine in trackLines:
         gSuite.addTrack(_parseTrackLine(trackLine, colNames, headerVars),
                         allowDuplicateTitles=False)
+        if onlyFirstTrack:
+            break
 
     _setCustomHeaders(gSuite, headerVars)
 
@@ -329,7 +331,8 @@ def parse(gSuiteFileName, allowTrackSummaryToOverrideHeaders=True):
 
 
 def validateLines(gSuiteLines, outFile=None, printHelpText=True,
-                  allowTrackSummaryToOverrideHeaders=False):
+                  allowTrackSummaryToOverrideHeaders=False, 
+                  onlyFirstTrack=False):
     """
     :return bool: True if GSuite file is valid, else False
     """
@@ -340,7 +343,7 @@ def validateLines(gSuiteLines, outFile=None, printHelpText=True,
         print >>out, '-----------------'
 
     try:
-        parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders)
+        parseLines(gSuiteLines, allowTrackSummaryToOverrideHeaders, onlyFirstTrack=onlyFirstTrack)
         valid = True
         print >>out, 'GSuite file is valid'
 
@@ -360,20 +363,23 @@ def validateLines(gSuiteLines, outFile=None, printHelpText=True,
 
 
 def validateFromString(gSuiteStr, outFile=None, printHelpText=True,
-                       allowTrackSummaryToOverrideHeaders=False):
+                       allowTrackSummaryToOverrideHeaders=False,
+                       onlyFirstTrack=False):
     """
     :return bool: True if GSuite file is valid, else False
     """
     valid = validateLines(
         gSuiteStr.split('\n'), outFile,
         printHelpText=printHelpText,
-        allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders)
+        allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders,
+            onlyFirstTrack=onlyFirstTrack)
 
     return valid
 
 
 def validate(gSuiteFileName, outFile=None, printHelpText=True,
-             allowTrackSummaryToOverrideHeaders=False):
+             allowTrackSummaryToOverrideHeaders=False,
+             onlyFirstTrack=False):
     """
     :return bool: True if GSuite file is valid, else False
     """
@@ -381,6 +387,7 @@ def validate(gSuiteFileName, outFile=None, printHelpText=True,
         valid = validateLines(
             gSuiteFileHandle, outFile,
             printHelpText=printHelpText,
-            allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders)
+            allowTrackSummaryToOverrideHeaders=allowTrackSummaryToOverrideHeaders, 
+            onlyFirstTrack=onlyFirstTrack)
 
     return valid

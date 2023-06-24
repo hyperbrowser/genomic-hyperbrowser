@@ -183,7 +183,7 @@ class GeneralGuiToolMixin(object):
             return fileStr.capitalize() + ' invalid: ' + str(e)
 
     @staticmethod
-    def _validateGSuiteFile(galaxyTN):
+    def _validateGSuiteFile(galaxyTN, onlyFirstTrack=True):
         import gold.gsuite.GSuiteParser as GSuiteParser
         from quick.application.ExternalTrackManager import ExternalTrackManager
         from cStringIO import StringIO
@@ -191,7 +191,8 @@ class GeneralGuiToolMixin(object):
         galaxyFn = ExternalTrackManager.extractFnFromGalaxyTN(galaxyTN)
         outFile = StringIO()
         ok = GSuiteParser.validate(galaxyFn, outFile=outFile, printHelpText=False,
-                                   allowTrackSummaryToOverrideHeaders=True)
+                                   allowTrackSummaryToOverrideHeaders=True,
+                                   onlyFirstTrack=onlyFirstTrack)
         if not ok:
             return outFile.getvalue()
 
