@@ -22,19 +22,16 @@ from quick.webtools.mixin.GenomeMixin import GenomeMixin
 from quick.webtools.mixin.UserBinMixin import UserBinMixin
 
 
-class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, GenomeMixin, UserBinMixin):
-    GSUITE_FILE_OPTIONS_BOX_KEYS = []
-    ALLOW_UNKNOWN_GENOME = False
-
+class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, UserBinMixin):
     @classmethod
     def getToolName(cls):
         return "Simulate two level GSuite from a base track (Benchmark 2)"
 
     @classmethod
     def getInputBoxNames(cls):
-        return [('Select the base track', 'baseTrack')] + \
-                cls.getInputBoxNamesForGenomeSelection() + \
-                [('Nr. of simulated sub-GSuites', 'nrSubGSuites'),
+        return [('Select the base track', 'baseTrack'),
+                ('Specify genome build for the output GSuite file', 'genome'),
+                ('Nr. of simulated sub-GSuites', 'nrSubGSuites'),
                 ('Nr. of tracks per group', 'nrTracks'),
                 ('True positive probability (group A)', 'tpProbGroup1'),
                 ('True negative probability (group A)', 'tnProbGroup1'),
@@ -191,9 +188,9 @@ class GroupTestSimulateGSuiteFromQueryTrackBM2Tool(GeneralGuiTool, GenomeMixin, 
         if errorString:
             return errorString
 
-        errorString = cls._validateGenome(choices)
-        if errorString:
-            return errorString
+        errorStr = cls._checkGenome(choices.genome)
+        if errorStr:
+            return errorStr
 
         try:
             int(choices.nrSubGSuites)
