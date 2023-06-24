@@ -59,7 +59,6 @@ class PairedTSStatUnsplittable(StatisticV2):
             if PairedTSStatUnsplittable.PROGRESS_COUNT == 1:
                 PairedTSStatUnsplittable.PROGRESS_START_TIME = time.time()
                 if self._progressStyle == 'html':
-                    print '<br>'
                     print "<p>Progress output (expected points: %s)</p>" % self._progressPoints
                 else:
                     print
