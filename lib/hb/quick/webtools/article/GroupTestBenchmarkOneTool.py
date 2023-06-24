@@ -135,6 +135,17 @@ class GroupTestBenchmarkOneTool(GeneralGuiTool, UserBinMixin, GenomeMixin, Debug
     #     return ['testChoice1', '..']
 
     @classmethod
+    def _randTypePreselection(cls, prevChoices):
+        """
+        Override this method in the tool if the type of randomization option box should be fixed
+        to a specific randomization algorithm category. If so, the option box will be hidden in the GUI.
+        :param: The selected choices selected by the user before the first rand alg option box
+        :return: The preselected randomization algorithm category text as defined in TsRandAlgorithmRegistry,
+                 e.g. `TsRandAlgorithmRegistry.WITHIN_TRACKS_CATEGORY`, or `None` (default value).
+        """
+        return None
+
+    @classmethod
     def getExtraHistElements(cls, choices):
         """
         Defines extra history elements to be created when clicking execute.

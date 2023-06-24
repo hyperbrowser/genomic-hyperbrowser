@@ -1,4 +1,5 @@
 from gold.track.TrackStructure import TrackStructureV2
+from gold.track.trackstructure import TsRandAlgorithmRegistry
 from gold.track.trackstructure.TsRandAlgorithmRegistry import \
     PERMUTED_SEGS_AND_SAMPLED_INTERSEGS_STR, WITHIN_TRACKS_CATEGORY, BETWEEN_TRACKS_CATEGORY, \
     SHUFFLE_BETWEEN_TRACKS_STR
@@ -102,6 +103,17 @@ class QueryTrackVsCategoricalGSuiteMixin(RandAlgorithmMixin):
             return ['reference', 'case-control']
             #return cls.RANDOMIZABLE_INPUTS
 
+    @classmethod
+    def _randTypePreselection(cls, prevChoices):
+        """
+        Override this method in the tool if the type of randomization option box should be fixed
+        to a specific randomization algorithm category. If so, the option box will be hidden in the GUI.
+        :param: The selected choices selected by the user before the first rand alg option box
+        :return: The preselected randomization algorithm category text as defined in TsRandAlgorithmRegistry,
+                 e.g. `TsRandAlgorithmRegistry.WITHIN_TRACKS_CATEGORY`, or `None` (default value).
+        """
+        if prevChoices.randInput == 'reference':
+            return TsRandAlgorithmRegistry.WITHIN_TRACKS_CATEGORY
 
     @classmethod
     def _getSubGSuiteResults(cls, mcResult, galaxyFn, subGSuiteLbl, catSummaryFunc):
