@@ -1,7 +1,7 @@
 # packages with C extensions
 bx-python==0.7.3
 MarkupSafe==0.23
-PyYAML==3.11
+PyYAML==5.4.1
 SQLAlchemy==1.0.8
 # Mercurial >= 3.5 changed the bundle format, which breaks hg push of TS repositories
 mercurial==3.4.2
