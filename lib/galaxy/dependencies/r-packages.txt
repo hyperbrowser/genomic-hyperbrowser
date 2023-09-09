@@ -37,6 +37,7 @@ RSQLite
 org.Hs.eg.db
 hgu133plus2.db
 locfit
+XML
 DESeq
 limma
 edgeR

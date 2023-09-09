@@ -21,11 +21,17 @@ progressbar>=2.3
 asteval==0.9.8
 python-Levenshtein==0.12.0
 mock>=2.0
+pox<0.3.2
+ppft<1.7.6.6
+multiprocess<0.70.14
+dill<0.3.6
+attrs<22
 pathos==0.2.1
 kiwisolver==1.1.0
 more-itertools==5.0.0
 zipp==0.6.0
 configparser<5
+packaging<21
 pytest>=4.6.4,<4.7
 future==0.18.2
 
@@ -35,7 +41,7 @@ importlib_metadata==1.7.0
 python_dateutil>=1.5
 suds>=0.4
 marisa_trie>=0.7.2
-tblib>=1.7.0
+tblib==1.7.0
 testing.postgresql>=1.0.6hb
 pg8000<1.13
 
