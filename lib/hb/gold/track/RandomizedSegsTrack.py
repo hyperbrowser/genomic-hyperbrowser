@@ -40,7 +40,9 @@ class RandomizedSegsTrack(RandomizedTrack):
         segLens = ends-starts
         #permuting order (of length-elements) of both pools
         if vals is None and strands is None:
-            numpy.random.shuffle(segLens)
+            # numpy.random.shuffle(segLens)
+            permutIndexes = numpy.random.permutation(len(segLens))
+            segLens = segLens[permutIndexes]
         else:
             permutIndexes = numpy.random.permutation( len(segLens) )
             segLens = segLens[permutIndexes]
@@ -61,7 +63,9 @@ class RandomizedSegsTrack(RandomizedTrack):
         #add start and end-case of bin. Double-check with statistician..
         intersegLens = numpy.append(intersegLens, [starts[0], binLen-ends[-1]])
 
-        numpy.random.shuffle(intersegLens)
+        # numpy.random.shuffle(intersegLens)
+        permutIndexes = numpy.random.permutation(len(intersegLens))
+        intersegLens = intersegLens[permutIndexes]
         return intersegLens
 
     def _sampleIntervals(self, totalSpace, numElements):

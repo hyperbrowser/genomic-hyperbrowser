@@ -745,7 +745,8 @@ class SubsampleTracks(GeneralTrackDataModifier):
 
         import numpy.random as nr
         lineNumbers = range(len(lines))
-        nr.shuffle(lineNumbers)
+        permutIndexes = nr.permutation(len(lineNumbers))
+        lineNumbers = lineNumbers[permutIndexes]
         lineNumbers = lineNumbers[0:numElements]
 
         for lineNum in lineNumbers:

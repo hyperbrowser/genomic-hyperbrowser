@@ -9,6 +9,7 @@ class ShuffledMarksTrack(RandomizedTrack):
 
     def _createRandomizedNumpyArrays(self, binLen, starts, ends, vals, strands, ids, edges, weights, extras, region):
         newVals = numpy.copy(vals)
-        numpy.random.shuffle(newVals)
+        permutIndexes = numpy.random.permutation(len(newVals))
+        newVals = newVals[permutIndexes]
 
         return starts, ends, newVals, strands, ids, edges, weights, extras

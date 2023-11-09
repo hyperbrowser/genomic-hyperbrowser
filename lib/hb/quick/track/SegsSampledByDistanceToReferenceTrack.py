@@ -113,7 +113,8 @@ class SegsSampledByDistanceToReferenceTrack(SegsSampledByIntensityTrack):
 
             assert len(sampledPositions) == numElements
             sampledElementLengths = elementLengths
-            numpy.random.shuffle(sampledElementLengths)
+            permutIndexes = numpy.random.permutation(len(sampledElementLengths))
+            sampledElementLengths = sampledElementLengths[permutIndexes]
             sampledPositions = numpy.array(sampledPositions)
             sampledPositions.sort()
             sampledStarts = (sampledPositions - (sampledElementLengths/2)).astype('int')
