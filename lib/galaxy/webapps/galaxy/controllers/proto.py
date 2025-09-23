@@ -52,7 +52,7 @@ class ProtoController( BaseUIController ):
             html = self.run_tool(mako, trans)
         except Exception, e:
             html = '<html><body><pre>\n'
-            html += str(e) + ':\n' + traceback.format_exc()
+        #    html += str(e) + ':\n' + traceback.format_exc()
             html += '\n</pre></body></html>'
 
         response.send_bytes(html)
