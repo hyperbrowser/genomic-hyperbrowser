@@ -184,7 +184,8 @@ class RootController( controller.JSAppLauncher, UsesAnnotations ):
             try:
                 hid = int( hid )
             except:
-                return "hid '%s' is invalid" % str( hid )
+                return "hid is invalid"
+                #return "hid is invalid" % str( hid )
             history = trans.get_history()
             for dataset in history.datasets:
                 if dataset.hid == hid:
@@ -198,7 +199,8 @@ class RootController( controller.JSAppLauncher, UsesAnnotations ):
             try:
                 data = trans.sa_session.query( self.app.model.HistoryDatasetAssociation ).get( id )
             except:
-                return "Dataset id '%s' is invalid" % str( id )
+                return "Dataset id is invalid"
+                #return "Dataset id '%s' is invalid" % str( id )
         if data:
             current_user_roles = trans.get_current_user_roles()
             if trans.app.security_agent.can_access_dataset( current_user_roles, data.dataset ):
