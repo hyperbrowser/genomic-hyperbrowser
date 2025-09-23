@@ -101,8 +101,9 @@ try:
             data = hyper.getTrackInfo(genome, trackname.split(':'))
 
         elif ajax == 'genomeinfo':
-            genomename = params.get('about')
-            data = hyper.getGenomeInfo(genomename)
+            genomeID = escape(params.get('about'), True)
+            if len(genomeID) == len(params.get('about')):
+               data = hyper.getGenomeInfo(genomeID)
 
         elif ajax == 'help':
             about = params.get('about')

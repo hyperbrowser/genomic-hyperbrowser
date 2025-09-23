@@ -23,6 +23,7 @@ from galaxy.security.validate_user_input import (transform_publicname,
                                                  validate_publicname)
 from galaxy.util import biostar, hash_util, docstring_trim, listify
 from galaxy.util.json import dumps, loads
+from galaxy.util.sanitize_html import sanitize_html
 from galaxy.web import url_for
 from galaxy.web.base.controller import (BaseUIController,
                                         CreatesApiKeysMixin,
@@ -1440,15 +1441,15 @@ class User( BaseUIController, UsesFormDefinitionsMixin, CreatesUsersMixin, Creat
             user = trans.sa_session.query( trans.app.model.User ).get( trans.security.decode_id( user_id ) )
         else:
             user = trans.user
-        short_desc = util.restore_text( params.get( 'short_desc', ''  ) )
-        name = util.restore_text( params.get( 'name', ''  ) )
-        institution = util.restore_text( params.get( 'institution', ''  ) )
-        address = util.restore_text( params.get( 'address', ''  ) )
-        city = util.restore_text( params.get( 'city', ''  ) )
-        state = util.restore_text( params.get( 'state', ''  ) )
-        postal_code = util.restore_text( params.get( 'postal_code', ''  ) )
-        country = util.restore_text( params.get( 'country', ''  ) )
-        phone = util.restore_text( params.get( 'phone', ''  ) )
+        short_desc = sanitize_html(util.restore_text( params.get( 'short_desc', ''  ) ))
+        name = sanitize_html(util.restore_text( params.get( 'name', ''  ) ))
+        institution = sanitize_html(util.restore_text( params.get( 'institution', ''  ) ))
+        address = sanitize_html(util.restore_text( params.get( 'address', ''  ) ))
+        city = sanitize_html(util.restore_text( params.get( 'city', ''  ) ))
+        state = sanitize_html(util.restore_text( params.get( 'state', ''  ) ))
+        postal_code = sanitize_html(util.restore_text( params.get( 'postal_code', ''  ) ))
+        country = sanitize_html(util.restore_text( params.get( 'country', ''  ) ))
+        phone = sanitize_html(util.restore_text( params.get( 'phone', ''  ) ))
         ok = True
         if not trans.app.config.allow_user_creation and not is_admin:
             return trans.show_error_message( 'User registration is disabled.  Please contact your local Galaxy administrator for an account.' )
@@ -1535,15 +1536,15 @@ class User( BaseUIController, UsesFormDefinitionsMixin, CreatesUsersMixin, Creat
         if address_obj.user_id != user.id:
             return trans.show_error_message( "Invalid address id." )
         if params.get( 'edit_address_button', False  ):
-            short_desc = util.restore_text( params.get( 'short_desc', ''  ) )
-            name = util.restore_text( params.get( 'name', ''  ) )
-            institution = util.restore_text( params.get( 'institution', ''  ) )
-            address = util.restore_text( params.get( 'address', ''  ) )
-            city = util.restore_text( params.get( 'city', ''  ) )
-            state = util.restore_text( params.get( 'state', ''  ) )
-            postal_code = util.restore_text( params.get( 'postal_code', ''  ) )
-            country = util.restore_text( params.get( 'country', ''  ) )
-            phone = util.restore_text( params.get( 'phone', ''  ) )
+            short_desc = sanitize_html(util.restore_text( params.get( 'short_desc', ''  ) ))
+            name = sanitize_html(util.restore_text( params.get( 'name', ''  ) ))
+            institution = sanitize_html(util.restore_text( params.get( 'institution', ''  ) ))
+            address = sanitize_html(util.restore_text( params.get( 'address', ''  ) ))
+            city = sanitize_html(util.restore_text( params.get( 'city', ''  ) ))
+            state = sanitize_html(util.restore_text( params.get( 'state', ''  ) ))
+            postal_code = sanitize_html(util.restore_text( params.get( 'postal_code', ''  ) ))
+            country = sanitize_html(util.restore_text( params.get( 'country', ''  ) ))
+            phone = sanitize_html(util.restore_text( params.get( 'phone', ''  ) ))
             ok = True
             if not short_desc:
                 ok = False

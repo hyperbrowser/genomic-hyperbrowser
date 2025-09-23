@@ -301,15 +301,15 @@ class DatasetInterface( BaseUIController, UsesAnnotations, UsesItemRatings, Uses
                         trans.app.datatypes_registry.change_datatype( data, params.datatype )
                         trans.sa_session.flush()
                         trans.app.datatypes_registry.set_external_metadata_tool.tool_action.execute( trans.app.datatypes_registry.set_external_metadata_tool, trans, incoming={ 'input1': data }, overwrite=False )  # overwrite is False as per existing behavior
-                        message = "Changed the type of dataset '%s' to %s" % ( to_unicode( data.name ), params.datatype )
+                        message = "Changed the type of dataset '%s' to %s" % ( escape(to_unicode( data.name )), params.datatype )
                         refresh_frames = ['history']
                 else:
                     message = "You are unable to change datatypes in this manner. Changing %s to %s is not allowed." % ( data.extension, params.datatype )
                     error = True
             elif params.save:
                 # The user clicked the Save button on the 'Edit Attributes' form
-                data.name = params.name if params.name else ''
-                data.info = params.info if params.info else ''
+                data.name = sanitize_html( params.name, 'utf-8', 'text/html' ) if params.name else ''
+                data.info = sanitize_html( params.info, 'utf-8', 'text/html' ) if params.info else ''
                 message = ''
                 if __ok_to_edit_metadata( data.id ):
                     # The following for loop will save all metadata_spec items
