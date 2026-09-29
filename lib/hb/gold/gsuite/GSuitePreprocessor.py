@@ -59,14 +59,18 @@ class GSuiteTrackPreprocessor(Visitor):
         from quick.application.ExternalTrackManager import ExternalTrackManager as ETM
         from gold.description.TrackInfo import TrackInfo
 
-        assert ALLOW_GSUITE_FILE_PROTOCOL
+        assert ALLOW_GSUITE_FILE_PROTOCOL, "File protocol is not allowed for GSuite preprocessor"
 
         resultsPathDirs = EXT_RESULTS_PATH.rstrip(os.path.sep).split(os.path.sep)
         curInstance = URL_PREFIX.strip('/')
-        assert resultsPathDirs[-1] == curInstance
+        if curInstance == 'hb':
+            curInstance = 'stable'
+        
+        assert resultsPathDirs[-1] == curInstance, "Not current instance: {} != {}".format(resultsPathDirs[-1], curInstance)
+
         resultsPathDirsNoInstance = os.path.sep.join(resultsPathDirs[:-1])
 
-        assert gSuiteTrack.path.startswith(resultsPathDirsNoInstance)
+        assert gSuiteTrack.path.startswith(resultsPathDirsNoInstance), "Path does not start with: " + resultsPathDirsNoInstance
 
         pathSplitted = gSuiteTrack.path.split(os.path.sep)
         instance = pathSplitted[len(resultsPathDirs) - 1]
