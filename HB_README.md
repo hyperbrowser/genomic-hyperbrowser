@@ -1,3 +1,4 @@
+[![Project Status: Inactive](https://www.repostatus.org/badges/latest/inactive.svg)](https://www.repostatus.org/#inactive)
 ![The Genomic HyperBrowser logo](https://hyperbrowser.uio.no/hb/static/hyperbrowser/images/logo/HB_logo_white_same_line.png)
   
   
